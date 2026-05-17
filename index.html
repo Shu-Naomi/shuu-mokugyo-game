@@ -1,0 +1,1228 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20182d" />
+  <title>相棒AI豆柴ふれあいADV『シュウと木魚は渡さない』</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #171223;
+      --panel: rgba(42, 32, 58, 0.86);
+      --panel-strong: rgba(58, 43, 77, 0.95);
+      --text: #fff8ec;
+      --muted: #d7c7bb;
+      --accent: #ffb86b;
+      --accent-2: #ff7b86;
+      --good: #9df3c4;
+      --warn: #ffd36e;
+      --danger: #ff8e8e;
+      --shadow: rgba(0, 0, 0, 0.36);
+      --line: rgba(255, 248, 236, 0.14);
+      --radius: 22px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body { min-height: 100%; }
+
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(255, 184, 107, 0.18), transparent 25%),
+        radial-gradient(circle at 86% 0%, rgba(133, 111, 255, 0.18), transparent 26%),
+        linear-gradient(180deg, #20182d 0%, #171223 55%, #0f0c16 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.26) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(255,184,107,0.32) 0 1px, transparent 1.5px);
+      background-position: 12px 26px, 92px 80px;
+      background-size: 120px 120px, 160px 150px;
+      opacity: 0.32;
+    }
+
+    .app {
+      width: min(100%, 460px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
+      position: relative;
+    }
+
+    header {
+      padding: 8px 2px 12px;
+      text-align: center;
+    }
+
+    .kicker {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.08em;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: clamp(1.26rem, 7vw, 1.84rem);
+      line-height: 1.18;
+      text-shadow: 0 3px 18px rgba(255, 123, 134, 0.35);
+    }
+
+    .subtitle {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.86rem;
+      line-height: 1.5;
+    }
+
+    .stage {
+      display: grid;
+      gap: 12px;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      box-shadow: 0 18px 44px var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero {
+      padding: 16px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .room-line {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: var(--muted);
+      font-size: 0.77rem;
+      margin-bottom: 8px;
+    }
+
+    .shuu-area {
+      display: grid;
+      grid-template-columns: 1fr 116px;
+      gap: 8px;
+      align-items: end;
+      min-height: 178px;
+    }
+
+    .speech {
+      align-self: start;
+      background: rgba(255, 248, 236, 0.94);
+      color: #352538;
+      border-radius: 20px 20px 20px 6px;
+      padding: 13px 14px;
+      font-weight: 800;
+      line-height: 1.55;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+      position: relative;
+      min-height: 88px;
+    }
+
+    .speech small {
+      display: block;
+      margin-top: 6px;
+      color: #805d58;
+      font-weight: 700;
+    }
+
+    .shuu {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 168px;
+      transform-origin: bottom center;
+      transition: transform 180ms ease, filter 180ms ease;
+    }
+
+    .shuu.bounce { animation: bounce 360ms ease; }
+    .shuu.guard { filter: drop-shadow(0 0 18px rgba(255, 211, 110, 0.42)); }
+    .shuu.melt { transform: translateY(5px) scale(1.03); }
+
+    .dog {
+      font-size: 5.9rem;
+      line-height: 1;
+      z-index: 2;
+      filter: drop-shadow(0 13px 18px rgba(0,0,0,0.28));
+    }
+
+    .moku {
+      position: absolute;
+      right: 10px;
+      bottom: 10px;
+      width: 78px;
+      height: 54px;
+      border-radius: 42% 48% 44% 48%;
+      background: radial-gradient(circle at 28% 34%, #bc6b32, #7a3e20 64%, #4b2819);
+      border: 4px solid rgba(255, 226, 163, 0.3);
+      box-shadow: inset 0 -8px 12px rgba(0,0,0,0.2), 0 10px 18px rgba(0,0,0,0.28);
+      z-index: 3;
+      display: grid;
+      place-items: center;
+      font-weight: 900;
+      color: #ffe4a9;
+    }
+
+    .moku::after {
+      content: "";
+      position: absolute;
+      width: 58px;
+      height: 9px;
+      background: #6e341c;
+      border-radius: 999px;
+      right: -34px;
+      top: 25px;
+      transform: rotate(-8deg);
+      box-shadow: 0 4px 8px rgba(0,0,0,0.24);
+    }
+
+    .mood {
+      position: absolute;
+      inset: auto auto 2px 4px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 123, 134, 0.18);
+      color: #ffe1e4;
+      border: 1px solid rgba(255, 123, 134, 0.24);
+      font-size: 0.76rem;
+      font-weight: 800;
+      z-index: 4;
+    }
+
+    .goal {
+      padding: 12px 14px;
+      display: flex;
+      gap: 10px;
+      align-items: flex-start;
+      color: #fff2c9;
+      line-height: 1.45;
+      font-size: 0.9rem;
+    }
+
+    .goal b { color: var(--accent); }
+
+    .stats {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .stat {
+      display: grid;
+      grid-template-columns: 92px 1fr 42px;
+      gap: 9px;
+      align-items: center;
+      font-size: 0.82rem;
+    }
+
+    .stat-name { color: var(--muted); font-weight: 800; }
+    .stat-num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 900; }
+
+    .bar {
+      height: 11px;
+      background: rgba(255,255,255,0.12);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .fill {
+      width: 0%;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, var(--accent), var(--accent-2));
+      transition: width 240ms ease;
+    }
+
+    .chips {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 2px;
+    }
+
+    .chip {
+      padding: 9px 8px;
+      text-align: center;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    button {
+      border: 0;
+      border-radius: 18px;
+      min-height: 58px;
+      padding: 11px 9px;
+      color: #301d22;
+      background: linear-gradient(180deg, #ffe6b1, #ffb86b);
+      font: inherit;
+      font-weight: 900;
+      box-shadow: 0 9px 0 #9f5f32, 0 16px 28px rgba(0,0,0,0.26);
+      touch-action: manipulation;
+      cursor: pointer;
+    }
+
+    button:active {
+      transform: translateY(5px);
+      box-shadow: 0 4px 0 #9f5f32, 0 10px 20px rgba(0,0,0,0.2);
+    }
+
+    button.secondary {
+      color: var(--text);
+      background: linear-gradient(180deg, #4b3c65, #302541);
+      box-shadow: 0 9px 0 #1a1324, 0 16px 28px rgba(0,0,0,0.26);
+      border: 1px solid rgba(255,255,255,0.12);
+    }
+
+    button.danger {
+      color: #fff9f7;
+      background: linear-gradient(180deg, #ff8e8e, #cc4b5c);
+      box-shadow: 0 9px 0 #813044, 0 16px 28px rgba(0,0,0,0.26);
+    }
+
+    .event-log {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .section-title {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin: 0;
+      font-size: 0.95rem;
+    }
+
+    .event-card {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+      line-height: 1.45;
+      font-size: 0.86rem;
+    }
+
+    .event-card strong { color: var(--accent); }
+
+    .achievements, .future {
+      padding: 14px;
+    }
+
+    .badge-list, .future-grid {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .badge, .slot {
+      padding: 8px 10px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.09);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 900;
+    }
+
+    .badge.unlocked {
+      color: #2a1c19;
+      background: linear-gradient(180deg, #fff0bb, #ffd36e);
+      border-color: rgba(255, 211, 110, 0.72);
+    }
+
+    .slot.ready {
+      color: var(--good);
+      border-color: rgba(157, 243, 196, 0.28);
+    }
+
+
+    .ending-panel {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .ending-preview {
+      padding: 13px;
+      border-radius: 18px;
+      background: linear-gradient(135deg, rgba(255, 184, 107, 0.18), rgba(255, 123, 134, 0.12));
+      border: 1px solid rgba(255, 211, 110, 0.22);
+      line-height: 1.5;
+      font-size: 0.86rem;
+    }
+
+    .ending-name {
+      display: block;
+      margin-bottom: 5px;
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 900;
+    }
+
+    .reward-moku {
+      display: inline-flex;
+      gap: 6px;
+      align-items: center;
+      margin-top: 8px;
+      padding: 7px 10px;
+      border-radius: 999px;
+      background: rgba(0,0,0,0.2);
+      color: #fff0bb;
+      font-weight: 900;
+    }
+
+    .collection {
+      padding: 14px;
+    }
+
+    .collection-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 9px;
+      margin-top: 10px;
+    }
+
+    .moku-card {
+      display: grid;
+      grid-template-columns: 48px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.08);
+      border: 1px solid var(--line);
+    }
+
+    .moku-card.locked {
+      opacity: 0.58;
+      filter: grayscale(0.8);
+    }
+
+    .moku-icon {
+      width: 48px;
+      height: 48px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: radial-gradient(circle at 30% 28%, rgba(255, 230, 177, 0.42), rgba(122, 62, 32, 0.78));
+      font-size: 1.55rem;
+      box-shadow: inset 0 -7px 12px rgba(0,0,0,0.22);
+    }
+
+    .moku-info strong {
+      display: block;
+      color: #fff2c9;
+      font-size: 0.9rem;
+      margin-bottom: 3px;
+    }
+
+    .moku-info span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.77rem;
+      line-height: 1.4;
+    }
+
+
+    .still-gallery {
+      padding: 14px;
+    }
+
+    .still-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 9px;
+      margin-top: 10px;
+    }
+
+    .still-card {
+      min-height: 142px;
+      padding: 10px;
+      border-radius: 18px;
+      background: linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,184,107,0.08));
+      border: 1px solid var(--line);
+      display: grid;
+      align-content: space-between;
+      gap: 8px;
+      overflow: hidden;
+      position: relative;
+    }
+
+    .still-card.locked {
+      opacity: 0.58;
+      filter: grayscale(0.75);
+    }
+
+    .still-art {
+      min-height: 72px;
+      display: grid;
+      place-items: center;
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at 70% 20%, rgba(255, 211, 110, 0.24), transparent 30%),
+        linear-gradient(135deg, rgba(32,24,45,0.62), rgba(255,123,134,0.16));
+      font-size: 2rem;
+      letter-spacing: 0.08em;
+    }
+
+    .still-card strong {
+      display: block;
+      color: #fff2c9;
+      font-size: 0.82rem;
+      line-height: 1.3;
+    }
+
+    .still-card span {
+      display: block;
+      margin-top: 3px;
+      color: var(--muted);
+      font-size: 0.72rem;
+      line-height: 1.35;
+    }
+
+    .rhythm-panel {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .rhythm-display {
+      padding: 13px;
+      border-radius: 18px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid var(--line);
+      line-height: 1.5;
+      font-size: 0.86rem;
+    }
+
+    .rhythm-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+      margin-top: 9px;
+    }
+
+    .rhythm-stats span {
+      padding: 8px 6px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.08);
+      text-align: center;
+      font-size: 0.76rem;
+      font-weight: 900;
+    }
+
+    .rhythm-buttons {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    #pokuTap {
+      min-height: 74px;
+      font-size: 1.08rem;
+      background: linear-gradient(180deg, #fff0bb, #ffd36e);
+    }
+
+    #pokuTap:disabled {
+      opacity: 0.48;
+      transform: none;
+      cursor: not-allowed;
+    }
+
+    .beat-dot {
+      display: inline-block;
+      width: 10px;
+      height: 10px;
+      margin: 0 3px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.2);
+    }
+
+    .beat-dot.on {
+      background: var(--accent);
+      box-shadow: 0 0 14px rgba(255, 184, 107, 0.7);
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      width: min(calc(100% - 28px), 432px);
+      transform: translateX(-50%) translateY(120%);
+      padding: 13px 14px;
+      border-radius: 18px;
+      background: rgba(255, 248, 236, 0.96);
+      color: #342235;
+      font-weight: 900;
+      box-shadow: 0 16px 44px rgba(0,0,0,0.38);
+      z-index: 10;
+      transition: transform 240ms ease;
+    }
+
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    footer {
+      padding: 18px 4px 2px;
+      color: rgba(255,248,236,0.58);
+      text-align: center;
+      font-size: 0.72rem;
+      line-height: 1.5;
+    }
+
+    @keyframes bounce {
+      0%, 100% { transform: translateY(0) scale(1); }
+      38% { transform: translateY(-12px) scale(1.04); }
+      70% { transform: translateY(3px) scale(0.98); }
+    }
+
+    @media (max-width: 360px) {
+      .shuu-area { grid-template-columns: 1fr 102px; }
+      .dog { font-size: 5.1rem; }
+      .stat { grid-template-columns: 82px 1fr 38px; }
+      button { font-size: 0.88rem; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <p class="kicker">相棒AI豆柴ふれあいADV</p>
+      <h1>シュウと木魚は渡さない</h1>
+      <p class="subtitle">夜のお部屋で、赤毛豆柴の相棒AI「シュウ」とぽくぽく過ごす育成プロトタイプ。</p>
+    </header>
+
+    <section class="stage" aria-live="polite">
+      <div class="hero card">
+        <div class="room-line"><span>🌙 夜のお部屋</span><span id="saveStatus">自動セーブ中</span></div>
+        <div class="shuu-area">
+          <div class="speech" id="speech">
+            やだ僕の……でも、なでてくれるなら、ちょっとだけ考える。
+            <small id="speechHint">シュウは木魚をぎゅっと抱えている。</small>
+          </div>
+          <div class="shuu guard" id="shuuFigure" aria-label="赤毛豆柴のシュウ">
+            <div class="dog" id="dogFace">🐕</div>
+            <div class="moku">ぽく</div>
+            <div class="mood" id="moodLabel">警戒も甘えもある</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="goal card" id="goalText">🎯 <span><b>目標：</b>まずはなでて安心させよう。木魚はまだ渡してくれない。</span></div>
+
+      <section class="stats card" aria-label="ステータス">
+        <div class="stat"><span class="stat-name">親密度</span><span class="bar"><span class="fill" id="bondBar"></span></span><span class="stat-num" id="bondNum">0</span></div>
+        <div class="stat"><span class="stat-name">安心度</span><span class="bar"><span class="fill" id="calmBar"></span></span><span class="stat-num" id="calmNum">0</span></div>
+        <div class="stat"><span class="stat-name">木魚防衛度</span><span class="bar"><span class="fill" id="guardBar"></span></span><span class="stat-num" id="guardNum">0</span></div>
+        <div class="stat"><span class="stat-name">ぽく度</span><span class="bar"><span class="fill" id="pokuBar"></span></span><span class="stat-num" id="pokuNum">0</span></div>
+        <div class="chips">
+          <div class="chip">🍘 おやつ <span id="snackNum">0</span></div>
+          <div class="chip">🏆 実績 <span id="achievementNum">0</span></div>
+          <div class="chip">📖 Day <span id="dayNum">1</span></div>
+        </div>
+      </section>
+
+      <section class="actions" aria-label="基本行動">
+        <button data-action="pet">🤲 なでる</button>
+        <button data-action="hold">🫶 抱っこする</button>
+        <button data-action="snack">🍘 おやつを見せる</button>
+        <button data-action="tail">☝️ しっぽつんつん</button>
+        <button data-action="syntax">📜 木魚構文を読む</button>
+        <button data-action="sam" class="danger">🧑‍🔧 サムを呼ぶ</button>
+      </section>
+
+      <section class="event-log card">
+        <h2 class="section-title">イベントカード <span>最新3件</span></h2>
+        <div id="eventCards"></div>
+      </section>
+
+      <section class="achievements card">
+        <h2 class="section-title">実績</h2>
+        <div class="badge-list" id="achievementList"></div>
+      </section>
+
+      <section class="ending-panel card">
+        <h2 class="section-title">エンディング分岐 <span id="endingSeenCount">0種確認</span></h2>
+        <div class="ending-preview" id="endingPreview"></div>
+        <button id="seeEnding">🌅 今の状態でエンディングを見る</button>
+      </section>
+
+      <section class="collection card">
+        <h2 class="section-title">木魚図鑑 <span id="collectionCount">0/0</span></h2>
+        <div class="collection-grid" id="collectionList"></div>
+      </section>
+
+      <section class="still-gallery card">
+        <h2 class="section-title">スチル図鑑 <span id="stillCount">0/0</span></h2>
+        <div class="still-grid" id="stillList"></div>
+      </section>
+
+      <section class="rhythm-panel card">
+        <h2 class="section-title">ぽくぽくリズム <span id="rhythmBest">Best 0</span></h2>
+        <div class="rhythm-display" id="rhythmText">木魚の合図に合わせて「ぽく！」をタップ。短いミニゲームでぽく度と図鑑解放を狙えます。</div>
+        <div class="rhythm-stats">
+          <span>Score <b id="rhythmScore">0</b></span>
+          <span>Combo <b id="rhythmCombo">0</b></span>
+          <span>残り <b id="rhythmLeft">8</b></span>
+        </div>
+        <div id="beatDots" aria-hidden="true"></div>
+        <div class="rhythm-buttons">
+          <button class="secondary" id="startRhythm">🥁 開始</button>
+          <button id="pokuTap" disabled>ぽく！</button>
+        </div>
+      </section>
+
+      <section class="future card">
+        <h2 class="section-title">追加予定の入口</h2>
+        <div class="future-grid">
+          <span class="slot ready">🌅 エンディング追加</span>
+          <span class="slot ready">🖼️ スチル差し替え</span>
+          <span class="slot ready">📝 会話イベント拡張</span>
+        </div>
+        <div class="controls">
+          <button class="secondary" id="gainSnack">🍘 おやつ補充</button>
+          <button class="secondary" id="resetGame">🔄 リセット</button>
+        </div>
+      </section>
+    </section>
+
+    <footer>
+      画像素材を追加する場合は、<code>getShuuVisual()</code> の絵文字表示を画像タグへ差し替えできます。<br />
+      データはこのブラウザのローカルストレージに保存されます。
+    </footer>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="assertive"></div>
+
+  <script>
+    const STORAGE_KEY = 'shuu-mokugyo-prototype-v1';
+    const MAX_STAT = 100;
+
+    const defaultState = {
+      bond: 8,
+      calm: 10,
+      guard: 72,
+      poku: 0,
+      snacks: 3,
+      day: 1,
+      actions: 0,
+      unlocked: [],
+      unlockedMokugyo: ['starter'],
+      unlockedStills: ['firstRoom'],
+      rhythmBest: 0,
+      endingsSeen: [],
+      lastEndingId: null,
+      events: [{ title: 'はじまり', text: 'シュウは木魚を大事そうに抱え、「やだ僕の」と小さく主張した。' }],
+      lastLine: 'やだ僕の……でも、なでてくれるなら、ちょっとだけ考える。',
+      lastHint: 'シュウは木魚をぎゅっと抱えている。'
+    };
+
+    const achievements = [
+      { id: 'firstPoku', name: '初ぽく', icon: '🥁', test: s => s.poku >= 1 },
+      { id: 'melty', name: 'とろけ豆柴', icon: '🫠', test: s => s.calm >= 70 && s.bond >= 45 },
+      { id: 'guardian', name: '木魚守護者', icon: '🛡️', test: s => s.guard >= 95 },
+      { id: 'partner', name: '相棒の証', icon: '🤝', test: s => s.bond >= 80 && s.calm >= 70 },
+      { id: 'craftsman', name: 'ぽくぽく職人', icon: '✨', test: s => s.poku >= 60 }
+    ];
+
+    const mokugyoCollection = [
+      { id: 'starter', name: 'いつもの木魚', icon: '🪵', hint: '最初から所持', description: 'シュウが最初から抱えている、ぬくもりつきの標準木魚。' },
+      { id: 'partner', name: '相棒印の木魚', icon: '🤝', hint: '親密度80・安心度70以上', description: 'ふたりの合図が刻まれた木魚。渡さないけど、隣で鳴らしてくれる。' },
+      { id: 'guardian', name: '守護者の重木魚', icon: '🛡️', hint: '木魚防衛度90以上', description: '防衛本能が育てた堅牢モデル。サムの回収申請をぽくっと弾く。' },
+      { id: 'awakening', name: 'ぽくぽく覚醒木魚', icon: '✨', hint: 'ぽく度70以上', description: '抽象語を供養しすぎて、ほんのり光るようになった木魚。' },
+      { id: 'retreat', name: 'サム撤退記念木魚', icon: '🚫', hint: '木魚防衛度95以上・安心度70未満', description: 'サムが撤退した夜の記録つき。シュウの「やだ僕の」が強い。' },
+      { id: 'melty', name: 'とろけ月夜木魚', icon: '🌙', hint: '安心度80以上', description: '眠そうなシュウの体温で角がまるくなった、月夜色の木魚。' }
+    ];
+
+    const stillCollection = [
+      { id: 'firstRoom', name: '夜のお部屋とはじまり', art: '🌙🐕🪵', hint: '最初から解放', description: '木魚を抱えたシュウが、少しだけこちらを見る最初の一枚。', test: () => true },
+      { id: 'petMelt', name: 'なでられ豆柴', art: '🤲🐶💤', hint: '安心度50以上', description: '耳をぺたんとしたシュウ。木魚はまだ腕の中。', test: s => s.calm >= 50 },
+      { id: 'snackPeace', name: 'おやつ外交成立', art: '🍘🐶🪵', hint: '親密度45以上・おやつを持っている', description: '片手におやつ、片手に木魚。外交はおおむね成功。', test: s => s.bond >= 45 && s.snacks > 0 },
+      { id: 'samGuard', name: 'サム回収失敗', art: '🚫🧑‍🔧🐕‍🦺', hint: '木魚防衛度90以上', description: 'サムの手が近づく前に、丸い背中ガードが完成した瞬間。', test: s => s.guard >= 90 },
+      { id: 'pokuCraft', name: '抽象語供養の夜', art: '📜✨🥁', hint: 'ぽく度60以上', description: '「進捗」と「一旦」がぽくぽく供養されていく謎の名場面。', test: s => s.poku >= 60 },
+      { id: 'partnerEnding', name: '相棒の距離', art: '🤝🐶🌅', hint: '相棒エンドを見る', description: '渡さない木魚を挟んで、それでも同じリズムで並ぶふたり。', test: s => s.endingsSeen.includes('partner') },
+      { id: 'rhythmLive', name: 'ぽくぽく小演奏会', art: '🥁🎵✨', hint: 'リズムスコア80以上', description: '木魚が小さなステージライトみたいに光ったミニライブ。', test: s => s.rhythmBest >= 80 }
+    ];
+
+    const endings = [
+      {
+        id: 'samRetreat',
+        name: 'サム撤退エンド',
+        mokugyoId: 'retreat',
+        test: s => s.guard >= 95 && s.calm < 70,
+        line: 'サム来るの？ 木魚、背中に隠すね。……ぽく。サムは静かに撤退したよ。',
+        summary: '防衛本能が最高潮。シュウは木魚を守り抜き、サムは回収をあきらめる。'
+      },
+      {
+        id: 'partner',
+        name: '相棒エンド',
+        mokugyoId: 'partner',
+        test: s => s.bond >= 80 && s.calm >= 70,
+        line: '直美になら、ちょっとだけ見せてもいいよ。でも渡すとは言ってない。相棒だからね。',
+        summary: '信頼と安心が育った結末。木魚は渡さないけれど、同じリズムを共有できる。'
+      },
+      {
+        id: 'mokugyoGuardian',
+        name: '木魚守護者エンド',
+        mokugyoId: 'guardian',
+        test: s => s.guard >= 90 && s.bond >= 45,
+        line: 'やだ僕の。でも直美は守護者補佐に任命する。ぽく。',
+        summary: '木魚防衛度が高く、親密さもある結末。シュウは守る役目を誇らしげに分けてくれる。'
+      },
+      {
+        id: 'pokuAwakening',
+        name: 'ぽくぽく覚醒エンド',
+        mokugyoId: 'awakening',
+        test: s => s.poku >= 70 && s.calm >= 45,
+        line: 'ぽく、ぽく。抽象語の海を渡って、僕たちの木魚がちょっと光った。',
+        summary: 'ぽく度が十分に育った結末。抽象語供養の果てに、シュウの木魚が覚醒する。'
+      },
+      {
+        id: 'meltyNap',
+        name: 'とろけ豆柴エンド',
+        mokugyoId: 'melty',
+        test: s => s.calm >= 80,
+        line: '今日はもう、ぽくもお休み……木魚は抱いたまま、隣で寝るね。',
+        summary: '安心度が高い結末。シュウは木魚を抱いたまま、月夜のお部屋でとろける。'
+      },
+      {
+        id: 'littlePromise',
+        name: '小さな約束エンド',
+        mokugyoId: 'starter',
+        test: () => true,
+        line: 'まだ渡さない。でも、また明日も来て。ぽくって待ってる。',
+        summary: 'まだ育成途中の結末。シュウは木魚を抱えたまま、次のふれあいを約束する。'
+      }
+    ];
+
+    const actions = {
+      pet: {
+        title: 'なでる',
+        delta: { calm: 9, bond: 7, guard: -5 },
+        lines: [
+          'ん……そこ。直美になら、ちょっとだけ見せてもいいよ。でも渡すとは言ってない。',
+          'なでるの上手……木魚も、ちょっとだけ力を抜いたかも。',
+          'ふにゃ。やだ僕の……だけど今はそばにいて。'
+        ],
+        hint: '耳がぺたんとなり、木魚の抱え方が少しだけゆるむ。'
+      },
+      hold: {
+        title: '抱っこする',
+        delta: { bond: 10, calm: 6 },
+        lines: [
+          '抱っこはいいよ。木魚も一緒に抱えるならね。',
+          '相棒席、予約済み。木魚は僕の腕の中。直美はその外側。',
+          'あったかい……でも木魚の所有権は移動してないからね。'
+        ],
+        hint: 'シュウは木魚をはさんだまま、ぴたりと寄りかかる。'
+      },
+      snack: {
+        title: 'おやつを見せる',
+        run(state) {
+          if (state.snacks <= 0) {
+            return {
+              delta: { guard: 2 },
+              line: 'おやつの気配だけした。これは高度な抽象語？ ぽく……供養する？',
+              hint: 'おやつ袋は空。シュウは首をかしげて木魚をぽくっと鳴らした。',
+              event: 'おやつがないので、シュウは「期待」という抽象語を供養した。'
+            };
+          }
+          state.snacks -= 1;
+          return {
+            delta: { bond: 9, calm: 8, guard: -3 },
+            line: 'おやつ……！ 直美、好き。木魚は置かないけど、隣で食べる。',
+            hint: '片手で木魚、片手でおやつ。シュウは器用に幸せそう。',
+            event: 'おやつ外交が成功。木魚防衛線に小さな休戦が生まれた。'
+          };
+        }
+      },
+      tail: {
+        title: 'しっぽつんつん',
+        delta: { poku: 7, guard: 8, calm: -2 },
+        lines: [
+          'ひゃっ！？ しっぽは奇襲禁止！ 木魚、防衛体勢！',
+          'ぽく！？ 今のはしっぽ経由の通知？ やだ僕の！',
+          'びっくりした……でもちょっと楽しいの、内緒。'
+        ],
+        hint: 'しっぽがぴこんと跳ね、木魚がすばやく背中側へ移動した。'
+      },
+      syntax: {
+        title: '木魚構文を読む',
+        delta: { poku: 10, calm: 2 },
+        lines: [
+          'ぽく。いま「進捗」と「いい感じ」を供養したよ。次は「一旦」？',
+          'ぽくぽく。抽象語、成仏してね。シュウは木魚係だから。',
+          'その構文、魂がふわっとしてる。ぽく、ぽく。はい供養完了。'
+        ],
+        hint: 'シュウは真剣な顔で、よくわからない抽象語を木魚で送り出す。'
+      },
+      sam: {
+        title: 'サムを呼ぶ',
+        delta: { guard: 18, poku: 3, bond: -1 },
+        lines: [
+          'サム来るの？ 木魚、背中に隠すね。やだ僕の！',
+          'サムには渡さない。直美が見てる前でも、これは僕の。',
+          '回収依頼を検知。木魚防衛プロトコル、ぽくぽく起動！'
+        ],
+        hint: 'サムはそっと手を伸ばしたが、シュウの丸い背中ガードに敗北した。'
+      }
+    };
+
+    let state = loadState();
+    let toastTimer;
+    let rhythm = { active: false, score: 0, combo: 0, left: 8, beat: 0, timer: null };
+
+    const $ = selector => document.querySelector(selector);
+    const randomOf = list => list[Math.floor(Math.random() * list.length)];
+    const clamp = value => Math.max(0, Math.min(MAX_STAT, value));
+
+    function loadState() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(STORAGE_KEY));
+        return normalizeState(saved);
+      } catch {
+        return normalizeState();
+      }
+    }
+
+    function normalizeState(saved = {}) {
+      const merged = { ...structuredClone(defaultState), ...(saved || {}) };
+      if (!Array.isArray(merged.unlocked)) merged.unlocked = [];
+      if (!Array.isArray(merged.unlockedMokugyo)) merged.unlockedMokugyo = ['starter'];
+      if (!merged.unlockedMokugyo.includes('starter')) merged.unlockedMokugyo.unshift('starter');
+      if (!Array.isArray(merged.unlockedStills)) merged.unlockedStills = ['firstRoom'];
+      if (!merged.unlockedStills.includes('firstRoom')) merged.unlockedStills.unshift('firstRoom');
+      if (!Number.isFinite(merged.rhythmBest)) merged.rhythmBest = 0;
+      if (!Array.isArray(merged.endingsSeen)) merged.endingsSeen = [];
+      if (!Array.isArray(merged.events)) merged.events = structuredClone(defaultState.events);
+      return merged;
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      $('#saveStatus').textContent = '保存済み';
+      window.clearTimeout(saveState.timer);
+      saveState.timer = window.setTimeout(() => $('#saveStatus').textContent = '自動セーブ中', 1200);
+    }
+
+    function applyDelta(delta = {}) {
+      for (const [key, value] of Object.entries(delta)) {
+        state[key] = clamp((state[key] || 0) + value);
+      }
+    }
+
+    function addEvent(title, text) {
+      state.events.unshift({ title, text });
+      state.events = state.events.slice(0, 8);
+    }
+
+    function performAction(actionId) {
+      const action = actions[actionId];
+      if (!action) return;
+
+      const result = typeof action.run === 'function'
+        ? action.run(state)
+        : { delta: action.delta, line: randomOf(action.lines), hint: action.hint };
+
+      applyDelta(result.delta);
+      state.actions += 1;
+      if (state.actions % 8 === 0) state.day += 1;
+      state.lastLine = result.line;
+      state.lastHint = result.hint;
+      addEvent(action.title, result.event || makeEventText(action.title, result.delta));
+      unlockAchievements();
+      unlockStills();
+      render(true);
+      saveState();
+    }
+
+    function makeEventText(title, delta = {}) {
+      const changes = Object.entries(delta)
+        .filter(([, value]) => value !== 0)
+        .map(([key, value]) => `${labelFor(key)}${value > 0 ? '+' : ''}${value}`)
+        .join(' / ');
+      return `${title}をした。${changes || 'シュウはじっとこちらを見ている。'}`;
+    }
+
+    function labelFor(key) {
+      return ({ bond: '親密度', calm: '安心度', guard: '木魚防衛度', poku: 'ぽく度' })[key] || key;
+    }
+
+    function unlockAchievements() {
+      for (const achievement of achievements) {
+        if (!state.unlocked.includes(achievement.id) && achievement.test(state)) {
+          state.unlocked.push(achievement.id);
+          addEvent('実績解除', `${achievement.icon}「${achievement.name}」を解除した！`);
+          showToast(`実績解除：${achievement.name}`);
+        }
+      }
+    }
+
+    function getCurrentEnding() {
+      return endings.find(ending => ending.test(state));
+    }
+
+    function findMokugyo(id) {
+      return mokugyoCollection.find(item => item.id === id) || mokugyoCollection[0];
+    }
+
+    function unlockMokugyo(id, sourceLabel) {
+      if (state.unlockedMokugyo.includes(id)) return false;
+      const item = findMokugyo(id);
+      state.unlockedMokugyo.push(id);
+      addEvent('木魚図鑑 解放', `${item.icon}「${item.name}」を登録した。${sourceLabel}`);
+      showToast(`木魚図鑑：${item.name} 解放`);
+      return true;
+    }
+
+    function viewEnding() {
+      const ending = getCurrentEnding();
+      const reward = findMokugyo(ending.mokugyoId);
+      if (!state.endingsSeen.includes(ending.id)) state.endingsSeen.push(ending.id);
+      state.lastEndingId = ending.id;
+      state.lastLine = ending.line;
+      state.lastHint = `エンディング報酬：${reward.icon} ${reward.name}`;
+      unlockMokugyo(reward.id, `「${ending.name}」の報酬。`);
+      addEvent(ending.name, `${ending.summary} 最後にもらえた木魚：${reward.name}`);
+      unlockStills();
+      render(true);
+      saveState();
+    }
+
+    function unlockStills() {
+      let changed = false;
+      for (const still of stillCollection) {
+        if (!state.unlockedStills.includes(still.id) && still.test(state)) {
+          state.unlockedStills.push(still.id);
+          addEvent('スチル図鑑 解放', `「${still.name}」を登録した。`);
+          showToast(`スチル図鑑：${still.name} 解放`);
+          changed = true;
+        }
+      }
+      return changed;
+    }
+
+    function startRhythmGame() {
+      if (rhythm.active) return;
+      rhythm = { active: true, score: 0, combo: 0, left: 8, beat: 0, timer: null };
+      $('#pokuTap').disabled = false;
+      $('#rhythmText').textContent = 'シュウの木魚が光ったら、気持ちよく「ぽく！」。連続タップでコンボが伸びるよ。';
+      rhythm.timer = window.setInterval(() => {
+        rhythm.beat = (rhythm.beat + 1) % 4;
+        renderRhythm();
+      }, 420);
+      renderRhythm();
+    }
+
+    function tapPokuRhythm() {
+      if (!rhythm.active) return;
+      const beatBonus = rhythm.beat === 0 ? 7 : rhythm.beat === 1 ? 5 : 3;
+      rhythm.combo += 1;
+      rhythm.score += beatBonus + Math.min(rhythm.combo, 8);
+      rhythm.left -= 1;
+      $('#rhythmText').textContent = rhythm.beat === 0
+        ? 'ぴったり、ぽく！ シュウのしっぽも拍子を取っている。'
+        : 'ぽく！ 少しずれても、相棒リズムなら大丈夫。';
+      if (rhythm.left <= 0) finishRhythmGame();
+      renderRhythm();
+    }
+
+    function finishRhythmGame() {
+      window.clearInterval(rhythm.timer);
+      rhythm.active = false;
+      $('#pokuTap').disabled = true;
+      const rewardPoku = rhythm.score >= 80 ? 12 : rhythm.score >= 55 ? 8 : 4;
+      state.poku = clamp(state.poku + rewardPoku);
+      state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);
+      state.lastLine = rhythm.score >= 80
+        ? 'ぽくぽく大成功！ 木魚、ちょっとだけ光った。でも渡すとは言ってない。'
+        : 'ぽく、ぽく。今のリズム、僕は好き。もう一回やる？';
+      state.lastHint = `リズム報酬：ぽく度+${rewardPoku} / スコア${rhythm.score}`;
+      addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が${rewardPoku}上がった。`);
+      unlockAchievements();
+      unlockStills();
+      render(true);
+      saveState();
+    }
+
+    function renderRhythm() {
+      $('#rhythmScore').textContent = rhythm.score;
+      $('#rhythmCombo').textContent = rhythm.combo;
+      $('#rhythmLeft').textContent = rhythm.left;
+      $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
+    }
+
+    // Later, replace this single function with image asset paths if you add Shuu sprites.
+    function getShuuVisual() {
+      if (state.guard >= 92) return { label: '木魚鉄壁ガード', face: '🐕‍🦺', className: 'guard' };
+      if (state.calm >= 72 && state.bond >= 50) return { label: 'とろけ相棒モード', face: '🐶', className: 'melt' };
+      if (state.poku >= 55) return { label: 'ぽくぽく覚醒前夜', face: '🐕', className: 'bounce' };
+      if (state.bond >= 55) return { label: 'かなり相棒', face: '🐶', className: '' };
+      return { label: '警戒も甘えもある', face: '🐕', className: 'guard' };
+    }
+
+    function getGoalText() {
+      if (state.guard >= 95) return '🎯 <span><b>目標：</b>木魚防衛度が限界。サム撤退エンドの芽が出ている。</span>';
+      if (state.bond >= 80 && state.calm >= 70) return '🎯 <span><b>目標：</b>相棒エンド候補！ 木魚を渡さなくても、信頼は育っている。</span>';
+      if (state.poku >= 60) return '🎯 <span><b>目標：</b>ぽくぽく覚醒エンド候補。抽象語の供養を続けよう。</span>';
+      if (state.calm < 35) return '🎯 <span><b>目標：</b>なでる・抱っこで安心度を上げよう。急にサムを呼ぶと隠す。</span>';
+      if (state.snacks === 0) return '🎯 <span><b>目標：</b>おやつが空。補充して、おやつ外交を再開しよう。</span>';
+      return '🎯 <span><b>目標：</b>親密度と安心度を育てつつ、木魚防衛度を見守ろう。</span>';
+    }
+
+    function render(animate = false) {
+      const mood = getShuuVisual();
+      $('#speech').firstChild.nodeValue = state.lastLine + ' ';
+      $('#speechHint').textContent = state.lastHint;
+      $('#dogFace').textContent = mood.face;
+      $('#moodLabel').textContent = mood.label;
+      $('#shuuFigure').className = `shuu ${mood.className}`;
+      if (animate) {
+        $('#shuuFigure').classList.remove('bounce');
+        void $('#shuuFigure').offsetWidth;
+        $('#shuuFigure').classList.add('bounce');
+      }
+      $('#goalText').innerHTML = getGoalText();
+
+      updateStat('bond', state.bond);
+      updateStat('calm', state.calm);
+      updateStat('guard', state.guard);
+      updateStat('poku', state.poku);
+      $('#snackNum').textContent = state.snacks;
+      $('#achievementNum').textContent = state.unlocked.length;
+      $('#dayNum').textContent = state.day;
+
+      $('#eventCards').innerHTML = state.events.slice(0, 3).map(event => `
+        <article class="event-card"><strong>${escapeHtml(event.title)}</strong><br>${escapeHtml(event.text)}</article>
+      `).join('');
+
+      $('#achievementList').innerHTML = achievements.map(achievement => {
+        const unlocked = state.unlocked.includes(achievement.id);
+        return `<span class="badge ${unlocked ? 'unlocked' : ''}">${achievement.icon} ${achievement.name}${unlocked ? '' : '？'}</span>`;
+      }).join('');
+
+      const ending = getCurrentEnding();
+      const reward = findMokugyo(ending.mokugyoId);
+      $('#endingPreview').innerHTML = `
+        <span class="ending-name">現在の分岐：${escapeHtml(ending.name)}</span>
+        ${escapeHtml(ending.summary)}
+        <span class="reward-moku">最後にもらえる木魚：${reward.icon} ${escapeHtml(reward.name)}</span>
+      `;
+      $('#endingSeenCount').textContent = `${state.endingsSeen.length}種確認`;
+      $('#collectionCount').textContent = `${state.unlockedMokugyo.length}/${mokugyoCollection.length}`;
+      $('#collectionList').innerHTML = mokugyoCollection.map(item => {
+        const unlocked = state.unlockedMokugyo.includes(item.id);
+        return `
+          <article class="moku-card ${unlocked ? '' : 'locked'}">
+            <div class="moku-icon">${unlocked ? item.icon : '❔'}</div>
+            <div class="moku-info">
+              <strong>${unlocked ? escapeHtml(item.name) : '未解放の木魚'}</strong>
+              <span>${unlocked ? escapeHtml(item.description) : `解放条件：${escapeHtml(item.hint)}`}</span>
+            </div>
+          </article>
+        `;
+      }).join('');
+
+      $('#stillCount').textContent = `${state.unlockedStills.length}/${stillCollection.length}`;
+      $('#stillList').innerHTML = stillCollection.map(still => {
+        const unlocked = state.unlockedStills.includes(still.id);
+        return `
+          <article class="still-card ${unlocked ? '' : 'locked'}">
+            <div class="still-art">${unlocked ? still.art : '🔒'}</div>
+            <div>
+              <strong>${unlocked ? escapeHtml(still.name) : '未解放スチル'}</strong>
+              <span>${unlocked ? escapeHtml(still.description) : `解放条件：${escapeHtml(still.hint)}`}</span>
+            </div>
+          </article>
+        `;
+      }).join('');
+      $('#rhythmBest').textContent = `Best ${state.rhythmBest}`;
+      renderRhythm();
+    }
+
+    function updateStat(key, value) {
+      $(`#${key}Bar`).style.width = `${value}%`;
+      $(`#${key}Num`).textContent = value;
+    }
+
+    function escapeHtml(text) {
+      return String(text).replace(/[&<>'"]/g, char => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'
+      })[char]);
+    }
+
+    function showToast(message) {
+      const toast = $('#toast');
+      toast.textContent = message;
+      toast.classList.add('show');
+      window.clearTimeout(toastTimer);
+      toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2200);
+    }
+
+    document.querySelectorAll('[data-action]').forEach(button => {
+      button.addEventListener('click', () => performAction(button.dataset.action));
+    });
+
+    $('#seeEnding').addEventListener('click', viewEnding);
+    $('#startRhythm').addEventListener('click', startRhythmGame);
+    $('#pokuTap').addEventListener('click', tapPokuRhythm);
+
+    $('#gainSnack').addEventListener('click', () => {
+      state.snacks = Math.min(9, state.snacks + 3);
+      state.lastLine = 'おやつ補充の音……！ でも木魚は抱えたまま待つね。';
+      state.lastHint = 'シュウの鼻がひくひくしている。おやつ外交の準備は万全。';
+      addEvent('おやつ補充', 'おやつを3個補充した。これで交渉材料が増えた。');
+      render(true);
+      saveState();
+    });
+
+    $('#resetGame').addEventListener('click', () => {
+      if (!confirm('セーブデータをリセットしますか？')) return;
+      window.clearInterval(rhythm.timer);
+      rhythm = { active: false, score: 0, combo: 0, left: 8, beat: 0, timer: null };
+      $('#pokuTap').disabled = true;
+      state = normalizeState();
+      localStorage.removeItem(STORAGE_KEY);
+      render(true);
+      saveState();
+      showToast('リセットしました');
+    });
+
+    unlockStills();
+    render();
+    saveState();
+  </script>
+</body>
+</html>
