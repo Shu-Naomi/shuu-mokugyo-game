@@ -592,12 +592,13 @@
     }
 
     .rhythm-display {
-      padding: 13px;
-      border-radius: 18px;
-      background: rgba(0,0,0,0.2);
-      border: 1px solid var(--line);
-      line-height: 1.5;
-      font-size: 0.86rem;
+      padding: 10px 12px;
+      border-radius: 16px;
+      background: rgba(0,0,0,0.16);
+      border: 1px solid rgba(255, 248, 236, 0.12);
+      color: var(--muted);
+      line-height: 1.45;
+      font-size: 0.8rem;
     }
 
     .rhythm-big-cue.ready {
@@ -618,10 +619,10 @@
 
     .rhythm-big-cue {
       position: relative;
-      min-height: 112px;
+      min-height: clamp(128px, 34vw, 170px);
       display: grid;
       place-items: center;
-      padding: 10px 12px 14px;
+      padding: 12px 12px 16px;
       border-radius: 20px;
       background:
         radial-gradient(circle at 50% 20%, rgba(255,255,255,0.11), transparent 44%),
@@ -634,8 +635,8 @@
 
     .rhythm-cue-image {
       display: block;
-      width: min(58%, 148px);
-      max-height: 84px;
+      width: min(70%, 188px);
+      max-height: 118px;
       object-fit: contain;
       filter: drop-shadow(0 12px 18px rgba(0,0,0,0.32));
       user-select: none;
@@ -647,9 +648,9 @@
     .rhythm-cue-fallback {
       display: grid;
       place-items: center;
-      min-height: 74px;
+      min-height: 88px;
       color: #fff2c9;
-      font-size: clamp(1.25rem, 8vw, 2.2rem);
+      font-size: clamp(1.35rem, 10vw, 2.6rem);
       font-weight: 1000;
     }
 
@@ -671,6 +672,8 @@
       line-height: 1.15;
       text-shadow: 0 4px 12px rgba(0,0,0,0.38);
     }
+
+    .rhythm-cue-label.is-hidden { display: none; }
 
     .rhythm-big-cue.perfect {
       color: #123626;
@@ -731,20 +734,6 @@
       opacity: 0.48;
       transform: none;
       cursor: not-allowed;
-    }
-
-    .beat-dot {
-      display: inline-block;
-      width: 10px;
-      height: 10px;
-      margin: 0 3px;
-      border-radius: 999px;
-      background: rgba(255,255,255,0.2);
-    }
-
-    .beat-dot.on {
-      background: var(--accent);
-      box-shadow: 0 0 14px rgba(255, 184, 107, 0.7);
     }
 
     .controls {
@@ -1070,7 +1059,6 @@
           <span>Combo <b id="rhythmCombo">0</b></span>
           <span>残り <b id="rhythmLeft">8</b></span>
         </div>
-        <div id="beatDots" aria-hidden="true"></div>
         <div class="rhythm-play-zone" aria-label="ボタン付近のタイミング表示">
           <div class="rhythm-big-cue" id="rhythmButtonCue" aria-live="assertive" aria-label="開始でカウント">
             <img class="rhythm-cue-image" id="rhythmCueImage" src="assets/shuu-rhythm.png" alt="リズム準備中のシュウ" decoding="async" draggable="false" />
@@ -1453,6 +1441,7 @@
       stopRhythmTimers();
       rhythm = createEmptyRhythm();
       $('#pokuTap').disabled = true;
+      setRhythmCue('開始');
       state = normalizeState();
       localStorage.removeItem(STORAGE_KEY);
       $('#endingScreen').classList.remove('show');
@@ -1499,12 +1488,19 @@
     function renderRhythmCueImage(assetKey, label) {
       const image = $('#rhythmCueImage');
       const fallback = $('#rhythmCueFallback');
+      const labelBadge = $('#rhythmCueLabel');
       const primarySrc = SHUU_ASSETS[assetKey];
       const fallbackSrc = SHUU_ASSETS.rhythm;
       const usePrimary = primarySrc && !missingShuuAssets.has(primarySrc);
       const nextSrc = usePrimary ? primarySrc : fallbackSrc;
+      const showTextFallback = () => {
+        image.classList.add('is-hidden');
+        fallback.classList.toggle('is-hidden', !label);
+        fallback.setAttribute('aria-hidden', label ? 'false' : 'true');
+        labelBadge.classList.add('is-hidden');
+      };
       fallback.textContent = label;
-      image.alt = `リズム中のシュウ：${label}`;
+      image.alt = label ? `リズム中のシュウ：${label}` : 'リズム待機中のシュウ';
       image.onerror = () => {
         const failedSrc = image.getAttribute('src');
         missingShuuAssets.add(failedSrc);
@@ -1512,16 +1508,16 @@
           image.src = fallbackSrc;
           return;
         }
-        image.classList.add('is-hidden');
-        fallback.classList.remove('is-hidden');
+        showTextFallback();
       };
       image.onload = () => {
         image.classList.remove('is-hidden');
         fallback.classList.add('is-hidden');
+        fallback.setAttribute('aria-hidden', 'true');
+        labelBadge.classList.toggle('is-hidden', !label);
       };
       if (!nextSrc || missingShuuAssets.has(nextSrc)) {
-        image.classList.add('is-hidden');
-        fallback.classList.remove('is-hidden');
+        showTextFallback();
         return;
       }
       if (image.getAttribute('src') !== nextSrc) image.src = nextSrc;
@@ -1531,7 +1527,7 @@
     function setRhythmCue(text, { ready = false, result = '' } = {}) {
       const bigClass = `rhythm-big-cue ${ready ? 'ready' : ''} ${result}`.trim();
       $('#rhythmButtonCue').className = bigClass;
-      $('#rhythmButtonCue').setAttribute('aria-label', text);
+      $('#rhythmButtonCue').setAttribute('aria-label', text || '次のぽくを待つ');
       $('#rhythmCueLabel').textContent = text;
       renderRhythmCueImage(rhythmCueAssetKey({ ready, result }), text);
       $('#pokuTap').classList.toggle('tap-cue', ready && rhythm.phase === 'playing');
@@ -1579,7 +1575,7 @@
       rhythm.hit = false;
       rhythm.beat = (rhythm.beat + 1) % 4;
       rhythm.targetAt = performance.now() + delay;
-      setRhythmCue('…');
+      setRhythmCue('');
       $('#mokuCue').classList.remove('cue');
       renderShuuVisual(getShuuVisual());
       rhythm.cueTimer = window.setTimeout(() => {
@@ -1656,7 +1652,7 @@
       rhythm.active = false;
       rhythm.phase = 'idle';
       $('#pokuTap').disabled = true;
-      setRhythmCue('終了');
+      setRhythmCue('');
       const rewardPoku = rhythm.score >= 150 ? 5 : rhythm.score >= 95 ? 3 : 1;
       const rewardSnack = rhythm.score >= 150 ? 2 : rhythm.score >= 95 ? 1 : 0;
       state.poku = clamp(state.poku + rewardPoku);
@@ -1677,7 +1673,6 @@
       $('#rhythmScore').textContent = rhythm.score;
       $('#rhythmCombo').textContent = rhythm.combo;
       $('#rhythmLeft').textContent = rhythm.left;
-      $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.phase === 'playing' && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
       if (!$('#rhythmButtonCue').classList.contains('ready')) $('#pokuTap').classList.remove('tap-cue');
     }
 
@@ -1881,6 +1876,7 @@
       stopRhythmTimers();
       rhythm = createEmptyRhythm();
       $('#pokuTap').disabled = true;
+      setRhythmCue('開始');
       state = normalizeState();
       localStorage.removeItem(STORAGE_KEY);
       render(true);
@@ -1889,6 +1885,7 @@
     });
 
     unlockStills();
+    setRhythmCue('開始');
     render();
     saveState();
   </script>
