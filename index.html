@@ -116,7 +116,7 @@
 
     .shuu-area {
       display: grid;
-      grid-template-columns: 1fr 116px;
+      grid-template-columns: minmax(0, 1fr) minmax(112px, 36%);
       gap: 8px;
       align-items: end;
       min-height: 178px;
@@ -149,18 +149,62 @@
       min-height: 168px;
       transform-origin: bottom center;
       transition: transform 180ms ease, filter 180ms ease;
+      isolation: isolate;
     }
 
     .shuu.bounce { animation: bounce 360ms ease; }
-    .shuu.guard { filter: drop-shadow(0 0 18px rgba(255, 211, 110, 0.42)); }
-    .shuu.melt { transform: translateY(5px) scale(1.03); }
+    .shuu.guard,
+    .shuu.state-guard,
+    .shuu.action-tail,
+    .shuu.action-sam { filter: drop-shadow(0 0 18px rgba(255, 211, 110, 0.42)); }
+    .shuu.melt,
+    .shuu.state-calm { transform: translateY(5px) scale(1.03); }
+    .shuu.rhythm-countdown { filter: drop-shadow(0 0 20px rgba(255, 184, 107, 0.35)); }
+    .shuu.rhythm-playing { filter: drop-shadow(0 0 22px rgba(255, 211, 110, 0.46)); }
+    .shuu.rhythm-perfect { animation: rhythmPerfect 360ms ease; }
+    .shuu.rhythm-good { animation: rhythmGood 320ms ease; }
+    .shuu.rhythm-miss { animation: rhythmMiss 320ms ease; }
+
+    .shuu-visual {
+      position: relative;
+      z-index: 2;
+      display: grid;
+      place-items: center;
+      width: clamp(96px, 31vw, 148px);
+      min-height: 134px;
+      animation: shuuFloat 3.8s ease-in-out infinite;
+      will-change: transform;
+    }
+
+    .shuu-img {
+      display: block;
+      width: min(100%, 148px);
+      max-height: 154px;
+      object-fit: contain;
+      object-position: center bottom;
+      filter: drop-shadow(0 13px 18px rgba(0,0,0,0.28));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .shuu-img.is-hidden { display: none; }
 
     .dog {
-      font-size: 5.9rem;
+      font-size: clamp(4.8rem, 19vw, 5.9rem);
       line-height: 1;
-      z-index: 2;
       filter: drop-shadow(0 13px 18px rgba(0,0,0,0.28));
     }
+
+    .dog.is-hidden { display: none; }
+
+    .shuu.action-pet .shuu-visual { animation: petHappy 620ms ease, shuuFloat 3.8s ease-in-out 620ms infinite; }
+    .shuu.action-hold .shuu-visual { animation: hugClose 760ms ease, shuuFloat 3.8s ease-in-out 760ms infinite; }
+    .shuu.action-snack .shuu-visual { animation: snackWiggle 620ms ease, shuuFloat 3.8s ease-in-out 620ms infinite; }
+    .shuu.action-tail .shuu-visual,
+    .shuu.action-sam .shuu-visual,
+    .shuu.state-guard .shuu-visual { animation: waryGuard 720ms ease, shuuFloat 3.4s ease-in-out 720ms infinite; }
+    .shuu.rhythm-countdown .shuu-visual { animation: readyBob 680ms ease-in-out infinite; }
+    .shuu.rhythm-playing .shuu-visual { animation: rhythmBob 760ms ease-in-out infinite; }
 
     .moku {
       position: absolute;
@@ -192,7 +236,12 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.24);
     }
 
-    .moku.cue {
+    .shuu.rhythm-playing .moku {
+      animation: mokuIdleBeat 760ms ease-in-out infinite;
+    }
+
+    .moku.cue,
+    .shuu.rhythm-playing .moku.cue {
       animation: mokuCue 520ms ease;
       box-shadow:
         inset 0 -8px 12px rgba(0,0,0,0.2),
@@ -648,7 +697,7 @@
     .ending-art {
       display: grid;
       place-items: center;
-      min-height: 118px;
+      min-height: 138px;
       margin-bottom: 12px;
       border-radius: 24px;
       background:
@@ -656,7 +705,26 @@
         linear-gradient(135deg, rgba(255, 184, 107, 0.18), rgba(255, 123, 134, 0.12));
       font-size: 2.5rem;
       letter-spacing: 0.08em;
+      overflow: hidden;
     }
+
+    .ending-visual {
+      display: grid;
+      place-items: center;
+      gap: 6px;
+      animation: endingFloat 3.8s ease-in-out infinite;
+    }
+
+    .ending-visual img {
+      display: block;
+      width: min(168px, 46vw);
+      max-height: 128px;
+      object-fit: contain;
+      filter: drop-shadow(0 14px 22px rgba(0,0,0,0.32));
+    }
+
+    .ending-visual img.is-hidden { display: none; }
+    .ending-fallback { font-size: 2.5rem; }
 
     .ending-card h2 {
       margin: 0 0 10px;
@@ -711,6 +779,74 @@
       70% { transform: translateY(3px) scale(0.98); }
     }
 
+    @keyframes shuuFloat {
+      0%, 100% { transform: translateY(0) rotate(-0.6deg); }
+      50% { transform: translateY(-7px) rotate(0.7deg); }
+    }
+
+    @keyframes petHappy {
+      0%, 100% { transform: translateY(0) scale(1); }
+      35% { transform: translateY(-14px) scale(1.05); }
+      68% { transform: translateY(2px) scale(0.98); }
+    }
+
+    @keyframes hugClose {
+      0% { transform: translateY(0) scale(1); }
+      45% { transform: translateY(-4px) scale(1.11); }
+      100% { transform: translateY(0) scale(1.03); }
+    }
+
+    @keyframes snackWiggle {
+      0%, 100% { transform: translateY(0) rotate(0deg); }
+      25% { transform: translateY(-6px) rotate(-3deg); }
+      55% { transform: translateY(-8px) rotate(3deg); }
+      78% { transform: translateY(1px) rotate(-1deg); }
+    }
+
+    @keyframes waryGuard {
+      0%, 100% { transform: translateX(0) rotate(0deg); }
+      22% { transform: translateX(-5px) rotate(-2deg); }
+      46% { transform: translateX(5px) rotate(2deg); }
+      72% { transform: translateX(-2px) rotate(-1deg); }
+    }
+
+    @keyframes readyBob {
+      0%, 100% { transform: translateY(0) scale(1); }
+      50% { transform: translateY(-5px) scale(1.02); }
+    }
+
+    @keyframes rhythmBob {
+      0%, 100% { transform: translateY(0) scale(1); }
+      48% { transform: translateY(-6px) scale(1.025); }
+    }
+
+    @keyframes rhythmPerfect {
+      0%, 100% { transform: translateY(0) scale(1); }
+      44% { transform: translateY(-10px) scale(1.08); }
+    }
+
+    @keyframes rhythmGood {
+      0%, 100% { transform: rotate(0deg) scale(1); }
+      42% { transform: rotate(-2deg) scale(1.04); }
+      72% { transform: rotate(2deg) scale(1.02); }
+    }
+
+    @keyframes rhythmMiss {
+      0%, 100% { transform: translateX(0); }
+      30% { transform: translateX(-6px); }
+      60% { transform: translateX(5px); }
+    }
+
+    @keyframes mokuIdleBeat {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.025); }
+    }
+
+    @keyframes endingFloat {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-6px); }
+    }
+
     @keyframes mokuCue {
       0%, 100% { transform: scale(1); }
       45% { transform: scale(1.08) rotate(-2deg); }
@@ -728,10 +864,19 @@
     }
 
     @media (max-width: 360px) {
-      .shuu-area { grid-template-columns: 1fr 102px; }
+      .shuu-area { grid-template-columns: minmax(0, 1fr) 102px; }
+      .shuu-visual { width: 102px; min-height: 126px; }
       .dog { font-size: 5.1rem; }
       .stat { grid-template-columns: 82px 1fr 38px; }
       button { font-size: 0.88rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+      }
     }
   </style>
 </head>
@@ -751,8 +896,11 @@
             やだ僕の……でも、なでてくれるなら、ちょっとだけ考える。
             <small id="speechHint">シュウは木魚をぎゅっと抱えている。</small>
           </div>
-          <div class="shuu guard" id="shuuFigure" aria-label="赤毛豆柴のシュウ">
-            <div class="dog" id="dogFace">🐕</div>
+          <div class="shuu guard state-guard" id="shuuFigure" aria-label="赤毛豆柴のシュウ">
+            <div class="shuu-visual">
+              <img class="shuu-img is-hidden" id="shuuImage" src="" alt="" decoding="async" draggable="false" />
+              <div class="dog" id="dogFace" aria-hidden="true">🐕</div>
+            </div>
             <div class="moku" id="mokuCue">ぽく</div>
             <div class="mood" id="moodLabel">警戒も甘えもある</div>
           </div>
@@ -840,14 +988,19 @@
     </section>
 
     <footer>
-      画像素材を追加する場合は、<code>getShuuVisual()</code> の絵文字表示を画像タグへ差し替えできます。<br />
+      画像素材を追加する場合は、<code>assets/shuu-default.png</code> などを置くと自動で差し替わります。<br />
       データはこのブラウザのローカルストレージに保存されます。
     </footer>
   </main>
 
   <div class="ending-screen" id="endingScreen" role="dialog" aria-modal="true" aria-labelledby="endingTitle">
     <div class="ending-card">
-      <div class="ending-art" id="endingArt">🌅🐕🪵</div>
+      <div class="ending-art" id="endingArt">
+        <div class="ending-visual">
+          <img class="is-hidden" id="endingImage" src="" alt="" decoding="async" draggable="false" />
+          <div class="ending-fallback" id="endingFallback">🌅🐕🪵</div>
+        </div>
+      </div>
       <h2 id="endingTitle">小さな約束エンド</h2>
       <p id="endingBody">まだ渡さない。でも、また明日も来て。</p>
       <small id="endingReward">エンディング報酬：いつもの木魚</small>
@@ -875,6 +1028,8 @@
       rhythmBest: 0,
       endingsSeen: [],
       lastEndingId: null,
+      lastAction: null,
+      lastActionAt: 0,
       events: [{ title: 'はじまり', text: 'シュウは木魚を大事そうに抱え、「やだ僕の」と小さく主張した。' }],
       lastLine: 'やだ僕の……でも、なでてくれるなら、ちょっとだけ考える。',
       lastHint: 'シュウは木魚をぎゅっと抱えている。'
@@ -1031,8 +1186,21 @@
       }
     };
 
+    const SHUU_ASSETS = {
+      default: 'assets/shuu-default.png',
+      petting: 'assets/shuu-petting.png',
+      hug: 'assets/shuu-hug.png',
+      snack: 'assets/shuu-snack.png',
+      guard: 'assets/shuu-guard.png',
+      calm: 'assets/shuu-calm.png',
+      rhythm: 'assets/shuu-rhythm.png'
+    };
+
+    const missingShuuAssets = new Set();
+
     let state = loadState();
     let toastTimer;
+    let visualEffectTimer;
     let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
 
     const $ = selector => document.querySelector(selector);
@@ -1058,6 +1226,7 @@
       if (!Number.isFinite(merged.rhythmBest)) merged.rhythmBest = 0;
       if (!Array.isArray(merged.endingsSeen)) merged.endingsSeen = [];
       if (!Array.isArray(merged.events)) merged.events = structuredClone(defaultState.events);
+      if (!Number.isFinite(merged.lastActionAt)) merged.lastActionAt = 0;
       return merged;
     }
 
@@ -1089,6 +1258,8 @@
 
       applyDelta(result.delta);
       state.actions += 1;
+      state.lastAction = actionId;
+      state.lastActionAt = state.actions;
       if (state.actions % 8 === 0) state.day += 1;
       state.lastLine = result.line;
       state.lastHint = result.hint;
@@ -1154,7 +1325,8 @@
     }
 
     function showEndingScreen(ending, reward) {
-      $('#endingArt').textContent = `${reward.icon}🐕🌅`;
+      const visual = getEndingVisual(ending);
+      renderImageWithFallback($('#endingImage'), $('#endingFallback'), visual, `${reward.icon}${visual.face}🌅`);
       $('#endingTitle').textContent = ending.name;
       $('#endingBody').textContent = ending.line;
       $('#endingReward').textContent = `${ending.summary} / 報酬：${reward.icon} ${reward.name}`;
@@ -1204,6 +1376,7 @@
       if (rhythm.active) return;
       stopRhythmTimers();
       rhythm = { ...createEmptyRhythm(), active: true, phase: 'countdown' };
+      renderShuuVisual(getShuuVisual());
       $('#pokuTap').disabled = true;
       $('#rhythmText').textContent = '合図の練習をするよ。3、2、1、ぽく！ のあと、光った瞬間にタップ。';
       const counts = ['3', '2', '1', 'ぽく！'];
@@ -1213,6 +1386,7 @@
         $('#rhythmCue').textContent = counts[index];
         $('#rhythmCue').classList.toggle('ready', counts[index] === 'ぽく！');
         $('#mokuCue').classList.toggle('cue', counts[index] === 'ぽく！');
+        renderShuuVisual(getShuuVisual());
         if (index === counts.length - 1) {
           rhythm.cueTimer = window.setTimeout(beginRhythmBeats, 620);
           renderRhythm();
@@ -1228,6 +1402,7 @@
     function beginRhythmBeats() {
       if (!rhythm.active) return;
       rhythm.phase = 'playing';
+      renderShuuVisual(getShuuVisual());
       $('#pokuTap').disabled = false;
       $('#rhythmText').textContent = '木魚が光ったら「ぽく！」。早すぎても遅すぎても Miss になるよ。';
       scheduleRhythmBeat(520);
@@ -1243,10 +1418,12 @@
       $('#rhythmCue').textContent = '…';
       $('#rhythmCue').classList.remove('ready');
       $('#mokuCue').classList.remove('cue');
+      renderShuuVisual(getShuuVisual());
       rhythm.cueTimer = window.setTimeout(() => {
         $('#rhythmCue').textContent = 'ぽく！';
         $('#rhythmCue').classList.add('ready');
         $('#mokuCue').classList.add('cue');
+        pulseShuuEffect('rhythm-good', 260);
         rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), 270);
         renderRhythm();
       }, delay);
@@ -1284,6 +1461,7 @@
         ? 'Perfect！ 木魚と指先がぴったり重なった。'
         : 'Good！ ちょっと揺れたけど、相棒リズムは続いてる。';
       renderRhythm();
+      pulseShuuEffect(label === 'Perfect' ? 'rhythm-perfect' : 'rhythm-good');
       updateStat('poku', state.poku);
       if (rhythm.left <= 0) {
         finishRhythmGame();
@@ -1301,6 +1479,7 @@
       rhythm.judgement = label;
       $('#rhythmText').textContent = message;
       renderRhythm();
+      pulseShuuEffect('rhythm-miss');
       if (rhythm.left <= 0) {
         finishRhythmGame();
       } else {
@@ -1340,13 +1519,83 @@
       $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.phase === 'playing' && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
     }
 
-    // Later, replace this single function with image asset paths if you add Shuu sprites.
+    function getRecentAction() {
+      return state.lastAction && state.actions - (state.lastActionAt || 0) <= 1 ? state.lastAction : null;
+    }
+
+    function visualForAsset(key, label, face, className = '') {
+      return {
+        src: SHUU_ASSETS[key],
+        alt: `赤毛豆柴のシュウ：${label}`,
+        label,
+        face,
+        className: `${className} state-${key}`.trim()
+      };
+    }
+
+    // assets/ に画像がない場合は img の error で絵文字表示へ戻る。
     function getShuuVisual() {
-      if (state.guard >= 92) return { label: '木魚鉄壁ガード', face: '🐕‍🦺', className: 'guard' };
-      if (state.calm >= 72 && state.bond >= 50) return { label: 'とろけ相棒モード', face: '🐶', className: 'melt' };
-      if (state.poku >= 55) return { label: 'ぽくぽく覚醒前夜', face: '🐕', className: 'bounce' };
-      if (state.bond >= 55) return { label: 'かなり相棒', face: '🐶', className: '' };
-      return { label: '警戒も甘えもある', face: '🐕', className: 'guard' };
+      if (rhythm.active) {
+        const phaseClass = rhythm.phase === 'countdown' ? 'rhythm-countdown' : 'rhythm-playing';
+        return visualForAsset('rhythm', rhythm.phase === 'countdown' ? 'リズム準備中' : 'ぽくぽく演奏中', '🐕', phaseClass);
+      }
+
+      const recentAction = getRecentAction();
+      if (recentAction === 'pet') return visualForAsset('petting', 'なでられごきげん', '🐶', 'action-pet');
+      if (recentAction === 'hold') return visualForAsset('hug', '抱っこでぴったり', '🐶', 'action-hold melt');
+      if (recentAction === 'snack') return visualForAsset('snack', 'おやつ外交中', '🐶', 'action-snack');
+      if (recentAction === 'tail') return visualForAsset('guard', 'しっぽ警戒モード', '🐕‍🦺', 'action-tail guard');
+      if (recentAction === 'sam') return visualForAsset('guard', '木魚防衛プロトコル', '🐕‍🦺', 'action-sam guard');
+
+      if (state.guard >= 92) return visualForAsset('guard', '木魚鉄壁ガード', '🐕‍🦺', 'guard');
+      if (state.calm >= 72 && state.bond >= 50) return visualForAsset('calm', 'とろけ相棒モード', '🐶', 'melt');
+      if (state.poku >= 55) return visualForAsset('rhythm', 'ぽくぽく覚醒前夜', '🐕', 'bounce');
+      if (state.bond >= 55) return visualForAsset('default', 'かなり相棒', '🐶');
+      return visualForAsset('default', '警戒も甘えもある', '🐕', 'guard');
+    }
+
+    function getEndingVisual(ending) {
+      if (ending.id === 'samRetreat' || ending.id === 'mokugyoGuardian') return visualForAsset('guard', 'エンディングのシュウ', '🐕‍🦺', 'guard');
+      if (ending.id === 'meltyNap' || ending.id === 'partner') return visualForAsset('calm', 'エンディングのシュウ', '🐶', 'melt');
+      if (ending.id === 'pokuAwakening') return visualForAsset('rhythm', 'エンディングのシュウ', '🐕', 'bounce');
+      return getShuuVisual();
+    }
+
+    function renderImageWithFallback(image, fallback, visual, fallbackText = visual.face) {
+      fallback.textContent = fallbackText;
+      image.alt = visual.alt;
+      if (!visual.src || missingShuuAssets.has(visual.src)) {
+        image.classList.add('is-hidden');
+        fallback.classList.remove('is-hidden');
+        return;
+      }
+      image.onerror = () => {
+        missingShuuAssets.add(visual.src);
+        image.classList.add('is-hidden');
+        fallback.classList.remove('is-hidden');
+      };
+      image.onload = () => {
+        image.classList.remove('is-hidden');
+        fallback.classList.add('is-hidden');
+      };
+      if (image.getAttribute('src') !== visual.src) image.src = visual.src;
+      if (image.complete && image.naturalWidth > 0) image.onload();
+    }
+
+    function renderShuuVisual(visual) {
+      renderImageWithFallback($('#shuuImage'), $('#dogFace'), visual);
+      $('#moodLabel').textContent = visual.label;
+      $('#shuuFigure').setAttribute('aria-label', visual.alt);
+      $('#shuuFigure').className = `shuu ${visual.className}`;
+    }
+
+    function pulseShuuEffect(className, duration = 420) {
+      const figure = $('#shuuFigure');
+      figure.classList.remove('rhythm-perfect', 'rhythm-good', 'rhythm-miss');
+      void figure.offsetWidth;
+      figure.classList.add(className);
+      window.clearTimeout(visualEffectTimer);
+      visualEffectTimer = window.setTimeout(() => figure.classList.remove(className), duration);
     }
 
     function getGoalText() {
@@ -1362,9 +1611,7 @@
       const mood = getShuuVisual();
       $('#speech').firstChild.nodeValue = state.lastLine + ' ';
       $('#speechHint').textContent = state.lastHint;
-      $('#dogFace').textContent = mood.face;
-      $('#moodLabel').textContent = mood.label;
-      $('#shuuFigure').className = `shuu ${mood.className}`;
+      renderShuuVisual(mood);
       if (animate) {
         $('#shuuFigure').classList.remove('bounce');
         void $('#shuuFigure').offsetWidth;
@@ -1458,6 +1705,8 @@
 
     $('#gainSnack').addEventListener('click', () => {
       state.snacks = Math.min(9, state.snacks + 3);
+      state.lastAction = 'snack';
+      state.lastActionAt = state.actions;
       state.lastLine = 'おやつ補充の音……！ でも木魚は抱えたまま待つね。';
       state.lastHint = 'シュウの鼻がひくひくしている。おやつ外交の準備は万全。';
       addEvent('おやつ補充', 'おやつを3個補充した。これで交渉材料が増えた。');
