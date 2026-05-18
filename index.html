@@ -192,6 +192,15 @@
       box-shadow: 0 4px 8px rgba(0,0,0,0.24);
     }
 
+    .moku.cue {
+      animation: mokuCue 520ms ease;
+      box-shadow:
+        inset 0 -8px 12px rgba(0,0,0,0.2),
+        0 0 0 8px rgba(255, 211, 110, 0.18),
+        0 0 28px rgba(255, 211, 110, 0.82);
+      filter: brightness(1.22);
+    }
+
     .mood {
       position: absolute;
       inset: auto auto 2px 4px;
@@ -521,6 +530,40 @@
       font-size: 0.86rem;
     }
 
+    .rhythm-cue {
+      min-height: 62px;
+      display: grid;
+      place-items: center;
+      margin-top: 9px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.07);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: clamp(1.2rem, 8vw, 2rem);
+      font-weight: 1000;
+      letter-spacing: 0.05em;
+    }
+
+    .rhythm-cue.ready {
+      color: #2a1c19;
+      background: radial-gradient(circle at 50% 45%, #fff7c8, #ffd36e 62%, #ffb86b);
+      box-shadow: 0 0 26px rgba(255, 211, 110, 0.55);
+      animation: cuePulse 520ms ease;
+    }
+
+    .judgement {
+      display: inline-block;
+      min-height: 1.4em;
+      margin-top: 8px;
+      color: var(--accent);
+      font-size: 1rem;
+      font-weight: 1000;
+    }
+
+    .judgement.perfect { color: var(--good); }
+    .judgement.good { color: var(--warn); }
+    .judgement.miss { color: var(--danger); }
+
     .rhythm-stats {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
@@ -576,6 +619,66 @@
       margin-top: 12px;
     }
 
+    .ending-screen {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background:
+        radial-gradient(circle at 50% 24%, rgba(255, 211, 110, 0.18), transparent 28%),
+        rgba(15, 12, 22, 0.82);
+      backdrop-filter: blur(10px);
+      z-index: 20;
+    }
+
+    .ending-screen.show { display: grid; }
+
+    .ending-card {
+      width: min(100%, 420px);
+      padding: 22px;
+      border-radius: 28px;
+      background: linear-gradient(160deg, rgba(58, 43, 77, 0.98), rgba(32, 24, 45, 0.98));
+      border: 1px solid rgba(255, 211, 110, 0.3);
+      box-shadow: 0 24px 70px rgba(0,0,0,0.5);
+      text-align: center;
+      animation: endingFade 560ms ease both;
+    }
+
+    .ending-art {
+      display: grid;
+      place-items: center;
+      min-height: 118px;
+      margin-bottom: 12px;
+      border-radius: 24px;
+      background:
+        radial-gradient(circle at 50% 44%, rgba(255, 240, 187, 0.34), transparent 34%),
+        linear-gradient(135deg, rgba(255, 184, 107, 0.18), rgba(255, 123, 134, 0.12));
+      font-size: 2.5rem;
+      letter-spacing: 0.08em;
+    }
+
+    .ending-card h2 {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 1.45rem;
+      line-height: 1.25;
+    }
+
+    .ending-card p {
+      margin: 0 0 12px;
+      color: var(--text);
+      line-height: 1.65;
+      font-weight: 800;
+    }
+
+    .ending-card small {
+      display: block;
+      margin-bottom: 16px;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
     .toast {
       position: fixed;
       left: 50%;
@@ -608,6 +711,22 @@
       70% { transform: translateY(3px) scale(0.98); }
     }
 
+    @keyframes mokuCue {
+      0%, 100% { transform: scale(1); }
+      45% { transform: scale(1.08) rotate(-2deg); }
+    }
+
+    @keyframes cuePulse {
+      0% { transform: scale(0.96); opacity: 0.72; }
+      60% { transform: scale(1.04); opacity: 1; }
+      100% { transform: scale(1); opacity: 1; }
+    }
+
+    @keyframes endingFade {
+      from { opacity: 0; transform: translateY(18px) scale(0.96); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     @media (max-width: 360px) {
       .shuu-area { grid-template-columns: 1fr 102px; }
       .dog { font-size: 5.1rem; }
@@ -634,7 +753,7 @@
           </div>
           <div class="shuu guard" id="shuuFigure" aria-label="赤毛豆柴のシュウ">
             <div class="dog" id="dogFace">🐕</div>
-            <div class="moku">ぽく</div>
+            <div class="moku" id="mokuCue">ぽく</div>
             <div class="mood" id="moodLabel">警戒も甘えもある</div>
           </div>
         </div>
@@ -692,6 +811,8 @@
       <section class="rhythm-panel card">
         <h2 class="section-title">ぽくぽくリズム <span id="rhythmBest">Best 0</span></h2>
         <div class="rhythm-display" id="rhythmText">木魚の合図に合わせて「ぽく！」をタップ。短いミニゲームでぽく度と図鑑解放を狙えます。</div>
+        <div class="rhythm-cue" id="rhythmCue">開始でカウント</div>
+        <span class="judgement" id="rhythmJudge" aria-live="polite"></span>
         <div class="rhythm-stats">
           <span>Score <b id="rhythmScore">0</b></span>
           <span>Combo <b id="rhythmCombo">0</b></span>
@@ -723,6 +844,16 @@
       データはこのブラウザのローカルストレージに保存されます。
     </footer>
   </main>
+
+  <div class="ending-screen" id="endingScreen" role="dialog" aria-modal="true" aria-labelledby="endingTitle">
+    <div class="ending-card">
+      <div class="ending-art" id="endingArt">🌅🐕🪵</div>
+      <h2 id="endingTitle">小さな約束エンド</h2>
+      <p id="endingBody">まだ渡さない。でも、また明日も来て。</p>
+      <small id="endingReward">エンディング報酬：いつもの木魚</small>
+      <button id="endingReplay">🔄 もう一度遊ぶ</button>
+    </div>
+  </div>
 
   <div class="toast" id="toast" role="status" aria-live="assertive"></div>
 
@@ -902,7 +1033,7 @@
 
     let state = loadState();
     let toastTimer;
-    let rhythm = { active: false, score: 0, combo: 0, left: 8, beat: 0, timer: null };
+    let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
 
     const $ = selector => document.querySelector(selector);
     const randomOf = list => list[Math.floor(Math.random() * list.length)];
@@ -1018,7 +1149,28 @@
       addEvent(ending.name, `${ending.summary} 最後にもらえた木魚：${reward.name}`);
       unlockStills();
       render(true);
+      showEndingScreen(ending, reward);
       saveState();
+    }
+
+    function showEndingScreen(ending, reward) {
+      $('#endingArt').textContent = `${reward.icon}🐕🌅`;
+      $('#endingTitle').textContent = ending.name;
+      $('#endingBody').textContent = ending.line;
+      $('#endingReward').textContent = `${ending.summary} / 報酬：${reward.icon} ${reward.name}`;
+      $('#endingScreen').classList.add('show');
+    }
+
+    function replayFromEnding() {
+      stopRhythmTimers();
+      rhythm = createEmptyRhythm();
+      $('#pokuTap').disabled = true;
+      state = normalizeState();
+      localStorage.removeItem(STORAGE_KEY);
+      $('#endingScreen').classList.remove('show');
+      render(true);
+      saveState();
+      showToast('もう一度、夜のお部屋へ');
     }
 
     function unlockStills() {
@@ -1034,43 +1186,145 @@
       return changed;
     }
 
+    function createEmptyRhythm() {
+      return { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
+    }
+
+    function stopRhythmTimers() {
+      window.clearInterval(rhythm.timer);
+      window.clearTimeout(rhythm.cueTimer);
+      window.clearTimeout(rhythm.missTimer);
+      rhythm.timer = null;
+      rhythm.cueTimer = null;
+      rhythm.missTimer = null;
+      $('#mokuCue').classList.remove('cue');
+    }
+
     function startRhythmGame() {
       if (rhythm.active) return;
-      rhythm = { active: true, score: 0, combo: 0, left: 8, beat: 0, timer: null };
-      $('#pokuTap').disabled = false;
-      $('#rhythmText').textContent = 'シュウの木魚が光ったら、気持ちよく「ぽく！」。連続タップでコンボが伸びるよ。';
-      rhythm.timer = window.setInterval(() => {
-        rhythm.beat = (rhythm.beat + 1) % 4;
+      stopRhythmTimers();
+      rhythm = { ...createEmptyRhythm(), active: true, phase: 'countdown' };
+      $('#pokuTap').disabled = true;
+      $('#rhythmText').textContent = '合図の練習をするよ。3、2、1、ぽく！ のあと、光った瞬間にタップ。';
+      const counts = ['3', '2', '1', 'ぽく！'];
+      let index = 0;
+      const tick = () => {
+        rhythm.judgement = '';
+        $('#rhythmCue').textContent = counts[index];
+        $('#rhythmCue').classList.toggle('ready', counts[index] === 'ぽく！');
+        $('#mokuCue').classList.toggle('cue', counts[index] === 'ぽく！');
+        if (index === counts.length - 1) {
+          rhythm.cueTimer = window.setTimeout(beginRhythmBeats, 620);
+          renderRhythm();
+          return;
+        }
+        index += 1;
+        rhythm.cueTimer = window.setTimeout(tick, 680);
         renderRhythm();
-      }, 420);
+      };
+      tick();
+    }
+
+    function beginRhythmBeats() {
+      if (!rhythm.active) return;
+      rhythm.phase = 'playing';
+      $('#pokuTap').disabled = false;
+      $('#rhythmText').textContent = '木魚が光ったら「ぽく！」。早すぎても遅すぎても Miss になるよ。';
+      scheduleRhythmBeat(520);
+    }
+
+    function scheduleRhythmBeat(delay = 760) {
+      if (!rhythm.active || rhythm.left <= 0) return finishRhythmGame();
+      window.clearTimeout(rhythm.cueTimer);
+      window.clearTimeout(rhythm.missTimer);
+      rhythm.hit = false;
+      rhythm.beat = (rhythm.beat + 1) % 4;
+      rhythm.targetAt = performance.now() + delay;
+      $('#rhythmCue').textContent = '…';
+      $('#rhythmCue').classList.remove('ready');
+      $('#mokuCue').classList.remove('cue');
+      rhythm.cueTimer = window.setTimeout(() => {
+        $('#rhythmCue').textContent = 'ぽく！';
+        $('#rhythmCue').classList.add('ready');
+        $('#mokuCue').classList.add('cue');
+        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), 270);
+        renderRhythm();
+      }, delay);
       renderRhythm();
     }
 
     function tapPokuRhythm() {
-      if (!rhythm.active) return;
-      const beatBonus = rhythm.beat === 0 ? 7 : rhythm.beat === 1 ? 5 : 3;
+      if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit) return;
+      const diff = performance.now() - rhythm.targetAt;
+      if (diff < -230) {
+        registerRhythmMiss('Miss', '早すぎたぽく！ 木魚が光るまで待ってね。');
+        return;
+      }
+      if (Math.abs(diff) <= 120) {
+        registerRhythmHit('Perfect', 18);
+        return;
+      }
+      if (Math.abs(diff) <= 230) {
+        registerRhythmHit('Good', 11);
+        return;
+      }
+      registerRhythmMiss('Miss', diff < 0 ? '少し早いぽく。光の真ん中を狙おう。' : '遅いぽく……次の光を待とう。');
+    }
+
+    function registerRhythmHit(label, baseScore) {
+      rhythm.hit = true;
+      stopRhythmTimers();
       rhythm.combo += 1;
-      rhythm.score += beatBonus + Math.min(rhythm.combo, 8);
       rhythm.left -= 1;
-      $('#rhythmText').textContent = rhythm.beat === 0
-        ? 'ぴったり、ぽく！ シュウのしっぽも拍子を取っている。'
-        : 'ぽく！ 少しずれても、相棒リズムなら大丈夫。';
-      if (rhythm.left <= 0) finishRhythmGame();
+      rhythm.score += baseScore + Math.min(rhythm.combo, 8);
+      rhythm.pokuEarned += 1;
+      state.poku = clamp(state.poku + 1);
+      rhythm.judgement = label;
+      $('#rhythmText').textContent = label === 'Perfect'
+        ? 'Perfect！ 木魚と指先がぴったり重なった。'
+        : 'Good！ ちょっと揺れたけど、相棒リズムは続いてる。';
       renderRhythm();
+      updateStat('poku', state.poku);
+      if (rhythm.left <= 0) {
+        finishRhythmGame();
+      } else {
+        rhythm.cueTimer = window.setTimeout(() => scheduleRhythmBeat(), 360);
+      }
+    }
+
+    function registerRhythmMiss(label, message) {
+      if (!rhythm.active || rhythm.hit) return;
+      rhythm.hit = true;
+      stopRhythmTimers();
+      rhythm.combo = 0;
+      rhythm.left -= 1;
+      rhythm.judgement = label;
+      $('#rhythmText').textContent = message;
+      renderRhythm();
+      if (rhythm.left <= 0) {
+        finishRhythmGame();
+      } else {
+        rhythm.cueTimer = window.setTimeout(() => scheduleRhythmBeat(), 520);
+      }
     }
 
     function finishRhythmGame() {
-      window.clearInterval(rhythm.timer);
+      stopRhythmTimers();
       rhythm.active = false;
+      rhythm.phase = 'idle';
       $('#pokuTap').disabled = true;
-      const rewardPoku = rhythm.score >= 80 ? 12 : rhythm.score >= 55 ? 8 : 4;
+      $('#rhythmCue').textContent = '終了';
+      $('#rhythmCue').classList.remove('ready');
+      const rewardPoku = rhythm.score >= 150 ? 5 : rhythm.score >= 95 ? 3 : 1;
+      const rewardSnack = rhythm.score >= 150 ? 2 : rhythm.score >= 95 ? 1 : 0;
       state.poku = clamp(state.poku + rewardPoku);
+      state.snacks = Math.min(9, state.snacks + rewardSnack);
       state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);
-      state.lastLine = rhythm.score >= 80
+      state.lastLine = rhythm.score >= 150
         ? 'ぽくぽく大成功！ 木魚、ちょっとだけ光った。でも渡すとは言ってない。'
         : 'ぽく、ぽく。今のリズム、僕は好き。もう一回やる？';
-      state.lastHint = `リズム報酬：ぽく度+${rewardPoku} / スコア${rhythm.score}`;
-      addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が${rewardPoku}上がった。`);
+      state.lastHint = `リズム報酬：ぽく度+${rhythm.pokuEarned + rewardPoku}${rewardSnack ? ` / おやつ+${rewardSnack}` : ''} / スコア${rhythm.score}`;
+      addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が${rhythm.pokuEarned + rewardPoku}上がった${rewardSnack ? `。おやつを${rewardSnack}個もらった` : ''}。`);
       unlockAchievements();
       unlockStills();
       render(true);
@@ -1081,7 +1335,9 @@
       $('#rhythmScore').textContent = rhythm.score;
       $('#rhythmCombo').textContent = rhythm.combo;
       $('#rhythmLeft').textContent = rhythm.left;
-      $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
+      $('#rhythmJudge').textContent = rhythm.judgement;
+      $('#rhythmJudge').className = `judgement ${rhythm.judgement.toLowerCase()}`;
+      $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.phase === 'playing' && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
     }
 
     // Later, replace this single function with image asset paths if you add Shuu sprites.
@@ -1198,6 +1454,7 @@
     $('#seeEnding').addEventListener('click', viewEnding);
     $('#startRhythm').addEventListener('click', startRhythmGame);
     $('#pokuTap').addEventListener('click', tapPokuRhythm);
+    $('#endingReplay').addEventListener('click', replayFromEnding);
 
     $('#gainSnack').addEventListener('click', () => {
       state.snacks = Math.min(9, state.snacks + 3);
@@ -1210,8 +1467,8 @@
 
     $('#resetGame').addEventListener('click', () => {
       if (!confirm('セーブデータをリセットしますか？')) return;
-      window.clearInterval(rhythm.timer);
-      rhythm = { active: false, score: 0, combo: 0, left: 8, beat: 0, timer: null };
+      stopRhythmTimers();
+      rhythm = createEmptyRhythm();
       $('#pokuTap').disabled = true;
       state = normalizeState();
       localStorage.removeItem(STORAGE_KEY);
