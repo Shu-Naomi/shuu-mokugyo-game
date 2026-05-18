@@ -600,26 +600,11 @@
       font-size: 0.86rem;
     }
 
-    .rhythm-cue {
-      min-height: 62px;
-      display: grid;
-      place-items: center;
-      margin-top: 9px;
-      border-radius: 18px;
-      background: rgba(255,255,255,0.07);
-      border: 1px solid var(--line);
-      color: var(--muted);
-      font-size: clamp(1.2rem, 8vw, 2rem);
-      font-weight: 1000;
-      letter-spacing: 0.05em;
-    }
-
-    .rhythm-cue.ready,
     .rhythm-big-cue.ready {
       color: #2a1c19;
       background: radial-gradient(circle at 50% 45%, #fff7c8, #ffd36e 62%, #ffb86b);
-      box-shadow: 0 0 26px rgba(255, 211, 110, 0.55);
-      animation: cuePulse 520ms ease;
+      box-shadow: 0 0 18px rgba(255, 211, 110, 0.38);
+      animation: cuePulse 420ms ease;
     }
 
     .rhythm-play-zone {
@@ -632,21 +617,59 @@
     }
 
     .rhythm-big-cue {
-      min-height: 108px;
+      position: relative;
+      min-height: 112px;
       display: grid;
       place-items: center;
-      padding: 12px;
-      border-radius: 22px;
+      padding: 10px 12px 14px;
+      border-radius: 20px;
       background:
         radial-gradient(circle at 50% 20%, rgba(255,255,255,0.11), transparent 44%),
         rgba(0,0,0,0.22);
       border: 1px solid var(--line);
       color: #fff2c9;
-      font-size: clamp(2.35rem, 16vw, 4.45rem);
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .rhythm-cue-image {
+      display: block;
+      width: min(58%, 148px);
+      max-height: 84px;
+      object-fit: contain;
+      filter: drop-shadow(0 12px 18px rgba(0,0,0,0.32));
+      user-select: none;
+      -webkit-user-drag: none;
+    }
+
+    .rhythm-cue-image.is-hidden { display: none; }
+
+    .rhythm-cue-fallback {
+      display: grid;
+      place-items: center;
+      min-height: 74px;
+      color: #fff2c9;
+      font-size: clamp(1.25rem, 8vw, 2.2rem);
+      font-weight: 1000;
+    }
+
+    .rhythm-cue-fallback.is-hidden { display: none; }
+
+    .rhythm-cue-label {
+      position: absolute;
+      right: 10px;
+      bottom: 9px;
+      max-width: calc(100% - 20px);
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(15, 12, 22, 0.74);
+      color: #fff2c9;
+      border: 1px solid rgba(255, 248, 236, 0.18);
+      font-size: clamp(0.9rem, 5vw, 1.18rem);
       font-weight: 1000;
       letter-spacing: 0.04em;
-      text-align: center;
-      text-shadow: 0 8px 22px rgba(0,0,0,0.32);
+      line-height: 1.15;
+      text-shadow: 0 4px 12px rgba(0,0,0,0.38);
     }
 
     .rhythm-big-cue.perfect {
@@ -669,19 +692,6 @@
       box-shadow: 0 0 24px rgba(255, 142, 142, 0.4);
       animation: missShake 360ms ease;
     }
-
-    .judgement {
-      display: inline-block;
-      min-height: 1.4em;
-      margin-top: 8px;
-      color: var(--accent);
-      font-size: 1rem;
-      font-weight: 1000;
-    }
-
-    .judgement.perfect { color: var(--good); }
-    .judgement.good { color: var(--warn); }
-    .judgement.miss { color: var(--danger); }
 
     .rhythm-stats {
       display: grid;
@@ -712,9 +722,9 @@
     }
 
     #pokuTap.tap-cue {
-      animation: tapButtonCue 520ms ease;
-      box-shadow: 0 9px 0 #9f5f32, 0 0 0 8px rgba(255, 211, 110, 0.2), 0 0 32px rgba(255, 211, 110, 0.86);
-      filter: brightness(1.12);
+      animation: tapButtonCue 420ms ease;
+      box-shadow: 0 9px 0 #9f5f32, 0 0 0 5px rgba(255, 211, 110, 0.16), 0 0 18px rgba(255, 211, 110, 0.58);
+      filter: brightness(1.07);
     }
 
     #pokuTap:disabled {
@@ -958,7 +968,7 @@
 
     @media (max-width: 360px) {
       .shuu-area { grid-template-columns: minmax(0, 1fr) 102px; }
-      .shuu-visual { width: 102px; min-height: 126px; }
+      .shuu-visual { width: 102px; min-height: 112px; }
       .dog { font-size: 5.1rem; }
       .stat { grid-template-columns: 82px 1fr 38px; }
       button { font-size: 0.88rem; }
@@ -1055,8 +1065,6 @@
       <section class="rhythm-panel card">
         <h2 class="section-title">ぽくぽくリズム <span id="rhythmBest">Best 0</span></h2>
         <div class="rhythm-display" id="rhythmText">木魚の合図に合わせて「ぽく！」をタップ。短いミニゲームでぽく度と図鑑解放を狙えます。</div>
-        <div class="rhythm-cue" id="rhythmCue">開始でカウント</div>
-        <span class="judgement" id="rhythmJudge" aria-live="polite"></span>
         <div class="rhythm-stats">
           <span>Score <b id="rhythmScore">0</b></span>
           <span>Combo <b id="rhythmCombo">0</b></span>
@@ -1064,7 +1072,11 @@
         </div>
         <div id="beatDots" aria-hidden="true"></div>
         <div class="rhythm-play-zone" aria-label="ボタン付近のタイミング表示">
-          <div class="rhythm-big-cue" id="rhythmButtonCue" aria-live="assertive">開始でカウント</div>
+          <div class="rhythm-big-cue" id="rhythmButtonCue" aria-live="assertive" aria-label="開始でカウント">
+            <img class="rhythm-cue-image" id="rhythmCueImage" src="assets/shuu-rhythm.png" alt="リズム準備中のシュウ" decoding="async" draggable="false" />
+            <div class="rhythm-cue-fallback is-hidden" id="rhythmCueFallback" aria-hidden="true">開始</div>
+            <span class="rhythm-cue-label" id="rhythmCueLabel">開始</span>
+          </div>
           <div class="rhythm-buttons">
             <button class="secondary" id="startRhythm">🥁 開始</button>
             <button id="pokuTap" disabled>ぽく！</button>
@@ -1292,7 +1304,12 @@
       snack: 'assets/shuu-snack.png',
       guard: 'assets/shuu-guard.png',
       calm: 'assets/shuu-calm.png',
-      rhythm: 'assets/shuu-rhythm.png'
+      rhythm: 'assets/shuu-rhythm.png',
+      rhythmReady: 'assets/shuu-rhythm-ready.png',
+      rhythmPoku: 'assets/shuu-rhythm-poku.png',
+      rhythmPerfect: 'assets/shuu-rhythm-perfect.png',
+      rhythmGood: 'assets/shuu-rhythm-good.png',
+      rhythmMiss: 'assets/shuu-rhythm-miss.png'
     };
 
     const missingShuuAssets = new Set();
@@ -1471,13 +1488,52 @@
       $('#mokuCue').classList.remove('cue');
     }
 
+    function rhythmCueAssetKey({ ready = false, result = '' } = {}) {
+      if (result === 'perfect') return 'rhythmPerfect';
+      if (result === 'good') return 'rhythmGood';
+      if (result === 'miss') return 'rhythmMiss';
+      if (ready) return 'rhythmPoku';
+      return 'rhythmReady';
+    }
+
+    function renderRhythmCueImage(assetKey, label) {
+      const image = $('#rhythmCueImage');
+      const fallback = $('#rhythmCueFallback');
+      const primarySrc = SHUU_ASSETS[assetKey];
+      const fallbackSrc = SHUU_ASSETS.rhythm;
+      const usePrimary = primarySrc && !missingShuuAssets.has(primarySrc);
+      const nextSrc = usePrimary ? primarySrc : fallbackSrc;
+      fallback.textContent = label;
+      image.alt = `リズム中のシュウ：${label}`;
+      image.onerror = () => {
+        const failedSrc = image.getAttribute('src');
+        missingShuuAssets.add(failedSrc);
+        if (failedSrc !== fallbackSrc && !missingShuuAssets.has(fallbackSrc)) {
+          image.src = fallbackSrc;
+          return;
+        }
+        image.classList.add('is-hidden');
+        fallback.classList.remove('is-hidden');
+      };
+      image.onload = () => {
+        image.classList.remove('is-hidden');
+        fallback.classList.add('is-hidden');
+      };
+      if (!nextSrc || missingShuuAssets.has(nextSrc)) {
+        image.classList.add('is-hidden');
+        fallback.classList.remove('is-hidden');
+        return;
+      }
+      if (image.getAttribute('src') !== nextSrc) image.src = nextSrc;
+      if (image.complete && image.naturalWidth > 0) image.onload();
+    }
+
     function setRhythmCue(text, { ready = false, result = '' } = {}) {
-      const cueClass = `rhythm-cue ${ready ? 'ready' : ''}`.trim();
       const bigClass = `rhythm-big-cue ${ready ? 'ready' : ''} ${result}`.trim();
-      $('#rhythmCue').textContent = text;
-      $('#rhythmCue').className = cueClass;
-      $('#rhythmButtonCue').textContent = text;
       $('#rhythmButtonCue').className = bigClass;
+      $('#rhythmButtonCue').setAttribute('aria-label', text);
+      $('#rhythmCueLabel').textContent = text;
+      renderRhythmCueImage(rhythmCueAssetKey({ ready, result }), text);
       $('#pokuTap').classList.toggle('tap-cue', ready && rhythm.phase === 'playing');
     }
 
@@ -1512,7 +1568,7 @@
       rhythm.phase = 'playing';
       renderShuuVisual(getShuuVisual());
       $('#pokuTap').disabled = false;
-      $('#rhythmText').textContent = '木魚が光ったら「ぽく！」。早すぎても遅すぎても Miss になるよ。';
+      $('#rhythmText').textContent = '木魚が光ったら「ぽく！」。早すぎても遅すぎても判定は大表示エリアに出るよ。';
       scheduleRhythmBeat(520);
     }
 
@@ -1564,8 +1620,8 @@
       state.poku = clamp(state.poku + 1);
       rhythm.judgement = label;
       $('#rhythmText').textContent = label === 'Perfect'
-        ? 'Perfect！ 木魚と指先がぴったり重なった。'
-        : 'Good！ ちょっと揺れたけど、相棒リズムは続いてる。';
+        ? '木魚と指先がぴったり重なった。次の合図も大表示エリアを見よう。'
+        : 'ちょっと揺れたけど、相棒リズムは続いてる。次の光を待とう。';
       setRhythmCue(label, { result: label.toLowerCase() });
       renderRhythm();
       pulseShuuEffect(label === 'Perfect' ? 'rhythm-perfect' : 'rhythm-good');
@@ -1621,10 +1677,8 @@
       $('#rhythmScore').textContent = rhythm.score;
       $('#rhythmCombo').textContent = rhythm.combo;
       $('#rhythmLeft').textContent = rhythm.left;
-      $('#rhythmJudge').textContent = rhythm.judgement;
-      $('#rhythmJudge').className = `judgement ${rhythm.judgement.toLowerCase()}`;
       $('#beatDots').innerHTML = [0, 1, 2, 3].map(i => `<span class="beat-dot ${rhythm.active && rhythm.phase === 'playing' && rhythm.beat === i ? 'on' : ''}"></span>`).join('');
-      if (!$('#rhythmCue').classList.contains('ready')) $('#pokuTap').classList.remove('tap-cue');
+      if (!$('#rhythmButtonCue').classList.contains('ready')) $('#pokuTap').classList.remove('tap-cue');
     }
 
     function getRecentAction() {
