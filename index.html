@@ -1464,12 +1464,13 @@
     }
 
     const RHYTHM_WINDOWS = {
-      tapOffsetMs: 24,
-      perfectMs: 120,
-      goodMs: 300,
+      tapOffsetMs: 0,
+      perfectEarlyMs: 160,
+      perfectLateMs: 160,
+      goodEarlyMs: 320,
+      goodLateMs: 360,
       cueDisplayMs: 360,
-      earlyMissMs: 340,
-      lateMissMs: 380
+      lateMissMs: 420
     };
 
     function createEmptyRhythm() {
@@ -1620,39 +1621,20 @@
     }
 
     function tapPokuRhythm() {
-      if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit) return;
-      const now = performance.now();
-      // 判定基準メモ:
-      // cueStartAt: 見た目で「ぽく！」が光り始める瞬間
-      // targetAt: Perfect の中心時刻（cueStartAt と同一）
-      // cueEndAt: 見た目の「ぽく！」表示が終わる瞬間
-      // tapTime: 実際にタップした時刻(now)
-      // tapOffsetMs: 端末入力遅延を吸収する補正（現在は小さめ24ms）
-      const tapTime = now;
-      const adjustedTapAt = tapTime + RHYTHM_WINDOWS.tapOffsetMs;
-      const diff = adjustedTapAt - rhythm.targetAt;
-      const beforeCue = rhythm.cueStartAt && tapTime < rhythm.cueStartAt;
-      const inCueDisplay = rhythm.cueStartAt && tapTime >= rhythm.cueStartAt && tapTime <= rhythm.cueEndAt;
+      if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit || !rhythm.cueStartAt) return;
+      const tapTime = performance.now();
+      const diff = tapTime - rhythm.cueStartAt;
 
-      if (beforeCue) {
-        if (diff >= -RHYTHM_WINDOWS.goodMs) {
-          registerRhythmHit('Good', 11);
-          return;
-        }
+      if (diff < -RHYTHM_WINDOWS.goodEarlyMs) {
         registerRhythmMiss('Miss', '早すぎるぽく！');
         return;
       }
-
-      if (Math.abs(diff) <= RHYTHM_WINDOWS.perfectMs) {
+      if (diff <= RHYTHM_WINDOWS.perfectLateMs && diff >= -RHYTHM_WINDOWS.perfectEarlyMs) {
         registerRhythmHit('Perfect', 18);
         return;
       }
-      if (Math.abs(diff) <= RHYTHM_WINDOWS.goodMs || inCueDisplay) {
+      if (diff <= RHYTHM_WINDOWS.goodLateMs && diff >= -RHYTHM_WINDOWS.goodEarlyMs) {
         registerRhythmHit('Good', 11);
-        return;
-      }
-      if (diff < -RHYTHM_WINDOWS.earlyMissMs) {
-        registerRhythmMiss('Miss', '早すぎるぽく！');
         return;
       }
       registerRhythmMiss('Miss', '遅いぽく……');
