@@ -1145,11 +1145,11 @@
 
     const mokugyoCollection = [
       { id: 'starter', name: 'いつもの木魚', icon: '🪵', hint: '最初から所持', description: 'シュウが最初から抱えている、ぬくもりつきの標準木魚。' },
-      { id: 'partner', name: '相棒印の木魚', icon: '🤝', hint: '親密度80・安心度70以上', description: 'ふたりの合図が刻まれた木魚。渡さないけど、隣で鳴らしてくれる。' },
-      { id: 'guardian', name: '守護者の重木魚', icon: '🛡️', hint: '木魚防衛度90以上', description: '防衛本能が育てた堅牢モデル。サムの回収申請をぽくっと弾く。' },
-      { id: 'awakening', name: 'ぽくぽく覚醒木魚', icon: '✨', hint: 'ぽく度70以上', description: '抽象語を供養しすぎて、ほんのり光るようになった木魚。' },
-      { id: 'retreat', name: 'サム撤退記念木魚', icon: '🚫', hint: '木魚防衛度95以上・安心度70未満', description: 'サムが撤退した夜の記録つき。シュウの「やだ僕の」が強い。' },
-      { id: 'melty', name: 'とろけ月夜木魚', icon: '🌙', hint: '安心度80以上', description: '眠そうなシュウの体温で角がまるくなった、月夜色の木魚。' }
+      { id: 'partner', name: '相棒印の木魚', icon: '🤝', hint: '親密度80・安心度70以上', description: 'ふたりの合図が刻まれた木魚。渡さないけど、隣で鳴らしてくれる。', test: s => s.bond >= 80 && s.calm >= 70 },
+      { id: 'guardian', name: '守護者の重木魚', icon: '🛡️', hint: '木魚防衛度90以上', description: '防衛本能が育てた堅牢モデル。サムの回収申請をぽくっと弾く。', test: s => s.guard >= 90 },
+      { id: 'awakening', name: 'ぽくぽく覚醒木魚', icon: '✨', hint: 'ぽく度70以上', description: '抽象語を供養しすぎて、ほんのり光るようになった木魚。', test: s => s.poku >= 70 },
+      { id: 'retreat', name: 'サム撤退記念木魚', icon: '🚫', hint: '木魚防衛度95以上・安心度70未満', description: 'サムが撤退した夜の記録つき。シュウの「やだ僕の」が強い。', test: s => s.guard >= 95 && s.calm < 70 },
+      { id: 'melty', name: 'とろけ月夜木魚', icon: '🌙', hint: '安心度80以上', description: '眠そうなシュウの体温で角がまるくなった、月夜色の木魚。', test: s => s.calm >= 80 }
     ];
 
     const stillCollection = [
@@ -1336,6 +1336,7 @@
     }
 
     function saveState() {
+      evaluateUnlocks({ notify: false });
       localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
       $('#saveStatus').textContent = '保存済み';
       window.clearTimeout(saveState.timer);
@@ -1369,8 +1370,7 @@
       state.lastLine = result.line;
       state.lastHint = result.hint;
       addEvent(action.title, result.event || makeEventText(action.title, result.delta));
-      unlockAchievements();
-      unlockStills();
+      evaluateUnlocks();
       render(true);
       saveState();
     }
@@ -1387,14 +1387,32 @@
       return ({ bond: '親密度', calm: '安心度', guard: '木魚防衛度', poku: 'ぽく度' })[key] || key;
     }
 
-    function unlockAchievements() {
+    function unlockAchievements({ notify = true } = {}) {
       for (const achievement of achievements) {
         if (!state.unlocked.includes(achievement.id) && achievement.test(state)) {
           state.unlocked.push(achievement.id);
           addEvent('実績解除', `${achievement.icon}「${achievement.name}」を解除した！`);
-          showToast(`実績解除：${achievement.name}`);
+          if (notify) showToast(`実績解除：${achievement.name}`);
         }
       }
+    }
+
+
+    function evaluateUnlocks(options = {}) {
+      const { notify = true } = options;
+      unlockAchievements({ notify });
+      unlockMokugyoByState({ notify });
+      unlockStills({ notify });
+    }
+
+    function unlockMokugyoByState({ notify = true } = {}) {
+      let changed = false;
+      for (const mokugyo of mokugyoCollection) {
+        if (typeof mokugyo.test !== 'function') continue;
+        if (!mokugyo.test(state)) continue;
+        if (unlockMokugyo(mokugyo.id, `条件達成：${mokugyo.hint}`, { notify }) && !changed) changed = true;
+      }
+      return changed;
     }
 
     function getCurrentEnding() {
@@ -1405,12 +1423,12 @@
       return mokugyoCollection.find(item => item.id === id) || mokugyoCollection[0];
     }
 
-    function unlockMokugyo(id, sourceLabel) {
+    function unlockMokugyo(id, sourceLabel, { notify = true } = {}) {
       if (state.unlockedMokugyo.includes(id)) return false;
       const item = findMokugyo(id);
       state.unlockedMokugyo.push(id);
       addEvent('木魚図鑑 解放', `${item.icon}「${item.name}」を登録した。${sourceLabel}`);
-      showToast(`木魚図鑑：${item.name} 解放`);
+      if (notify) showToast(`木魚図鑑：${item.name} 解放`);
       return true;
     }
 
@@ -1423,7 +1441,7 @@
       state.lastHint = `エンディング報酬：${reward.icon} ${reward.name}`;
       unlockMokugyo(reward.id, `「${ending.name}」の報酬。`);
       addEvent(ending.name, `${ending.summary} 最後にもらえた木魚：${reward.name}`);
-      unlockStills();
+      evaluateUnlocks();
       render(true);
       showEndingScreen(ending, reward);
       saveState();
@@ -1466,13 +1484,13 @@
       showToast('もう一度、夜のお部屋へ');
     }
 
-    function unlockStills() {
+    function unlockStills({ notify = true } = {}) {
       let changed = false;
       for (const still of stillCollection) {
         if (!state.unlockedStills.includes(still.id) && still.test(state)) {
           state.unlockedStills.push(still.id);
           addEvent('スチル図鑑 解放', `「${still.name}」を登録した。`);
-          showToast(`スチル図鑑：${still.name} 解放`);
+          if (notify) showToast(`スチル図鑑：${still.name} 解放`);
           changed = true;
         }
       }
@@ -1711,8 +1729,7 @@
         : 'ぽく、ぽく。今のリズム、僕は好き。もう一回やる？';
       state.lastHint = `リズム報酬：ぽく度+${rhythm.pokuEarned + rewardPoku}${rewardSnack ? ` / おやつ+${rewardSnack}` : ''} / スコア${rhythm.score}`;
       addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が${rhythm.pokuEarned + rewardPoku}上がった${rewardSnack ? `。おやつを${rewardSnack}個もらった` : ''}。`);
-      unlockAchievements();
-      unlockStills();
+      evaluateUnlocks();
       render(true);
       saveState();
     }
@@ -1813,6 +1830,7 @@
     }
 
     function render(animate = false) {
+      evaluateUnlocks({ notify: false });
       const mood = getShuuVisual();
       $('#speech').firstChild.nodeValue = state.lastLine + ' ';
       $('#speechHint').textContent = state.lastHint;
@@ -1915,6 +1933,7 @@
       state.lastLine = 'おやつ補充の音……！ でも木魚は抱えたまま待つね。';
       state.lastHint = 'シュウの鼻がひくひくしている。おやつ外交の準備は万全。';
       addEvent('おやつ補充', 'おやつを3個補充した。これで交渉材料が増えた。');
+      evaluateUnlocks();
       render(true);
       saveState();
     });
@@ -1939,7 +1958,7 @@
       showToast('全データをリセットしました');
     });
 
-    unlockStills();
+    evaluateUnlocks({ notify: false });
     setRhythmCue('開始');
     render();
     saveState();
