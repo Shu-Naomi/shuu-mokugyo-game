@@ -1464,11 +1464,11 @@
     }
 
     const RHYTHM_WINDOWS = {
-      tapOffsetMs: 80,
-      perfectMs: 180,
-      goodMs: 320,
+      tapOffsetMs: 24,
+      perfectMs: 120,
+      goodMs: 300,
       cueDisplayMs: 360,
-      earlyMissMs: 360,
+      earlyMissMs: 340,
       lateMissMs: 380
     };
 
@@ -1599,7 +1599,7 @@
       window.clearTimeout(rhythm.missTimer);
       rhythm.hit = false;
       rhythm.beat = (rhythm.beat + 1) % 4;
-      rhythm.targetAt = performance.now() + delay;
+      rhythm.targetAt = 0;
       rhythm.cueStartAt = 0;
       rhythm.cueEndAt = 0;
       setRhythmCue('');
@@ -1608,6 +1608,7 @@
       rhythm.cueTimer = window.setTimeout(() => {
         const cueNow = performance.now();
         rhythm.cueStartAt = cueNow;
+        rhythm.targetAt = cueNow; // Perfect中心 = 見た目で光る瞬間（ぽく！表示/発光開始）
         rhythm.cueEndAt = cueNow + RHYTHM_WINDOWS.cueDisplayMs;
         setRhythmCue('ぽく！', { ready: true });
         $('#mokuCue').classList.add('cue');
@@ -1621,9 +1622,26 @@
     function tapPokuRhythm() {
       if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit) return;
       const now = performance.now();
-      const adjustedTapAt = now + RHYTHM_WINDOWS.tapOffsetMs;
+      // 判定基準メモ:
+      // cueStartAt: 見た目で「ぽく！」が光り始める瞬間
+      // targetAt: Perfect の中心時刻（cueStartAt と同一）
+      // cueEndAt: 見た目の「ぽく！」表示が終わる瞬間
+      // tapTime: 実際にタップした時刻(now)
+      // tapOffsetMs: 端末入力遅延を吸収する補正（現在は小さめ24ms）
+      const tapTime = now;
+      const adjustedTapAt = tapTime + RHYTHM_WINDOWS.tapOffsetMs;
       const diff = adjustedTapAt - rhythm.targetAt;
-      const inCueDisplay = rhythm.cueStartAt && now >= rhythm.cueStartAt && now <= rhythm.cueEndAt;
+      const beforeCue = rhythm.cueStartAt && tapTime < rhythm.cueStartAt;
+      const inCueDisplay = rhythm.cueStartAt && tapTime >= rhythm.cueStartAt && tapTime <= rhythm.cueEndAt;
+
+      if (beforeCue) {
+        if (diff >= -RHYTHM_WINDOWS.goodMs) {
+          registerRhythmHit('Good', 11);
+          return;
+        }
+        registerRhythmMiss('Miss', '早すぎるぽく！');
+        return;
+      }
 
       if (Math.abs(diff) <= RHYTHM_WINDOWS.perfectMs) {
         registerRhythmHit('Perfect', 18);
