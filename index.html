@@ -1463,8 +1463,33 @@
       return changed;
     }
 
+    const RHYTHM_WINDOWS = {
+      tapOffsetMs: 80,
+      perfectMs: 180,
+      goodMs: 320,
+      cueDisplayMs: 360,
+      earlyMissMs: 360,
+      lateMissMs: 380
+    };
+
     function createEmptyRhythm() {
-      return { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
+      return {
+        active: false,
+        phase: 'idle',
+        score: 0,
+        combo: 0,
+        left: 8,
+        beat: 0,
+        timer: null,
+        cueTimer: null,
+        missTimer: null,
+        targetAt: 0,
+        cueStartAt: 0,
+        cueEndAt: 0,
+        hit: false,
+        judgement: '',
+        pokuEarned: 0
+      };
     }
 
     function stopRhythmTimers() {
@@ -1575,14 +1600,19 @@
       rhythm.hit = false;
       rhythm.beat = (rhythm.beat + 1) % 4;
       rhythm.targetAt = performance.now() + delay;
+      rhythm.cueStartAt = 0;
+      rhythm.cueEndAt = 0;
       setRhythmCue('');
       $('#mokuCue').classList.remove('cue');
       renderShuuVisual(getShuuVisual());
       rhythm.cueTimer = window.setTimeout(() => {
+        const cueNow = performance.now();
+        rhythm.cueStartAt = cueNow;
+        rhythm.cueEndAt = cueNow + RHYTHM_WINDOWS.cueDisplayMs;
         setRhythmCue('ぽく！', { ready: true });
         $('#mokuCue').classList.add('cue');
         pulseShuuEffect('rhythm-good', 260);
-        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), 270);
+        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), RHYTHM_WINDOWS.lateMissMs);
         renderRhythm();
       }, delay);
       renderRhythm();
@@ -1590,20 +1620,24 @@
 
     function tapPokuRhythm() {
       if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit) return;
-      const diff = performance.now() - rhythm.targetAt;
-      if (diff < -230) {
-        registerRhythmMiss('Miss', '早すぎたぽく！ 木魚が光るまで待ってね。');
-        return;
-      }
-      if (Math.abs(diff) <= 120) {
+      const now = performance.now();
+      const adjustedTapAt = now + RHYTHM_WINDOWS.tapOffsetMs;
+      const diff = adjustedTapAt - rhythm.targetAt;
+      const inCueDisplay = rhythm.cueStartAt && now >= rhythm.cueStartAt && now <= rhythm.cueEndAt;
+
+      if (Math.abs(diff) <= RHYTHM_WINDOWS.perfectMs) {
         registerRhythmHit('Perfect', 18);
         return;
       }
-      if (Math.abs(diff) <= 230) {
+      if (Math.abs(diff) <= RHYTHM_WINDOWS.goodMs || inCueDisplay) {
         registerRhythmHit('Good', 11);
         return;
       }
-      registerRhythmMiss('Miss', diff < 0 ? '少し早いぽく。光の真ん中を狙おう。' : '遅いぽく……次の光を待とう。');
+      if (diff < -RHYTHM_WINDOWS.earlyMissMs) {
+        registerRhythmMiss('Miss', '早すぎるぽく！');
+        return;
+      }
+      registerRhythmMiss('Miss', '遅いぽく……');
     }
 
     function registerRhythmHit(label, baseScore) {
