@@ -1465,9 +1465,7 @@
 
     const RHYTHM_WINDOWS = {
       tapOffsetMs: 0,
-      perfectEarlyMs: 160,
-      perfectLateMs: 160,
-      goodEarlyMs: 320,
+      perfectLateMs: 180,
       goodLateMs: 360,
       cueDisplayMs: 360,
       lateMissMs: 420
@@ -1625,15 +1623,15 @@
       const tapTime = performance.now();
       const diff = tapTime - rhythm.cueStartAt;
 
-      if (diff < -RHYTHM_WINDOWS.goodEarlyMs) {
+      if (diff < 0) {
         registerRhythmMiss('Miss', '早すぎるぽく！');
         return;
       }
-      if (diff <= RHYTHM_WINDOWS.perfectLateMs && diff >= -RHYTHM_WINDOWS.perfectEarlyMs) {
+      if (diff <= RHYTHM_WINDOWS.perfectLateMs) {
         registerRhythmHit('Perfect', 18);
         return;
       }
-      if (diff <= RHYTHM_WINDOWS.goodLateMs && diff >= -RHYTHM_WINDOWS.goodEarlyMs) {
+      if (diff <= RHYTHM_WINDOWS.goodLateMs) {
         registerRhythmHit('Good', 11);
         return;
       }
