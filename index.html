@@ -1081,7 +1081,8 @@
         </div>
         <div class="controls">
           <button class="secondary" id="gainSnack">🍘 おやつ補充</button>
-          <button class="secondary" id="resetGame">🔄 リセット</button>
+          <button class="secondary" id="resetGame">🔄 周回リセット</button>
+          <button class="secondary" id="resetAllData">🧹 全データリセット</button>
         </div>
       </section>
     </section>
@@ -1437,16 +1438,31 @@
       $('#endingScreen').classList.add('show');
     }
 
-    function replayFromEnding() {
+    function createLoopResetState(previousState) {
+      const next = normalizeState();
+      next.unlocked = [...previousState.unlocked];
+      next.unlockedMokugyo = [...previousState.unlockedMokugyo];
+      if (!next.unlockedMokugyo.includes('starter')) next.unlockedMokugyo.unshift('starter');
+      next.unlockedStills = [...previousState.unlockedStills];
+      if (!next.unlockedStills.includes('firstRoom')) next.unlockedStills.unshift('firstRoom');
+      next.endingsSeen = [...new Set(previousState.endingsSeen)];
+      next.rhythmBest = previousState.rhythmBest;
+      return next;
+    }
+
+    function resetForLoop() {
       stopRhythmTimers();
       rhythm = createEmptyRhythm();
       $('#pokuTap').disabled = true;
       setRhythmCue('開始');
-      state = normalizeState();
-      localStorage.removeItem(STORAGE_KEY);
+      state = createLoopResetState(state);
       $('#endingScreen').classList.remove('show');
       render(true);
       saveState();
+    }
+
+    function replayFromEnding() {
+      resetForLoop();
       showToast('もう一度、夜のお部屋へ');
     }
 
@@ -1904,16 +1920,23 @@
     });
 
     $('#resetGame').addEventListener('click', () => {
-      if (!confirm('セーブデータをリセットしますか？')) return;
+      if (!confirm('進行状態のみリセットして、周回を開始しますか？')) return;
+      resetForLoop();
+      showToast('周回を開始しました');
+    });
+
+    $('#resetAllData').addEventListener('click', () => {
+      if (!confirm('全データを削除して最初からやり直しますか？')) return;
       stopRhythmTimers();
       rhythm = createEmptyRhythm();
       $('#pokuTap').disabled = true;
       setRhythmCue('開始');
       state = normalizeState();
       localStorage.removeItem(STORAGE_KEY);
+      $('#endingScreen').classList.remove('show');
       render(true);
       saveState();
-      showToast('リセットしました');
+      showToast('全データをリセットしました');
     });
 
     unlockStills();
