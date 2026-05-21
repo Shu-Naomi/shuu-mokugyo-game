@@ -1800,6 +1800,25 @@
       return state.lastAction && state.actions - (state.lastActionAt || 0) <= 1 ? state.lastAction : null;
     }
 
+    function hasKeyword(text, keywords) {
+      return keywords.some(keyword => text.includes(keyword));
+    }
+
+    function isGuardContextText(text) {
+      if (!text) return false;
+      return hasKeyword(text, ['サム', 'しっぽ', 'つんつん', '取られ', '防衛', '警戒', '回収依頼']);
+    }
+
+    function isRhythmAfterText(text) {
+      if (!text) return false;
+      return hasKeyword(text, ['リズム報酬', 'スコア', 'もう一回', '合図の練習']);
+    }
+
+    function isReadingContextText(text) {
+      if (!text) return false;
+      return hasKeyword(text, ['木魚構文', '抽象語', '供養', '進捗', '一旦']);
+    }
+
     const SHUU_VISUAL_TUNING = {
       default: { scale: 1.12, offsetY: 2 },
       petting: { scale: 1.14, offsetY: 2 },
@@ -1843,11 +1862,15 @@
       if (recentAction === 'tail') return visualForAsset('guard', 'しっぽ警戒モード', '🐕‍🦺', 'action-tail guard');
       if (recentAction === 'sam') return visualForAsset('guard', '木魚防衛プロトコル', '🐕‍🦺', 'action-sam guard');
 
-      if (state.guard >= 92) return visualForAsset('guard', '木魚鉄壁ガード', '🐕‍🦺', 'guard');
+      const latestText = `${state.lastLine || ''} ${state.lastHint || ''} ${(state.events[0] && state.events[0].text) || ''}`;
+      if (isGuardContextText(latestText)) return visualForAsset('guard', '木魚警戒モード', '🐕‍🦺', 'guard');
+      if (isRhythmAfterText(latestText)) return visualForAsset('rhythmGood', 'リズムの余韻', '🐶', 'bounce');
+      if (isReadingContextText(latestText)) return visualForAsset('calm', '読み物モード', '🐶');
+
       if (state.calm >= 72 && state.bond >= 50) return visualForAsset('calm', 'とろけ相棒モード', '🐶', 'melt');
       if (state.poku >= 55) return visualForAsset('rhythm', 'ぽくぽく覚醒前夜', '🐕', 'bounce');
       if (state.bond >= 55) return visualForAsset('default', 'かなり相棒', '🐶');
-      return visualForAsset('default', '警戒も甘えもある', '🐕', 'guard');
+      return visualForAsset('default', '落ち着いて見守り中', '🐕');
     }
 
     function getEndingVisual(ending) {
