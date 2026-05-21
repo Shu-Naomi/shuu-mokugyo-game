@@ -191,6 +191,8 @@
       max-height: 142px;
       object-fit: contain;
       object-position: center bottom;
+      transform: translateY(var(--shuu-offset-y, 0px)) scale(var(--shuu-scale, 1));
+      transform-origin: center bottom;
       filter: drop-shadow(0 13px 18px rgba(0,0,0,0.28));
       user-select: none;
       -webkit-user-drag: none;
@@ -683,6 +685,8 @@
       width: min(76%, 192px);
       max-height: 126px;
       object-fit: contain;
+      transform: translateY(var(--shuu-offset-y, 0px)) scale(var(--shuu-scale, 1));
+      transform-origin: center bottom;
       filter: drop-shadow(0 12px 18px rgba(0,0,0,0.32));
       user-select: none;
       -webkit-user-drag: none;
@@ -840,6 +844,8 @@
       width: min(168px, 46vw);
       max-height: 128px;
       object-fit: contain;
+      transform: translateY(var(--shuu-offset-y, 0px)) scale(var(--shuu-scale, 1));
+      transform-origin: center bottom;
       filter: drop-shadow(0 14px 22px rgba(0,0,0,0.32));
     }
 
@@ -1593,6 +1599,9 @@
       const image = $('#rhythmCueImage');
       const fallback = $('#rhythmCueFallback');
       const labelBadge = $('#rhythmCueLabel');
+      const tune = SHUU_VISUAL_TUNING[assetKey] || SHUU_VISUAL_TUNING.rhythm;
+      image.style.setProperty('--shuu-scale', `${tune.scale ?? 1}`);
+      image.style.setProperty('--shuu-offset-y', `${tune.offsetY ?? 0}px`);
       const primarySrc = SHUU_ASSETS[assetKey];
       const fallbackSrc = SHUU_ASSETS.rhythm;
       const usePrimary = primarySrc && !missingShuuAssets.has(primarySrc);
@@ -1791,13 +1800,32 @@
       return state.lastAction && state.actions - (state.lastActionAt || 0) <= 1 ? state.lastAction : null;
     }
 
+    const SHUU_VISUAL_TUNING = {
+      default: { scale: 1.12, offsetY: 2 },
+      petting: { scale: 1.14, offsetY: 2 },
+      hug: { scale: 1.13, offsetY: 1 },
+      snack: { scale: 1.13, offsetY: 1 },
+      guard: { scale: 1.12, offsetY: 2 },
+      calm: { scale: 1.11, offsetY: 3 },
+      rhythm: { scale: 1.1, offsetY: 2 },
+      rhythmReady: { scale: 1.12, offsetY: 2 },
+      rhythmPoku: { scale: 1.12, offsetY: 2 },
+      rhythmPerfect: { scale: 1.14, offsetY: 1 },
+      rhythmGood: { scale: 1.12, offsetY: 2 },
+      rhythmMiss: { scale: 1.11, offsetY: 2 }
+    };
+
     function visualForAsset(key, label, face, className = '') {
+      const tune = SHUU_VISUAL_TUNING[key] || SHUU_VISUAL_TUNING.default;
       return {
+        key,
         src: SHUU_ASSETS[key],
         alt: `赤毛豆柴のシュウ：${label}`,
         label,
         face,
-        className: `${className} state-${key}`.trim()
+        className: `${className} state-${key}`.trim(),
+        scale: tune.scale,
+        offsetY: tune.offsetY
       };
     }
 
@@ -1829,9 +1857,15 @@
       return getShuuVisual();
     }
 
+    function applyImageTuning(image, visual) {
+      image.style.setProperty('--shuu-scale', `${visual.scale ?? 1}`);
+      image.style.setProperty('--shuu-offset-y', `${visual.offsetY ?? 0}px`);
+    }
+
     function renderImageWithFallback(image, fallback, visual, fallbackText = visual.face) {
       fallback.textContent = fallbackText;
       image.alt = visual.alt;
+      applyImageTuning(image, visual);
       if (!visual.src || missingShuuAssets.has(visual.src)) {
         image.classList.add('is-hidden');
         fallback.classList.remove('is-hidden');
