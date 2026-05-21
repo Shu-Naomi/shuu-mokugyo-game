@@ -1113,7 +1113,7 @@
         </div>
         <div class="rhythm-play-zone" aria-label="ボタン付近のタイミング表示">
           <div class="rhythm-big-cue" id="rhythmButtonCue" aria-live="assertive" aria-label="開始でカウント">
-            <img class="rhythm-cue-image" id="rhythmCueImage" src="assets/crop_3616.png" alt="リズム準備中のシュウ" decoding="async" draggable="false" />
+            <img class="rhythm-cue-image" id="rhythmCueImage" src="assets/shuu-crop-rhythm.png" alt="リズム準備中のシュウ" decoding="async" draggable="false" />
             <div class="rhythm-cue-fallback is-hidden" id="rhythmCueFallback" aria-hidden="true">開始</div>
             <span class="rhythm-cue-label" id="rhythmCueLabel">開始</span>
           </div>
@@ -1140,7 +1140,7 @@
     </section>
 
     <footer>
-      画像素材を追加する場合は、<code>assets/shuu-default.png</code> などを置くと自動で差し替わります。<br />
+      画像素材を追加する場合は、<code>assets/shuu-crop-default.png</code> などを置くと自動で差し替わります。<br />
       データはこのブラウザのローカルストレージに保存されます。
     </footer>
   </main>
@@ -1339,18 +1339,18 @@
     };
 
     const SHUU_ASSETS = {
-      default: 'assets/crop_3571.png',
-      petting: 'assets/crop_3572.png',
-      hug: 'assets/crop_3573.png',
-      snack: 'assets/crop_3574.png',
-      guard: 'assets/crop_3614.png',
-      calm: 'assets/crop_3615.png',
-      rhythm: 'assets/crop_3616.png',
-      rhythmReady: 'assets/crop_3617.png',
-      rhythmPoku: 'assets/crop_3618.png',
-      rhythmPerfect: 'assets/crop_3619.png',
-      rhythmGood: 'assets/crop_3620.png',
-      rhythmMiss: 'assets/crop_3621.png'
+      default: 'assets/shuu-crop-default.png',
+      petting: 'assets/shuu-crop-petting.png',
+      hug: 'assets/shuu-crop-hug.png',
+      snack: 'assets/shuu-crop-snack.png',
+      guard: 'assets/shuu-crop-guard.png',
+      calm: 'assets/shuu-crop-calm.png',
+      rhythm: 'assets/shuu-crop-rhythm.png',
+      rhythmReady: 'assets/shuu-crop-rhythm-ready.png',
+      rhythmPoku: 'assets/shuu-crop-rhythm-poku.png',
+      rhythmPerfect: 'assets/shuu-crop-rhythm-perfect.png',
+      rhythmGood: 'assets/shuu-crop-rhythm-good.png',
+      rhythmMiss: 'assets/shuu-crop-rhythm-miss.png'
     };
 
     const missingShuuAssets = new Set();
@@ -1591,8 +1591,8 @@
       if (result === 'perfect') return 'rhythmPerfect';
       if (result === 'good') return 'rhythmGood';
       if (result === 'miss') return 'rhythmMiss';
-      if (ready) return 'rhythmPoku';
-      return 'rhythmReady';
+      if (ready) return 'rhythmReady';
+      return 'rhythmPoku';
     }
 
     function renderRhythmCueImage(assetKey, label) {
