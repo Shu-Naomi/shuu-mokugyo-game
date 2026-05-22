@@ -91,6 +91,9 @@
       gap: 12px;
     }
 
+    .view { display: none; }
+    .view.active { display: grid; gap: 12px; }
+
     .card {
       background: var(--panel);
       border: 1px solid var(--line);
@@ -449,6 +452,23 @@
     .slot.ready {
       color: var(--good);
       border-color: rgba(157, 243, 196, 0.28);
+    }
+
+    .mini-menu {
+      padding: 14px;
+      display: grid;
+      gap: 10px;
+    }
+
+    .mini-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255, 248, 236, 0.06);
+      border: 1px solid var(--line);
+      font-weight: 700;
     }
 
 
@@ -1033,6 +1053,7 @@
     </header>
 
     <section class="stage" aria-live="polite">
+      <div class="view active" id="homeView">
       <div class="hero card">
         <div class="room-line"><span>🌙 夜のお部屋</span><span id="saveStatus">自動セーブ中</span></div>
         <div class="shuu-area">
@@ -1075,6 +1096,7 @@
         <button data-action="tail">☝️ しっぽつんつん</button>
         <button data-action="syntax">📜 木魚構文を読む</button>
         <button data-action="sam" class="danger">🧑‍🔧 サムを呼ぶ</button>
+        <button id="goMiniGames" class="secondary">🎮 シュウと遊ぶ</button>
       </section>
 
       <section class="event-log card">
@@ -1137,6 +1159,17 @@
           <button class="secondary" id="resetAllData">🧹 全データリセット</button>
         </div>
       </section>
+      </div>
+      <div class="view" id="miniGameView">
+        <section class="card mini-menu">
+          <h2 class="section-title">ミニゲーム一覧 <span>準備中</span></h2>
+          <div class="mini-item"><span>○×クイズ</span><span>準備中</span></div>
+          <div class="mini-item"><span>神経衰弱</span><span>準備中</span></div>
+          <div class="mini-item"><span>しっぽ防衛ゲーム</span><span>準備中</span></div>
+          <div class="mini-item"><span>お散歩</span><span>準備中</span></div>
+          <button id="backHome" class="secondary">← ホームへ戻る</button>
+        </section>
+      </div>
     </section>
 
     <footer>
@@ -1395,9 +1428,35 @@
       saveState.timer = window.setTimeout(() => $('#saveStatus').textContent = '自動セーブ中', 1200);
     }
 
-    function applyDelta(delta = {}) {
+    function getGrowthMultiplier(current, source = 'normal') {
+      const base = source === 'bonus' ? 0.72 : 0.58;
+      if (current <= 30) return base * 1.2;
+      if (current <= 70) return base * 0.9;
+      if (current <= 90) return base * 0.5;
+      if (current <= 99) return base * 0.22;
+      return 0;
+    }
+
+    function canReachMaxStat(source = 'normal') {
+      const longPlayReady = state.actions >= 140;
+      return longPlayReady && source === 'bonus' && Math.random() < 0.22;
+    }
+
+    function scalePositiveGrowth(key, value, source = 'normal') {
+      const current = state[key] || 0;
+      if (value <= 0 || current >= MAX_STAT) return value;
+      if (current >= 99 && !canReachMaxStat(source)) return 0;
+      const scaled = value * getGrowthMultiplier(current, source);
+      const whole = Math.floor(scaled);
+      const rest = scaled - whole;
+      return whole + (Math.random() < rest ? 1 : 0);
+    }
+
+    function applyDelta(delta = {}, options = {}) {
+      const source = options.source || 'normal';
       for (const [key, value] of Object.entries(delta)) {
-        state[key] = clamp((state[key] || 0) + value);
+        const next = value > 0 ? scalePositiveGrowth(key, value, source) : value;
+        state[key] = clamp((state[key] || 0) + next);
       }
     }
 
@@ -1414,7 +1473,7 @@
         ? action.run(state)
         : { delta: action.delta, line: randomOf(action.lines), hint: action.hint };
 
-      applyDelta(result.delta);
+      applyDelta(result.delta, { source: 'normal' });
       state.actions += 1;
       state.lastAction = actionId;
       state.lastActionAt = state.actions;
@@ -1734,7 +1793,7 @@
       rhythm.left -= 1;
       rhythm.score += baseScore + Math.min(rhythm.combo, 8);
       rhythm.pokuEarned += 1;
-      state.poku = clamp(state.poku + 1);
+      applyDelta({ poku: 1 }, { source: 'bonus' });
       rhythm.judgement = label;
       $('#rhythmText').textContent = label === 'Perfect'
         ? '木魚と指先がぴったり重なった。次の合図も大表示エリアを見よう。'
@@ -1776,14 +1835,14 @@
       setRhythmCue('');
       const rewardPoku = rhythm.score >= 150 ? 5 : rhythm.score >= 95 ? 3 : 1;
       const rewardSnack = rhythm.score >= 150 ? 2 : rhythm.score >= 95 ? 1 : 0;
-      state.poku = clamp(state.poku + rewardPoku);
+      applyDelta({ poku: rewardPoku }, { source: 'bonus' });
       state.snacks = Math.min(9, state.snacks + rewardSnack);
       state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);
       state.lastLine = rhythm.score >= 150
         ? 'ぽくぽく大成功！ 木魚、ちょっとだけ光った。でも渡すとは言ってない。'
         : 'ぽく、ぽく。今のリズム、僕は好き。もう一回やる？';
-      state.lastHint = `リズム報酬：ぽく度+${rhythm.pokuEarned + rewardPoku}${rewardSnack ? ` / おやつ+${rewardSnack}` : ''} / スコア${rhythm.score}`;
-      addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が${rhythm.pokuEarned + rewardPoku}上がった${rewardSnack ? `。おやつを${rewardSnack}個もらった` : ''}。`);
+      state.lastHint = `リズム報酬：ぽく度ボーナス${rewardSnack ? ` / おやつ+${rewardSnack}` : ''} / スコア${rhythm.score}`;
+      addEvent('ぽくぽくリズム', `スコア${rhythm.score}。ぽく度が上がった${rewardSnack ? `。おやつを${rewardSnack}個もらった` : ''}。`);
       evaluateUnlocks();
       render(true);
       saveState();
@@ -2020,9 +2079,16 @@
       toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
+    function switchView(viewName) {
+      $('#homeView').classList.toggle('active', viewName === 'home');
+      $('#miniGameView').classList.toggle('active', viewName === 'mini');
+    }
+
     document.querySelectorAll('[data-action]').forEach(button => {
       button.addEventListener('click', () => performAction(button.dataset.action));
     });
+    $('#goMiniGames').addEventListener('click', () => switchView('mini'));
+    $('#backHome').addEventListener('click', () => switchView('home'));
 
     $('#seeEnding').addEventListener('click', viewEnding);
     $('#startRhythm').addEventListener('click', startRhythmGame);
