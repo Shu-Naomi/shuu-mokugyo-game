@@ -471,6 +471,24 @@
       font-weight: 700;
     }
 
+    .mini-item button {
+      width: 100%;
+      border: none;
+      background: transparent;
+      color: inherit;
+      font: inherit;
+      padding: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+    }
+
+    .oxo-panel { padding: 14px; display: grid; gap: 10px; }
+    .oxo-status { padding: 11px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 248, 236, 0.16); color: var(--muted); line-height: 1.45; }
+    .oxo-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
+    .oxo-cell { min-height: 76px; border-radius: 16px; border: 1px solid rgba(255, 240, 187, 0.22); background: linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,184,107,0.08)); color: #fff2c9; font-size: 2rem; font-weight: 1000; }
+
 
     .ending-panel {
       padding: 14px;
@@ -1162,12 +1180,24 @@
       </div>
       <div class="view" id="miniGameView">
         <section class="card mini-menu">
-          <h2 class="section-title">ミニゲーム一覧 <span>準備中</span></h2>
-          <div class="mini-item"><span>○×クイズ</span><span>準備中</span></div>
+          <h2 class="section-title">ミニゲーム一覧 <span>1種プレイ可能</span></h2>
+          <div class="mini-item"><button id="goOxoGame"><span>○×ゲーム（三目並べ）</span><span>遊べる！</span></button></div>
           <div class="mini-item"><span>神経衰弱</span><span>準備中</span></div>
           <div class="mini-item"><span>しっぽ防衛ゲーム</span><span>準備中</span></div>
           <div class="mini-item"><span>お散歩</span><span>準備中</span></div>
           <button id="backHome" class="secondary">← ホームへ戻る</button>
+        </section>
+      </div>
+      <div class="view" id="oxoView">
+        <section class="card oxo-panel">
+          <h2 class="section-title">○×ゲーム <span>あなた：○ / シュウ：×</span></h2>
+          <div class="oxo-status" id="oxoStatus">空いているマスをタップして開始！</div>
+          <div class="oxo-board" id="oxoBoard"></div>
+          <div class="controls">
+            <button id="oxoReplay">🔄 もう一度遊ぶ</button>
+            <button id="oxoBackMini" class="secondary">🎮 ミニゲーム一覧へ戻る</button>
+            <button id="oxoBackHome" class="secondary">🏠 ホームへ戻る</button>
+          </div>
         </section>
       </div>
     </section>
@@ -1392,6 +1422,7 @@
     let toastTimer;
     let visualEffectTimer;
     let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
+    let oxo = { board: Array(9).fill(null), finished: false, result: '', line: '' };
 
     const $ = selector => document.querySelector(selector);
     const randomOf = list => list[Math.floor(Math.random() * list.length)];
@@ -2079,9 +2110,78 @@
       toastTimer = window.setTimeout(() => toast.classList.remove('show'), 2200);
     }
 
+    function createEmptyOxo() {
+      return { board: Array(9).fill(null), finished: false, result: '', line: '' };
+    }
+
+    function winningLine(board, mark) {
+      const lines = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+      return lines.find(([a, b, c]) => board[a] === mark && board[b] === mark && board[c] === mark);
+    }
+
+    function pickShuuMove(board) {
+      const empties = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+      for (const i of empties) { const b = [...board]; b[i] = '×'; if (winningLine(b, '×')) return i; }
+      for (const i of empties) { const b = [...board]; b[i] = '○'; if (winningLine(b, '○')) return i; }
+      if (board[4] == null) return 4;
+      const corners = [0, 2, 6, 8].filter(i => board[i] == null);
+      if (corners.length) return randomOf(corners);
+      return randomOf(empties);
+    }
+
+    function renderOxo() {
+      $('#oxoBoard').innerHTML = oxo.board.map((cell, i) => `<button class="oxo-cell" data-oxo="${i}" ${cell || oxo.finished ? 'disabled' : ''}>${cell || ''}</button>`).join('');
+      $('#oxoStatus').textContent = oxo.line || '空いているマスをタップして開始！';
+      document.querySelectorAll('[data-oxo]').forEach(btn => btn.addEventListener('click', () => playOxo(Number(btn.dataset.oxo))));
+    }
+
+    function finishOxo(result) {
+      oxo.finished = true;
+      if (result === 'player') {
+        applyDelta({ snacks: 1, bond: 1, calm: 1 }, { source: 'normal' });
+        oxo.line = '直美の勝ち！ シュウは木魚を抱えたまま、ちょっと悔しそうにしっぽを揺らした。';
+        addEvent('○×ゲーム勝利', '○×ゲームに勝利した。シュウは悔しそうに木魚を抱え直した。');
+      } else if (result === 'shuu') {
+        applyDelta({ bond: 0.3 }, { source: 'normal' });
+        oxo.line = 'シュウの勝ち！ シュウは得意げに木魚をぽくっと鳴らした。';
+        addEvent('○×ゲーム敗北', 'シュウがぽくっと勝利。次はきっと勝てる。');
+      } else {
+        applyDelta({ snacks: 1, bond: 0.5 }, { source: 'normal' });
+        oxo.line = '引き分け！ ふたりは木魚を挟んで、しばらく盤面を見つめた。';
+        addEvent('○×ゲーム引き分け', 'いい勝負だった。ふたりはまた盤面を並べた。');
+      }
+      state.lastLine = `${oxo.line} 報酬を獲得した。`;
+      state.lastHint = '「もう一度遊ぶ」で再戦できる。';
+      evaluateUnlocks();
+      render(true);
+      renderOxo();
+      saveState();
+    }
+
+    function playOxo(index) {
+      if (oxo.finished || oxo.board[index]) return;
+      oxo.board[index] = '○';
+      if (winningLine(oxo.board, '○')) return finishOxo('player');
+      if (!oxo.board.includes(null)) return finishOxo('draw');
+      const shuuMove = pickShuuMove(oxo.board);
+      if (Number.isInteger(shuuMove)) oxo.board[shuuMove] = '×';
+      if (winningLine(oxo.board, '×')) return finishOxo('shuu');
+      if (!oxo.board.includes(null)) return finishOxo('draw');
+      oxo.line = 'あなたの番です。○を置いてください。';
+      renderOxo();
+    }
+
+    function startOxoGame() {
+      oxo = createEmptyOxo();
+      oxo.line = 'あなたの番です。○を置いてください。';
+      switchView('oxo');
+      renderOxo();
+    }
+
     function switchView(viewName) {
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
+      $('#oxoView').classList.toggle('active', viewName === 'oxo');
     }
 
     document.querySelectorAll('[data-action]').forEach(button => {
@@ -2089,6 +2189,10 @@
     });
     $('#goMiniGames').addEventListener('click', () => switchView('mini'));
     $('#backHome').addEventListener('click', () => switchView('home'));
+    $('#goOxoGame').addEventListener('click', startOxoGame);
+    $('#oxoReplay').addEventListener('click', startOxoGame);
+    $('#oxoBackMini').addEventListener('click', () => switchView('mini'));
+    $('#oxoBackHome').addEventListener('click', () => switchView('home'));
 
     $('#seeEnding').addEventListener('click', viewEnding);
     $('#startRhythm').addEventListener('click', startRhythmGame);
