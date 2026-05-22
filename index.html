@@ -1422,7 +1422,10 @@
       rhythmPoku: 'assets/shuu-crop-rhythm-poku.png',
       rhythmPerfect: 'assets/shuu-crop-rhythm-perfect.png',
       rhythmGood: 'assets/shuu-crop-rhythm-good.png',
-      rhythmMiss: 'assets/shuu-crop-rhythm-miss.png'
+      rhythmMiss: 'assets/shuu-crop-rhythm-miss.png',
+      oxoThink: 'assets/shuu-crop-ox-think.png',
+      oxoNeutral: 'assets/shuu-crop-ox-neutral.png',
+      oxoVictory: 'assets/shuu-crop-ox-victory.png'
     };
 
     const missingShuuAssets = new Set();
@@ -1432,6 +1435,7 @@
     let visualEffectTimer;
     let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
     let oxo = { board: Array(9).fill(null), finished: false, result: '', line: '', difficulty: 'normal' };
+    let currentView = 'home';
 
     const $ = selector => document.querySelector(selector);
     const randomOf = list => list[Math.floor(Math.random() * list.length)];
@@ -1930,7 +1934,10 @@
       rhythmPoku: { scale: 1.12, offsetY: 2 },
       rhythmPerfect: { scale: 1.14, offsetY: 1 },
       rhythmGood: { scale: 1.12, offsetY: 2 },
-      rhythmMiss: { scale: 1.11, offsetY: 2 }
+      rhythmMiss: { scale: 1.11, offsetY: 2 },
+      oxoThink: { scale: 1.12, offsetY: 2 },
+      oxoNeutral: { scale: 1.11, offsetY: 2 },
+      oxoVictory: { scale: 1.13, offsetY: 1 }
     };
 
     function visualForAsset(key, label, face, className = '') {
@@ -1949,6 +1956,13 @@
 
     // assets/ に画像がない場合は img の error で絵文字表示へ戻る。
     function getShuuVisual() {
+      if (currentView === 'oxo') {
+        if (!oxo.finished) return visualForAsset('oxoThink', 'うーん……ここは慎重にいくよ……', '🐕', 'guard');
+        if (oxo.result === 'shuu') return visualForAsset('oxoVictory', 'えへへ、僕の勝ち！木魚防衛、成功だよ！', '🐶', 'bounce');
+        if (oxo.result === 'player') return visualForAsset('oxoNeutral', 'むむ……直美、強い……！でも木魚はまだ渡さないもん！', '🐕', 'melt');
+        return visualForAsset('oxoNeutral', '引き分けだね。もう一回勝負する？', '🐶');
+      }
+
       if (rhythm.active) {
         const phaseClass = rhythm.phase === 'countdown' ? 'rhythm-countdown' : 'rhythm-playing';
         return visualForAsset('rhythm', rhythm.phase === 'countdown' ? 'リズム準備中' : 'ぽくぽく演奏中', '🐕', phaseClass);
@@ -2166,6 +2180,7 @@
 
     function finishOxo(result) {
       oxo.finished = true;
+      oxo.result = result;
       const rewardByDifficulty = {
         easy: { win: { snacks: 1, bond: 0.5 }, draw: { snacks: 1, bond: 0.3 }, lose: { bond: 0.2 } },
         normal: { win: { snacks: 1, bond: 1, calm: 0.5 }, draw: { snacks: 1, bond: 0.5, calm: 0.3 }, lose: { bond: 0.3, calm: 0.2 } },
@@ -2210,6 +2225,7 @@
       if (winningLine(oxo.board, '×')) return finishOxo('shuu');
       if (!oxo.board.includes(null)) return finishOxo('draw');
       oxo.line = 'あなたの番です。○を置いてください。';
+      renderShuuVisual(getShuuVisual());
       renderOxo();
     }
 
@@ -2218,14 +2234,17 @@
       oxo.difficulty = difficulty;
       oxo.line = 'あなたの番です。○を置いてください。';
       switchView('oxo');
+      renderShuuVisual(getShuuVisual());
       renderOxo();
     }
 
     function switchView(viewName) {
+      currentView = viewName;
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
       $('#oxoDifficultyView').classList.toggle('active', viewName === 'oxoDifficulty');
       $('#oxoView').classList.toggle('active', viewName === 'oxo');
+      renderShuuVisual(getShuuVisual());
     }
 
     document.querySelectorAll('[data-action]').forEach(button => {
