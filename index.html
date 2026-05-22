@@ -1188,6 +1188,15 @@
           <button id="backHome" class="secondary">← ホームへ戻る</button>
         </section>
       </div>
+      <div class="view" id="oxoDifficultyView">
+        <section class="card mini-menu">
+          <h2 class="section-title">○×ゲーム難易度</h2>
+          <div class="mini-item"><button data-oxo-difficulty="easy"><span>かんたん</span><span>勝ちやすい</span></button></div>
+          <div class="mini-item"><button data-oxo-difficulty="normal"><span>ふつう</span><span>ほどよく手強い</span></button></div>
+          <div class="mini-item"><button data-oxo-difficulty="hard"><span>むずかしい</span><span>防衛型AI</span></button></div>
+          <button id="oxoDifficultyBack" class="secondary">🎮 ミニゲーム一覧へ戻る</button>
+        </section>
+      </div>
       <div class="view" id="oxoView">
         <section class="card oxo-panel">
           <h2 class="section-title">○×ゲーム <span>あなた：○ / シュウ：×</span></h2>
@@ -1422,7 +1431,7 @@
     let toastTimer;
     let visualEffectTimer;
     let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
-    let oxo = { board: Array(9).fill(null), finished: false, result: '', line: '' };
+    let oxo = { board: Array(9).fill(null), finished: false, result: '', line: '', difficulty: 'normal' };
 
     const $ = selector => document.querySelector(selector);
     const randomOf = list => list[Math.floor(Math.random() * list.length)];
@@ -2111,7 +2120,7 @@
     }
 
     function createEmptyOxo() {
-      return { board: Array(9).fill(null), finished: false, result: '', line: '' };
+      return { board: Array(9).fill(null), finished: false, result: '', line: '', difficulty: oxo.difficulty || 'normal' };
     }
 
     function winningLine(board, mark) {
@@ -2119,14 +2128,34 @@
       return lines.find(([a, b, c]) => board[a] === mark && board[b] === mark && board[c] === mark);
     }
 
-    function pickShuuMove(board) {
+    function pickStrategicMove(board, options = {}) {
       const empties = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
-      for (const i of empties) { const b = [...board]; b[i] = '×'; if (winningLine(b, '×')) return i; }
-      for (const i of empties) { const b = [...board]; b[i] = '○'; if (winningLine(b, '○')) return i; }
-      if (board[4] == null) return 4;
+      const { missWinChance = 0, missBlockChance = 0, preferCenter = true, preferCorners = true } = options;
+      if (Math.random() >= missWinChance) {
+        for (const i of empties) { const b = [...board]; b[i] = '×'; if (winningLine(b, '×')) return i; }
+      }
+      if (Math.random() >= missBlockChance) {
+        for (const i of empties) { const b = [...board]; b[i] = '○'; if (winningLine(b, '○')) return i; }
+      }
+      if (preferCenter && board[4] == null) return 4;
       const corners = [0, 2, 6, 8].filter(i => board[i] == null);
-      if (corners.length) return randomOf(corners);
+      if (preferCorners && corners.length) return randomOf(corners);
+      if (corners.length && Math.random() < 0.5) return randomOf(corners);
       return randomOf(empties);
+    }
+
+    function pickShuuMove(board, difficulty = 'normal') {
+      const empties = board.map((v, i) => v ? -1 : i).filter(i => i >= 0);
+      if (!empties.length) return null;
+      if (difficulty === 'easy') {
+        if (Math.random() < 0.58) return randomOf(empties);
+        return pickStrategicMove(board, { missWinChance: 0.55, missBlockChance: 0.6, preferCenter: false, preferCorners: false });
+      }
+      if (difficulty === 'normal') {
+        if (Math.random() < 0.24) return randomOf(empties);
+        return pickStrategicMove(board, { missWinChance: 0.22, missBlockChance: 0.28, preferCenter: Math.random() < 0.8, preferCorners: true });
+      }
+      return pickStrategicMove(board, { missWinChance: 0, missBlockChance: 0, preferCenter: true, preferCorners: true });
     }
 
     function renderOxo() {
@@ -2137,18 +2166,31 @@
 
     function finishOxo(result) {
       oxo.finished = true;
+      const rewardByDifficulty = {
+        easy: { win: { snacks: 1, bond: 0.5 }, draw: { snacks: 1, bond: 0.3 }, lose: { bond: 0.2 } },
+        normal: { win: { snacks: 1, bond: 1, calm: 0.5 }, draw: { snacks: 1, bond: 0.5, calm: 0.3 }, lose: { bond: 0.3, calm: 0.2 } },
+        hard: { win: { snacks: 2, bond: 1, calm: 1, poku: 1 }, draw: { snacks: 1, bond: 0.6, calm: 0.4, poku: 0.3 }, lose: { snacks: 1, bond: 0.4, calm: 0.3, poku: 0.2 } }
+      };
+      const rewards = rewardByDifficulty[oxo.difficulty] || rewardByDifficulty.normal;
+      const difficultyLabel = ({ easy: 'かんたん', normal: 'ふつう', hard: 'むずかしい' })[oxo.difficulty] || 'ふつう';
       if (result === 'player') {
-        applyDelta({ snacks: 1, bond: 1, calm: 1 }, { source: 'normal' });
+        const reward = rewards.win;
+        state.snacks = Math.min(9, state.snacks + (reward.snacks || 0));
+        applyDelta({ bond: reward.bond || 0, calm: reward.calm || 0, poku: reward.poku || 0 }, { source: 'bonus' });
         oxo.line = '直美の勝ち！ シュウは木魚を抱えたまま、ちょっと悔しそうにしっぽを揺らした。';
-        addEvent('○×ゲーム勝利', '○×ゲームに勝利した。シュウは悔しそうに木魚を抱え直した。');
+        addEvent(`○×ゲーム勝利（${difficultyLabel}）`, '○×ゲームに勝利した。シュウは悔しそうに木魚を抱え直した。');
       } else if (result === 'shuu') {
-        applyDelta({ bond: 0.3 }, { source: 'normal' });
+        const reward = rewards.lose;
+        state.snacks = Math.min(9, state.snacks + (reward.snacks || 0));
+        applyDelta({ bond: reward.bond || 0, calm: reward.calm || 0, poku: reward.poku || 0 }, { source: 'bonus' });
         oxo.line = 'シュウの勝ち！ シュウは得意げに木魚をぽくっと鳴らした。';
-        addEvent('○×ゲーム敗北', 'シュウがぽくっと勝利。次はきっと勝てる。');
+        addEvent(`○×ゲーム敗北（${difficultyLabel}）`, 'シュウがぽくっと勝利。次はきっと勝てる。');
       } else {
-        applyDelta({ snacks: 1, bond: 0.5 }, { source: 'normal' });
+        const reward = rewards.draw;
+        state.snacks = Math.min(9, state.snacks + (reward.snacks || 0));
+        applyDelta({ bond: reward.bond || 0, calm: reward.calm || 0, poku: reward.poku || 0 }, { source: 'bonus' });
         oxo.line = '引き分け！ ふたりは木魚を挟んで、しばらく盤面を見つめた。';
-        addEvent('○×ゲーム引き分け', 'いい勝負だった。ふたりはまた盤面を並べた。');
+        addEvent(`○×ゲーム引き分け（${difficultyLabel}）`, 'いい勝負だった。ふたりはまた盤面を並べた。');
       }
       state.lastLine = `${oxo.line} 報酬を獲得した。`;
       state.lastHint = '「もう一度遊ぶ」で再戦できる。';
@@ -2163,7 +2205,7 @@
       oxo.board[index] = '○';
       if (winningLine(oxo.board, '○')) return finishOxo('player');
       if (!oxo.board.includes(null)) return finishOxo('draw');
-      const shuuMove = pickShuuMove(oxo.board);
+      const shuuMove = pickShuuMove(oxo.board, oxo.difficulty);
       if (Number.isInteger(shuuMove)) oxo.board[shuuMove] = '×';
       if (winningLine(oxo.board, '×')) return finishOxo('shuu');
       if (!oxo.board.includes(null)) return finishOxo('draw');
@@ -2171,8 +2213,9 @@
       renderOxo();
     }
 
-    function startOxoGame() {
+    function startOxoGame(difficulty = oxo.difficulty || 'normal') {
       oxo = createEmptyOxo();
+      oxo.difficulty = difficulty;
       oxo.line = 'あなたの番です。○を置いてください。';
       switchView('oxo');
       renderOxo();
@@ -2181,6 +2224,7 @@
     function switchView(viewName) {
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
+      $('#oxoDifficultyView').classList.toggle('active', viewName === 'oxoDifficulty');
       $('#oxoView').classList.toggle('active', viewName === 'oxo');
     }
 
@@ -2189,8 +2233,12 @@
     });
     $('#goMiniGames').addEventListener('click', () => switchView('mini'));
     $('#backHome').addEventListener('click', () => switchView('home'));
-    $('#goOxoGame').addEventListener('click', startOxoGame);
-    $('#oxoReplay').addEventListener('click', startOxoGame);
+    $('#goOxoGame').addEventListener('click', () => switchView('oxoDifficulty'));
+    document.querySelectorAll('[data-oxo-difficulty]').forEach(button => {
+      button.addEventListener('click', () => startOxoGame(button.dataset.oxoDifficulty));
+    });
+    $('#oxoDifficultyBack').addEventListener('click', () => switchView('mini'));
+    $('#oxoReplay').addEventListener('click', () => startOxoGame(oxo.difficulty));
     $('#oxoBackMini').addEventListener('click', () => switchView('mini'));
     $('#oxoBackHome').addEventListener('click', () => switchView('home'));
 
