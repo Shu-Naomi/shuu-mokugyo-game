@@ -485,6 +485,9 @@
     }
 
     .oxo-panel { padding: 14px; display: grid; gap: 10px; }
+    .oxo-shuu { display: grid; gap: 8px; justify-items: center; padding: 10px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255, 248, 236, 0.16); }
+    .oxo-shuu-visual { display: grid; place-items: center; width: min(42vw, 168px); min-height: 136px; border-radius: 20px; padding: 10px; background: linear-gradient(165deg, rgba(255, 248, 236, 0.1), rgba(255, 184, 107, 0.12) 54%, rgba(51, 38, 73, 0.86)); border: 1px solid rgba(255, 240, 187, 0.2); }
+    .oxo-shuu-label { text-align: center; color: var(--text); font-weight: 800; line-height: 1.5; font-size: 0.92rem; }
     .oxo-status { padding: 11px; border-radius: 14px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255, 248, 236, 0.16); color: var(--muted); line-height: 1.45; }
     .oxo-board { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
     .oxo-cell { min-height: 76px; border-radius: 16px; border: 1px solid rgba(255, 240, 187, 0.22); background: linear-gradient(160deg, rgba(255,255,255,0.1), rgba(255,184,107,0.08)); color: #fff2c9; font-size: 2rem; font-weight: 1000; }
@@ -1200,6 +1203,13 @@
       <div class="view" id="oxoView">
         <section class="card oxo-panel">
           <h2 class="section-title">○×ゲーム <span>あなた：○ / シュウ：×</span></h2>
+          <div class="oxo-shuu" id="oxoShuu" aria-label="○×ゲーム中のシュウ">
+            <div class="oxo-shuu-visual">
+              <img class="shuu-img is-hidden" id="oxoShuuImage" src="" alt="" decoding="async" draggable="false" />
+              <div class="dog" id="oxoDogFace" aria-hidden="true">🐕</div>
+            </div>
+            <div class="oxo-shuu-label" id="oxoMoodLabel">うーん……ここは慎重にいくよ……</div>
+          </div>
           <div class="oxo-status" id="oxoStatus">空いているマスをタップして開始！</div>
           <div class="oxo-board" id="oxoBoard"></div>
           <div class="controls">
@@ -2172,7 +2182,15 @@
       return pickStrategicMove(board, { missWinChance: 0, missBlockChance: 0, preferCenter: true, preferCorners: true });
     }
 
+    function renderOxoVisual() {
+      const visual = getShuuVisual();
+      renderImageWithFallback($('#oxoShuuImage'), $('#oxoDogFace'), visual);
+      $('#oxoMoodLabel').textContent = visual.label;
+      $('#oxoShuu').setAttribute('aria-label', visual.alt);
+    }
+
     function renderOxo() {
+      renderOxoVisual();
       $('#oxoBoard').innerHTML = oxo.board.map((cell, i) => `<button class="oxo-cell" data-oxo="${i}" ${cell || oxo.finished ? 'disabled' : ''}>${cell || ''}</button>`).join('');
       $('#oxoStatus').textContent = oxo.line || '空いているマスをタップして開始！';
       document.querySelectorAll('[data-oxo]').forEach(btn => btn.addEventListener('click', () => playOxo(Number(btn.dataset.oxo))));
