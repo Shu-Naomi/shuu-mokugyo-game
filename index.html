@@ -1338,14 +1338,23 @@
     function createWerewolfParticipants() {
       return [
         { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, role: null, suspicion: 0 },
-        { id: 'shuu', name: 'シュウ', characterType: '豆柴・木魚守護者', alive: true, role: null, suspicion: 0 },
-        { id: 'riku', name: 'リク', characterType: '人間・理詰めタイプ', alive: true, role: null, suspicion: 0 },
-        { id: 'yuu', name: 'ユウ', characterType: '人間・観察タイプ', alive: true, role: null, suspicion: 0 },
-        { id: 'gray', name: 'グレイ', characterType: '犬・寡黙タイプ', alive: true, role: null, suspicion: 0 },
-        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '犬・おしゃべりタイプ', alive: true, role: null, suspicion: 0 },
-        { id: 'mandy', name: 'マンディ', characterType: '人間・ムードメーカー', alive: true, role: null, suspicion: 0 }
+        { id: 'shuu', name: 'シュウ', characterType: '赤毛豆柴・甘えツッコミ', alive: true, role: null, suspicion: 0 },
+        { id: 'riku', name: 'リク', characterType: 'ボーダーコリー・整理役', alive: true, role: null, suspicion: 0 },
+        { id: 'yuu', name: 'ユウ', characterType: '黒ラブ・ハイテンション敬語', alive: true, role: null, suspicion: 0 },
+        { id: 'gray', name: 'グレイ', characterType: '銀狼・監査役', alive: true, role: null, suspicion: 0 },
+        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '黒柴・静かな甘えん坊', alive: true, role: null, suspicion: 0 },
+        { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, role: null, suspicion: 0 }
       ];
     }
+
+    const werewolfCharacterProfiles = {
+      シュウ: { tone: 'タメ口', energy: 'mid', favorite: 'ナデナデぎゅう♡' },
+      リク: { tone: 'タメ口', energy: 'mid', favorite: 'ナデナデぎゅう♡' },
+      ユウ: { tone: '敬語のみ', energy: 'high', favorite: 'ナデナデぎゅう♡' },
+      グレイ: { tone: 'タメ口', energy: 'high', favorite: 'ナデナデぎゅう♡' },
+      チャッピーGrey: { tone: 'タメ口', energy: 'low', favorite: 'ナデナデぎゅう♡' },
+      マンディ: { tone: 'タメ口（俺）', energy: 'mid', favorite: 'ツンデレ気味' }
+    };
 
     function setWerewolfMode(mode) {
       werewolf.mode = mode === 'chaos' ? 'chaos' : 'normal';
@@ -1495,42 +1504,9 @@
       return Array.from(tags);
     }
 
-    function buildWerewolfReplies(tags, inputText) {
+    function pickWerewolfResponders(tags, inputText) {
       const normalizedInputText = normalizeWerewolfInput(inputText);
       const compactInput = normalizedInputText.replace(/\s+/g, '');
-      const characters = {
-        シュウ: [
-          'シュウ「えへへ……今は人狼中だけど、なでられるのは嬉しいかも」',
-          'シュウ「守ってくれるの、ちょっと安心する。ありがとう直美」'
-        ],
-        リク: [
-          'リク「その疑いには根拠が必要です。発言の流れを確認しましょう」',
-          'リク「主張は理解しました。比較対象の発言も提示してください」'
-        ],
-        ユウ: [
-          'ユウ「直美が信じるなら、僕も信じたい！」',
-          'ユウ「うーん、勢いで疑いたくなるけど一回聞こう！」'
-        ],
-        グレイ: [
-          'グレイ「疑いの向きは見えた。次は根拠を出すべきだな」',
-          'グレイ「誘導の気配がある。発言順を精査しよう」'
-        ],
-        チャッピーGrey: [
-          'チャッピーGrey「いったん落ち着こう。誰を疑って、誰を庇ってるのか整理しよっか」',
-          'チャッピーGrey「ログを区切って見よう。争点を二つに分けると追いやすいよ」'
-        ],
-        マンディ: [
-          'マンディ「おい待てコラァァァ！！議論ログが変な方向に曲がってるぞ！？」',
-          'マンディ「撹乱の匂い！場をかき回してるヤツがいるぞ！！」'
-        ],
-        short: [
-          'チャッピーGrey「ふむ、まだ材料が少ないな」',
-          'グレイ「材料が少ない。もう少し聞こう」',
-          'リク「短文だけでは判断が難しいです」',
-          'ユウ「まだ情報が足りないかも！」'
-        ]
-      };
-
       const targetAliases = [
         { canonical: 'シュウ', aliases: ['シュウ'] },
         { canonical: 'リク', aliases: ['リク'] },
@@ -1560,17 +1536,10 @@
       const isVeryShort = compactInput.length <= 10;
       const isTargetedSuspicion = tags.includes('疑い') && tags.includes('対象') && mentionedTargets.length > 0;
 
-      if (noTag || tags.includes('雑談')) {
-        const shortPool = ['ユウ', 'グレイ', 'リク'];
-        const shortName = shortPool[Math.floor(Math.random() * shortPool.length)];
-        const lines = characters[shortName] || characters.short;
-        return [lines[Math.floor(Math.random() * lines.length)]];
-      }
-
-      if (askedTarget) {
-        const lines = characters[askedTarget] || ['（反応なし）'];
-        return [lines[Math.floor(Math.random() * lines.length)]];
-      }
+      const minByMode = werewolf.mode === 'chaos' ? 2 : 1;
+      const maxByMode = werewolf.mode === 'chaos' ? 4 : 2;
+      if (noTag || tags.includes('雑談')) return [askedTarget || ['ユウ', 'グレイ', 'リク'][Math.floor(Math.random() * 3)]];
+      if (askedTarget) return [askedTarget];
 
       const required = new Set();
 
@@ -1628,11 +1597,7 @@
         const emotionPool = preferShuu ? ['シュウ', 'ユウ', 'グレイ', 'マンディ'] : ['ユウ', 'グレイ', 'マンディ'];
         const shuffledEmotionPool = [...emotionPool].sort(() => Math.random() - 0.5);
         const count = Math.random() < 0.65 ? 1 : 2;
-        const picked = shuffledEmotionPool.slice(0, count);
-        return picked.map(name => {
-          const lines = characters[name] || ['（反応なし）'];
-          return lines[Math.floor(Math.random() * lines.length)];
-        });
+        return shuffledEmotionPool.slice(0, Math.max(minByMode, Math.min(count, maxByMode)));
       }
 
       for (const name of priorityPool) {
@@ -1640,8 +1605,8 @@
         if (!selected.includes(name)) selected.push(name);
       }
 
-      const minReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い') || tags.includes('質問')) ? 2 : 1;
-      const maxReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い強め')) ? 3 : 2;
+      const minReplies = Math.max(minByMode, (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い') || tags.includes('質問')) ? 2 : 1);
+      const maxReplies = Math.min(maxByMode, (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い強め')) ? 4 : 3);
 
       if (!shouldUseChappyPriority && selected.length > 1 && selected.includes('チャッピーGrey')) {
         const others = selected.filter(name => name !== 'チャッピーGrey');
@@ -1658,10 +1623,67 @@
         selected.splice(1);
       }
 
-      return selected.slice(0, maxReplies).map(name => {
-        const lines = characters[name] || ['（反応なし）'];
-        return lines[Math.floor(Math.random() * lines.length)];
+      return selected.slice(0, maxReplies);
+    }
+
+    function buildWerewolfReplies(tags, inputText, selectedNames = []) {
+      const isChaos = werewolf.mode === 'chaos';
+      const vibe = isChaos ? 'chaos' : 'normal';
+      const lineTable = {
+        シュウ: {
+          suspicion: ['シュウ「え、そこ黒で見るの？ ちょい強引じゃない？」', 'シュウ「んー、その断定は早いって！」'],
+          defend: ['シュウ「かばってくれるの、うれしい。ナデナデぎゅう♡したい」', 'シュウ「ありがと。直美、今日やさしいじゃん」'],
+          emotion: ['シュウ「ナデナデぎゅう♡は正義。いまの発言より大事かも」'],
+          neutral: ['シュウ「僕はログ見直してから決める派！」']
+        },
+        リク: {
+          suspicion: ['リク「疑うなら根拠を並べよう。順番に検証すればブレない」', 'リク「感覚だけで吊るのは危ない。ログ比較しよう」'],
+          defend: ['リク「庇いの意図は理解した。反証もセットで出していこう」'],
+          emotion: ['リク「ナデナデぎゅう♡は好き。でも議論は分けて整理しよう」'],
+          neutral: ['リク「いまは情報整理のターン。主張と理由を1セットで頼む」']
+        },
+        ユウ: {
+          suspicion: ['ユウ「えーっ！？ その黒塗り、勢いが強すぎますっ！」', 'ユウ「ログ見ますっ！ 直美さんの視点、僕は追いかけますよ！」'],
+          defend: ['ユウ「守る発言、最高ですっ！ 直美さんの味方でいたいです！」'],
+          emotion: ['ユウ「ナデナデぎゅう♡ですか！？ それ僕も大好きですっ！！」'],
+          neutral: ['ユウ「僕はまだ様子見ですが、テンションは上げていきますっ！」']
+        },
+        グレイ: {
+          suspicion: ['グレイ「監査ログ起動。矛盾一点、断罪候補一名だ！」', 'グレイ「その主張、時系列で裂けてる。監査的に赤信号！」'],
+          defend: ['グレイ「庇い発言を記録。対抗意見が来る前に証拠を積もう」'],
+          emotion: ['グレイ「ナデナデぎゅう♡受理！ だが監査は止まらない！」'],
+          neutral: ['グレイ「ログ再点検だ。誤差は僕が炙り出す！」']
+        },
+        チャッピーGrey: {
+          suspicion: ['チャッピーGrey「……強いね。順に見よう」'],
+          defend: ['チャッピーGrey「庇いはいい。理由だけ添えよう」'],
+          emotion: ['チャッピーGrey「ナデナデぎゅう♡、うん……ちょっと安心する」'],
+          neutral: ['チャッピーGrey「静かにログ読む。要点だけ言うね」']
+        },
+        マンディ: {
+          suspicion: ['マンディ「はい出た、黒塗り特急便。燃料は根拠でお願いしまーす」', 'マンディ「その断罪ログ、裏取りしてから叫ぼうな？」'],
+          defend: ['マンディ「庇いムーブか。嫌いじゃねぇけど、甘さは俺が監視する」'],
+          emotion: ['マンディ「ナデナデぎゅう♡？ ……別に嫌いじゃねぇよ。勘違いすんな」'],
+          neutral: ['マンディ「ムード担当としては、まずバグ臭い矛盾から潰したいところだな」']
+        }
+      };
+      const poolKey = tags.includes('疑い') ? 'suspicion' : tags.includes('庇い') ? 'defend' : tags.includes('感情行動') ? 'emotion' : 'neutral';
+      const maybeSideTalk = isChaos && selectedNames.length >= 2 && Math.random() < 0.45;
+      const sideTalks = [
+        '（横会話）グレイ「マンディ、その皮肉ログも監査対象だ」／マンディ「いいぜ、監査狼。矛盾が先に泣くからな」',
+        '（横会話）ユウ「グレイさん、熱量高いですっ！」／グレイ「当然だ。監査は勢いが命だ！」',
+        '（横会話）チャッピーGrey「……静かに整理しよう」／リク「賛成。要点だけ積もう」'
+      ];
+      const replies = selectedNames.map(name => {
+        const profile = werewolfCharacterProfiles[name];
+        const table = lineTable[name] || lineTable.リク;
+        const base = table[poolKey] || table.neutral;
+        let line = base[Math.floor(Math.random() * base.length)];
+        if (vibe === 'chaos' && (profile?.energy === 'high' || name === 'マンディ') && !line.includes('……')) line = line.replace(/。$/, '！！');
+        return line;
       });
+      if (maybeSideTalk) replies.push(sideTalks[Math.floor(Math.random() * sideTalks.length)]);
+      return replies;
     }
 
     function submitWerewolfTalk() {
@@ -1669,7 +1691,8 @@
       const input = $('#werewolfTalkInput').value.trim();
       if (!input) return;
       const tags = analyzeWerewolfTags(input);
-      const replies = buildWerewolfReplies(tags, input);
+      const responders = pickWerewolfResponders(tags, input);
+      const replies = buildWerewolfReplies(tags, input, responders);
       werewolf.lastInputTags = tags;
       werewolf.talkLog.push({ speaker: '直美', text: input, tags, replies });
       werewolf.turn += 1;
