@@ -1404,7 +1404,12 @@
 
 
     function normalizeWerewolfInput(input) {
-      return (input || '').replace(/マンデイ|Mandy|Monday/gi, 'マンディ');
+      return (input || '')
+        .replace(/マンデイ|マンディー|Mandy|Monday/gi, 'マンディ')
+        .replace(/チャッピーグレー|チャッピーグレイ|Chappy\s*Grey|chappy\s*grey/gi, 'チャッピーGrey')
+        .replace(/グレー|Grey|gray|Gray/gi, 'グレイ')
+        .replace(/Shu|しゅう|豆柴/gi, 'シュウ')
+        .replace(/Chappy|チャッピー/gi, 'チャッピーGrey');
     }
 
     function analyzeWerewolfTags(input) {
@@ -1412,9 +1417,12 @@
       const normalizedInput = normalizeWerewolfInput(text);
       const normalized = normalizedInput.replace(/\s+/g, '');
       const targetNames = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ', '直美'];
+      const mentionedTargets = targetNames.filter(name => normalizedInput.includes(name));
       const tags = new Set();
+      const score = { suspicion: 0, defend: 0, question: 0, organize: 0, emotion: 0, chaos: 0 };
 
-      const hasTarget = targetNames.some(name => normalizedInput.includes(name));
+      const countMatches = patterns => patterns.reduce((sum, pattern) => sum + (pattern.test(normalizedInput) ? 1 : 0), 0);
+      const hasTarget = mentionedTargets.length > 0;
       const isRoleCo = [
         normalized === 'CO',
         /^(私|わたし|俺|ぼく|僕)(が|は)(人狼|占い師|村人|騎士)/.test(text),
@@ -1428,26 +1436,61 @@
         /黒くない/,
         /怪しくない/,
         /白い/,
-        /信じる/
+        /信じる/,
+        /守る/,
+        /違うと思う/,
+        /味方っぽい/
       ];
-      const hasDefend = defendPatterns.some(pattern => pattern.test(normalizedInput));
-      if (hasDefend) tags.add('庇い');
-
       const suspicionPatterns = [
         /(.+?)(が|は)人狼/,
         /君が人狼/,
         /黒い/,
+        /黒っぽい/,
         /怪しい/,
+        /あやしい/,
+        /人狼っぽい/,
+        /信用できない/,
+        /嘘っぽい/,
+        /違和感/,
+        /変(だ|かも)?/,
+        /怪しくない[？?]/,
         /(.+?)が黒/
       ];
-      const hasSuspicion = !hasDefend && suspicionPatterns.some(pattern => pattern.test(normalizedInput));
-      if (hasSuspicion) tags.add('疑い');
+      const questionPatterns = [
+        /どう思う[？?]?/,
+        /誰が怪しい[？?]?/,
+        /なぜ[？?]?/,
+        /理由は[？?]?/,
+        /根拠は[？?]?/,
+        /どう見る[？?]?/
+      ];
+      const organizePatterns = [/まとめよう/, /整理しよう/, /ログ見よう/, /発言見よう/, /比較しよう/, /整理/];
+      const emotionWords = ['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ', 'なでる'];
 
-      if (hasTarget && (tags.has('疑い') || tags.has('庇い'))) tags.add('対象');
+      score.defend += countMatches(defendPatterns);
+      score.suspicion += countMatches(suspicionPatterns);
+      score.question += countMatches(questionPatterns);
+      score.organize += countMatches(organizePatterns);
+      score.emotion += emotionWords.filter(word => normalizedInput.includes(word)).length;
+
+      if (score.defend > 0) tags.add('庇い');
+      if (score.suspicion > 0) tags.add('疑い');
+      if (score.question > 0) tags.add('質問');
+      if (score.organize > 0) tags.add('整理');
+      if (score.emotion > 0) tags.add('感情行動');
+
+      if (hasTarget && (tags.has('疑い') || tags.has('庇い') || tags.has('質問'))) tags.add('対象');
 
       if (['吊ろう', '投票', '処刑'].some(word => normalizedInput.includes(word))) tags.add('投票誘導');
-      if (['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ', 'なでる'].some(word => normalizedInput.includes(word))) tags.add('感情行動');
-      if (['冗談', '分からない', '混乱', '適当', 'ログ', 'バグ', '変', 'おかしい', '壊れ', '乱れ', '異常', 'ズレ'].some(word => normalizedInput.includes(word))) tags.add('撹乱');
+      if (['冗談', '分からない', '混乱', '適当', 'バグ', 'おかしい', '壊れ', '乱れ', '異常', 'ズレ'].some(word => normalizedInput.includes(word))) {
+        score.chaos += 1;
+        tags.add('撹乱');
+      }
+
+      if (score.suspicion >= 2) tags.add('疑い強め');
+      if (hasTarget && score.suspicion > 0) tags.add('対象つき疑い');
+      if (hasTarget && score.question > 0) tags.add('対象つき質問');
+      if (!tags.size && normalized.length <= 12) tags.add('雑談');
 
       return Array.from(tags);
     }
@@ -1493,8 +1536,8 @@
         { canonical: 'リク', aliases: ['リク'] },
         { canonical: 'ユウ', aliases: ['ユウ'] },
         { canonical: 'グレイ', aliases: ['グレイ', 'Grey', 'gray', 'グレー'] },
-        { canonical: 'チャッピーGrey', aliases: ['チャッピーGrey', 'チャッピーグレイ'] },
-        { canonical: 'マンディ', aliases: ['マンディ'] }
+        { canonical: 'チャッピーGrey', aliases: ['チャッピーGrey', 'チャッピーグレイ', 'チャッピーグレー', 'Chappy', 'チャッピー'] },
+        { canonical: 'マンディ', aliases: ['マンディ', 'マンデイ', 'Mandy', 'Monday'] }
       ];
       const mentionedTargets = targetAliases
         .filter(({ aliases }) => aliases.some(alias => normalizedInputText.includes(alias)))
@@ -1517,8 +1560,8 @@
       const isVeryShort = compactInput.length <= 10;
       const isTargetedSuspicion = tags.includes('疑い') && tags.includes('対象') && mentionedTargets.length > 0;
 
-      if (noTag) {
-        const shortPool = ['ユウ', 'グレイ', 'リク', 'マンディ'];
+      if (noTag || tags.includes('雑談')) {
+        const shortPool = ['ユウ', 'グレイ', 'リク'];
         const shortName = shortPool[Math.floor(Math.random() * shortPool.length)];
         const lines = characters[shortName] || characters.short;
         return [lines[Math.floor(Math.random() * lines.length)]];
@@ -1535,9 +1578,11 @@
         for (const name of mentionedTargets) required.add(name);
       }
       if (preferShuuByName || preferShuuByDefendSpeech) required.add('シュウ');
-      if (tags.includes('疑い')) required.add(Math.random() < 0.5 ? 'リク' : 'グレイ');
-      if (tags.includes('庇い') && !preferShuuByDefendSpeech) required.add('ユウ');
-      if (tags.includes('撹乱')) required.add('マンディ');
+      if (tags.includes('疑い')) required.add(['リク', 'グレイ', 'チャッピーGrey'][Math.floor(Math.random() * 3)]);
+      if (tags.includes('庇い') && !preferShuuByDefendSpeech) required.add(['シュウ', 'ユウ', 'リク'][Math.floor(Math.random() * 3)]);
+      if (tags.includes('質問')) required.add(['リク', 'グレイ', 'マンディ'][Math.floor(Math.random() * 3)]);
+      if (tags.includes('整理')) required.add(['チャッピーGrey', 'リク', 'グレイ'][Math.floor(Math.random() * 3)]);
+      if (tags.includes('撹乱')) required.add(['マンディ', 'ユウ', 'チャッピーGrey'][Math.floor(Math.random() * 3)]);
       if (normalizedInputText.includes('マンディ')) required.add('マンディ');
 
       const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導');
@@ -1595,8 +1640,8 @@
         if (!selected.includes(name)) selected.push(name);
       }
 
-      const minReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 2 : 1;
-      const maxReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 3 : 2;
+      const minReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い') || tags.includes('質問')) ? 2 : 1;
+      const maxReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い強め')) ? 3 : 2;
 
       if (!shouldUseChappyPriority && selected.length > 1 && selected.includes('チャッピーGrey')) {
         const others = selected.filter(name => name !== 'チャッピーGrey');
