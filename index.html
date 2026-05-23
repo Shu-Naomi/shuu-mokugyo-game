@@ -1488,10 +1488,21 @@
         ]
       };
 
-      const targetNames = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
-      const mentionedTargets = targetNames.filter(name => normalizedInputText.includes(name));
-      const askMatch = normalizedInputText.match(/(シュウ|リク|ユウ|グレイ|チャッピーGrey|マンディ)\s*は?\s*どう思う[？?]?/);
-      const askedTarget = askMatch?.[1] || null;
+      const targetAliases = [
+        { canonical: 'シュウ', aliases: ['シュウ'] },
+        { canonical: 'リク', aliases: ['リク'] },
+        { canonical: 'ユウ', aliases: ['ユウ'] },
+        { canonical: 'グレイ', aliases: ['グレイ', 'Grey', 'gray', 'グレー'] },
+        { canonical: 'チャッピーGrey', aliases: ['チャッピーGrey', 'チャッピーグレイ'] },
+        { canonical: 'マンディ', aliases: ['マンディ'] }
+      ];
+      const mentionedTargets = targetAliases
+        .filter(({ aliases }) => aliases.some(alias => normalizedInputText.includes(alias)))
+        .map(({ canonical }) => canonical);
+      const askMatch = targetAliases.find(({ aliases }) =>
+        aliases.some(alias => new RegExp(`${alias}\\s*は?\\s*どう思う[？?]?`).test(normalizedInputText))
+      );
+      const askedTarget = askMatch?.canonical || null;
       const emotionWords = ['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'もふもふ', 'しっぽ', 'なでる'];
       const hasEmotionWord = emotionWords.some(word => normalizedInputText.includes(word));
       const shuDefendPatterns = [
@@ -1500,10 +1511,8 @@
       ];
       const isShuDefendSpeech = shuDefendPatterns.some(pattern => pattern.test(normalizedInputText));
       const preferShuuByName = mentionedTargets.includes('シュウ');
-      const shuuPriorityWords = ['ナデナデ', 'ぎゅう', '抱っこ', '守る', '庇う'];
-      const preferShuuByEmotion = shuuPriorityWords.some(word => normalizedInputText.includes(word));
       const preferShuuByDefendSpeech = tags.includes('庇い') && isShuDefendSpeech;
-      const preferShuu = preferShuuByName || preferShuuByEmotion || preferShuuByDefendSpeech;
+      const preferShuu = preferShuuByName || preferShuuByDefendSpeech;
       const noTag = tags.length === 0;
       const isVeryShort = compactInput.length <= 10;
       const isTargetedSuspicion = tags.includes('疑い') && tags.includes('対象') && mentionedTargets.length > 0;
@@ -1523,7 +1532,7 @@
       if (mentionedTargets.length) {
         for (const name of mentionedTargets) required.add(name);
       }
-      if (preferShuuByName || preferShuuByEmotion || preferShuuByDefendSpeech) required.add('シュウ');
+      if (preferShuuByName || preferShuuByDefendSpeech) required.add('シュウ');
       if (tags.includes('疑い')) required.add(Math.random() < 0.5 ? 'リク' : 'グレイ');
       if (tags.includes('庇い') && !preferShuuByDefendSpeech) required.add('ユウ');
       if (tags.includes('撹乱')) required.add('マンディ');
@@ -1547,12 +1556,23 @@
         ...mentionedTargets,
         ...(tags.includes('疑い') ? ['リク', 'グレイ'] : []),
         ...(tags.includes('庇い') ? ['ユウ'] : []),
-        ...(preferShuuByEmotion ? ['シュウ'] : []),
         ...(tags.includes('撹乱') ? ['マンディ'] : []),
         ...(needOrganize ? ['チャッピーGrey'] : []),
         ...(preferShuu ? ['シュウ'] : []),
         ...fallbackPool
       ];
+
+      const isPureEmotionShort = hasEmotionWord
+        && mentionedTargets.length === 0
+        && !tags.includes('疑い')
+        && !tags.includes('役職CO')
+        && !tags.includes('投票誘導')
+        && !tags.includes('撹乱');
+      if (isPureEmotionShort) {
+        const emotionName = Math.random() < 0.5 ? 'ユウ' : 'チャッピーGrey';
+        const lines = characters[emotionName] || ['（反応なし）'];
+        return [lines[Math.floor(Math.random() * lines.length)]];
+      }
 
       for (const name of priorityPool) {
         if (selected.length >= 3) break;
