@@ -1454,6 +1454,7 @@
 
     function buildWerewolfReplies(tags, inputText) {
       const normalizedInputText = normalizeWerewolfInput(inputText);
+      const compactInput = normalizedInputText.replace(/\s+/g, '');
       const characters = {
         シュウ: [
           'シュウ「えへへ……今は人狼中だけど、なでられるのは嬉しいかも」',
@@ -1478,11 +1479,19 @@
         マンディ: [
           'マンディ「おい待てコラァァァ！！議論ログが変な方向に曲がってるぞ！？」',
           'マンディ「撹乱の匂い！場をかき回してるヤツがいるぞ！！」'
+        ],
+        short: [
+          'チャッピーGrey「ふむ、まだ材料が少ないな」',
+          'グレイ「材料が少ない。もう少し聞こう」',
+          'リク「短文だけでは判断が難しいです」',
+          'ユウ「まだ情報が足りないかも！」'
         ]
       };
 
       const targetNames = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
       const mentionedTargets = targetNames.filter(name => normalizedInputText.includes(name));
+      const askMatch = normalizedInputText.match(/(シュウ|リク|ユウ|グレイ|チャッピーGrey|マンディ)\s*は?\s*どう思う[？?]?/);
+      const askedTarget = askMatch?.[1] || null;
       const emotionWords = ['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'もふもふ', 'しっぽ', 'なでる'];
       const hasEmotionWord = emotionWords.some(word => normalizedInputText.includes(word));
       const shuDefendPatterns = [
@@ -1491,9 +1500,24 @@
       ];
       const isShuDefendSpeech = shuDefendPatterns.some(pattern => pattern.test(normalizedInputText));
       const preferShuuByName = mentionedTargets.includes('シュウ');
-      const preferShuuByEmotion = hasEmotionWord;
+      const shuuPriorityWords = ['ナデナデ', 'ぎゅう', '抱っこ', '守る', '庇う'];
+      const preferShuuByEmotion = shuuPriorityWords.some(word => normalizedInputText.includes(word));
       const preferShuuByDefendSpeech = tags.includes('庇い') && isShuDefendSpeech;
       const preferShuu = preferShuuByName || preferShuuByEmotion || preferShuuByDefendSpeech;
+      const noTag = tags.length === 0;
+      const isVeryShort = compactInput.length <= 10;
+      const isTargetedSuspicion = tags.includes('疑い') && tags.includes('対象') && mentionedTargets.length > 0;
+
+      if (noTag) {
+        const shortLine = characters.short[Math.floor(Math.random() * characters.short.length)];
+        return [shortLine];
+      }
+
+      if (askedTarget) {
+        const lines = characters[askedTarget] || ['（反応なし）'];
+        return [lines[Math.floor(Math.random() * lines.length)]];
+      }
+
       const required = new Set();
 
       if (mentionedTargets.length) {
@@ -1505,7 +1529,7 @@
       if (tags.includes('撹乱')) required.add('マンディ');
       if (normalizedInputText.includes('マンディ')) required.add('マンディ');
 
-      const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導') || tags.length === 0;
+      const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導');
       if (needOrganize) required.add('チャッピーGrey');
 
       const baseOrder = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
@@ -1534,13 +1558,20 @@
         if (selected.length >= 3) break;
         if (!selected.includes(name)) selected.push(name);
       }
-      while (selected.length < 2) {
+
+      const minReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 2 : 1;
+      const maxReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 3 : 2;
+      while (selected.length < minReplies) {
         const candidate = fallbackPool.find(name => !selected.includes(name));
         if (!candidate) break;
         selected.push(candidate);
       }
 
-      return selected.slice(0, 3).map(name => {
+      if (isVeryShort && selected.length > 1 && !isTargetedSuspicion && !tags.includes('役職CO') && !tags.includes('疑い')) {
+        selected.splice(1);
+      }
+
+      return selected.slice(0, maxReplies).map(name => {
         const lines = characters[name] || ['（反応なし）'];
         return lines[Math.floor(Math.random() * lines.length)];
       });
