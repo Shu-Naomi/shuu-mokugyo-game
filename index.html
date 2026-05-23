@@ -1195,9 +1195,12 @@
       <div class="view" id="werewolfLobbyView">
         <section class="card mini-menu">
           <h2 class="section-title">犬小屋人狼 ロビー</h2>
-          <div class="mini-item"><span>ダミー：参加者を待っています…</span><span>準備中</span></div>
+          <div class="mini-item"><span>参加者</span><span>7人固定</span></div>
+          <div class="mini-item"><span>モード</span><span id="werewolfModeLabel">通常モード（シャッフルなし）</span></div>
+          <div class="mini-item"><button id="werewolfModeNormal"><span>通常モード</span><span>シャッフルカードなし</span></button></div>
+          <div class="mini-item"><button id="werewolfModeChaos"><span>カオスモード</span><span>シャッフルカードあり</span></button></div>
           <div class="controls">
-            <button id="goWerewolfGame">🐺 ゲーム開始（ダミー）</button>
+            <button id="goWerewolfGame">🐺 ゲーム開始</button>
             <button id="werewolfLobbyBackMini" class="secondary">🎮 ミニゲーム一覧へ戻る</button>
           </div>
         </section>
@@ -1205,7 +1208,9 @@
       <div class="view" id="werewolfView">
         <section class="card mini-menu">
           <h2 class="section-title">犬小屋人狼 本編</h2>
-          <div class="mini-item"><span>ダミー：ここに会話・推理・投票UIが入ります</span><span>未実装</span></div>
+          <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
+          <div class="mini-item"><span>直美の役職</span><span id="werewolfNaomiRole">-</span></div>
+          <div id="werewolfParticipants"></div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
             <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
@@ -1301,8 +1306,72 @@
 
     function createEmptyWerewolf() {
       return {
-        active: false
+        active: false,
+        mode: 'normal',
+        shuffleCardEnabled: false,
+        playerId: 'naomi',
+        participants: [],
+        roles: {
+          werewolf: 2,
+          fortuneTeller: 1,
+          knight: 1,
+          villager: 3
+        }
       };
+    }
+
+    function createWerewolfParticipants() {
+      return [
+        { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, role: null, suspicion: 0 },
+        { id: 'shuu', name: 'シュウ', characterType: '豆柴・木魚守護者', alive: true, role: null, suspicion: 0 },
+        { id: 'riku', name: 'リク', characterType: '人間・理詰めタイプ', alive: true, role: null, suspicion: 0 },
+        { id: 'yuu', name: 'ユウ', characterType: '人間・観察タイプ', alive: true, role: null, suspicion: 0 },
+        { id: 'gray', name: 'グレイ', characterType: '犬・寡黙タイプ', alive: true, role: null, suspicion: 0 },
+        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '犬・おしゃべりタイプ', alive: true, role: null, suspicion: 0 },
+        { id: 'mandy', name: 'マンディ', characterType: '人間・ムードメーカー', alive: true, role: null, suspicion: 0 }
+      ];
+    }
+
+    function setWerewolfMode(mode) {
+      werewolf.mode = mode === 'chaos' ? 'chaos' : 'normal';
+      werewolf.shuffleCardEnabled = werewolf.mode === 'chaos';
+      $('#werewolfModeLabel').textContent = werewolf.mode === 'chaos'
+        ? 'カオスモード（シャッフルあり）'
+        : '通常モード（シャッフルなし）';
+    }
+
+    function roleName(role) {
+      return ({ werewolf: '人狼', fortuneTeller: '占い師', knight: '騎士', villager: '村人' })[role] || '未設定';
+    }
+
+    function startWerewolfGame() {
+      const pool = [
+        ...Array(werewolf.roles.werewolf).fill('werewolf'),
+        ...Array(werewolf.roles.fortuneTeller).fill('fortuneTeller'),
+        ...Array(werewolf.roles.knight).fill('knight'),
+        ...Array(werewolf.roles.villager).fill('villager')
+      ];
+      const shuffled = [...pool].sort(() => Math.random() - 0.5);
+      werewolf.participants = createWerewolfParticipants().map((participant, index) => ({
+        ...participant,
+        role: shuffled[index] || null
+      }));
+      switchView('werewolf');
+      renderWerewolf();
+    }
+
+    function renderWerewolf() {
+      if (!werewolf.participants.length) return;
+      const player = werewolf.participants.find(member => member.id === werewolf.playerId);
+      const isPlayerWerewolf = player?.role === 'werewolf';
+      $('#werewolfCurrentMode').textContent = werewolf.mode === 'chaos' ? 'カオスモード' : '通常モード';
+      $('#werewolfNaomiRole').textContent = roleName(player?.role);
+      $('#werewolfParticipants').innerHTML = werewolf.participants.map(member => {
+        const ally = isPlayerWerewolf && member.id !== werewolf.playerId && member.role === 'werewolf'
+          ? ' 🐺 仲間'
+          : '';
+        return `<div class="mini-item"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '生存' : '脱落'}${ally}</span></div>`;
+      }).join('');
     }
 
     const achievements = [
@@ -2312,9 +2381,12 @@
     $('#backHome').addEventListener('click', () => switchView('home'));
     $('#goWerewolfLobby').addEventListener('click', () => {
       werewolf = { ...createEmptyWerewolf(), active: true };
+      setWerewolfMode('normal');
       switchView('werewolfLobby');
     });
-    $('#goWerewolfGame').addEventListener('click', () => switchView('werewolf'));
+    $('#werewolfModeNormal').addEventListener('click', () => setWerewolfMode('normal'));
+    $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
+    $('#goWerewolfGame').addEventListener('click', startWerewolfGame);
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
     $('#werewolfLobbyBackMini').addEventListener('click', () => switchView('mini'));
