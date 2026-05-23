@@ -1423,16 +1423,76 @@
     }
 
     function buildWerewolfReplies(tags, inputText) {
-      const replies = [];
-      if (tags.includes('感情行動') && inputText.includes('シュウ')) replies.push('シュウ「えへへ……いや今は人狼中だよ直美！？でもナデナデは受け取る！」');
-      if (tags.includes('疑い')) {
-        replies.push('リク「その疑いには根拠が必要です。発言の流れを確認しましょう」');
-        replies.push('グレイ「疑いの向きは見えた。次は根拠を出すべきだな」');
+      const characters = {
+        シュウ: [
+          'シュウ「えへへ……今は人狼中だけど、なでられるのは嬉しいかも」',
+          'シュウ「守ってくれるの、ちょっと安心する。ありがとう直美」'
+        ],
+        リク: [
+          'リク「その疑いには根拠が必要です。発言の流れを確認しましょう」',
+          'リク「主張は理解しました。比較対象の発言も提示してください」'
+        ],
+        ユウ: [
+          'ユウ「直美が信じるなら、僕も信じたい！」',
+          'ユウ「うーん、勢いで疑いたくなるけど一回聞こう！」'
+        ],
+        グレイ: [
+          'グレイ「疑いの向きは見えた。次は根拠を出すべきだな」',
+          'グレイ「誘導の気配がある。発言順を精査しよう」'
+        ],
+        チャッピーGrey: [
+          'チャッピーGrey「いったん落ち着こう。誰を疑って、誰を庇ってるのか整理しよっか」',
+          'チャッピーGrey「ログを区切って見よう。争点を二つに分けると追いやすいよ」'
+        ],
+        マンディ: [
+          'マンディ「おい待てコラァァァ！！議論ログが変な方向に曲がってるぞ！？」',
+          'マンディ「撹乱の匂い！場をかき回してるヤツがいるぞ！！」'
+        ]
+      };
+
+      const targetNames = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
+      const mentionedTargets = targetNames.filter(name => inputText.includes(name));
+      const required = new Set();
+
+      if (mentionedTargets.length) required.add(mentionedTargets[0]);
+      if (tags.includes('感情行動') && inputText.includes('シュウ')) required.add('シュウ');
+      if (tags.includes('疑い')) required.add(Math.random() < 0.5 ? 'リク' : 'グレイ');
+      if (tags.includes('庇い')) required.add(Math.random() < 0.5 ? 'ユウ' : 'シュウ');
+      if (tags.includes('撹乱')) required.add('マンディ');
+
+      const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導') || tags.length === 0;
+      if (needOrganize) required.add('チャッピーGrey');
+
+      const baseOrder = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
+      const selected = [];
+      for (const name of required) {
+        if (!selected.includes(name)) selected.push(name);
       }
-      if (tags.includes('庇い')) replies.push('ユウ「直美が信じるなら、僕も信じたい！」');
-      if (tags.includes('撹乱')) replies.push('マンディ「おい待てコラァァァ！！議論ログが変な方向に曲がってるぞ！？」');
-      replies.push('チャッピーGrey「いったん落ち着こう。誰を疑って、誰を庇ってるのか整理しよっか」');
-      return replies;
+
+      const priorityPool = [
+        ...mentionedTargets,
+        ...(tags.includes('疑い') ? ['リク', 'グレイ'] : []),
+        ...(tags.includes('庇い') ? ['ユウ', 'シュウ'] : []),
+        ...(tags.includes('感情行動') ? ['シュウ'] : []),
+        ...(tags.includes('撹乱') ? ['マンディ'] : []),
+        ...(needOrganize ? ['チャッピーGrey'] : []),
+        ...baseOrder
+      ];
+
+      for (const name of priorityPool) {
+        if (selected.length >= 3) break;
+        if (!selected.includes(name)) selected.push(name);
+      }
+      while (selected.length < 2) {
+        const candidate = baseOrder.find(name => !selected.includes(name));
+        if (!candidate) break;
+        selected.push(candidate);
+      }
+
+      return selected.slice(0, 3).map(name => {
+        const lines = characters[name] || ['（反応なし）'];
+        return lines[Math.floor(Math.random() * lines.length)];
+      });
     }
 
     function submitWerewolfTalk() {
