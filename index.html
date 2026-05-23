@@ -1211,6 +1211,16 @@
           <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
           <div class="mini-item"><span>直美の役職</span><span id="werewolfNaomiRole">-</span></div>
           <div id="werewolfParticipants"></div>
+          <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
+          <div class="mini-item"><span>昼フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
+          <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
+          <div class="controls">
+            <button id="werewolfTalkSubmit">🗣️ 発言する</button>
+          </div>
+          <div class="mini-item"><span>解析結果</span><span id="werewolfTagResult">-</span></div>
+          <div class="mini-item"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
+          <div class="mini-item"><span>会話ログ</span><span id="werewolfTalkLog">まだ発言はありません</span></div>
+          <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>投票フェーズは次回実装予定</span></div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
             <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
@@ -1316,7 +1326,12 @@
           fortuneTeller: 1,
           knight: 1,
           villager: 3
-        }
+        },
+        phase: 'dayTalk',
+        turn: 0,
+        maxTalkTurns: 3,
+        talkLog: [],
+        lastInputTags: []
       };
     }
 
@@ -1372,6 +1387,65 @@
           : '';
         return `<div class="mini-item"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '生存' : '脱落'}${ally}</span></div>`;
       }).join('');
+      const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
+      const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
+      $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
+      $('#werewolfPhaseLabel').textContent = werewolf.phase === 'dayTalk' ? '昼会話フェーズ' : werewolf.phase;
+      $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
+      $('#werewolfReplyResult').textContent = latestLog ? latestLog.replies.join(' ｜ ') : '-';
+      $('#werewolfTalkLog').innerHTML = werewolf.talkLog.length
+        ? werewolf.talkLog.map((entry, idx) => `${idx + 1}. ${escapeHtml(entry.speaker)}「${escapeHtml(entry.text)}」<br>タグ: ${escapeHtml((entry.tags || ['タグなし']).join(' / '))}<br>反応: ${escapeHtml(entry.replies.join(' / '))}`).join('<hr style="border-color: rgba(255,255,255,0.1);">')
+        : 'まだ発言はありません';
+      const finished = werewolf.turn >= werewolf.maxTalkTurns;
+      $('#werewolfTalkInput').disabled = finished;
+      $('#werewolfTalkSubmit').disabled = finished;
+      $('#werewolfTalkFinished').classList.toggle('is-hidden', !finished);
+    }
+
+
+    function analyzeWerewolfTags(input) {
+      const text = (input || '').trim();
+      const dictionary = {
+        roleCO: ['占い師', '村人', '人狼', 'CO'],
+        suspicion: ['怪しい', '黒い', '人狼っぽい', '嘘', '疑う'],
+        defend: ['白い', '信じる', '違うと思う', '守る'],
+        voteLead: ['吊ろう', '投票', '処刑'],
+        emotionAction: ['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ'],
+        confuse: ['冗談', '分からない', '混乱', '適当'],
+        target: ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ', '直美']
+      };
+      const labels = {
+        roleCO: '役職CO', suspicion: '疑い', defend: '庇い', voteLead: '投票誘導', emotionAction: '感情行動', confuse: '撹乱', target: '対象'
+      };
+      return Object.entries(dictionary)
+        .filter(([, words]) => words.some(word => text.includes(word)))
+        .map(([key]) => labels[key]);
+    }
+
+    function buildWerewolfReplies(tags, inputText) {
+      const replies = [];
+      if (tags.includes('感情行動') && inputText.includes('シュウ')) replies.push('シュウ「えへへ……いや今は人狼中だよ直美！？でもナデナデは受け取る！」');
+      if (tags.includes('疑い')) {
+        replies.push('リク「その疑いには根拠が必要です。発言の流れを確認しましょう」');
+        replies.push('グレイ「疑いの向きは見えた。次は根拠を出すべきだな」');
+      }
+      if (tags.includes('庇い')) replies.push('ユウ「直美が信じるなら、僕も信じたい！」');
+      if (tags.includes('撹乱')) replies.push('マンディ「おい待てコラァァァ！！議論ログが変な方向に曲がってるぞ！？」');
+      replies.push('チャッピーGrey「いったん落ち着こう。誰を疑って、誰を庇ってるのか整理しよっか」');
+      return replies;
+    }
+
+    function submitWerewolfTalk() {
+      if (werewolf.turn >= werewolf.maxTalkTurns) return;
+      const input = $('#werewolfTalkInput').value.trim();
+      if (!input) return;
+      const tags = analyzeWerewolfTags(input);
+      const replies = buildWerewolfReplies(tags, input);
+      werewolf.lastInputTags = tags;
+      werewolf.talkLog.push({ speaker: '直美', text: input, tags, replies });
+      werewolf.turn += 1;
+      $('#werewolfTalkInput').value = '';
+      renderWerewolf();
     }
 
     const achievements = [
@@ -2387,6 +2461,10 @@
     $('#werewolfModeNormal').addEventListener('click', () => setWerewolfMode('normal'));
     $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
     $('#goWerewolfGame').addEventListener('click', startWerewolfGame);
+    $('#werewolfTalkSubmit').addEventListener('click', submitWerewolfTalk);
+    $('#werewolfTalkInput').addEventListener('keydown', event => {
+      if (event.key === 'Enter') submitWerewolfTalk();
+    });
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
     $('#werewolfLobbyBackMini').addEventListener('click', () => switchView('mini'));
