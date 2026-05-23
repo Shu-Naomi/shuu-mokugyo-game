@@ -1183,12 +1183,42 @@
       </div>
       <div class="view" id="miniGameView">
         <section class="card mini-menu">
-          <h2 class="section-title">ミニゲーム一覧 <span>1種プレイ可能</span></h2>
+          <h2 class="section-title">ミニゲーム一覧 <span>2種プレイ可能</span></h2>
           <div class="mini-item"><button id="goOxoGame"><span>○×ゲーム（三目並べ）</span><span>遊べる！</span></button></div>
+          <div class="mini-item"><button id="goWerewolfLobby"><span>犬小屋人狼</span><span>遊べる！</span></button></div>
           <div class="mini-item"><span>神経衰弱</span><span>準備中</span></div>
           <div class="mini-item"><span>しっぽ防衛ゲーム</span><span>準備中</span></div>
           <div class="mini-item"><span>お散歩</span><span>準備中</span></div>
           <button id="backHome" class="secondary">← ホームへ戻る</button>
+        </section>
+      </div>
+      <div class="view" id="werewolfLobbyView">
+        <section class="card mini-menu">
+          <h2 class="section-title">犬小屋人狼 ロビー</h2>
+          <div class="mini-item"><span>ダミー：参加者を待っています…</span><span>準備中</span></div>
+          <div class="controls">
+            <button id="goWerewolfGame">🐺 ゲーム開始（ダミー）</button>
+            <button id="werewolfLobbyBackMini" class="secondary">🎮 ミニゲーム一覧へ戻る</button>
+          </div>
+        </section>
+      </div>
+      <div class="view" id="werewolfView">
+        <section class="card mini-menu">
+          <h2 class="section-title">犬小屋人狼 本編</h2>
+          <div class="mini-item"><span>ダミー：ここに会話・推理・投票UIが入ります</span><span>未実装</span></div>
+          <div class="controls">
+            <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
+            <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
+          </div>
+        </section>
+      </div>
+      <div class="view" id="werewolfResultView">
+        <section class="card mini-menu">
+          <h2 class="section-title">犬小屋人狼 結果</h2>
+          <div class="mini-item"><span>ダミー：結果表示エリア</span><span>未実装</span></div>
+          <div class="controls">
+            <button id="werewolfResultBackMini" class="secondary">🎮 ミニゲーム一覧へ戻る</button>
+          </div>
         </section>
       </div>
       <div class="view" id="oxoDifficultyView">
@@ -1268,6 +1298,12 @@
       lastLine: 'やだ僕の……でも、なでてくれるなら、ちょっとだけ考える。',
       lastHint: 'シュウは木魚をぎゅっと抱えている。'
     };
+
+    function createEmptyWerewolf() {
+      return {
+        active: false
+      };
+    }
 
     const achievements = [
       { id: 'firstPoku', name: '初ぽく', icon: '🥁', test: s => s.poku >= 1 },
@@ -1445,6 +1481,7 @@
     let visualEffectTimer;
     let rhythm = { active: false, phase: 'idle', score: 0, combo: 0, left: 8, beat: 0, timer: null, cueTimer: null, missTimer: null, targetAt: 0, hit: false, judgement: '', pokuEarned: 0 };
     let oxo = { board: Array(9).fill(null), finished: false, result: '', line: '', difficulty: 'normal' };
+    let werewolf = createEmptyWerewolf();
     let currentView = 'home';
 
     const $ = selector => document.querySelector(selector);
@@ -2260,6 +2297,9 @@
       currentView = viewName;
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
+      $('#werewolfLobbyView').classList.toggle('active', viewName === 'werewolfLobby');
+      $('#werewolfView').classList.toggle('active', viewName === 'werewolf');
+      $('#werewolfResultView').classList.toggle('active', viewName === 'werewolfResult');
       $('#oxoDifficultyView').classList.toggle('active', viewName === 'oxoDifficulty');
       $('#oxoView').classList.toggle('active', viewName === 'oxo');
       renderShuuVisual(getShuuVisual());
@@ -2270,6 +2310,15 @@
     });
     $('#goMiniGames').addEventListener('click', () => switchView('mini'));
     $('#backHome').addEventListener('click', () => switchView('home'));
+    $('#goWerewolfLobby').addEventListener('click', () => {
+      werewolf = { ...createEmptyWerewolf(), active: true };
+      switchView('werewolfLobby');
+    });
+    $('#goWerewolfGame').addEventListener('click', () => switchView('werewolf'));
+    $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
+    $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
+    $('#werewolfLobbyBackMini').addEventListener('click', () => switchView('mini'));
+    $('#werewolfResultBackMini').addEventListener('click', () => switchView('mini'));
     $('#goOxoGame').addEventListener('click', () => switchView('oxoDifficulty'));
     document.querySelectorAll('[data-oxo-difficulty]').forEach(button => {
       button.addEventListener('click', () => startOxoGame(button.dataset.oxoDifficulty));
