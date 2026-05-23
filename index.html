@@ -1405,21 +1405,46 @@
 
     function analyzeWerewolfTags(input) {
       const text = (input || '').trim();
-      const dictionary = {
-        roleCO: ['占い師', '村人', '人狼', 'CO'],
-        suspicion: ['怪しい', '黒い', '人狼っぽい', '嘘', '疑う'],
-        defend: ['白い', '信じる', '違うと思う', '守る'],
-        voteLead: ['吊ろう', '投票', '処刑'],
-        emotionAction: ['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ'],
-        confuse: ['冗談', '分からない', '混乱', '適当'],
-        target: ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ', '直美']
-      };
-      const labels = {
-        roleCO: '役職CO', suspicion: '疑い', defend: '庇い', voteLead: '投票誘導', emotionAction: '感情行動', confuse: '撹乱', target: '対象'
-      };
-      return Object.entries(dictionary)
-        .filter(([, words]) => words.some(word => text.includes(word)))
-        .map(([key]) => labels[key]);
+      const normalized = text.replace(/\s+/g, '');
+      const targetNames = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ', '直美'];
+      const tags = new Set();
+
+      const hasTarget = targetNames.some(name => text.includes(name));
+      const isRoleCo = [
+        normalized === 'CO',
+        /^(私|わたし|俺|ぼく|僕)(が|は)(人狼|占い師|村人|騎士)/.test(text),
+        /(人狼|占い師|村人|騎士)\s*CO$/i.test(text)
+      ].some(Boolean);
+      if (isRoleCo) tags.add('役職CO');
+
+      const defendPatterns = [
+        /人狼じゃない/,
+        /人狼ではない/,
+        /黒くない/,
+        /怪しくない/,
+        /白い/,
+        /信じる/
+      ];
+      const hasDefend = defendPatterns.some(pattern => pattern.test(text));
+      if (hasDefend) tags.add('庇い');
+
+      const suspicionPatterns = [
+        /(.+?)(が|は)人狼/,
+        /君が人狼/,
+        /黒い/,
+        /怪しい/,
+        /(.+?)が黒/
+      ];
+      const hasSuspicion = !hasDefend && suspicionPatterns.some(pattern => pattern.test(text));
+      if (hasSuspicion) tags.add('疑い');
+
+      if (hasTarget && (tags.has('疑い') || tags.has('庇い'))) tags.add('対象');
+
+      if (['吊ろう', '投票', '処刑'].some(word => text.includes(word))) tags.add('投票誘導');
+      if (['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ'].some(word => text.includes(word))) tags.add('感情行動');
+      if (['冗談', '分からない', '混乱', '適当'].some(word => text.includes(word))) tags.add('撹乱');
+
+      return Array.from(tags);
     }
 
     function buildWerewolfReplies(tags, inputText) {
@@ -1454,7 +1479,9 @@
       const mentionedTargets = targetNames.filter(name => inputText.includes(name));
       const required = new Set();
 
-      if (mentionedTargets.length) required.add(mentionedTargets[0]);
+      if (mentionedTargets.length) {
+        for (const name of mentionedTargets) required.add(name);
+      }
       if (tags.includes('感情行動') && inputText.includes('シュウ')) required.add('シュウ');
       if (tags.includes('疑い')) required.add(Math.random() < 0.5 ? 'リク' : 'グレイ');
       if (tags.includes('庇い')) required.add(Math.random() < 0.5 ? 'ユウ' : 'シュウ');
