@@ -1442,7 +1442,7 @@
 
       if (['吊ろう', '投票', '処刑'].some(word => text.includes(word))) tags.add('投票誘導');
       if (['ナデナデ', 'ぎゅう', '抱っこ', 'おやつ', 'しっぽ', 'もふもふ'].some(word => text.includes(word))) tags.add('感情行動');
-      if (['冗談', '分からない', '混乱', '適当'].some(word => text.includes(word))) tags.add('撹乱');
+      if (['冗談', '分からない', '混乱', '適当', 'ログ', 'バグ', '変', 'おかしい', '壊れ', '乱れ', '異常', 'ズレ'].some(word => text.includes(word))) tags.add('撹乱');
 
       return Array.from(tags);
     }
@@ -1486,6 +1486,7 @@
       if (tags.includes('疑い')) required.add(Math.random() < 0.5 ? 'リク' : 'グレイ');
       if (tags.includes('庇い')) required.add(Math.random() < 0.5 ? 'ユウ' : 'シュウ');
       if (tags.includes('撹乱')) required.add('マンディ');
+      if (inputText.includes('マンディ')) required.add('マンディ');
 
       const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導') || tags.length === 0;
       if (needOrganize) required.add('チャッピーGrey');
@@ -1496,6 +1497,12 @@
         if (!selected.includes(name)) selected.push(name);
       }
 
+      const preferShuu = mentionedTargets.includes('シュウ') || tags.includes('庇い') || tags.includes('感情行動');
+      const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
+      const lastResponders = new Set((latestLog?.replies || []).map(reply => reply.split('「')[0]).filter(Boolean));
+      const shuffledBase = [...baseOrder].sort(() => Math.random() - 0.5);
+      const fallbackPool = [...shuffledBase.filter(name => !lastResponders.has(name)), ...shuffledBase.filter(name => lastResponders.has(name))];
+
       const priorityPool = [
         ...mentionedTargets,
         ...(tags.includes('疑い') ? ['リク', 'グレイ'] : []),
@@ -1503,7 +1510,8 @@
         ...(tags.includes('感情行動') ? ['シュウ'] : []),
         ...(tags.includes('撹乱') ? ['マンディ'] : []),
         ...(needOrganize ? ['チャッピーGrey'] : []),
-        ...baseOrder
+        ...(preferShuu ? ['シュウ'] : []),
+        ...fallbackPool
       ];
 
       for (const name of priorityPool) {
@@ -1511,7 +1519,7 @@
         if (!selected.includes(name)) selected.push(name);
       }
       while (selected.length < 2) {
-        const candidate = baseOrder.find(name => !selected.includes(name));
+        const candidate = fallbackPool.find(name => !selected.includes(name));
         if (!candidate) break;
         selected.push(candidate);
       }
