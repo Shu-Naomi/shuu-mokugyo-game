@@ -1518,8 +1518,10 @@
       const isTargetedSuspicion = tags.includes('疑い') && tags.includes('対象') && mentionedTargets.length > 0;
 
       if (noTag) {
-        const shortLine = characters.short[Math.floor(Math.random() * characters.short.length)];
-        return [shortLine];
+        const shortPool = ['ユウ', 'グレイ', 'リク', 'マンディ'];
+        const shortName = shortPool[Math.floor(Math.random() * shortPool.length)];
+        const lines = characters[shortName] || characters.short;
+        return [lines[Math.floor(Math.random() * lines.length)]];
       }
 
       if (askedTarget) {
@@ -1552,26 +1554,40 @@
       const shuffledBase = [...baseOrder].sort(() => Math.random() - 0.5);
       const fallbackPool = [...shuffledBase.filter(name => !lastResponders.has(name)), ...shuffledBase.filter(name => lastResponders.has(name))];
 
+      const shouldUseChappyPriority = needOrganize
+        || tags.includes('疑い')
+        || tags.includes('役職CO')
+        || tags.includes('撹乱')
+        || normalizedInputText.includes('ログ')
+        || normalizedInputText.includes('整理');
+
       const priorityPool = [
         ...mentionedTargets,
         ...(tags.includes('疑い') ? ['リク', 'グレイ'] : []),
         ...(tags.includes('庇い') ? ['ユウ'] : []),
         ...(tags.includes('撹乱') ? ['マンディ'] : []),
-        ...(needOrganize ? ['チャッピーGrey'] : []),
+        ...(shouldUseChappyPriority ? ['チャッピーGrey'] : []),
         ...(preferShuu ? ['シュウ'] : []),
         ...fallbackPool
       ];
 
       const isPureEmotionShort = hasEmotionWord
+        && tags.includes('感情行動')
         && mentionedTargets.length === 0
         && !tags.includes('疑い')
         && !tags.includes('役職CO')
         && !tags.includes('投票誘導')
-        && !tags.includes('撹乱');
+        && !tags.includes('撹乱')
+        && !tags.includes('庇い');
       if (isPureEmotionShort) {
-        const emotionName = Math.random() < 0.5 ? 'ユウ' : 'チャッピーGrey';
-        const lines = characters[emotionName] || ['（反応なし）'];
-        return [lines[Math.floor(Math.random() * lines.length)]];
+        const emotionPool = preferShuu ? ['シュウ', 'ユウ', 'グレイ', 'マンディ'] : ['ユウ', 'グレイ', 'マンディ'];
+        const shuffledEmotionPool = [...emotionPool].sort(() => Math.random() - 0.5);
+        const count = Math.random() < 0.65 ? 1 : 2;
+        const picked = shuffledEmotionPool.slice(0, count);
+        return picked.map(name => {
+          const lines = characters[name] || ['（反応なし）'];
+          return lines[Math.floor(Math.random() * lines.length)];
+        });
       }
 
       for (const name of priorityPool) {
@@ -1581,6 +1597,12 @@
 
       const minReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 2 : 1;
       const maxReplies = (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い')) ? 3 : 2;
+
+      if (!shouldUseChappyPriority && selected.length > 1 && selected.includes('チャッピーGrey')) {
+        const others = selected.filter(name => name !== 'チャッピーGrey');
+        selected.length = 0;
+        selected.push(...others);
+      }
       while (selected.length < minReplies) {
         const candidate = fallbackPool.find(name => !selected.includes(name));
         if (!candidate) break;
