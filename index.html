@@ -1555,7 +1555,7 @@
         activeTab: 'meeting',
         selectedInfoCharacterId: 'naomi',
         turn: 0,
-        maxTalkTurns: 3,
+        maxTalkTurns: 5,
         talkLog: [],
         lastInputTags: []
       };
@@ -1588,6 +1588,12 @@
       { label: 'グレイにログ監査を頼む', target: 'グレイ', topic: 'log', actionType: 'ask' },
       { label: 'チャッピーGreyに違和感を聞く', target: 'チャッピーGrey', topic: 'suspicion', actionType: 'ask' },
       { label: 'マンディに黒塗りログを見せる', target: 'マンディ', topic: 'blacklog', actionType: 'present' },
+      { label: 'シュウをゆさぶる', target: 'シュウ', topic: 'press', actionType: 'press' },
+      { label: 'リクをゆさぶる', target: 'リク', topic: 'press', actionType: 'press' },
+      { label: 'ユウをゆさぶる', target: 'ユウ', topic: 'press', actionType: 'press' },
+      { label: 'グレイをゆさぶる', target: 'グレイ', topic: 'press', actionType: 'press' },
+      { label: 'チャッピーGreyをゆさぶる', target: 'チャッピーGrey', topic: 'press', actionType: 'press' },
+      { label: 'マンディをゆさぶる', target: 'マンディ', topic: 'press', actionType: 'press' },
       { label: '自分への疑いに反論する', target: '全体', topic: 'selfDefense', actionType: 'counter' },
       { label: 'ナデナデぎゅう♡で反応を見る', target: '全体', topic: 'affection', actionType: 'react' },
       { label: 'おやつ山盛りドンっ♡を提示する', target: '全体', topic: 'snackOffer', actionType: 'present' }
@@ -1610,17 +1616,67 @@
       '自分の昨夜の行動を確認する'
     ];
 
+    function getWerewolfTeammates(name) {
+      const speaker = werewolf.participants.find(member => member.name === name);
+      if (!speaker) return [];
+      return werewolf.participants
+        .filter(member => member.id !== speaker.id && member.role === 'werewolf')
+        .map(member => member.name);
+    }
+
     function buildInitialTestimonies(choiceLabel = '全員に証言を求める') {
-      return [
+      const isChaos = werewolf.mode === 'chaos';
+      const wasStorageNearBy = ['おやつ保管庫を調べる', '黒塗りログを確認する'].includes(choiceLabel);
+      const choiceLead = {
+        '全員に証言を求める': 'まずは全員の証言を並べて、ズレを拾っていく。',
+        'おやつ保管庫を調べる': '保管庫の前に、爪痕と甘い匂いが少し残っていた。',
+        '黒塗りログを確認する': '黒塗りログの時刻は「23:10〜23:20」だけ妙に綺麗だった。',
+        'まずシュウに声をかける': 'シュウが「夜中にカサッて音がしたかも」と先に言った。',
+        '自分の昨夜の行動を確認する': '自分の手帳には「23時前に保管庫を閉めた」とメモが残っていた。'
+      };
+      const base = [
         { speaker: '直美', text: `初動は『${choiceLabel}』でいく。みんな、順番に昨夜のことを話して`, type: 'testimony' },
-        { speaker: '直美', text: '私は昨日の夜、おやつを置いたはず', type: 'testimony' },
-        { speaker: 'シュウ', text: '僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ', type: 'testimony' },
-        { speaker: 'リク', text: 'まず時系列を確認しよ。最後におやつを見た人が大事', type: 'testimony' },
-        { speaker: 'ユウ', text: '僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！', type: 'testimony' },
-        { speaker: 'グレイ', text: '監査ログに黒塗り箇所を確認。これは事件だ！', type: 'testimony' },
-        { speaker: 'チャッピーGrey', text: '……夜、少しだけ誰かが動いた気配はあった', type: 'testimony' },
-        { speaker: 'マンディ', text: 'おやつが消えた？ はいはい、甘いログ犯罪ってわけか', type: 'testimony' }
+        { speaker: '進行', text: choiceLead[choiceLabel] || choiceLead['全員に証言を求める'], type: 'introDetail' },
+        { speaker: '直美', text: '私は昨日の夜、おやつを置いたはず', type: 'testimony' }
       ];
+      const linesByName = {
+        シュウ: '僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ',
+        リク: 'まず時系列を確認しよ。最後におやつを見た人が大事',
+        ユウ: '僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！',
+        グレイ: '監査ログに黒塗り箇所を確認。これは事件だ！',
+        チャッピーGrey: '……夜、少しだけ誰かが動いた気配はあった',
+        マンディ: 'おやつが消えた？ はいはい、甘いログ犯罪ってわけか'
+      };
+      const werewolfHints = {
+        normal: [
+          'その時間、物音は特に聞こえなかった気がするな',
+          '保管庫の前は通ってない。いや、本当に',
+          '甘い匂いの話？ そこは今はいいだろ',
+          '時刻は23:30くらいだったと思う。たぶんだが'
+        ],
+        chaos: [
+          '僕は保管庫に近づいてない、絶対にだ',
+          '匂いのことを気にしすぎると視野が狭くなるぞ',
+          '黒塗り時刻だけ綺麗ってのは、逆に作為的すぎるだろ'
+        ]
+      };
+      const testimony = werewolf.participants
+        .filter(member => member.name !== '直美')
+        .map(member => {
+          let text = linesByName[member.name] || 'ログを見ながら考えよう';
+          if (member.role === 'werewolf') {
+            const hints = werewolfHints[isChaos ? 'chaos' : 'normal'];
+            const hint = hints[Math.floor(Math.random() * hints.length)];
+            const teammate = getWerewolfTeammates(member.name)[0];
+            const cover = teammate && Math.random() < (isChaos ? 0.45 : 0.25)
+              ? ` それより${teammate}の線は薄いと思う。`
+              : '';
+            const subtle = wasStorageNearBy && !text.includes('保管庫') ? ' 保管庫のことは誰かの見間違いじゃないか？' : '';
+            text = `${text} ……${hint}。${subtle}${cover}`.replace(/\s+/g, ' ').trim();
+          }
+          return { speaker: member.name, text, type: 'testimony' };
+        });
+      return [...base, ...testimony];
     }
 
 
@@ -2140,12 +2196,39 @@
         log: ['グレイ「監査ログ起動。矛盾の抽出を始める！」', 'マンディ「監査モード、来たな」'],
         suspicion: ['チャッピーGrey「……違和感は、発言の温度差かな」', 'リク「その観点、比較に使える」'],
         blacklog: ['マンディ「黒塗りログ？ 伏せた部分が一番うるさいやつだ」', 'グレイ「開示範囲を決めて監査しよう」'],
+        press: ['対象者「……その質問、どこが引っかかった？」', 'リク「細部の説明をもう一段聞こう」'],
         selfDefense: ['直美「その疑いは誤解です。根拠を順に反証します」', 'リク「反論は論点ごとに出すと強い」'],
         affection: ['シュウ「ナデナデぎゅう♡は正義！ でも議論も忘れずね」', 'ユウ「癒やし補給、完了ですっ！」'],
         snackOffer: ['シュウ「おやつ山盛り！？ 交渉の空気がやわらいだかも」', 'マンディ「買収はともかく士気は上がるな」']
       };
       const base = table[command.topic] || ['リク「要点をもう一回確認しよう」'];
-      const reply = [base[0]];
+      const isChaos = werewolf.mode === 'chaos';
+      const targetMember = werewolf.participants.find(member => member.name === command.target);
+      const targetIsWerewolf = targetMember?.role === 'werewolf';
+      const targetTeammate = targetIsWerewolf ? getWerewolfTeammates(command.target)[0] : null;
+      const pressByTarget = {
+        シュウ: ['シュウ「えっ、僕？ 甘い匂いはした。でも時間は……寝る直前かな」', 'シュウ「保管庫の前？ 通ってないと思う。たぶん」'],
+        リク: ['リク「僕の時系列は23:00基準。ずれがあるならそこを詰めよう」'],
+        ユウ: ['ユウ「えっ、僕ですか！？ 食べてませんっ！ 匂いがしたのは、みんなが寝る少し前ですっ！」'],
+        グレイ: ['グレイ「監査として答える。黒塗り時刻だけ整いすぎている、それが不自然だ」'],
+        チャッピーGrey: ['チャッピーGrey「……僕は足音を一回だけ聞いた。保管庫側だったと思う」'],
+        マンディ: ['マンディ「俺を疑うのか？ いい度胸だな。……黒塗り時刻、綺麗すぎるのは気になる」']
+      };
+      let reply = [base[0]];
+      if (command.topic === 'press') {
+        reply = [pressByTarget[command.target]?.[0] || `${command.target}「……その点をもう少し具体的に聞いて」`];
+        if (targetIsWerewolf) {
+          const defensive = isChaos
+            ? `${command.target}「保管庫には近づいてない。そこは強調しておく」`
+            : `${command.target}「物音は聞いてない。少なくとも僕の近くでは」`;
+          reply.push(defensive);
+          if (targetTeammate && Math.random() < (isChaos ? 0.55 : 0.3)) {
+            reply.push(`${command.target}「それより${targetTeammate}まで疑うのは早いだろ」`);
+          }
+        } else {
+          reply.push(`${command.target}「必要なら、昨夜の順番をもう一回説明するよ」`);
+        }
+      }
       const sidePick = base[1];
       const shouldSideTalk = sidePick && (command.target === '全体' || Math.random() < 0.55);
       const sideTalk = shouldSideTalk ? `（横会話）${sidePick}` : null;
