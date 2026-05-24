@@ -58,6 +58,7 @@
       padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
       position: relative;
     }
+    .app.has-bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 126px); }
 
     header {
       padding: 8px 2px 12px;
@@ -550,30 +551,47 @@
     }
 
 
-    .werewolf-tabs {
+    .bottom-nav {
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 12px);
+      transform: translateX(-50%);
+      width: min(100% - 24px, 432px);
       display: grid;
       grid-template-columns: repeat(3, minmax(0, 1fr));
       gap: 8px;
+      padding: 9px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 240, 187, 0.22);
+      background: linear-gradient(165deg, rgba(40, 29, 59, 0.96), rgba(27, 20, 40, 0.96));
+      box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04) inset;
+      backdrop-filter: blur(10px);
+      z-index: 26;
     }
 
-    .werewolf-tab {
-      border-radius: 12px;
+    .bottom-nav-button {
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
       border: 1px solid rgba(255, 240, 187, 0.26);
-      background: rgba(255,255,255,0.05);
+      background: rgba(62, 46, 88, 0.78);
       color: var(--muted);
       font-weight: 900;
-      padding: 9px 8px;
+      padding: 10px 6px;
       font-size: 0.84rem;
+      line-height: 1.2;
+      min-height: 46px;
     }
 
-    .werewolf-tab.is-active {
-      background: linear-gradient(135deg, rgba(255, 184, 107, 0.24), rgba(255,123,134,0.18));
-      color: var(--text);
+    .bottom-nav-button.active {
+      background: linear-gradient(135deg, rgba(255, 236, 183, 0.96), rgba(255, 196, 112, 0.92));
+      color: #472f30;
       border-color: rgba(255, 211, 110, 0.5);
+      box-shadow: 0 8px 14px rgba(255, 182, 104, 0.3), inset 0 1px 0 rgba(255,255,255,0.45);
     }
 
-    .werewolf-tab-panel { display: none; }
-    .werewolf-tab-panel.is-active { display: grid; gap: 10px; }
+    .tab-panel { display: none; }
+    .tab-panel.is-active { display: grid; gap: 10px; }
 
     .werewolf-subtitle {
       margin: 0;
@@ -1354,40 +1372,50 @@
       <div class="view" id="werewolfView">
         <section class="card mini-menu">
           <h2 class="section-title">犬小屋人狼 本編</h2>
-          <div class="werewolf-tabs" role="tablist" aria-label="本編タブ">
-            <button class="werewolf-tab is-active" data-werewolf-tab="progress" role="tab" aria-selected="true">進行</button>
-            <button class="werewolf-tab" data-werewolf-tab="log" role="tab" aria-selected="false">ログ</button>
-            <button class="werewolf-tab" data-werewolf-tab="info" role="tab" aria-selected="false">情報</button>
+          <div class="bottom-nav" role="tablist" aria-label="本編タブ">
+            <button class="bottom-nav-button active" data-werewolf-tab="progress" role="tab" aria-selected="true">🐾 進行</button>
+            <button class="bottom-nav-button" data-werewolf-tab="log" role="tab" aria-selected="false">📜 ログ</button>
+            <button class="bottom-nav-button" data-werewolf-tab="info" role="tab" aria-selected="false">🦴 情報</button>
           </div>
-          <div class="werewolf-tab-panel is-active" id="werewolfProgressPanel">
+          <div class="tab-panel is-active" id="werewolfProgressPanel">
+            <div id="werewolfProgressSummaryBlock">
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
             <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
             <div class="mini-item"><span>共犯</span><span id="werewolfAccompliceInfo">-</span></div>
             <div id="werewolfParticipants"></div>
             <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
             <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
+            </div>
+            <div id="werewolfProgressActionsBlock">
             <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
             <div class="mini-item"><span>事件導入</span><span id="werewolfIncidentIntro">-</span></div>
             <div class="controls" id="werewolfIntroChoiceList"></div>
+            <div id="werewolfDayActionBlock">
             <div class="controls" id="werewolfCommandList"></div>
             <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
             <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
             <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
             <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
+            </div>
+            </div>
+            <div class="werewolf-log-panel is-hidden" id="werewolfInitialFullLogPanel" aria-label="初回証言ログ">
+              <h3 class="werewolf-log-title">初回証言ログ（全件）</h3>
+              <div id="werewolfInitialFullLog" class="werewolf-talk-log">まだ発言はありません</div>
+            </div>
             <div class="werewolf-log-panel" aria-label="最新ログ">
               <h3 class="werewolf-log-title">最新ログ（3件）</h3>
               <div id="werewolfRecentLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
             <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
           </div>
-          <div class="werewolf-tab-panel" id="werewolfLogPanel">
+          <div class="tab-panel" id="werewolfLogPanel">
             <p class="werewolf-subtitle">初回証言・コマンド選択・AI反応・横会話を時系列で全件表示します。</p>
             <div class="werewolf-log-panel" aria-label="会話ログ">
               <h3 class="werewolf-log-title">会話ログ</h3>
               <div id="werewolfTalkLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
           </div>
-          <div class="werewolf-tab-panel" id="werewolfInfoPanel">
+          <div class="tab-panel" id="werewolfInfoPanel">
             <p class="werewolf-subtitle">参加キャラと現在の進行状態をまとめて確認できます。</p>
             <div id="werewolfParticipantsInfo"></div>
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentModeInfo">-</span></div>
@@ -1646,7 +1674,7 @@
       const activeTab = werewolf.activeTab || 'progress';
       document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
         const selected = button.dataset.werewolfTab === activeTab;
-        button.classList.toggle('is-active', selected);
+        button.classList.toggle('active', selected);
         button.setAttribute('aria-selected', selected ? 'true' : 'false');
       });
       $('#werewolfProgressPanel').classList.toggle('is-active', activeTab === 'progress');
@@ -1693,10 +1721,18 @@
         ? werewolf.talkLog.map((entry, idx) => renderTalkLogCard(entry, idx)).join('')
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
       $('#werewolfTalkLog').innerHTML = allLogsHtml;
+      $('#werewolfInitialFullLog').innerHTML = allLogsHtml;
       const recentLogs = werewolf.talkLog.slice(-3);
       $('#werewolfRecentLog').innerHTML = recentLogs.length
         ? recentLogs.map((entry, idx) => renderTalkLogCard(entry, werewolf.talkLog.length - recentLogs.length + idx)).join('')
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
+      const isInitialTestimony = werewolf.phase === 'initialTestimony';
+      const isDayTalk = werewolf.phase === 'dayTalk';
+      $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
+      $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfInitialFullLogPanel').classList.toggle('is-hidden', !isInitialTestimony);
+      $('#werewolfRecentLog').parentElement.classList.toggle('is-hidden', !isDayTalk);
       renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
       const canTalk = werewolf.phase === 'dayTalk' && !finished;
@@ -3093,6 +3129,7 @@
 
     function switchView(viewName) {
       currentView = viewName;
+      document.querySelector('.app')?.classList.toggle('has-bottom-nav', viewName === 'werewolf');
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
       $('#werewolfEntryView').classList.toggle('active', viewName === 'werewolfEntry');
