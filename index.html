@@ -592,6 +592,7 @@
 
     .tab-panel { display: none; }
     .tab-panel.is-active { display: grid; gap: 10px; }
+    .is-hidden { display: none !important; }
     .werewolf-back-link {
       margin: 2px 0 10px;
     }
@@ -1652,6 +1653,7 @@
       werewolf.talkLog = [];
       werewolf.lastInputTags = [];
       werewolf.debugMode = false;
+      werewolf.activeTab = 'progress';
       switchView('werewolf');
       renderWerewolf();
     }
@@ -3227,7 +3229,7 @@
     document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
       button.addEventListener('click', () => {
         werewolf.activeTab = button.dataset.werewolfTab;
-        renderWerewolfTabs();
+        renderWerewolf();
       });
     });
 
