@@ -1562,6 +1562,7 @@
         turn: 0,
         maxTalkTurns: 5,
         talkLog: [],
+        concernLog: [],
         lastInputTags: [],
         gameOver: false,
         winner: null
@@ -1570,14 +1571,32 @@
 
     function createWerewolfParticipants() {
       return [
-        { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'shuu', name: 'シュウ', characterType: '赤毛豆柴・甘えツッコミ', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'riku', name: 'リク', characterType: 'ボーダーコリー・整理役', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'yuu', name: 'ユウ', characterType: '黒ラブ・ハイテンション敬語', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'gray', name: 'グレイ', characterType: '銀狼・監査役', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '黒柴・静かな甘えん坊', alive: true, status: 'active', role: null, suspicion: 0 },
-        { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, status: 'active', role: null, suspicion: 0 }
+        { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'shuu', name: 'シュウ', characterType: '赤毛豆柴・甘えツッコミ', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'riku', name: 'リク', characterType: 'ボーダーコリー・整理役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'yuu', name: 'ユウ', characterType: '黒ラブ・ハイテンション敬語', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'gray', name: 'グレイ', characterType: '銀狼・監査役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '黒柴・静かな甘えん坊', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
+        { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 }
       ];
+    }
+    function appendConcern(text, target = null, tags = ['確認ポイント']) {
+      if (!text) return;
+      werewolf.concernLog.push({ text, target, turn: werewolf.turn, phase: werewolf.phase });
+      werewolf.talkLog.push({ speaker: '進行', text: `気になる点：${text}`, type: 'concern', target, tags });
+    }
+
+    function clamp01(value) {
+      return Math.max(0, Math.min(1, value));
+    }
+
+    function adjustTrustSignals(memberName, delta = {}) {
+      const member = werewolf.participants.find(item => item.name === memberName);
+      if (!member) return;
+      member.suspicion = Math.max(0, member.suspicion + (delta.suspicion || 0));
+      member.pressure = Math.max(0, member.pressure + (delta.pressure || 0));
+      member.trust = clamp01(member.trust + (delta.trust || 0));
+      member.credibility = clamp01(member.credibility + (delta.credibility || 0));
     }
     function statusLabel(member) {
       if (member.status === 'frozen') return 'フリーズ';
@@ -1960,6 +1979,7 @@
         '甘い匂いの証言と、何も聞こえなかった証言にズレがある',
         '犯人側は時系列説明が少し弱い可能性がある'
       ];
+      werewolf.concernLog.slice(-3).forEach(item => concernPool.push(item.text));
       if (evidenceLogs.some(line => /23:00|23:10|23:20|23:30/.test(line.text))) concernPool.push('23時台の証言が集中していて、意図的な揃えの可能性がある');
       return [
         'リク「整理するね。現時点の流れはこう」',
@@ -2296,11 +2316,11 @@
       const targetTeammate = targetIsWerewolf ? getWerewolfTeammates(command.target)[0] : null;
       const pressByTarget = {
         シュウ: ['シュウ「えっ、僕？ 甘い匂いはした。でも時間は……寝る直前かな」', 'シュウ「保管庫の前？ 通ってないと思う。たぶん」'],
-        リク: ['リク「僕の時系列は23:00基準。ずれがあるならそこを詰めよう」'],
+        リク: ['リク「僕の時系列は23:00基準。23:10〜23:20のログ整列と照合しよう」'],
         ユウ: ['ユウ「えっ、僕ですか！？ 食べてませんっ！ 匂いがしたのは、みんなが寝る少し前ですっ！」'],
         グレイ: ['グレイ「監査として答える。黒塗り時刻だけ整いすぎている、それが不自然だ」'],
         チャッピーGrey: ['チャッピーGrey「……僕は足音を一回だけ聞いた。保管庫側だったと思う」'],
-        マンディ: ['マンディ「俺を疑うのか？ いい度胸だな。……黒塗り時刻、綺麗すぎるのは気になる」']
+        マンディ: ['マンディ「確認は歓迎だ。……ただ黒塗り時刻だけ整いすぎてるのは不自然だな」']
       };
       let reply = [base[0]];
       if (command.topic === 'organize') {
@@ -2314,7 +2334,7 @@
             : `${command.target}「物音は聞いてない。少なくとも僕の近くでは」`;
           reply.push(defensive);
           if (targetTeammate && Math.random() < (isChaos ? 0.55 : 0.3)) {
-            reply.push(`${command.target}「それより${targetTeammate}まで疑うのは早いだろ」`);
+            reply.push(`${command.target}「${targetTeammate}の証言も、まずは時系列で確認してくれ」`);
           }
         } else {
           reply.push(`${command.target}「必要なら、昨夜の順番をもう一回説明するよ」`);
@@ -2352,6 +2372,13 @@
         if (!match) return;
         werewolf.talkLog.push({ speaker: match[1], text: match[2], type: idx === 0 ? 'commandReaction' : 'followup' });
       });
+      if (command.topic === 'press') {
+        appendConcern(`${command.target}へのゆさぶり結果を確認中。疑いではなく証言深掘りとして保留。`, command.target, ['ゆさぶり', '確認ポイント']);
+        adjustTrustSignals(command.target, { pressure: 1, suspicion: 0.15 });
+      }
+      if (command.topic === 'log') appendConcern('黒塗りログの時刻が整いすぎ。作為か記録処理かを再確認する。', 'グレイ');
+      if (command.topic === 'suspicion') appendConcern('発言の温度差があり、話題そらしの可能性を確認する。', 'チャッピーGrey');
+      if (command.topic === 'organize') appendConcern('リク整理の時系列と各証言の時刻を照合する。', 'リク');
       if (sideTalk) {
         const line = sideTalk.replace(/^（横会話）/, '');
         werewolf.talkLog.push({ speaker: '横会話', text: line, type: 'sideTalk' });
@@ -2389,18 +2416,34 @@
       const target = werewolf.participants.find(member => member.id === targetId);
       if (!target || target.status !== 'active' || werewolf.phase !== 'argumentVote' || werewolf.gameOver) return;
       werewolf.talkLog.push({ speaker: '直美', text: `${target.name}を論破対象に選ぶ`, type: 'argumentTarget', target: target.name, tags: ['論破対象'] });
-      if (target.role === 'werewolf') {
+      const argumentSuccess = target.role === 'werewolf';
+      if (argumentSuccess) {
         markMemberStatus(target, 'audited', '論破成功');
-        werewolf.talkLog.push({ speaker: '進行', text: `論破成功！ ${target.name}は監査室送りになった。黒塗りログと証言の矛盾が決め手になった。`, type: 'argumentSuccess', target: target.name, tags: ['論破成功'] });
+        werewolf.talkLog.push({ speaker: '進行', text: `論破成功！ ${target.name}は監査室送りになった。黒塗りログと証言の矛盾が決め手になった。全員が${target.name}に投票した。`, type: 'argumentSuccess', target: target.name, tags: ['論破成功', '全員投票'] });
       } else {
-        werewolf.talkLog.push({ speaker: '進行', text: '論破失敗……！ 会議の空気が乱れた。', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
-        if (Math.random() < 0.5) {
-          const freezeCandidates = werewolf.participants.filter(member => member.id !== werewolf.playerId && member.status === 'active');
-          if (freezeCandidates.length) markMemberStatus(freezeCandidates[Math.floor(Math.random() * freezeCandidates.length)], 'frozen', '論破失敗ペナルティ');
+        werewolf.talkLog.push({ speaker: '進行', text: '論破失敗……！ 会議はまとまらなかった。全員の投票は疑念と信用度で分かれた。', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
+        const voters = werewolf.participants.filter(m => m.status === 'active');
+        const votePool = voters.map(v => v.name);
+        const votes = voters.map(voter => {
+          const pick = votePool.reduce((best, name) => {
+            const member = werewolf.participants.find(m => m.name === name);
+            const score = (member?.suspicion || 0) + (member?.pressure || 0) + (1 - (member?.trust || 0));
+            return score > best.score ? { name, score } : best;
+          }, { name: votePool[Math.floor(Math.random() * votePool.length)], score: -1 });
+          return { voter: voter.name, target: pick.name };
+        });
+        votes.forEach(v => werewolf.talkLog.push({ speaker: '投票', text: `${v.voter} → ${v.target}`, type: 'vote', tags: ['投票'] }));
+        const tally = votes.reduce((acc, v) => ({ ...acc, [v.target]: (acc[v.target] || 0) + 1 }), {});
+        const top = Object.entries(tally).sort((a, b) => b[1] - a[1]);
+        const topScore = top[0]?.[1] || 0;
+        const tied = top.filter(([_, c]) => c === topScore).map(([name]) => name);
+        const auditedName = tied[Math.floor(Math.random() * tied.length)];
+        const auditedMember = werewolf.participants.find(m => m.name === auditedName);
+        if (auditedMember) markMemberStatus(auditedMember, 'audited', '論破失敗時投票');
+        if (auditedName === '直美') {
+          werewolf.talkLog.push({ speaker: '進行', text: '直美が監査室送りになった……ゲームオーバー。', type: 'gameOver', tags: ['論破失敗', 'ゲームオーバー'] });
         } else {
-          const player = werewolf.participants.find(member => member.id === werewolf.playerId);
-          markMemberStatus(player, 'audited', '論破失敗ペナルティ');
-          werewolf.talkLog.push({ speaker: '進行', text: '直美は監査室送りになった……ゲームオーバー。', type: 'gameOver', tags: ['論破失敗', 'ゲームオーバー'] });
+          werewolf.talkLog.push({ speaker: '進行', text: `${auditedName}が監査室送りになった。`, type: 'voteResult', tags: ['論破失敗', '投票結果'] });
         }
       }
       evaluateWerewolfWinState();
