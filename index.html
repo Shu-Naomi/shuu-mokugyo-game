@@ -1384,11 +1384,12 @@
           </div>
           <h2 class="section-title">犬小屋人狼 本編</h2>
           <div class="bottom-nav" role="tablist" aria-label="本編タブ">
-            <button class="bottom-nav-button active" data-werewolf-tab="progress" role="tab" aria-selected="true">🐾 進行</button>
+            <button class="bottom-nav-button active" data-werewolf-tab="meeting" role="tab" aria-selected="true">🐾 会議</button>
             <button class="bottom-nav-button" data-werewolf-tab="log" role="tab" aria-selected="false">📜 ログ</button>
             <button class="bottom-nav-button" data-werewolf-tab="info" role="tab" aria-selected="false">🦴 情報</button>
           </div>
-          <div class="tab-panel is-active" id="werewolfProgressPanel">
+          <div class="tab-panel is-active" id="werewolfMeetingPanel">
+            <p class="werewolf-subtitle">会議タブは画面切替用です。フェーズ進行はこの中のボタンから行います。</p>
             <div id="werewolfProgressSummaryBlock">
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
             <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
@@ -1420,16 +1421,20 @@
               <div id="werewolfRecentLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
             <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
+            <div class="controls" id="werewolfMeetingPhaseActions">
+              <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
+              <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
+            </div>
           </div>
           <div class="tab-panel" id="werewolfLogPanel">
-            <p class="werewolf-subtitle">初回証言・コマンド選択・AI反応・横会話を時系列で全件表示します。</p>
+            <p class="werewolf-subtitle">初回証言・昼コマンド選択・AI反応・横会話・任意コメントを時系列で全件表示します。読み返し専用です。</p>
             <div class="werewolf-log-panel" aria-label="会話ログ">
               <h3 class="werewolf-log-title">会話ログ</h3>
               <div id="werewolfTalkLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
           </div>
           <div class="tab-panel" id="werewolfInfoPanel">
-            <p class="werewolf-subtitle">調べるための情報タブです。全体情報とキャラ発言を確認できます。</p>
+            <p class="werewolf-subtitle">調査・確認専用タブです。参加キャラ、現在状態、キャラ別発言を確認できます。</p>
             <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
             <div class="mini-item"><span>共犯情報</span><span id="werewolfAccompliceInfo">-</span></div>
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentModeInfo">-</span></div>
@@ -1441,10 +1446,6 @@
               <h3 class="werewolf-log-title">キャラ詳細</h3>
               <div id="werewolfCharacterDetail" class="werewolf-talk-log">キャラを選択してください</div>
             </div>
-          </div>
-          <div class="controls">
-            <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
-            <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
           </div>
         </section>
       </div>
@@ -1551,7 +1552,7 @@
         phase: 'incidentIntro',
         introChoice: null,
         debugMode: false,
-        activeTab: 'progress',
+        activeTab: 'meeting',
         selectedInfoCharacterId: 'naomi',
         turn: 0,
         maxTalkTurns: 3,
@@ -1653,7 +1654,7 @@
       werewolf.talkLog = [];
       werewolf.lastInputTags = [];
       werewolf.debugMode = false;
-      werewolf.activeTab = 'progress';
+      werewolf.activeTab = 'meeting';
       switchView('werewolf');
       renderWerewolf();
     }
@@ -1692,13 +1693,13 @@
 
 
     function renderWerewolfTabs() {
-      const activeTab = werewolf.activeTab || 'progress';
+      const activeTab = werewolf.activeTab || 'meeting';
       document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
         const selected = button.dataset.werewolfTab === activeTab;
         button.classList.toggle('active', selected);
         button.setAttribute('aria-selected', selected ? 'true' : 'false');
       });
-      $('#werewolfProgressPanel').classList.toggle('is-active', activeTab === 'progress');
+      $('#werewolfMeetingPanel').classList.toggle('is-active', activeTab === 'meeting');
       $('#werewolfLogPanel').classList.toggle('is-active', activeTab === 'log');
       $('#werewolfInfoPanel').classList.toggle('is-active', activeTab === 'info');
     }
