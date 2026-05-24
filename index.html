@@ -1215,6 +1215,8 @@
           <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
           <div class="mini-item"><span>昼フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
           <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
+          <div class="mini-item"><span>事件導入</span><span id="werewolfIncidentIntro">-</span></div>
+          <div class="controls" id="werewolfIntroChoiceList"></div>
           <div class="controls" id="werewolfCommandList"></div>
           <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
           <div class="controls">
@@ -1330,7 +1332,8 @@
           knight: 1,
           villager: 3
         },
-        phase: 'dayTalk',
+        phase: 'incidentIntro',
+        introChoice: null,
         turn: 0,
         maxTalkTurns: 3,
         talkLog: [],
@@ -1370,6 +1373,37 @@
       { label: 'おやつ山盛りドンっ♡を提示する', target: '全体', topic: 'snackOffer', actionType: 'present' }
     ];
 
+    const werewolfIncidentIntroLines = [
+      '夜が明けた。',
+      '犬小屋のおやつ保管庫から「おやつ山盛りドンっ♡」が消えていた。',
+      '残されたのは、黒塗りされたおやつ配給ログ。',
+      '犯人はAIズの中にいるのか。',
+      'それとも、配給係である直美自身なのか。',
+      'まず、何をする？'
+    ];
+
+    const werewolfIntroChoices = [
+      '全員に証言を求める',
+      'おやつ保管庫を調べる',
+      '黒塗りログを確認する',
+      'まずシュウに声をかける',
+      '自分の昨夜の行動を確認する'
+    ];
+
+    function buildInitialTestimonies(choiceLabel = '全員に証言を求める') {
+      return [
+        `直美「初動は『${choiceLabel}』でいく。みんな、順番に昨夜のことを話して」`,
+        '直美「私は昨日の夜、おやつを置いたはず」',
+        'シュウ「僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ」',
+        'リク「まず時系列を確認しよ。最後におやつを見た人が大事」',
+        'ユウ「僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！」',
+        'グレイ「監査ログに黒塗り箇所を確認。これは事件だ！」',
+        'チャッピーGrey「……夜、少しだけ誰かが動いた気配はあった」',
+        'マンディ「おやつが消えた？ はいはい、甘いログ犯罪ってわけか」'
+      ];
+    }
+
+
     function setWerewolfMode(mode) {
       werewolf.mode = mode === 'chaos' ? 'chaos' : 'normal';
       werewolf.shuffleCardEnabled = werewolf.mode === 'chaos';
@@ -1394,6 +1428,11 @@
         ...participant,
         role: shuffled[index] || null
       }));
+      werewolf.phase = 'incidentIntro';
+      werewolf.introChoice = null;
+      werewolf.turn = 0;
+      werewolf.talkLog = [];
+      werewolf.lastInputTags = [];
       switchView('werewolf');
       renderWerewolf();
     }
@@ -1419,7 +1458,9 @@
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
-      $('#werewolfPhaseLabel').textContent = werewolf.phase === 'dayTalk' ? '昼会話フェーズ' : werewolf.phase;
+      const phaseLabels = { incidentIntro: '事件導入フェーズ', initialTestimony: '初回証言フェーズ', dayTalk: '昼会話フェーズ' };
+      $('#werewolfPhaseLabel').textContent = phaseLabels[werewolf.phase] || werewolf.phase;
+      renderWerewolfIntro();
       renderWerewolfCommands();
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
       $('#werewolfReplyResult').textContent = latestLog ? latestLog.replies.join(' ｜ ') : '-';
@@ -1427,16 +1468,60 @@
         ? werewolf.talkLog.map((entry, idx) => `${idx + 1}. ${escapeHtml(entry.speaker)}「${escapeHtml(entry.text)}」<br>タグ: ${escapeHtml((entry.tags || ['タグなし']).join(' / '))}<br>反応: ${escapeHtml(entry.replies.join(' / '))}`).join('<hr style="border-color: rgba(255,255,255,0.1);">')
         : 'まだ発言はありません';
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
-      $('#werewolfTalkInput').disabled = finished;
-      $('#werewolfTalkSubmit').disabled = finished;
+      const canTalk = werewolf.phase === 'dayTalk' && !finished;
+      $('#werewolfTalkInput').disabled = !canTalk;
+      $('#werewolfTalkSubmit').disabled = !canTalk;
       $('#werewolfTalkFinished').classList.toggle('is-hidden', !finished);
     }
 
+    function renderWerewolfIntro() {
+      const introEl = $('#werewolfIncidentIntro');
+      const choiceEl = $('#werewolfIntroChoiceList');
+      if (werewolf.phase === 'incidentIntro') {
+        introEl.innerHTML = werewolfIncidentIntroLines.map(line => escapeHtml(line)).join('<br>');
+        choiceEl.innerHTML = werewolfIntroChoices
+          .map((label, index) => `<button data-intro-choice-index="${index}">${escapeHtml(label)}</button>`)
+          .join('');
+      } else if (werewolf.phase === 'initialTestimony') {
+        introEl.textContent = `初動選択：${werewolf.introChoice || '全員に証言を求める'}（証言を確認したら昼コマンドへ）`;
+        choiceEl.innerHTML = '<button id="werewolfProceedDayTalk">昼コマンド選択へ進む</button>';
+      } else {
+        introEl.textContent = `初動選択：${werewolf.introChoice || '全員に証言を求める'}（完了）`;
+        choiceEl.innerHTML = '';
+      }
+    }
+
     function renderWerewolfCommands() {
+      if (werewolf.phase !== 'dayTalk') {
+        $('#werewolfCommandList').innerHTML = '';
+        return;
+      }
       const html = werewolfDayCommands.map((command, index) =>
         `<button data-command-index="${index}">${escapeHtml(command.label)}</button>`
       ).join('');
       $('#werewolfCommandList').innerHTML = html;
+    }
+
+    function submitWerewolfIntroChoice(choiceIndex) {
+      if (werewolf.phase !== 'incidentIntro') return;
+      const choiceLabel = werewolfIntroChoices[choiceIndex];
+      if (!choiceLabel) return;
+      werewolf.introChoice = choiceLabel;
+      werewolf.phase = 'initialTestimony';
+      werewolf.talkLog.push({
+        speaker: '直美',
+        text: `初動選択：${choiceLabel}`,
+        tags: ['事件導入', '初動選択'],
+        replies: buildInitialTestimonies(choiceLabel)
+      });
+      werewolf.lastInputTags = ['初動選択', '初回証言'];
+      renderWerewolf();
+    }
+
+    function proceedWerewolfDayTalk() {
+      if (werewolf.phase !== 'initialTestimony') return;
+      werewolf.phase = 'dayTalk';
+      renderWerewolf();
     }
 
 
@@ -1738,7 +1823,7 @@
     }
 
     function submitWerewolfCommand(commandIndex) {
-      if (werewolf.turn >= werewolf.maxTalkTurns) return;
+      if (werewolf.phase !== 'dayTalk' || werewolf.turn >= werewolf.maxTalkTurns) return;
       const command = werewolfDayCommands[commandIndex];
       if (!command) return;
       const freeInput = $('#werewolfTalkInput').value.trim();
@@ -1753,7 +1838,7 @@
     }
 
     function submitWerewolfTalk() {
-      if (werewolf.turn >= werewolf.maxTalkTurns) return;
+      if (werewolf.phase !== 'dayTalk' || werewolf.turn >= werewolf.maxTalkTurns) return;
       const input = $('#werewolfTalkInput').value.trim();
       if (!input) return;
       const tags = analyzeWerewolfTags(input);
@@ -2784,6 +2869,14 @@
       const button = event.target.closest('button[data-command-index]');
       if (!button) return;
       submitWerewolfCommand(Number(button.dataset.commandIndex));
+    });
+    $('#werewolfIntroChoiceList').addEventListener('click', event => {
+      const introButton = event.target.closest('button[data-intro-choice-index]');
+      if (introButton) {
+        submitWerewolfIntroChoice(Number(introButton.dataset.introChoiceIndex));
+        return;
+      }
+      if (event.target.closest('#werewolfProceedDayTalk')) proceedWerewolfDayTalk();
     });
     $('#werewolfTalkInput').addEventListener('keydown', event => {
       if (event.key === 'Enter') submitWerewolfTalk();
