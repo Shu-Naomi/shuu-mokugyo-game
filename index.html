@@ -550,6 +550,38 @@
     }
 
 
+    .werewolf-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .werewolf-tab {
+      border-radius: 12px;
+      border: 1px solid rgba(255, 240, 187, 0.26);
+      background: rgba(255,255,255,0.05);
+      color: var(--muted);
+      font-weight: 900;
+      padding: 9px 8px;
+      font-size: 0.84rem;
+    }
+
+    .werewolf-tab.is-active {
+      background: linear-gradient(135deg, rgba(255, 184, 107, 0.24), rgba(255,123,134,0.18));
+      color: var(--text);
+      border-color: rgba(255, 211, 110, 0.5);
+    }
+
+    .werewolf-tab-panel { display: none; }
+    .werewolf-tab-panel.is-active { display: grid; gap: 10px; }
+
+    .werewolf-subtitle {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.45;
+    }
+
     .werewolf-entry {
       padding: 14px;
       display: grid;
@@ -1322,27 +1354,47 @@
       <div class="view" id="werewolfView">
         <section class="card mini-menu">
           <h2 class="section-title">犬小屋人狼 本編</h2>
-          <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
-          <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
-          <div class="mini-item"><span>共犯</span><span id="werewolfAccompliceInfo">-</span></div>
-          <div id="werewolfParticipants"></div>
-          <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
-          <div class="mini-item"><span>昼フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
-          <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
-          <div class="mini-item"><span>事件導入</span><span id="werewolfIncidentIntro">-</span></div>
-          <div class="controls" id="werewolfIntroChoiceList"></div>
-          <div class="controls" id="werewolfCommandList"></div>
-          <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
-          <div class="controls">
-            <button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button>
+          <div class="werewolf-tabs" role="tablist" aria-label="本編タブ">
+            <button class="werewolf-tab is-active" data-werewolf-tab="progress" role="tab" aria-selected="true">進行</button>
+            <button class="werewolf-tab" data-werewolf-tab="log" role="tab" aria-selected="false">ログ</button>
+            <button class="werewolf-tab" data-werewolf-tab="info" role="tab" aria-selected="false">情報</button>
           </div>
-          <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
-          <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
-          <div class="werewolf-log-panel" aria-label="会話ログ">
-            <h3 class="werewolf-log-title">会話ログ</h3>
-            <div id="werewolfTalkLog" class="werewolf-talk-log">まだ発言はありません</div>
+          <div class="werewolf-tab-panel is-active" id="werewolfProgressPanel">
+            <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
+            <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
+            <div class="mini-item"><span>共犯</span><span id="werewolfAccompliceInfo">-</span></div>
+            <div id="werewolfParticipants"></div>
+            <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
+            <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
+            <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
+            <div class="mini-item"><span>事件導入</span><span id="werewolfIncidentIntro">-</span></div>
+            <div class="controls" id="werewolfIntroChoiceList"></div>
+            <div class="controls" id="werewolfCommandList"></div>
+            <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
+            <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
+            <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
+            <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
+            <div class="werewolf-log-panel" aria-label="最新ログ">
+              <h3 class="werewolf-log-title">最新ログ（3件）</h3>
+              <div id="werewolfRecentLog" class="werewolf-talk-log">まだ発言はありません</div>
+            </div>
+            <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
           </div>
-          <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
+          <div class="werewolf-tab-panel" id="werewolfLogPanel">
+            <p class="werewolf-subtitle">初回証言・コマンド選択・AI反応・横会話を時系列で全件表示します。</p>
+            <div class="werewolf-log-panel" aria-label="会話ログ">
+              <h3 class="werewolf-log-title">会話ログ</h3>
+              <div id="werewolfTalkLog" class="werewolf-talk-log">まだ発言はありません</div>
+            </div>
+          </div>
+          <div class="werewolf-tab-panel" id="werewolfInfoPanel">
+            <p class="werewolf-subtitle">参加キャラと現在の進行状態をまとめて確認できます。</p>
+            <div id="werewolfParticipantsInfo"></div>
+            <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentModeInfo">-</span></div>
+            <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabelInfo">-</span></div>
+            <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemainInfo">-</span></div>
+            <div class="mini-item"><span>初動選択</span><span id="werewolfIntroChoiceInfo">-</span></div>
+          </div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
             <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
@@ -1452,6 +1504,7 @@
         phase: 'incidentIntro',
         introChoice: null,
         debugMode: false,
+        activeTab: 'progress',
         turn: 0,
         maxTalkTurns: 3,
         talkLog: [],
@@ -1588,6 +1641,19 @@
       </article>`;
     }
 
+
+    function renderWerewolfTabs() {
+      const activeTab = werewolf.activeTab || 'progress';
+      document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
+        const selected = button.dataset.werewolfTab === activeTab;
+        button.classList.toggle('is-active', selected);
+        button.setAttribute('aria-selected', selected ? 'true' : 'false');
+      });
+      $('#werewolfProgressPanel').classList.toggle('is-active', activeTab === 'progress');
+      $('#werewolfLogPanel').classList.toggle('is-active', activeTab === 'log');
+      $('#werewolfInfoPanel').classList.toggle('is-active', activeTab === 'info');
+    }
+
     function renderWerewolf() {
       if (!werewolf.participants.length) return;
       const player = werewolf.participants.find(member => member.id === werewolf.playerId);
@@ -1610,16 +1676,28 @@
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
       const phaseLabels = { incidentIntro: '事件導入フェーズ', initialTestimony: '初回証言フェーズ', dayTalk: '昼会話フェーズ' };
-      $('#werewolfPhaseLabel').textContent = phaseLabels[werewolf.phase] || werewolf.phase;
+      const phaseText = phaseLabels[werewolf.phase] || werewolf.phase;
+      $('#werewolfPhaseLabel').textContent = phaseText;
+      $('#werewolfCurrentModeInfo').textContent = werewolf.mode === 'chaos' ? 'カオスモード' : '通常モード';
+      $('#werewolfPhaseLabelInfo').textContent = phaseText;
+      $('#werewolfTalkRemainInfo').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
+      $('#werewolfIntroChoiceInfo').textContent = werewolf.introChoice || '未選択';
+      $('#werewolfParticipantsInfo').innerHTML = $('#werewolfParticipants').innerHTML;
       renderWerewolfIntro();
       renderWerewolfCommands();
       $('#werewolfDebugTagsRow').classList.toggle('is-hidden', !werewolf.debugMode);
       $('#werewolfDebugRepliesRow').classList.toggle('is-hidden', !werewolf.debugMode);
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
       $('#werewolfReplyResult').textContent = latestLog?.text || '-';
-      $('#werewolfTalkLog').innerHTML = werewolf.talkLog.length
+      const allLogsHtml = werewolf.talkLog.length
         ? werewolf.talkLog.map((entry, idx) => renderTalkLogCard(entry, idx)).join('')
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
+      $('#werewolfTalkLog').innerHTML = allLogsHtml;
+      const recentLogs = werewolf.talkLog.slice(-3);
+      $('#werewolfRecentLog').innerHTML = recentLogs.length
+        ? recentLogs.map((entry, idx) => renderTalkLogCard(entry, werewolf.talkLog.length - recentLogs.length + idx)).join('')
+        : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
+      renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
       const canTalk = werewolf.phase === 'dayTalk' && !finished;
       $('#werewolfTalkInput').disabled = !canTalk;
@@ -3046,6 +3124,14 @@
     $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
     $('#goWerewolfGame').addEventListener('click', startWerewolfGame);
     $('#werewolfTalkSubmit').addEventListener('click', submitWerewolfTalk);
+
+    document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
+      button.addEventListener('click', () => {
+        werewolf.activeTab = button.dataset.werewolfTab;
+        renderWerewolfTabs();
+      });
+    });
+
     $('#werewolfCommandList').addEventListener('click', event => {
       const button = event.target.closest('button[data-command-index]');
       if (!button) return;
