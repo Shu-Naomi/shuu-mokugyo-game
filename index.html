@@ -592,6 +592,13 @@
 
     .tab-panel { display: none; }
     .tab-panel.is-active { display: grid; gap: 10px; }
+    .werewolf-back-link {
+      margin: 2px 0 10px;
+    }
+    .werewolf-back-link button {
+      width: 100%;
+      text-align: left;
+    }
 
     .werewolf-subtitle {
       margin: 0;
@@ -1371,6 +1378,9 @@
       </div>
       <div class="view" id="werewolfView">
         <section class="card mini-menu">
+          <div class="werewolf-back-link">
+            <button id="werewolfBackMiniPersistent" class="secondary">← ミニゲーム一覧へ戻る</button>
+          </div>
           <h2 class="section-title">犬小屋人狼 本編</h2>
           <div class="bottom-nav" role="tablist" aria-label="本編タブ">
             <button class="bottom-nav-button active" data-werewolf-tab="progress" role="tab" aria-selected="true">🐾 進行</button>
@@ -3242,6 +3252,7 @@
     });
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
+    $('#werewolfBackMiniPersistent').addEventListener('click', () => switchView('mini'));
     $('#werewolfLobbyBackMini').addEventListener('click', () => switchView('mini'));
     $('#werewolfResultBackMini').addEventListener('click', () => switchView('mini'));
     $('#goOxoGame').addEventListener('click', () => switchView('oxoDifficulty'));
