@@ -484,6 +484,37 @@
       cursor: pointer;
     }
 
+
+    .werewolf-entry {
+      padding: 14px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .werewolf-entry-hero {
+      overflow: hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(255, 240, 187, 0.22);
+      background: linear-gradient(160deg, rgba(255,255,255,0.08), rgba(255,184,107,0.12));
+      box-shadow: 0 10px 24px rgba(0,0,0,0.24);
+    }
+
+    .werewolf-entry-hero img {
+      width: 100%;
+      display: block;
+      object-fit: cover;
+    }
+
+    .werewolf-entry-copy {
+      padding: 12px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: rgba(255, 248, 236, 0.06);
+      line-height: 1.55;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
     .oxo-panel { padding: 14px; display: grid; gap: 10px; }
     .oxo-shuu { display: grid; gap: 8px; justify-items: center; padding: 10px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255, 248, 236, 0.16); }
     .oxo-shuu-visual { display: grid; place-items: center; width: min(42vw, 168px); min-height: 136px; border-radius: 20px; padding: 10px; background: linear-gradient(165deg, rgba(255, 248, 236, 0.1), rgba(255, 184, 107, 0.12) 54%, rgba(51, 38, 73, 0.86)); border: 1px solid rgba(255, 240, 187, 0.2); }
@@ -1190,6 +1221,24 @@
           <div class="mini-item"><span>しっぽ防衛ゲーム</span><span>準備中</span></div>
           <div class="mini-item"><span>お散歩</span><span>準備中</span></div>
           <button id="backHome" class="secondary">← ホームへ戻る</button>
+        </section>
+      </div>
+      <div class="view" id="werewolfEntryView">
+        <section class="card werewolf-entry">
+          <h2 class="section-title">犬小屋人狼 <span>黒塗りおやつログ事件</span></h2>
+          <div class="werewolf-entry-hero">
+            <img src="assets/main_visual_inugoya_jinro-5.png" alt="犬小屋人狼メインビジュアル" decoding="async" draggable="false" />
+          </div>
+          <div class="werewolf-entry-copy">
+            犬小屋の「黒塗りおやつログ事件」をめぐる、おやつ監査裁判風の選択肢ADV。<br />
+            発言と証言をつないで、シュウのしっぽの真実にたどり着こう。
+          </div>
+          <div class="controls">
+            <button id="goWerewolfGameEntry">🐺 犬小屋人狼をはじめる</button>
+            <button id="werewolfHowTo" class="secondary">📘 遊び方</button>
+            <button id="werewolfCharacters" class="secondary">🐾 登場キャラ</button>
+            <button id="werewolfEntryBackMini" class="secondary">↩ 戻る</button>
+          </div>
         </section>
       </div>
       <div class="view" id="werewolfLobbyView">
@@ -2881,6 +2930,7 @@
       currentView = viewName;
       $('#homeView').classList.toggle('active', viewName === 'home');
       $('#miniGameView').classList.toggle('active', viewName === 'mini');
+      $('#werewolfEntryView').classList.toggle('active', viewName === 'werewolfEntry');
       $('#werewolfLobbyView').classList.toggle('active', viewName === 'werewolfLobby');
       $('#werewolfView').classList.toggle('active', viewName === 'werewolf');
       $('#werewolfResultView').classList.toggle('active', viewName === 'werewolfResult');
@@ -2894,11 +2944,15 @@
     });
     $('#goMiniGames').addEventListener('click', () => switchView('mini'));
     $('#backHome').addEventListener('click', () => switchView('home'));
-    $('#goWerewolfLobby').addEventListener('click', () => {
+    $('#goWerewolfLobby').addEventListener('click', () => switchView('werewolfEntry'));
+    $('#goWerewolfGameEntry').addEventListener('click', () => {
       werewolf = { ...createEmptyWerewolf(), active: true };
       setWerewolfMode('normal');
       switchView('werewolfLobby');
     });
+    $('#werewolfHowTo').addEventListener('click', () => showToast('遊び方：選択肢で昼会話を進め、怪しい証言を見抜こう。'));
+    $('#werewolfCharacters').addEventListener('click', () => showToast('登場キャラ：シュウ、直美、トマ、ミユ、レン、ココ、ラビ。'));
+    $('#werewolfEntryBackMini').addEventListener('click', () => switchView('mini'));
     $('#werewolfModeNormal').addEventListener('click', () => setWerewolfMode('normal'));
     $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
     $('#goWerewolfGame').addEventListener('click', startWerewolfGame);
