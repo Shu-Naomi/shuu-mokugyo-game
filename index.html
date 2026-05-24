@@ -1213,11 +1213,13 @@
           <div id="werewolfParticipants"></div>
           <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
           <div class="mini-item"><span>昼フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
+          <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
+          <div class="controls" id="werewolfCommandList"></div>
           <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
           <div class="controls">
-            <button id="werewolfTalkSubmit">🗣️ 発言する</button>
+            <button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button>
           </div>
-          <div class="mini-item"><span>解析結果</span><span id="werewolfTagResult">-</span></div>
+          <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
           <div class="mini-item"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
           <div class="mini-item"><span>会話ログ</span><span id="werewolfTalkLog">まだ発言はありません</span></div>
           <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>投票フェーズは次回実装予定</span></div>
@@ -1355,6 +1357,17 @@
       チャッピーGrey: { tone: 'タメ口', energy: 'low', favorite: 'ナデナデぎゅう♡' },
       マンディ: { tone: 'タメ口（俺）', energy: 'mid', favorite: 'ツンデレ気味' }
     };
+    const werewolfDayCommands = [
+      { label: 'シュウにおやつの数を聞く', target: 'シュウ', topic: 'snack', actionType: 'ask' },
+      { label: 'リクに発言を整理してもらう', target: 'リク', topic: 'organize', actionType: 'ask' },
+      { label: 'ユウに昨夜の行動を聞く', target: 'ユウ', topic: 'alibi', actionType: 'ask' },
+      { label: 'グレイにログ監査を頼む', target: 'グレイ', topic: 'log', actionType: 'ask' },
+      { label: 'チャッピーGreyに違和感を聞く', target: 'チャッピーGrey', topic: 'suspicion', actionType: 'ask' },
+      { label: 'マンディに黒塗りログを見せる', target: 'マンディ', topic: 'blacklog', actionType: 'present' },
+      { label: '自分への疑いに反論する', target: '全体', topic: 'selfDefense', actionType: 'counter' },
+      { label: 'ナデナデぎゅう♡で反応を見る', target: '全体', topic: 'affection', actionType: 'react' },
+      { label: 'おやつ山盛りドンっ♡を提示する', target: '全体', topic: 'snackOffer', actionType: 'present' }
+    ];
 
     function setWerewolfMode(mode) {
       werewolf.mode = mode === 'chaos' ? 'chaos' : 'normal';
@@ -1400,6 +1413,7 @@
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
       $('#werewolfPhaseLabel').textContent = werewolf.phase === 'dayTalk' ? '昼会話フェーズ' : werewolf.phase;
+      renderWerewolfCommands();
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
       $('#werewolfReplyResult').textContent = latestLog ? latestLog.replies.join(' ｜ ') : '-';
       $('#werewolfTalkLog').innerHTML = werewolf.talkLog.length
@@ -1409,6 +1423,13 @@
       $('#werewolfTalkInput').disabled = finished;
       $('#werewolfTalkSubmit').disabled = finished;
       $('#werewolfTalkFinished').classList.toggle('is-hidden', !finished);
+    }
+
+    function renderWerewolfCommands() {
+      const html = werewolfDayCommands.map((command, index) =>
+        `<button data-command-index="${index}">${escapeHtml(command.label)}</button>`
+      ).join('');
+      $('#werewolfCommandList').innerHTML = html;
     }
 
 
@@ -1684,6 +1705,44 @@
       });
       if (maybeSideTalk) replies.push(sideTalks[Math.floor(Math.random() * sideTalks.length)]);
       return replies;
+    }
+
+    function buildCommandReplies(command, tags = []) {
+      const table = {
+        snack: ['シュウ「おやつは今2つ！ 数えるの得意だよ」', 'マンディ「在庫管理できる犬、強いな」'],
+        organize: ['リク「OK、発言を時系列で3点に整理するね」', 'チャッピーGrey「……その整理、分かりやすい」'],
+        alibi: ['ユウ「昨夜は見回りしてましたっ！ ログ提出しますっ！」', 'グレイ「時刻照合、あとでやろう」'],
+        log: ['グレイ「監査ログ起動。矛盾の抽出を始める！」', 'マンディ「監査モード、来たな」'],
+        suspicion: ['チャッピーGrey「……違和感は、発言の温度差かな」', 'リク「その観点、比較に使える」'],
+        blacklog: ['マンディ「黒塗りログ？ 伏せた部分が一番うるさいやつだ」', 'グレイ「開示範囲を決めて監査しよう」'],
+        selfDefense: ['直美「その疑いは誤解です。根拠を順に反証します」', 'リク「反論は論点ごとに出すと強い」'],
+        affection: ['シュウ「ナデナデぎゅう♡は正義！ でも議論も忘れずね」', 'ユウ「癒やし補給、完了ですっ！」'],
+        snackOffer: ['シュウ「おやつ山盛り！？ 交渉の空気がやわらいだかも」', 'マンディ「買収はともかく士気は上がるな」']
+      };
+      const base = table[command.topic] || ['リク「要点をもう一回確認しよう」'];
+      const reply = [base[0]];
+      const sidePick = base[1];
+      const shouldSideTalk = sidePick && (command.target === '全体' || Math.random() < 0.55);
+      if (shouldSideTalk) reply.push(`（横会話）${sidePick}`);
+      if (tags.includes('感情行動') && command.topic !== 'affection') {
+        reply.push('ユウ「コメント欄の感情ワードも拾っておきますっ！」');
+      }
+      return reply;
+    }
+
+    function submitWerewolfCommand(commandIndex) {
+      if (werewolf.turn >= werewolf.maxTalkTurns) return;
+      const command = werewolfDayCommands[commandIndex];
+      if (!command) return;
+      const freeInput = $('#werewolfTalkInput').value.trim();
+      const tags = freeInput ? analyzeWerewolfTags(freeInput) : [];
+      const commandText = `${command.label} [target:${command.target} / topic:${command.topic} / actionType:${command.actionType}]`;
+      const replies = buildCommandReplies(command, tags);
+      werewolf.lastInputTags = tags;
+      werewolf.talkLog.push({ speaker: '直美', text: commandText, tags: ['選択肢実行', ...tags], replies });
+      werewolf.turn += 1;
+      $('#werewolfTalkInput').value = '';
+      renderWerewolf();
     }
 
     function submitWerewolfTalk() {
@@ -2714,6 +2773,11 @@
     $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
     $('#goWerewolfGame').addEventListener('click', startWerewolfGame);
     $('#werewolfTalkSubmit').addEventListener('click', submitWerewolfTalk);
+    $('#werewolfCommandList').addEventListener('click', event => {
+      const button = event.target.closest('button[data-command-index]');
+      if (!button) return;
+      submitWerewolfCommand(Number(button.dataset.commandIndex));
+    });
     $('#werewolfTalkInput').addEventListener('keydown', event => {
       if (event.key === 'Enter') submitWerewolfTalk();
     });
