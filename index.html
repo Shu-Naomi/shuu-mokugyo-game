@@ -1222,8 +1222,8 @@
           <div class="controls">
             <button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button>
           </div>
-          <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
-          <div class="mini-item"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
+          <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
+          <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
           <div class="mini-item"><span>会話ログ</span><span id="werewolfTalkLog">まだ発言はありません</span></div>
           <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
           <div class="controls">
@@ -1334,6 +1334,7 @@
         },
         phase: 'incidentIntro',
         introChoice: null,
+        debugMode: false,
         turn: 0,
         maxTalkTurns: 3,
         talkLog: [],
@@ -1392,14 +1393,14 @@
 
     function buildInitialTestimonies(choiceLabel = '全員に証言を求める') {
       return [
-        `直美「初動は『${choiceLabel}』でいく。みんな、順番に昨夜のことを話して」`,
-        '直美「私は昨日の夜、おやつを置いたはず」',
-        'シュウ「僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ」',
-        'リク「まず時系列を確認しよ。最後におやつを見た人が大事」',
-        'ユウ「僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！」',
-        'グレイ「監査ログに黒塗り箇所を確認。これは事件だ！」',
-        'チャッピーGrey「……夜、少しだけ誰かが動いた気配はあった」',
-        'マンディ「おやつが消えた？ はいはい、甘いログ犯罪ってわけか」'
+        { speaker: '直美', text: `初動は『${choiceLabel}』でいく。みんな、順番に昨夜のことを話して`, type: 'testimony' },
+        { speaker: '直美', text: '私は昨日の夜、おやつを置いたはず', type: 'testimony' },
+        { speaker: 'シュウ', text: '僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ', type: 'testimony' },
+        { speaker: 'リク', text: 'まず時系列を確認しよ。最後におやつを見た人が大事', type: 'testimony' },
+        { speaker: 'ユウ', text: '僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！', type: 'testimony' },
+        { speaker: 'グレイ', text: '監査ログに黒塗り箇所を確認。これは事件だ！', type: 'testimony' },
+        { speaker: 'チャッピーGrey', text: '……夜、少しだけ誰かが動いた気配はあった', type: 'testimony' },
+        { speaker: 'マンディ', text: 'おやつが消えた？ はいはい、甘いログ犯罪ってわけか', type: 'testimony' }
       ];
     }
 
@@ -1433,8 +1434,22 @@
       werewolf.turn = 0;
       werewolf.talkLog = [];
       werewolf.lastInputTags = [];
+      werewolf.debugMode = false;
       switchView('werewolf');
       renderWerewolf();
+    }
+
+    function formatTalkLogLine(entry) {
+      if (!entry) return '';
+      const body = `${escapeHtml(entry.speaker)}「${escapeHtml(entry.text)}」`;
+      if (!werewolf.debugMode) return body;
+      const debug = [];
+      if (entry.type) debug.push(`type: ${entry.type}`);
+      if (entry.target) debug.push(`target: ${entry.target}`);
+      if (entry.topic) debug.push(`topic: ${entry.topic}`);
+      if (entry.actionType) debug.push(`actionType: ${entry.actionType}`);
+      if (entry.tags?.length) debug.push(`tags: ${entry.tags.join(' / ')}`);
+      return debug.length ? `${body}<br><small style="color: var(--muted);">[${escapeHtml(debug.join(' / '))}]</small>` : body;
     }
 
     function renderWerewolf() {
@@ -1462,10 +1477,12 @@
       $('#werewolfPhaseLabel').textContent = phaseLabels[werewolf.phase] || werewolf.phase;
       renderWerewolfIntro();
       renderWerewolfCommands();
+      $('#werewolfDebugTagsRow').classList.toggle('is-hidden', !werewolf.debugMode);
+      $('#werewolfDebugRepliesRow').classList.toggle('is-hidden', !werewolf.debugMode);
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
-      $('#werewolfReplyResult').textContent = latestLog ? latestLog.replies.join(' ｜ ') : '-';
+      $('#werewolfReplyResult').textContent = latestLog?.text || '-';
       $('#werewolfTalkLog').innerHTML = werewolf.talkLog.length
-        ? werewolf.talkLog.map((entry, idx) => `${idx + 1}. ${escapeHtml(entry.speaker)}「${escapeHtml(entry.text)}」<br>タグ: ${escapeHtml((entry.tags || ['タグなし']).join(' / '))}<br>反応: ${escapeHtml(entry.replies.join(' / '))}`).join('<hr style="border-color: rgba(255,255,255,0.1);">')
+        ? werewolf.talkLog.map((entry, idx) => `${idx + 1}. ${formatTalkLogLine(entry)}`).join('<hr style="border-color: rgba(255,255,255,0.1);">')
         : 'まだ発言はありません';
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
       const canTalk = werewolf.phase === 'dayTalk' && !finished;
@@ -1511,9 +1528,10 @@
       werewolf.talkLog.push({
         speaker: '直美',
         text: `初動選択：${choiceLabel}`,
-        tags: ['事件導入', '初動選択'],
-        replies: buildInitialTestimonies(choiceLabel)
+        type: 'intro',
+        tags: ['事件導入', '初動選択']
       });
+      werewolf.talkLog.push(...buildInitialTestimonies(choiceLabel));
       werewolf.lastInputTags = ['初動選択', '初回証言'];
       renderWerewolf();
     }
@@ -1815,11 +1833,14 @@
       const reply = [base[0]];
       const sidePick = base[1];
       const shouldSideTalk = sidePick && (command.target === '全体' || Math.random() < 0.55);
-      if (shouldSideTalk) reply.push(`（横会話）${sidePick}`);
+      const sideTalk = shouldSideTalk ? `（横会話）${sidePick}` : null;
       if (tags.includes('感情行動') && command.topic !== 'affection') {
         reply.push('ユウ「コメント欄の感情ワードも拾っておきますっ！」');
       }
-      return reply;
+      return {
+        targetReaction: reply,
+        sideTalk
+      };
     }
 
     function submitWerewolfCommand(commandIndex) {
@@ -1828,10 +1849,18 @@
       if (!command) return;
       const freeInput = $('#werewolfTalkInput').value.trim();
       const tags = freeInput ? analyzeWerewolfTags(freeInput) : [];
-      const commandText = `${command.label} [target:${command.target} / topic:${command.topic} / actionType:${command.actionType}]`;
-      const replies = buildCommandReplies(command, tags);
+      const { targetReaction, sideTalk } = buildCommandReplies(command, tags);
       werewolf.lastInputTags = tags;
-      werewolf.talkLog.push({ speaker: '直美', text: commandText, tags: ['選択肢実行', ...tags], replies });
+      werewolf.talkLog.push({ speaker: '直美', text: `${command.label}を選択`, type: 'commandSelection', target: command.target, topic: command.topic, actionType: command.actionType, tags: ['選択肢実行', ...tags] });
+      targetReaction.forEach((line, idx) => {
+        const match = line.match(/^([^「]+)「(.+)」$/);
+        if (!match) return;
+        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: idx === 0 ? 'commandReaction' : 'followup' });
+      });
+      if (sideTalk) {
+        const line = sideTalk.replace(/^（横会話）/, '');
+        werewolf.talkLog.push({ speaker: '横会話', text: line, type: 'sideTalk' });
+      }
       werewolf.turn += 1;
       $('#werewolfTalkInput').value = '';
       renderWerewolf();
@@ -1845,7 +1874,16 @@
       const responders = pickWerewolfResponders(tags, input);
       const replies = buildWerewolfReplies(tags, input, responders);
       werewolf.lastInputTags = tags;
-      werewolf.talkLog.push({ speaker: '直美', text: input, tags, replies });
+      werewolf.talkLog.push({ speaker: '直美', text: input, type: 'talkInput', tags, replies: [] });
+      replies.forEach(line => {
+        if (line.startsWith('（横会話）')) {
+          werewolf.talkLog.push({ speaker: '横会話', text: line.replace(/^（横会話）/, ''), type: 'sideTalk' });
+          return;
+        }
+        const match = line.match(/^([^「]+)「(.+)」$/);
+        if (!match) return;
+        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: 'reply' });
+      });
       werewolf.turn += 1;
       $('#werewolfTalkInput').value = '';
       renderWerewolf();
