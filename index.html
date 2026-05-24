@@ -1395,8 +1395,10 @@
             </div>
             <div id="werewolfProgressActionsBlock">
             <div class="mini-item"><span>現在の目的 / 案内</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
+            <div id="werewolfInitialPhaseBlock">
             <div class="mini-item"><span>進行案内</span><span id="werewolfIncidentIntro">-</span></div>
             <div class="controls" id="werewolfIntroChoiceList"></div>
+            </div>
             <div id="werewolfDayActionBlock">
             <div class="mini-item"><span>昼コマンド</span><span>いま実行する行動を選択</span></div>
             <div class="controls" id="werewolfCommandList"></div>
@@ -1412,7 +1414,7 @@
               <h3 class="werewolf-log-title">初回証言ログ（全件）</h3>
               <div id="werewolfInitialFullLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
-            <div class="werewolf-log-panel" aria-label="最新ログ">
+            <div class="werewolf-log-panel is-hidden" id="werewolfRecentLogPanel" aria-label="最新ログ">
               <h3 class="werewolf-log-title">最新ログ（3件）</h3>
               <div id="werewolfRecentLog" class="werewolf-talk-log">まだ発言はありません</div>
             </div>
@@ -1761,9 +1763,10 @@
       const isDayTalk = werewolf.phase === 'dayTalk';
       $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
+      $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', isDayTalk);
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
       $('#werewolfInitialFullLogPanel').classList.toggle('is-hidden', !isInitialTestimony);
-      $('#werewolfRecentLog').parentElement.classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfRecentLogPanel').classList.toggle('is-hidden', !isDayTalk);
       renderWerewolfCharacterDetail();
       renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
