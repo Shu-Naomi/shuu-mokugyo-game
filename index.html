@@ -1380,22 +1380,22 @@
           <div class="tab-panel is-active" id="werewolfProgressPanel">
             <div id="werewolfProgressSummaryBlock">
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
-            <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
-            <div class="mini-item"><span>共犯</span><span id="werewolfAccompliceInfo">-</span></div>
-            <div id="werewolfParticipants"></div>
-            <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
             <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
+            <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
             </div>
             <div id="werewolfProgressActionsBlock">
-            <div class="mini-item"><span>昼コマンド</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
-            <div class="mini-item"><span>事件導入</span><span id="werewolfIncidentIntro">-</span></div>
+            <div class="mini-item"><span>現在の目的 / 案内</span><span id="werewolfCommandHint">選択肢を押して会話を進めよう</span></div>
+            <div class="mini-item"><span>進行案内</span><span id="werewolfIncidentIntro">-</span></div>
             <div class="controls" id="werewolfIntroChoiceList"></div>
             <div id="werewolfDayActionBlock">
+            <div class="mini-item"><span>昼コマンド</span><span>いま実行する行動を選択</span></div>
             <div class="controls" id="werewolfCommandList"></div>
             <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
             <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
-            <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
-            <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
+            <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
+            <div class="mini-item"><span>AIズ反応（最新）</span><span id="werewolfReplyResult">-</span></div>
+            <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>debug</span><span id="werewolfDebugTagResult">-</span></div>
+            <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>debug</span><span id="werewolfDebugReplyResult">-</span></div>
             </div>
             </div>
             <div class="werewolf-log-panel is-hidden" id="werewolfInitialFullLogPanel" aria-label="初回証言ログ">
@@ -1416,12 +1416,18 @@
             </div>
           </div>
           <div class="tab-panel" id="werewolfInfoPanel">
-            <p class="werewolf-subtitle">参加キャラと現在の進行状態をまとめて確認できます。</p>
-            <div id="werewolfParticipantsInfo"></div>
+            <p class="werewolf-subtitle">調べるための情報タブです。全体情報とキャラ発言を確認できます。</p>
+            <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
+            <div class="mini-item"><span>共犯情報</span><span id="werewolfAccompliceInfo">-</span></div>
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentModeInfo">-</span></div>
             <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabelInfo">-</span></div>
             <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemainInfo">-</span></div>
             <div class="mini-item"><span>初動選択</span><span id="werewolfIntroChoiceInfo">-</span></div>
+            <div id="werewolfParticipantsInfo"></div>
+            <div class="werewolf-log-panel" aria-label="キャラ詳細">
+              <h3 class="werewolf-log-title">キャラ詳細</h3>
+              <div id="werewolfCharacterDetail" class="werewolf-talk-log">キャラを選択してください</div>
+            </div>
           </div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
@@ -1533,6 +1539,7 @@
         introChoice: null,
         debugMode: false,
         activeTab: 'progress',
+        selectedInfoCharacterId: 'naomi',
         turn: 0,
         maxTalkTurns: 3,
         talkLog: [],
@@ -1694,29 +1701,37 @@
       $('#werewolfAccompliceInfo').textContent = isPlayerWerewolf
         ? (accomplices.length ? accomplices.join(' / ') : 'なし')
         : '非公開';
-      $('#werewolfParticipants').innerHTML = werewolf.participants.map(member => {
+      $('#werewolfParticipantsInfo').innerHTML = werewolf.participants.map(member => {
         const ally = isPlayerWerewolf && member.id !== werewolf.playerId && member.role === 'werewolf'
           ? ' 🐺 共犯'
           : '';
-        return `<div class="mini-item"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}${ally}</span></div>`;
+        const selected = member.id === werewolf.selectedInfoCharacterId;
+        return `<div class="mini-item"><button data-info-character-id="${escapeHtml(member.id)}"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}${ally}${selected ? ' / 選択中' : ''}</span></button></div>`;
       }).join('');
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
       const phaseLabels = { incidentIntro: '事件導入フェーズ', initialTestimony: '初回証言フェーズ', dayTalk: '昼会話フェーズ' };
       const phaseText = phaseLabels[werewolf.phase] || werewolf.phase;
+      const objectiveByPhase = {
+        incidentIntro: 'まず初動選択を決めて、証言フェーズへ進みます。',
+        initialTestimony: '証言を読み切って状況を把握し、昼コマンドへ進みます。',
+        dayTalk: '昼コマンドか任意コメントで議論を進行してください。'
+      };
       $('#werewolfPhaseLabel').textContent = phaseText;
+      $('#werewolfCommandHint').textContent = objectiveByPhase[werewolf.phase] || '選択肢を押して会話を進めよう';
       $('#werewolfCurrentModeInfo').textContent = werewolf.mode === 'chaos' ? 'カオスモード' : '通常モード';
       $('#werewolfPhaseLabelInfo').textContent = phaseText;
       $('#werewolfTalkRemainInfo').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
       $('#werewolfIntroChoiceInfo').textContent = werewolf.introChoice || '未選択';
-      $('#werewolfParticipantsInfo').innerHTML = $('#werewolfParticipants').innerHTML;
       renderWerewolfIntro();
       renderWerewolfCommands();
-      $('#werewolfDebugTagsRow').classList.toggle('is-hidden', !werewolf.debugMode);
-      $('#werewolfDebugRepliesRow').classList.toggle('is-hidden', !werewolf.debugMode);
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
       $('#werewolfReplyResult').textContent = latestLog?.text || '-';
+      $('#werewolfDebugTagsRow').classList.toggle('is-hidden', !werewolf.debugMode);
+      $('#werewolfDebugRepliesRow').classList.toggle('is-hidden', !werewolf.debugMode);
+      $('#werewolfDebugTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
+      $('#werewolfDebugReplyResult').textContent = latestLog?.text || '-';
       const allLogsHtml = werewolf.talkLog.length
         ? werewolf.talkLog.map((entry, idx) => renderTalkLogCard(entry, idx)).join('')
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
@@ -1733,12 +1748,31 @@
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
       $('#werewolfInitialFullLogPanel').classList.toggle('is-hidden', !isInitialTestimony);
       $('#werewolfRecentLog').parentElement.classList.toggle('is-hidden', !isDayTalk);
+      renderWerewolfCharacterDetail();
       renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
       const canTalk = werewolf.phase === 'dayTalk' && !finished;
       $('#werewolfTalkInput').disabled = !canTalk;
       $('#werewolfTalkSubmit').disabled = !canTalk;
       $('#werewolfTalkFinished').classList.toggle('is-hidden', !finished);
+    }
+
+    function renderWerewolfCharacterDetail() {
+      const selectedId = werewolf.selectedInfoCharacterId || 'naomi';
+      const member = werewolf.participants.find(item => item.id === selectedId) || werewolf.participants[0];
+      if (!member) return;
+      const memberLogs = werewolf.talkLog.filter(entry => entry.speaker === member.name);
+      const latest = memberLogs[memberLogs.length - 1];
+      const detail = [
+        `<div class="mini-item"><span>キャラ名</span><span>${escapeHtml(member.name)}</span></div>`,
+        `<div class="mini-item"><span>キャラタイプ</span><span>${escapeHtml(member.characterType)}</span></div>`,
+        `<div class="mini-item"><span>現在状態</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}</span></div>`,
+        `<div class="mini-item"><span>最新発言</span><span>${escapeHtml(latest?.text || 'まだ発言はありません')}</span></div>`
+      ];
+      if (memberLogs.length) {
+        detail.push(memberLogs.map((entry, index) => renderTalkLogCard(entry, index)).join(''));
+      }
+      $('#werewolfCharacterDetail').innerHTML = detail.join('');
     }
 
     function renderWerewolfIntro() {
@@ -3184,6 +3218,12 @@
     });
     $('#werewolfTalkInput').addEventListener('keydown', event => {
       if (event.key === 'Enter') submitWerewolfTalk();
+    });
+    $('#werewolfParticipantsInfo').addEventListener('click', event => {
+      const button = event.target.closest('button[data-info-character-id]');
+      if (!button) return;
+      werewolf.selectedInfoCharacterId = button.dataset.infoCharacterId;
+      renderWerewolf();
     });
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
