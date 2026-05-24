@@ -2950,8 +2950,10 @@
       setWerewolfMode('normal');
       switchView('werewolfLobby');
     });
+    const WEREWOLF_ENTRY_CHARACTERS = ['直美', 'シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
+
     $('#werewolfHowTo').addEventListener('click', () => showToast('遊び方：選択肢で昼会話を進め、怪しい証言を見抜こう。'));
-    $('#werewolfCharacters').addEventListener('click', () => showToast('登場キャラ：シュウ、直美、トマ、ミユ、レン、ココ、ラビ。'));
+    $('#werewolfCharacters').addEventListener('click', () => showToast(`登場キャラ：${WEREWOLF_ENTRY_CHARACTERS.join('、')}`));
     $('#werewolfEntryBackMini').addEventListener('click', () => switchView('mini'));
     $('#werewolfModeNormal').addEventListener('click', () => setWerewolfMode('normal'));
     $('#werewolfModeChaos').addEventListener('click', () => setWerewolfMode('chaos'));
