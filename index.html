@@ -484,6 +484,71 @@
       cursor: pointer;
     }
 
+    .werewolf-log-panel {
+      padding: 12px;
+      border-radius: 16px;
+      background: rgba(255, 248, 236, 0.04);
+      border: 1px solid var(--line);
+      display: grid;
+      gap: 10px;
+    }
+
+    .werewolf-log-title {
+      margin: 0;
+      font-size: 0.88rem;
+      color: var(--muted);
+      letter-spacing: 0.02em;
+    }
+
+    .werewolf-talk-log {
+      display: grid;
+      gap: 9px;
+    }
+
+    .werewolf-talk-empty {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .werewolf-log-card {
+      margin: 0;
+      padding: 10px 12px;
+      border-radius: 14px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      background: rgba(255, 255, 255, 0.06);
+      border-left: 4px solid var(--speaker-color, var(--accent));
+      display: grid;
+      gap: 5px;
+      line-height: 1.58;
+    }
+
+    .werewolf-log-speaker {
+      display: inline-flex;
+      align-items: center;
+      width: fit-content;
+      padding: 3px 8px;
+      border-radius: 999px;
+      font-size: 0.73rem;
+      font-weight: 900;
+      letter-spacing: 0.01em;
+      color: #2f2032;
+      background: var(--speaker-color, var(--accent));
+    }
+
+    .werewolf-log-text {
+      margin: 0;
+      font-size: 0.91rem;
+      color: var(--text);
+      word-break: break-word;
+    }
+
+    .werewolf-log-debug {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.74rem;
+    }
+
 
     .werewolf-entry {
       padding: 14px;
@@ -1273,7 +1338,10 @@
           </div>
           <div class="mini-item is-hidden" id="werewolfDebugTagsRow"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
           <div class="mini-item is-hidden" id="werewolfDebugRepliesRow"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
-          <div class="mini-item"><span>会話ログ</span><span id="werewolfTalkLog">まだ発言はありません</span></div>
+          <div class="werewolf-log-panel" aria-label="会話ログ">
+            <h3 class="werewolf-log-title">会話ログ</h3>
+            <div id="werewolfTalkLog" class="werewolf-talk-log">まだ発言はありません</div>
+          </div>
           <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
@@ -1488,17 +1556,36 @@
       renderWerewolf();
     }
 
-    function formatTalkLogLine(entry) {
+    function getSpeakerColor(speaker) {
+      const speakerColors = {
+        '直美': '#ffcf91',
+        'シュウ': '#9df3c4',
+        'リク': '#96d1ff',
+        'ユウ': '#ffe184',
+        'グレイ': '#b9c6ff',
+        'チャッピーGrey': '#cbbfff',
+        'マンディ': '#ff9fb0',
+        '横会話': '#d8d2ff'
+      };
+      return speakerColors[speaker] || '#ffd9a1';
+    }
+
+    function renderTalkLogCard(entry, index) {
       if (!entry) return '';
-      const body = `${escapeHtml(entry.speaker)}「${escapeHtml(entry.text)}」`;
-      if (!werewolf.debugMode) return body;
       const debug = [];
       if (entry.type) debug.push(`type: ${entry.type}`);
       if (entry.target) debug.push(`target: ${entry.target}`);
       if (entry.topic) debug.push(`topic: ${entry.topic}`);
       if (entry.actionType) debug.push(`actionType: ${entry.actionType}`);
       if (entry.tags?.length) debug.push(`tags: ${entry.tags.join(' / ')}`);
-      return debug.length ? `${body}<br><small style="color: var(--muted);">[${escapeHtml(debug.join(' / '))}]</small>` : body;
+      const debugHtml = werewolf.debugMode && debug.length
+        ? `<p class="werewolf-log-debug">${escapeHtml(debug.join(' / '))}</p>`
+        : '';
+      return `<article class="werewolf-log-card" style="--speaker-color:${getSpeakerColor(entry.speaker)}">
+        <span class="werewolf-log-speaker">${index + 1}. ${escapeHtml(entry.speaker)}</span>
+        <p class="werewolf-log-text">「${escapeHtml(entry.text)}」</p>
+        ${debugHtml}
+      </article>`;
     }
 
     function renderWerewolf() {
@@ -1531,8 +1618,8 @@
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
       $('#werewolfReplyResult').textContent = latestLog?.text || '-';
       $('#werewolfTalkLog').innerHTML = werewolf.talkLog.length
-        ? werewolf.talkLog.map((entry, idx) => `${idx + 1}. ${formatTalkLogLine(entry)}`).join('<hr style="border-color: rgba(255,255,255,0.1);">')
-        : 'まだ発言はありません';
+        ? werewolf.talkLog.map((entry, idx) => renderTalkLogCard(entry, idx)).join('')
+        : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
       const canTalk = werewolf.phase === 'dayTalk' && !finished;
       $('#werewolfTalkInput').disabled = !canTalk;
