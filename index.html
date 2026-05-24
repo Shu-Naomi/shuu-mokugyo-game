@@ -1209,7 +1209,8 @@
         <section class="card mini-menu">
           <h2 class="section-title">犬小屋人狼 本編</h2>
           <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
-          <div class="mini-item"><span>直美の役職</span><span id="werewolfNaomiRole">-</span></div>
+          <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
+          <div class="mini-item"><span>共犯</span><span id="werewolfAccompliceInfo">-</span></div>
           <div id="werewolfParticipants"></div>
           <div class="mini-item"><span>残り発言回数</span><span id="werewolfTalkRemain">-</span></div>
           <div class="mini-item"><span>昼フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
@@ -1222,7 +1223,7 @@
           <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
           <div class="mini-item"><span>AIズ反応</span><span id="werewolfReplyResult">-</span></div>
           <div class="mini-item"><span>会話ログ</span><span id="werewolfTalkLog">まだ発言はありません</span></div>
-          <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>投票フェーズは次回実装予定</span></div>
+          <div class="mini-item is-hidden" id="werewolfTalkFinished"><span>案内</span><span>監査室送り選択フェーズは次回実装予定</span></div>
           <div class="controls">
             <button id="goWerewolfResult">📋 結果を見る（ダミー）</button>
             <button id="werewolfBackLobby" class="secondary">🏠 ロビーへ戻る</button>
@@ -1378,7 +1379,7 @@
     }
 
     function roleName(role) {
-      return ({ werewolf: '人狼', fortuneTeller: '占い師', knight: '騎士', villager: '村人' })[role] || '未設定';
+      return ({ werewolf: 'おやつ横領犯', fortuneTeller: '占い師', knight: '騎士', villager: 'おやつ守備隊' })[role] || '未設定';
     }
 
     function startWerewolfGame() {
@@ -1403,11 +1404,17 @@
       const isPlayerWerewolf = player?.role === 'werewolf';
       $('#werewolfCurrentMode').textContent = werewolf.mode === 'chaos' ? 'カオスモード' : '通常モード';
       $('#werewolfNaomiRole').textContent = roleName(player?.role);
+      const accomplices = werewolf.participants
+        .filter(member => member.id !== werewolf.playerId && member.role === 'werewolf')
+        .map(member => member.name);
+      $('#werewolfAccompliceInfo').textContent = isPlayerWerewolf
+        ? (accomplices.length ? accomplices.join(' / ') : 'なし')
+        : '非公開';
       $('#werewolfParticipants').innerHTML = werewolf.participants.map(member => {
         const ally = isPlayerWerewolf && member.id !== werewolf.playerId && member.role === 'werewolf'
-          ? ' 🐺 仲間'
+          ? ' 🐺 共犯'
           : '';
-        return `<div class="mini-item"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '生存' : '脱落'}${ally}</span></div>`;
+        return `<div class="mini-item"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}${ally}</span></div>`;
       }).join('');
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
@@ -1458,7 +1465,7 @@
         /^(私|わたし|俺|ぼく|僕)(が|は)(人狼|占い師|村人|騎士)/.test(text),
         /(人狼|占い師|村人|騎士)\s*CO$/i.test(text)
       ].some(Boolean);
-      if (isRoleCo) tags.add('役職CO');
+      if (isRoleCo) tags.add('役割CO');
 
       const defendPatterns = [
         /人狼じゃない/,
@@ -1511,7 +1518,7 @@
 
       if (hasTarget && (tags.has('疑い') || tags.has('庇い') || tags.has('質問'))) tags.add('対象');
 
-      if (['吊ろう', '投票', '処刑'].some(word => normalizedInput.includes(word))) tags.add('投票誘導');
+      if (['吊ろう', '投票', '処刑'].some(word => normalizedInput.includes(word))) tags.add('監査室送り選択誘導');
       if (['冗談', '分からない', '混乱', '適当', 'バグ', 'おかしい', '壊れ', '乱れ', '異常', 'ズレ'].some(word => normalizedInput.includes(word))) {
         score.chaos += 1;
         tags.add('撹乱');
@@ -1575,7 +1582,7 @@
       if (tags.includes('撹乱')) required.add(['マンディ', 'ユウ', 'チャッピーGrey'][Math.floor(Math.random() * 3)]);
       if (normalizedInputText.includes('マンディ')) required.add('マンディ');
 
-      const needOrganize = tags.includes('役職CO') || tags.includes('投票誘導');
+      const needOrganize = tags.includes('役割CO') || tags.includes('監査室送り選択誘導');
       if (needOrganize) required.add('チャッピーGrey');
 
       const baseOrder = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'];
@@ -1591,7 +1598,7 @@
 
       const shouldUseChappyPriority = needOrganize
         || tags.includes('疑い')
-        || tags.includes('役職CO')
+        || tags.includes('役割CO')
         || tags.includes('撹乱')
         || normalizedInputText.includes('ログ')
         || normalizedInputText.includes('整理');
@@ -1610,8 +1617,8 @@
         && tags.includes('感情行動')
         && mentionedTargets.length === 0
         && !tags.includes('疑い')
-        && !tags.includes('役職CO')
-        && !tags.includes('投票誘導')
+        && !tags.includes('役割CO')
+        && !tags.includes('監査室送り選択誘導')
         && !tags.includes('撹乱')
         && !tags.includes('庇い');
       if (isPureEmotionShort) {
@@ -1626,8 +1633,8 @@
         if (!selected.includes(name)) selected.push(name);
       }
 
-      const minReplies = Math.max(minByMode, (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い') || tags.includes('質問')) ? 2 : 1);
-      const maxReplies = Math.min(maxByMode, (isTargetedSuspicion || tags.includes('役職CO') || tags.includes('疑い強め')) ? 4 : 3);
+      const minReplies = Math.max(minByMode, (isTargetedSuspicion || tags.includes('役割CO') || tags.includes('疑い') || tags.includes('質問')) ? 2 : 1);
+      const maxReplies = Math.min(maxByMode, (isTargetedSuspicion || tags.includes('役割CO') || tags.includes('疑い強め')) ? 4 : 3);
 
       if (!shouldUseChappyPriority && selected.length > 1 && selected.includes('チャッピーGrey')) {
         const others = selected.filter(name => name !== 'チャッピーGrey');
@@ -1640,7 +1647,7 @@
         selected.push(candidate);
       }
 
-      if (isVeryShort && selected.length > 1 && !isTargetedSuspicion && !tags.includes('役職CO') && !tags.includes('疑い')) {
+      if (isVeryShort && selected.length > 1 && !isTargetedSuspicion && !tags.includes('役割CO') && !tags.includes('疑い')) {
         selected.splice(1);
       }
 
