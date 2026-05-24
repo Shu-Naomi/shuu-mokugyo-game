@@ -1694,7 +1694,9 @@
       const player = werewolf.participants.find(member => member.id === werewolf.playerId);
       const isPlayerWerewolf = player?.role === 'werewolf';
       $('#werewolfCurrentMode').textContent = werewolf.mode === 'chaos' ? 'カオスモード' : '通常モード';
-      $('#werewolfNaomiRole').textContent = roleName(player?.role);
+      $('#werewolfNaomiRole').textContent = isPlayerWerewolf || werewolf.debugMode
+        ? roleName(player?.role)
+        : '非公開';
       const accomplices = werewolf.participants
         .filter(member => member.id !== werewolf.playerId && member.role === 'werewolf')
         .map(member => member.name);
@@ -1702,11 +1704,15 @@
         ? (accomplices.length ? accomplices.join(' / ') : 'なし')
         : '非公開';
       $('#werewolfParticipantsInfo').innerHTML = werewolf.participants.map(member => {
-        const ally = isPlayerWerewolf && member.id !== werewolf.playerId && member.role === 'werewolf'
+        const isWerewolfSideVisible = isPlayerWerewolf || werewolf.debugMode;
+        const ally = isWerewolfSideVisible && member.id !== werewolf.playerId && member.role === 'werewolf'
           ? ' 🐺 共犯'
           : '';
+        const roleSuffix = (member.id === werewolf.playerId && isWerewolfSideVisible)
+          ? ` / ${roleName(member.role)}`
+          : '';
         const selected = member.id === werewolf.selectedInfoCharacterId;
-        return `<div class="mini-item"><button data-info-character-id="${escapeHtml(member.id)}"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}${ally}${selected ? ' / 選択中' : ''}</span></button></div>`;
+        return `<div class="mini-item"><button data-info-character-id="${escapeHtml(member.id)}"><span>${escapeHtml(member.name)}（${escapeHtml(member.characterType)}）</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}${roleSuffix}${ally}${selected ? ' / 選択中' : ''}</span></button></div>`;
       }).join('');
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
@@ -1743,7 +1749,7 @@
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
       const isInitialTestimony = werewolf.phase === 'initialTestimony';
       const isDayTalk = werewolf.phase === 'dayTalk';
-      $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
       $('#werewolfInitialFullLogPanel').classList.toggle('is-hidden', !isInitialTestimony);
@@ -1761,12 +1767,21 @@
       const selectedId = werewolf.selectedInfoCharacterId || 'naomi';
       const member = werewolf.participants.find(item => item.id === selectedId) || werewolf.participants[0];
       if (!member) return;
+      const player = werewolf.participants.find(item => item.id === werewolf.playerId);
+      const isPlayerWerewolf = player?.role === 'werewolf';
+      const showWerewolfInfo = isPlayerWerewolf || werewolf.debugMode;
       const memberLogs = werewolf.talkLog.filter(entry => entry.speaker === member.name);
       const latest = memberLogs[memberLogs.length - 1];
+      const detailRole = showWerewolfInfo ? roleName(member.role) : '非公開';
+      const accompliceLabel = !showWerewolfInfo
+        ? '非公開'
+        : ((member.id !== werewolf.playerId && member.role === 'werewolf') ? 'あり' : 'なし');
       const detail = [
         `<div class="mini-item"><span>キャラ名</span><span>${escapeHtml(member.name)}</span></div>`,
         `<div class="mini-item"><span>キャラタイプ</span><span>${escapeHtml(member.characterType)}</span></div>`,
         `<div class="mini-item"><span>現在状態</span><span>${member.alive ? '参加中' : 'ログ修復待ち'}</span></div>`,
+        `<div class="mini-item"><span>役割</span><span>${escapeHtml(detailRole)}</span></div>`,
+        `<div class="mini-item"><span>共犯フラグ</span><span>${escapeHtml(accompliceLabel)}</span></div>`,
         `<div class="mini-item"><span>最新発言</span><span>${escapeHtml(latest?.text || 'まだ発言はありません')}</span></div>`
       ];
       if (memberLogs.length) {
