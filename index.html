@@ -1563,6 +1563,7 @@
         maxTalkTurns: 5,
         talkLog: [],
         concernLog: [],
+        testimonyCards: [],
         lastInputTags: [],
         gameOver: false,
         winner: null
@@ -1657,6 +1658,30 @@
         .map(member => member.name);
     }
 
+
+    function createTestimonyCard({ speaker, claim = '', time = '', place = '', sensory = '', denial = '', target = '', contradictionTags = [], type = 'testimony' }) {
+      return {
+        speaker,
+        claim,
+        time,
+        place,
+        sensory,
+        denial,
+        target,
+        contradictionTags: Array.from(new Set(contradictionTags.filter(Boolean))),
+        type
+      };
+    }
+
+    function addTestimonyCard(card) {
+      if (!card || !card.speaker) return;
+      werewolf.testimonyCards.push(createTestimonyCard(card));
+    }
+
+    function testimonyLabel(type) {
+      return ({ testimony: '証言', press: '追加証言', organize: '整理' })[type] || '証言';
+    }
+
     function buildInitialTestimonies(choiceLabel = '全員に証言を求める') {
       const isChaos = werewolf.mode === 'chaos';
       const wasStorageNearBy = ['おやつ保管庫を調べる', '黒塗りログを確認する'].includes(choiceLabel);
@@ -1673,10 +1698,10 @@
         { speaker: '直美', text: '私は昨日の夜、おやつを置いたはず', type: 'testimony' }
       ];
       const linesByName = {
-        シュウ: '僕、夜中に甘い匂いはしたけど……保管庫には近づいてないよ',
+        シュウ: '僕は食べてないよ。でも甘い匂いがしたのは寝る少し前だったと思う。保管庫には近づいてない……はず。廊下は通ったかもしれない',
         リク: 'まず時系列を確認しよ。最後におやつを見た人が大事',
         ユウ: '僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！',
-        グレイ: '監査ログに黒塗り箇所を確認。これは事件だ！',
+        グレイ: '監査ログを見る限り、23:10〜23:20だけ妙に整っている。僕が気になるのは人物より時刻の整い方だ',
         チャッピーGrey: '……夜、少しだけ誰かが動いた気配はあった',
         マンディ: 'おやつが消えた？ はいはい、甘いログ犯罪ってわけか'
       };
@@ -1709,6 +1734,15 @@
           }
           return { speaker: member.name, text, type: 'testimony' };
         });
+      const cards = [
+        createTestimonyCard({ speaker: 'シュウ', claim: '甘い匂いはした', time: '寝る直前', place: '保管庫には近づいていない（廊下は通ったかもしれない）', sensory: '甘い匂い', denial: '保管庫前は通っていないはず', contradictionTags: ['smell', 'storage', 'timeAmbiguous'] }),
+        createTestimonyCard({ speaker: 'リク', claim: '時系列を確認する', time: '23:00基準', target: '全員', contradictionTags: ['timelineChecker'] }),
+        createTestimonyCard({ speaker: 'ユウ', claim: '食べていないが食べたいとは思った', time: 'みんなが寝る少し前', denial: '勝手には食べていない', contradictionTags: ['desire', 'denyEat'] }),
+        createTestimonyCard({ speaker: 'グレイ', claim: '黒塗りログに不自然な時刻がある', time: '23:10〜23:20付近', place: '監査ログ', sensory: '物音は聞こえなかった', contradictionTags: ['blackLog', 'timeClean', 'noSound'] }),
+        createTestimonyCard({ speaker: 'チャッピーGrey', claim: '夜に誰かが動いた気配があった', time: '夜中', sensory: '気配', contradictionTags: ['presence', 'nightMove'] }),
+        createTestimonyCard({ speaker: 'マンディ', claim: '黒塗りログが気になる', place: '監査ログ', contradictionTags: ['blackLog', 'detailShort'] })
+      ];
+      cards.forEach(addTestimonyCard);
       return [...base, ...testimony];
     }
 
@@ -1771,6 +1805,7 @@
       werewolf.introChoice = null;
       werewolf.turn = 0;
       werewolf.talkLog = [];
+      werewolf.testimonyCards = [];
       werewolf.lastInputTags = [];
       werewolf.debugMode = false;
       werewolf.activeTab = 'meeting';
@@ -1804,7 +1839,7 @@
         ? `<p class="werewolf-log-debug">${escapeHtml(debug.join(' / '))}</p>`
         : '';
       return `<article class="werewolf-log-card" style="--speaker-color:${getSpeakerColor(entry.speaker)}">
-        <span class="werewolf-log-speaker">${index + 1}. ${escapeHtml(entry.speaker)}</span>
+        <span class="werewolf-log-speaker">${index + 1}. [${escapeHtml(entry.logLabel || testimonyLabel(entry.type))}] ${escapeHtml(entry.speaker)}</span>
         <p class="werewolf-log-text">「${escapeHtml(entry.text)}」</p>
         ${debugHtml}
       </article>`;
@@ -1968,33 +2003,34 @@
     }
 
     function buildRikuOrganizeSummary() {
-      const testimonyLogs = werewolf.talkLog.filter(entry => entry.type === 'testimony');
-      const evidenceLogs = werewolf.talkLog.filter(entry => ['commandReaction', 'followup', 'reply'].includes(entry.type));
-      const testimonyByName = ['シュウ', 'リク', 'ユウ', 'グレイ', 'チャッピーGrey', 'マンディ'].map(name => {
-        const found = testimonyLogs.find(line => line.speaker === name);
-        return found ? `- ${name}：${found.text}` : null;
-      }).filter(Boolean);
-      const concernPool = [
-        '黒塗りログの時刻が整いすぎている',
-        '甘い匂いの証言と、何も聞こえなかった証言にズレがある',
-        '犯人側は時系列説明が少し弱い可能性がある'
+      const cards = werewolf.testimonyCards || [];
+      const timeline = [
+        '22:50頃：おやつ保管庫に「おやつ山盛りドンっ♡」があった可能性',
+        '23:00頃：誰かが保管庫付近を通った可能性',
+        '23:10〜23:20頃：黒塗りログが残る',
+        '寝る直前：シュウが甘い匂いを感じた',
+        '夜中：チャッピーGreyが誰かの気配を感じた',
+        '朝：おやつ消失が発覚'
       ];
-      werewolf.concernLog.slice(-3).forEach(item => concernPool.push(item.text));
-      if (evidenceLogs.some(line => /23:00|23:10|23:20|23:30/.test(line.text))) concernPool.push('23時台の証言が集中していて、意図的な揃えの可能性がある');
+      const summary = ['シュウ','リク','ユウ','グレイ','チャッピーGrey','マンディ'].map(name => {
+        const card = cards.filter(c => c.speaker === name).slice(-1)[0];
+        return card ? `- ${name}：${card.claim}${card.denial ? `（${card.denial}）` : ''}` : null;
+      }).filter(Boolean);
+      const concerns = [
+        'シュウの「甘い匂いはした」と、保管庫に近づいていないという否定が少し気になる',
+        'グレイの「黒塗り時刻は整いすぎている」と、物音は聞こえなかったという証言に温度差がある',
+        'チャッピーGreyの「誰かが動いた気配」と、他キャラの「何も聞いていない」が一致していない',
+        'マンディは黒塗りログに反応しているが、具体的な時刻説明が少ない'
+      ];
+      addTestimonyCard({ speaker: 'リク', claim: '時系列と証言ズレを整理した', type: 'organize', contradictionTags: ['timelineChecker','organize'] });
       return [
-        'リク「整理するね。現時点の流れはこう」',
-        'リク「1. 事件発覚」',
-        'リク「- おやつ保管庫から「おやつ山盛りドンっ♡」が消えた」',
-        'リク「- 黒塗りログが残っている」',
-        'リク「2. 初回証言」',
-        ...testimonyByName.map(line => `リク「${line}」`),
-        'リク「3. 気になる点」',
-        ...concernPool.slice(0, 3).map(line => `リク「- ${line}」`),
-        'リク「4. 次に見るべきこと」',
-        'リク「- 黒塗りログ」',
-        'リク「- 保管庫付近の証言」',
-        'リク「- 時刻の矛盾」',
-        'リク「- ゆさぶり時の反応」'
+        'リク「整理するね。今の時系列はこう」',
+        'リク「【時系列】」',
+        ...timeline.map(line => `リク「- ${line}」`),
+        'リク「【証言まとめ】」',
+        ...summary.map(line => `リク「${line}」`),
+        'リク「【気になる点】」',
+        ...concerns.map(line => `リク「- ${line}」`)
       ];
     }
 
@@ -2370,14 +2406,24 @@
       targetReaction.forEach((line, idx) => {
         const match = line.match(/^([^「]+)「(.+)」$/);
         if (!match) return;
-        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: idx === 0 ? 'commandReaction' : 'followup' });
+        const parsedType = command.topic === 'organize' ? 'organize' : (command.topic === 'press' ? 'additionalTestimony' : (idx === 0 ? 'commandReaction' : 'followup'));
+        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: parsedType, logLabel: testimonyLabel(command.topic === 'press' ? 'press' : parsedType === 'organize' ? 'organize' : 'testimony') });
       });
       if (command.topic === 'press') {
-        appendConcern(`${command.target}へのゆさぶり結果を確認中。疑いではなく証言深掘りとして保留。`, command.target, ['ゆさぶり', '確認ポイント']);
+        const pressCards = {
+          シュウ: { speaker: 'シュウ', type: 'press', claim: '甘い匂いは寝る直前', time: '寝る直前', denial: '保管庫前は通っていない', contradictionTags: ['smell', 'timeAmbiguous', 'storageDeny'] },
+          リク: { speaker: 'リク', type: 'press', claim: '23:00基準で再照合する', time: '23:00基準', contradictionTags: ['timelineChecker'] },
+          ユウ: { speaker: 'ユウ', type: 'press', claim: '食べていない', denial: '勝手に食べていない', contradictionTags: ['denyEat'] },
+          グレイ: { speaker: 'グレイ', type: 'press', claim: '23:10〜23:20の整列が不自然', time: '23:10〜23:20', contradictionTags: ['blackLog', 'timeClean'] },
+          チャッピーGrey: { speaker: 'チャッピーGrey', type: 'press', claim: '夜に誰かの気配', time: '夜中', sensory: '足音1回', contradictionTags: ['presence', 'nightMove'] },
+          マンディ: { speaker: 'マンディ', type: 'press', claim: '黒塗り時刻だけ整いすぎ', contradictionTags: ['blackLog', 'detailShort'] }
+        };
+        addTestimonyCard(pressCards[command.target]);
+        appendConcern(`${command.target}のゆさぶり追加証言を記録。疑い断定ではなく、確認すべき違和感として保持。`, command.target, ['ゆさぶり', '追加証言']);
         adjustTrustSignals(command.target, { pressure: 1, suspicion: 0.15 });
       }
-      if (command.topic === 'log') appendConcern('黒塗りログの時刻が整いすぎ。作為か記録処理かを再確認する。', 'グレイ');
-      if (command.topic === 'suspicion') appendConcern('発言の温度差があり、話題そらしの可能性を確認する。', 'チャッピーGrey');
+      if (command.topic === 'log') appendConcern('グレイの「黒塗り時刻は整いすぎ」と、物音を聞いていない証言の温度差を確認する。', 'グレイ');
+      if (command.topic === 'suspicion') appendConcern('チャッピーGreyの「誰かが動いた気配」と、他メンバーの無音証言がズレていないか確認する。', 'チャッピーGrey');
       if (command.topic === 'organize') appendConcern('リク整理の時系列と各証言の時刻を照合する。', 'リク');
       if (sideTalk) {
         const line = sideTalk.replace(/^（横会話）/, '');
