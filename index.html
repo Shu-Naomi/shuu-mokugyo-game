@@ -1419,12 +1419,14 @@
                 <button id="werewolfBackInvestigation" class="secondary">🔍 調査に戻る</button>
               </div>
             </div>
-            <div class="mini-item is-hidden" id="werewolfArgumentBlock"><span>会議／投票／論破フェーズ</span><span>怪しいメンバーと根拠ログを選んで論破する</span></div>
+            <div class="mini-item is-hidden" id="werewolfArgumentBlock"><span>論破フェーズ</span><span>怪しいメンバーを指名し、再証言の矛盾を探してください</span></div>
             <div class="mini-item is-hidden" id="werewolfArgumentTargetRow"><span>怪しいメンバー</span><span id="werewolfArgumentTargetSummary">未選択</span></div>
             <div class="controls" id="werewolfArgumentTargets"></div>
+            <div class="mini-item is-hidden" id="werewolfRetestimonyRow"><span>再証言カード</span><span id="werewolfRetestimonySummary">まだ再証言はありません</span></div>
             <div class="mini-item is-hidden" id="werewolfEvidenceRow"><span>根拠ログ</span><span id="werewolfEvidenceSummary">未選択</span></div>
             <div class="controls" id="werewolfEvidenceList"></div>
-            <div class="controls"><button id="werewolfDebateSubmit" class="secondary">⚡ この根拠で論破する</button><button id="werewolfVoteSubmit" class="secondary">🗳️ 投票する</button></div>
+            <div class="controls"><button id="werewolfDebateSubmit" class="secondary">⚡ この根拠で論破する</button><button id="werewolfVoteSubmit" class="secondary">🗳️ 投票へ進む</button><button id="werewolfBackToMeetingFromRefute" class="secondary">↩ 会議へ戻る</button></div>
+            <div class="mini-item is-hidden" id="werewolfRefutationResultRow"><span>論破結果</span><span id="werewolfRefutationResultText">-</span></div>
             <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
             <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
             <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
@@ -1590,6 +1592,11 @@
         testimonyProgress: {},
         selectedArgumentTargetId: '',
         selectedEvidenceIndex: -1,
+        discoveredClues: ['sweet_smell', 'vague_route', 'hallway', 'clean_log', 'audit_log', 'suspicious_time_range', 'blackout_log', 'hidden_phrase', 'sweet_smell_link', 'movement_presence', 'patrol_route_vague', 'timeline_gap'],
+        suspectRetestimony: null,
+        refutationResult: null,
+        refutedTarget: '',
+        randomAttackTarget: '',
         lastInputTags: [],
         gameOver: false,
         winner: null,
@@ -1857,6 +1864,10 @@
       werewolf.lastInputTags = [];
       werewolf.selectedArgumentTargetId = '';
       werewolf.selectedEvidenceIndex = -1;
+      werewolf.suspectRetestimony = null;
+      werewolf.refutationResult = null;
+      werewolf.refutedTarget = '';
+      werewolf.randomAttackTarget = '';
       werewolf.debateOutcome = null;
       werewolf.pendingVoteTargetId = '';
       werewolf.meetingLogs = [];
@@ -1987,13 +1998,15 @@
       $('#werewolfMeetingBlock').classList.toggle('is-hidden', !isMeetingPhase);
       $('#werewolfArgumentBlock').classList.toggle('is-hidden', !isArgumentPhase);
       $('#werewolfArgumentTargetRow').classList.toggle('is-hidden', !isArgumentPhase);
+      $('#werewolfRetestimonyRow').classList.toggle('is-hidden', !isArgumentPhase);
       $('#werewolfEvidenceRow').classList.toggle('is-hidden', !isArgumentPhase);
+      $('#werewolfRefutationResultRow').classList.toggle('is-hidden', !isArgumentPhase);
       $('#werewolfGoMeeting').disabled = !(isDayTalk && !werewolf.gameOver);
       $('#werewolfDebateStart').disabled = !isMeetingPhase;
       $('#werewolfVoteStart').disabled = !isMeetingPhase;
       $('#werewolfContinueMeeting').disabled = !isMeetingPhase;
       $('#werewolfDebateSubmit').disabled = !isArgumentPhase;
-      $('#werewolfVoteSubmit').disabled = !isVotePhase;
+      $('#werewolfVoteSubmit').disabled = !(isVotePhase || isArgumentPhase);
       $('#werewolfArgumentTargets').innerHTML = isArgumentPhase
         ? werewolf.participants
           .filter(member => member.id !== werewolf.playerId && member.status === 'active')
@@ -2001,13 +2014,14 @@
         : '';
       const selectedTarget = werewolf.participants.find(member => member.id === werewolf.selectedArgumentTargetId);
       $('#werewolfArgumentTargetSummary').textContent = selectedTarget ? `${selectedTarget.name}を疑っている` : '未選択';
-      const evidenceLogs = werewolf.talkLog.map((entry, idx) => ({ ...entry, idx }))
-        .filter(entry => ['証言', '追加証言', '違和感', '疑念変化', '整理', '監査', '黒塗りログ'].includes(entry.logLabel || testimonyLabel(entry.type)));
+      $('#werewolfRetestimonySummary').textContent = werewolf.suspectRetestimony?.text || 'まだ再証言はありません';
       $('#werewolfEvidenceList').innerHTML = isArgumentPhase
-        ? evidenceLogs.slice(-12).map(entry => `<button data-evidence-index="${entry.idx}">#${entry.idx + 1} [${escapeHtml(entry.logLabel || testimonyLabel(entry.type))}] ${escapeHtml(entry.speaker)}：${escapeHtml(entry.text.slice(0, 32))}</button>`).join('')
+        ? werewolf.discoveredClues.map((tag, idx) => `<button data-evidence-index="${idx}">${escapeHtml(tag)}</button>`).join('')
         : '';
-      const selectedEvidence = werewolf.talkLog[werewolf.selectedEvidenceIndex];
-      $('#werewolfEvidenceSummary').textContent = selectedEvidence ? `#${werewolf.selectedEvidenceIndex + 1} ${selectedEvidence.speaker}：${selectedEvidence.text.slice(0, 20)}` : '未選択';
+      const selectedEvidenceTag = werewolf.discoveredClues[werewolf.selectedEvidenceIndex];
+      $('#werewolfEvidenceSummary').textContent = selectedEvidenceTag || '未選択';
+      const resultLabel = werewolf.refutationResult === 'success' ? 'success（追及成功）' : werewolf.refutationResult === 'weak' ? 'weak（決定打不足）' : werewolf.refutationResult === 'fail' ? 'fail（論破失敗）' : '-';
+      $('#werewolfRefutationResultText').textContent = resultLabel;
       const meetingTopics = [
         '23:10〜23:20の黒塗りログ',
         '甘い匂いを誰がどこで感じたか',
@@ -2676,40 +2690,66 @@
         werewolf.talkLog.push({ speaker: '進行', text: `翌朝、${target.name}がフリーズしていた。`, type: 'nightResult', target: target.name, tags: ['夜行動', '襲撃結果'] });
       }
     }
+    function runRefuteFailAttack() {
+      const candidates = werewolf.participants.filter(member =>
+        member.status === 'active' &&
+        member.role !== 'werewolf' &&
+        member.id !== werewolf.playerId
+      );
+      if (!candidates.length) return;
+      const target = candidates[Math.floor(Math.random() * candidates.length)];
+      werewolf.randomAttackTarget = target.id;
+      markMemberStatus(target, 'frozen', '論破失敗後の襲撃');
+      werewolf.talkLog.push({ speaker: '進行', text: `夜の犬小屋で、犯人側がこっそり動いた。${target.name}が次の会議に参加できなくなった`, type: 'refuteFailAttack', target: target.name, tags: ['襲撃ログ', '論破失敗'] });
+    }
+
+    function buildSuspectRetestimony(target) {
+      const isCulprit = target.role === 'werewolf';
+      const suspectReTestimonyMap = {
+        shuu: { culprit: { text: '僕は保管庫の前では止まってないよ。ただ、廊下の曲がり角で甘い匂いが強くなった気はする', tags: ['sweet_smell', 'vague_route', 'hallway'] }, innocent: { text: '甘い匂いはしたけど、僕がいたのは寝床に近い廊下だよ。保管庫の扉には触ってない', tags: [] } },
+        gray: { culprit: { text: '僕が見た時点では、23:15付近の記録だけ妙に滑らかだった', tags: ['clean_log', 'audit_log', 'suspicious_time_range'] }, innocent: { text: 'ログが整っているのは事実。でも僕が分かるのは、改ざんの痕跡があるというところまでだ', tags: [] } },
+        mandy: { culprit: { text: 'あの伏せ字、たぶん“甘い匂い”って単語を隠してるんだろ', tags: ['blackout_log', 'hidden_phrase', 'sweet_smell_link'] }, innocent: { text: '黒塗りの位置が変なんだよ。だが、中身までは俺にも分からねぇ', tags: [] } },
+        chappyGrey: { culprit: { text: '誰かが動いた気配はあった。でも……足音は、たぶん小さかった', tags: ['movement_presence'] }, innocent: { text: '動いた気配はあった。でも誰かまでは分からない。僕は見てない', tags: [] } },
+        yuu: { culprit: { text: '見回りはしました。でも保管庫の前を通ったかは……ちょっと覚えてません', tags: ['patrol_route_vague'] }, innocent: { text: '見回りはしました。でも保管庫側の廊下には行ってません', tags: [] } },
+        riku: { culprit: { text: '時系列で見ると、23:10〜23:20が空白だね。でもそこは今は後回しにしよう', tags: ['timeline_gap'] }, innocent: { text: '時系列で見ると、23:10〜23:20の黒塗りが重要だと思う。そこを中心に考えよう', tags: [] } }
+      };
+      const source = suspectReTestimonyMap[target.id];
+      if (!source) return null;
+      const picked = isCulprit ? source.culprit : source.innocent;
+      return { targetId: target.id, targetName: target.name, text: picked.text, contradictionTags: picked.tags, isCulprit };
+    }
 
     function judgeRefutation(targetId, evidenceIndex) {
       const target = werewolf.participants.find(member => member.id === targetId);
-      const evidence = werewolf.talkLog[evidenceIndex];
+      const evidenceTag = werewolf.discoveredClues[evidenceIndex];
       if (!target || target.status !== 'active' || werewolf.phase !== 'refute' || werewolf.gameOver) return;
-      werewolf.talkLog.push({ speaker: '直美', text: `${target.name}を論破対象に選ぶ`, type: 'argumentTarget', target: target.name, tags: ['論破対象'] });
-      if (evidence) werewolf.talkLog.push({ speaker: '直美', text: `根拠ログ提示：#${evidenceIndex + 1} ${evidence.speaker}「${evidence.text}」`, type: 'argumentEvidence', target: target.name, tags: ['根拠ログ'] });
-      const culpritEvidenceMap = {
-        shuu: ['sweet_smell', 'vague_route', 'hallway'],
-        gray: ['clean_log', 'audit_log', 'suspicious_time_range', 'no_sound'],
-        mandy: ['blackout_log', 'hidden_phrase', 'sweet_smell_link'],
-        yuu: ['patrol_route_vague'],
-        riku: ['timeline_gap'],
-        chappyGrey: ['movement_presence']
-      };
-      const evidenceTags = evidence?.tags || [];
-      const expectedTags = culpritEvidenceMap[target.id] || [];
-      const evidenceMatch = expectedTags.some(tag => evidenceTags.includes(tag));
-      const isCulprit = target.role === 'werewolf';
-      if (isCulprit && evidenceMatch) {
+      const reTestimony = werewolf.suspectRetestimony || buildSuspectRetestimony(target);
+      const evidenceMatch = reTestimony?.contradictionTags?.includes(evidenceTag);
+      if (reTestimony?.isCulprit && evidenceMatch) {
+        werewolf.refutationResult = 'success';
         werewolf.debateOutcome = 'success';
+        werewolf.refutedTarget = target.id;
         werewolf.pendingVoteTargetId = target.id;
         target.suspicion += 4;
+        target.playerTrust = clamp01((target.playerTrust || 0) - 0.15);
+        const player = werewolf.participants.find(m => m.id === werewolf.playerId);
+        if (player) player.playerTrust = clamp01((player.playerTrust || 0.5) + 0.06);
         werewolf.talkLog.push({ speaker: '進行', text: `直美の指摘が刺さった。${target.name}の証言に明確な矛盾が生まれた`, type: 'argumentSuccess', target: target.name, tags: ['論破成功'] });
-      } else if (isCulprit) {
+      } else if (reTestimony?.isCulprit) {
+        werewolf.refutationResult = 'weak';
         werewolf.debateOutcome = 'weak';
+        werewolf.refutedTarget = target.id;
         werewolf.pendingVoteTargetId = target.id;
         target.suspicion += 1.2;
         werewolf.talkLog.push({ speaker: '進行', text: '怪しい点はあるが、決定打には足りない', type: 'argumentWeak', target: target.name, tags: ['論破弱い'] });
       } else {
+        werewolf.refutationResult = 'fail';
         werewolf.debateOutcome = 'fail';
         const player = werewolf.participants.find(m => m.id === werewolf.playerId);
-        if (player) player.trust = clamp01((player.trust || 0) - 0.08);
+        if (player) player.trust = clamp01((player.trust || 0) - 0.12);
+        werewolf.participants.filter(m => m.role === 'werewolf' && m.status === 'active').forEach(m => { m.culpritBias = (m.culpritBias || 0) + 0.2; });
         werewolf.talkLog.push({ speaker: '進行', text: 'その根拠では論破できなかった。会議の空気が少し乱れた', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
+        runRefuteFailAttack();
       }
       renderWerewolf();
     }
@@ -2721,19 +2761,20 @@
       const livingTargets = voters.map(v => v.name);
       const player = werewolf.participants.find(m => m.id === werewolf.playerId);
       const votes = [];
+      const spreadNoise = werewolf.refutationResult === 'fail' ? 1.8 : 0.6;
       voters.forEach(voter => {
         let targetName = livingTargets[0];
         if (voter.id === werewolf.playerId && playerTargetId) {
           const p = werewolf.participants.find(m => m.id === playerTargetId && m.status === 'active');
           targetName = p ? p.name : targetName;
-      } else if (['success', 'weak'].includes(werewolf.debateOutcome) && werewolf.pendingVoteTargetId) {
-          const forced = werewolf.participants.find(m => m.id === werewolf.pendingVoteTargetId && m.status === 'active');
-          const ratio = werewolf.debateOutcome === 'success' ? 0.88 : 0.64;
+      } else if (['success', 'weak'].includes(werewolf.refutationResult) && werewolf.refutedTarget) {
+          const forced = werewolf.participants.find(m => m.id === werewolf.refutedTarget && m.status === 'active');
+          const ratio = werewolf.refutationResult === 'success' ? 0.88 : 0.64;
           if (forced && Math.random() < ratio) targetName = forced.name;
         } else {
           const pick = werewolf.participants.filter(m => m.status === 'active').reduce((best,m)=>{
             const bias = voter.role === 'werewolf' && m.id !== voter.id ? voter.culpritBias : 0;
-            const score = m.suspicion + (1-m.trust)*1.2 + m.pressure*0.6 + ((voter.influence||0.5)*0.2) + bias + Math.random()*0.6;
+            const score = m.suspicion + (1-m.trust)*1.2 + m.pressure*0.6 + ((voter.influence||0.5)*0.2) + bias + Math.random()*spreadNoise;
             return score > best.score ? {name:m.name,score} : best;
           },{name:targetName,score:-99});
           targetName = pick.name;
@@ -3809,6 +3850,10 @@
     $('#werewolfDebateStart').addEventListener('click', () => {
       if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
       werewolf.phase = 'refute';
+      werewolf.selectedArgumentTargetId = '';
+      werewolf.selectedEvidenceIndex = -1;
+      werewolf.suspectRetestimony = null;
+      werewolf.refutationResult = null;
       renderWerewolf();
     });
     $('#werewolfContinueMeeting').addEventListener('click', () => {
@@ -3822,7 +3867,15 @@
       werewolf.talkLog.push({ speaker: '進行', text: '簡易投票フェーズに移行。現在の論点で投票を行う。', type: 'phaseChange', tags: ['投票フェーズ'] });
       renderWerewolf();
     });
-    $('#werewolfVoteSubmit')?.addEventListener('click', () => runVote(werewolf.selectedArgumentTargetId));
+    $('#werewolfVoteSubmit')?.addEventListener('click', () => {
+      if (werewolf.phase === 'refute') {
+        werewolf.phase = 'vote';
+        werewolf.talkLog.push({ speaker: '進行', text: '論破フェーズを終了。投票フェーズへ進む。', type: 'phaseChange', tags: ['投票フェーズ'] });
+        renderWerewolf();
+        return;
+      }
+      runVote(werewolf.selectedArgumentTargetId);
+    });
     $('#werewolfDebateSubmit').addEventListener('click', () => {
       if (!werewolf.selectedArgumentTargetId || werewolf.selectedEvidenceIndex < 0) return;
       judgeRefutation(werewolf.selectedArgumentTargetId, werewolf.selectedEvidenceIndex);
@@ -3849,6 +3902,12 @@
       const button = event.target.closest('button[data-argument-target-id]');
       if (!button) return;
       werewolf.selectedArgumentTargetId = button.dataset.argumentTargetId;
+      const target = werewolf.participants.find(member => member.id === werewolf.selectedArgumentTargetId);
+      werewolf.suspectRetestimony = target ? buildSuspectRetestimony(target) : null;
+      werewolf.talkLog.push({ speaker: '直美', text: `${target?.name || '対象'}を指名。再証言を要求する。`, type: 'argumentTarget', target: target?.name, tags: ['論破対象'] });
+      if (werewolf.suspectRetestimony) {
+        werewolf.talkLog.push({ speaker: target.name, text: werewolf.suspectRetestimony.text, type: 'additionalTestimony', target: target.name, tags: ['再証言', ...werewolf.suspectRetestimony.contradictionTags] });
+      }
       renderWerewolf();
     });
     $('#werewolfEvidenceList').addEventListener('click', event => {
@@ -3879,6 +3938,11 @@
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
     $('#werewolfBackInvestigation')?.addEventListener('click', () => { werewolf.phase = 'investigation'; renderWerewolf(); });
+    $('#werewolfBackToMeetingFromRefute')?.addEventListener('click', () => {
+      if (werewolf.phase !== 'refute') return;
+      werewolf.phase = 'meeting';
+      renderWerewolf();
+    });
     $('#werewolfRestart')?.addEventListener('click', () => { startWerewolfGame(); switchView('werewolf'); });
     $('#werewolfBackMiniPersistent').addEventListener('click', () => switchView('mini'));
     $('#werewolfLobbyBackMini').addEventListener('click', () => switchView('mini'));
