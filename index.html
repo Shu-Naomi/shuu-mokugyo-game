@@ -2046,6 +2046,24 @@
       $('#werewolfPressCommandList').innerHTML = pressHtml;
     }
 
+
+    function buildEvidenceContrasts() {
+      const cards = werewolf.testimonyCards || [];
+      const latest = (name, type) => cards.filter(c => c.speaker === name && c.type === type).slice(-1)[0];
+      const shuu = latest('シュウ', 'press') || latest('シュウ', 'testimony');
+      const gray = latest('グレイ', 'press') || latest('グレイ', 'testimony');
+      const chappy = latest('チャッピーGrey', 'press') || latest('チャッピーGrey', 'testimony');
+      const yu = latest('ユウ', 'press') || latest('ユウ', 'testimony');
+      const mandy = latest('マンディ', 'press') || latest('マンディ', 'testimony');
+      const points = [];
+      if (chappy && gray) points.push('チャッピーGreyは夜に誰かが動いた気配を感じたが、グレイは物音を聞いていないと証言している。');
+      if (yu) points.push('ユウは保管庫付近を通ったか曖昧だが、甘い匂いは感じている。');
+      if (gray) points.push('グレイは監査室ログを見ており、23:10〜23:20のログが整いすぎている。');
+      if (mandy) points.push('マンディは黒塗りログに詳しいが、詳しい理由を説明していない。');
+      if (shuu) points.push('シュウは甘い匂いを感じたが、保管庫前は通っていないと述べている。');
+      return points;
+    }
+
     function buildRikuOrganizeSummary() {
       const cards = werewolf.testimonyCards || [];
       const timeline = [
@@ -2065,9 +2083,10 @@
         return card ? `- ${name}：${card.claim}${card.denial ? `（${card.denial}）` : ''}` : null;
       }).filter(Boolean);
       const concerns = [
-        ...werewolf.concernLog.slice(-5).map(c => `- ${c.text}`),
+        ...werewolf.concernLog.slice(-4).map(c => `- ${c.text}`),
+        ...buildEvidenceContrasts().map(point => `- 論点候補：${point}`),
         ...werewolf.reasoningPoints.map(point => `- 論点候補：${point}`)
-      ].slice(0, 8);
+      ].slice(0, 10);
       addTestimonyCard({ speaker: 'リク', claim: '時系列と証言ズレを整理した', type: 'organize', contradictionTags: ['timelineChecker','organize'] });
       return [
         'リク「整理するね」',
@@ -2440,6 +2459,21 @@
           }
         }
       }
+
+      if (command.topic === 'log') {
+        reply = [
+          'グレイ「[監査] 23:10〜23:20のログだけ整いすぎている。改行と時刻の揃い方が不自然だ」',
+          '進行「[違和感] グレイの証言と監査ログの整い方に関係がありそうだ」',
+          'リク「[論点候補] 監査ログを扱える人物に絞れるかもしれない」'
+        ];
+      }
+      if (command.topic === 'blacklog') {
+        reply = [
+          'マンディ「[黒塗り] 伏せた部分が一番うるさいやつだ。改変痕だけ残ってる」',
+          '進行「[違和感] マンディは黒塗りログに詳しいが、なぜ詳しいのか説明していない」',
+          'リク「[論点候補] 黒塗りログを触れる立場か、見た立場かを分けよう」'
+        ];
+      }
       const sidePick = base[1];
       const shouldSideTalk = sidePick && (command.target === '全体' || Math.random() < 0.55);
       const sideTalk = shouldSideTalk ? `（横会話）${sidePick}` : null;
@@ -2497,7 +2531,7 @@
           マンディ: { speaker: 'マンディ', type: 'press', claim: '黒塗り時刻だけ綺麗すぎる', contradictionTags: ['blackLog', 'detailShort', 'tooDetailed'] }
         };
         const concernByTarget = {
-          シュウ: 'シュウは甘い匂いを認めたが、保管庫前を通っていないと言っている',
+          シュウ: 'シュウの証言は保管庫付近の誰かを示しているが、シュウ本人を疑う決定打ではない',
           リク: 'リクは23:10〜23:20のログだけ妙に整っていると述べた',
           ユウ: 'ユウは見回りを認めたが、保管庫付近を通ったかが曖昧',
           グレイ: 'グレイは23:10〜23:20のログが整いすぎていると指摘した',
@@ -2505,12 +2539,12 @@
           マンディ: 'マンディは黒塗りログに詳しいが、なぜ詳しいのか説明していない'
         };
         const suspicionShiftByTarget = {
-          シュウ: { text: 'シュウへの疑念が少し強まった', delta: { pressure: 1, suspicion: 1, trust: -0.03 } },
+          シュウ: { text: 'シュウの甘い匂い証言は気になるが、保管庫前を通った証拠はない。疑念は保留。', delta: { pressure: 0.2, suspicion: 0, trust: 0 } },
           リク: { text: 'リクの証言は時系列整理に使えそう', delta: { pressure: 0.5, suspicion: -0.5, trust: 0.04, credibility: 0.03 } },
           ユウ: { text: 'ユウの見回り証言に小さな引っかかりが残った', delta: { pressure: 1, suspicion: 1, trust: -0.03 } },
-          グレイ: { text: 'グレイの監査証言は重要そうだ', delta: { pressure: 0.8, suspicion: -0.3, trust: 0.03, credibility: 0.04 } },
+          グレイ: { text: 'グレイの監査発言と23:10〜23:20のログ整合性が噛み合いすぎている。', delta: { pressure: 1, suspicion: 0.8, trust: -0.02, credibility: 0.01 } },
           チャッピーGrey: { text: 'チャッピーGreyの気配証言は照合が必要だ', delta: { pressure: 0.8, suspicion: 0.5 } },
-          マンディ: { text: 'マンディの反応に少し引っかかりが残った', delta: { pressure: 1, suspicion: 1, trust: -0.02 } }
+          マンディ: { text: 'マンディは黒塗りログに詳しいが、詳しい理由を説明していない。囮の可能性もある。', delta: { pressure: 0.8, suspicion: 0.6, trust: -0.01 } }
         };
         const pointsByTarget = {
           シュウ: '甘い匂いの時刻',
@@ -2528,9 +2562,16 @@
         rememberReasoningPoint(pointsByTarget[command.target]);
         rememberReasoningPoint('保管庫前を通ったかどうか');
       }
-      if (command.topic === 'log') appendConcern('グレイの「黒塗り時刻は整いすぎ」と、物音を聞いていない証言の温度差を確認する。', 'グレイ');
-      if (command.topic === 'suspicion') appendConcern('チャッピーGreyの「誰かが動いた気配」と、他メンバーの無音証言がズレていないか確認する。', 'チャッピーGrey');
-      if (command.topic === 'organize') appendConcern('リク整理の時系列と各証言の時刻を照合する。', 'リク');
+      if (command.topic === 'log') {
+        appendConcern('23:10〜23:20の監査ログだけ整っている点と、グレイ証言の近さを照合する。', 'グレイ', ['監査','違和感']);
+        rememberReasoningPoint('監査室ログを扱える立場の切り分け');
+      }
+      if (command.topic === 'suspicion') appendConcern('チャッピーGreyは気配あり、グレイは物音なしと証言している。物音・気配の認識にズレがある。', 'チャッピーGrey');
+      if (command.topic === 'organize') appendConcern('物音・甘い匂い・ログ/黒塗りの証言ズレを論点候補として整理する。', 'リク');
+      if (command.topic === 'blacklog') {
+        appendConcern('黒塗りログの改変痕跡と、マンディの知識源を切り分ける。', 'マンディ', ['黒塗り','違和感']);
+        rememberReasoningPoint('黒塗りログを触れた人物と見ただけの人物の区別');
+      }
       if (sideTalk) {
         const line = sideTalk.replace(/^（横会話）/, '');
         werewolf.talkLog.push({ speaker: '横会話', text: line, type: 'sideTalk' });
