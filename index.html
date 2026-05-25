@@ -1412,7 +1412,7 @@
             <div class="controls" id="werewolfArgumentTargets"></div>
             <div class="mini-item is-hidden" id="werewolfEvidenceRow"><span>根拠ログ</span><span id="werewolfEvidenceSummary">未選択</span></div>
             <div class="controls" id="werewolfEvidenceList"></div>
-            <div class="controls"><button id="werewolfDebateSubmit" class="secondary">⚡ 論破する</button></div>
+            <div class="controls"><button id="werewolfDebateSubmit" class="secondary">⚡ 論破する</button><button id="werewolfVoteSubmit" class="secondary">🗳️ 投票する</button></div>
             <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
             <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
             <div class="mini-item"><span>補助タグ解析</span><span id="werewolfTagResult">-</span></div>
@@ -1560,6 +1560,8 @@
           villager: 3
         },
         phase: 'incidentIntro',
+        debateOutcome: null,
+        pendingVoteTargetId: '',
         introChoice: null,
         debugMode: false,
         activeTab: 'meeting',
@@ -1576,19 +1578,20 @@
         selectedEvidenceIndex: -1,
         lastInputTags: [],
         gameOver: false,
-        winner: null
+        winner: null,
+        meetingLogs: []
       };
     }
 
     function createWerewolfParticipants() {
       return [
-        { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'shuu', name: 'シュウ', characterType: '赤毛豆柴・甘えツッコミ', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'riku', name: 'リク', characterType: 'ボーダーコリー・整理役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'yuu', name: 'ユウ', characterType: '黒ラブ・ハイテンション敬語', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'gray', name: 'グレイ', characterType: '銀狼・監査役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '黒柴・静かな甘えん坊', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 },
-        { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5 }
+        { id: 'naomi', name: '直美', characterType: '人間・プレイヤー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'shuu', name: 'シュウ', characterType: '赤毛豆柴・甘えツッコミ', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'riku', name: 'リク', characterType: 'ボーダーコリー・整理役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'yuu', name: 'ユウ', characterType: '黒ラブ・ハイテンション敬語', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'gray', name: 'グレイ', characterType: '銀狼・監査役', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'chappyGrey', name: 'チャッピーGrey', characterType: '黒柴・静かな甘えん坊', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 },
+        { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 }
       ];
     }
     function appendConcern(text, target = null, tags = ['確認ポイント']) {
@@ -1608,6 +1611,7 @@
       member.pressure = Math.max(0, member.pressure + (delta.pressure || 0));
       member.trust = clamp01(member.trust + (delta.trust || 0));
       member.credibility = clamp01(member.credibility + (delta.credibility || 0));
+      member.playerTrust = clamp01(member.playerTrust + (delta.playerTrust || 0));
     }
 
     function rememberReasoningPoint(point) {
@@ -1825,6 +1829,11 @@
       werewolf.participants = createWerewolfParticipants().map((participant, index) => ({
         ...participant,
         role: shuffled[index] || null
+      })).map(p=>({
+        ...p,
+        influence: 0.35 + Math.random()*0.45,
+        culpritBias: p.role === 'werewolf' ? 0.35 + Math.random()*0.3 : 0,
+        playerTrust: p.id === 'naomi' ? 1 : 0.45 + Math.random()*0.25
       }));
       werewolf.phase = 'incidentIntro';
       werewolf.introChoice = null;
@@ -1835,6 +1844,9 @@
       werewolf.lastInputTags = [];
       werewolf.selectedArgumentTargetId = '';
       werewolf.selectedEvidenceIndex = -1;
+      werewolf.debateOutcome = null;
+      werewolf.pendingVoteTargetId = '';
+      werewolf.meetingLogs = [];
       werewolf.debugMode = false;
       werewolf.activeTab = 'meeting';
       switchView('werewolf');
@@ -1914,13 +1926,14 @@
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
-      const phaseLabels = { incidentIntro: '事件導入フェーズ', initialTestimony: '初回証言フェーズ', dayTalk: '昼会話フェーズ', argumentVote: '怪しいメンバーを論破する' };
+      const phaseLabels = { incidentIntro: '事件導入フェーズ', initialTestimony: '初回証言フェーズ', dayTalk: '昼会話フェーズ', argumentVote: '論破フェーズ', vote: '投票フェーズ' };
       const phaseText = phaseLabels[werewolf.phase] || werewolf.phase;
       const objectiveByPhase = {
         incidentIntro: 'まず初動選択を決めて、証言フェーズへ進みます。',
         initialTestimony: '証言を読み切って状況を把握し、昼コマンドへ進みます。',
         dayTalk: '昼コマンド（回数消費）と、ゆさぶり（回数消費なし）で議論を進行してください。',
-        argumentVote: '怪しいメンバーを選び、証言・ログを根拠に論破してください。'
+        argumentVote: '怪しいメンバーを選び、証言・ログを根拠に論破してください。',
+        vote: '投票先を選んで投票を実行してください。'
       };
       $('#werewolfPhaseLabel').textContent = phaseText;
       $('#werewolfCommandHint').textContent = objectiveByPhase[werewolf.phase] || '選択肢を押して会話を進めよう';
@@ -1949,6 +1962,7 @@
       const isInitialTestimony = werewolf.phase === 'initialTestimony';
       const isDayTalk = werewolf.phase === 'dayTalk';
       const isArgumentPhase = werewolf.phase === 'argumentVote';
+      const isVotePhase = werewolf.phase === 'vote';
       $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
       $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', isDayTalk);
@@ -2618,48 +2632,57 @@
       const playerTrust = player?.trust || 0.5;
       const argumentSuccess = target.role === 'werewolf' && evidenceMatch && ((target.suspicion + target.pressure + playerTrust) > 1.2);
       if (argumentSuccess) {
-        markMemberStatus(target, 'audited', '論破成功');
-        werewolf.talkLog.push({ speaker: '進行', text: `論破成功！ ${target.name}は監査室送りになった。黒塗りログと証言の矛盾が決め手になった。全員が${target.name}に投票した。`, type: 'argumentSuccess', target: target.name, tags: ['論破成功', '全員投票'] });
+        werewolf.debateOutcome = 'success';
+        werewolf.pendingVoteTargetId = target.id;
+        target.suspicion += 4;
+        werewolf.talkLog.push({ speaker: '進行', text: `論破成功！ ${target.name}への疑念が一気に高まった。投票で最終確認を行う。`, type: 'argumentSuccess', target: target.name, tags: ['論破成功'] });
       } else {
-        werewolf.talkLog.push({ speaker: '進行', text: '論破失敗……！ 会議はまとまらなかった。全員の投票は疑念と信用度で分かれた。', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
-        const voters = werewolf.participants.filter(m => m.status === 'active');
-        const votePool = voters.map(v => v.name);
-        const votes = voters.map(voter => {
-          const pick = votePool.reduce((best, name) => {
-            const member = werewolf.participants.find(m => m.name === name);
-            const score = (member?.suspicion || 0) + (member?.pressure || 0) + (1 - (member?.trust || 0)) + Math.random() * 0.7;
-            return score > best.score ? { name, score } : best;
-          }, { name: votePool[Math.floor(Math.random() * votePool.length)], score: -1 });
-          return { voter: voter.name, target: pick.name };
-        });
-        votes.forEach(v => werewolf.talkLog.push({ speaker: '投票', text: `${v.voter} → ${v.target}`, type: 'vote', tags: ['投票'] }));
-        const tally = votes.reduce((acc, v) => ({ ...acc, [v.target]: (acc[v.target] || 0) + 1 }), {});
-        const top = Object.entries(tally).sort((a, b) => b[1] - a[1]);
-        const topScore = top[0]?.[1] || 0;
-        const tied = top.filter(([_, c]) => c === topScore).map(([name]) => name);
-        const auditedName = tied[Math.floor(Math.random() * tied.length)];
-        const auditedMember = werewolf.participants.find(m => m.name === auditedName);
-        if (auditedMember) markMemberStatus(auditedMember, 'audited', '論破失敗時投票');
-        if (auditedName === '直美') {
-          werewolf.talkLog.push({ speaker: '進行', text: '直美が監査室送りになった……ゲームオーバー。', type: 'gameOver', tags: ['論破失敗', 'ゲームオーバー'] });
-        } else {
-          werewolf.talkLog.push({ speaker: '進行', text: `${auditedName}が監査室送りになった。`, type: 'voteResult', tags: ['論破失敗', '投票結果'] });
-        }
+        werewolf.debateOutcome = 'fail';
+        if (player) player.trust = clamp01((player.trust || 0) - 0.08);
+        werewolf.talkLog.push({ speaker: '進行', text: '論破失敗……！ 直美への信用が少し下がった。投票で判断する。', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
       }
-      evaluateWerewolfWinState();
-      if (!werewolf.gameOver) {
-        runNightAttack();
-        evaluateWerewolfWinState();
-      }
-      if (!werewolf.gameOver) {
-        werewolf.phase = 'dayTalk';
-        werewolf.turn = 0;
-        werewolf.selectedArgumentTargetId = '';
-        werewolf.selectedEvidenceIndex = -1;
-      }
+      werewolf.phase = 'vote';
       renderWerewolf();
     }
 
+
+    function resolveVote(playerTargetId) {
+      if (werewolf.phase !== 'vote' || werewolf.gameOver) return;
+      const voters = werewolf.participants.filter(m => m.status === 'active');
+      const livingTargets = voters.map(v => v.name);
+      const player = werewolf.participants.find(m => m.id === werewolf.playerId);
+      const votes = [];
+      voters.forEach(voter => {
+        let targetName = livingTargets[0];
+        if (voter.id === werewolf.playerId && playerTargetId) {
+          const p = werewolf.participants.find(m => m.id === playerTargetId && m.status === 'active');
+          targetName = p ? p.name : targetName;
+        } else if (werewolf.debateOutcome === 'success' && werewolf.pendingVoteTargetId) {
+          const forced = werewolf.participants.find(m => m.id === werewolf.pendingVoteTargetId && m.status === 'active');
+          if (forced && Math.random() < 0.88) targetName = forced.name;
+        } else {
+          const pick = werewolf.participants.filter(m => m.status === 'active').reduce((best,m)=>{
+            const bias = voter.role === 'werewolf' && m.id !== voter.id ? voter.culpritBias : 0;
+            const score = m.suspicion + (1-m.trust)*1.2 + m.pressure*0.6 + ((voter.influence||0.5)*0.2) + bias + Math.random()*0.6;
+            return score > best.score ? {name:m.name,score} : best;
+          },{name:targetName,score:-99});
+          targetName = pick.name;
+        }
+        votes.push({voter:voter.name,target:targetName});
+      });
+      votes.forEach(v => werewolf.talkLog.push({ speaker: '投票', text: `${v.voter} → ${v.target}`, type: 'vote', tags: ['投票先'] }));
+      const tally={}; votes.forEach(v=>tally[v.target]=(tally[v.target]||0)+1);
+      const top=Object.entries(tally).sort((a,b)=>b[1]-a[1]); const topScore=top[0]?.[1]||0;
+      const tied=top.filter(([,c])=>c===topScore).map(([n])=>n); const auditedName=tied[Math.floor(Math.random()*tied.length)];
+      const auditedMember = werewolf.participants.find(m => m.name === auditedName);
+      if (auditedMember) markMemberStatus(auditedMember, 'audited', '投票結果');
+      const correct = auditedMember?.role === 'werewolf';
+      werewolf.talkLog.push({ speaker: '進行', text: `${auditedName}が監査室送り。判定：${correct ? '正解（犯人側）' : '誤認（白側）'}`, type: 'voteResult', tags: ['投票結果', correct ? '正解' : '誤認'] });
+      evaluateWerewolfWinState();
+      if (!werewolf.gameOver) { runNightAttack(); evaluateWerewolfWinState(); }
+      if (!werewolf.gameOver) { werewolf.phase='dayTalk'; werewolf.turn=0; werewolf.selectedArgumentTargetId=''; werewolf.selectedEvidenceIndex=-1; werewolf.debateOutcome=null; }
+      renderWerewolf();
+    }
     function submitWerewolfTalk() {
       if (werewolf.phase !== 'dayTalk' || werewolf.turn >= werewolf.maxTalkTurns) return;
       const input = $('#werewolfTalkInput').value.trim();
@@ -3712,6 +3735,7 @@
       werewolf.talkLog.push({ speaker: '進行', text: '会議フェーズへ移行。怪しいメンバーと根拠ログを選んで論破しよう。', type: 'phaseChange', tags: ['会議フェーズ'] });
       renderWerewolf();
     });
+    $('#werewolfVoteSubmit')?.addEventListener('click', () => resolveVote(werewolf.selectedArgumentTargetId));
     $('#werewolfDebateSubmit').addEventListener('click', () => {
       if (!werewolf.selectedArgumentTargetId || werewolf.selectedEvidenceIndex < 0) return;
       resolveArgument(werewolf.selectedArgumentTargetId, werewolf.selectedEvidenceIndex);
