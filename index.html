@@ -1448,6 +1448,7 @@
             </div>
           </div>
           <div class="tab-panel" id="werewolfLogPanel">
+            <div class="controls"><button id="werewolfBackToMeetingFromLog" class="secondary">← 会議画面へ戻る</button></div>
             <p class="werewolf-subtitle">初回証言・昼コマンド選択・AI反応・横会話・任意コメントを時系列で全件表示します。読み返し専用です。</p>
             <div class="werewolf-log-panel" aria-label="会話ログ">
               <h3 class="werewolf-log-title">会話ログ</h3>
@@ -1455,6 +1456,7 @@
             </div>
           </div>
           <div class="tab-panel" id="werewolfInfoPanel">
+            <div class="controls"><button id="werewolfBackToMeetingFromInfo" class="secondary">← 会議画面へ戻る</button></div>
             <p class="werewolf-subtitle">調査・確認専用タブです。参加キャラ、現在状態、キャラ別発言を確認できます。</p>
             <div class="mini-item"><span>直美の役割</span><span id="werewolfNaomiRole">-</span></div>
             <div class="mini-item"><span>共犯情報</span><span id="werewolfAccompliceInfo">-</span></div>
@@ -1571,7 +1573,7 @@
           knight: 1,
           villager: 3
         },
-        phase: 'investigation',
+        phase: 'introTestimony',
         debateOutcome: null,
         pendingVoteTargetId: '',
         introChoice: null,
@@ -1734,12 +1736,11 @@
         '自分の昨夜の行動を確認する': '自分の手帳には「23時前に保管庫を閉めた」とメモが残っていた。'
       };
       const base = [
-        { speaker: '直美', text: `初動は『${choiceLabel}』でいく。みんな、順番に昨夜のことを話して`, type: 'testimony' },
-        { speaker: '進行', text: choiceLead[choiceLabel] || choiceLead['全員に証言を求める'], type: 'introDetail' },
-        { speaker: '直美', text: '私は昨日の夜、おやつを置いたはず', type: 'testimony' }
+        { speaker: '直美', text: `初動選択：${choiceLabel}`, type: 'testimony' },
+        { speaker: '進行', text: choiceLead[choiceLabel] || choiceLead['全員に証言を求める'], type: 'introDetail' }
       ];
       const linesByName = {
-        シュウ: '僕は食べてないよ。でも甘い匂いがしたのは寝る少し前だったと思う。保管庫には近づいてない……はず。廊下は通ったかもしれない',
+        シュウ: '寝る少し前、廊下で甘い匂いを嗅いだ。でも、保管庫には近づいてない……はず',
         リク: 'まず時系列を確認しよ。最後におやつを見た人が大事',
         ユウ: '僕は食べてませんっ！ 食べたいとは思いましたけど、勝手には食べません！',
         グレイ: '監査ログを見る限り、23:10〜23:20だけ妙に整っている。僕が気になるのは人物より時刻の整い方だ',
@@ -1847,7 +1848,7 @@
         culpritBias: p.role === 'werewolf' ? 0.35 + Math.random()*0.3 : 0,
         playerTrust: p.id === 'naomi' ? 1 : 0.45 + Math.random()*0.25
       }));
-      werewolf.phase = 'investigation';
+      werewolf.phase = 'introTestimony';
       werewolf.introChoice = null;
       werewolf.turn = 0;
       werewolf.talkLog = [];
@@ -1941,9 +1942,10 @@
       const remain = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
       const latestLog = werewolf.talkLog[werewolf.talkLog.length - 1];
       $('#werewolfTalkRemain').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
-      const phaseLabels = { investigation: '調査フェーズ', meeting: '会議フェーズ', refute: '論破フェーズ', vote: '投票フェーズ', result: '結果フェーズ' };
+      const phaseLabels = { introTestimony: '初回証言フェーズ', investigation: '調査フェーズ', meeting: '会議フェーズ', refute: '論破フェーズ', vote: '投票フェーズ', result: '結果フェーズ' };
       const phaseText = phaseLabels[werewolf.phase] || werewolf.phase;
       const objectiveByPhase = {
+        introTestimony: '初回証言を確認して「調査フェーズへ進む」を押してください。',
         investigation: '調査で違和感ログを集め、会議に進んでください。',
         meeting: '論点・違和感ログ・疑念度を確認し、会議を進めてください。',
         refute: '容疑者と根拠ログを選び、「この根拠で論破する」で判定します。',
@@ -1973,14 +1975,14 @@
       $('#werewolfRecentLog').innerHTML = recentLogs.length
         ? recentLogs.map((entry, idx) => renderTalkLogCard(entry, werewolf.talkLog.length - recentLogs.length + idx)).join('')
         : '<p class="werewolf-talk-empty">まだ発言はありません</p>';
-      const isInitialTestimony = false;
+      const isInitialTestimony = werewolf.phase === 'introTestimony';
       const isDayTalk = werewolf.phase === 'investigation';
       const isMeetingPhase = werewolf.phase === 'meeting';
       const isArgumentPhase = werewolf.phase === 'refute';
       const isVotePhase = werewolf.phase === 'vote';
       $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
-      $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', isDayTalk);
+      $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', false);
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
       $('#werewolfMeetingBlock').classList.toggle('is-hidden', !isMeetingPhase);
       $('#werewolfArgumentBlock').classList.toggle('is-hidden', !isArgumentPhase);
@@ -2024,7 +2026,7 @@
       $('#werewolfMeetingTrust').textContent = trustRows.join(' | ');
       $('#werewolfMeetingRikuLine').textContent = 'リク「まず時系列を確認しよう。23:10〜23:20の黒塗り、甘い匂い、誰かが動いた気配。この3つが中心だと思う」';
       $('#werewolfInitialFullLogPanel').classList.toggle('is-hidden', !isInitialTestimony);
-      $('#werewolfRecentLogPanel').classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfRecentLogPanel').classList.toggle('is-hidden', !(isDayTalk || isInitialTestimony));
       renderWerewolfCharacterDetail();
       renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
@@ -2082,14 +2084,16 @@
     function renderWerewolfIntro() {
       const introEl = $('#werewolfIncidentIntro');
       const choiceEl = $('#werewolfIntroChoiceList');
-      if (werewolf.phase === 'investigation') {
+      if (werewolf.phase === 'introTestimony') {
         introEl.innerHTML = werewolfIncidentIntroLines.map(line => escapeHtml(line)).join('<br>');
-        choiceEl.innerHTML = werewolfIntroChoices
-          .map((label, index) => `<button data-intro-choice-index="${index}">${escapeHtml(label)}</button>`)
-          .join('');
-      } else if (false) {
-        introEl.textContent = `初動選択：${werewolf.introChoice || '全員に証言を求める'}（証言を確認したら昼コマンドへ）`;
-        choiceEl.innerHTML = '<button id="werewolfProceedDayTalk">昼コマンド選択へ進む</button>';
+        if (!werewolf.introChoice) {
+          choiceEl.innerHTML = werewolfIntroChoices
+            .map((label, index) => `<button data-intro-choice-index="${index}">${escapeHtml(label)}</button>`)
+            .join('');
+        } else {
+          introEl.innerHTML += `<br><br>初動選択：${escapeHtml(werewolf.introChoice)}`;
+          choiceEl.innerHTML = '<button id="werewolfProceedDayTalk">調査フェーズへ進む</button>';
+        }
       } else {
         introEl.textContent = `初動選択：${werewolf.introChoice || '全員に証言を求める'}（完了）`;
         choiceEl.innerHTML = '';
@@ -2168,11 +2172,10 @@
     }
 
     function submitWerewolfIntroChoice(choiceIndex) {
-      if (werewolf.phase !== 'investigation') return;
+      if (werewolf.phase !== 'introTestimony') return;
       const choiceLabel = werewolfIntroChoices[choiceIndex];
       if (!choiceLabel) return;
       werewolf.introChoice = choiceLabel;
-      werewolf.phase = 'investigation';
       werewolf.talkLog.push({
         speaker: '直美',
         text: `初動選択：${choiceLabel}`,
@@ -2185,7 +2188,8 @@
     }
 
     function proceedWerewolfDayTalk() {
-      if (werewolf.phase !== 'investigation') return;
+      if (werewolf.phase !== 'introTestimony') return;
+      werewolf.phase = 'investigation';
       renderWerewolf();
     }
 
@@ -3827,7 +3831,6 @@
     document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
       button.addEventListener('click', () => {
         werewolf.activeTab = button.dataset.werewolfTab;
-        if (button.dataset.werewolfTab === 'meeting' && werewolf.phase !== 'result') werewolf.phase = 'meeting';
         renderWerewolf();
       });
     });
@@ -3862,6 +3865,8 @@
       }
       if (event.target.closest('#werewolfProceedDayTalk')) proceedWerewolfDayTalk();
     });
+    $('#werewolfBackToMeetingFromLog')?.addEventListener('click', () => { werewolf.activeTab = 'meeting'; renderWerewolf(); });
+    $('#werewolfBackToMeetingFromInfo')?.addEventListener('click', () => { werewolf.activeTab = 'meeting'; renderWerewolf(); });
     $('#werewolfTalkInput').addEventListener('keydown', event => {
       if (event.key === 'Enter') submitWerewolfTalk();
     });
