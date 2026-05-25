@@ -1562,6 +1562,22 @@
       lastHint: 'シュウは木魚をぎゅっと抱えている。'
     };
 
+    const ALL_CLUE_TAGS = ['sweet_smell', 'vague_route', 'hallway', 'clean_log', 'audit_log', 'suspicious_time_range', 'blackout_log', 'hidden_phrase', 'sweet_smell_link', 'movement_presence', 'patrol_route_vague', 'timeline_gap'];
+    const clueLabels = {
+      sweet_smell: '甘い匂い',
+      vague_route: '曖昧な移動経路',
+      hallway: '廊下を通った可能性',
+      clean_log: '整いすぎたログ',
+      audit_log: '監査ログ知識',
+      suspicious_time_range: '23:10〜23:20の不自然な時刻',
+      blackout_log: '黒塗りログ',
+      hidden_phrase: '伏せ字の不自然さ',
+      sweet_smell_link: '甘い匂いとの関連',
+      movement_presence: '誰かが動いた気配',
+      patrol_route_vague: '見回り経路の曖昧さ',
+      timeline_gap: '時系列の空白'
+    };
+
     function createEmptyWerewolf() {
       return {
         active: false,
@@ -1592,7 +1608,7 @@
         testimonyProgress: {},
         selectedArgumentTargetId: '',
         selectedEvidenceIndex: -1,
-        discoveredClues: ['sweet_smell', 'vague_route', 'hallway', 'clean_log', 'audit_log', 'suspicious_time_range', 'blackout_log', 'hidden_phrase', 'sweet_smell_link', 'movement_presence', 'patrol_route_vague', 'timeline_gap'],
+        discoveredClues: [],
         suspectRetestimony: null,
         refutationResult: null,
         refutedTarget: '',
@@ -1872,6 +1888,7 @@
       werewolf.pendingVoteTargetId = '';
       werewolf.meetingLogs = [];
       werewolf.debugMode = false;
+      werewolf.discoveredClues = werewolf.debugMode ? [...ALL_CLUE_TAGS] : [];
       werewolf.activeTab = 'meeting';
       switchView('werewolf');
       renderWerewolf();
@@ -2016,12 +2033,13 @@
       $('#werewolfArgumentTargetSummary').textContent = selectedTarget ? `${selectedTarget.name}を疑っている` : '未選択';
       $('#werewolfRetestimonySummary').textContent = werewolf.suspectRetestimony?.text || 'まだ再証言はありません';
       $('#werewolfEvidenceList').innerHTML = isArgumentPhase
-        ? werewolf.discoveredClues.map((tag, idx) => `<button data-evidence-index="${idx}">${escapeHtml(tag)}</button>`).join('')
+        ? werewolf.discoveredClues.map((tag, idx) => `<button data-evidence-index="${idx}">${escapeHtml(clueLabels[tag] || tag)}</button>`).join('')
         : '';
       const selectedEvidenceTag = werewolf.discoveredClues[werewolf.selectedEvidenceIndex];
-      $('#werewolfEvidenceSummary').textContent = selectedEvidenceTag || '未選択';
-      const resultLabel = werewolf.refutationResult === 'success' ? 'success（追及成功）' : werewolf.refutationResult === 'weak' ? 'weak（決定打不足）' : werewolf.refutationResult === 'fail' ? 'fail（論破失敗）' : '-';
+      $('#werewolfEvidenceSummary').textContent = selectedEvidenceTag ? (clueLabels[selectedEvidenceTag] || selectedEvidenceTag) : '未選択';
+      const resultLabel = werewolf.refutationResult === 'success' ? '論破成功' : werewolf.refutationResult === 'weak' ? '怪しいが決定打不足' : werewolf.refutationResult === 'fail' ? '論破失敗。会議が混乱し、犯人側が動いた' : '-';
       $('#werewolfRefutationResultText').textContent = resultLabel;
+      $('#werewolfVoteSubmit').textContent = isArgumentPhase ? '🗳️ 投票フェーズへ進む' : isVotePhase ? '🗳️ 投票を実行する' : '🗳️ 投票へ進む';
       const meetingTopics = [
         '23:10〜23:20の黒塗りログ',
         '甘い匂いを誰がどこで感じたか',
@@ -3907,6 +3925,10 @@
       werewolf.talkLog.push({ speaker: '直美', text: `${target?.name || '対象'}を指名。再証言を要求する。`, type: 'argumentTarget', target: target?.name, tags: ['論破対象'] });
       if (werewolf.suspectRetestimony) {
         werewolf.talkLog.push({ speaker: target.name, text: werewolf.suspectRetestimony.text, type: 'additionalTestimony', target: target.name, tags: ['再証言', ...werewolf.suspectRetestimony.contradictionTags] });
+        if (!werewolf.suspectRetestimony.isCulprit) {
+          werewolf.talkLog.push({ speaker: 'リク', text: '今の証言には大きな矛盾はないと思う', type: 'organize', target: target.name, tags: ['再証言評価', '矛盾なし'] });
+          werewolf.talkLog.push({ speaker: 'マンディ', text: '空振りだな。疑うなら根拠を持ってこい', type: 'sideTalk', target: target.name, tags: ['再証言評価', '矛盾なし'] });
+        }
       }
       renderWerewolf();
     });
