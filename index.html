@@ -1563,6 +1563,8 @@
         maxTalkTurns: 5,
         talkLog: [],
         concernLog: [],
+        reasoningPoints: [],
+        suspicionShifts: [],
         testimonyCards: [],
         lastInputTags: [],
         gameOver: false,
@@ -1599,6 +1601,18 @@
       member.trust = clamp01(member.trust + (delta.trust || 0));
       member.credibility = clamp01(member.credibility + (delta.credibility || 0));
     }
+
+    function rememberReasoningPoint(point) {
+      if (!point) return;
+      if (!werewolf.reasoningPoints.includes(point)) werewolf.reasoningPoints.push(point);
+    }
+
+    function addSuspicionShift(memberName, text, delta = {}) {
+      adjustTrustSignals(memberName, delta);
+      werewolf.suspicionShifts.push({ memberName, text, delta, turn: werewolf.turn });
+      werewolf.talkLog.push({ speaker: '進行', text, type: 'suspicionShift', target: memberName, tags: ['疑念変化'] });
+    }
+
     function statusLabel(member) {
       if (member.status === 'frozen') return 'フリーズ';
       if (member.status === 'audited') return '監査室送り';
@@ -1679,7 +1693,7 @@
     }
 
     function testimonyLabel(type) {
-      return ({ testimony: '証言', press: '追加証言', organize: '整理' })[type] || '証言';
+      return ({ testimony: '証言', additionalTestimony: '追加証言', press: 'ゆさぶり', concern: '違和感', organize: '整理', sideTalk: '横会話', suspicionShift: '疑念変化' })[type] || '証言';
     }
 
     function buildInitialTestimonies(choiceLabel = '全員に証言を求める') {
@@ -2012,25 +2026,23 @@
         '夜中：チャッピーGreyが誰かの気配を感じた',
         '朝：おやつ消失が発覚'
       ];
-      const summary = ['シュウ','リク','ユウ','グレイ','チャッピーGrey','マンディ'].map(name => {
-        const card = cards.filter(c => c.speaker === name).slice(-1)[0];
+      const pressSummary = ['シュウ','グレイ','ユウ','チャッピーGrey','マンディ','リク'].map(name => {
+        const card = cards.filter(c => c.speaker === name && c.type === 'press').slice(-1)[0];
         return card ? `- ${name}：${card.claim}${card.denial ? `（${card.denial}）` : ''}` : null;
       }).filter(Boolean);
       const concerns = [
-        'シュウの「甘い匂いはした」と、保管庫に近づいていないという否定が少し気になる',
-        'グレイの「黒塗り時刻は整いすぎている」と、物音は聞こえなかったという証言に温度差がある',
-        'チャッピーGreyの「誰かが動いた気配」と、他キャラの「何も聞いていない」が一致していない',
-        'マンディは黒塗りログに反応しているが、具体的な時刻説明が少ない'
-      ];
+        ...werewolf.concernLog.slice(-5).map(c => `- ${c.text}`),
+        ...werewolf.reasoningPoints.map(point => `- 論点候補：${point}`)
+      ].slice(0, 8);
       addTestimonyCard({ speaker: 'リク', claim: '時系列と証言ズレを整理した', type: 'organize', contradictionTags: ['timelineChecker','organize'] });
       return [
-        'リク「整理するね。今の時系列はこう」',
+        'リク「整理するね」',
         'リク「【時系列】」',
         ...timeline.map(line => `リク「- ${line}」`),
-        'リク「【証言まとめ】」',
-        ...summary.map(line => `リク「${line}」`),
+        'リク「【追加証言】」',
+        ...(pressSummary.length ? pressSummary.map(line => `リク「${line}」`) : ['リク「- まだゆさぶり結果は少ない。次に積もう」']),
         'リク「【気になる点】」',
-        ...concerns.map(line => `リク「- ${line}」`)
+        ...concerns.map(line => `リク「${line}」`)
       ];
     }
 
@@ -2351,19 +2363,21 @@
       const targetIsWerewolf = targetMember?.role === 'werewolf';
       const targetTeammate = targetIsWerewolf ? getWerewolfTeammates(command.target)[0] : null;
       const pressByTarget = {
-        シュウ: ['シュウ「えっ、僕？ 甘い匂いはした。でも時間は……寝る直前かな」', 'シュウ「保管庫の前？ 通ってないと思う。たぶん」'],
-        リク: ['リク「僕の時系列は23:00基準。23:10〜23:20のログ整列と照合しよう」'],
-        ユウ: ['ユウ「えっ、僕ですか！？ 食べてませんっ！ 匂いがしたのは、みんなが寝る少し前ですっ！」'],
-        グレイ: ['グレイ「監査として答える。黒塗り時刻だけ整いすぎている、それが不自然だ」'],
-        チャッピーGrey: ['チャッピーGrey「……僕は足音を一回だけ聞いた。保管庫側だったと思う」'],
-        マンディ: ['マンディ「確認は歓迎だ。……ただ黒塗り時刻だけ整いすぎてるのは不自然だな」']
+        シュウ: { normal: 'シュウ「甘い匂いがしたのは寝る少し前。……でも保管庫の前は通ってない。たぶん」', werewolf: 'シュウ「僕は食べてないよ。甘い匂いは寝る前……いや、もう少し前だったかも」' },
+        リク: { normal: 'リク「僕の記録は23:00基準。だけど23:10〜23:20のログだけ妙に整ってる」', werewolf: 'リク「23:00基準で照合できる。……23:10〜23:20だけ綺麗なのは、少し出来すぎかな」' },
+        ユウ: { normal: 'ユウ「見回りはしてました！ でも保管庫の近くは……通ったかもしれません」', werewolf: 'ユウ「見回りしましたっ！ 保管庫は、えっと……通ってない、はずですっ！」' },
+        グレイ: { normal: 'グレイ「監査ログ上、23:10〜23:20だけ整いすぎている。人為的に整えた可能性がある」', werewolf: 'グレイ「ログは整っている。整いすぎている。……誰が整えたかは今は断定しない」' },
+        チャッピーGrey: { normal: 'チャッピーGrey「夜、少しだけ誰かが動いた気配はあった。でも足音までは分からない」', werewolf: 'チャッピーGrey「……気配はあった。足音は、たぶん一回だけ。違ったかも」' },
+        マンディ: { normal: 'マンディ「黒塗り時刻だけ綺麗すぎる。雑な奴じゃなく、ログを触れる奴の匂いがするな」', werewolf: 'マンディ「俺を疑うのか？ いい度胸だな。……黒塗り時刻だけ綺麗すぎるのは気になる」' }
       };
       let reply = [base[0]];
       if (command.topic === 'organize') {
         reply = buildRikuOrganizeSummary();
       }
       if (command.topic === 'press') {
-        reply = [pressByTarget[command.target]?.[0] || `${command.target}「……その点をもう少し具体的に聞いて」`];
+        const p = pressByTarget[command.target];
+        const forced = p ? (targetIsWerewolf ? p.werewolf : p.normal) : `${command.target}「……その点をもう少し具体的に聞いて」`;
+        reply = [forced];
         if (targetIsWerewolf) {
           const defensive = isChaos
             ? `${command.target}「保管庫には近づいてない。そこは強調しておく」`
@@ -2372,8 +2386,6 @@
           if (targetTeammate && Math.random() < (isChaos ? 0.55 : 0.3)) {
             reply.push(`${command.target}「${targetTeammate}の証言も、まずは時系列で確認してくれ」`);
           }
-        } else {
-          reply.push(`${command.target}「必要なら、昨夜の順番をもう一回説明するよ」`);
         }
       }
       const sidePick = base[1];
@@ -2407,20 +2419,47 @@
         const match = line.match(/^([^「]+)「(.+)」$/);
         if (!match) return;
         const parsedType = command.topic === 'organize' ? 'organize' : (command.topic === 'press' ? 'additionalTestimony' : (idx === 0 ? 'commandReaction' : 'followup'));
-        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: parsedType, logLabel: testimonyLabel(command.topic === 'press' ? 'press' : parsedType === 'organize' ? 'organize' : 'testimony') });
+        werewolf.talkLog.push({ speaker: match[1], text: match[2], type: parsedType, logLabel: testimonyLabel(parsedType) });
       });
       if (command.topic === 'press') {
         const pressCards = {
-          シュウ: { speaker: 'シュウ', type: 'press', claim: '甘い匂いは寝る直前', time: '寝る直前', denial: '保管庫前は通っていない', contradictionTags: ['smell', 'timeAmbiguous', 'storageDeny'] },
-          リク: { speaker: 'リク', type: 'press', claim: '23:00基準で再照合する', time: '23:00基準', contradictionTags: ['timelineChecker'] },
-          ユウ: { speaker: 'ユウ', type: 'press', claim: '食べていない', denial: '勝手に食べていない', contradictionTags: ['denyEat'] },
-          グレイ: { speaker: 'グレイ', type: 'press', claim: '23:10〜23:20の整列が不自然', time: '23:10〜23:20', contradictionTags: ['blackLog', 'timeClean'] },
-          チャッピーGrey: { speaker: 'チャッピーGrey', type: 'press', claim: '夜に誰かの気配', time: '夜中', sensory: '足音1回', contradictionTags: ['presence', 'nightMove'] },
-          マンディ: { speaker: 'マンディ', type: 'press', claim: '黒塗り時刻だけ整いすぎ', contradictionTags: ['blackLog', 'detailShort'] }
+          シュウ: { speaker: 'シュウ', type: 'press', claim: '甘い匂いは寝る少し前', time: '寝る少し前', denial: '保管庫前は通っていない（たぶん）', contradictionTags: ['smell', 'timeAmbiguous', 'storageDeny'] },
+          リク: { speaker: 'リク', type: 'press', claim: '23:10〜23:20だけログが整いすぎる', time: '23:00基準', contradictionTags: ['timelineChecker', 'timeClean'] },
+          ユウ: { speaker: 'ユウ', type: 'press', claim: '見回りはした', denial: '保管庫付近を通ったか曖昧', contradictionTags: ['alibi', 'timeAmbiguous'] },
+          グレイ: { speaker: 'グレイ', type: 'press', claim: '23:10〜23:20の整列が人為的かもしれない', time: '23:10〜23:20', contradictionTags: ['blackLog', 'timeClean'] },
+          チャッピーGrey: { speaker: 'チャッピーGrey', type: 'press', claim: '夜に誰かの気配', time: '夜中', sensory: '足音不明', contradictionTags: ['presence', 'nightMove'] },
+          マンディ: { speaker: 'マンディ', type: 'press', claim: '黒塗り時刻だけ綺麗すぎる', contradictionTags: ['blackLog', 'detailShort', 'tooDetailed'] }
+        };
+        const concernByTarget = {
+          シュウ: 'シュウは甘い匂いを認めたが、保管庫前を通っていないと言っている',
+          リク: 'リクは23:10〜23:20のログだけ妙に整っていると述べた',
+          ユウ: 'ユウは見回りを認めたが、保管庫付近を通ったかが曖昧',
+          グレイ: 'グレイは23:10〜23:20のログが整いすぎていると指摘した',
+          チャッピーGrey: 'チャッピーGreyの「誰かが動いた気配」と、物音を聞いていない証言がズレる',
+          マンディ: 'マンディは黒塗りログに詳しいが、なぜ詳しいのか説明していない'
+        };
+        const suspicionShiftByTarget = {
+          シュウ: { text: 'シュウへの疑念が少し強まった', delta: { pressure: 1, suspicion: 1, trust: -0.03 } },
+          リク: { text: 'リクの証言は時系列整理に使えそう', delta: { pressure: 0.5, suspicion: -0.5, trust: 0.04, credibility: 0.03 } },
+          ユウ: { text: 'ユウの見回り証言に小さな引っかかりが残った', delta: { pressure: 1, suspicion: 1, trust: -0.03 } },
+          グレイ: { text: 'グレイの監査証言は重要そうだ', delta: { pressure: 0.8, suspicion: -0.3, trust: 0.03, credibility: 0.04 } },
+          チャッピーGrey: { text: 'チャッピーGreyの気配証言は照合が必要だ', delta: { pressure: 0.8, suspicion: 0.5 } },
+          マンディ: { text: 'マンディの反応に少し引っかかりが残った', delta: { pressure: 1, suspicion: 1, trust: -0.02 } }
+        };
+        const pointsByTarget = {
+          シュウ: '甘い匂いの時刻',
+          リク: '23:10〜23:20の不自然さ',
+          ユウ: '見回り証言の曖昧さ',
+          グレイ: '黒塗りログの時刻',
+          チャッピーGrey: '物音 / 気配の有無',
+          マンディ: 'ログに詳しすぎる人物'
         };
         addTestimonyCard(pressCards[command.target]);
-        appendConcern(`${command.target}のゆさぶり追加証言を記録。疑い断定ではなく、確認すべき違和感として保持。`, command.target, ['ゆさぶり', '追加証言']);
-        adjustTrustSignals(command.target, { pressure: 1, suspicion: 0.15 });
+        appendConcern(concernByTarget[command.target], command.target, ['ゆさぶり', '違和感']);
+        const shift = suspicionShiftByTarget[command.target];
+        addSuspicionShift(command.target, shift.text, shift.delta);
+        rememberReasoningPoint(pointsByTarget[command.target]);
+        rememberReasoningPoint('保管庫前を通ったかどうか');
       }
       if (command.topic === 'log') appendConcern('グレイの「黒塗り時刻は整いすぎ」と、物音を聞いていない証言の温度差を確認する。', 'グレイ');
       if (command.topic === 'suspicion') appendConcern('チャッピーGreyの「誰かが動いた気配」と、他メンバーの無音証言がズレていないか確認する。', 'チャッピーGrey');
