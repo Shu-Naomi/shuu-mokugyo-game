@@ -1835,7 +1835,8 @@
     function enterArgumentPhaseIfNeeded() {
       if (werewolf.phase === 'investigation' && werewolf.turn >= werewolf.maxTalkTurns) {
         werewolf.phase = 'meeting';
-        werewolf.talkLog.push({ speaker: '進行', text: '昼会話が終了。怪しいメンバーを論破するフェーズに移行する。', type: 'phaseChange', tags: ['論破フェーズ'] });
+        werewolf.activeTab = 'meeting';
+        werewolf.talkLog.push({ speaker: '進行', text: '昼の発言を終え、会議フェーズへ移行した', type: 'phaseChange', tags: ['会議フェーズ'] });
       }
     }
     function evaluateWerewolfWinState() {
@@ -2019,12 +2020,18 @@
       $('#werewolfRetestimonyRow').classList.toggle('is-hidden', !isArgumentPhase);
       $('#werewolfEvidenceRow').classList.toggle('is-hidden', !isArgumentPhase);
       $('#werewolfRefutationResultRow').classList.toggle('is-hidden', !(isArgumentPhase || isVotePhase));
-      $('#werewolfGoMeeting').disabled = !(isDayTalk && !werewolf.gameOver);
-      $('#werewolfDebateStart').disabled = !isMeetingPhase;
-      $('#werewolfVoteStart').disabled = !isMeetingPhase;
-      $('#werewolfContinueMeeting').disabled = !isMeetingPhase;
-      $('#werewolfDebateSubmit').disabled = !isArgumentPhase;
-      $('#werewolfVoteSubmit').disabled = !(isVotePhase || isArgumentPhase);
+      const remainingTalk = Math.max(0, werewolf.maxTalkTurns - werewolf.turn);
+      const cannotUseDayTalk = werewolf.phase !== 'investigation' || remainingTalk <= 0 || werewolf.gameOver;
+      const canGoMeeting = werewolf.phase === 'investigation' && !werewolf.gameOver;
+      const canGoRefute = werewolf.phase === 'meeting' && !werewolf.gameOver;
+      const canGoVote = (werewolf.phase === 'meeting' || werewolf.phase === 'refute') && !werewolf.gameOver;
+      const canSubmitVote = werewolf.phase === 'vote' && !werewolf.gameOver;
+      $('#werewolfGoMeeting').disabled = !canGoMeeting;
+      $('#werewolfDebateStart').disabled = !canGoRefute;
+      $('#werewolfVoteStart').disabled = !canGoVote;
+      $('#werewolfContinueMeeting').disabled = !canGoRefute;
+      $('#werewolfDebateSubmit').disabled = !(isArgumentPhase && !werewolf.gameOver);
+      $('#werewolfVoteSubmit').disabled = !(canGoVote || canSubmitVote);
       $('#werewolfArgumentBlock span:first-child').textContent = isVotePhase ? '投票フェーズ' : '論破フェーズ';
       $('#werewolfArgumentBlock span:last-child').textContent = isVotePhase
         ? '投票先を選択して投票を実行してください'
@@ -2067,9 +2074,8 @@
       renderWerewolfCharacterDetail();
       renderWerewolfTabs();
       const finished = werewolf.turn >= werewolf.maxTalkTurns;
-      const canTalk = werewolf.phase === 'investigation' && !finished && !werewolf.gameOver;
-      $('#werewolfTalkInput').disabled = !canTalk;
-      $('#werewolfTalkSubmit').disabled = !canTalk;
+      $('#werewolfTalkInput').disabled = cannotUseDayTalk;
+      $('#werewolfTalkSubmit').disabled = cannotUseDayTalk;
       $('#werewolfTalkFinished').classList.toggle('is-hidden', !(finished && !werewolf.gameOver));
 
       const resultData = werewolf.resultData || {};
@@ -3867,7 +3873,7 @@
       if (werewolf.phase !== 'investigation' || werewolf.gameOver) return;
       werewolf.phase = 'meeting';
       werewolf.activeTab = 'meeting';
-      werewolf.talkLog.push({ speaker: '進行', text: '会議フェーズへ移行。論点と重要ログを確認しよう。', type: 'phaseChange', tags: ['会議フェーズ'] });
+      werewolf.talkLog.push({ speaker: '進行', text: '昼の発言を終え、会議フェーズへ移行した', type: 'phaseChange', tags: ['会議フェーズ'] });
       werewolf.talkLog.push({ speaker: 'リク', text: 'まず時系列を確認しよう。23:10〜23:20の黒塗り、甘い匂い、誰かが動いた気配。この3つが中心だと思う', type: 'organize', tags: ['時系列整理', '会議フェーズ'] });
       renderWerewolf();
     });
@@ -3887,7 +3893,7 @@
       renderWerewolf();
     });
     $('#werewolfVoteStart').addEventListener('click', () => {
-      if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
+      if ((werewolf.phase !== 'meeting' && werewolf.phase !== 'refute') || werewolf.gameOver) return;
       werewolf.phase = 'vote';
       werewolf.activeTab = 'meeting';
       werewolf.talkLog.push({ speaker: '進行', text: '投票フェーズへ移行。現在の論点で投票を行う。', type: 'phaseChange', tags: ['投票フェーズ'] });
