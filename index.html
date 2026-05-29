@@ -1416,7 +1416,7 @@
                 <button id="werewolfContinueMeeting" class="secondary">🗣️ 会議を続ける</button>
                 <button id="werewolfDebateStart" class="secondary">⚡ 論破フェーズへ進む</button>
                 <button id="werewolfVoteStart" class="secondary">🗳️ 投票フェーズへ進む</button>
-                <button id="werewolfBackInvestigation" class="secondary">🔍 調査に戻る</button>
+                <button id="werewolfBackInvestigation" class="secondary">🔎 調査へ戻る</button>
               </div>
             </div>
             <div class="mini-item is-hidden" id="werewolfArgumentBlock"><span>論破フェーズ</span><span>怪しいメンバーを指名し、再証言の矛盾を探してください</span></div>
@@ -1940,6 +1940,85 @@
       $('#werewolfInfoPanel').classList.toggle('is-active', activeTab === 'info');
     }
 
+
+    function bindWerewolfEvents() {
+      const bindAllById = (id, handler) => {
+        document.querySelectorAll(`#${id}`).forEach(button => {
+          button.onclick = handler;
+        });
+      };
+
+      bindAllById('werewolfDebateStart', () => {
+        werewolf.talkLog.push({
+          speaker: 'DEBUG',
+          text: 'DEBUG: werewolfDebateStart clicked',
+          type: 'debug',
+          tags: ['DEBUG']
+        });
+        if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
+
+        werewolf.phase = 'refute';
+        werewolf.activeTab = 'meeting';
+        werewolf.selectedArgumentTargetId = '';
+        werewolf.selectedEvidenceIndex = -1;
+        werewolf.suspectRetestimony = null;
+        werewolf.refutationResult = null;
+
+        werewolf.talkLog.push({
+          speaker: '進行',
+          text: '論破フェーズへ移行。怪しいメンバーを指名してください。',
+          type: 'phaseChange',
+          tags: ['論破フェーズ']
+        });
+
+        renderWerewolf();
+      });
+
+      bindAllById('werewolfVoteStart', () => {
+        werewolf.talkLog.push({
+          speaker: 'DEBUG',
+          text: 'DEBUG: werewolfVoteStart clicked',
+          type: 'debug',
+          tags: ['DEBUG']
+        });
+        if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
+
+        werewolf.phase = 'vote';
+        werewolf.activeTab = 'meeting';
+
+        werewolf.talkLog.push({
+          speaker: '進行',
+          text: '投票フェーズへ移行。現在の論点で投票を行います。',
+          type: 'phaseChange',
+          tags: ['投票フェーズ']
+        });
+
+        renderWerewolf();
+      });
+
+      bindAllById('werewolfBackInvestigation', () => {
+        werewolf.talkLog.push({
+          speaker: 'DEBUG',
+          text: 'DEBUG: werewolfBackInvestigation clicked',
+          type: 'debug',
+          tags: ['DEBUG']
+        });
+        if (werewolf.gameOver) return;
+
+        werewolf.phase = 'investigation';
+        werewolf.activeTab = 'meeting';
+
+        werewolf.talkLog.push({
+          speaker: '進行',
+          text: '会議を一度中断し、調査へ戻ります。',
+          type: 'phaseChange',
+          tags: ['調査へ戻る']
+        });
+
+        renderWerewolf();
+      });
+    }
+
     function renderWerewolf() {
       if (!werewolf.participants.length) return;
       if (werewolf.phase === 'result') {
@@ -2013,7 +2092,7 @@
       $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
       $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', false);
-      $('#werewolfDayActionBlock').classList.toggle('is-hidden', !isDayTalk);
+      $('#werewolfDayActionBlock').classList.toggle('is-hidden', !(isDayTalk || isMeetingPhase || isArgumentPhase || isVotePhase));
       $('#werewolfMeetingBlock').classList.toggle('is-hidden', !(isMeetingPhase && isMeetingTab));
       $('#werewolfArgumentBlock').classList.toggle('is-hidden', !(isArgumentPhase || isVotePhase));
       $('#werewolfArgumentTargetRow').classList.toggle('is-hidden', !(isArgumentPhase || isVotePhase));
@@ -2027,15 +2106,15 @@
       const canGoVote = (werewolf.phase === 'meeting' || werewolf.phase === 'refute') && !werewolf.gameOver;
       const canSubmitVote = werewolf.phase === 'vote' && !werewolf.gameOver;
       $('#werewolfGoMeeting').disabled = !canGoMeeting;
-      $('#werewolfDebateStart').disabled = !canGoRefute;
-      $('#werewolfVoteStart').disabled = !canGoVote;
+      document.querySelectorAll('#werewolfDebateStart').forEach(button => { button.disabled = !canGoRefute; });
+      document.querySelectorAll('#werewolfVoteStart').forEach(button => { button.disabled = !canGoVote; });
       $('#werewolfContinueMeeting').disabled = !canGoRefute;
       $('#werewolfDebateSubmit').disabled = !(isArgumentPhase && !werewolf.gameOver);
       $('#werewolfVoteSubmit').disabled = !(canGoVote || canSubmitVote);
       $('#werewolfArgumentBlock span:first-child').textContent = isVotePhase ? '投票フェーズ' : '論破フェーズ';
       $('#werewolfArgumentBlock span:last-child').textContent = isVotePhase
         ? '投票先を選択して投票を実行してください'
-        : '怪しいメンバーを指名し、再証言の矛盾を探してください';
+        : '怪しいメンバーを指名してください';
       $('#werewolfArgumentTargets').innerHTML = (isArgumentPhase || isVotePhase)
         ? werewolf.participants
           .filter(member => member.id !== werewolf.playerId && member.status === 'active')
@@ -2051,7 +2130,7 @@
       $('#werewolfEvidenceSummary').textContent = selectedEvidenceTag ? (clueLabels[selectedEvidenceTag] || selectedEvidenceTag) : '未選択';
       const resultLabel = werewolf.refutationResult === 'success' ? '論破成功' : werewolf.refutationResult === 'weak' ? '怪しいが決定打不足' : werewolf.refutationResult === 'fail' ? '論破失敗。会議が混乱し、犯人側が動いた' : '-';
       $('#werewolfRefutationResultText').textContent = resultLabel;
-      $('#werewolfVoteSubmit').textContent = isArgumentPhase ? '🗳️ 投票フェーズへ進む' : isVotePhase ? '🗳️ 投票を実行する' : '🗳️ 投票を実行する';
+      $('#werewolfVoteSubmit').textContent = isArgumentPhase ? '🗳️ 投票フェーズへ進む' : isVotePhase ? '🗳️ 投票を実行する' : '🗳️ 投票フェーズへ進む';
       const meetingTopics = [
         '23:10〜23:20の黒塗りログ',
         '甘い匂いを誰がどこで感じたか',
@@ -2118,6 +2197,7 @@
           ${playerLines}
         `;
       }
+      bindWerewolfEvents();
     }
 
     function renderWerewolfCharacterDetail() {
@@ -3903,31 +3983,9 @@
       werewolf.talkLog.push({ speaker: 'リク', text: 'まず時系列を確認しよう。23:10〜23:20の黒塗り、甘い匂い、誰かが動いた気配。この3つが中心だと思う', type: 'organize', tags: ['時系列整理', '会議フェーズ'] });
       renderWerewolf();
     });
-    $('#werewolfDebateStart')?.addEventListener('click', () => {
-      if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
-      werewolf.phase = 'refute';
-      werewolf.selectedArgumentTargetId = '';
-      werewolf.selectedEvidenceIndex = -1;
-      werewolf.suspectRetestimony = null;
-      werewolf.refutationResult = null;
-      werewolf.activeTab = 'meeting';
-      renderWerewolf();
-    });
     $('#werewolfContinueMeeting').addEventListener('click', () => {
       if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
       werewolf.talkLog.push({ speaker: '進行', text: '会議継続。違和感ログの照合を続行する。', type: 'meetingContinue', tags: ['会議継続'] });
-      renderWerewolf();
-    });
-    $('#werewolfVoteStart')?.addEventListener('click', () => {
-      if (werewolf.phase !== 'meeting' || werewolf.gameOver) return;
-      werewolf.phase = 'vote';
-      werewolf.activeTab = 'meeting';
-      werewolf.talkLog.push({
-        speaker: '進行',
-        text: '会議を切り上げ、投票フェーズへ移行した。',
-        type: 'phaseChange',
-        tags: ['投票フェーズ']
-      });
       renderWerewolf();
     });
     $('#werewolfVoteSubmit')?.addEventListener('click', () => {
@@ -4012,12 +4070,6 @@
     });
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
-    $('#werewolfBackInvestigation')?.addEventListener('click', () => {
-      if (werewolf.gameOver) return;
-      werewolf.phase = 'investigation';
-      werewolf.activeTab = 'meeting';
-      renderWerewolf();
-    });
     $('#werewolfBackToMeetingFromRefute')?.addEventListener('click', () => {
       if (werewolf.phase !== 'refute') return;
       werewolf.phase = 'meeting';
