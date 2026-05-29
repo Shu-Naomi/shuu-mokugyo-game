@@ -1821,8 +1821,46 @@
     }
 
     function roleName(role) {
-      return ({ werewolf: 'おやつ横領犯', fortuneTeller: '占い師', knight: '騎士', villager: 'おやつ守備隊' })[role] || '未設定';
+      return ({ werewolf: 'おやつ横領犯', culprit: '犯人', fortuneTeller: '占い師', knight: '騎士', villager: 'おやつ守備隊' })[role] || '未設定';
     }
+
+    function isCulpritSideMember(member) {
+      if (!member) return false;
+      return member.role === 'werewolf'
+        || member.role === 'culprit'
+        || member.side === 'culprit'
+        || member.side === '犯人側';
+    }
+
+    function werewolfSideLabel(member) {
+      return isCulpritSideMember(member) ? '犯人側' : '白側';
+    }
+
+    function werewolfWinnerLabel(winner = werewolf.winner) {
+      if (!winner) return '未確定';
+      return winner === 'village' || winner === 'white' ? '白側勝利' : '犯人側勝利';
+    }
+
+    function werewolfResultLine(member, winner = werewolf.winner) {
+      const whiteWinLines = {
+        '直美': 'よし、見抜けた',
+        'シュウ': 'やった……！ 直美、すごい！',
+        'リク': '時系列と根拠が噛み合ったね',
+        'グレイ': '……まさかここで終わるとは',
+        'マンディ': 'へぇ、ちゃんと当てたじゃねぇか'
+      };
+      const culpritWinLines = {
+        '直美': '了解、次はもっと慎重に見極める',
+        'シュウ': 'うぅ……次はもっとちゃんと見る',
+        'リク': '判断材料が足りなかったかも'
+      };
+      if (winner === 'village' || winner === 'white') {
+        return whiteWinLines[member.name] || 'よし、白側で勝ち切れた';
+      }
+      if (culpritWinLines[member.name]) return culpritWinLines[member.name];
+      return isCulpritSideMember(member) ? '……まだ見抜かれていないようだな' : '次はもっと根拠を集めよう';
+    }
+
     function getActiveMembers() {
       return werewolf.participants.filter(member => member.status === 'active');
     }
@@ -2065,7 +2103,7 @@
       $('#werewolfPhaseLabelInfo').textContent = phaseText;
       $('#werewolfTalkRemainInfo').textContent = `${remain} / ${werewolf.maxTalkTurns}`;
       $('#werewolfIntroChoiceInfo').textContent = werewolf.introChoice || '未選択';
-      $('#werewolfOutcomeInfo').textContent = werewolf.gameOver ? (werewolf.winner === 'village' ? '守備隊側勝利' : '犯人側勝利') : '進行中';
+      $('#werewolfOutcomeInfo').textContent = werewolf.gameOver ? werewolfWinnerLabel() : '進行中';
       renderWerewolfIntro();
       renderWerewolfCommands();
       $('#werewolfTagResult').textContent = werewolf.lastInputTags.length ? werewolf.lastInputTags.join(' / ') : 'タグなし';
@@ -2186,14 +2224,16 @@
       const resultData = werewolf.resultData || {};
       const summaryEl = $('#werewolfResultSummary');
       if (summaryEl) {
-        summaryEl.innerHTML = `<span>追放結果</span><span>${escapeHtml(resultData.auditedName || '未実行')} / ${resultData.correct ? '犯人側' : '白側'}</span>`;
+        const exiledLabel = resultData.auditedName ? `${resultData.auditedName} / ${resultData.exiledSide || '白側'}` : '未実行';
+        summaryEl.innerHTML = `<span>追放結果</span><span>${escapeHtml(exiledLabel)}</span>`;
       }
       const resultLinesEl = $('#werewolfResultLines');
       if (resultLinesEl) {
-        const playerLines = werewolf.participants.map(member => `<div class="mini-item"><span>${escapeHtml(member.name)}</span><span>${escapeHtml(member.status === 'audited' ? '……まさかここで終わるとは。' : '了解、次はもっと慎重に見極める。')}</span></div>`).join('');
+        const resultWinner = resultData.winner || werewolf.winner;
+        const playerLines = werewolf.participants.map(member => `<div class="mini-item"><span>${escapeHtml(member.name)}</span><span>${escapeHtml(werewolfResultLine(member, resultWinner))}</span></div>`).join('');
         resultLinesEl.innerHTML = `
           <div class="mini-item"><span>最多票</span><span>${escapeHtml(resultData.auditedName || '-')}</span></div>
-          <div class="mini-item"><span>勝敗</span><span>${werewolf.winner === 'village' ? '守備隊側勝利' : '犯人側勝利'}</span></div>
+          <div class="mini-item"><span>勝敗</span><span>${escapeHtml(werewolfWinnerLabel(resultWinner))}</span></div>
           ${playerLines}
         `;
       }
@@ -2921,12 +2961,15 @@
       const top=Object.entries(tally).sort((a,b)=>b[1]-a[1]); const topScore=top[0]?.[1]||0;
       const tied=top.filter(([,c])=>c===topScore).map(([n])=>n); const auditedName=tied[Math.floor(Math.random()*tied.length)];
       const auditedMember = werewolf.participants.find(m => m.name === auditedName);
+      const isCulpritSide = isCulpritSideMember(auditedMember);
+      const exiledSide = werewolfSideLabel(auditedMember);
+      const winner = isCulpritSide ? 'village' : 'werewolf';
       if (auditedMember) markMemberStatus(auditedMember, 'audited', '投票結果');
-      const correct = auditedMember?.role === 'werewolf';
-      werewolf.talkLog.push({ speaker: '進行', text: `${auditedName}が監査室送り。判定：${correct ? '正解（犯人側）' : '誤認（白側）'}`, type: 'voteResult', tags: ['投票結果', correct ? '正解' : '誤認'] });
-      evaluateWerewolfWinState();
-      if (!werewolf.gameOver) { runNightAttack(); evaluateWerewolfWinState(); }
-      werewolf.phase='result'; werewolf.resultData = { auditedName, correct, votes, tally, winner: werewolf.winner || (correct ? 'village' : 'werewolf') };
+      werewolf.gameOver = true;
+      werewolf.winner = winner;
+      werewolf.talkLog.push({ speaker: '進行', text: `${auditedName}が監査室送り。判定：${isCulpritSide ? '正解（犯人側）' : '誤認（白側）'}。勝敗：${werewolfWinnerLabel(winner)}`, type: 'voteResult', tags: ['投票結果', isCulpritSide ? '正解' : '誤認'] });
+      werewolf.phase='result';
+      werewolf.resultData = { auditedName, correct: isCulpritSide, exiledSide, votes, tally, winner };
       renderWerewolf();
     }
     function submitWerewolfTalk() {
