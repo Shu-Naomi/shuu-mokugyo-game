@@ -1609,6 +1609,7 @@
         selectedArgumentTargetId: '',
         selectedEvidenceIndex: -1,
         discoveredClues: [],
+        pressedLogIds: [],
         suspectRetestimony: null,
         refutationResult: null,
         refutationMessage: '',
@@ -1632,12 +1633,27 @@
         { id: 'mandy', name: 'マンディ', characterType: '黒猫・皮肉ムードメーカー', alive: true, status: 'active', role: null, suspicion: 0, trust: 0.5, pressure: 0, credibility: 0.5, influence: 0.5, culpritBias: 0, playerTrust: 0.5 }
       ];
     }
+    function addDiscoveredClue(tag) {
+      if (ALL_CLUE_TAGS.includes(tag) && !werewolf.discoveredClues.includes(tag)) {
+        werewolf.discoveredClues.push(tag);
+      }
+    }
+
     function addDiscoveredClues(tags = []) {
-      tags
-        .filter(tag => ALL_CLUE_TAGS.includes(tag))
-        .forEach(tag => {
-          if (!werewolf.discoveredClues.includes(tag)) werewolf.discoveredClues.push(tag);
-        });
+      tags.forEach(addDiscoveredClue);
+    }
+
+    function addTalkLogOnce(entry) {
+      if (!entry) return false;
+      const exists = werewolf.talkLog.some(log =>
+        log.speaker === entry.speaker &&
+        log.text === entry.text &&
+        log.type === entry.type
+      );
+      if (exists) return false;
+      werewolf.talkLog.push(entry);
+      ensureTalkLogIds();
+      return true;
     }
 
     function appendConcern(text, target = null, tags = ['確認ポイント']) {
@@ -1756,7 +1772,13 @@
 
     function addTestimonyCard(card) {
       if (!card || !card.speaker) return;
-      werewolf.testimonyCards.push(createTestimonyCard(card));
+      const normalizedCard = createTestimonyCard(card);
+      const exists = werewolf.testimonyCards.some(existing =>
+        existing.speaker === normalizedCard.speaker &&
+        existing.type === normalizedCard.type &&
+        existing.claim === normalizedCard.claim
+      );
+      if (!exists) werewolf.testimonyCards.push(normalizedCard);
     }
 
     function testimonyLabel(type) {
@@ -1770,7 +1792,11 @@
     }
 
     function isPressableLog(entry) {
-      return ['testimony', 'additionalTestimony', 'contradiction', 'suspicion', 'audit', 'blackout', 'blacklog'].includes(entry?.type);
+      return ['testimony', 'baseTestimony', 'initialTestimony'].includes(entry?.type);
+    }
+
+    function isPressedLog(entry) {
+      return Boolean(entry?.id && werewolf.pressedLogIds?.includes(entry.id));
     }
 
     function evidenceTagsFromTalkLog() {
@@ -1983,6 +2009,7 @@
       werewolf.meetingLogs = [];
       werewolf.debugMode = false;
       werewolf.discoveredClues = werewolf.debugMode ? [...ALL_CLUE_TAGS] : [];
+      werewolf.pressedLogIds = [];
       werewolf.activeTab = 'meeting';
       switchView('werewolf');
       renderWerewolf();
@@ -2015,7 +2042,9 @@
         ? `<p class="werewolf-log-debug">${escapeHtml(debug.join(' / '))}</p>`
         : '';
       const pressHtml = isPressableLog(entry)
-        ? `<button class="secondary werewolf-log-press" data-press-log-id="${escapeHtml(entry.id)}">この発言をゆさぶる</button>`
+        ? (isPressedLog(entry)
+          ? '<button class="secondary werewolf-log-press" disabled>ゆさぶり済み</button>'
+          : `<button class="secondary werewolf-log-press" data-press-log-id="${escapeHtml(entry.id)}">この発言をゆさぶる</button>`)
         : '';
       return `<article class="werewolf-log-card" style="--speaker-color:${getSpeakerColor(entry.speaker)}">
         <span class="werewolf-log-speaker">${index + 1}. [${escapeHtml(entry.logLabel || testimonyLabel(entry.type))}] ${escapeHtml(entry.speaker)}</span>
@@ -2912,8 +2941,20 @@
 
     function pressStatement(logId) {
       ensureTalkLogIds();
+      if (!Array.isArray(werewolf.pressedLogIds)) werewolf.pressedLogIds = [];
       const sourceLog = werewolf.talkLog.find(entry => entry.id === logId);
       if (!sourceLog || !isPressableLog(sourceLog)) return;
+      if (werewolf.pressedLogIds.includes(logId)) {
+        addTalkLogOnce({
+          speaker: '進行',
+          text: 'この発言はすでにゆさぶり済みです。',
+          type: 'system',
+          tags: ['ゆさぶり済み']
+        });
+        renderWerewolf();
+        return;
+      }
+      werewolf.pressedLogIds.push(logId);
       const tags = sourceLog.tags || [];
       const hasTag = tag => tags.includes(tag) || (sourceLog.text || '').includes(clueLabels[tag] || '');
       const pressRules = [
@@ -2929,8 +2970,7 @@
         tags: []
       };
       addDiscoveredClues(rule.tags);
-      addTestimonyCard({ speaker: sourceLog.speaker, type: 'additionalTestimony', claim: rule.text, tags: rule.tags });
-      werewolf.talkLog.push({
+      const addedLog = addTalkLogOnce({
         speaker: sourceLog.speaker,
         text: rule.text,
         type: 'additionalTestimony',
@@ -2938,6 +2978,7 @@
         tags: rule.tags,
         sourceLogId: sourceLog.id
       });
+      if (addedLog) addTestimonyCard({ speaker: sourceLog.speaker, type: 'additionalTestimony', claim: rule.text, tags: rule.tags });
       if (rule.tags.length) appendConcern(rule.text, sourceLog.speaker, ['ゆさぶり', '違和感', ...rule.tags]);
       renderWerewolf();
     }
