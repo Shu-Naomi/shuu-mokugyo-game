@@ -590,6 +590,26 @@
       box-shadow: 0 8px 14px rgba(255, 182, 104, 0.3), inset 0 1px 0 rgba(255,255,255,0.45);
     }
 
+    .werewolf-action-bar {
+      position: sticky;
+      bottom: calc(env(safe-area-inset-bottom) + 72px);
+      z-index: 50;
+      background: rgba(35, 25, 55, 0.95);
+      backdrop-filter: blur(8px);
+      padding: 12px;
+      border: 1px solid rgba(255, 240, 187, 0.18);
+      border-radius: 18px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 14px 0 4px;
+    }
+
+    .werewolf-action-bar button {
+      min-height: 56px;
+    }
+
     .tab-panel { display: none; }
     .tab-panel.is-active { display: grid; gap: 10px; }
     .is-hidden { display: none !important; }
@@ -1412,7 +1432,7 @@
               <div class="mini-item"><span>重要な違和感ログ</span><span id="werewolfMeetingConcerns">-</span></div>
               <div class="mini-item"><span>疑念度 / 信用度</span><span id="werewolfMeetingTrust">-</span></div>
               <div class="mini-item"><span>時系列整理（リク）</span><span id="werewolfMeetingRikuLine">-</span></div>
-              <div class="controls">
+              <div class="controls werewolf-action-bar" id="werewolfMeetingActionBar" aria-label="会議フェーズ操作">
                 <button id="werewolfContinueMeeting" class="secondary">🗣️ 会議を続ける</button>
                 <button id="werewolfDebateStart" class="secondary">⚡ 論破フェーズへ進む</button>
                 <button id="werewolfVoteStart" class="secondary">🗳️ 投票フェーズへ進む</button>
@@ -1425,7 +1445,7 @@
             <div class="mini-item is-hidden" id="werewolfRetestimonyRow"><span>再証言カード</span><span id="werewolfRetestimonySummary">まだ再証言はありません</span></div>
             <div class="mini-item is-hidden" id="werewolfEvidenceRow"><span>根拠ログ</span><span id="werewolfEvidenceSummary">未選択</span></div>
             <div class="controls" id="werewolfEvidenceList"></div>
-            <div class="controls"><button id="werewolfDebateSubmit" class="secondary">⚡ この根拠で論破する</button><button id="werewolfVoteSubmit" class="secondary">🗳️ 投票を実行する</button><button id="werewolfBackToMeetingFromRefute" class="secondary">↩ 会議へ戻る</button></div>
+            <div class="controls werewolf-action-bar is-hidden" id="werewolfRefuteVoteActionBar" aria-label="論破・投票フェーズ操作"><button id="werewolfDebateSubmit" class="secondary">⚡ この根拠で論破する</button><button id="werewolfVoteSubmit" class="secondary">🗳️ 投票を実行する</button><button id="werewolfBackToMeetingFromRefute" class="secondary">↩ 会議へ戻る</button></div>
             <div class="mini-item is-hidden" id="werewolfRefutationResultRow"><span>論破結果</span><span id="werewolfRefutationResultText">-</span></div>
             <div class="mini-item"><span>直美の発言</span><input id="werewolfTalkInput" type="text" maxlength="120" placeholder="例：シュウは白いと思う。ナデナデしたい" /></div>
             <div class="controls"><button id="werewolfTalkSubmit" class="secondary">🗣️ 任意コメントを送る</button></div>
@@ -2223,6 +2243,8 @@
       $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', false);
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !(isDayTalk || isMeetingPhase || isArgumentPhase || isVotePhase));
       $('#werewolfMeetingBlock').classList.toggle('is-hidden', !(isMeetingPhase && isMeetingTab));
+      $('#werewolfMeetingActionBar').classList.toggle('is-hidden', !(isMeetingPhase && isMeetingTab));
+      $('#werewolfRefuteVoteActionBar').classList.toggle('is-hidden', !((isArgumentPhase || isVotePhase) && isMeetingTab));
       $('#werewolfArgumentBlock').classList.toggle('is-hidden', !(isArgumentPhase || isVotePhase));
       $('#werewolfArgumentTargetRow').classList.toggle('is-hidden', !(isArgumentPhase || isVotePhase));
       $('#werewolfRetestimonyRow').classList.toggle('is-hidden', !isArgumentPhase);
@@ -2238,8 +2260,11 @@
       document.querySelectorAll('#werewolfDebateStart').forEach(button => { button.disabled = !canGoRefute; });
       document.querySelectorAll('#werewolfVoteStart').forEach(button => { button.disabled = !canGoVote; });
       $('#werewolfContinueMeeting').disabled = !canGoRefute;
-      $('#werewolfDebateSubmit').disabled = !(isArgumentPhase && !werewolf.gameOver);
+      $('#werewolfDebateSubmit').disabled = !((isArgumentPhase || isVotePhase) && !werewolf.gameOver);
       $('#werewolfVoteSubmit').disabled = !(canGoVote || canSubmitVote);
+      $('#werewolfDebateSubmit').style.order = isVotePhase ? '2' : '1';
+      $('#werewolfVoteSubmit').style.order = isVotePhase ? '1' : '2';
+      $('#werewolfBackToMeetingFromRefute').style.order = '3';
       $('#werewolfArgumentBlock span:first-child').textContent = isVotePhase ? '投票フェーズ' : '論破フェーズ';
       $('#werewolfArgumentBlock span:last-child').textContent = isVotePhase
         ? '投票先を選択して投票を実行してください'
@@ -2295,15 +2320,6 @@
             <div class="mini-item">
               <span>案内</span>
               <span>怪しいメンバーを指名して論破フェーズへ進めます。</span>
-            </div>
-            <div class="mini-item">
-              <span>デバッグ</span>
-              <span>meeting buttons rendered</span>
-            </div>
-            <div class="controls">
-              <button id="werewolfDebateStart" class="secondary">⚡ 論破フェーズへ進む</button>
-              <button id="werewolfVoteStart" class="secondary">🗳️ 投票フェーズへ進む</button>
-              <button id="werewolfBackInvestigation" class="secondary">🔎 調査へ戻る</button>
             </div>
           </div>
         `;
@@ -4185,6 +4201,11 @@
       runVote(werewolf.selectedArgumentTargetId);
     });
     $('#werewolfDebateSubmit').addEventListener('click', () => {
+      if (werewolf.phase === 'vote') {
+        werewolf.phase = 'refute';
+        werewolf.activeTab = 'meeting';
+        werewolf.talkLog.push({ speaker: '進行', text: '投票前に論破フェーズへ戻り、根拠を確認する。', type: 'phaseChange', tags: ['論破フェーズ'] });
+      }
       if (!werewolf.selectedArgumentTargetId) {
         werewolf.refutationResult = 'missingTarget';
         werewolf.refutationMessage = '先に怪しいメンバーを指名してください。';
@@ -4285,7 +4306,7 @@
     $('#goWerewolfResult').addEventListener('click', () => switchView('werewolfResult'));
     $('#werewolfBackLobby').addEventListener('click', () => switchView('werewolfLobby'));
     $('#werewolfBackToMeetingFromRefute')?.addEventListener('click', () => {
-      if (werewolf.phase !== 'refute') return;
+      if (!['refute', 'vote'].includes(werewolf.phase)) return;
       werewolf.phase = 'meeting';
       werewolf.activeTab = 'meeting';
       renderWerewolf();
