@@ -58,7 +58,7 @@
       padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
       position: relative;
     }
-    .app.has-bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 126px); }
+    .app.has-bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 220px); }
 
     header {
       padding: 8px 2px 12px;
@@ -591,23 +591,29 @@
     }
 
     .werewolf-action-bar {
-      position: sticky;
-      bottom: calc(env(safe-area-inset-bottom) + 72px);
-      z-index: 50;
-      background: rgba(35, 25, 55, 0.95);
-      backdrop-filter: blur(8px);
-      padding: 12px;
+      position: fixed;
+      left: 50%;
+      bottom: calc(env(safe-area-inset-bottom) + 88px);
+      transform: translateX(-50%);
+      width: min(calc(100% - 24px), 432px);
+      z-index: 60;
+      background: rgba(35, 25, 55, 0.96);
+      backdrop-filter: blur(10px);
+      padding: 10px;
       border: 1px solid rgba(255, 240, 187, 0.18);
       border-radius: 18px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.35);
+      box-shadow: 0 8px 24px rgba(0,0,0,0.42);
       display: grid;
       grid-template-columns: 1fr 1fr;
       gap: 10px;
-      margin: 14px 0 4px;
+    }
+
+    #werewolfView:not(.active) .werewolf-action-bar {
+      display: none;
     }
 
     .werewolf-action-bar button {
-      min-height: 56px;
+      min-height: 54px;
     }
 
     .tab-panel { display: none; }
