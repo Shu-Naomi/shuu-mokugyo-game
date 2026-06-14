@@ -3556,11 +3556,11 @@
     }
 
     const RHYTHM_WINDOWS = {
-      tapOffsetMs: 0,
-      perfectLateMs: 180,
-      goodLateMs: 360,
+      tapOffsetMs: 20,
+      perfectWindowMs: 110,
+      goodWindowMs: 240,
       cueDisplayMs: 360,
-      lateMissMs: 420
+      missWindowMs: 400
     };
 
     function createEmptyRhythm() {
@@ -3707,7 +3707,7 @@
         setRhythmCue('ぽく！', { ready: true });
         $('#mokuCue').classList.add('cue');
         pulseShuuEffect('rhythm-good', 260);
-        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), RHYTHM_WINDOWS.lateMissMs);
+        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), RHYTHM_WINDOWS.missWindowMs);
         renderRhythm();
       }, delay);
       renderRhythm();
@@ -3716,21 +3716,20 @@
     function tapPokuRhythm() {
       if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit || !rhythm.cueStartAt) return;
       const tapTime = performance.now();
-      const diff = tapTime - rhythm.cueStartAt;
+      const diff = (tapTime - rhythm.cueStartAt) - RHYTHM_WINDOWS.tapOffsetMs;
+      const absDiff = Math.abs(diff);
 
-      if (diff < 0) {
-        registerRhythmMiss('Miss', '早すぎるぽく！');
-        return;
-      }
-      if (diff <= RHYTHM_WINDOWS.perfectLateMs) {
+      if (absDiff <= RHYTHM_WINDOWS.perfectWindowMs) {
         registerRhythmHit('Perfect', 18);
         return;
       }
-      if (diff <= RHYTHM_WINDOWS.goodLateMs) {
+      if (absDiff <= RHYTHM_WINDOWS.goodWindowMs) {
         registerRhythmHit('Good', 11);
         return;
       }
-      registerRhythmMiss('Miss', '遅いぽく……');
+      if (absDiff <= RHYTHM_WINDOWS.missWindowMs) {
+        registerRhythmMiss('Miss', diff < 0 ? '早すぎるぽく！' : '遅いぽく……');
+      }
     }
 
     function registerRhythmHit(label, baseScore) {
@@ -4325,7 +4324,10 @@
 
     $('#seeEnding').addEventListener('click', viewEnding);
     $('#startRhythm').addEventListener('click', startRhythmGame);
-    $('#pokuTap').addEventListener('click', tapPokuRhythm);
+    $('#pokuTap').addEventListener('pointerdown', (event) => {
+      event.preventDefault();
+      tapPokuRhythm();
+    }, { passive: false });
     $('#endingReplay').addEventListener('click', replayFromEnding);
 
     $('#gainSnack').addEventListener('click', () => {
