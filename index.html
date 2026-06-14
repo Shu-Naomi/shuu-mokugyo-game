@@ -4232,14 +4232,7 @@
 
     document.querySelectorAll('[data-werewolf-tab]').forEach(button => {
       button.addEventListener('click', () => {
-        const nextTab = button.dataset.werewolfTab;
-        if (nextTab === 'meeting') {
-          werewolf.activeTab = 'meeting';
-        } else if (nextTab === 'log') {
-          werewolf.activeTab = 'log';
-        } else if (nextTab === 'info') {
-          werewolf.activeTab = 'info';
-        }
+        werewolf.activeTab = button.dataset.werewolfTab;
         renderWerewolf();
       });
     });
