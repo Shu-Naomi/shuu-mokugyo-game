@@ -58,7 +58,7 @@
       padding: max(14px, env(safe-area-inset-top)) 14px max(18px, env(safe-area-inset-bottom));
       position: relative;
     }
-    .app.has-bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 220px); }
+    .app.has-bottom-nav { padding-bottom: calc(env(safe-area-inset-bottom) + 260px); }
 
     header {
       padding: 8px 2px 12px;
@@ -566,7 +566,7 @@
       background: linear-gradient(165deg, rgba(40, 29, 59, 0.96), rgba(27, 20, 40, 0.96));
       box-shadow: 0 12px 28px rgba(0,0,0,0.32), 0 0 0 1px rgba(255,255,255,0.04) inset;
       backdrop-filter: blur(10px);
-      z-index: 26;
+      z-index: 80;
     }
 
     .bottom-nav-button {
@@ -596,7 +596,7 @@
       bottom: calc(env(safe-area-inset-bottom) + 88px);
       transform: translateX(-50%);
       width: min(calc(100% - 24px), 432px);
-      z-index: 60;
+      z-index: 90;
       background: rgba(35, 25, 55, 0.96);
       backdrop-filter: blur(10px);
       padding: 10px;
@@ -1409,11 +1409,6 @@
             <button id="werewolfBackMiniPersistent" class="secondary">← ミニゲーム一覧へ戻る</button>
           </div>
           <h2 class="section-title">犬小屋人狼 本編</h2>
-          <div class="bottom-nav" role="tablist" aria-label="本編タブ">
-            <button class="bottom-nav-button active" data-werewolf-tab="meeting" role="tab" aria-selected="true">🐾 会議</button>
-            <button class="bottom-nav-button" data-werewolf-tab="log" role="tab" aria-selected="false">📜 ログ</button>
-            <button class="bottom-nav-button" data-werewolf-tab="info" role="tab" aria-selected="false">🦴 情報</button>
-          </div>
           <div class="tab-panel is-active" id="werewolfMeetingPanel">
             <p class="werewolf-subtitle">会議タブで昼会話→会議→論破→投票まで進行します。</p>
             <div id="werewolfProgressSummaryBlock">
@@ -1500,6 +1495,11 @@
             </div>
           </div>
         </section>
+        <div class="bottom-nav" role="tablist" aria-label="本編タブ">
+          <button class="bottom-nav-button active" data-werewolf-tab="meeting" role="tab" aria-selected="true">🐾 会議</button>
+          <button class="bottom-nav-button" data-werewolf-tab="log" role="tab" aria-selected="false">📜 ログ</button>
+          <button class="bottom-nav-button" data-werewolf-tab="info" role="tab" aria-selected="false">🦴 情報</button>
+        </div>
       </div>
       <div class="view" id="werewolfResultView">
         <section class="card mini-menu">
