@@ -1,0 +1,15 @@
+{
+  "name": "ヌシ釣り 〜リクと川辺で〜",
+  "short_name": "ヌシ釣り",
+  "description": "犬小屋発・和風ぬし釣りゲーム",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f3ead6",
+  "theme_color": "#16304d",
+  "icons": [
+    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ]
+}
