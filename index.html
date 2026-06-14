@@ -3556,11 +3556,13 @@
     }
 
     const RHYTHM_WINDOWS = {
-      tapOffsetMs: 20,
-      perfectWindowMs: 110,
-      goodWindowMs: 240,
+      tapOffsetMs: 150,
+      perfectEarlyMs: 70,
+      perfectLateMs: 130,
+      goodEarlyMs: 130,
+      goodLateMs: 260,
       cueDisplayMs: 360,
-      missWindowMs: 400
+      lateMissMs: 420
     };
 
     function createEmptyRhythm() {
@@ -3707,7 +3709,7 @@
         setRhythmCue('ぽく！', { ready: true });
         $('#mokuCue').classList.add('cue');
         pulseShuuEffect('rhythm-good', 260);
-        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), RHYTHM_WINDOWS.missWindowMs);
+        rhythm.missTimer = window.setTimeout(() => registerRhythmMiss('Miss', '遅いぽく……次の光を待とう。'), RHYTHM_WINDOWS.lateMissMs + RHYTHM_WINDOWS.tapOffsetMs);
         renderRhythm();
       }, delay);
       renderRhythm();
@@ -3715,19 +3717,19 @@
 
     function tapPokuRhythm() {
       if (!rhythm.active || rhythm.phase !== 'playing' || rhythm.hit || !rhythm.cueStartAt) return;
-      const tapTime = performance.now();
-      const diff = (tapTime - rhythm.cueStartAt) - RHYTHM_WINDOWS.tapOffsetMs;
-      const absDiff = Math.abs(diff);
+      const inputTime = performance.now();
+      const tapTime = inputTime - RHYTHM_WINDOWS.tapOffsetMs;
+      const diff = tapTime - rhythm.targetAt;
 
-      if (absDiff <= RHYTHM_WINDOWS.perfectWindowMs) {
+      if (diff >= -RHYTHM_WINDOWS.perfectEarlyMs && diff <= RHYTHM_WINDOWS.perfectLateMs) {
         registerRhythmHit('Perfect', 18);
         return;
       }
-      if (absDiff <= RHYTHM_WINDOWS.goodWindowMs) {
+      if (diff >= -RHYTHM_WINDOWS.goodEarlyMs && diff <= RHYTHM_WINDOWS.goodLateMs) {
         registerRhythmHit('Good', 11);
         return;
       }
-      if (absDiff <= RHYTHM_WINDOWS.missWindowMs) {
+      if (diff <= RHYTHM_WINDOWS.lateMissMs) {
         registerRhythmMiss('Miss', diff < 0 ? '早すぎるぽく！' : '遅いぽく……');
       }
     }
