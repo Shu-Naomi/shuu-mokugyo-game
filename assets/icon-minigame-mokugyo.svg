@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="木魚ゲーム">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d2045"/><stop offset="1" stop-color="#130d22"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe2a4"/><stop offset="1" stop-color="#c8792e"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f2b35e"/><stop offset="1" stop-color="#8d4d1f"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="202" cy="50" r="18" fill="#ffd86a"/><circle cx="210" cy="43" r="18" fill="#24163b"/>
+  <g fill="#ffd86a" opacity=".95"><circle cx="52" cy="42" r="4"/><circle cx="84" cy="28" r="3"/><circle cx="204" cy="96" r="3"/><path d="M68 70l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/></g>
+  <ellipse cx="132" cy="180" rx="74" ry="22" fill="#4f2b6e" stroke="#d6a857" stroke-width="4"/>
+  <g filter="url(#glow)">
+    <path d="M58 122c8-44 50-63 92-55 43 8 67 41 58 80-8 37-45 55-91 48-41-6-66-34-59-73z" fill="url(#wood)" stroke="#ffd07a" stroke-width="5"/>
+    <path d="M63 129c10-20 31-28 56-24-14 17-25 31-37 43-12-2-19-7-19-19z" fill="#24110b" opacity=".92"/>
+    <path d="M137 102c20 9 36 25 43 47" fill="none" stroke="#6d3518" stroke-width="5" stroke-linecap="round" opacity=".65"/>
+    <path d="M126 137c16-10 32-10 48 0M120 154c20-8 39-6 56 4" fill="none" stroke="#6d3518" stroke-width="5" stroke-linecap="round" opacity=".55"/>
+    <path d="M188 91l31 88" stroke="#8e4d22" stroke-width="16" stroke-linecap="round"/>
+    <circle cx="184" cy="83" r="18" fill="#ffe6c0" stroke="#c78535" stroke-width="5"/>
+  </g>
+  <text x="34" y="221" fill="#fff0c8" font-size="22" font-weight="900" font-family="system-ui, sans-serif">木魚ゲーム</text>
+</svg>
