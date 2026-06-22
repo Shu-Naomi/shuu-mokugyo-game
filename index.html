@@ -1086,21 +1086,37 @@
       left: 50%;
       top: 50%;
       transform: translate(-50%, -50%);
-      width: 136px;
-      min-height: 136px;
-      border-radius: 999px;
+      width: clamp(148px, 34vw, 190px);
+      min-height: clamp(160px, 38vw, 202px);
+      border-radius: 28px;
       display: grid;
       place-items: center;
+      gap: 4px;
+      padding: 12px 10px 10px;
       text-align: center;
       font-weight: 1000;
       color: #fff2c9;
-      background: radial-gradient(circle, rgba(255, 184, 107, 0.34), rgba(94, 54, 45, 0.72));
+      background: radial-gradient(circle at 50% 42%, rgba(255, 240, 187, 0.22), rgba(255, 184, 107, 0.18) 48%, rgba(94, 54, 45, 0.72));
       border: 2px solid rgba(255, 240, 187, 0.34);
       box-shadow: 0 16px 35px rgba(0,0,0,0.25), 0 0 28px rgba(255, 184, 107, 0.24);
       pointer-events: none;
+      z-index: 1;
     }
 
-    .tail-defense-tail strong { display: block; font-size: 2.25rem; }
+    .tail-defense-shuu-image {
+      display: block;
+      width: min(32vw, 132px);
+      max-width: 100%;
+      height: min(32vw, 132px);
+      object-fit: contain;
+      filter: drop-shadow(0 8px 12px rgba(38, 22, 18, 0.24));
+    }
+
+    .tail-defense-tail-label {
+      display: block;
+      line-height: 1.22;
+      text-shadow: 0 2px 8px rgba(0,0,0,0.28);
+    }
 
     .tail-defense-target {
       position: absolute;
@@ -1667,7 +1683,7 @@
           <div class="tail-defense-instructions">ルール：危険物はタップ、おやつは取る、木魚は叩かない。</div>
           <div class="tail-defense-message" id="tailDefenseMessage">直美、しっぽ守って……！ 開始で30秒防衛だよ。</div>
           <div class="tail-defense-arena" id="tailDefenseArena" aria-label="しっぽ防衛戦フィールド">
-            <div class="tail-defense-tail"><span><strong>🐕‍🦺</strong>シュウの<br />しっぽ</span></div>
+            <div class="tail-defense-tail"><img class="tail-defense-shuu-image" id="tailShuuImage" src="assets/shuu-happy.svg" alt="元気にしっぽを守る赤毛豆柴のシュウ" decoding="async" draggable="false" /><span class="tail-defense-tail-label">シュウの<br />しっぽ</span></div>
           </div>
           <div class="tail-defense-result is-hidden" id="tailDefenseResult"></div>
           <div class="controls">
@@ -3505,6 +3521,10 @@
 
 
     const TAIL_DEFENSE_DURATION = 30;
+    const TAIL_DEFENSE_SHUU_IMAGES = {
+      happy: { src: 'assets/shuu-happy.svg', alt: '元気にしっぽを守る赤毛豆柴のシュウ' },
+      sad: { src: 'assets/shuu-sad.svg', alt: 'しょんぼりした赤毛豆柴のシュウ' }
+    };
     const TAIL_DEFENSE_TARGETS = [
       { id: 'hand', icon: '🖐️', label: '謎の手', kind: 'danger', score: 12, damage: 1, message: '謎の手を追い払った！' },
       { id: 'toolbox', icon: '🧰', label: '工具箱', kind: 'danger', score: 14, damage: 1, message: '工具箱は没収！' },
@@ -3520,6 +3540,14 @@
     }
 
     let tailDefense = createEmptyTailDefense();
+
+    function updateShuuMood(mood = 'happy') {
+      const image = $('#tailShuuImage');
+      if (!image) return;
+      const visual = TAIL_DEFENSE_SHUU_IMAGES[mood] || TAIL_DEFENSE_SHUU_IMAGES.happy;
+      image.src = visual.src;
+      image.alt = visual.alt;
+    }
 
     function stopTailDefenseTimers() {
       window.clearInterval(tailDefense.tickTimer);
@@ -3549,6 +3577,7 @@
       $('#tailDefenseMessage').textContent = '直美、しっぽ守って……！ 危険物は外側からしっぽへ迫ってくるよ。';
       $('#tailDefenseResult').classList.add('is-hidden');
       $('#tailDefenseResult').textContent = '';
+      updateShuuMood('happy');
       renderTailDefense();
     }
 
@@ -3557,6 +3586,7 @@
       tailDefense.active = true;
       tailDefense.startedAt = Date.now();
       $('#tailDefenseMessage').textContent = 'しっぽ毛、一本も渡さない！外側から迫る危険物をタップして追い払って！';
+      updateShuuMood('happy');
       tailDefense.tickTimer = window.setInterval(tickTailDefense, 250);
       scheduleTailDefenseSpawn(250);
       renderTailDefense();
@@ -3703,6 +3733,7 @@
           : tailDefense.score >= 180
             ? 'しっぽ警備主任！直美、完璧だよ！'
             : 'しっぽ毛、守り切ったよ。ありがとう直美！';
+      updateShuuMood(reason === 'failed' ? 'sad' : 'happy');
       $('#tailDefenseMessage').textContent = reason === 'failed' ? 'ゲームオーバー……しっぽ防衛線、いったん撤退。' : '30秒防衛成功！しっぽは無事だよ。';
       $('#tailDefenseResult').innerHTML = `スコア：<b>${tailDefense.score}</b><br />守り切った時間：<b>${tailDefense.elapsed}秒</b><br />残りしっぽ毛ライフ：<b>${tailDefense.life}</b><br />評価：${comment}`;
       $('#tailDefenseResult').classList.remove('is-hidden');
