@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="ぬし釣り">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2b2148"/><stop offset="1" stop-color="#0f1328"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe3a0"/><stop offset="1" stop-color="#c87828"/></linearGradient>
+    <linearGradient id="fish" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd77a"/><stop offset="1" stop-color="#b86b24"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="203" cy="49" r="18" fill="#ffd86a"/><circle cx="211" cy="42" r="18" fill="#20143a"/>
+  <path d="M32 185c44-22 88-24 137-6 22 8 39 8 57-3v48H32z" fill="#26194a" opacity=".9"/>
+  <path d="M31 198c42-20 95-20 139-4 23 8 41 7 56-4" fill="none" stroke="#8c5bb0" stroke-width="5" opacity=".8"/>
+  <g fill="#ffd86a"><path d="M55 62l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><circle cx="88" cy="40" r="3"/><circle cx="184" cy="92" r="3"/></g>
+  <g filter="url(#glow)">
+    <path d="M96 156c12-50 65-73 106-49 27 16 29 49 5 69-26 21-72 10-111-20z" fill="url(#fish)" stroke="#ffd27d" stroke-width="5"/>
+    <circle cx="174" cy="117" r="8" fill="#33180d"/>
+    <path d="M210 127l24-15-4 29zM119 154l-27 20 5-34z" fill="#b86521" stroke="#ffd27d" stroke-width="3"/>
+    <path d="M141 144c16-11 34-13 53-7M147 161c18-8 36-8 54 1" fill="none" stroke="#7d3d18" stroke-width="4" stroke-linecap="round" opacity=".55"/>
+    <ellipse cx="70" cy="178" rx="24" ry="18" fill="#e83d3d" stroke="#ffd2a0" stroke-width="5"/>
+    <path d="M70 156v-26c0-25 18-43 40-50" fill="none" stroke="#ffe09e" stroke-width="5" stroke-linecap="round"/>
+    <rect x="61" y="165" width="18" height="30" rx="8" fill="#fff7e5" opacity=".9"/>
+  </g>
+  <text x="35" y="221" fill="#fff0c8" font-size="24" font-weight="900" font-family="system-ui, sans-serif">ぬし釣り</text>
+</svg>
