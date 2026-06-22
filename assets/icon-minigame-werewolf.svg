@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="犬小屋人狼">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2148"/><stop offset="1" stop-color="#130d22"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe4a2"/><stop offset="1" stop-color="#c8782b"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0b565"/><stop offset="1" stop-color="#8f4e22"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <path d="M190 43c13 0 24 11 24 24 0 3-.5 6-1.5 8 8-4 13-12 13-22 0-14-11-25-25-25-10 0-18 5-22 13 3-1 7-2 12-2z" fill="#ffd86a"/>
+  <g fill="#ffd86a"><circle cx="57" cy="65" r="3"/><path d="M205 112l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/></g>
+  <g filter="url(#glow)">
+    <path d="M47 118l81-62 81 62v90H47z" fill="url(#wood)" stroke="#ffd27d" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M38 116l90-71 90 71-17 20-73-54-73 54z" fill="#5d2d79" stroke="#ffd27d" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M82 113h92v26H82z" rx="8" fill="#d79b48" stroke="#6d3518" stroke-width="4"/>
+    <text x="95" y="132" fill="#3a1e10" font-size="20" font-weight="900" font-family="system-ui, sans-serif">人狼</text>
+    <path d="M91 208v-47c0-25 17-43 37-43s37 18 37 43v47z" fill="#1b1025"/>
+    <path d="M112 170c8-20 24-28 39-17-5 6-6 14-2 23-14-8-27-7-37-6z" fill="#090713"/>
+    <circle cx="143" cy="158" r="5" fill="#ffd86a"/>
+    <circle cx="102" cy="96" r="8" fill="#2f1c3f"/><circle cx="128" cy="89" r="8" fill="#2f1c3f"/><circle cx="154" cy="96" r="8" fill="#2f1c3f"/><ellipse cx="128" cy="111" rx="18" ry="13" fill="#2f1c3f"/>
+  </g>
+  <path d="M44 166h54c9 0 16 7 16 16v6c0 9-7 16-16 16H78l-20 17 5-17H44c-9 0-16-7-16-16v-6c0-9 7-16 16-16z" fill="#fff0d0" opacity=".95" stroke="#d6a857" stroke-width="4"/>
+  <circle cx="63" cy="185" r="6" fill="#6c3d8d"/><circle cx="79" cy="185" r="6" fill="#6c3d8d"/>
+  <text x="31" y="229" fill="#fff0c8" font-size="22" font-weight="900" font-family="system-ui, sans-serif">犬小屋人狼</text>
+</svg>
