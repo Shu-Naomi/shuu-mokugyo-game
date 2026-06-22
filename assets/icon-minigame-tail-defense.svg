@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="しっぽ防衛戦">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2a2047"/><stop offset="1" stop-color="#140d22"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe3a1"/><stop offset="1" stop-color="#c8782b"/></linearGradient>
+    <linearGradient id="fur" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe9b8"/><stop offset="0.45" stop-color="#f0a442"/><stop offset="1" stop-color="#a35623"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="202" cy="50" r="18" fill="#ffd86a"/><circle cx="210" cy="43" r="18" fill="#24163b"/>
+  <g fill="#ffd86a" opacity=".95"><path d="M56 66l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><circle cx="84" cy="38" r="3"/><circle cx="205" cy="99" r="3"/></g>
+  <ellipse cx="128" cy="188" rx="82" ry="24" fill="#4f2b6e" stroke="#d6a857" stroke-width="4"/>
+  <g filter="url(#glow)">
+    <path d="M68 172c12-59 33-91 71-106 35-14 73 6 76 42 3 37-26 54-62 46 13-12 16-27 8-37-12-15-40-6-50 17-9 21-3 47-43 38z" fill="url(#fur)" stroke="#ffd27d" stroke-width="5" stroke-linejoin="round"/>
+    <path d="M152 74c24-2 42 11 48 31" fill="none" stroke="#fff2c9" stroke-width="12" stroke-linecap="round" opacity=".7"/>
+    <path d="M135 107c-11 18-12 38-1 58" fill="none" stroke="#7a3e1b" stroke-width="5" stroke-linecap="round" opacity=".35"/>
+    <path d="M142 119l49-18 21 20-8 58-62 21-62-21-8-58 21-20z" fill="#4b2b66" stroke="#ffd27d" stroke-width="7"/>
+    <path d="M142 132c-21 0-36 14-36 34 0 21 15 30 36 30s36-9 36-30c0-20-15-34-36-34z" fill="#d58b31"/>
+    <circle cx="119" cy="142" r="10" fill="#d58b31"/><circle cx="140" cy="136" r="10" fill="#d58b31"/><circle cx="162" cy="142" r="10" fill="#d58b31"/>
+  </g>
+  <text x="24" y="224" fill="#fff0c8" font-size="21" font-weight="900" font-family="system-ui, sans-serif">しっぽ防衛戦</text>
+</svg>
