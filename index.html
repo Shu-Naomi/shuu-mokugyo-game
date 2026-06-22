@@ -482,7 +482,34 @@
       display: flex;
       justify-content: space-between;
       align-items: center;
+      gap: 12px;
       cursor: pointer;
+    }
+
+    .mini-item-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      min-width: 0;
+      text-align: left;
+    }
+
+    .mini-item-icon {
+      width: 38px;
+      height: 38px;
+      flex: 0 0 38px;
+      object-fit: cover;
+      border-radius: 12px;
+      border: 1px solid rgba(255, 248, 236, 0.22);
+      background: rgba(255, 248, 236, 0.1);
+      box-shadow: 0 8px 18px rgba(0,0,0,0.22);
+    }
+
+    .mini-item-status {
+      flex: 0 0 auto;
+      color: var(--accent);
+      font-size: 0.82rem;
+      font-weight: 900;
     }
 
     .werewolf-log-panel {
@@ -1470,11 +1497,13 @@
       </div>
       <div class="view" id="miniGameView">
         <section class="card mini-menu">
-          <h2 class="section-title">ミニゲーム一覧 <span>3種プレイ可能</span></h2>
-          <div class="mini-item"><button id="goOxoGame"><span>○×ゲーム（三目並べ）</span><span>遊べる！</span></button></div>
-          <div class="mini-item"><button id="goWerewolfLobby"><span>犬小屋人狼</span><span>遊べる！</span></button></div>
+          <h2 class="section-title">ミニゲーム一覧 <span>5種プレイ可能</span></h2>
+          <div class="mini-item"><button id="goOxoGame"><span>○×ゲーム（三目並べ）</span><span class="mini-item-status">遊べる！</span></button></div>
+          <div class="mini-item"><button id="goWerewolfLobby"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-werewolf.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>犬小屋人狼</span></span><span class="mini-item-status">遊べる！</span></button></div>
           <div class="mini-item"><span>神経衰弱</span><span>準備中</span></div>
-          <div class="mini-item"><button id="goTailDefense"><span>🐕 しっぽ防衛戦 〜毛は渡さない〜</span><span>遊べる！</span></button></div>
+          <div class="mini-item"><button id="goTailDefense"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-tail-defense.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>しっぽ防衛戦 〜毛は渡さない〜</span></span><span class="mini-item-status">遊べる！</span></button></div>
+          <div class="mini-item"><button id="goRhythmGame"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-mokugyo.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>ぽくぽくリズム</span></span><span class="mini-item-status">遊べる！</span></button></div>
+          <div class="mini-item"><button id="goNushiTsuri"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-nushi-tsuri.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>ぬし釣り</span></span><span class="mini-item-status">遊べる！</span></button></div>
           <div class="mini-item"><span>お散歩</span><span>準備中</span></div>
           <button id="backHome" class="secondary">← ホームへ戻る</button>
         </section>
@@ -4509,6 +4538,13 @@
     $('#goMiniGames').addEventListener('click', () => switchView('mini'));
     $('#backHome').addEventListener('click', () => switchView('home'));
     $('#goWerewolfLobby').addEventListener('click', () => switchView('werewolfEntry'));
+    $('#goRhythmGame').addEventListener('click', () => {
+      switchView('home');
+      $('#startRhythm').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    });
+    $('#goNushiTsuri').addEventListener('click', () => {
+      window.location.href = 'nushi-tsuri/';
+    });
     $('#goTailDefense').addEventListener('click', () => {
       resetTailDefenseScreen();
       switchView('tailDefense');
