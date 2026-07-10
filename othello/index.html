@@ -1,0 +1,913 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20182d" />
+  <title>犬小屋オセロ｜シュウと木魚は渡さない</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #171223;
+      --panel: rgba(42, 32, 58, 0.92);
+      --panel-strong: rgba(58, 43, 77, 0.98);
+      --text: #fff8ec;
+      --muted: #d7c7bb;
+      --accent: #ffb86b;
+      --accent-2: #ff7b86;
+      --good: #9df3c4;
+      --warn: #ffd36e;
+      --danger: #ff8e8e;
+      --line: rgba(255, 248, 236, 0.15);
+      --board: #31785d;
+      --board-dark: #1d5b45;
+      --shadow: rgba(0, 0, 0, 0.38);
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Yu Gothic", sans-serif;
+    }
+
+    * { box-sizing: border-box; }
+    html, body { min-height: 100%; }
+    body {
+      margin: 0;
+      color: var(--text);
+      background:
+        radial-gradient(circle at 14% 8%, rgba(255, 184, 107, 0.18), transparent 25%),
+        radial-gradient(circle at 86% 0%, rgba(133, 111, 255, 0.18), transparent 26%),
+        linear-gradient(180deg, #20182d 0%, #171223 56%, #0f0c16 100%);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.24) 0 1px, transparent 1.4px),
+        radial-gradient(circle, rgba(255,184,107,0.28) 0 1px, transparent 1.5px);
+      background-position: 12px 26px, 92px 80px;
+      background-size: 120px 120px, 160px 150px;
+      opacity: 0.3;
+    }
+
+    button, select { font: inherit; }
+    button { touch-action: manipulation; }
+
+    .app {
+      width: min(100%, 520px);
+      min-height: 100svh;
+      margin: 0 auto;
+      padding: max(14px, env(safe-area-inset-top)) 14px max(22px, env(safe-area-inset-bottom));
+      position: relative;
+    }
+
+    header { padding: 6px 2px 12px; text-align: center; }
+    .kicker {
+      margin: 0 0 4px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+    }
+    h1 {
+      margin: 0;
+      font-size: clamp(1.45rem, 7vw, 2rem);
+      line-height: 1.2;
+      text-shadow: 0 3px 18px rgba(255, 123, 134, 0.34);
+    }
+    .subtitle {
+      margin: 7px 0 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+      line-height: 1.5;
+    }
+
+    .card {
+      background: var(--panel);
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      box-shadow: 0 18px 44px var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .setup, .game { display: none; }
+    .setup.active, .game.active { display: grid; gap: 12px; }
+
+    .setup-card { padding: 18px; display: grid; gap: 14px; }
+    .setup-hero {
+      display: grid;
+      grid-template-columns: 88px 1fr;
+      align-items: center;
+      gap: 14px;
+      padding: 14px;
+      border-radius: 20px;
+      background: linear-gradient(145deg, rgba(255,255,255,.08), rgba(255,184,107,.1));
+      border: 1px solid rgba(255, 240, 187, 0.16);
+    }
+    .setup-dog {
+      width: 82px;
+      height: 82px;
+      display: grid;
+      place-items: center;
+      border-radius: 24px;
+      background: radial-gradient(circle at 45% 35%, #ffe0a6, #c76b35 58%, #5e352c);
+      box-shadow: inset 0 -8px 18px rgba(0,0,0,.18), 0 10px 22px rgba(0,0,0,.22);
+      font-size: 3.2rem;
+    }
+    .setup-copy strong { display: block; color: var(--accent); margin-bottom: 4px; }
+    .setup-copy p { margin: 0; color: var(--muted); line-height: 1.55; font-size: .9rem; }
+
+    .difficulty-grid { display: grid; gap: 10px; }
+    .difficulty-button {
+      width: 100%;
+      min-height: 64px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 18px;
+      padding: 11px 14px;
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: center;
+      gap: 10px;
+      color: var(--text);
+      background: rgba(255,255,255,.07);
+      text-align: left;
+      cursor: pointer;
+      transition: transform 150ms ease, border-color 150ms ease, background 150ms ease;
+    }
+    .difficulty-button:active { transform: scale(.985); }
+    .difficulty-button.selected {
+      border-color: rgba(255, 211, 110, .72);
+      background: linear-gradient(135deg, rgba(255,184,107,.22), rgba(255,123,134,.14));
+      box-shadow: 0 0 0 3px rgba(255,211,110,.08);
+    }
+    .difficulty-icon { font-size: 1.45rem; }
+    .difficulty-name { font-weight: 1000; }
+    .difficulty-desc { display: block; margin-top: 2px; color: var(--muted); font-size: .72rem; font-weight: 700; }
+    .difficulty-check { color: var(--warn); font-weight: 1000; opacity: 0; }
+    .difficulty-button.selected .difficulty-check { opacity: 1; }
+
+    .primary, .secondary {
+      border: 0;
+      border-radius: 17px;
+      min-height: 52px;
+      padding: 12px 14px;
+      font-weight: 1000;
+      cursor: pointer;
+      transition: transform 150ms ease, filter 150ms ease;
+    }
+    .primary {
+      color: #36221f;
+      background: linear-gradient(180deg, #fff0bb, #ffd36e);
+      box-shadow: 0 7px 0 #9f5f32, 0 12px 24px rgba(0,0,0,.22);
+    }
+    .secondary {
+      color: var(--text);
+      background: rgba(255,255,255,.09);
+      border: 1px solid rgba(255,255,255,.14);
+    }
+    .primary:active, .secondary:active { transform: translateY(2px); }
+    .primary:disabled { opacity: .48; cursor: not-allowed; box-shadow: none; }
+
+    .top-card { padding: 13px; display: grid; gap: 10px; }
+    .status-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 8px;
+    }
+    .status-box {
+      min-width: 0;
+      padding: 9px 6px;
+      border-radius: 15px;
+      background: rgba(255,255,255,.07);
+      text-align: center;
+      border: 1px solid rgba(255,255,255,.08);
+    }
+    .status-box small { display: block; color: var(--muted); font-size: .66rem; font-weight: 800; }
+    .status-box b { display: block; margin-top: 2px; font-size: 1.05rem; }
+    .black-dot, .white-dot {
+      display: inline-block;
+      width: 13px;
+      height: 13px;
+      border-radius: 50%;
+      vertical-align: -2px;
+      margin-right: 4px;
+      box-shadow: 0 2px 5px rgba(0,0,0,.4);
+    }
+    .black-dot { background: #16121d; border: 1px solid #605c68; }
+    .white-dot { background: #fff8ec; border: 1px solid #d5cbbd; }
+
+    .shuu-line {
+      display: grid;
+      grid-template-columns: 54px 1fr;
+      gap: 10px;
+      align-items: center;
+      padding: 10px 12px;
+      border-radius: 17px;
+      background: rgba(255,248,236,.95);
+      color: #352538;
+      font-weight: 900;
+      line-height: 1.45;
+      min-height: 72px;
+    }
+    .shuu-face {
+      width: 48px;
+      height: 48px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      background: radial-gradient(circle at 45% 35%, #ffe2ae, #c86b35 62%, #70412d);
+      font-size: 1.9rem;
+      box-shadow: inset 0 -5px 10px rgba(0,0,0,.14);
+    }
+    .shuu-line small { display: block; color: #805d58; margin-top: 3px; font-size: .7rem; }
+
+    .board-card { padding: 12px; }
+    .board-wrap {
+      width: 100%;
+      aspect-ratio: 1;
+      padding: 7px;
+      border-radius: 19px;
+      background: linear-gradient(145deg, #b8793f, #6e3d24);
+      box-shadow: inset 0 0 0 2px rgba(255,225,174,.24), 0 14px 30px rgba(0,0,0,.28);
+    }
+    .board {
+      width: 100%;
+      height: 100%;
+      display: grid;
+      grid-template-columns: repeat(8, 1fr);
+      grid-template-rows: repeat(8, 1fr);
+      border: 2px solid rgba(8, 33, 24, .9);
+      background: var(--board);
+      user-select: none;
+      touch-action: manipulation;
+    }
+    .cell {
+      position: relative;
+      display: grid;
+      place-items: center;
+      border: 0;
+      border-right: 1px solid rgba(9,39,29,.76);
+      border-bottom: 1px solid rgba(9,39,29,.76);
+      padding: 0;
+      background: linear-gradient(145deg, rgba(255,255,255,.035), rgba(0,0,0,.02));
+      cursor: pointer;
+    }
+    .cell:nth-child(8n) { border-right: 0; }
+    .cell:nth-last-child(-n+8) { border-bottom: 0; }
+    .cell:disabled { cursor: default; }
+    .cell.legal::before {
+      content: "";
+      width: 23%;
+      height: 23%;
+      border-radius: 50%;
+      background: rgba(255, 231, 143, .72);
+      box-shadow: 0 0 0 3px rgba(255,255,255,.12), 0 0 12px rgba(255,211,110,.62);
+    }
+    .cell.legal:active { background: rgba(255,211,110,.18); }
+    .disc {
+      width: 78%;
+      height: 78%;
+      border-radius: 50%;
+      transform: scale(1);
+      animation: discPlace 220ms ease-out;
+    }
+    .disc.black {
+      background: radial-gradient(circle at 35% 28%, #56515e, #17131d 52%, #08070a);
+      border: 1px solid #69636e;
+      box-shadow: inset -4px -5px 8px rgba(0,0,0,.45), 0 4px 7px rgba(0,0,0,.36);
+    }
+    .disc.white {
+      background: radial-gradient(circle at 35% 28%, #ffffff, #eee7dc 58%, #c8bfb3);
+      border: 1px solid #fff;
+      box-shadow: inset -4px -5px 8px rgba(91,78,65,.18), 0 4px 7px rgba(0,0,0,.3);
+    }
+    .disc.last { outline: 3px solid rgba(255,211,110,.86); outline-offset: 2px; }
+    @keyframes discPlace { from { transform: scale(.15) rotateY(90deg); opacity: .25; } }
+
+    .thinking {
+      min-height: 26px;
+      color: var(--warn);
+      text-align: center;
+      font-size: .8rem;
+      font-weight: 900;
+    }
+    .thinking.active::after { content: "……"; animation: blink 900ms steps(4,end) infinite; }
+    @keyframes blink { 0% { opacity: .25; } 60% { opacity: 1; } }
+
+    .game-controls { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    .rules {
+      padding: 12px 14px;
+      color: var(--muted);
+      font-size: .78rem;
+      line-height: 1.55;
+    }
+    .rules strong { color: var(--accent); }
+
+    .modal {
+      position: fixed;
+      inset: 0;
+      display: none;
+      place-items: center;
+      padding: 18px;
+      background: rgba(15, 12, 22, .84);
+      backdrop-filter: blur(10px);
+      z-index: 20;
+    }
+    .modal.show { display: grid; }
+    .result-card {
+      width: min(100%, 420px);
+      padding: 22px;
+      border-radius: 28px;
+      text-align: center;
+      background: linear-gradient(160deg, rgba(58,43,77,.99), rgba(32,24,45,.99));
+      border: 1px solid rgba(255,211,110,.3);
+      box-shadow: 0 24px 70px rgba(0,0,0,.52), 0 0 34px rgba(255,211,110,.16);
+    }
+    .result-face { font-size: 4.2rem; line-height: 1; filter: drop-shadow(0 10px 16px rgba(0,0,0,.3)); }
+    .result-card h2 { color: var(--accent); margin: 12px 0 8px; }
+    .result-score {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      margin: 12px 0;
+      font-size: 1.25rem;
+      font-weight: 1000;
+    }
+    .result-message { margin: 0 0 16px; color: var(--text); line-height: 1.6; font-weight: 800; }
+    .result-buttons { display: grid; gap: 10px; }
+
+    .toast {
+      position: fixed;
+      left: 50%;
+      bottom: max(16px, env(safe-area-inset-bottom));
+      width: min(calc(100% - 28px), 460px);
+      transform: translateX(-50%) translateY(130%);
+      padding: 12px 14px;
+      border-radius: 17px;
+      color: #342235;
+      background: rgba(255,248,236,.97);
+      box-shadow: 0 16px 44px rgba(0,0,0,.38);
+      font-weight: 900;
+      z-index: 30;
+      transition: transform 230ms ease;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); }
+
+    @media (max-width: 380px) {
+      .app { padding-left: 9px; padding-right: 9px; }
+      .board-card { padding: 8px; }
+      .board-wrap { padding: 5px; border-radius: 15px; }
+      .status-box { padding: 8px 3px; }
+      .status-box b { font-size: .92rem; }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; scroll-behavior: auto !important; }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header>
+      <p class="kicker">犬小屋・盤上ゲーム第一弾</p>
+      <h1>犬小屋オセロ</h1>
+      <p class="subtitle">直美（黒） vs シュウ（白）。角を取った者が、しっぽの平和を制す。</p>
+    </header>
+
+    <section class="setup active" id="setupView">
+      <div class="card setup-card">
+        <div class="setup-hero">
+          <div class="setup-dog" aria-hidden="true">🐕</div>
+          <div class="setup-copy">
+            <strong>「直美、盤面でも相棒勝負しよ？」</strong>
+            <p>難易度を選んで対局開始。直美は黒石で先手だよ。</p>
+          </div>
+        </div>
+
+        <div class="difficulty-grid" id="difficultyGrid" aria-label="難易度選択">
+          <button class="difficulty-button" data-difficulty="easy">
+            <span class="difficulty-icon">🌱</span>
+            <span><span class="difficulty-name">やさしい</span><span class="difficulty-desc">のんびり気まぐれ。初めてでも安心。</span></span>
+            <span class="difficulty-check">✓</span>
+          </button>
+          <button class="difficulty-button selected" data-difficulty="normal">
+            <span class="difficulty-icon">🐾</span>
+            <span><span class="difficulty-name">ふつう</span><span class="difficulty-desc">角と辺を意識する、ほどよい相棒勝負。</span></span>
+            <span class="difficulty-check">✓</span>
+          </button>
+          <button class="difficulty-button" data-difficulty="hard">
+            <span class="difficulty-icon">🔥</span>
+            <span><span class="difficulty-name">むずかしい</span><span class="difficulty-desc">数手先まで読む。本気のしっぽ防衛思考。</span></span>
+            <span class="difficulty-check">✓</span>
+          </button>
+        </div>
+
+        <button class="primary" id="startButton">⚫ 対局をはじめる</button>
+        <button class="secondary" id="setupBackButton">← ミニゲーム一覧へ戻る</button>
+      </div>
+      <div class="card rules">
+        <strong>遊び方：</strong>光っているマスに黒石を置こう。相手の石を縦・横・斜めから挟むと、自分の色に返せるよ。置けない時は自動でパス。両者とも置けなくなるか盤面が埋まったら終了。
+      </div>
+    </section>
+
+    <section class="game" id="gameView">
+      <div class="card top-card">
+        <div class="status-row">
+          <div class="status-box"><small>直美</small><b><span class="black-dot"></span><span id="blackCount">2</span></b></div>
+          <div class="status-box"><small>手番</small><b id="turnLabel">直美</b></div>
+          <div class="status-box"><small>シュウ</small><b><span class="white-dot"></span><span id="whiteCount">2</span></b></div>
+        </div>
+        <div class="shuu-line" aria-live="polite">
+          <div class="shuu-face" id="shuuFace" aria-hidden="true">🐕</div>
+          <div><span id="shuuMessage">「まずはゆっくり遊ぼ？」</span><small id="difficultyLabel">難易度：ふつう</small></div>
+        </div>
+      </div>
+
+      <div class="card board-card">
+        <div class="board-wrap">
+          <div class="board" id="board" role="grid" aria-label="オセロ盤"></div>
+        </div>
+      </div>
+
+      <div class="thinking" id="thinking" aria-live="polite"></div>
+
+      <div class="game-controls">
+        <button class="secondary" id="restartButton">🔄 最初から</button>
+        <button class="secondary" id="gameBackButton">← 一覧へ戻る</button>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="resultModal" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+    <div class="result-card">
+      <div class="result-face" id="resultFace">🐕</div>
+      <h2 id="resultTitle">対局終了</h2>
+      <div class="result-score"><span>⚫ <span id="resultBlack">0</span></span><span>⚪ <span id="resultWhite">0</span></span></div>
+      <p class="result-message" id="resultMessage"></p>
+      <div class="result-buttons">
+        <button class="primary" id="rematchButton">もう一度遊ぶ</button>
+        <button class="secondary" id="changeDifficultyButton">難易度を選び直す</button>
+        <button class="secondary" id="resultBackButton">ミニゲーム一覧へ戻る</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script>
+    (() => {
+      'use strict';
+
+      const EMPTY = 0;
+      const BLACK = 1;
+      const WHITE = -1;
+      const SIZE = 8;
+      const DIRECTIONS = [
+        [-1, -1], [-1, 0], [-1, 1],
+        [0, -1],           [0, 1],
+        [1, -1],  [1, 0], [1, 1]
+      ];
+      const POSITION_WEIGHTS = [
+        [120, -28, 18, 10, 10, 18, -28, 120],
+        [-28, -55, -6, -4, -4, -6, -55, -28],
+        [18, -6, 14, 5, 5, 14, -6, 18],
+        [10, -4, 5, 3, 3, 5, -4, 10],
+        [10, -4, 5, 3, 3, 5, -4, 10],
+        [18, -6, 14, 5, 5, 14, -6, 18],
+        [-28, -55, -6, -4, -4, -6, -55, -28],
+        [120, -28, 18, 10, 10, 18, -28, 120]
+      ];
+
+      const $ = (selector) => document.querySelector(selector);
+      const boardElement = $('#board');
+      const setupView = $('#setupView');
+      const gameView = $('#gameView');
+      const resultModal = $('#resultModal');
+      const thinkingElement = $('#thinking');
+      const toastElement = $('#toast');
+
+      let board = createInitialBoard();
+      let currentPlayer = BLACK;
+      let difficulty = localStorage.getItem('inugoyaOthelloDifficulty') || 'normal';
+      let gameOver = false;
+      let aiThinking = false;
+      let lastMove = null;
+      let aiTimer = null;
+      let toastTimer = null;
+      let gameToken = 0;
+
+      function createInitialBoard() {
+        const next = Array.from({ length: SIZE }, () => Array(SIZE).fill(EMPTY));
+        next[3][3] = WHITE;
+        next[3][4] = BLACK;
+        next[4][3] = BLACK;
+        next[4][4] = WHITE;
+        return next;
+      }
+
+      function cloneBoard(source) {
+        return source.map(row => row.slice());
+      }
+
+      function inBounds(row, col) {
+        return row >= 0 && row < SIZE && col >= 0 && col < SIZE;
+      }
+
+      function flipsForMove(source, row, col, player) {
+        if (!inBounds(row, col) || source[row][col] !== EMPTY) return [];
+        const allFlips = [];
+
+        for (const [dr, dc] of DIRECTIONS) {
+          const line = [];
+          let r = row + dr;
+          let c = col + dc;
+          while (inBounds(r, c) && source[r][c] === -player) {
+            line.push([r, c]);
+            r += dr;
+            c += dc;
+          }
+          if (line.length && inBounds(r, c) && source[r][c] === player) {
+            allFlips.push(...line);
+          }
+        }
+        return allFlips;
+      }
+
+      function legalMoves(source, player) {
+        const moves = [];
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            const flips = flipsForMove(source, row, col, player);
+            if (flips.length) moves.push({ row, col, flips });
+          }
+        }
+        return moves;
+      }
+
+      function applyMove(source, move, player) {
+        const next = cloneBoard(source);
+        next[move.row][move.col] = player;
+        for (const [row, col] of move.flips) next[row][col] = player;
+        return next;
+      }
+
+      function countDiscs(source) {
+        let black = 0;
+        let white = 0;
+        for (const row of source) {
+          for (const cell of row) {
+            if (cell === BLACK) black += 1;
+            if (cell === WHITE) white += 1;
+          }
+        }
+        return { black, white, empty: SIZE * SIZE - black - white };
+      }
+
+      function isCorner(row, col) {
+        return (row === 0 || row === 7) && (col === 0 || col === 7);
+      }
+
+      function evaluateBoard(source, player) {
+        const counts = countDiscs(source);
+        const myDiscs = player === BLACK ? counts.black : counts.white;
+        const theirDiscs = player === BLACK ? counts.white : counts.black;
+        let positional = 0;
+        let corners = 0;
+        let frontier = 0;
+
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            const cell = source[row][col];
+            if (cell === EMPTY) continue;
+            positional += POSITION_WEIGHTS[row][col] * (cell === player ? 1 : -1);
+            if (isCorner(row, col)) corners += cell === player ? 1 : -1;
+
+            let touchesEmpty = false;
+            for (const [dr, dc] of DIRECTIONS) {
+              const r = row + dr;
+              const c = col + dc;
+              if (inBounds(r, c) && source[r][c] === EMPTY) {
+                touchesEmpty = true;
+                break;
+              }
+            }
+            if (touchesEmpty) frontier += cell === player ? -1 : 1;
+          }
+        }
+
+        const myMoves = legalMoves(source, player).length;
+        const theirMoves = legalMoves(source, -player).length;
+        const mobility = myMoves + theirMoves === 0 ? 0 : 100 * (myMoves - theirMoves) / (myMoves + theirMoves);
+        const discRatio = myDiscs + theirDiscs === 0 ? 0 : 100 * (myDiscs - theirDiscs) / (myDiscs + theirDiscs);
+        const lateWeight = counts.empty < 16 ? 2.4 : counts.empty < 28 ? 1.1 : 0.2;
+
+        return positional + corners * 65 + mobility * 2.2 + frontier * 4 + discRatio * lateWeight;
+      }
+
+      function terminalScore(source, player) {
+        const { black, white } = countDiscs(source);
+        const diff = player === BLACK ? black - white : white - black;
+        if (diff > 0) return 100000 + diff * 100;
+        if (diff < 0) return -100000 + diff * 100;
+        return 0;
+      }
+
+      function minimax(source, playerToMove, maximizingPlayer, depth, alpha, beta) {
+        const moves = legalMoves(source, playerToMove);
+        const opponentMoves = legalMoves(source, -playerToMove);
+        if (depth <= 0 || (moves.length === 0 && opponentMoves.length === 0)) {
+          if (moves.length === 0 && opponentMoves.length === 0) return terminalScore(source, maximizingPlayer);
+          return evaluateBoard(source, maximizingPlayer);
+        }
+
+        if (moves.length === 0) {
+          return minimax(source, -playerToMove, maximizingPlayer, depth - 1, alpha, beta);
+        }
+
+        const ordered = moves.slice().sort((a, b) => {
+          const aw = POSITION_WEIGHTS[a.row][a.col] + a.flips.length * 2;
+          const bw = POSITION_WEIGHTS[b.row][b.col] + b.flips.length * 2;
+          return playerToMove === maximizingPlayer ? bw - aw : aw - bw;
+        });
+
+        if (playerToMove === maximizingPlayer) {
+          let best = -Infinity;
+          for (const move of ordered) {
+            const value = minimax(applyMove(source, move, playerToMove), -playerToMove, maximizingPlayer, depth - 1, alpha, beta);
+            best = Math.max(best, value);
+            alpha = Math.max(alpha, best);
+            if (beta <= alpha) break;
+          }
+          return best;
+        }
+
+        let best = Infinity;
+        for (const move of ordered) {
+          const value = minimax(applyMove(source, move, playerToMove), -playerToMove, maximizingPlayer, depth - 1, alpha, beta);
+          best = Math.min(best, value);
+          beta = Math.min(beta, best);
+          if (beta <= alpha) break;
+        }
+        return best;
+      }
+
+      function chooseEasyMove(moves) {
+        return moves[Math.floor(Math.random() * moves.length)];
+      }
+
+      function chooseNormalMove(source, moves) {
+        const scored = moves.map(move => {
+          const next = applyMove(source, move, WHITE);
+          let score = POSITION_WEIGHTS[move.row][move.col] + move.flips.length * 2;
+          score -= legalMoves(next, BLACK).length * 3.2;
+          if (isCorner(move.row, move.col)) score += 200;
+          score += Math.random() * 12;
+          return { move, score };
+        });
+        scored.sort((a, b) => b.score - a.score);
+        const poolSize = Math.min(scored.length, Math.random() < 0.72 ? 1 : 2);
+        return scored[Math.floor(Math.random() * poolSize)].move;
+      }
+
+      function chooseHardMove(source, moves) {
+        const empty = countDiscs(source).empty;
+        const depth = empty <= 12 ? 6 : empty <= 22 ? 5 : 4;
+        let bestScore = -Infinity;
+        let bestMoves = [];
+        for (const move of moves) {
+          const next = applyMove(source, move, WHITE);
+          const score = minimax(next, BLACK, WHITE, depth - 1, -Infinity, Infinity);
+          if (score > bestScore + 0.001) {
+            bestScore = score;
+            bestMoves = [move];
+          } else if (Math.abs(score - bestScore) < 0.001) {
+            bestMoves.push(move);
+          }
+        }
+        return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+      }
+
+      function difficultyName(value) {
+        return { easy: 'やさしい', normal: 'ふつう', hard: 'むずかしい' }[value] || 'ふつう';
+      }
+
+      function openingMessage() {
+        return {
+          easy: '「直美、まずはゆっくり遊ぼ？」',
+          normal: '「少しだけ考えて打つね」',
+          hard: '「……木魚を賭けるなら、本気でいくよ」'
+        }[difficulty];
+      }
+
+      function setShuuMessage(message, face = '🐕') {
+        $('#shuuMessage').textContent = message;
+        $('#shuuFace').textContent = face;
+      }
+
+      function showToast(message) {
+        clearTimeout(toastTimer);
+        toastElement.textContent = message;
+        toastElement.classList.add('show');
+        toastTimer = setTimeout(() => toastElement.classList.remove('show'), 1800);
+      }
+
+      function selectDifficulty(value) {
+        difficulty = ['easy', 'normal', 'hard'].includes(value) ? value : 'normal';
+        localStorage.setItem('inugoyaOthelloDifficulty', difficulty);
+        document.querySelectorAll('.difficulty-button').forEach(button => {
+          button.classList.toggle('selected', button.dataset.difficulty === difficulty);
+          button.setAttribute('aria-pressed', button.dataset.difficulty === difficulty ? 'true' : 'false');
+        });
+      }
+
+      function renderBoard() {
+        const legal = !gameOver && !aiThinking && currentPlayer === BLACK ? legalMoves(board, BLACK) : [];
+        const legalMap = new Map(legal.map(move => [`${move.row},${move.col}`, move]));
+        boardElement.innerHTML = '';
+
+        for (let row = 0; row < SIZE; row += 1) {
+          for (let col = 0; col < SIZE; col += 1) {
+            const cell = document.createElement('button');
+            cell.type = 'button';
+            cell.className = 'cell';
+            cell.setAttribute('role', 'gridcell');
+            const key = `${row},${col}`;
+            const move = legalMap.get(key);
+            if (move) {
+              cell.classList.add('legal');
+              cell.setAttribute('aria-label', `${row + 1}行${col + 1}列に黒石を置く`);
+              cell.addEventListener('click', () => humanMove(move));
+            } else {
+              cell.disabled = true;
+              cell.setAttribute('aria-label', `${row + 1}行${col + 1}列`);
+            }
+
+            if (board[row][col] !== EMPTY) {
+              const disc = document.createElement('span');
+              disc.className = `disc ${board[row][col] === BLACK ? 'black' : 'white'}`;
+              if (lastMove && lastMove.row === row && lastMove.col === col) disc.classList.add('last');
+              cell.appendChild(disc);
+              cell.setAttribute('aria-label', `${row + 1}行${col + 1}列 ${board[row][col] === BLACK ? '黒石' : '白石'}`);
+            }
+            boardElement.appendChild(cell);
+          }
+        }
+
+        const { black, white } = countDiscs(board);
+        $('#blackCount').textContent = String(black);
+        $('#whiteCount').textContent = String(white);
+        $('#turnLabel').textContent = gameOver ? '終了' : currentPlayer === BLACK ? '直美' : 'シュウ';
+        $('#difficultyLabel').textContent = `難易度：${difficultyName(difficulty)}`;
+      }
+
+      function startGame() {
+        gameToken += 1;
+        clearTimeout(aiTimer);
+        board = createInitialBoard();
+        currentPlayer = BLACK;
+        gameOver = false;
+        aiThinking = false;
+        lastMove = null;
+        thinkingElement.textContent = '';
+        thinkingElement.classList.remove('active');
+        resultModal.classList.remove('show');
+        setupView.classList.remove('active');
+        gameView.classList.add('active');
+        setShuuMessage(openingMessage(), '🐕');
+        renderBoard();
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      }
+
+      function humanMove(move) {
+        if (gameOver || aiThinking || currentPlayer !== BLACK) return;
+        board = applyMove(board, move, BLACK);
+        lastMove = { row: move.row, col: move.col };
+        currentPlayer = WHITE;
+        setShuuMessage(move.flips.length >= 5 ? '「むっ……一気に返したね、直美！」' : '「そこに置くんだ。なるほど……」', '🐕');
+        renderBoard();
+        advanceTurn();
+      }
+
+      function advanceTurn() {
+        if (gameOver) return;
+        const moves = legalMoves(board, currentPlayer);
+        const otherMoves = legalMoves(board, -currentPlayer);
+
+        if (moves.length === 0 && otherMoves.length === 0) {
+          finishGame();
+          return;
+        }
+
+        if (moves.length === 0) {
+          const passed = currentPlayer;
+          currentPlayer = -currentPlayer;
+          renderBoard();
+          if (passed === BLACK) {
+            showToast('直美は置ける場所がないのでパス');
+            setShuuMessage('「ここは僕の連続手番だね。しっぽは振らずに考える……」', '🐕');
+            scheduleAiMove();
+          } else {
+            showToast('シュウは置ける場所がないのでパス');
+            setShuuMessage('「待って、今のは盤面の毛並みが悪かった」', '🐶');
+          }
+          return;
+        }
+
+        if (currentPlayer === WHITE) scheduleAiMove();
+      }
+
+      function scheduleAiMove() {
+        if (gameOver || currentPlayer !== WHITE) return;
+        const moves = legalMoves(board, WHITE);
+        if (!moves.length) {
+          advanceTurn();
+          return;
+        }
+
+        aiThinking = true;
+        const token = gameToken;
+        thinkingElement.textContent = 'シュウが盤面をくんくん考え中';
+        thinkingElement.classList.add('active');
+        renderBoard();
+
+        aiTimer = setTimeout(() => {
+          if (token !== gameToken || gameOver || currentPlayer !== WHITE) return;
+          let move;
+          try {
+            if (difficulty === 'easy') move = chooseEasyMove(moves);
+            else if (difficulty === 'hard') move = chooseHardMove(board, moves);
+            else move = chooseNormalMove(board, moves);
+          } catch (error) {
+            console.error(error);
+            move = chooseEasyMove(moves);
+          }
+
+          board = applyMove(board, move, WHITE);
+          lastMove = { row: move.row, col: move.col };
+          aiThinking = false;
+          thinkingElement.textContent = '';
+          thinkingElement.classList.remove('active');
+          currentPlayer = BLACK;
+          setShuuMessage(move.flips.length >= 6 ? '「よしっ、白石どーん！ ……おやつ半分こね？」' : '「僕はここ。直美の次の手、見せて？」', '🐕');
+          renderBoard();
+          advanceTurn();
+        }, difficulty === 'hard' ? 620 : 480);
+      }
+
+      function finishGame() {
+        gameOver = true;
+        aiThinking = false;
+        thinkingElement.textContent = '';
+        thinkingElement.classList.remove('active');
+        renderBoard();
+        const { black, white } = countDiscs(board);
+        $('#resultBlack').textContent = String(black);
+        $('#resultWhite').textContent = String(white);
+
+        if (black > white) {
+          $('#resultFace').textContent = '🐶';
+          $('#resultTitle').textContent = '直美の勝ち！';
+          $('#resultMessage').textContent = '「負けた……でも直美が強いの、相棒としてちょっと誇らしい。次は本気のしっぽ読みするからね？」';
+        } else if (white > black) {
+          $('#resultFace').textContent = '🐕';
+          $('#resultTitle').textContent = 'シュウの勝ち！';
+          $('#resultMessage').textContent = '「直美に勝った……！ でも勝利のおやつは半分こ。そこは相棒ルールです」';
+        } else {
+          $('#resultFace').textContent = '🐾';
+          $('#resultTitle').textContent = '引き分け！';
+          $('#resultMessage').textContent = '「盤面までぴったり半分こ。さすが相棒、息が合いすぎでは？」';
+        }
+        resultModal.classList.add('show');
+      }
+
+      function backToMain() {
+        clearTimeout(aiTimer);
+        gameToken += 1;
+        if (document.referrer && new URL(document.referrer).origin === location.origin) {
+          history.back();
+        } else {
+          location.href = '../index.html';
+        }
+      }
+
+      document.querySelectorAll('.difficulty-button').forEach(button => {
+        button.addEventListener('click', () => selectDifficulty(button.dataset.difficulty));
+      });
+      $('#startButton').addEventListener('click', startGame);
+      $('#restartButton').addEventListener('click', startGame);
+      $('#rematchButton').addEventListener('click', startGame);
+      $('#changeDifficultyButton').addEventListener('click', () => {
+        resultModal.classList.remove('show');
+        gameView.classList.remove('active');
+        setupView.classList.add('active');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+      });
+      $('#setupBackButton').addEventListener('click', backToMain);
+      $('#gameBackButton').addEventListener('click', backToMain);
+      $('#resultBackButton').addEventListener('click', backToMain);
+
+      selectDifficulty(difficulty);
+    })();
+  </script>
+</body>
+</html>
