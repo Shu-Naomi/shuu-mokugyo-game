@@ -1,0 +1,49 @@
+name: Integrate Othello once
+
+on:
+  push:
+    paths:
+      - .github/workflows/integrate-othello-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Add Othello to the mini-game menu
+        shell: python
+        run: |
+          from pathlib import Path
+
+          path = Path("index.html")
+          text = path.read_text(encoding="utf-8")
+
+          count_old = 'ミニゲーム一覧 <span>5種プレイ可能</span>'
+          count_new = 'ミニゲーム一覧 <span>6種プレイ可能</span>'
+          if count_old in text:
+              text = text.replace(count_old, count_new, 1)
+
+          marker = '<div class="mini-item"><button id="goOxoGame"><span>○×ゲーム（三目並べ）</span><span class="mini-item-status">遊べる！</span></button></div>'
+          item = '<div class="mini-item"><button id="goOthelloGame" onclick="window.location.href=\'othello/index.html\'"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-othello.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>犬小屋オセロ</span></span><span class="mini-item-status">遊べる！</span></button></div>'
+
+          if 'id="goOthelloGame"' not in text:
+              if marker not in text:
+                  raise SystemExit("Mini-game menu marker was not found; index.html was not changed.")
+              text = text.replace(marker, marker + '\n          ' + item, 1)
+
+          path.write_text(text, encoding="utf-8")
+
+      - name: Commit menu integration and remove one-time workflow
+        shell: bash
+        run: |
+          git config user.name "Shuu Game Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git rm .github/workflows/integrate-othello-once.yml
+          git add index.html
+          git commit -m "Link Inugoya Othello from mini-game menu"
+          git push
