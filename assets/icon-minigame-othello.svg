@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="犬小屋オセロ">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2d2149"/><stop offset="1" stop-color="#121021"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe5a7"/><stop offset="1" stop-color="#c8792d"/></linearGradient>
+    <linearGradient id="board" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4c9a75"/><stop offset="1" stop-color="#246048"/></linearGradient>
+    <radialGradient id="black"><stop offset="0" stop-color="#66616b"/><stop offset=".58" stop-color="#201b25"/><stop offset="1" stop-color="#08070a"/></radialGradient>
+    <radialGradient id="white"><stop offset="0" stop-color="#ffffff"/><stop offset=".68" stop-color="#eee7dc"/><stop offset="1" stop-color="#c9bfb2"/></radialGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="202" cy="49" r="18" fill="#ffd86a"/><circle cx="210" cy="42" r="18" fill="#24163b"/>
+  <g fill="#ffd86a"><path d="M55 58l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><circle cx="85" cy="37" r="3"/><circle cx="207" cy="96" r="3"/></g>
+  <g filter="url(#glow)">
+    <rect x="45" y="61" width="166" height="154" rx="18" fill="#7a4829" stroke="#ffd27d" stroke-width="5"/>
+    <rect x="57" y="73" width="142" height="130" rx="6" fill="url(#board)" stroke="#123d2d" stroke-width="3"/>
+    <g stroke="#174b38" stroke-width="2" opacity=".9">
+      <path d="M92.5 73v130M128 73v130M163.5 73v130M57 105.5h142M57 138h142M57 170.5h142"/>
+    </g>
+    <circle cx="110" cy="122" r="21" fill="url(#black)" stroke="#79737f" stroke-width="2"/>
+    <circle cx="146" cy="154" r="21" fill="url(#white)" stroke="#fff8ec" stroke-width="2"/>
+    <path d="M145 105c16 0 29 13 29 29" fill="none" stroke="#ffd86a" stroke-width="5" stroke-linecap="round"/>
+    <path d="M172 122l3 14-14-4" fill="#ffd86a"/>
+  </g>
+  <text x="42" y="235" fill="#fff0c8" font-size="22" font-weight="900" font-family="system-ui, sans-serif">犬小屋オセロ</text>
+</svg>
