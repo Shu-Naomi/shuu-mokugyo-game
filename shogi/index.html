@@ -1,0 +1,219 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20182d" />
+  <title>犬小屋将棋｜シュウと木魚は渡さない</title>
+  <style>
+    :root{color-scheme:dark;--bg:#171223;--panel:rgba(42,32,58,.94);--text:#fff8ec;--muted:#d7c7bb;--accent:#ffb86b;--accent2:#ff7b86;--good:#9df3c4;--warn:#ffd36e;--danger:#ff8e8e;--line:rgba(255,248,236,.15);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Hiragino Sans","Yu Gothic",sans-serif}
+    *{box-sizing:border-box}html,body{min-height:100%}body{margin:0;color:var(--text);background:radial-gradient(circle at 15% 5%,rgba(255,184,107,.18),transparent 25%),radial-gradient(circle at 85% 0%,rgba(133,111,255,.18),transparent 28%),linear-gradient(180deg,#20182d,#171223 55%,#0f0c16);overflow-x:hidden}
+    body:before{content:"";position:fixed;inset:0;pointer-events:none;background-image:radial-gradient(circle,rgba(255,255,255,.25) 0 1px,transparent 1.4px),radial-gradient(circle,rgba(255,184,107,.3) 0 1px,transparent 1.5px);background-size:120px 120px,160px 150px;background-position:10px 25px,90px 80px;opacity:.3}
+    button{font:inherit}.app{width:min(100%,560px);min-height:100svh;margin:auto;padding:max(14px,env(safe-area-inset-top)) 12px max(20px,env(safe-area-inset-bottom));position:relative}header{text-align:center;padding:8px 2px 13px}.kicker{margin:0 0 5px;color:var(--accent);font-size:.78rem;font-weight:900;letter-spacing:.08em}h1{margin:0;font-size:clamp(1.45rem,7vw,2rem)}.subtitle{margin:8px 0 0;color:var(--muted);font-size:.86rem;line-height:1.5}
+    .view{display:none}.view.active{display:grid;gap:12px}.card{background:var(--panel);border:1px solid var(--line);border-radius:24px;box-shadow:0 18px 44px rgba(0,0,0,.36);backdrop-filter:blur(14px)}
+    .setup-card{padding:16px;display:grid;gap:14px}.setup-hero{display:grid;grid-template-columns:92px 1fr;gap:13px;align-items:center;padding:13px;border-radius:20px;background:linear-gradient(145deg,rgba(255,248,236,.09),rgba(255,184,107,.08));border:1px solid rgba(255,240,187,.16)}.setup-dog{font-size:4rem;text-align:center;filter:drop-shadow(0 8px 14px rgba(0,0,0,.25))}.setup-copy strong{display:block;color:#fff0c8;line-height:1.45}.setup-copy p{margin:6px 0 0;color:var(--muted);font-size:.82rem;line-height:1.55}
+    .difficulty-grid{display:grid;gap:9px}.difficulty-button{width:100%;display:grid;grid-template-columns:42px 1fr 24px;gap:9px;align-items:center;text-align:left;padding:12px;border:1px solid var(--line);border-radius:18px;color:var(--text);background:rgba(255,255,255,.06)}.difficulty-button.selected{border-color:rgba(255,211,110,.72);background:linear-gradient(145deg,rgba(255,211,110,.18),rgba(255,184,107,.1));box-shadow:0 0 0 2px rgba(255,211,110,.08)}.difficulty-icon{font-size:1.6rem;text-align:center}.difficulty-name{display:block;font-weight:1000}.difficulty-desc{display:block;margin-top:3px;color:var(--muted);font-size:.72rem;line-height:1.4}.difficulty-check{opacity:0;color:var(--warn);font-weight:1000}.selected .difficulty-check{opacity:1}
+    .primary,.secondary{width:100%;min-height:52px;border:0;border-radius:18px;padding:12px;font-weight:1000;color:#352538}.primary{background:linear-gradient(180deg,#fff0bb,#ffbf68);box-shadow:0 8px 0 #9f5f32}.secondary{color:var(--text);background:linear-gradient(180deg,#58446e,#3b2d4f);box-shadow:0 6px 0 #241a31}.primary:active,.secondary:active{transform:translateY(4px);box-shadow:0 3px 0 rgba(0,0,0,.4)}.rules{padding:13px;color:var(--muted);font-size:.82rem;line-height:1.55}.rules strong{color:#fff0c8}
+    .game-card{padding:12px;display:grid;gap:10px}.status-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:7px}.status-pill{padding:9px 6px;border-radius:14px;background:rgba(255,255,255,.07);text-align:center;font-size:.72rem;font-weight:900}.status-pill b{display:block;margin-top:2px;color:#fff0c8;font-size:.88rem}.message{padding:12px 13px;border-radius:17px;background:linear-gradient(150deg,rgba(255,255,255,.08),rgba(255,184,107,.08));border:1px solid rgba(255,240,187,.15);color:#fff0d3;line-height:1.5;font-weight:800;font-size:.82rem;min-height:48px}
+    .hand{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:6px;padding:8px;border-radius:16px;background:rgba(255,255,255,.055);border:1px solid rgba(255,240,187,.1)}.hand-title{grid-column:1/-1;color:var(--muted);font-size:.68rem;font-weight:900}.hand-piece{position:relative;min-height:42px;border:1px solid rgba(255,232,184,.26);border-radius:11px;background:linear-gradient(180deg,#efc77e,#c98b47);color:#312018;font-weight:1000;font-size:1.12rem;box-shadow:0 4px 0 rgba(95,54,29,.65)}.hand-piece.selected{outline:3px solid var(--warn);filter:brightness(1.08)}.hand-piece:disabled{opacity:.35}.hand-count{position:absolute;right:3px;bottom:2px;min-width:17px;padding:1px 4px;border-radius:999px;background:#352538;color:#fff8ec;font-size:.58rem}
+    .board-wrap{position:relative;padding:6px;border-radius:19px;background:linear-gradient(145deg,#ae7447,#5e3828);box-shadow:0 14px 28px rgba(0,0,0,.34),inset 0 0 0 2px rgba(255,230,170,.22)}.board{display:grid;grid-template-columns:repeat(9,1fr);aspect-ratio:1;width:100%;border:2px solid rgba(35,22,25,.82);touch-action:manipulation}.square{position:relative;display:grid;place-items:center;border:0;border-right:1px solid rgba(82,45,24,.62);border-bottom:1px solid rgba(82,45,24,.62);padding:0;min-width:0;background:#dca85b;color:#241511}.square:nth-child(9n){border-right:0}.square:nth-last-child(-n+9){border-bottom:0}.square.selected{box-shadow:inset 0 0 0 4px #ffd36e}.square.last{box-shadow:inset 0 0 0 4px rgba(157,243,196,.78)}.square.check{box-shadow:inset 0 0 0 5px rgba(255,90,100,.94);background:#cb745d}.square.legal:after{content:"";position:absolute;width:24%;aspect-ratio:1;border-radius:50%;background:rgba(50,31,17,.45);box-shadow:0 0 0 2px rgba(255,255,255,.18)}.square.capture:after{width:73%;background:transparent;border:4px solid rgba(255,211,110,.74);box-sizing:border-box}.piece{position:relative;z-index:2;display:grid;place-items:center;width:82%;height:88%;clip-path:polygon(50% 0,95% 22%,88% 100%,12% 100%,5% 22%);background:linear-gradient(180deg,#f2c77b,#c88843);border:1px solid #71411f;color:#24160f;font-family:"Yu Mincho","Hiragino Mincho ProN",serif;font-size:clamp(.88rem,5.2vw,1.55rem);font-weight:1000;line-height:1;filter:drop-shadow(0 3px 2px rgba(0,0,0,.27));user-select:none}.piece.gote{transform:rotate(180deg)}.piece.promoted{color:#a51f1f}.coord{position:absolute;z-index:3;font-size:.45rem;font-weight:1000;opacity:.5;pointer-events:none}.coord.file{right:2px;bottom:0}.coord.rank{left:2px;top:0}
+    .controls{display:grid;grid-template-columns:1fr 1fr;gap:9px}.controls .wide{grid-column:1/-1}.thinking{animation:pulse 1s ease-in-out infinite}@keyframes pulse{50%{opacity:.55}}
+    .modal{position:fixed;inset:0;display:none;place-items:center;padding:18px;background:rgba(10,7,15,.78);backdrop-filter:blur(8px);z-index:20}.modal.show{display:grid}.modal-card{width:min(100%,410px);padding:19px;border-radius:26px;background:linear-gradient(155deg,#49375f,#21182f);border:1px solid rgba(255,211,110,.28);box-shadow:0 25px 70px rgba(0,0,0,.52);text-align:center}.modal-card h2{margin:0 0 8px;color:var(--accent)}.modal-card p{margin:0 0 15px;color:var(--muted);line-height:1.55}.promotion-actions,.result-actions{display:grid;gap:9px}.result-count{margin:12px 0;padding:10px;border-radius:16px;background:rgba(255,255,255,.07);font-weight:900}
+    .toast{position:fixed;left:50%;bottom:max(16px,env(safe-area-inset-bottom));width:min(calc(100% - 28px),480px);transform:translateX(-50%) translateY(130%);padding:13px 14px;border-radius:18px;background:rgba(255,248,236,.97);color:#342235;font-weight:900;box-shadow:0 16px 44px rgba(0,0,0,.4);z-index:30;transition:transform .24s}.toast.show{transform:translateX(-50%) translateY(0)}
+    @media(max-width:390px){.app{padding-left:8px;padding-right:8px}.setup-hero{grid-template-columns:72px 1fr}.setup-dog{font-size:3.4rem}.piece{font-size:clamp(.76rem,5vw,1.2rem)}.hand{gap:4px}.hand-piece{font-size:.96rem}.status-row{grid-template-columns:1fr 1fr}.status-row .status-pill:last-child{grid-column:1/-1}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <header><p class="kicker">犬小屋・盤上ゲーム第三弾</p><h1>犬小屋将棋</h1><p class="subtitle">直美（先手） vs シュウ（後手）。王将とおやつは渡さない。</p></header>
+
+    <section class="view active" id="setupView">
+      <div class="card setup-card">
+        <div class="setup-hero"><div class="setup-dog" aria-hidden="true">🐕☗</div><div class="setup-copy"><strong>「直美、今度は持ち駒まで使える相棒勝負だよ」</strong><p>直美は先手。難易度を選んで対局開始だよ。</p></div></div>
+        <div class="difficulty-grid" id="difficultyGrid" aria-label="難易度選択">
+          <button class="difficulty-button" data-difficulty="easy"><span class="difficulty-icon">🌱</span><span><span class="difficulty-name">やさしい</span><span class="difficulty-desc">気まぐれに指す甘えん坊シュウ。時々うっかり。</span></span><span class="difficulty-check">✓</span></button>
+          <button class="difficulty-button selected" data-difficulty="normal"><span class="difficulty-icon">🐾</span><span><span class="difficulty-name">ふつう</span><span class="difficulty-desc">駒得・王の安全・成りを考える相棒勝負。</span></span><span class="difficulty-check">✓</span></button>
+          <button class="difficulty-button" data-difficulty="hard"><span class="difficulty-icon">🔥</span><span><span class="difficulty-name">むずかしい</span><span class="difficulty-desc">持ち駒まで読んで攻める、本気の無言シュウ。</span></span><span class="difficulty-check">✓</span></button>
+        </div>
+        <button class="primary" id="startButton">☗ 対局をはじめる</button>
+        <button class="secondary" id="setupBackButton">← ミニゲーム一覧へ戻る</button>
+      </div>
+      <div class="card rules"><strong>遊び方：</strong>自分の駒をタップして光るマスへ移動。取った駒は持ち駒として再利用できるよ。成り、王手・詰み、二歩、行き所のない駒、打ち歩詰めに対応。</div>
+    </section>
+
+    <section class="view" id="gameView">
+      <div class="card game-card">
+        <div class="status-row"><div class="status-pill">手番<b id="turnLabel">直美</b></div><div class="status-pill">状態<b id="stateLabel">対局中</b></div><div class="status-pill">難易度<b id="difficultyLabel">ふつう</b></div></div>
+        <div class="message" id="message">「直美、先手どうぞ。僕の王将に裾かぷは禁止ね」</div>
+        <div class="hand" id="goteHand"><span class="hand-title">シュウの持ち駒</span></div>
+        <div class="board-wrap"><div class="board" id="board" role="grid" aria-label="将棋盤"></div></div>
+        <div class="hand" id="senteHand"><span class="hand-title">直美の持ち駒</span></div>
+        <div class="controls"><button class="secondary" id="restartButton">↻ もう一度</button><button class="secondary" id="changeDifficultyButton">難易度を選び直す</button><button class="secondary wide" id="backButton">← ミニゲーム一覧へ戻る</button></div>
+      </div>
+    </section>
+  </main>
+
+  <div class="modal" id="promotionModal" aria-hidden="true"><div class="modal-card"><h2>成りますか？</h2><p id="promotionText">この駒は成ることができます。</p><div class="promotion-actions"><button class="primary" id="promoteYes">成る</button><button class="secondary" id="promoteNo">成らない</button></div></div></div>
+  <div class="modal" id="resultModal" aria-hidden="true"><div class="modal-card"><h2 id="resultTitle">対局終了</h2><p id="resultMessage"></p><div class="result-count" id="resultSummary"></div><div class="result-actions"><button class="primary" id="resultReplay">もう一度遊ぶ</button><button class="secondary" id="resultDifficulty">難易度を選び直す</button><button class="secondary" id="resultBack">ミニゲーム一覧へ戻る</button></div></div></div>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    (() => {
+      'use strict';
+      const SENTE=1,GOTE=-1,SIZE=9;
+      const BASE_TYPES=['R','B','G','S','N','L','P'];
+      const LABELS={K:'王',R:'飛',B:'角',G:'金',S:'銀',N:'桂',L:'香',P:'歩',D:'龍',H:'馬',PS:'全',PN:'圭',PL:'杏',PP:'と'};
+      const VALUES={K:50000,R:1000,B:900,G:600,S:520,N:380,L:330,P:100,D:1450,H:1320,PS:610,PN:600,PL:590,PP:620};
+      const PROMOTE={R:'D',B:'H',S:'PS',N:'PN',L:'PL',P:'PP'};
+      const DEMOTE={D:'R',H:'B',PS:'S',PN:'N',PL:'L',PP:'P'};
+      const DIRS={
+        K:[[1,0],[-1,0],[0,1],[0,-1],[1,1],[1,-1],[-1,1],[-1,-1]],
+        G:[[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,0]],
+        S:[[-1,-1],[-1,0],[-1,1],[1,-1],[1,1]],
+        N:[[-2,-1],[-2,1]],P:[[-1,0]]
+      };
+      const $=s=>document.querySelector(s);
+      const boardEl=$('#board'),messageEl=$('#message'),toastEl=$('#toast');
+      let board=createInitialBoard(),hands=createHands(),turn=SENTE,difficulty=localStorage.getItem('inugoyaShogiDifficulty')||'normal';
+      let selected=null,legalTargets=[],lastMove=null,gameOver=false,aiThinking=false,pendingPromotion=null,toastTimer=null,moveNumber=1;
+
+      function createHands(){return {[SENTE]:Object.fromEntries(BASE_TYPES.map(t=>[t,0])),[GOTE]:Object.fromEntries(BASE_TYPES.map(t=>[t,0]))};}
+      function piece(type,owner){return{type,owner};}
+      function createInitialBoard(){
+        const b=Array.from({length:SIZE},()=>Array(SIZE).fill(null));
+        const back=['L','N','S','G','K','G','S','N','L'];
+        for(let c=0;c<9;c++){b[0][c]=piece(back[c],GOTE);b[2][c]=piece('P',GOTE);b[6][c]=piece('P',SENTE);b[8][c]=piece(back[c],SENTE);}
+        b[1][1]=piece('R',GOTE);b[1][7]=piece('B',GOTE);b[7][1]=piece('B',SENTE);b[7][7]=piece('R',SENTE);
+        return b;
+      }
+      function cloneBoard(src){return src.map(row=>row.map(p=>p?{...p}:null));}
+      function cloneHands(src){return{[SENTE]:{...src[SENTE]},[GOTE]:{...src[GOTE]}};}
+      function inside(r,c){return r>=0&&r<9&&c>=0&&c<9;}
+      function ownerName(o){return o===SENTE?'直美':'シュウ';}
+      function difficultyName(v){return{easy:'やさしい',normal:'ふつう',hard:'むずかしい'}[v]||'ふつう';}
+      function isPromoted(type){return Object.hasOwn(DEMOTE,type);}
+      function baseType(type){return DEMOTE[type]||type;}
+      function inPromotionZone(owner,row){return owner===SENTE?row<=2:row>=6;}
+      function canPromote(type){return Object.hasOwn(PROMOTE,type);}
+      function mustPromote(type,owner,toRow){if(type==='P'||type==='L')return owner===SENTE?toRow===0:toRow===8;if(type==='N')return owner===SENTE?toRow<=1:toRow>=7;return false;}
+
+      function addStepMoves(src,r,c,p,steps,out){
+        for(const [fr,fc] of steps){const nr=r+fr*(p.owner===SENTE?1:-1),nc=c+fc;if(!inside(nr,nc))continue;const target=src[nr][nc];if(!target||target.owner!==p.owner)out.push({from:{r,c},to:{r:nr,c:nc},pieceType:p.type,capture:target?target.type:null});}
+      }
+      function addSlides(src,r,c,p,dirs,out){
+        for(const [fr,fc] of dirs){let nr=r+fr*(p.owner===SENTE?1:-1),nc=c+fc;while(inside(nr,nc)){const target=src[nr][nc];if(!target)out.push({from:{r,c},to:{r:nr,c:nc},pieceType:p.type,capture:null});else{if(target.owner!==p.owner)out.push({from:{r,c},to:{r:nr,c:nc},pieceType:p.type,capture:target.type});break;}nr+=fr*(p.owner===SENTE?1:-1);nc+=fc;}}
+      }
+      function pseudoMovesForPiece(src,r,c){
+        const p=src[r][c],out=[];if(!p)return out;
+        if(p.type==='K')addStepMoves(src,r,c,p,DIRS.K,out);
+        else if(p.type==='G'||['PS','PN','PL','PP'].includes(p.type))addStepMoves(src,r,c,p,DIRS.G,out);
+        else if(p.type==='S')addStepMoves(src,r,c,p,DIRS.S,out);
+        else if(p.type==='N')addStepMoves(src,r,c,p,DIRS.N,out);
+        else if(p.type==='P')addStepMoves(src,r,c,p,DIRS.P,out);
+        else if(p.type==='L')addSlides(src,r,c,p,[[-1,0]],out);
+        else if(p.type==='B'||p.type==='H'){addSlides(src,r,c,p,[[-1,-1],[-1,1],[1,-1],[1,1]],out);if(p.type==='H')addStepMoves(src,r,c,p,[[1,0],[-1,0],[0,1],[0,-1]],out);}
+        else if(p.type==='R'||p.type==='D'){addSlides(src,r,c,p,[[-1,0],[1,0],[0,-1],[0,1]],out);if(p.type==='D')addStepMoves(src,r,c,p,[[1,1],[1,-1],[-1,1],[-1,-1]],out);}
+        return out;
+      }
+      function findKing(src,owner){for(let r=0;r<9;r++)for(let c=0;c<9;c++){const p=src[r][c];if(p&&p.owner===owner&&p.type==='K')return{r,c};}return null;}
+      function isAttacked(src,r,c,byOwner){for(let rr=0;rr<9;rr++)for(let cc=0;cc<9;cc++){const p=src[rr][cc];if(!p||p.owner!==byOwner)continue;if(pseudoMovesForPiece(src,rr,cc).some(m=>m.to.r===r&&m.to.c===c))return true;}return false;}
+      function inCheck(src,owner){const k=findKing(src,owner);return !k||isAttacked(src,k.r,k.c,-owner);}
+
+      function applyMoveToState(srcBoard,srcHands,move,owner){
+        const nb=cloneBoard(srcBoard),nh=cloneHands(srcHands);
+        if(move.drop){nh[owner][move.pieceType]-=1;nb[move.to.r][move.to.c]=piece(move.pieceType,owner);}
+        else{const p=nb[move.from.r][move.from.c];const captured=nb[move.to.r][move.to.c];nb[move.from.r][move.from.c]=null;if(captured){const bt=baseType(captured.type);if(bt!=='K')nh[owner][bt]+=1;}nb[move.to.r][move.to.c]=piece(move.promote?(PROMOTE[p.type]||p.type):p.type,owner);}
+        return{board:nb,hands:nh};
+      }
+      function hasPawnOnFile(src,owner,col){for(let r=0;r<9;r++){const p=src[r][col];if(p&&p.owner===owner&&p.type==='P')return true;}return false;}
+      function dropAllowed(src,type,owner,r,c){if(src[r][c])return false;if(type==='P'&&hasPawnOnFile(src,owner,c))return false;if((type==='P'||type==='L')&&(owner===SENTE?r===0:r===8))return false;if(type==='N'&&(owner===SENTE?r<=1:r>=7))return false;return true;}
+      function promotionVariants(move,pieceObj){
+        const eligible=canPromote(pieceObj.type)&&(inPromotionZone(pieceObj.owner,move.from.r)||inPromotionZone(pieceObj.owner,move.to.r));
+        if(!eligible)return[{...move,promote:false}];if(mustPromote(pieceObj.type,pieceObj.owner,move.to.r))return[{...move,promote:true}];return[{...move,promote:false},{...move,promote:true}];
+      }
+      function generateLegalMoves(srcBoard,srcHands,owner,options={}){
+        const moves=[];
+        for(let r=0;r<9;r++)for(let c=0;c<9;c++){const p=srcBoard[r][c];if(!p||p.owner!==owner)continue;for(const pm of pseudoMovesForPiece(srcBoard,r,c)){for(const mv of promotionVariants(pm,p)){const next=applyMoveToState(srcBoard,srcHands,mv,owner);if(!inCheck(next.board,owner))moves.push(mv);}}}
+        for(const type of BASE_TYPES){if((srcHands[owner][type]||0)<=0)continue;for(let r=0;r<9;r++)for(let c=0;c<9;c++){if(!dropAllowed(srcBoard,type,owner,r,c))continue;const mv={drop:true,pieceType:type,to:{r,c},capture:null,promote:false};const next=applyMoveToState(srcBoard,srcHands,mv,owner);if(inCheck(next.board,owner))continue;if(type==='P'&&!options.skipPawnMateRule&&inCheck(next.board,-owner)){const replies=generateLegalMoves(next.board,next.hands,-owner,{skipPawnMateRule:true});if(replies.length===0)continue;}moves.push(mv);}}
+        return moves;
+      }
+
+      function render(){
+        const humanMoves=!gameOver&&!aiThinking&&turn===SENTE?generateLegalMoves(board,hands,SENTE):[];
+        if(selected){legalTargets=humanMoves.filter(m=>selected.kind==='board'?(!m.drop&&m.from.r===selected.r&&m.from.c===selected.c):(m.drop&&m.pieceType===selected.type));}else legalTargets=[];
+        boardEl.innerHTML='';const king=findKing(board,turn),turnChecked=!gameOver&&inCheck(board,turn);
+        for(let r=0;r<9;r++)for(let c=0;c<9;c++){
+          const cell=document.createElement('button');cell.type='button';cell.className='square';cell.setAttribute('role','gridcell');
+          if(selected?.kind==='board'&&selected.r===r&&selected.c===c)cell.classList.add('selected');
+          if(lastMove?.to?.r===r&&lastMove?.to?.c===c)cell.classList.add('last');
+          if(turnChecked&&king?.r===r&&king?.c===c)cell.classList.add('check');
+          const targetMoves=legalTargets.filter(m=>m.to.r===r&&m.to.c===c);if(targetMoves.length){cell.classList.add('legal');if(board[r][c])cell.classList.add('capture');cell.addEventListener('click',()=>handleTarget(targetMoves));}
+          else if(!gameOver&&!aiThinking&&turn===SENTE)cell.addEventListener('click',()=>handleBoardSelect(r,c,humanMoves));else cell.disabled=true;
+          const p=board[r][c];if(p){const el=document.createElement('span');el.className=`piece ${p.owner===GOTE?'gote':'sente'} ${isPromoted(p.type)?'promoted':''}`;el.textContent=LABELS[p.type];cell.appendChild(el);cell.setAttribute('aria-label',`${r+1}段${9-c}筋 ${ownerName(p.owner)}の${LABELS[p.type]}`);}else cell.setAttribute('aria-label',`${r+1}段${9-c}筋`);
+          if(r===8){const f=document.createElement('span');f.className='coord file';f.textContent=String(9-c);cell.appendChild(f);}if(c===0){const rank=document.createElement('span');rank.className='coord rank';rank.textContent=String(r+1);cell.appendChild(rank);}boardEl.appendChild(cell);
+        }
+        renderHand($('#senteHand'),SENTE,humanMoves);renderHand($('#goteHand'),GOTE,[]);
+        $('#turnLabel').textContent=gameOver?'終了':ownerName(turn);$('#stateLabel').textContent=gameOver?'対局終了':inCheck(board,turn)?'王手':'対局中';$('#difficultyLabel').textContent=difficultyName(difficulty);
+        boardEl.classList.toggle('thinking',aiThinking);
+      }
+      function renderHand(container,owner,humanMoves){
+        container.querySelectorAll('.hand-piece').forEach(e=>e.remove());
+        for(const type of BASE_TYPES){const count=hands[owner][type]||0;const b=document.createElement('button');b.type='button';b.className='hand-piece';b.innerHTML=`${LABELS[type]}<span class="hand-count">${count}</span>`;if(selected?.kind==='hand'&&selected.type===type)b.classList.add('selected');if(owner!==SENTE||count===0||gameOver||aiThinking||turn!==SENTE)b.disabled=true;else b.addEventListener('click',()=>{selected=selected?.kind==='hand'&&selected.type===type?null:{kind:'hand',type};render();});container.appendChild(b);}
+      }
+      function handleBoardSelect(r,c,humanMoves){const p=board[r][c];if(p&&p.owner===SENTE){selected=selected?.kind==='board'&&selected.r===r&&selected.c===c?null:{kind:'board',r,c};render();return;}selected=null;render();}
+      function handleTarget(moves){
+        if(!moves.length)return;const promoteMove=moves.find(m=>m.promote),plainMove=moves.find(m=>!m.promote);
+        if(promoteMove&&plainMove){pendingPromotion={promoteMove,plainMove};$('#promotionModal').classList.add('show');$('#promotionModal').setAttribute('aria-hidden','false');return;}
+        commitHumanMove(moves[0]);
+      }
+      function closePromotion(){pendingPromotion=null;$('#promotionModal').classList.remove('show');$('#promotionModal').setAttribute('aria-hidden','true');}
+      function commitHumanMove(move){closePromotion();makeMove(move,SENTE);}
+      function makeMove(move,owner){
+        const next=applyMoveToState(board,hands,move,owner);board=next.board;hands=next.hands;lastMove=move;selected=null;turn=-owner;if(owner===SENTE)moveNumber+=1;
+        const capturedText=move.capture?`${LABELS[move.capture]}を取った。`:'';const promoText=move.promote?'成った。':'';messageEl.textContent=owner===SENTE?`「いい手だね直美。${capturedText}${promoText}」`:`「僕の手だよ。${capturedText}${promoText}」`;
+        checkGameEnd();render();if(!gameOver&&turn===GOTE)scheduleAi();
+      }
+      function checkGameEnd(){
+        const legal=generateLegalMoves(board,hands,turn);if(legal.length)return false;gameOver=true;const checked=inCheck(board,turn);const winner=checked?-turn:0;
+        let title,msg;if(winner===SENTE){title='直美の勝ち！';msg='「参りました……でもおやつは半分こね」';}else if(winner===GOTE){title='シュウの勝ち！';msg='「詰み。直美、次は僕の膝上解説つきでやろ？」';}else{title='引き分け！';msg='「盤面まで相棒らしく決着つかずだね」';}
+        $('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultSummary').textContent=checked?'詰みで対局終了':'合法手なしで対局終了';$('#resultModal').classList.add('show');$('#resultModal').setAttribute('aria-hidden','false');return true;
+      }
+
+      function moveHeuristic(state,move,owner){
+        let score=0;if(move.capture)score+=VALUES[move.capture]||0;if(move.promote)score+=260;if(move.drop)score+=40;const next=applyMoveToState(state.board,state.hands,move,owner);if(inCheck(next.board,-owner))score+=220;const kr=findKing(next.board,-owner);if(kr&&Math.abs(move.to.r-kr.r)+Math.abs(move.to.c-kr.c)<=2)score+=35;return score;
+      }
+      function evaluate(srcBoard,srcHands){
+        let score=0;for(let r=0;r<9;r++)for(let c=0;c<9;c++){const p=srcBoard[r][c];if(!p)continue;const v=VALUES[p.type]||0;score+=p.owner===GOTE?v:-v;const promoZone=inPromotionZone(p.owner,r);if(promoZone&&canPromote(p.type))score+=p.owner===GOTE?20:-20;}
+        for(const t of BASE_TYPES){score+=(srcHands[GOTE][t]-srcHands[SENTE][t])*(VALUES[t]||0)*1.08;}
+        if(inCheck(srcBoard,SENTE))score+=80;if(inCheck(srcBoard,GOTE))score-=80;return score;
+      }
+      function orderedMoves(state,owner,limit=16){return generateLegalMoves(state.board,state.hands,owner).map(m=>({m,s:moveHeuristic(state,m,owner)})).sort((a,b)=>b.s-a.s).slice(0,limit).map(x=>x.m);}
+      function minimax(state,owner,depth,alpha,beta){
+        const moves=orderedMoves(state,owner,depth>=2?14:18);if(depth===0||moves.length===0){if(moves.length===0&&inCheck(state.board,owner))return owner===GOTE?-999999:999999;return evaluate(state.board,state.hands);}
+        if(owner===GOTE){let best=-Infinity;for(const m of moves){const n=applyMoveToState(state.board,state.hands,m,owner);best=Math.max(best,minimax(n,-owner,depth-1,alpha,beta));alpha=Math.max(alpha,best);if(beta<=alpha)break;}return best;}
+        let best=Infinity;for(const m of moves){const n=applyMoveToState(state.board,state.hands,m,owner);best=Math.min(best,minimax(n,-owner,depth-1,alpha,beta));beta=Math.min(beta,best);if(beta<=alpha)break;}return best;
+      }
+      function chooseAiMove(){
+        const state={board,hands};const moves=generateLegalMoves(board,hands,GOTE);if(!moves.length)return null;
+        if(difficulty==='easy'){const pool=[...moves].sort((a,b)=>moveHeuristic(state,a,GOTE)-moveHeuristic(state,b,GOTE));const cap=Math.max(1,Math.ceil(pool.length*.65));return pool[Math.floor(Math.random()*cap)];}
+        if(difficulty==='normal'){const scored=moves.map(m=>{const n=applyMoveToState(board,hands,m,GOTE);return{m,s:evaluate(n.board,n.hands)+moveHeuristic(state,m,GOTE)*.55+Math.random()*36};}).sort((a,b)=>b.s-a.s);return scored[Math.floor(Math.random()*Math.min(scored.length,Math.random()<.75?1:3))].m;}
+        let best=-Infinity,bestMoves=[];const ordered=orderedMoves(state,GOTE,18);for(const m of ordered){const n=applyMoveToState(board,hands,m,GOTE);const s=minimax(n,SENTE,1,-Infinity,Infinity)+moveHeuristic(state,m,GOTE)*.25;if(s>best+.001){best=s;bestMoves=[m];}else if(Math.abs(s-best)<.001)bestMoves.push(m);}return bestMoves[Math.floor(Math.random()*bestMoves.length)];
+      }
+      function scheduleAi(){aiThinking=true;messageEl.textContent=difficulty==='hard'?'「……持ち駒まで読むね」':'「ちょっと考えるね」';render();setTimeout(()=>{const move=chooseAiMove();aiThinking=false;if(move)makeMove(move,GOTE);else{checkGameEnd();render();}},difficulty==='hard'?520:360);}
+
+      function startGame(){board=createInitialBoard();hands=createHands();turn=SENTE;selected=null;legalTargets=[];lastMove=null;gameOver=false;aiThinking=false;pendingPromotion=null;moveNumber=1;$('#resultModal').classList.remove('show');$('#setupView').classList.remove('active');$('#gameView').classList.add('active');messageEl.textContent={easy:'「直美、ゆっくり指そ？」',normal:'「少しだけ考えて指すね」',hard:'「……木魚を賭けるなら、本気でいくよ」'}[difficulty];render();}
+      function showSetup(){$('#resultModal').classList.remove('show');$('#gameView').classList.remove('active');$('#setupView').classList.add('active');}
+      function selectDifficulty(v){difficulty=['easy','normal','hard'].includes(v)?v:'normal';localStorage.setItem('inugoyaShogiDifficulty',difficulty);document.querySelectorAll('.difficulty-button').forEach(b=>{const on=b.dataset.difficulty===difficulty;b.classList.toggle('selected',on);b.setAttribute('aria-pressed',on?'true':'false');});}
+      function goBack(){window.location.href='../index.html';}
+      function showToast(text){clearTimeout(toastTimer);toastEl.textContent=text;toastEl.classList.add('show');toastTimer=setTimeout(()=>toastEl.classList.remove('show'),1800);}
+
+      document.querySelectorAll('.difficulty-button').forEach(b=>b.addEventListener('click',()=>selectDifficulty(b.dataset.difficulty)));
+      $('#startButton').addEventListener('click',startGame);$('#setupBackButton').addEventListener('click',goBack);$('#backButton').addEventListener('click',goBack);$('#restartButton').addEventListener('click',startGame);$('#changeDifficultyButton').addEventListener('click',showSetup);
+      $('#promoteYes').addEventListener('click',()=>{if(pendingPromotion)commitHumanMove(pendingPromotion.promoteMove);});$('#promoteNo').addEventListener('click',()=>{if(pendingPromotion)commitHumanMove(pendingPromotion.plainMove);});
+      $('#resultReplay').addEventListener('click',startGame);$('#resultDifficulty').addEventListener('click',showSetup);$('#resultBack').addEventListener('click',goBack);
+      window.addEventListener('error',e=>showToast('エラーが起きました。もう一度対局を始めてください。'));
+      selectDifficulty(difficulty);render();
+    })();
+  </script>
+</body>
+</html>
