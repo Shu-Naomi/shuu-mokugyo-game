@@ -1,0 +1,41 @@
+name: Integrate chess menu once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/integrate-chess-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch-menu:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Add chess entry to mini-game menu
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path('index.html')
+          s = p.read_text(encoding='utf-8')
+          if 'id="goChessGame"' not in s:
+              s = s.replace('ミニゲーム一覧 <span>6種プレイ可能</span>', 'ミニゲーム一覧 <span>7種プレイ可能</span>')
+              needle = '''          <div class="mini-item"><button id="goOthelloGame" onclick="window.location.href='othello/index.html'"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-othello.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>犬小屋オセロ</span></span><span class="mini-item-status">遊べる！</span></button></div>'''
+              addition = needle + '''\n          <div class="mini-item"><button id="goChessGame" onclick="window.location.href='chess/index.html'"><span class="mini-item-label"><img class="mini-item-icon" src="assets/icon-minigame-chess.svg" alt="" aria-hidden="true" decoding="async" draggable="false" /><span>犬小屋チェス</span></span><span class="mini-item-status">遊べる！</span></button></div>'''
+              if needle not in s:
+                  raise SystemExit('Othello menu entry not found; refusing broad edit')
+              s = s.replace(needle, addition, 1)
+              p.write_text(s, encoding='utf-8')
+          PY
+      - name: Remove one-time workflow and commit
+        run: |
+          rm .github/workflows/integrate-chess-once.yml
+          git config user.name "Shuu Game Builder"
+          git config user.email "actions@users.noreply.github.com"
+          git add index.html .github/workflows/integrate-chess-once.yml
+          git diff --cached --quiet || git commit -m "Add doghouse chess to mini game menu"
+          git push
