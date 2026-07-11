@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-label="犬小屋将棋">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#2c2148"/><stop offset="1" stop-color="#130d22"/></linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe4a2"/><stop offset="1" stop-color="#c8782b"/></linearGradient>
+    <linearGradient id="wood" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f0bd6c"/><stop offset="1" stop-color="#9b5a28"/></linearGradient>
+    <filter id="glow"><feGaussianBlur stdDeviation="3" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+  </defs>
+  <rect x="8" y="8" width="240" height="240" rx="42" fill="url(#bg)" stroke="url(#gold)" stroke-width="10"/>
+  <circle cx="203" cy="49" r="18" fill="#ffd86a"/><circle cx="211" cy="42" r="18" fill="#21143a"/>
+  <g fill="#ffd86a"><path d="M54 62l4 10 10 4-10 4-4 10-4-10-10-4 10-4z"/><circle cx="88" cy="39" r="3"/><circle cx="202" cy="103" r="3"/></g>
+  <g filter="url(#glow)">
+    <path d="M42 160L128 80l86 80-18 50H60z" fill="#5b3474" stroke="#ffd27d" stroke-width="6" stroke-linejoin="round" opacity=".9"/>
+    <path d="M77 177l18-68h66l18 68-51 42z" fill="url(#wood)" stroke="#ffd27d" stroke-width="6" stroke-linejoin="round"/>
+    <path d="M128 96l39 28-9 73-30 22-30-22-9-73z" fill="url(#wood)" stroke="#6f3b1d" stroke-width="4"/>
+    <text x="128" y="172" text-anchor="middle" fill="#341d10" font-size="54" font-weight="900" font-family="Yu Mincho, Hiragino Mincho ProN, serif">王</text>
+    <path d="M73 124l22-26 19 24-10 29-31-4z" fill="#e1aa59" stroke="#ffd27d" stroke-width="4"/>
+    <text x="94" y="134" text-anchor="middle" fill="#3a2113" font-size="22" font-weight="900" font-family="Yu Mincho, serif">歩</text>
+    <path d="M164 122l20-24 20 24-9 29-31-4z" fill="#e1aa59" stroke="#ffd27d" stroke-width="4"/>
+    <text x="184" y="133" text-anchor="middle" fill="#3a2113" font-size="22" font-weight="900" font-family="Yu Mincho, serif">金</text>
+  </g>
+  <text x="31" y="232" fill="#fff0c8" font-size="21" font-weight="900" font-family="system-ui, sans-serif">犬小屋将棋</text>
+</svg>
