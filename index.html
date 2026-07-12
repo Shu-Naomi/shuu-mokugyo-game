@@ -852,6 +852,77 @@
       #werewolfView .section-title { font-size: 1.02rem; }
     }
 
+    /* 1画面型の証言尋問UI */
+    .app.has-bottom-nav { padding: max(6px, env(safe-area-inset-top)) 6px 0; }
+    .app.has-bottom-nav > header { display: none; }
+    #werewolfView { padding-bottom: 0; }
+    #werewolfView .court-compact-shell {
+      height: calc(100svh - max(10px, env(safe-area-inset-top)) - 10px);
+      min-height: 640px;
+      padding: 8px;
+      gap: 5px;
+      overflow: hidden;
+      border-radius: 14px;
+    }
+    #werewolfView .werewolf-back-link { margin: 0; }
+    #werewolfView .werewolf-back-link button { min-height: 34px; padding: 4px 10px; box-shadow: none; font-size: .76rem; }
+    #werewolfView .court-compact-shell > .section-title { padding: 1px 5px; font-size: .9rem; }
+    #werewolfMeetingPanel.is-active {
+      min-height: 0;
+      height: 100%;
+      grid-template-rows: auto minmax(260px, 42svh) auto auto minmax(0, 1fr);
+      gap: 5px;
+      overflow: hidden;
+    }
+    #werewolfMeetingPanel > .werewolf-subtitle { display: none; }
+    #werewolfMeetingPanel .court-stage { min-height: 0; height: 100%; }
+    #werewolfMeetingPanel .court-portrait-wrap { height: 69%; bottom: 82px; }
+    #werewolfMeetingPanel .court-dialogue { min-height: 82px; padding-top: 26px; }
+    #werewolfProgressSummaryBlock { display: none !important; }
+    #werewolfProgressActionsBlock {
+      min-height: 0;
+      overflow-y: auto;
+      overscroll-behavior: contain;
+      padding: 8px 6px 132px;
+      border: 1px solid rgba(240,195,97,.28);
+      border-radius: 9px;
+      background: rgba(14, 15, 32, .94);
+      scrollbar-width: thin;
+    }
+    #werewolfProgressActionsBlock > .mini-item,
+    #werewolfDayActionBlock > .mini-item,
+    #werewolfMeetingBlock > .mini-item,
+    #werewolfTagResult, #werewolfReplyResult,
+    #werewolfTalkSubmit, #werewolfMeetingPhaseActions,
+    #werewolfInitialFullLogPanel, #werewolfRecentLogPanel,
+    #werewolfTalkFinished { display: none !important; }
+    #werewolfInitialPhaseBlock, #werewolfDayActionBlock { display: grid; gap: 7px; }
+    #werewolfInitialPhaseBlock > .mini-item { display: flex !important; padding: 8px 10px; font-size: .78rem; }
+    #werewolfCommandList, #werewolfArgumentTargets { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
+    #werewolfCommandList button, #werewolfArgumentTargets button, #werewolfIntroChoiceList button {
+      min-height: 42px;
+      padding: 7px;
+      border-radius: 8px;
+      box-shadow: 0 4px 0 #86512d;
+      font-size: .76rem;
+    }
+    #werewolfPressCommandList { display: none; }
+    #werewolfEvidenceList { display: flex; overflow-x: auto; gap: 7px; padding: 4px 2px 9px; scroll-snap-type: x mandatory; }
+    #werewolfEvidenceList button { flex: 0 0 72%; min-height: 58px; scroll-snap-align: center; border-radius: 8px; }
+    #werewolfArgumentBlock { display: flex !important; padding: 7px 9px; font-size: .76rem; }
+    #werewolfArgumentBlock.is-hidden { display: none !important; }
+    #werewolfRefutationResultRow:not(.is-hidden) { display: flex !important; background: rgba(126,38,56,.45); }
+    .court-testimony-nav { display: grid; grid-template-columns: 44px 1fr 1fr 44px; gap: 5px; }
+    .court-testimony-nav button { min-height: 38px; padding: 5px 4px; border-radius: 7px; box-shadow: 0 4px 0 #6f472b; font-size: .72rem; }
+    .court-testimony-nav button.secondary { box-shadow: 0 4px 0 #151020; }
+    #courtPressCurrent { background: linear-gradient(#ffe394,#e6a842); color: #2d1820; }
+    #courtPresentEvidence { background: linear-gradient(#d73c4c,#811a32); color: white; }
+    #werewolfLogPanel.is-active, #werewolfInfoPanel.is-active { height: 100%; overflow-y: auto; padding-bottom: 88px; }
+    #werewolfView .bottom-nav { bottom: calc(env(safe-area-inset-bottom) + 5px); width: min(100% - 18px, 442px); padding: 5px; border-radius: 13px; }
+    #werewolfView .bottom-nav-button { min-height: 38px; padding: 5px; border-radius: 9px; font-size: .75rem; }
+    #werewolfView .werewolf-action-bar { bottom: calc(env(safe-area-inset-bottom) + 54px); width: min(calc(100% - 18px), 442px); padding: 6px; border-radius: 10px; }
+    #werewolfView .werewolf-action-bar button { min-height: 42px; padding: 6px; border-radius: 8px; font-size: .72rem; }
+
     .oxo-panel { padding: 14px; display: grid; gap: 10px; }
     .oxo-shuu { display: grid; gap: 8px; justify-items: center; padding: 10px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255, 248, 236, 0.16); }
     .oxo-shuu-visual { display: grid; place-items: center; width: min(42vw, 168px); min-height: 136px; border-radius: 20px; padding: 10px; background: linear-gradient(165deg, rgba(255, 248, 236, 0.1), rgba(255, 184, 107, 0.12) 54%, rgba(51, 38, 73, 0.86)); border: 1px solid rgba(255, 240, 187, 0.2); }
@@ -1720,7 +1791,7 @@
         </section>
       </div>
       <div class="view" id="werewolfView">
-        <section class="card mini-menu">
+        <section class="card mini-menu court-compact-shell">
           <div class="werewolf-back-link">
             <button id="werewolfBackMiniPersistent" class="secondary">← ミニゲーム一覧へ戻る</button>
           </div>
@@ -1734,6 +1805,12 @@
               <div class="court-burst" id="courtBurst"><span id="courtBurstText">異議あり！</span></div>
             </section>
             <div class="court-record" aria-label="法廷進行"><span data-court-step="investigation">証言</span><span data-court-step="meeting">審理</span><span data-court-step="refute">論破</span><span data-court-step="vote">評決</span><span data-court-step="result">判決</span><span id="courtClueCount">証拠 0件</span></div>
+            <div class="court-testimony-nav" aria-label="証言操作">
+              <button id="courtPrevTestimony" class="secondary" aria-label="前の証言">◀</button>
+              <button id="courtPressCurrent">ゆさぶる</button>
+              <button id="courtPresentEvidence">つきつける</button>
+              <button id="courtNextTestimony" class="secondary" aria-label="次の証言">▶</button>
+            </div>
             <div id="werewolfProgressSummaryBlock">
             <div class="mini-item"><span>現在モード</span><span id="werewolfCurrentMode">-</span></div>
             <div class="mini-item"><span>現在フェーズ</span><span id="werewolfPhaseLabel">-</span></div>
@@ -1974,6 +2051,7 @@
         debugMode: false,
         activeTab: 'meeting',
         selectedInfoCharacterId: 'naomi',
+        courtTestimonyIndex: -1,
         turn: 0,
         maxTalkTurns: 5,
         talkLog: [],
@@ -2387,6 +2465,7 @@
       werewolf.discoveredClues = werewolf.debugMode ? [...ALL_CLUE_TAGS] : [];
       werewolf.pressedLogIds = [];
       werewolf.activeTab = 'meeting';
+      werewolf.courtTestimonyIndex = -1;
       switchView('werewolf');
       renderWerewolf();
     }
@@ -2530,18 +2609,29 @@
       return null;
     }
 
+    function courtTestimonyLogs() {
+      return werewolf.talkLog.filter(entry =>
+        ['testimony', 'additionalTestimony', 'press', 'reply'].includes(entry.type) && COURT_PORTRAITS[entry.speaker]
+      );
+    }
+
     function renderWerewolfCourt(latestLog, phaseText) {
       const stage = $('#werewolfCourtStage');
       if (!stage) return;
-      const speaker = courtSpeakerFromLog(latestLog);
+      stage.dataset.phase = werewolf.phase;
+      const testimonies = courtTestimonyLogs();
+      if (werewolf.courtTestimonyIndex >= testimonies.length) werewolf.courtTestimonyIndex = testimonies.length - 1;
+      const selectedTestimony = werewolf.courtTestimonyIndex >= 0 ? testimonies[werewolf.courtTestimonyIndex] : null;
+      const displayLog = selectedTestimony || latestLog;
+      const speaker = courtSpeakerFromLog(displayLog);
       const portrait = $('#courtPortrait');
-      const line = latestLog?.text || '事件記録を整理して、証言の矛盾を探そう。';
+      const line = displayLog?.text || '事件記録を整理して、証言の矛盾を探そう。';
       const courtPhaseNames = {
         introTestimony: '開廷・初回証言', investigation: '証言尋問', meeting: '審理・論点整理',
         refute: '追及・証拠提示', vote: '最終評決', result: '判決'
       };
       $('#courtHeader').textContent = `第1法廷・${courtPhaseNames[werewolf.phase] || phaseText}`;
-      $('#courtSpeaker').textContent = latestLog?.speaker || speaker;
+      $('#courtSpeaker').textContent = displayLog?.speaker || speaker;
       $('#courtLine').textContent = line;
       if (portrait.getAttribute('src') !== COURT_PORTRAITS[speaker]) {
         portrait.setAttribute('src', COURT_PORTRAITS[speaker]);
@@ -2550,7 +2640,7 @@
         void portrait.offsetWidth;
       }
       portrait.classList.toggle('is-thinking', ['meeting', 'vote'].includes(werewolf.phase));
-      portrait.classList.toggle('is-pressing', ['additionalTestimony', 'argumentSuccess', 'argumentFail'].includes(latestLog?.type));
+      portrait.classList.toggle('is-pressing', ['additionalTestimony', 'argumentSuccess', 'argumentFail'].includes(displayLog?.type));
 
       document.querySelectorAll('[data-court-step]').forEach(step => {
         const key = step.dataset.courtStep;
@@ -2558,8 +2648,13 @@
         step.classList.toggle('active', active);
       });
       $('#courtClueCount').textContent = `証拠 ${werewolf.discoveredClues.length}件`;
+      $('#courtPrevTestimony').disabled = testimonies.length < 2;
+      $('#courtNextTestimony').disabled = testimonies.length < 2;
+      $('#courtPressCurrent').disabled = !selectedTestimony || isPressedLog(selectedTestimony);
+      $('#courtPressCurrent').textContent = selectedTestimony && isPressedLog(selectedTestimony) ? 'ゆさぶり済み' : 'ゆさぶる';
+      $('#courtPresentEvidence').textContent = werewolf.phase === 'refute' ? '証拠を選ぶ' : 'つきつける';
 
-      const effect = courtEffectForState(latestLog);
+      const effect = courtEffectForState(displayLog);
       const burst = $('#courtBurst');
       if (effect && stage.dataset.effectKey !== effect.key) {
         stage.dataset.effectKey = effect.key;
@@ -2644,7 +2739,7 @@
       const isMeetingTab = (werewolf.activeTab || 'meeting') === 'meeting';
       $('#werewolfProgressSummaryBlock').classList.toggle('is-hidden', false);
       $('#werewolfProgressActionsBlock').classList.toggle('is-hidden', false);
-      $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', false);
+      $('#werewolfInitialPhaseBlock').classList.toggle('is-hidden', !isInitialTestimony);
       $('#werewolfDayActionBlock').classList.toggle('is-hidden', !(isDayTalk || isMeetingPhase || isArgumentPhase || isVotePhase));
       $('#werewolfMeetingBlock').classList.toggle('is-hidden', !(isMeetingPhase && isMeetingTab));
       $('#werewolfMeetingActionBar').classList.toggle('is-hidden', !(isMeetingPhase && isMeetingTab));
@@ -3414,6 +3509,7 @@
       });
       if (addedLog) addTestimonyCard({ speaker: sourceLog.speaker, type: 'additionalTestimony', claim: rule.text, tags: rule.tags });
       if (rule.tags.length) appendConcern(rule.text, sourceLog.speaker, ['ゆさぶり', '違和感', ...rule.tags]);
+      werewolf.courtTestimonyIndex = -1;
       renderWerewolf();
     }
 
@@ -4884,6 +4980,52 @@
         werewolf.activeTab = button.dataset.werewolfTab;
         renderWerewolf();
       });
+    });
+
+    $('#courtPrevTestimony').addEventListener('click', () => {
+      const logs = courtTestimonyLogs();
+      if (!logs.length) return showToast('まだ証言がありません');
+      const current = werewolf.courtTestimonyIndex < 0 ? logs.length - 1 : werewolf.courtTestimonyIndex;
+      werewolf.courtTestimonyIndex = (current - 1 + logs.length) % logs.length;
+      renderWerewolf();
+    });
+    $('#courtNextTestimony').addEventListener('click', () => {
+      const logs = courtTestimonyLogs();
+      if (!logs.length) return showToast('まだ証言がありません');
+      const current = werewolf.courtTestimonyIndex < 0 ? logs.length - 1 : werewolf.courtTestimonyIndex;
+      werewolf.courtTestimonyIndex = (current + 1) % logs.length;
+      renderWerewolf();
+    });
+    $('#courtPressCurrent').addEventListener('click', () => {
+      ensureTalkLogIds();
+      const logs = courtTestimonyLogs();
+      if (!logs.length) return showToast('先に証言を聞こう');
+      const index = werewolf.courtTestimonyIndex < 0 ? logs.length - 1 : werewolf.courtTestimonyIndex;
+      pressStatement(logs[index]?.id);
+    });
+    $('#courtPresentEvidence').addEventListener('click', () => {
+      if (werewolf.phase === 'introTestimony') return showToast('まず初回証言を確認しよう');
+      if (werewolf.phase === 'investigation') {
+        werewolf.talkLog.push({ speaker: '進行', text: '証言尋問を終え、証拠提示へ移る。', type: 'phaseChange', tags: ['会議フェーズ'] });
+        werewolf.phase = 'meeting';
+      }
+      if (werewolf.phase === 'meeting') {
+        werewolf.phase = 'refute';
+        werewolf.selectedArgumentTargetId = '';
+        werewolf.selectedEvidenceIndex = -1;
+        werewolf.suspectRetestimony = null;
+        werewolf.refutationResult = null;
+        werewolf.talkLog.push({ speaker: '進行', text: '証人を指名し、矛盾する記録をつきつけてください。', type: 'phaseChange', tags: ['論破フェーズ'] });
+        renderWerewolf();
+        return;
+      }
+      if (werewolf.phase === 'vote') {
+        werewolf.phase = 'refute';
+        renderWerewolf();
+        return;
+      }
+      $('#werewolfProgressActionsBlock')?.scrollTo({ top: 9999, behavior: 'smooth' });
+      showToast(werewolf.selectedArgumentTargetId ? '横へ送って証拠を選ぼう' : '先に証人を指名しよう');
     });
 
     $('#werewolfCommandList').addEventListener('click', event => {
