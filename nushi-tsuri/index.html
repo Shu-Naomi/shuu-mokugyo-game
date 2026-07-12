@@ -253,10 +253,37 @@
       }
       .player {
         position: absolute;
-        width: 34px;
-        height: 38px;
+        width: 46px;
+        height: 58px;
         transform: translate(-50%, -50%);
+        background-size: 300% 100%;
+        background-position: 0 50%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
         z-index: 5;
+      }
+      .player.boy {
+        background-image: url("assets/player-boy.png");
+      }
+      .player.girl {
+        background-image: url("assets/player-girl.png");
+      }
+      .player.face-side {
+        background-position-x: 50%;
+      }
+      .player.face-up {
+        background-position-x: 100%;
+      }
+      .player.face-left {
+        transform: translate(-50%, -50%) scaleX(-1);
+      }
+      .player.walking {
+        animation: player-step 0.24s steps(2) 2;
+      }
+      @keyframes player-step {
+        50% {
+          margin-top: -3px;
+        }
       }
       .player:before {
         content: "";
@@ -278,6 +305,12 @@
         height: 9px;
         background: #3c2b26;
         border: 2px solid #231a18;
+      }
+      .player.boy::before,
+      .player.boy::after,
+      .player.girl::before,
+      .player.girl::after {
+        display: none;
       }
       .companion {
         position: absolute;
@@ -494,6 +527,19 @@
       .dog-select button.active {
         outline: 3px solid #fff3a0;
       }
+      .avatar-select {
+        display: flex;
+        justify-content: center;
+        gap: 7px;
+        margin: 7px 0;
+      }
+      .avatar-select button {
+        padding: 6px 14px;
+        font-size: 0.82rem;
+      }
+      .avatar-select button.active {
+        outline: 3px solid #91e6ff;
+      }
       .battle-ui {
         position: absolute;
         top: 23%;
@@ -587,6 +633,10 @@
         <h1>ぬし釣り犬小屋</h1>
         <h2>星降る湖</h2>
         <p>Fableリクの釣りメモを手に、湖のヌシを追え。</p>
+        <div class="avatar-select" aria-label="主人公を選ぶ">
+          <button data-avatar="boy">🧢 男の子</button>
+          <button data-avatar="girl">🧢 女の子</button>
+        </div>
         <div class="dog-select" aria-label="同行するワンコ">
           <button data-dog="shuu">🐕 シュウ</button>
           <button data-dog="riku">🐕‍🦺 リク</button>
@@ -727,6 +777,8 @@
             x: 30,
             y: 78,
             dog: "riku",
+            avatar: "boy",
+            direction: "down",
             rescueAt: -99,
             calmBonus: 0,
           },
@@ -752,7 +804,10 @@
         const mapX = s.x / 3;
         const camera = Math.max(0, Math.min(200, s.x - 50));
         $("#map").style.transform = `translateX(${-camera / 3}%)`;
-        $("#player").style.cssText = `left:${mapX}%;top:${s.y}%`;
+        $("#player").style.left = `${mapX}%`;
+        $("#player").style.top = `${s.y}%`;
+        $("#player").className =
+          `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} ${s.direction === "left" ? "face-left" : ""}`;
         $("#dog").style.cssText =
           `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
         $("#dog").className = `companion ${s.dog}`;
@@ -773,6 +828,7 @@
       }
       function move(d) {
         if (battle) return;
+        s.direction = d;
         let n = 4;
         ({
           left: () => (s.x -= n),
@@ -781,6 +837,7 @@
           down: () => (s.y += n),
         })[d]();
         render();
+        $("#player").classList.add("walking");
       }
       function action() {
         if (near(130, 70)) cast();
@@ -832,7 +889,12 @@
       }
       function cast() {
         if (s.bait < 1) {
-          log("エサがない。リクが足元を掘り始めた。");
+          $("#hint").textContent =
+            s.money >= 120
+              ? "エサがない！釣具店を開くよ。エサを買おう。"
+              : `エサもお金もない！${dogName()}が助けに来た。`;
+          if (s.money >= 120) open("store");
+          else rescue();
           return;
         }
         s.bait--;
@@ -982,6 +1044,16 @@
           s.dog = b.dataset.dog;
           document
             .querySelectorAll("[data-dog]")
+            .forEach((x) => x.classList.toggle("active", x === b));
+          save();
+        };
+      });
+      document.querySelectorAll("[data-avatar]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.avatar === s.avatar);
+        b.onclick = () => {
+          s.avatar = b.dataset.avatar;
+          document
+            .querySelectorAll("[data-avatar]")
             .forEach((x) => x.classList.toggle("active", x === b));
           save();
         };
