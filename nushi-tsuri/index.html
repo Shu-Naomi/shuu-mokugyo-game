@@ -326,59 +326,36 @@
         background-repeat: no-repeat;
       }
       .companion.shuu {
-        background-image: url("assets/shuu-turn.png");
-        background-size: 300% 100%;
+        background-image: url("assets/shuu-walk.png");
       }
       .companion.grey {
-        background-image: url("assets/grey-turn.png");
-        background-size: 300% 100%;
+        background-image: url("assets/grey-walk.png");
       }
-      .companion.shuu.dir-down,
-      .companion.grey.dir-down {
-        background-position: 0 50%;
-      }
-      .companion.shuu.dir-left,
-      .companion.grey.dir-left {
-        background-position: 50% 50%;
-      }
-      .companion.shuu.dir-right,
-      .companion.grey.dir-right {
-        background-position: 50% 50%;
-        transform: translate(-50%, -50%) scaleX(-1);
-      }
-      .companion.shuu.dir-up,
-      .companion.grey.dir-up {
-        background-position: 100% 50%;
-      }
+      .companion.shuu,
+      .companion.grey,
       .companion.riku {
-        background-image: url("assets/riku-walk.png");
         background-size: 400% 300%;
         color: transparent;
       }
-      .companion.riku.dir-down {
+      .companion.riku {
+        background-image: url("assets/riku-walk.png");
+      }
+      .companion.dir-down {
         background-position: 0 50%;
       }
-      .companion.riku.dir-left {
+      .companion.dir-left {
         background-position: 33.333% 50%;
       }
-      .companion.riku.dir-right {
+      .companion.dir-right {
         background-position: 66.667% 50%;
       }
-      .companion.riku.dir-up {
+      .companion.dir-up {
         background-position: 100% 50%;
       }
-      .companion:not(.riku).walking {
-        animation: dog-bob 0.28s steps(2) infinite;
+      .companion.walking {
+        animation: dog-step 0.3s steps(1) infinite;
       }
-      .companion.riku.walking {
-        animation: riku-step 0.28s steps(2) infinite;
-      }
-      @keyframes dog-bob {
-        50% {
-          margin-top: -3px;
-        }
-      }
-      @keyframes riku-step {
+      @keyframes dog-step {
         0% {
           background-position-y: 0;
         }
@@ -388,6 +365,34 @@
         100% {
           background-position-y: 0;
         }
+      }
+      .sam {
+        position: absolute;
+        left: 88%;
+        bottom: 17%;
+        width: 26px;
+        height: 42px;
+        z-index: 4;
+        background: linear-gradient(#d8b07d 0 26%, #38556a 27% 70%, #513c31 71%);
+        border: 3px solid #35251e;
+        box-shadow: inset 0 10px #efe0c2;
+        image-rendering: pixelated;
+      }
+      .sam::before {
+        content: "🕶️";
+        position: absolute;
+        left: -5px;
+        top: 1px;
+        font-size: 18px;
+      }
+      .sam::after {
+        content: "SAM";
+        position: absolute;
+        left: -7px;
+        top: -19px;
+        color: #fff1a5;
+        font: 900 9px monospace;
+        text-shadow: 1px 1px #000;
       }
       .hint {
         position: absolute;
@@ -632,9 +637,27 @@
         gap: 10px;
       }
       .battle-actions button {
-        width: 74px;
+        width: 96px;
         height: 64px;
       }
+      .cast-meter {
+        position: relative;
+        height: 18px;
+        margin: 7px 0;
+        overflow: hidden;
+        border: 2px solid #fff;
+        background: linear-gradient(90deg,#bde7a6 0 33%,#f7df78 34% 67%,#efa09b 68%);
+      }
+      .cast-marker {
+        position: absolute;
+        left: 0;
+        width: 5px;
+        height: 100%;
+        background: #142033;
+        transform: translateX(-50%);
+      }
+      .tackle-options { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
+      .tackle-options button.selected { outline:3px solid #69d8ff; }
       .landscape-warning {
         display: none;
       }
@@ -711,6 +734,7 @@
           <div class="shore"></div>
           <div class="dock"></div>
           <div class="shop"></div>
+          <div class="sam" aria-label="サミュエル・オールドマン"></div>
           <div class="building house-a" data-name="湖畔の民家"></div>
           <div class="building house-b" data-name="釣り宿"></div>
           <div class="building diner" data-name="ワカサギ食堂"></div>
@@ -747,15 +771,16 @@
           <div class="hook">🪝</div>
           <div class="battle-fish" id="battleFish"></div>
           <div class="battle-ui">
-            <b id="fishName">魚影</b><small> 体力</small>
+            <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
+            <div class="cast-meter" id="castMeter"><div class="cast-marker" id="castMarker"></div></div>
             <div class="meter"><div class="fill" id="hp"></div></div>
             <small>糸テンション</small>
             <div class="meter"><div class="fill tension" id="ten"></div></div>
             <div class="battle-msg" id="battleMsg">魚の動きを見よう。</div>
           </div>
           <div class="battle-actions">
-            <button id="pull">A<br /><small>引く</small></button
-            ><button id="wait">B<br /><small>待つ</small></button>
+            <button id="pull">A<br /><small>投げる</small></button
+            ><button id="wait">B<br /><small>やめる</small></button>
           </div>
         </div>
         <div class="modal" id="record">
@@ -770,9 +795,18 @@
           <h2>サミュエル・オールドマン</h2>
           <p>「釣具は未来を引き寄せるんじゃよ」</p>
           <div class="grid">
-            <button id="buyBait">エサ3個・120円</button
-            ><button id="buyRod">ホンモロコ竿・1500円</button>
+            <button data-buy-bait="worm">ミミズ3個・120円</button>
+            <button data-buy-bait="river">川虫2個・180円</button>
+            <button data-buy-bait="paste">練りエサ2個・240円</button>
+            <button data-buy-rod="moroko">ホンモロコ竿・1500円</button>
           </div>
+        </div>
+        <div class="modal" id="tackle">
+          <button class="close" data-close>閉じる</button>
+          <h2>仕掛けを選ぶ</h2>
+          <p>エサ</p><div class="tackle-options" id="baitOptions"></div>
+          <p>釣具</p><div class="tackle-options" id="rodOptions"></div>
+          <button id="beginCast">この仕掛けで釣る</button>
         </div>
       </main>
     </section>
@@ -816,11 +850,24 @@
             shadowRow: 4,
           },
         ],
+        baitData = {
+          worm: { name: "ミミズ", price: 120, amount: 3, bite: 1 },
+          river: { name: "川虫", price: 180, amount: 2, bite: 1.35 },
+          paste: { name: "練りエサ", price: 240, amount: 2, bite: 1.15 },
+        },
+        rodData = {
+          bamboo: { name: "竹の竿", power: 16, control: 1 },
+          moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
+        },
         key = "nushi-inugoya-v2";
       let s = Object.assign(
           {
             money: 300,
             bait: 5,
+            baits: null,
+            selectedBait: "worm",
+            selectedRod: "bamboo",
+            ownedRods: ["bamboo"],
             rod: "竹の竿",
             power: 16,
             caught: {},
@@ -839,6 +886,9 @@
         battle = null,
         timer = 0,
         walkTimer = 0;
+      if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
+      if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
+        s.ownedRods.push("moroko");
       function save() {
         localStorage.setItem(key, JSON.stringify(s));
       }
@@ -866,11 +916,14 @@
         $("#dog").className = `companion ${s.dog} dir-${s.direction}`;
         $("#dog").textContent = "";
         $("#money").textContent = s.money;
-        $("#bait").textContent = s.bait;
+        s.bait = s.baits[s.selectedBait] || 0;
+        s.rod = rodData[s.selectedRod].name;
+        s.power = rodData[s.selectedRod].power;
+        $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
         $("#hint").textContent = near(130, 70)
-          ? "桟橋だ。Aで仕掛けを投げる。"
+          ? "桟橋だ。Aでエサと釣具を選ぶ。"
           : near(258, 72)
             ? "釣具店だ。Aで入る。"
             : near(96, 82)
@@ -915,7 +968,8 @@
         return { shuu: "シュウ", riku: "リク", grey: "Grey" }[s.dog] || "リク";
       }
       function rescue() {
-        if (s.bait > 0 || s.money >= 120)
+        const totalBait = Object.values(s.baits).reduce((a,b) => a + b, 0);
+        if (totalBait > 0 || s.money >= 120)
           return log(`${dogName()}「まだ自分の力で準備できるよ」`);
         if (s.time - s.rescueAt < 2)
           return log(
@@ -923,14 +977,15 @@
           );
         s.rescueAt = s.time;
         if (s.dog === "shuu") {
-          s.bait += 3;
+          s.baits.worm += 3;
           log("シュウが夢中で土を掘り、ミミズを3匹見つけた！");
         } else if (s.dog === "grey") {
-          s.bait += 2;
+          s.baits.worm += 2;
           s.money += 40;
           log("Greyが落とし物の40円とエサ2匹を静かに見つけた。");
         } else {
-          s.bait += 2;
+          s.baits.river += 2;
+          s.selectedBait = "river";
           s.calmBonus = 1;
           log("リクが水辺を観察して川虫を2匹発見。次の魚が止まりやすくなる！");
         }
@@ -946,51 +1001,93 @@
         return fish[0];
       }
       function cast() {
+        renderTackle();
+        open("tackle");
+      }
+      function renderTackle() {
+        $("#baitOptions").innerHTML = Object.entries(baitData).map(([id,b]) =>
+          `<button data-pick-bait="${id}" class="${s.selectedBait === id ? "selected" : ""}">${b.name} ×${s.baits[id] || 0}</button>`).join("");
+        $("#rodOptions").innerHTML = s.ownedRods.map(id =>
+          `<button data-pick-rod="${id}" class="${s.selectedRod === id ? "selected" : ""}">${rodData[id].name}</button>`).join("");
+        document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
+          s.selectedBait = b.dataset.pickBait; renderTackle(); render();
+        });
+        document.querySelectorAll("[data-pick-rod]").forEach(b => b.onclick = () => {
+          s.selectedRod = b.dataset.pickRod; renderTackle(); render();
+        });
+      }
+      function beginFishing() {
+        s.bait = s.baits[s.selectedBait] || 0;
         if (s.bait < 1) {
           $("#hint").textContent =
             s.money >= 120
               ? "エサがない！釣具店を開くよ。エサを買おう。"
               : `エサもお金もない！${dogName()}が助けに来た。`;
+          close();
           if (s.money >= 120) open("store");
           else rescue();
           return;
         }
-        s.bait--;
+        s.baits[s.selectedBait]--;
         s.time++;
-        let f = pick();
+        close();
         battle = {
-          f,
-          hp: f.hp,
-          max: f.hp,
-          ten: 24,
+          phase: "cast",
+          cast: 0,
+          castDir: 1,
+          f: null,
+          hp: 1,
+          max: 1,
+          ten: 18,
           calm: false,
           x: 68,
           y: 55,
           frame: 0,
+          reeling: false,
         };
         $("#fishScene").classList.add("active");
-        $("#fishName").textContent = [
-          "細い魚影",
-          "丸い魚影",
-          "大きな魚影",
-          "長い魚影",
-          "巨大な魚影",
-        ][f.shadowRow];
-        $("#battleFish").textContent = "";
-        $("#battleFish").style.backgroundPositionY = `${f.shadowRow * 25}%`;
-        $("#battleMsg").textContent =
-          `${f.name}が食いついた！まずはBで様子を見る。`;
+        $("#battleFish").style.opacity = "0";
+        $("#castMeter").style.display = "block";
+        $("#hp").parentElement.style.display = "none";
+        $("#ten").parentElement.style.display = "none";
+        $("#fishName").textContent = "キャスト";
+        $("#phaseLabel").textContent = " 距離を決める";
+        $("#battleMsg").textContent = "Aを押して投げる！遠いほど大物が狙える。";
+        $("#pull").innerHTML = "A<br><small>投げる！</small>";
+        $("#wait").innerHTML = "B<br><small>やめる</small>";
         battleTick();
         drawBattle();
-        log(`${f.name}が食いついた！`);
+        render();
       }
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
           if (!battle) return;
-          const calmChance = 0.42 + (s.calmBonus ? 0.2 : 0);
-          battle.calm = Math.random() < calmChance;
-          if (battle.calm && s.calmBonus) s.calmBonus = 0;
+          if (battle.phase === "cast") {
+            battle.cast += battle.castDir * 3;
+            if (battle.cast >= 100 || battle.cast <= 0) battle.castDir *= -1;
+            $("#castMarker").style.left = `${battle.cast}%`;
+            return;
+          }
+          if (battle.phase === "wait") {
+            const now = Date.now();
+            if (now >= battle.biteAt && now <= battle.biteAt + 1050) {
+              battle.phase = "bite";
+              $("#battleMsg").textContent = "消し込んだ！！今だ、Aで合わせる！";
+              $("#pull").innerHTML = "A<br><small>合わせる！</small>";
+            }
+            return;
+          }
+          if (battle.phase === "bite") {
+            if (Date.now() > battle.biteAt + 1050) lose("合わせが遅れた……魚はエサだけ持っていった。");
+            return;
+          }
+          if (battle.phase !== "fight") return;
+          const control = rodData[s.selectedRod].control;
+          if (!battle.nextMood || Date.now() > battle.nextMood) {
+            battle.calm = Math.random() < 0.34;
+            battle.nextMood = Date.now() + 650 + Math.random() * 450;
+          }
           let el = $("#battleFish");
           battle.x = battle.calm
             ? 58 + Math.random() * 18
@@ -1005,37 +1102,60 @@
           el.style.transform = battle.calm
             ? "translate(-50%,-50%) scale(.98)"
             : "translate(-50%,-50%) scale(1.04)";
-          battle.ten = Math.max(5, battle.ten + (battle.calm ? -8 : 7));
+          if (battle.reeling) {
+            battle.hp -= (s.power / 11) * (battle.calm ? 1.8 : 0.7);
+            battle.ten += (battle.calm ? 2 : 7) / control;
+          } else battle.ten = Math.max(3, battle.ten - 5 * control);
           $("#battleMsg").textContent = battle.calm
-            ? "魚が止まった！糸が緩んだ、A！"
-            : "魚が走っている！Bで耐えよう。";
+            ? "糸が緩んだ！押して巻く好機！"
+            : battle.reeling ? "魚が暴れている！危険なら指を離す！" : "竿を送り、テンションを逃がしている。";
+          if (battle.hp <= 0) return caught();
           if (battle.ten >= 100) lose("糸が切れた……");
           drawBattle();
-        }, 950);
+        }, 120);
       }
       function pull() {
         if (!battle) return;
-        if (battle.calm) {
-          battle.hp -= s.power + Math.floor(Math.random() * 10);
-          battle.ten += 13;
-          $("#battleMsg").textContent = "好機！魚を水面へ引き寄せた！";
-        } else {
-          battle.hp -= 3;
-          battle.ten += 28;
-          $("#battleMsg").textContent = "魚が走っている！糸が危ない！";
+        if (battle.phase === "cast") {
+          const distance = battle.cast;
+          let f = pick();
+          if (distance > 72 && Math.random() < .28) f = fish[Math.random() < .75 ? 2 : 3];
+          battle.f = f; battle.hp = f.hp; battle.max = f.hp;
+          battle.phase = "wait";
+          battle.biteAt = Date.now() + (1500 + Math.random() * 2600) / baitData[s.selectedBait].bite;
+          $("#castMeter").style.display = "none";
+          $("#fishName").textContent = "水面を読む";
+          $("#phaseLabel").textContent = distance > 67 ? " 深場" : distance > 34 ? " 中層" : " 岸際";
+          $("#battleMsg").textContent = "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
+          $("#pull").innerHTML = "A<br><small>合わせる</small>";
+          $("#wait").innerHTML = "B<br><small>竿を上げる</small>";
+          return;
         }
-        battle.calm = false;
-        if (battle.hp <= 0) return caught();
-        if (battle.ten >= 100) return lose("糸が切れた……");
-        drawBattle();
+        if (battle.phase === "wait") return lose("まだ前アタリだった。早合わせで逃げられた……。");
+        if (battle.phase === "bite") startFight();
+        if (battle.phase === "fight") battle.reeling = true;
+      }
+      function startFight() {
+        battle.phase = "fight";
+        const f = battle.f;
+        $("#battleFish").style.opacity = "1";
+        $("#battleFish").style.backgroundPositionY = `${f.shadowRow * 25}%`;
+        $("#hp").parentElement.style.display = "block";
+        $("#ten").parentElement.style.display = "block";
+        $("#fishName").textContent = ["細い魚影","丸い魚影","大きな魚影","長い魚影","巨大な魚影"][f.shadowRow];
+        $("#phaseLabel").textContent = " 水中戦";
+        $("#pull").innerHTML = "A<br><small>押して巻く</small>";
+        $("#wait").innerHTML = "B<br><small>糸を送る</small>";
+        $("#battleMsg").textContent = "掛かった！Aを押して巻く、暴れたら離す！";
+        log(`${f.name}が掛かった！`);
       }
       function wait() {
         if (!battle) return;
-        battle.ten = Math.max(3, battle.ten - 19);
-        $("#battleMsg").textContent = "竿を送り、糸の張りを逃がした。";
-        drawBattle();
+        if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
+        battle.reeling = false;
       }
       function drawBattle() {
+        if (!battle || battle.phase !== "fight") return;
         $("#hp").style.width =
           Math.max(0, (battle.hp / battle.max) * 100) + "%";
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
@@ -1122,27 +1242,27 @@
       $("#action").onclick = action;
       $("#back").onclick = close;
       $("#menu").onclick = () => open("record");
-      $("#pull").onclick = pull;
+      $("#pull").onpointerdown = (e) => { e.preventDefault(); pull(); };
+      $("#pull").onpointerup = () => { if (battle) battle.reeling = false; };
+      $("#pull").onpointercancel = () => { if (battle) battle.reeling = false; };
       $("#wait").onclick = wait;
+      $("#beginCast").onclick = beginFishing;
       document
         .querySelectorAll("[data-close]")
         .forEach((b) => (b.onclick = close));
-      $("#buyBait").onclick = () => {
-        if (s.money < 120) return log("お金が足りない。");
-        s.money -= 120;
-        s.bait += 3;
-        log("エサを3個買った。");
-        render();
-      };
-      $("#buyRod").onclick = () => {
-        if (s.rod === "ホンモロコ竿") return log("もう持っている。");
+      document.querySelectorAll("[data-buy-bait]").forEach(button => button.onclick = () => {
+        const id = button.dataset.buyBait, item = baitData[id];
+        if (s.money < item.price) return log("お金が足りない。");
+        s.money -= item.price; s.baits[id] = (s.baits[id] || 0) + item.amount;
+        log(`${item.name}を${item.amount}個買った。`); render();
+      });
+      document.querySelectorAll("[data-buy-rod]").forEach(button => button.onclick = () => {
+        const id = button.dataset.buyRod;
+        if (s.ownedRods.includes(id)) return log("もう持っている。");
         if (s.money < 1500) return log("お金が足りない。");
-        s.money -= 1500;
-        s.rod = "ホンモロコ竿";
-        s.power = 30;
-        log("ホンモロコ竿を買った！");
-        render();
-      };
+        s.money -= 1500; s.ownedRods.push(id); s.selectedRod = id;
+        log(`${rodData[id].name}を買った！`); render();
+      });
       addEventListener("keydown", (e) => {
         let m = {
           ArrowLeft: "left",
@@ -1153,6 +1273,9 @@
         if (m) move(m);
         if (e.key === "z" || e.key === "Enter") battle ? pull() : action();
         if (e.key === "x" || e.key === "Escape") battle ? wait() : close();
+      });
+      addEventListener("keyup", (e) => {
+        if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
       });
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("./sw.js").catch(() => {});
