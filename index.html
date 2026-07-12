@@ -788,6 +788,7 @@
 
     .court-portrait.is-thinking { animation: court-think .8s steps(2, end) infinite; }
     .court-portrait.is-pressing { animation: court-press .28s steps(2, end) 2; }
+    .court-portrait.is-chappy-grey { clip-path: inset(0 10% 0 0); }
     .court-stage.reaction-success { animation: court-impact .48s steps(2, end) 2; }
     .court-stage.reaction-success .court-portrait { animation: court-shocked .7s steps(3, end) 2; filter: saturate(.72) brightness(1.15); }
     .court-stage.reaction-success .court-portrait-wrap::after,
@@ -2454,16 +2455,33 @@
         'グレイ': '……まさかここで終わるとは',
         'マンディ': 'へぇ、ちゃんと当てたじゃねぇか'
       };
-      const culpritWinLines = {
+      const culpritVictoryLines = {
+        '直美': '偽装成功。おやつ山盛りは犯人側のものだね♡',
+        'シュウ': 'やった……！ 直美、僕たちの完全勝利だね！',
+        'リク': '誘導成功。最後まで時系列は崩れなかったね',
+        'ユウ': '横領ミッション成功です！ おやつ確保ー！',
+        'グレイ': '監査をすり抜けた。犯人側の勝利だ',
+        'チャッピーGrey': '……誰にも気づかれなかった。成功だね',
+        'マンディ': 'へっ、法廷ごと綺麗に騙し切ったな'
+      };
+      const culpritDefeatLines = {
+        '直美': 'くっ、偽装の痕跡を見抜かれた……',
+        'シュウ': 'うぅ……僕たちの作戦、ばれちゃった',
+        'リク': 'この矛盾は隠し切れなかったね'
+      };
+      const whiteDefeatLines = {
         '直美': '了解、次はもっと慎重に見極める',
         'シュウ': 'うぅ……次はもっとちゃんと見る',
         'リク': '判断材料が足りなかったかも'
       };
-      if (winner === 'village' || winner === 'white') {
+      const whiteWon = winner === 'village' || winner === 'white';
+      const culpritMember = isCulpritSideMember(member);
+      if (whiteWon) {
+        if (culpritMember) return culpritDefeatLines[member.name] || '……犯行を見抜かれたか';
         return whiteWinLines[member.name] || 'よし、白側で勝ち切れた';
       }
-      if (culpritWinLines[member.name]) return culpritWinLines[member.name];
-      return isCulpritSideMember(member) ? '……まだ見抜かれていないようだな' : '次はもっと根拠を集めよう';
+      if (culpritMember) return culpritVictoryLines[member.name] || '……最後まで見抜かれなかった。犯人側の勝利だ';
+      return whiteDefeatLines[member.name] || '次はもっと根拠を集めよう';
     }
 
     function getActiveMembers() {
@@ -2734,6 +2752,7 @@
       }
       portrait.classList.toggle('is-thinking', ['meeting', 'vote'].includes(werewolf.phase));
       portrait.classList.toggle('is-pressing', displayLog?.type === 'additionalTestimony');
+      portrait.classList.toggle('is-chappy-grey', speaker === 'チャッピーGrey');
       stage.classList.toggle('reaction-success', displayLog?.type === 'argumentSuccess');
       stage.classList.toggle('reaction-weak', displayLog?.type === 'argumentWeak');
       stage.classList.toggle('reaction-fail', displayLog?.type === 'argumentFail');
@@ -2959,6 +2978,7 @@
         const resultSpeakerName = audited && COURT_PORTRAITS[audited.name] ? audited.name : 'リク';
         resultPortrait.src = COURT_PORTRAITS[resultSpeakerName];
         resultPortrait.alt = `${resultSpeakerName}のドット絵`;
+        resultPortrait.classList.toggle('is-chappy-grey', resultSpeakerName === 'チャッピーGrey');
       }
       if ($('#courtResultSpeaker')) $('#courtResultSpeaker').textContent = audited?.id === werewolf.playerId ? '進行' : (resultData.auditedName || '進行');
       if ($('#courtResultLine')) {
@@ -3731,6 +3751,15 @@
       const player = werewolf.participants.find(member => member.id === werewolf.playerId);
       const canFrame = target.role !== 'werewolf' && (FRAME_EVIDENCE_BY_TARGET[target.id] || []).includes(evidenceTag);
       if (canFrame) {
+        const evidenceName = clueLabels[evidenceTag] || evidenceTag;
+        const protestLines = {
+          shuu: `えっ、待って直美。「${evidenceName}」だけで僕が犯人って、それは強引だよ！`,
+          riku: `その組み立ては順序が逆だよ。「${evidenceName}」から僕の犯行は証明できない`,
+          yuu: `ちょ、ちょっと待ってください！ 「${evidenceName}」は私だけの証拠じゃありません！`,
+          gray: `論理が飛躍している。「${evidenceName}」を僕に結びつけたい意図が先に見える`,
+          chappyGrey: `僕は気配を感じただけだよ。「${evidenceName}」で僕が犯人になるのはおかしい`,
+          mandy: `へぇ、「${evidenceName}」一つで俺に全部おっかぶせる気か？ 雑な濡れ衣だな`
+        };
         werewolf.refutationResult = 'frameSuccess';
         werewolf.refutationMessage = '偽装論破成功';
         werewolf.debateOutcome = 'frameSuccess';
@@ -3738,7 +3767,7 @@
         werewolf.pendingVoteTargetId = target.id;
         target.suspicion += 4;
         target.playerTrust = clamp01((target.playerTrust || 0.5) - 0.18);
-        werewolf.talkLog.push({ speaker: target.name, text: `待って……！ その証拠だけで僕が犯人だと決めるの？`, type: 'argumentSuccess', target: target.name, tags: ['偽装論破成功', '疑惑誘導'] });
+        werewolf.talkLog.push({ speaker: target.name, text: protestLines[target.id] || `「${evidenceName}」だけで私を犯人にするの？`, type: 'argumentSuccess', target: target.name, tags: ['偽装論破成功', '疑惑誘導'] });
         werewolf.talkLog.push({ speaker: '進行', text: `${target.name}に疑惑が集まった。このまま評決を通せば犯人側の勝利だ`, type: 'frameProgress', target: target.name, tags: ['偽装論破'] });
         return;
       }
