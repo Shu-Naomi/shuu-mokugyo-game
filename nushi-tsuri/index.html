@@ -400,11 +400,11 @@
       }
       .sam {
         position: absolute;
-        left: 88%;
-        bottom: 17%;
+        left: 12px;
+        bottom: -2px;
         width: 26px;
         height: 42px;
-        z-index: 4;
+        z-index: 12;
         background: linear-gradient(#d8b07d 0 26%, #38556a 27% 70%, #513c31 71%);
         border: 3px solid #35251e;
         box-shadow: inset 0 10px #efe0c2;
@@ -595,8 +595,7 @@
         top: 55%;
         width: clamp(100px, 19vw, 190px);
         height: clamp(62px, 12vw, 120px);
-        background-image: url("assets/fish-shadows.png");
-        background-size: 300% 500%;
+        background-size: 300% 100%;
         background-repeat: no-repeat;
         image-rendering: pixelated;
         transform: translate(-50%, -50%);
@@ -765,8 +764,7 @@
           <div class="lake"></div>
           <div class="shore"></div>
           <div class="dock"></div>
-          <div class="shop"></div>
-          <div class="sam" aria-label="サミュエル・オールドマン"></div>
+          <div class="shop"><div class="sam" aria-label="サミュエル・オールドマン"></div></div>
           <div class="building house-a" data-name="湖畔の民家"></div>
           <div class="building house-b" data-name="釣り宿"></div>
           <div class="building diner" data-name="ワカサギ食堂"></div>
@@ -890,6 +888,12 @@
         rodData = {
           bamboo: { name: "竹の竿", power: 16, control: 1 },
           moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
+        },
+        fishAssets = {
+          moroko: "assets/fish-moroko.png",
+          funa: "assets/fish-funa.png",
+          koi: "assets/fish-koi.png",
+          nushi: "assets/fish-nushi.png",
         },
         key = "nushi-inugoya-v2";
       let s = Object.assign(
@@ -1060,8 +1064,18 @@
         return fish[0];
       }
       function cast() {
-        renderTackle();
-        open("tackle");
+        wakeDog();
+        battle = { phase: "prep", reeling: false };
+        $("#fishScene").classList.add("active");
+        $("#battleFish").style.opacity = "0";
+        $("#castMeter").style.display = "none";
+        $("#hp").parentElement.style.display = "none";
+        $("#ten").parentElement.style.display = "none";
+        $("#fishName").textContent = "釣行準備";
+        $("#phaseLabel").textContent = " 仕掛け確認";
+        $("#battleMsg").textContent = `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+        $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
+        $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
       }
       function renderTackle() {
         $("#baitOptions").innerHTML = Object.entries(baitData).map(([id,b]) =>
@@ -1149,13 +1163,11 @@
             battle.nextMood = Date.now() + 650 + Math.random() * 450;
           }
           let el = $("#battleFish");
-          battle.x = battle.calm
-            ? 58 + Math.random() * 18
-            : 46 + Math.random() * 44;
-          battle.y = battle.calm
-            ? 54 + Math.random() * 12
-            : 34 + Math.random() * 47;
-          battle.frame = (battle.frame + 1) % 3;
+          if (!battle.calm) {
+            battle.x = 46 + Math.random() * 44;
+            battle.y = 34 + Math.random() * 47;
+            battle.frame = (battle.frame + 1) % 3;
+          }
           el.style.left = battle.x + "%";
           el.style.top = battle.y + "%";
           el.style.backgroundPositionX = `${battle.frame * 50}%`;
@@ -1176,6 +1188,7 @@
       }
       function pull() {
         if (!battle) return;
+        if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") {
           const distance = battle.cast;
           let f = pick();
@@ -1199,7 +1212,8 @@
         battle.phase = "fight";
         const f = battle.f;
         $("#battleFish").style.opacity = "1";
-        $("#battleFish").style.backgroundPositionY = `${f.shadowRow * 25}%`;
+        $("#battleFish").style.backgroundImage = `url("${fishAssets[f.id]}")`;
+        $("#battleFish").style.backgroundPositionY = "0";
         $("#hp").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
         $("#fishName").textContent = ["細い魚影","丸い魚影","大きな魚影","長い魚影","巨大な魚影"][f.shadowRow];
@@ -1211,6 +1225,10 @@
       }
       function wait() {
         if (!battle) return;
+        if (battle.phase === "prep") {
+          renderTackle();
+          return open("tackle");
+        }
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
         battle.reeling = false;
       }
