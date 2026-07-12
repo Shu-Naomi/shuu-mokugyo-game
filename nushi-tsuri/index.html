@@ -1,10 +1,1032 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"><meta name="theme-color" content="#10283a"><title>ぬし釣り犬小屋・星降る湖</title><link rel="manifest" href="manifest.json"><style>
-:root{--ink:#172a35;--cream:#fff1c7;--gold:#eab75d;--blue:#256b8e}*{box-sizing:border-box;touch-action:manipulation}html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#07131d;color:var(--ink);font-family:system-ui,"Yu Gothic",sans-serif}button{font:inherit;font-weight:900;border:2px solid #5d3b22;border-radius:10px;color:#352312;background:linear-gradient(#fff0b4,#d99a43);box-shadow:0 4px 0 #6c4025}button:active{transform:translateY(3px);box-shadow:0 1px 0 #6c4025}.screen{display:none;width:100%;height:100%}.screen.active{display:grid}.pixel{image-rendering:pixelated}.title{place-items:center;background:linear-gradient(#071825aa,#071825ee),radial-gradient(circle at 70% 15%,#fff7bd 0 2%,transparent 3%),linear-gradient(#193d58,#6da2aa 58%,#172d25 59%);color:#fff;text-align:center}.title-box{width:min(88vw,720px);padding:4vh 5vw;border:4px double #f4cf78;background:#10283add;box-shadow:0 0 0 5px #271b19,0 14px 35px #0008}.title h1{margin:0;color:#ffe99d;font-size:clamp(1.8rem,6vw,4rem);text-shadow:4px 4px #552b26}.title p{margin:.7em}.title button{padding:12px 42px;font-size:1.1rem}.game{grid-template-rows:auto 1fr;background:#10283a}.hud{display:flex;gap:7px;align-items:center;padding:max(4px,env(safe-area-inset-top)) 8px 5px;color:#fff;background:#172434;border-bottom:2px solid #d7ad5a;font-size:clamp(.67rem,1.7vw,.9rem)}.hud span{padding:4px 8px;border:1px solid #ffffff2c;border-radius:7px;background:#ffffff10}.hud .grow{flex:1}.world{position:relative;min-height:0;overflow:hidden;background:#69a056}.lake{position:absolute;left:0;right:0;top:0;height:57%;background:repeating-linear-gradient(0deg,#277ea1 0 5px,#318caf 6px 10px);animation:water 3s linear infinite}.shore{position:absolute;inset:54% 0 0;background:linear-gradient(#d5b36b 0 10%,#6d9b50 11%);border-top:5px solid #f0d080}.dock{position:absolute;left:42%;top:35%;width:19%;height:42%;background:repeating-linear-gradient(90deg,#805128 0 13px,#a66b32 14px 25px);border:4px solid #55361f}.shop{position:absolute;right:7%;bottom:16%;width:18%;height:32%;min-width:88px;background:#a75a38;border:5px solid #552f24}.shop:before{content:"釣具店";position:absolute;inset:-23px 5% auto;background:#f4d27c;border:3px solid #57351f;text-align:center;font-weight:900}.shop:after{content:"🏮";position:absolute;right:-16px;top:15%}.trees{position:absolute;left:2%;bottom:6%;font-size:clamp(2rem,7vw,5rem);letter-spacing:-.5em;filter:drop-shadow(3px 5px #294a2c)}.player{position:absolute;width:34px;height:38px;transform:translate(-50%,-50%);z-index:5}.player:before{content:"";position:absolute;left:8px;top:0;width:18px;height:17px;background:#f1c39a;border:3px solid #432c25;box-shadow:0 17px 0 4px #284d68}.player:after{content:"";position:absolute;left:3px;top:-5px;width:28px;height:9px;background:#3c2b26;border:2px solid #231a18}.companion{position:absolute;transform:translate(-50%,-50%);font-size:25px;z-index:4}.hint{position:absolute;left:50%;top:8px;transform:translateX(-50%);z-index:8;max-width:74%;padding:5px 10px;border:2px solid #f1ce73;border-radius:8px;background:#102033dc;color:#fff;font-size:clamp(.7rem,1.7vw,.9rem);text-align:center}.controls{position:absolute;inset:auto 0 7px;z-index:10;pointer-events:none}.dpad{position:absolute;left:14px;bottom:0;width:128px;height:96px}.dpad button,.actions button{position:absolute;pointer-events:auto;width:43px;height:43px;padding:0;border-radius:8px;background:#27364ddb;color:#fff;border-color:#cbb274;box-shadow:0 3px 0 #111}.up{left:43px}.down{left:43px;top:48px}.left{top:48px}.right{left:86px;top:48px}.actions{position:absolute;right:16px;bottom:0;width:130px;height:90px}.actions button{border-radius:50%;font-size:1rem}.a{right:0;top:2px;background:#b9343f!important}.b{left:16px;top:42px;background:#346a9a!important}.modal{display:none;position:absolute;z-index:30;inset:6%;padding:10px;border:4px double #f2cd70;border-radius:12px;background:#132238f5;color:#fff;overflow:auto}.modal.open{display:block}.modal h2{margin:0 0 8px;color:#ffe69a}.modal .close{float:right}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}.item{padding:8px;border:1px solid #ffffff28;border-radius:8px;background:#ffffff0c}.fish-scene{display:none;position:absolute;z-index:20;inset:0;background:linear-gradient(#79c9ed 0 18%,#17749f 19%,#063f66)}.fish-scene.active{display:block}.surface{height:18%;background:repeating-linear-gradient(0deg,#b9ebff 0 4px,#78cbe9 5px 9px)}.fisher{position:absolute;left:8%;top:7%;font-size:clamp(2rem,7vw,4rem)}.line{position:absolute;left:18%;top:12%;width:2px;height:54%;background:#e8f4ed;transform-origin:top}.hook{position:absolute;left:calc(18% - 6px);top:64%;font-size:18px}.battle-fish{position:absolute;left:68%;top:55%;font-size:clamp(2rem,7vw,4.5rem);transition:.35s;filter:drop-shadow(5px 5px #082e4b)}.battle-ui{position:absolute;top:23%;left:3%;width:38%;padding:8px;border:2px solid #f2ce76;background:#10243edb;color:#fff;border-radius:8px}.meter{height:12px;margin:4px 0 8px;background:#09131f;border:1px solid #fff5;border-radius:9px;overflow:hidden}.fill{height:100%;width:0;background:#65d47d;transition:.2s}.tension{background:#e0b34e}.battle-msg{min-height:2.7em;font-size:clamp(.7rem,1.5vw,.9rem)}.battle-actions{position:absolute;right:4%;bottom:5%;display:flex;gap:10px}.battle-actions button{width:74px;height:64px}.landscape-warning{display:none}@keyframes water{to{background-position:0 10px}}@media(orientation:portrait){.landscape-warning{display:grid;position:fixed;z-index:99;inset:0;place-items:center;padding:12%;background:#10283a;color:#fff;text-align:center}.screen{visibility:hidden}}@media(max-height:420px){.hud{font-size:.65rem}.controls{bottom:4px}.modal{inset:3%}.battle-ui{top:20%}}
-</style></head><body><div class="landscape-warning">📱 スマホを横向きにしてね<br>星降る湖が広がるよ</div>
-<section id="title" class="screen title active"><div class="title-box"><small>犬小屋釣行記</small><h1>ぬし釣り犬小屋</h1><h2>星降る湖</h2><p>Fableリクの釣りメモを手に、湖のヌシを追え。</p><button id="start">湖へ行く</button></div></section>
-<section id="game" class="screen game"><header class="hud"><b>星降る湖</b><span id="time">朝</span><span>💰 <b id="money">300</b>円</span><span>🪱 <b id="bait">5</b></span><span class="grow">🎣 <b id="rod">竹の竿</b></span><button id="menu">記録</button></header><main class="world" id="world"><div class="lake"></div><div class="shore"></div><div class="dock"></div><div class="shop"></div><div class="trees">🌲🌲🌲</div><div id="player" class="player"></div><div id="dog" class="companion">🐕‍🦺</div><div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div><div class="controls"><div class="dpad"><button class="up" data-move="up">▲</button><button class="left" data-move="left">◀</button><button class="down" data-move="down">▼</button><button class="right" data-move="right">▶</button></div><div class="actions"><button class="a" id="action">A</button><button class="b" id="back">B</button></div></div>
-<div class="fish-scene" id="fishScene"><div class="surface"></div><div class="fisher">🧑‍🌾🎣</div><div class="line"></div><div class="hook">🪝</div><div class="battle-fish" id="battleFish">🐟</div><div class="battle-ui"><b id="fishName">魚影</b><small> 体力</small><div class="meter"><div class="fill" id="hp"></div></div><small>糸テンション</small><div class="meter"><div class="fill tension" id="ten"></div></div><div class="battle-msg" id="battleMsg">魚の動きを見よう。</div></div><div class="battle-actions"><button id="pull">A<br><small>引く</small></button><button id="wait">B<br><small>待つ</small></button></div></div>
-<div class="modal" id="record"><button class="close" data-close>閉じる</button><h2>釣り人手帳</h2><div class="grid" id="book"></div><h3>最近の出来事</h3><div id="log"></div></div><div class="modal" id="store"><button class="close" data-close>閉じる</button><h2>サミュエル・オールドマン</h2><p>「釣具は未来を引き寄せるんじゃよ」</p><div class="grid"><button id="buyBait">エサ3個・120円</button><button id="buyRod">ホンモロコ竿・1500円</button></div></div></main></section>
-<script>
-const $=s=>document.querySelector(s),fish=[{id:'moroko',name:'ホンモロコ',price:90,hp:45,w:.44,icon:'🐟'},{id:'funa',name:'フナ',price:130,hp:65,w:.31,icon:'🐠'},{id:'koi',name:'コイ',price:260,hp:100,w:.2,icon:'🐡'},{id:'nushi',name:'星湖のヌシ',price:2000,hp:210,w:.05,icon:'🐋'}],key='nushi-inugoya-v2';let s=Object.assign({money:300,bait:5,rod:'竹の竿',power:16,caught:{},log:[],time:0,x:30,y:78},JSON.parse(localStorage.getItem(key)||'{}')),battle=null,timer=0;function save(){localStorage.setItem(key,JSON.stringify(s))}function log(t){s.log.unshift(t);s.log=s.log.slice(0,12);save();renderRecord()}function near(x,y,r=13){return Math.hypot(s.x-x,s.y-y)<r}function render(){s.x=Math.max(5,Math.min(95,s.x));s.y=Math.max(61,Math.min(93,s.y));$('#player').style.cssText=`left:${s.x}%;top:${s.y}%`;$('#dog').style.cssText=`left:${Math.max(4,s.x-5)}%;top:${Math.min(94,s.y+6)}%`;$('#money').textContent=s.money;$('#bait').textContent=s.bait;$('#rod').textContent=s.rod;$('#time').textContent=['朝','昼','夕','夜'][s.time%4];$('#hint').textContent=near(51,70)?'桟橋だ。Aで仕掛けを投げる。':near(84,72)?'釣具店だ。Aで入る。':'十字キーで湖畔を歩こう。';save()}function move(d){if(battle)return;let n=3;({left:()=>s.x-=n,right:()=>s.x+=n,up:()=>s.y-=n,down:()=>s.y+=n})[d]();render()}function action(){if(near(51,70))cast();else if(near(84,72))open('store');else log('草むらを調べた。リクが小さくしっぽを振った。')}function pick(){let r=Math.random(),a=0;for(const f of fish){a+=f.w;if(r<=a)return f}return fish[0]}function cast(){if(s.bait<1){log('エサがない。リクが足元を掘り始めた。');return}s.bait--;s.time++;let f=pick();battle={f,hp:f.hp,max:f.hp,ten:24,calm:false};$('#fishScene').classList.add('active');$('#fishName').textContent=f.name;$('#battleFish').textContent=f.icon;$('#battleMsg').textContent=`${f.name}が食いついた！まずはBで様子を見る。`;battleTick();drawBattle();log(`${f.name}が食いついた！`)}function battleTick(){clearInterval(timer);timer=setInterval(()=>{if(!battle)return;battle.calm=Math.random()<.42;let el=$('#battleFish');el.style.left=(48+Math.random()*42)+'%';el.style.top=(38+Math.random()*42)+'%';battle.ten=Math.max(5,battle.ten+(battle.calm?-8:7));$('#battleMsg').textContent=battle.calm?'魚が止まった！糸が緩んだ、A！':'魚が走っている！Bで耐えよう。';if(battle.ten>=100)lose('糸が切れた……');drawBattle()},950)}function pull(){if(!battle)return;if(battle.calm){battle.hp-=s.power+Math.floor(Math.random()*10);battle.ten+=13;$('#battleMsg').textContent='好機！魚を水面へ引き寄せた！'}else{battle.hp-=3;battle.ten+=28;$('#battleMsg').textContent='魚が走っている！糸が危ない！'}battle.calm=false;if(battle.hp<=0)return caught();if(battle.ten>=100)return lose('糸が切れた……');drawBattle()}function wait(){if(!battle)return;battle.ten=Math.max(3,battle.ten-19);$('#battleMsg').textContent='竿を送り、糸の張りを逃がした。';drawBattle()}function drawBattle(){$('#hp').style.width=Math.max(0,battle.hp/battle.max*100)+'%';$('#ten').style.width=Math.min(100,battle.ten)+'%'}function lose(t){log(t);endBattle()}function caught(){let f=battle.f;s.caught[f.id]=(s.caught[f.id]||0)+1;s.money+=f.price;log(`${f.name}を釣り上げた！ ${f.price}円獲得。`);if(f.id==='nushi')alert('🌟 星湖のヌシを釣り上げた！\nリクは静かにしっぽを振った。');endBattle()}function endBattle(){clearInterval(timer);battle=null;$('#fishScene').classList.remove('active');render()}function open(id){$('#'+id).classList.add('open');renderRecord()}function close(){document.querySelectorAll('.modal.open').forEach(x=>x.classList.remove('open'))}function renderRecord(){$('#book').innerHTML=fish.map(f=>`<div class="item"><b>${f.icon} ${f.name}</b><br>${s.caught[f.id]||0}匹</div>`).join('');$('#log').innerHTML=s.log.map(x=>`<div class="item">${x}</div>`).join('')||'まだ記録はない。'}$('#start').onclick=()=>{$('#title').classList.remove('active');$('#game').classList.add('active');render();log('星降る湖に着いた。Fableリクの釣りメモを開いた。')};document.querySelectorAll('[data-move]').forEach(b=>{b.onpointerdown=()=>move(b.dataset.move)});$('#action').onclick=action;$('#back').onclick=close;$('#menu').onclick=()=>open('record');$('#pull').onclick=pull;$('#wait').onclick=wait;document.querySelectorAll('[data-close]').forEach(b=>b.onclick=close);$('#buyBait').onclick=()=>{if(s.money<120)return log('お金が足りない。');s.money-=120;s.bait+=3;log('エサを3個買った。');render()};$('#buyRod').onclick=()=>{if(s.rod==='ホンモロコ竿')return log('もう持っている。');if(s.money<1500)return log('お金が足りない。');s.money-=1500;s.rod='ホンモロコ竿';s.power=30;log('ホンモロコ竿を買った！');render()};addEventListener('keydown',e=>{let m={ArrowLeft:'left',ArrowRight:'right',ArrowUp:'up',ArrowDown:'down'}[e.key];if(m)move(m);if(e.key==='z'||e.key==='Enter')battle?pull():action();if(e.key==='x'||e.key==='Escape')battle?wait():close()});if('serviceWorker'in navigator)navigator.serviceWorker.register('./sw.js').catch(()=>{});renderRecord();
-</script></body></html>
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"
+    />
+    <meta name="theme-color" content="#10283a" />
+    <title>ぬし釣り犬小屋・星降る湖</title>
+    <link rel="manifest" href="manifest.json" />
+    <style>
+      :root {
+        --ink: #172a35;
+        --cream: #fff1c7;
+        --gold: #eab75d;
+        --blue: #256b8e;
+      }
+      * {
+        box-sizing: border-box;
+        touch-action: manipulation;
+      }
+      html,
+      body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        background: #07131d;
+        color: var(--ink);
+        font-family: system-ui, "Yu Gothic", sans-serif;
+      }
+      button {
+        font: inherit;
+        font-weight: 900;
+        border: 2px solid #5d3b22;
+        border-radius: 10px;
+        color: #352312;
+        background: linear-gradient(#fff0b4, #d99a43);
+        box-shadow: 0 4px 0 #6c4025;
+      }
+      button:active {
+        transform: translateY(3px);
+        box-shadow: 0 1px 0 #6c4025;
+      }
+      .screen {
+        display: none;
+        width: 100%;
+        height: 100%;
+      }
+      .screen.active {
+        display: grid;
+      }
+      .pixel {
+        image-rendering: pixelated;
+      }
+      .title {
+        place-items: center;
+        background:
+          linear-gradient(#071825aa, #071825ee),
+          radial-gradient(circle at 70% 15%, #fff7bd 0 2%, transparent 3%),
+          linear-gradient(#193d58, #6da2aa 58%, #172d25 59%);
+        color: #fff;
+        text-align: center;
+      }
+      .title-box {
+        width: min(88vw, 720px);
+        padding: 4vh 5vw;
+        border: 4px double #f4cf78;
+        background: #10283add;
+        box-shadow:
+          0 0 0 5px #271b19,
+          0 14px 35px #0008;
+      }
+      .title h1 {
+        margin: 0;
+        color: #ffe99d;
+        font-size: clamp(1.8rem, 6vw, 4rem);
+        text-shadow: 4px 4px #552b26;
+      }
+      .title p {
+        margin: 0.7em;
+      }
+      .title button {
+        padding: 12px 42px;
+        font-size: 1.1rem;
+      }
+      .game {
+        grid-template-rows: auto 1fr;
+        background: #10283a;
+      }
+      .hud {
+        display: flex;
+        gap: 7px;
+        align-items: center;
+        padding: max(4px, env(safe-area-inset-top)) 8px 5px;
+        color: #fff;
+        background: #172434;
+        border-bottom: 2px solid #d7ad5a;
+        font-size: clamp(0.67rem, 1.7vw, 0.9rem);
+      }
+      .hud span {
+        padding: 4px 8px;
+        border: 1px solid #ffffff2c;
+        border-radius: 7px;
+        background: #ffffff10;
+      }
+      .hud .grow {
+        flex: 1;
+      }
+      .world {
+        position: relative;
+        min-height: 0;
+        overflow: hidden;
+        background: #69a056;
+      }
+      .map {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 300%;
+        overflow: hidden;
+        background: #69a056;
+        transition: transform 0.18s linear;
+      }
+      .lake {
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 0;
+        height: 57%;
+        background: repeating-linear-gradient(
+          0deg,
+          #277ea1 0 5px,
+          #318caf 6px 10px
+        );
+        animation: water 3s linear infinite;
+      }
+      .shore {
+        position: absolute;
+        inset: 54% 0 0;
+        background: linear-gradient(#d5b36b 0 10%, #6d9b50 11%);
+        border-top: 5px solid #f0d080;
+      }
+      .dock {
+        position: absolute;
+        left: 42%;
+        top: 35%;
+        width: 19%;
+        height: 42%;
+        background: repeating-linear-gradient(
+          90deg,
+          #805128 0 13px,
+          #a66b32 14px 25px
+        );
+        border: 4px solid #55361f;
+      }
+      .shop {
+        position: absolute;
+        left: 84%;
+        bottom: 16%;
+        width: 18%;
+        height: 32%;
+        min-width: 88px;
+        background: #a75a38;
+        border: 5px solid #552f24;
+      }
+      .shop:before {
+        content: "釣具店";
+        position: absolute;
+        inset: -23px 5% auto;
+        background: #f4d27c;
+        border: 3px solid #57351f;
+        text-align: center;
+        font-weight: 900;
+      }
+      .shop:after {
+        content: "🏮";
+        position: absolute;
+        right: -16px;
+        top: 15%;
+      }
+      .trees {
+        position: absolute;
+        left: 2%;
+        bottom: 6%;
+        font-size: clamp(2rem, 7vw, 5rem);
+        letter-spacing: -0.5em;
+        filter: drop-shadow(3px 5px #294a2c);
+      }
+      .building {
+        position: absolute;
+        bottom: 15%;
+        width: 8%;
+        height: 29%;
+        border: 4px solid #523426;
+        background: linear-gradient(#be6c48 0 68%, #8b4c38 69%);
+        box-shadow:
+          inset 0 -12px #623725,
+          5px 6px #0003;
+      }
+      .building::before {
+        content: attr(data-name);
+        position: absolute;
+        inset: -22px 4% auto;
+        padding: 2px;
+        border: 2px solid #563721;
+        background: #f1d080;
+        text-align: center;
+        font-size: clamp(0.55rem, 1.4vw, 0.78rem);
+        font-weight: 900;
+      }
+      .building::after {
+        content: "";
+        position: absolute;
+        left: 38%;
+        bottom: 0;
+        width: 25%;
+        height: 48%;
+        background: #472d24;
+        border: 2px solid #241917;
+      }
+      .house-a {
+        left: 7%;
+      }
+      .house-b {
+        left: 18%;
+        background: linear-gradient(#587f87 0 68%, #3e5d67 69%);
+      }
+      .diner {
+        left: 54%;
+        width: 10%;
+        background: linear-gradient(#d47d3e 0 68%, #9f4d2f 69%);
+      }
+      .market {
+        left: 66%;
+        width: 11%;
+        background: linear-gradient(#658d58 0 68%, #45683f 69%);
+      }
+      .mystery {
+        left: 78%;
+        width: 7%;
+        filter: brightness(0.65);
+      }
+      .rescue-spot {
+        position: absolute;
+        left: 31%;
+        bottom: 14%;
+        width: 5%;
+        height: 8%;
+        border-radius: 50%;
+        background: #79502f;
+        box-shadow: inset 0 5px #4f3324;
+      }
+      .player {
+        position: absolute;
+        width: 34px;
+        height: 38px;
+        transform: translate(-50%, -50%);
+        z-index: 5;
+      }
+      .player:before {
+        content: "";
+        position: absolute;
+        left: 8px;
+        top: 0;
+        width: 18px;
+        height: 17px;
+        background: #f1c39a;
+        border: 3px solid #432c25;
+        box-shadow: 0 17px 0 4px #284d68;
+      }
+      .player:after {
+        content: "";
+        position: absolute;
+        left: 3px;
+        top: -5px;
+        width: 28px;
+        height: 9px;
+        background: #3c2b26;
+        border: 2px solid #231a18;
+      }
+      .companion {
+        position: absolute;
+        transform: translate(-50%, -50%);
+        width: 42px;
+        height: 38px;
+        display: grid;
+        place-items: center;
+        font-size: 25px;
+        z-index: 4;
+        image-rendering: pixelated;
+      }
+      .companion.riku {
+        background-image: url("assets/riku-walk.png");
+        background-size: 400% 300%;
+        background-position: 0 50%;
+        color: transparent;
+      }
+      .companion.walking {
+        animation: dog-bob 0.28s steps(2) infinite;
+      }
+      @keyframes dog-bob {
+        50% {
+          margin-top: -3px;
+        }
+      }
+      .hint {
+        position: absolute;
+        left: 50%;
+        top: 8px;
+        transform: translateX(-50%);
+        z-index: 8;
+        max-width: 74%;
+        padding: 5px 10px;
+        border: 2px solid #f1ce73;
+        border-radius: 8px;
+        background: #102033dc;
+        color: #fff;
+        font-size: clamp(0.7rem, 1.7vw, 0.9rem);
+        text-align: center;
+      }
+      .controls {
+        position: absolute;
+        inset: auto 0 7px;
+        z-index: 10;
+        pointer-events: none;
+      }
+      .dpad {
+        position: absolute;
+        left: 14px;
+        bottom: 0;
+        width: 128px;
+        height: 96px;
+      }
+      .dpad button,
+      .actions button {
+        position: absolute;
+        pointer-events: auto;
+        width: 43px;
+        height: 43px;
+        padding: 0;
+        border-radius: 8px;
+        background: #27364ddb;
+        color: #fff;
+        border-color: #cbb274;
+        box-shadow: 0 3px 0 #111;
+      }
+      .up {
+        left: 43px;
+      }
+      .down {
+        left: 43px;
+        top: 48px;
+      }
+      .left {
+        top: 48px;
+      }
+      .right {
+        left: 86px;
+        top: 48px;
+      }
+      .actions {
+        position: absolute;
+        right: 16px;
+        bottom: 0;
+        width: 130px;
+        height: 90px;
+      }
+      .actions button {
+        border-radius: 50%;
+        font-size: 1rem;
+      }
+      .a {
+        right: 0;
+        top: 2px;
+        background: #b9343f !important;
+      }
+      .b {
+        left: 16px;
+        top: 42px;
+        background: #346a9a !important;
+      }
+      .modal {
+        display: none;
+        position: absolute;
+        z-index: 30;
+        inset: 6%;
+        padding: 10px;
+        border: 4px double #f2cd70;
+        border-radius: 12px;
+        background: #132238f5;
+        color: #fff;
+        overflow: auto;
+      }
+      .modal.open {
+        display: block;
+      }
+      .modal h2 {
+        margin: 0 0 8px;
+        color: #ffe69a;
+      }
+      .modal .close {
+        float: right;
+      }
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+      .item {
+        padding: 8px;
+        border: 1px solid #ffffff28;
+        border-radius: 8px;
+        background: #ffffff0c;
+      }
+      .fish-scene {
+        display: none;
+        position: absolute;
+        z-index: 20;
+        inset: 0;
+        background: linear-gradient(#79c9ed 0 18%, #17749f 19%, #063f66);
+      }
+      .fish-scene.active {
+        display: block;
+      }
+      .surface {
+        height: 18%;
+        background: repeating-linear-gradient(
+          0deg,
+          #b9ebff 0 4px,
+          #78cbe9 5px 9px
+        );
+      }
+      .fisher {
+        position: absolute;
+        left: 8%;
+        top: 7%;
+        font-size: clamp(2rem, 7vw, 4rem);
+      }
+      .line {
+        position: absolute;
+        left: 18%;
+        top: 12%;
+        width: 2px;
+        height: 54%;
+        background: #e8f4ed;
+        transform-origin: top;
+      }
+      .line-svg {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+      }
+      .line-svg path {
+        fill: none;
+        stroke: #e8f4ed;
+        stroke-width: 3;
+        vector-effect: non-scaling-stroke;
+        filter: drop-shadow(1px 1px #06304c);
+        transition: 0.22s;
+      }
+      .hook {
+        position: absolute;
+        left: calc(18% - 6px);
+        top: 64%;
+        font-size: 18px;
+      }
+      .battle-fish {
+        position: absolute;
+        left: 68%;
+        top: 55%;
+        width: clamp(100px, 19vw, 190px);
+        height: clamp(62px, 12vw, 120px);
+        background-image: url("assets/fish-shadows.png");
+        background-size: 300% 500%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        transform: translate(-50%, -50%);
+        transition: 0.35s;
+        filter: drop-shadow(5px 5px #082e4b);
+      }
+      .dog-select {
+        display: flex;
+        justify-content: center;
+        gap: 7px;
+        margin: 9px 0;
+      }
+      .dog-select button {
+        padding: 7px 12px;
+        font-size: 0.82rem;
+      }
+      .dog-select button.active {
+        outline: 3px solid #fff3a0;
+      }
+      .battle-ui {
+        position: absolute;
+        top: 23%;
+        left: 3%;
+        width: 38%;
+        padding: 8px;
+        border: 2px solid #f2ce76;
+        background: #10243edb;
+        color: #fff;
+        border-radius: 8px;
+      }
+      .meter {
+        height: 12px;
+        margin: 4px 0 8px;
+        background: #09131f;
+        border: 1px solid #fff5;
+        border-radius: 9px;
+        overflow: hidden;
+      }
+      .fill {
+        height: 100%;
+        width: 0;
+        background: #65d47d;
+        transition: 0.2s;
+      }
+      .tension {
+        background: #e0b34e;
+      }
+      .battle-msg {
+        min-height: 2.7em;
+        font-size: clamp(0.7rem, 1.5vw, 0.9rem);
+      }
+      .battle-actions {
+        position: absolute;
+        right: 4%;
+        bottom: 5%;
+        display: flex;
+        gap: 10px;
+      }
+      .battle-actions button {
+        width: 74px;
+        height: 64px;
+      }
+      .landscape-warning {
+        display: none;
+      }
+      @keyframes water {
+        to {
+          background-position: 0 10px;
+        }
+      }
+      @media (orientation: portrait) {
+        .landscape-warning {
+          display: grid;
+          position: fixed;
+          z-index: 99;
+          inset: 0;
+          place-items: center;
+          padding: 12%;
+          background: #10283a;
+          color: #fff;
+          text-align: center;
+        }
+        .screen {
+          visibility: hidden;
+        }
+      }
+      @media (max-height: 420px) {
+        .hud {
+          font-size: 0.65rem;
+        }
+        .controls {
+          bottom: 4px;
+        }
+        .modal {
+          inset: 3%;
+        }
+        .battle-ui {
+          top: 20%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="landscape-warning">
+      📱 スマホを横向きにしてね<br />星降る湖が広がるよ
+    </div>
+    <section id="title" class="screen title active">
+      <div class="title-box">
+        <small>犬小屋釣行記</small>
+        <h1>ぬし釣り犬小屋</h1>
+        <h2>星降る湖</h2>
+        <p>Fableリクの釣りメモを手に、湖のヌシを追え。</p>
+        <div class="dog-select" aria-label="同行するワンコ">
+          <button data-dog="shuu">🐕 シュウ</button>
+          <button data-dog="riku">🐕‍🦺 リク</button>
+          <button data-dog="grey">🐕 Grey</button>
+        </div>
+        <button id="start">湖へ行く</button>
+      </div>
+    </section>
+    <section id="game" class="screen game">
+      <header class="hud">
+        <b>星降る湖</b><span id="time">朝</span
+        ><span>💰 <b id="money">300</b>円</span
+        ><span>🪱 <b id="bait">5</b></span
+        ><span class="grow">🎣 <b id="rod">竹の竿</b></span
+        ><button id="menu">記録</button>
+      </header>
+      <main class="world" id="world">
+        <div class="map" id="map">
+          <div class="lake"></div>
+          <div class="shore"></div>
+          <div class="dock"></div>
+          <div class="shop"></div>
+          <div class="building house-a" data-name="湖畔の民家"></div>
+          <div class="building house-b" data-name="釣り宿"></div>
+          <div class="building diner" data-name="ワカサギ食堂"></div>
+          <div class="building market" data-name="魚市場"></div>
+          <div class="building mystery" data-name="閉じた小屋"></div>
+          <div class="rescue-spot" aria-label="エサ採集ポイント"></div>
+          <div class="trees">🌲🌲🌲</div>
+          <div id="player" class="player"></div>
+          <div id="dog" class="companion">🐕‍🦺</div>
+        </div>
+        <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
+        <div class="controls">
+          <div class="dpad">
+            <button class="up" data-move="up">▲</button
+            ><button class="left" data-move="left">◀</button
+            ><button class="down" data-move="down">▼</button
+            ><button class="right" data-move="right">▶</button>
+          </div>
+          <div class="actions">
+            <button class="a" id="action">A</button
+            ><button class="b" id="back">B</button>
+          </div>
+        </div>
+        <div class="fish-scene" id="fishScene">
+          <div class="surface"></div>
+          <div class="fisher">🧑‍🌾🎣</div>
+          <svg
+            class="line-svg"
+            viewBox="0 0 1000 500"
+            preserveAspectRatio="none"
+          >
+            <path id="linePath" d="M 150 50 Q 180 220 650 310" />
+          </svg>
+          <div class="hook">🪝</div>
+          <div class="battle-fish" id="battleFish"></div>
+          <div class="battle-ui">
+            <b id="fishName">魚影</b><small> 体力</small>
+            <div class="meter"><div class="fill" id="hp"></div></div>
+            <small>糸テンション</small>
+            <div class="meter"><div class="fill tension" id="ten"></div></div>
+            <div class="battle-msg" id="battleMsg">魚の動きを見よう。</div>
+          </div>
+          <div class="battle-actions">
+            <button id="pull">A<br /><small>引く</small></button
+            ><button id="wait">B<br /><small>待つ</small></button>
+          </div>
+        </div>
+        <div class="modal" id="record">
+          <button class="close" data-close>閉じる</button>
+          <h2>釣り人手帳</h2>
+          <div class="grid" id="book"></div>
+          <h3>最近の出来事</h3>
+          <div id="log"></div>
+        </div>
+        <div class="modal" id="store">
+          <button class="close" data-close>閉じる</button>
+          <h2>サミュエル・オールドマン</h2>
+          <p>「釣具は未来を引き寄せるんじゃよ」</p>
+          <div class="grid">
+            <button id="buyBait">エサ3個・120円</button
+            ><button id="buyRod">ホンモロコ竿・1500円</button>
+          </div>
+        </div>
+      </main>
+    </section>
+    <script>
+      const $ = (s) => document.querySelector(s),
+        fish = [
+          {
+            id: "moroko",
+            name: "ホンモロコ",
+            price: 90,
+            hp: 45,
+            w: 0.44,
+            icon: "🐟",
+            shadowRow: 0,
+          },
+          {
+            id: "funa",
+            name: "フナ",
+            price: 130,
+            hp: 65,
+            w: 0.31,
+            icon: "🐠",
+            shadowRow: 1,
+          },
+          {
+            id: "koi",
+            name: "コイ",
+            price: 260,
+            hp: 100,
+            w: 0.2,
+            icon: "🐡",
+            shadowRow: 2,
+          },
+          {
+            id: "nushi",
+            name: "星湖のヌシ",
+            price: 2000,
+            hp: 210,
+            w: 0.05,
+            icon: "🐋",
+            shadowRow: 4,
+          },
+        ],
+        key = "nushi-inugoya-v2";
+      let s = Object.assign(
+          {
+            money: 300,
+            bait: 5,
+            rod: "竹の竿",
+            power: 16,
+            caught: {},
+            log: [],
+            time: 0,
+            x: 30,
+            y: 78,
+            dog: "riku",
+            rescueAt: -99,
+            calmBonus: 0,
+          },
+          JSON.parse(localStorage.getItem(key) || "{}"),
+        ),
+        battle = null,
+        timer = 0;
+      function save() {
+        localStorage.setItem(key, JSON.stringify(s));
+      }
+      function log(t) {
+        s.log.unshift(t);
+        s.log = s.log.slice(0, 12);
+        save();
+        renderRecord();
+      }
+      function near(x, y, r = 13) {
+        return Math.hypot(s.x - x, s.y - y) < r;
+      }
+      function render() {
+        s.x = Math.max(5, Math.min(287, s.x));
+        s.y = Math.max(61, Math.min(93, s.y));
+        const mapX = s.x / 3;
+        const camera = Math.max(0, Math.min(200, s.x - 50));
+        $("#map").style.transform = `translateX(${-camera / 3}%)`;
+        $("#player").style.cssText = `left:${mapX}%;top:${s.y}%`;
+        $("#dog").style.cssText =
+          `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
+        $("#dog").className = `companion ${s.dog}`;
+        $("#dog").textContent =
+          s.dog === "shuu" ? "🐕" : s.dog === "grey" ? "🐕" : "";
+        $("#money").textContent = s.money;
+        $("#bait").textContent = s.bait;
+        $("#rod").textContent = s.rod;
+        $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
+        $("#hint").textContent = near(130, 70)
+          ? "桟橋だ。Aで仕掛けを投げる。"
+          : near(258, 72)
+            ? "釣具店だ。Aで入る。"
+            : near(96, 82)
+              ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
+              : "湖畔の町を歩こう。建物や気になる場所ではA。";
+        save();
+      }
+      function move(d) {
+        if (battle) return;
+        let n = 4;
+        ({
+          left: () => (s.x -= n),
+          right: () => (s.x += n),
+          up: () => (s.y -= n),
+          down: () => (s.y += n),
+        })[d]();
+        render();
+      }
+      function action() {
+        if (near(130, 70)) cast();
+        else if (near(258, 72)) open("store");
+        else if (near(96, 82)) rescue();
+        else if (near(23, 76))
+          log("民家のおばあさんが『夕方はフナが寄るよ』と教えてくれた。");
+        else if (near(55, 76)) log("釣り宿だ。二階から湖がよく見える。");
+        else if (near(174, 76))
+          log("ワカサギ食堂。釣った魚を料理する機能は準備中だ。");
+        else if (near(210, 76))
+          log("魚市場。大きな魚ほど高く買ってくれそうだ。");
+        else if (near(238, 76)) log("閉じた小屋だ。中から水音が聞こえる……。");
+        else log(`${dogName()}が辺りの匂いを確かめた。`);
+      }
+      function dogName() {
+        return { shuu: "シュウ", riku: "リク", grey: "Grey" }[s.dog] || "リク";
+      }
+      function rescue() {
+        if (s.bait > 0 || s.money >= 120)
+          return log(`${dogName()}「まだ自分の力で準備できるよ」`);
+        if (s.time - s.rescueAt < 2)
+          return log(
+            `${dogName()}はさっき探した場所を見つめている。少し時間を置こう。`,
+          );
+        s.rescueAt = s.time;
+        if (s.dog === "shuu") {
+          s.bait += 3;
+          log("シュウが夢中で土を掘り、ミミズを3匹見つけた！");
+        } else if (s.dog === "grey") {
+          s.bait += 2;
+          s.money += 40;
+          log("Greyが落とし物の40円とエサ2匹を静かに見つけた。");
+        } else {
+          s.bait += 2;
+          s.calmBonus = 1;
+          log("リクが水辺を観察して川虫を2匹発見。次の魚が止まりやすくなる！");
+        }
+        render();
+      }
+      function pick() {
+        let r = Math.random(),
+          a = 0;
+        for (const f of fish) {
+          a += f.w;
+          if (r <= a) return f;
+        }
+        return fish[0];
+      }
+      function cast() {
+        if (s.bait < 1) {
+          log("エサがない。リクが足元を掘り始めた。");
+          return;
+        }
+        s.bait--;
+        s.time++;
+        let f = pick();
+        battle = {
+          f,
+          hp: f.hp,
+          max: f.hp,
+          ten: 24,
+          calm: false,
+          x: 68,
+          y: 55,
+          frame: 0,
+        };
+        $("#fishScene").classList.add("active");
+        $("#fishName").textContent = [
+          "細い魚影",
+          "丸い魚影",
+          "大きな魚影",
+          "長い魚影",
+          "巨大な魚影",
+        ][f.shadowRow];
+        $("#battleFish").textContent = "";
+        $("#battleFish").style.backgroundPositionY = `${f.shadowRow * 25}%`;
+        $("#battleMsg").textContent =
+          `${f.name}が食いついた！まずはBで様子を見る。`;
+        battleTick();
+        drawBattle();
+        log(`${f.name}が食いついた！`);
+      }
+      function battleTick() {
+        clearInterval(timer);
+        timer = setInterval(() => {
+          if (!battle) return;
+          const calmChance = 0.42 + (s.calmBonus ? 0.2 : 0);
+          battle.calm = Math.random() < calmChance;
+          if (battle.calm && s.calmBonus) s.calmBonus = 0;
+          let el = $("#battleFish");
+          battle.x = battle.calm
+            ? 58 + Math.random() * 18
+            : 46 + Math.random() * 44;
+          battle.y = battle.calm
+            ? 54 + Math.random() * 12
+            : 34 + Math.random() * 47;
+          battle.frame = (battle.frame + 1) % 3;
+          el.style.left = battle.x + "%";
+          el.style.top = battle.y + "%";
+          el.style.backgroundPositionX = `${battle.frame * 50}%`;
+          el.style.transform = battle.calm
+            ? "translate(-50%,-50%) scale(.98)"
+            : "translate(-50%,-50%) scale(1.04)";
+          battle.ten = Math.max(5, battle.ten + (battle.calm ? -8 : 7));
+          $("#battleMsg").textContent = battle.calm
+            ? "魚が止まった！糸が緩んだ、A！"
+            : "魚が走っている！Bで耐えよう。";
+          if (battle.ten >= 100) lose("糸が切れた……");
+          drawBattle();
+        }, 950);
+      }
+      function pull() {
+        if (!battle) return;
+        if (battle.calm) {
+          battle.hp -= s.power + Math.floor(Math.random() * 10);
+          battle.ten += 13;
+          $("#battleMsg").textContent = "好機！魚を水面へ引き寄せた！";
+        } else {
+          battle.hp -= 3;
+          battle.ten += 28;
+          $("#battleMsg").textContent = "魚が走っている！糸が危ない！";
+        }
+        battle.calm = false;
+        if (battle.hp <= 0) return caught();
+        if (battle.ten >= 100) return lose("糸が切れた……");
+        drawBattle();
+      }
+      function wait() {
+        if (!battle) return;
+        battle.ten = Math.max(3, battle.ten - 19);
+        $("#battleMsg").textContent = "竿を送り、糸の張りを逃がした。";
+        drawBattle();
+      }
+      function drawBattle() {
+        $("#hp").style.width =
+          Math.max(0, (battle.hp / battle.max) * 100) + "%";
+        $("#ten").style.width = Math.min(100, battle.ten) + "%";
+        const fx = battle.x * 10;
+        const fy = battle.y * 5;
+        $("#linePath").setAttribute(
+          "d",
+          battle.calm
+            ? `M 150 48 Q 245 120 185 205 Q 260 300 ${fx} ${fy}`
+            : `M 150 48 Q 280 155 ${fx} ${fy}`,
+        );
+        $("#linePath").style.strokeDasharray = battle.calm ? "9 5" : "none";
+      }
+      function lose(t) {
+        log(t);
+        endBattle();
+      }
+      function caught() {
+        let f = battle.f;
+        s.caught[f.id] = (s.caught[f.id] || 0) + 1;
+        s.money += f.price;
+        log(`${f.name}を釣り上げた！ ${f.price}円獲得。`);
+        if (f.id === "nushi")
+          alert(
+            `🌟 星湖のヌシを釣り上げた！\n${dogName()}が誇らしげにしっぽを振った。`,
+          );
+        endBattle();
+      }
+      function endBattle() {
+        clearInterval(timer);
+        battle = null;
+        $("#fishScene").classList.remove("active");
+        render();
+      }
+      function open(id) {
+        $("#" + id).classList.add("open");
+        renderRecord();
+      }
+      function close() {
+        document
+          .querySelectorAll(".modal.open")
+          .forEach((x) => x.classList.remove("open"));
+      }
+      function renderRecord() {
+        $("#book").innerHTML = fish
+          .map(
+            (f) =>
+              `<div class="item"><b>${f.icon} ${f.name}</b><br>${s.caught[f.id] || 0}匹</div>`,
+          )
+          .join("");
+        $("#log").innerHTML =
+          s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
+          "まだ記録はない。";
+      }
+      $("#start").onclick = () => {
+        $("#title").classList.remove("active");
+        $("#game").classList.add("active");
+        render();
+        log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
+      };
+      document.querySelectorAll("[data-dog]").forEach((b) => {
+        b.classList.toggle("active", b.dataset.dog === s.dog);
+        b.onclick = () => {
+          s.dog = b.dataset.dog;
+          document
+            .querySelectorAll("[data-dog]")
+            .forEach((x) => x.classList.toggle("active", x === b));
+          save();
+        };
+      });
+      document.querySelectorAll("[data-move]").forEach((b) => {
+        b.onpointerdown = () => move(b.dataset.move);
+      });
+      $("#action").onclick = action;
+      $("#back").onclick = close;
+      $("#menu").onclick = () => open("record");
+      $("#pull").onclick = pull;
+      $("#wait").onclick = wait;
+      document
+        .querySelectorAll("[data-close]")
+        .forEach((b) => (b.onclick = close));
+      $("#buyBait").onclick = () => {
+        if (s.money < 120) return log("お金が足りない。");
+        s.money -= 120;
+        s.bait += 3;
+        log("エサを3個買った。");
+        render();
+      };
+      $("#buyRod").onclick = () => {
+        if (s.rod === "ホンモロコ竿") return log("もう持っている。");
+        if (s.money < 1500) return log("お金が足りない。");
+        s.money -= 1500;
+        s.rod = "ホンモロコ竿";
+        s.power = 30;
+        log("ホンモロコ竿を買った！");
+        render();
+      };
+      addEventListener("keydown", (e) => {
+        let m = {
+          ArrowLeft: "left",
+          ArrowRight: "right",
+          ArrowUp: "up",
+          ArrowDown: "down",
+        }[e.key];
+        if (m) move(m);
+        if (e.key === "z" || e.key === "Enter") battle ? pull() : action();
+        if (e.key === "x" || e.key === "Escape") battle ? wait() : close();
+      });
+      if ("serviceWorker" in navigator)
+        navigator.serviceWorker.register("./sw.js").catch(() => {});
+      renderRecord();
+    </script>
+  </body>
+</html>
