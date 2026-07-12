@@ -926,8 +926,19 @@
     #werewolfLogPanel.is-active, #werewolfInfoPanel.is-active { height: 100%; overflow-y: auto; padding-bottom: 88px; }
     #werewolfView .bottom-nav { bottom: calc(env(safe-area-inset-bottom) + 5px); width: min(100% - 18px, 442px); padding: 5px; border-radius: 13px; }
     #werewolfView .bottom-nav-button { min-height: 38px; padding: 5px; border-radius: 9px; font-size: .75rem; }
-    #werewolfView .werewolf-action-bar { bottom: calc(env(safe-area-inset-bottom) + 54px); width: min(calc(100% - 18px), 442px); padding: 6px; border-radius: 10px; }
+    #werewolfView .werewolf-action-bar {
+      position: static;
+      left: auto;
+      bottom: auto;
+      transform: none;
+      width: 100%;
+      margin-top: 8px;
+      padding: 6px;
+      border-radius: 10px;
+      box-shadow: 0 6px 16px rgba(0,0,0,.3);
+    }
     #werewolfView .werewolf-action-bar button { min-height: 42px; padding: 6px; border-radius: 8px; font-size: .72rem; }
+    #werewolfView #werewolfBackToMeetingFromRefute { grid-column: 1 / -1; }
 
     .oxo-panel { padding: 14px; display: grid; gap: 10px; }
     .oxo-shuu { display: grid; gap: 8px; justify-items: center; padding: 10px; border-radius: 16px; background: rgba(255,255,255,0.04); border: 1px solid rgba(255, 248, 236, 0.16); }
