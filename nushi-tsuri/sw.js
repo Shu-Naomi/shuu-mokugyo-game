@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v6-realtime-fishing";
+const CACHE_NAME = "nushi-tsuri-v7-dog-idles";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -11,6 +11,7 @@ const APP_ASSETS = [
   "./assets/player-girl.png",
   "./assets/shuu-walk.png",
   "./assets/grey-walk.png",
+  "./assets/dog-idles.png",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(

@@ -355,6 +355,29 @@
       .companion.walking {
         animation: dog-step 0.3s steps(1) infinite;
       }
+      .companion.idle-sit,
+      .companion.idle-sleep,
+      .companion.idle-dig,
+      .companion.idle-beg {
+        background-image: url("assets/dog-idles.png");
+        background-size: 400% 300%;
+      }
+      .companion.shuu[class*="idle-"] { background-position-y: 0; }
+      .companion.riku[class*="idle-"] { background-position-y: 50%; }
+      .companion.grey[class*="idle-"] { background-position-y: 100%; }
+      .companion.idle-sit { background-position-x: 0; }
+      .companion.idle-sleep { background-position-x: 33.333%; animation: dog-breathe 2.4s ease-in-out infinite; }
+      .companion.idle-dig { background-position-x: 66.667%; animation: dog-dig .28s steps(2) infinite; }
+      .companion.idle-beg { background-position-x: 100%; animation: dog-beg .8s ease-in-out infinite; }
+      .companion.idle-beg::after {
+        content: "♡";
+        position: absolute;
+        right: -5px;
+        top: -13px;
+        color: #ff8fa8;
+        font-size: 16px;
+        text-shadow: 1px 1px #fff;
+      }
       @keyframes dog-step {
         0% {
           background-position-y: 0;
@@ -365,6 +388,15 @@
         100% {
           background-position-y: 0;
         }
+      }
+      @keyframes dog-breathe {
+        50% { transform: translate(-50%, -50%) scale(1.03, .98); }
+      }
+      @keyframes dog-dig {
+        50% { transform: translate(-51%, -49%); filter: brightness(1.08); }
+      }
+      @keyframes dog-beg {
+        50% { transform: translate(-50%, -53%); }
       }
       .sam {
         position: absolute;
@@ -885,7 +917,10 @@
         ),
         battle = null,
         timer = 0,
-        walkTimer = 0;
+        walkTimer = 0,
+        idleTimer = 0,
+        idleActionTimer = 0,
+        dogIdleMode = "";
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
@@ -913,7 +948,7 @@
           `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} face-${s.direction}`;
         $("#dog").style.cssText =
           `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
-        $("#dog").className = `companion ${s.dog} dir-${s.direction}`;
+        $("#dog").className = `companion ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         $("#dog").textContent = "";
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
@@ -933,6 +968,7 @@
       }
       function move(d) {
         if (battle) return;
+        wakeDog();
         s.direction = d;
         let n = 4;
         ({
@@ -948,7 +984,30 @@
         walkTimer = setTimeout(() => {
           $("#player").classList.remove("walking");
           $("#dog").classList.remove("walking");
+          armDogIdle();
         }, 320);
+      }
+      function wakeDog() {
+        clearTimeout(idleTimer);
+        clearTimeout(idleActionTimer);
+        dogIdleMode = "";
+        $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
+      }
+      function setDogIdle(mode) {
+        if (battle) return;
+        dogIdleMode = `idle-${mode}`;
+        $("#dog").className = `companion ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+      }
+      function armDogIdle() {
+        wakeDog();
+        idleTimer = setTimeout(() => setDogIdle("sit"), 900);
+        idleActionTimer = setTimeout(randomDogIdle, 30000);
+      }
+      function randomDogIdle() {
+        if (battle) return;
+        const modes = ["sleep", "dig", "beg"];
+        setDogIdle(modes[Math.floor(Math.random() * modes.length)]);
+        idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
         if (near(130, 70)) cast();
@@ -1017,6 +1076,7 @@
         });
       }
       function beginFishing() {
+        wakeDog();
         s.bait = s.baits[s.selectedBait] || 0;
         if (s.bait < 1) {
           $("#hint").textContent =
@@ -1189,6 +1249,7 @@
         battle = null;
         $("#fishScene").classList.remove("active");
         render();
+        armDogIdle();
       }
       function open(id) {
         $("#" + id).classList.add("open");
@@ -1214,6 +1275,7 @@
         $("#title").classList.remove("active");
         $("#game").classList.add("active");
         render();
+        armDogIdle();
         log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
       };
       document.querySelectorAll("[data-dog]").forEach((b) => {
@@ -1223,6 +1285,8 @@
           document
             .querySelectorAll("[data-dog]")
             .forEach((x) => x.classList.toggle("active", x === b));
+          render();
+          armDogIdle();
           save();
         };
       });
