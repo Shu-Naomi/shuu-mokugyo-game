@@ -870,7 +870,7 @@
     #werewolfMeetingPanel.is-active {
       min-height: 0;
       height: 100%;
-      grid-template-rows: auto minmax(260px, 42svh) auto auto minmax(0, 1fr);
+      grid-template-rows: auto minmax(250px, 42svh) auto auto minmax(0, 1fr);
       gap: 5px;
       overflow: hidden;
     }
@@ -898,7 +898,8 @@
     #werewolfTalkFinished { display: none !important; }
     #werewolfInitialPhaseBlock, #werewolfDayActionBlock { display: grid; gap: 7px; }
     #werewolfInitialPhaseBlock > .mini-item { display: flex !important; padding: 8px 10px; font-size: .78rem; }
-    #werewolfCommandList, #werewolfArgumentTargets { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
+    #werewolfCommandList { display: none !important; }
+    #werewolfArgumentTargets { grid-template-columns: repeat(2, minmax(0,1fr)); gap: 6px; }
     #werewolfCommandList button, #werewolfArgumentTargets button, #werewolfIntroChoiceList button {
       min-height: 42px;
       padding: 7px;
@@ -912,7 +913,12 @@
     #werewolfArgumentBlock { display: flex !important; padding: 7px 9px; font-size: .76rem; }
     #werewolfArgumentBlock.is-hidden { display: none !important; }
     #werewolfRefutationResultRow:not(.is-hidden) { display: flex !important; background: rgba(126,38,56,.45); }
-    .court-testimony-nav { display: grid; grid-template-columns: 44px 1fr 1fr 44px; gap: 5px; }
+    .court-witness-picker { display: flex; gap: 5px; overflow-x: auto; padding: 2px 1px 5px; scrollbar-width: none; }
+    .court-witness-picker::-webkit-scrollbar { display: none; }
+    .court-witness-button { position: relative; flex: 0 0 61px; height: 54px; min-height: 54px; padding: 2px; overflow: hidden; border-radius: 8px; border: 1px solid rgba(240,195,97,.3); background: #231d36 center 18% / 58px auto no-repeat; box-shadow: 0 3px 0 #171020; color: white; }
+    .court-witness-button span { position: absolute; inset: auto 0 0; padding: 2px; background: rgba(17,13,29,.9); font-size: .6rem; line-height: 1.2; }
+    .court-witness-button.active { border-color: #ffe38b; box-shadow: 0 0 0 2px #b62c42 inset, 0 3px 0 #6c2532; transform: translateY(-1px); }
+    .court-testimony-nav { display: grid; grid-template-columns: 38px 1fr 1fr 1fr 38px; gap: 4px; }
     .court-testimony-nav button { min-height: 38px; padding: 5px 4px; border-radius: 7px; box-shadow: 0 4px 0 #6f472b; font-size: .72rem; }
     .court-testimony-nav button.secondary { box-shadow: 0 4px 0 #151020; }
     #courtPressCurrent { background: linear-gradient(#ffe394,#e6a842); color: #2d1820; }
@@ -1798,6 +1804,7 @@
           <h2 class="section-title">犬小屋法廷 <span>おやつ山盛りドンっ♡消失事件</span></h2>
           <div class="tab-panel is-active" id="werewolfMeetingPanel">
             <p class="werewolf-subtitle">証言をゆさぶり、記録を照合し、矛盾へ証拠をつきつけよう。</p>
+            <div class="court-witness-picker" id="courtWitnessPicker" aria-label="証言者を選ぶ"></div>
             <section class="court-stage" id="werewolfCourtStage" aria-live="polite">
               <div class="court-header" id="courtHeader">第1法廷・開廷準備</div>
               <div class="court-portrait-wrap"><img class="court-portrait" id="courtPortrait" src="data:image/webp;base64,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" alt="発言中のキャラクター" /></div>
@@ -1807,6 +1814,7 @@
             <div class="court-record" aria-label="法廷進行"><span data-court-step="investigation">証言</span><span data-court-step="meeting">審理</span><span data-court-step="refute">論破</span><span data-court-step="vote">評決</span><span data-court-step="result">判決</span><span id="courtClueCount">証拠 0件</span></div>
             <div class="court-testimony-nav" aria-label="証言操作">
               <button id="courtPrevTestimony" class="secondary" aria-label="前の証言">◀</button>
+              <button id="courtAskWitness">証言を聞く</button>
               <button id="courtPressCurrent">ゆさぶる</button>
               <button id="courtPresentEvidence">つきつける</button>
               <button id="courtNextTestimony" class="secondary" aria-label="次の証言">▶</button>
@@ -2051,6 +2059,7 @@
         debugMode: false,
         activeTab: 'meeting',
         selectedInfoCharacterId: 'naomi',
+        selectedCourtWitnessId: 'shuu',
         courtTestimonyIndex: -1,
         turn: 0,
         maxTalkTurns: 5,
@@ -2465,6 +2474,7 @@
       werewolf.discoveredClues = werewolf.debugMode ? [...ALL_CLUE_TAGS] : [];
       werewolf.pressedLogIds = [];
       werewolf.activeTab = 'meeting';
+      werewolf.selectedCourtWitnessId = 'shuu';
       werewolf.courtTestimonyIndex = -1;
       switchView('werewolf');
       renderWerewolf();
@@ -2610,8 +2620,10 @@
     }
 
     function courtTestimonyLogs() {
+      const selected = werewolf.participants.find(member => member.id === werewolf.selectedCourtWitnessId)?.name;
       return werewolf.talkLog.filter(entry =>
-        ['testimony', 'additionalTestimony', 'press', 'reply'].includes(entry.type) && COURT_PORTRAITS[entry.speaker]
+        ['testimony', 'initialTestimony', 'baseTestimony', 'additionalTestimony', 'press', 'reply'].includes(entry.type) &&
+        COURT_PORTRAITS[entry.speaker] && (!selected || entry.speaker === selected)
       );
     }
 
@@ -2622,7 +2634,13 @@
       const testimonies = courtTestimonyLogs();
       if (werewolf.courtTestimonyIndex >= testimonies.length) werewolf.courtTestimonyIndex = testimonies.length - 1;
       const selectedTestimony = werewolf.courtTestimonyIndex >= 0 ? testimonies[werewolf.courtTestimonyIndex] : null;
-      const displayLog = selectedTestimony || latestLog;
+      const selectedWitness = werewolf.participants.find(member => member.id === werewolf.selectedCourtWitnessId);
+      const displayLog = selectedTestimony || (selectedWitness ? {
+        speaker: selectedWitness.name,
+        target: selectedWitness.name,
+        type: 'testimonyStandby',
+        text: `${selectedWitness.name}が証言台に立った。証言を聞き、怪しい一文をゆさぶろう。`
+      } : latestLog);
       const speaker = courtSpeakerFromLog(displayLog);
       const portrait = $('#courtPortrait');
       const line = displayLog?.text || '事件記録を整理して、証言の矛盾を探そう。';
@@ -2648,9 +2666,13 @@
         step.classList.toggle('active', active);
       });
       $('#courtClueCount').textContent = `証拠 ${werewolf.discoveredClues.length}件`;
+      $('#courtWitnessPicker').innerHTML = werewolf.participants
+        .filter(member => member.id !== werewolf.playerId && member.status === 'active')
+        .map(member => `<button class="court-witness-button ${member.id === werewolf.selectedCourtWitnessId ? 'active' : ''}" data-court-witness-id="${escapeHtml(member.id)}" style="background-image:url('${COURT_PORTRAITS[member.name]}')"><span>${escapeHtml(member.name)}</span></button>`)
+        .join('');
       $('#courtPrevTestimony').disabled = testimonies.length < 2;
       $('#courtNextTestimony').disabled = testimonies.length < 2;
-      $('#courtPressCurrent').disabled = !selectedTestimony || isPressedLog(selectedTestimony);
+      $('#courtPressCurrent').disabled = !selectedTestimony || !isPressableLog(selectedTestimony) || isPressedLog(selectedTestimony);
       $('#courtPressCurrent').textContent = selectedTestimony && isPressedLog(selectedTestimony) ? 'ゆさぶり済み' : 'ゆさぶる';
       $('#courtPresentEvidence').textContent = werewolf.phase === 'refute' ? '証拠を選ぶ' : 'つきつける';
 
@@ -3389,7 +3411,7 @@
       targetReaction.forEach((line, idx) => {
         const match = line.match(/^([^「]+)「(.+)」$/);
         if (!match) return;
-        const parsedType = command.topic === 'organize' ? 'organize' : (command.topic === 'press' ? 'additionalTestimony' : (idx === 0 ? 'commandReaction' : 'followup'));
+        const parsedType = command.topic === 'testimony' && idx === 0 ? 'testimony' : command.topic === 'organize' ? 'organize' : (command.topic === 'press' ? 'additionalTestimony' : (idx === 0 ? 'commandReaction' : 'followup'));
         werewolf.talkLog.push({ speaker: match[1], text: match[2], type: parsedType, logLabel: testimonyLabel(parsedType) });
       });
 
@@ -4980,6 +5002,26 @@
         werewolf.activeTab = button.dataset.werewolfTab;
         renderWerewolf();
       });
+    });
+
+    $('#courtWitnessPicker').addEventListener('click', event => {
+      const button = event.target.closest('[data-court-witness-id]');
+      if (!button) return;
+      werewolf.selectedCourtWitnessId = button.dataset.courtWitnessId;
+      const logs = courtTestimonyLogs();
+      werewolf.courtTestimonyIndex = logs.length ? logs.length - 1 : -1;
+      renderWerewolf();
+    });
+    $('#courtAskWitness').addEventListener('click', () => {
+      if (werewolf.phase === 'introTestimony') return showToast('最初の証言開始を選んでね');
+      if (werewolf.phase !== 'investigation') return showToast('証言を聞き直す時は審理から調査へ戻ろう');
+      const witness = werewolf.participants.find(member => member.id === werewolf.selectedCourtWitnessId);
+      const commandIndex = werewolfDayCommands.findIndex(command => command.topic === 'testimony' && command.target === witness?.name);
+      if (commandIndex < 0) return;
+      submitWerewolfCommand(commandIndex, { consumeTurn: false, commandSource: 'day' });
+      const logs = courtTestimonyLogs();
+      werewolf.courtTestimonyIndex = logs.length ? logs.length - 1 : -1;
+      renderWerewolf();
     });
 
     $('#courtPrevTestimony').addEventListener('click', () => {
