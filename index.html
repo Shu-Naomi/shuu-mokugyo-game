@@ -2137,6 +2137,7 @@
         suspectRetestimony: null,
         refutationResult: null,
         refutationMessage: '',
+        culpritAlert: 0,
         refutedTarget: '',
         randomAttackTarget: '',
         lastInputTags: [],
@@ -2680,8 +2681,8 @@
     }
 
     function courtEffectForState(log) {
-      if (werewolf.refutationResult === 'success') return { text: '異議あり！', key: `success-${werewolf.talkLog.length}` };
-      if (werewolf.refutationResult === 'fail') return { text: '待った！', key: `fail-${werewolf.talkLog.length}` };
+      if (['success', 'frameSuccess'].includes(werewolf.refutationResult)) return { text: werewolf.refutationResult === 'frameSuccess' ? '誘導成功！' : '異議あり！', key: `success-${werewolf.talkLog.length}` };
+      if (['fail', 'frameFail'].includes(werewolf.refutationResult)) return { text: werewolf.refutationResult === 'frameFail' ? '監査警戒！' : '待った！', key: `fail-${werewolf.talkLog.length}` };
       if (log?.type === 'additionalTestimony') return { text: '証言更新！', key: `press-${log.id || werewolf.talkLog.length}` };
       if (log?.type === 'voteResult') return { text: '判決！', key: `result-${werewolf.talkLog.length}` };
       return null;
@@ -2703,7 +2704,7 @@
       if (werewolf.courtTestimonyIndex >= testimonies.length) werewolf.courtTestimonyIndex = testimonies.length - 1;
       const selectedTestimony = werewolf.courtTestimonyIndex >= 0 ? testimonies[werewolf.courtTestimonyIndex] : null;
       const selectedWitness = werewolf.participants.find(member => member.id === werewolf.selectedCourtWitnessId);
-      const reactionLog = ['success', 'weak', 'fail'].includes(werewolf.refutationResult)
+      const reactionLog = ['success', 'weak', 'fail', 'frameSuccess', 'frameFail'].includes(werewolf.refutationResult)
         ? [...werewolf.talkLog].reverse().find(entry =>
           ['argumentSuccess', 'argumentWeak', 'argumentFail'].includes(entry.type) &&
           (!selectedWitness || entry.speaker === selectedWitness.name)
@@ -2802,7 +2803,7 @@
         introTestimony: '初回証言を確認して「調査フェーズへ進む」を押してください。',
         investigation: '調査で違和感ログを集め、会議に進んでください。',
         meeting: '論点・違和感ログ・疑念度を確認し、会議を進めてください。',
-        refute: '容疑者と根拠ログを選び、「この根拠で論破する」で判定します。',
+        refute: isPlayerWerewolf ? `白側へ証拠を押しつけて偽装論破しよう。監査警戒 ${werewolf.culpritAlert || 0} / 3` : '容疑者と根拠ログを選び、「この根拠で論破する」で判定します。',
         vote: '投票先を選んで投票を実行してください。'
       };
       $('#werewolfPhaseLabel').textContent = phaseText;
@@ -2866,7 +2867,9 @@
       $('#werewolfArgumentBlock span:first-child').textContent = isVotePhase ? '最終評決' : '追及・証拠提示';
       $('#werewolfArgumentBlock span:last-child').textContent = isVotePhase
         ? '投票先を選択して投票を実行してください'
-        : '怪しいメンバーを指名してください';
+        : isPlayerWerewolf
+          ? `白側を指名し、似合う証拠で疑惑を誘導してください（監査警戒 ${werewolf.culpritAlert || 0} / 3）`
+          : '怪しいメンバーを指名してください';
       $('#werewolfArgumentTargets').innerHTML = (isArgumentPhase || isVotePhase)
         ? werewolf.participants
           .filter(member => member.id !== werewolf.playerId && member.status === 'active')
@@ -2886,8 +2889,9 @@
         : '';
       const selectedEvidenceTag = evidenceCandidates[werewolf.selectedEvidenceIndex];
       $('#werewolfEvidenceSummary').textContent = selectedEvidenceTag ? (clueLabels[selectedEvidenceTag] || selectedEvidenceTag) : '未選択';
-      const resultLabel = werewolf.refutationResult === 'missingTarget' ? '先に怪しいメンバーを指名してください' : werewolf.refutationResult === 'missingEvidence' ? '根拠ログを選んでください' : werewolf.refutationResult === 'success' ? '論破成功' : werewolf.refutationResult === 'weak' ? '怪しいが決定打不足' : werewolf.refutationResult === 'fail' ? '論破失敗' : '-';
+      const resultLabel = werewolf.refutationResult === 'missingTarget' ? '先に怪しいメンバーを指名してください' : werewolf.refutationResult === 'missingEvidence' ? '根拠ログを選んでください' : werewolf.refutationResult === 'success' ? '論破成功' : werewolf.refutationResult === 'frameSuccess' ? '偽装論破成功・このまま評決へ' : werewolf.refutationResult === 'frameFail' ? `偽装失敗・監査警戒 ${werewolf.culpritAlert || 0} / 3` : werewolf.refutationResult === 'weak' ? '怪しいが決定打不足' : werewolf.refutationResult === 'fail' ? '論破失敗' : '-';
       $('#werewolfRefutationResultText').textContent = resultLabel;
+      $('#werewolfDebateSubmit').textContent = isPlayerWerewolf && isArgumentPhase ? '⚡ 偽装論破！' : '⚡ つきつける！';
       $('#werewolfVoteSubmit').textContent = isArgumentPhase ? '🗳️ 最終評決へ進む' : isVotePhase ? '🗳️ 評決を下す' : '🗳️ 最終評決へ進む';
       const meetingTopics = [
         '23:10〜23:20の黒塗りログ',
@@ -2958,7 +2962,9 @@
       }
       if ($('#courtResultSpeaker')) $('#courtResultSpeaker').textContent = audited?.id === werewolf.playerId ? '進行' : (resultData.auditedName || '進行');
       if ($('#courtResultLine')) {
-        $('#courtResultLine').textContent = resultData.ending === 'lastThree'
+        $('#courtResultLine').textContent = resultData.ending === 'culpritExposed'
+          ? '偽装論破の痕跡が3回蓄積。直美の横領が発覚し、白側勝利！'
+          : resultData.ending === 'lastThree'
           ? `直美と犯人側だけが残った。最後の3人となり、犯人側勝利……！`
           : resultData.auditedName
           ? `${resultData.auditedName}を監査室送りとする。${resultData.correct ? '犯人側を見抜いた！' : 'しかし、この評決には重大な誤りがあった……'}`
@@ -3594,7 +3600,7 @@
         { speaker: 'シュウ', match: () => hasTag('sweet_smell') || /甘い匂い/.test(sourceLog.text || ''), text: 'シュウは「匂いが強かったのは廊下の曲がり角あたり」と答えた', tags: ['vague_route', 'hallway'] },
         { speaker: 'グレイ', match: () => hasTag('clean_log') || /整/.test(sourceLog.text || ''), text: 'グレイは「23:10〜23:20だけログの整い方が不自然だ」と指摘した', tags: ['clean_log', 'suspicious_time_range'] },
         { speaker: 'マンディ', match: () => hasTag('blackout_log') || /黒塗り/.test(sourceLog.text || ''), text: 'マンディは「黒塗りは全部消したんじゃなく、見せたくない単語だけ伏せた感じだ」と呟いた', tags: ['hidden_phrase', 'blackout_log'] },
-        { speaker: 'チャッピーGrey', match: () => hasTag('movement_presence') || /気配/.test(sourceLog.text || ''), text: 'チャッピーGreyは「誰かが動いた気配はあった。でも足音までは分からない」と答えた', tags: ['movement_presence'] },
+        { speaker: 'チャッピーGrey', match: () => hasTag('movement_presence') || /気配/.test(sourceLog.text || ''), text: '誰かが動いた気配はあった。でも、足音までは分からない', tags: ['movement_presence'] },
         { speaker: 'ユウ', match: () => hasTag('patrol_route_vague') || /見回り|曖昧/.test(sourceLog.text || ''), text: 'ユウは見回り経路について少し言葉を濁した', tags: ['patrol_route_vague'] },
         { speaker: 'リク', match: () => hasTag('timeline_gap') || /23:10〜23:20|空白|時系列/.test(sourceLog.text || ''), text: 'リクは23:10〜23:20の空白を時系列の中心に置いた', tags: ['timeline_gap'] }
       ];
@@ -3712,12 +3718,61 @@
       return true;
     }
 
+    const FRAME_EVIDENCE_BY_TARGET = {
+      shuu: ['sweet_smell', 'vague_route', 'hallway'],
+      gray: ['clean_log', 'audit_log', 'suspicious_time_range'],
+      mandy: ['blackout_log', 'hidden_phrase', 'sweet_smell_link'],
+      chappyGrey: ['movement_presence'],
+      yuu: ['patrol_route_vague'],
+      riku: ['timeline_gap']
+    };
+
+    function judgeCulpritFrame(target, evidenceTag) {
+      const player = werewolf.participants.find(member => member.id === werewolf.playerId);
+      const canFrame = target.role !== 'werewolf' && (FRAME_EVIDENCE_BY_TARGET[target.id] || []).includes(evidenceTag);
+      if (canFrame) {
+        werewolf.refutationResult = 'frameSuccess';
+        werewolf.refutationMessage = '偽装論破成功';
+        werewolf.debateOutcome = 'frameSuccess';
+        werewolf.refutedTarget = target.id;
+        werewolf.pendingVoteTargetId = target.id;
+        target.suspicion += 4;
+        target.playerTrust = clamp01((target.playerTrust || 0.5) - 0.18);
+        werewolf.talkLog.push({ speaker: target.name, text: `待って……！ その証拠だけで僕が犯人だと決めるの？`, type: 'argumentSuccess', target: target.name, tags: ['偽装論破成功', '疑惑誘導'] });
+        werewolf.talkLog.push({ speaker: '進行', text: `${target.name}に疑惑が集まった。このまま評決を通せば犯人側の勝利だ`, type: 'frameProgress', target: target.name, tags: ['偽装論破'] });
+        return;
+      }
+      werewolf.refutationResult = 'frameFail';
+      werewolf.refutationMessage = '偽装失敗';
+      werewolf.debateOutcome = 'frameFail';
+      werewolf.culpritAlert = Math.min(3, (werewolf.culpritAlert || 0) + 1);
+      if (player) {
+        player.suspicion += 2;
+        player.trust = clamp01((player.trust || 0.5) - 0.16);
+      }
+      werewolf.talkLog.push({ speaker: target.name, text: 'その証拠は僕には繋がらない。むしろ、なぜ直美がそこまで強引に誘導するの？', type: 'argumentFail', target: target.name, tags: ['偽装失敗', '直美への疑惑'] });
+      werewolf.talkLog.push({ speaker: 'グレイ', text: `直美への監査警戒度は${werewolf.culpritAlert} / 3。誘導の痕跡を記録する`, type: 'audit', target: '直美', tags: ['監査警戒', `警戒${werewolf.culpritAlert}`] });
+      if (werewolf.culpritAlert >= 3) {
+        if (player) markMemberStatus(player, 'audited', '偽装論破の痕跡が3回蓄積');
+        werewolf.gameOver = true;
+        werewolf.winner = 'village';
+        werewolf.phase = 'result';
+        werewolf.resultData = { ending: 'culpritExposed', auditedName: '直美', correct: true, exiledSide: '犯人側', winner: 'village' };
+      }
+    }
+
     function judgeRefutation(targetId, evidenceIndex) {
       const target = werewolf.participants.find(member => member.id === targetId);
       const evidenceTag = getRefutationEvidenceCandidates()[evidenceIndex];
       if (!target || target.status !== 'active' || werewolf.phase !== 'refute' || werewolf.gameOver) return;
       const reTestimony = werewolf.suspectRetestimony || buildSuspectRetestimony(target);
       const evidenceMatch = reTestimony?.contradictionTags?.includes(evidenceTag);
+      const player = werewolf.participants.find(member => member.id === werewolf.playerId);
+      if (player?.role === 'werewolf') {
+        judgeCulpritFrame(target, evidenceTag);
+        renderWerewolf();
+        return;
+      }
       if (reTestimony?.isCulprit && evidenceMatch) {
         werewolf.refutationResult = 'success';
         werewolf.refutationMessage = '論破成功';
@@ -3726,7 +3781,6 @@
         werewolf.pendingVoteTargetId = target.id;
         target.suspicion += 4;
         target.playerTrust = clamp01((target.playerTrust || 0) - 0.15);
-        const player = werewolf.participants.find(m => m.id === werewolf.playerId);
         if (player) player.playerTrust = clamp01((player.playerTrust || 0.5) + 0.06);
         werewolf.talkLog.push({ speaker: target.name, text: buildRefutationReaction(target, 'success', evidenceTag), type: 'argumentSuccess', target: target.name, tags: ['論破成功', '証言訂正'] });
       } else if (reTestimony?.isCulprit) {
@@ -3741,7 +3795,6 @@
         werewolf.refutationResult = 'fail';
         werewolf.refutationMessage = '論破失敗';
         werewolf.debateOutcome = 'fail';
-        const player = werewolf.participants.find(m => m.id === werewolf.playerId);
         if (player) player.trust = clamp01((player.trust || 0) - 0.12);
         werewolf.participants.filter(m => m.role === 'werewolf' && m.status === 'active').forEach(m => { m.culpritBias = (m.culpritBias || 0) + 0.2; });
         werewolf.talkLog.push({ speaker: target.name, text: buildRefutationReaction(target, 'fail', evidenceTag), type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
@@ -3757,15 +3810,15 @@
       const livingTargets = voters.map(v => v.name);
       const player = werewolf.participants.find(m => m.id === werewolf.playerId);
       const votes = [];
-      const spreadNoise = werewolf.refutationResult === 'fail' ? 1.8 : 0.6;
+      const spreadNoise = ['fail', 'frameFail'].includes(werewolf.refutationResult) ? 1.8 : 0.6;
       voters.forEach(voter => {
         let targetName = livingTargets[0];
         if (voter.id === werewolf.playerId && playerTargetId) {
           const p = werewolf.participants.find(m => m.id === playerTargetId && m.status === 'active');
           targetName = p ? p.name : targetName;
-      } else if (['success', 'weak'].includes(werewolf.refutationResult) && werewolf.refutedTarget) {
+      } else if (['success', 'weak', 'frameSuccess'].includes(werewolf.refutationResult) && werewolf.refutedTarget) {
           const forced = werewolf.participants.find(m => m.id === werewolf.refutedTarget && m.status === 'active');
-          const ratio = werewolf.refutationResult === 'success' ? 0.88 : 0.64;
+          const ratio = ['success', 'frameSuccess'].includes(werewolf.refutationResult) ? 0.88 : 0.64;
           if (forced && Math.random() < ratio) targetName = forced.name;
         } else {
           const pick = werewolf.participants.filter(m => m.status === 'active').reduce((best,m)=>{
