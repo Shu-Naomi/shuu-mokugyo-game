@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v3-town";
+const CACHE_NAME = "nushi-tsuri-v4-avatar-fix";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,8 @@ const APP_ASSETS = [
   "./icon-512.png",
   "./assets/riku-walk.png",
   "./assets/fish-shadows.png",
+  "./assets/player-boy.png",
+  "./assets/player-girl.png",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(
