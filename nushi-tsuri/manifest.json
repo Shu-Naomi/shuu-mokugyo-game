@@ -1,11 +1,11 @@
 {
-  "name": "ヌシ釣り 〜リクと川辺で〜",
-  "short_name": "ヌシ釣り",
+  "name": "ぬし釣り犬小屋・星降る湖",
+  "short_name": "ぬし釣り犬小屋",
   "description": "犬小屋発・和風ぬし釣りゲーム",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
+  "orientation": "landscape",
   "background_color": "#f3ead6",
   "theme_color": "#16304d",
   "icons": []
