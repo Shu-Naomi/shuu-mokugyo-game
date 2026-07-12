@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v8-sprite-fix";
+const CACHE_NAME = "nushi-tsuri-v9-canvas-dogs-haptics-2";
 const APP_ASSETS = [
   "./",
   "./index.html",

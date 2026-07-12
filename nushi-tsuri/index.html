@@ -19,6 +19,9 @@
       * {
         box-sizing: border-box;
         touch-action: manipulation;
+        -webkit-user-select: none;
+        user-select: none;
+        -webkit-touch-callout: none;
       }
       html,
       body {
@@ -325,6 +328,16 @@
         image-rendering: pixelated;
         background-repeat: no-repeat;
       }
+      .companion.canvas-dog {
+        background: none !important;
+      }
+      .companion canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
       .companion.shuu {
         background-image: url("assets/shuu-walk.png");
       }
@@ -400,11 +413,11 @@
       }
       .sam {
         position: absolute;
-        left: 12px;
-        bottom: -2px;
-        width: 26px;
-        height: 42px;
-        z-index: 12;
+        left: 82%;
+        bottom: 15%;
+        width: 34px;
+        height: 50px;
+        z-index: 20;
         background: linear-gradient(#d8b07d 0 26%, #38556a 27% 70%, #513c31 71%);
         border: 3px solid #35251e;
         box-shadow: inset 0 10px #efe0c2;
@@ -670,6 +683,7 @@
       .battle-actions button {
         width: 96px;
         height: 64px;
+        touch-action: none;
       }
       .cast-meter {
         position: relative;
@@ -764,7 +778,8 @@
           <div class="lake"></div>
           <div class="shore"></div>
           <div class="dock"></div>
-          <div class="shop"><div class="sam" aria-label="サミュエル・オールドマン"></div></div>
+          <div class="shop"></div>
+          <div class="sam" aria-label="サミュエル・オールドマン"></div>
           <div class="building house-a" data-name="湖畔の民家"></div>
           <div class="building house-b" data-name="釣り宿"></div>
           <div class="building diner" data-name="ワカサギ食堂"></div>
@@ -773,7 +788,7 @@
           <div class="rescue-spot" aria-label="エサ採集ポイント"></div>
           <div class="trees">🌲🌲🌲</div>
           <div id="player" class="player"></div>
-          <div id="dog" class="companion">🐕‍🦺</div>
+          <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
         </div>
         <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
         <div class="controls">
@@ -924,12 +939,24 @@
         walkTimer = 0,
         idleTimer = 0,
         idleActionTimer = 0,
-        dogIdleMode = "";
+        dogIdleMode = "",
+        dogWalking = false,
+        dogAnimFrame = 0;
+      const dogImages = {
+          shuu: Object.assign(new Image(), { src: "assets/shuu-walk.png" }),
+          riku: Object.assign(new Image(), { src: "assets/riku-walk.png" }),
+          grey: Object.assign(new Image(), { src: "assets/grey-walk.png" }),
+        },
+        dogIdleImage = Object.assign(new Image(), { src: "assets/dog-idles.png" });
+      Object.values(dogImages).concat(dogIdleImage).forEach(img => img.onload = drawDog);
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       function save() {
         localStorage.setItem(key, JSON.stringify(s));
+      }
+      function vibrate(pattern) {
+        try { navigator.vibrate?.(pattern); } catch (_) {}
       }
       function log(t) {
         s.log.unshift(t);
@@ -952,8 +979,8 @@
           `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} face-${s.direction}`;
         $("#dog").style.cssText =
           `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
-        $("#dog").className = `companion ${s.dog} dir-${s.direction} ${dogIdleMode}`;
-        $("#dog").textContent = "";
+        $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        drawDog();
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
@@ -973,6 +1000,7 @@
       function move(d) {
         if (battle) return;
         wakeDog();
+        dogWalking = true;
         s.direction = d;
         let n = 4;
         ({
@@ -986,21 +1014,48 @@
         $("#dog").classList.add("walking");
         clearTimeout(walkTimer);
         walkTimer = setTimeout(() => {
+          dogWalking = false;
           $("#player").classList.remove("walking");
           $("#dog").classList.remove("walking");
+          drawDog();
           armDogIdle();
         }, 320);
+      }
+      function drawDog() {
+        const canvas = $("#dogSprite");
+        if (!canvas) return;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.imageSmoothingEnabled = false;
+        const direction = { down: 0, left: 1, right: 2, up: 3 }[s.direction] ?? 0;
+        let image, size, col, row;
+        if (dogIdleMode) {
+          image = dogIdleImage;
+          size = 320;
+          col = { "idle-sit": 0, "idle-sleep": 1, "idle-dig": 2, "idle-beg": 3 }[dogIdleMode] ?? 0;
+          row = { shuu: 0, riku: 1, grey: 2 }[s.dog] ?? 1;
+        } else {
+          image = dogImages[s.dog] || dogImages.riku;
+          size = s.dog === "riku" ? 362 : 320;
+          col = direction;
+          row = dogWalking ? (dogAnimFrame % 2 ? 0 : 2) : 1;
+        }
+        if (!image.complete || !image.naturalWidth) return;
+        ctx.drawImage(image, col * size, row * size, size, size, 0, 0, 320, 320);
       }
       function wakeDog() {
         clearTimeout(idleTimer);
         clearTimeout(idleActionTimer);
         dogIdleMode = "";
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
+        drawDog();
       }
       function setDogIdle(mode) {
         if (battle) return;
+        dogWalking = false;
         dogIdleMode = `idle-${mode}`;
-        $("#dog").className = `companion ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        drawDog();
       }
       function armDogIdle() {
         wakeDog();
@@ -1147,6 +1202,7 @@
             const now = Date.now();
             if (now >= battle.biteAt && now <= battle.biteAt + 1050) {
               battle.phase = "bite";
+              vibrate([90, 55, 170]);
               $("#battleMsg").textContent = "消し込んだ！！今だ、Aで合わせる！";
               $("#pull").innerHTML = "A<br><small>合わせる！</small>";
             }
@@ -1159,8 +1215,10 @@
           if (battle.phase !== "fight") return;
           const control = rodData[s.selectedRod].control;
           if (!battle.nextMood || Date.now() > battle.nextMood) {
+            const wasCalm = battle.calm;
             battle.calm = Math.random() < 0.34;
             battle.nextMood = Date.now() + 650 + Math.random() * 450;
+            if (wasCalm && !battle.calm) vibrate([45, 35, 45]);
           }
           let el = $("#battleFish");
           if (!battle.calm) {
@@ -1324,7 +1382,11 @@
       $("#action").onclick = action;
       $("#back").onclick = close;
       $("#menu").onclick = () => open("record");
-      $("#pull").onpointerdown = (e) => { e.preventDefault(); pull(); };
+      $("#pull").onpointerdown = (e) => {
+        e.preventDefault();
+        e.currentTarget.setPointerCapture?.(e.pointerId);
+        pull();
+      };
       $("#pull").onpointerup = () => { if (battle) battle.reeling = false; };
       $("#pull").onpointercancel = () => { if (battle) battle.reeling = false; };
       $("#wait").onclick = wait;
@@ -1359,6 +1421,11 @@
       addEventListener("keyup", (e) => {
         if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
       });
+      $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
+      setInterval(() => {
+        dogAnimFrame++;
+        if (dogWalking) drawDog();
+      }, 170);
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       renderRecord();
