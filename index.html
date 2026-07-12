@@ -769,6 +769,31 @@
 
     .court-portrait.is-thinking { animation: court-think .8s steps(2, end) infinite; }
     .court-portrait.is-pressing { animation: court-press .28s steps(2, end) 2; }
+    .court-stage.reaction-success { animation: court-impact .48s steps(2, end) 2; }
+    .court-stage.reaction-success .court-portrait { animation: court-shocked .7s steps(3, end) 2; filter: saturate(.72) brightness(1.15); }
+    .court-stage.reaction-success .court-portrait-wrap::after,
+    .court-stage.reaction-weak .court-portrait-wrap::after,
+    .court-stage.reaction-fail .court-portrait-wrap::after {
+      position: absolute;
+      z-index: 4;
+      right: 7%;
+      top: 8%;
+      padding: 5px 8px;
+      border: 2px solid #fff2b4;
+      border-radius: 50%;
+      background: #711b30;
+      color: white;
+      font-size: 1.35rem;
+      font-weight: 1000;
+      box-shadow: 3px 3px 0 #1a1023;
+      animation: court-reaction-mark .7s steps(2, end) 2;
+    }
+    .court-stage.reaction-success .court-portrait-wrap::after { content: '！？  💦'; }
+    .court-stage.reaction-weak .court-portrait-wrap::after { content: '…！'; background: #75531f; }
+    .court-stage.reaction-fail .court-portrait-wrap::after { content: '？'; background: #263a70; }
+    .court-stage.reaction-success .court-dialogue { border-color: #fff0a5; box-shadow: 0 0 18px rgba(255,207,91,.55), inset 0 0 0 2px #7a1830; }
+    .court-stage.reaction-weak .court-portrait { animation: court-wobble .5s ease-in-out 2; }
+    .court-stage.reaction-fail .court-portrait { animation: court-deny .45s ease-in-out 2; filter: saturate(.8); }
 
     .court-dialogue {
       position: absolute;
@@ -844,6 +869,11 @@
     @keyframes court-press { 50% { transform: translateX(-7px) rotate(-1deg); } }
     @keyframes court-blink { 50% { opacity: 0; } }
     @keyframes court-burst { 0% { opacity: 0; transform: scale(1.7); background-color: white; } 16%,62% { opacity: 1; transform: scale(1); background-color: rgba(104,13,32,.48); } 100% { opacity: 0; transform: scale(.92); } }
+    @keyframes court-impact { 0%,100% { transform: translate(0); } 25% { transform: translate(-5px,2px); } 50% { transform: translate(5px,-2px); } 75% { transform: translate(-3px,-1px); } }
+    @keyframes court-shocked { 0% { transform: translateY(0) scale(1); } 35% { transform: translateY(-12px) scale(1.04); } 70% { transform: translateY(5px) scale(.98); } 100% { transform: translateY(0) scale(1); } }
+    @keyframes court-wobble { 25% { transform: rotate(-2deg); } 75% { transform: rotate(2deg); } }
+    @keyframes court-deny { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+    @keyframes court-reaction-mark { 0% { opacity: 0; transform: scale(2) rotate(-12deg); } 35%,100% { opacity: 1; transform: scale(1) rotate(4deg); } }
 
     @media (max-width: 480px) {
       .court-stage { min-height: 335px; }
@@ -2646,7 +2676,13 @@
       if (werewolf.courtTestimonyIndex >= testimonies.length) werewolf.courtTestimonyIndex = testimonies.length - 1;
       const selectedTestimony = werewolf.courtTestimonyIndex >= 0 ? testimonies[werewolf.courtTestimonyIndex] : null;
       const selectedWitness = werewolf.participants.find(member => member.id === werewolf.selectedCourtWitnessId);
-      const displayLog = selectedTestimony || (selectedWitness ? {
+      const reactionLog = ['success', 'weak', 'fail'].includes(werewolf.refutationResult)
+        ? [...werewolf.talkLog].reverse().find(entry =>
+          ['argumentSuccess', 'argumentWeak', 'argumentFail'].includes(entry.type) &&
+          (!selectedWitness || entry.speaker === selectedWitness.name)
+        )
+        : null;
+      const displayLog = reactionLog || selectedTestimony || (selectedWitness ? {
         speaker: selectedWitness.name,
         target: selectedWitness.name,
         type: 'testimonyStandby',
@@ -2669,7 +2705,10 @@
         void portrait.offsetWidth;
       }
       portrait.classList.toggle('is-thinking', ['meeting', 'vote'].includes(werewolf.phase));
-      portrait.classList.toggle('is-pressing', ['additionalTestimony', 'argumentSuccess', 'argumentFail'].includes(displayLog?.type));
+      portrait.classList.toggle('is-pressing', displayLog?.type === 'additionalTestimony');
+      stage.classList.toggle('reaction-success', displayLog?.type === 'argumentSuccess');
+      stage.classList.toggle('reaction-weak', displayLog?.type === 'argumentWeak');
+      stage.classList.toggle('reaction-fail', displayLog?.type === 'argumentFail');
 
       document.querySelectorAll('[data-court-step]').forEach(step => {
         const key = step.dataset.courtStep;
@@ -3597,6 +3636,21 @@
       return { targetId: target.id, targetName: target.name, text: picked.text, contradictionTags: picked.tags, isCulprit };
     }
 
+    function buildRefutationReaction(target, outcome, evidenceTag) {
+      const evidenceName = clueLabels[evidenceTag] || evidenceTag || 'その証拠';
+      const successLines = {
+        shuu: `うっ……その記録と合わない。訂正するよ。僕は保管庫の前で一度立ち止まった`,
+        gray: `なっ……「${evidenceName}」まで残っていたのか。ログを整えたのは僕だ`,
+        mandy: `チッ、そこまで照合したのかよ。黒塗りの中身を知っていたのは認める`,
+        chappyGrey: `あっ……！ 足音が小さかったと言えたのは、僕がすぐ近くにいたからだよ`,
+        yuu: `そ、その証拠は……！ 訂正します。私は保管庫側の廊下を通りました`,
+        riku: `……その時系列では逃げられないね。23:10〜23:20を後回しにしたのは意図的だった`
+      };
+      if (outcome === 'success') return successLines[target.id] || `うっ……「${evidenceName}」と私の証言は矛盾している。訂正する`;
+      if (outcome === 'weak') return `たしかに「${evidenceName}」は気になる。でも、それだけで僕が犯人だとは言えないよ……！`;
+      return `その証拠は僕の証言と矛盾していないよ。もう一度、記録を確かめて`;
+    }
+
     function judgeRefutation(targetId, evidenceIndex) {
       const target = werewolf.participants.find(member => member.id === targetId);
       const evidenceTag = getRefutationEvidenceCandidates()[evidenceIndex];
@@ -3613,7 +3667,7 @@
         target.playerTrust = clamp01((target.playerTrust || 0) - 0.15);
         const player = werewolf.participants.find(m => m.id === werewolf.playerId);
         if (player) player.playerTrust = clamp01((player.playerTrust || 0.5) + 0.06);
-        werewolf.talkLog.push({ speaker: '進行', text: `直美の指摘が刺さった。${target.name}の証言に明確な矛盾が生まれた`, type: 'argumentSuccess', target: target.name, tags: ['論破成功'] });
+        werewolf.talkLog.push({ speaker: target.name, text: buildRefutationReaction(target, 'success', evidenceTag), type: 'argumentSuccess', target: target.name, tags: ['論破成功', '証言訂正'] });
       } else if (reTestimony?.isCulprit) {
         werewolf.refutationResult = 'weak';
         werewolf.refutationMessage = '怪しいが決定打不足';
@@ -3621,7 +3675,7 @@
         werewolf.refutedTarget = target.id;
         werewolf.pendingVoteTargetId = target.id;
         target.suspicion += 1.2;
-        werewolf.talkLog.push({ speaker: '進行', text: '怪しい点はあるが、決定打には足りない', type: 'argumentWeak', target: target.name, tags: ['論破弱い'] });
+        werewolf.talkLog.push({ speaker: target.name, text: buildRefutationReaction(target, 'weak', evidenceTag), type: 'argumentWeak', target: target.name, tags: ['論破弱い'] });
       } else {
         werewolf.refutationResult = 'fail';
         werewolf.refutationMessage = '論破失敗';
@@ -3629,7 +3683,7 @@
         const player = werewolf.participants.find(m => m.id === werewolf.playerId);
         if (player) player.trust = clamp01((player.trust || 0) - 0.12);
         werewolf.participants.filter(m => m.role === 'werewolf' && m.status === 'active').forEach(m => { m.culpritBias = (m.culpritBias || 0) + 0.2; });
-        werewolf.talkLog.push({ speaker: '進行', text: 'その根拠では論破できなかった。会議の空気が少し乱れた', type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
+        werewolf.talkLog.push({ speaker: target.name, text: buildRefutationReaction(target, 'fail', evidenceTag), type: 'argumentFail', target: target.name, tags: ['論破失敗'] });
         runRefuteFailAttack();
       }
       renderWerewolf();
