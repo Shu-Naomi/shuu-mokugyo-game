@@ -274,7 +274,8 @@
       .player.face-up {
         background-position-x: 100%;
       }
-      .player.face-left {
+      .player.boy.face-right,
+      .player.girl.face-left {
         transform: translate(-50%, -50%) scaleX(-1);
       }
       .player.walking {
@@ -322,19 +323,70 @@
         font-size: 25px;
         z-index: 4;
         image-rendering: pixelated;
+        background-repeat: no-repeat;
+      }
+      .companion.shuu {
+        background-image: url("assets/shuu-turn.png");
+        background-size: 300% 100%;
+      }
+      .companion.grey {
+        background-image: url("assets/grey-turn.png");
+        background-size: 300% 100%;
+      }
+      .companion.shuu.dir-down,
+      .companion.grey.dir-down {
+        background-position: 0 50%;
+      }
+      .companion.shuu.dir-left,
+      .companion.grey.dir-left {
+        background-position: 50% 50%;
+      }
+      .companion.shuu.dir-right,
+      .companion.grey.dir-right {
+        background-position: 50% 50%;
+        transform: translate(-50%, -50%) scaleX(-1);
+      }
+      .companion.shuu.dir-up,
+      .companion.grey.dir-up {
+        background-position: 100% 50%;
       }
       .companion.riku {
         background-image: url("assets/riku-walk.png");
         background-size: 400% 300%;
-        background-position: 0 50%;
         color: transparent;
       }
-      .companion.walking {
+      .companion.riku.dir-down {
+        background-position: 0 50%;
+      }
+      .companion.riku.dir-left {
+        background-position: 33.333% 50%;
+      }
+      .companion.riku.dir-right {
+        background-position: 66.667% 50%;
+      }
+      .companion.riku.dir-up {
+        background-position: 100% 50%;
+      }
+      .companion:not(.riku).walking {
         animation: dog-bob 0.28s steps(2) infinite;
+      }
+      .companion.riku.walking {
+        animation: riku-step 0.28s steps(2) infinite;
       }
       @keyframes dog-bob {
         50% {
           margin-top: -3px;
+        }
+      }
+      @keyframes riku-step {
+        0% {
+          background-position-y: 0;
+        }
+        50% {
+          background-position-y: 100%;
+        }
+        100% {
+          background-position-y: 0;
         }
       }
       .hint {
@@ -785,7 +837,8 @@
           JSON.parse(localStorage.getItem(key) || "{}"),
         ),
         battle = null,
-        timer = 0;
+        timer = 0,
+        walkTimer = 0;
       function save() {
         localStorage.setItem(key, JSON.stringify(s));
       }
@@ -807,12 +860,11 @@
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${s.y}%`;
         $("#player").className =
-          `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} ${s.direction === "left" ? "face-left" : ""}`;
+          `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} face-${s.direction}`;
         $("#dog").style.cssText =
           `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
-        $("#dog").className = `companion ${s.dog}`;
-        $("#dog").textContent =
-          s.dog === "shuu" ? "🐕" : s.dog === "grey" ? "🐕" : "";
+        $("#dog").className = `companion ${s.dog} dir-${s.direction}`;
+        $("#dog").textContent = "";
         $("#money").textContent = s.money;
         $("#bait").textContent = s.bait;
         $("#rod").textContent = s.rod;
@@ -838,6 +890,12 @@
         })[d]();
         render();
         $("#player").classList.add("walking");
+        $("#dog").classList.add("walking");
+        clearTimeout(walkTimer);
+        walkTimer = setTimeout(() => {
+          $("#player").classList.remove("walking");
+          $("#dog").classList.remove("walking");
+        }, 320);
       }
       function action() {
         if (near(130, 70)) cast();
