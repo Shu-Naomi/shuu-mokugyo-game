@@ -340,10 +340,10 @@
         pointer-events: none;
       }
       .companion.shuu {
-        background-image: url("assets/shuu-walk.png");
+        background-image: url("assets/shuu-walk.png?v=12");
       }
       .companion.grey {
-        background-image: url("assets/grey-walk.png");
+        background-image: url("assets/grey-walk.png?v=12");
       }
       .companion.shuu,
       .companion.grey,
@@ -352,7 +352,7 @@
         color: transparent;
       }
       .companion.riku {
-        background-image: url("assets/riku-walk.png");
+        background-image: url("assets/riku-walk.png?v=12");
       }
       .companion.dir-down {
         background-position: 0 50%;
@@ -373,7 +373,7 @@
       .companion.idle-sleep,
       .companion.idle-dig,
       .companion.idle-beg {
-        background-image: url("assets/dog-idles.png");
+        background-image: url("assets/dog-idles.png?v=12");
         background-size: 400% 300%;
       }
       .companion.shuu[class*="idle-"] { background-position-y: 0; }
@@ -763,7 +763,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v11</span><span id="time">朝</span
+        <b>星降る湖</b><span>v12</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -948,11 +948,11 @@
         return image;
       }
       const dogImages = {
-          shuu: loadDogImage("assets/shuu-walk.png"),
-          riku: loadDogImage("assets/riku-walk.png"),
-          grey: loadDogImage("assets/grey-walk.png"),
+          shuu: loadDogImage("assets/shuu-walk.png?v=12"),
+          riku: loadDogImage("assets/riku-walk.png?v=12"),
+          grey: loadDogImage("assets/grey-walk.png?v=12"),
         },
-        dogIdleImage = loadDogImage("assets/dog-idles.png");
+        dogIdleImage = loadDogImage("assets/dog-idles.png?v=12");
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
