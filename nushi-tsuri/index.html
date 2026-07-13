@@ -331,7 +331,9 @@
         will-change: left, top;
       }
       .companion.canvas-dog {
-        /* Keep the sprite background as a fail-safe while Canvas is loading. */
+        /* The dog assets are now pre-cached; avoid drawing a second sprite
+           underneath Canvas (Riku's differently sized sheet exposed it). */
+        background-image: none !important;
         background-color: transparent;
       }
       .companion canvas {
@@ -772,7 +774,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v13</span><span id="time">朝</span
+        <b>星降る湖</b><span>v14</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1065,7 +1067,9 @@
           image = dogImages[s.dog] || dogImages.riku;
           size = s.dog === "riku" ? 362 : 320;
           col = direction;
-          row = dogWalking ? (dogAnimFrame % 2 ? 0 : 2) : 1;
+          // Riku's upper/lower walk frames have a much larger vertical shift.
+          // Keep his stable middle frame and let the 1px CSS paw-step animate it.
+          row = dogWalking && s.dog !== "riku" ? (dogAnimFrame % 2 ? 0 : 2) : 1;
         }
         if (!image.complete || !image.naturalWidth) return;
         ctx.drawImage(image, col * size, row * size, size, size, 0, 0, 320, 320);
