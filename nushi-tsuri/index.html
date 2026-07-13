@@ -413,28 +413,23 @@
       }
       .sam {
         position: absolute;
-        left: 82%;
-        bottom: 15%;
-        width: 34px;
-        height: 50px;
+        left: 4%;
+        bottom: 1%;
+        width: 52px;
+        height: 70px;
         z-index: 20;
-        background: linear-gradient(#d8b07d 0 26%, #38556a 27% 70%, #513c31 71%);
-        border: 3px solid #35251e;
-        box-shadow: inset 0 10px #efe0c2;
+        background: url("assets/sam-front.png") center bottom / contain no-repeat;
         image-rendering: pixelated;
       }
       .sam::before {
-        content: "🕶️";
-        position: absolute;
-        left: -5px;
-        top: 1px;
-        font-size: 18px;
+        content: none;
       }
       .sam::after {
-        content: "SAM";
+        content: "サム";
         position: absolute;
-        left: -7px;
-        top: -19px;
+        left: 50%;
+        top: -13px;
+        transform: translateX(-50%);
         color: #fff1a5;
         font: 900 9px monospace;
         text-shadow: 1px 1px #000;
@@ -612,7 +607,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
         transform: translate(-50%, -50%);
-        transition: 0.35s;
+        transition: left 0.18s linear, top 0.18s linear, transform 0.15s ease;
         filter: drop-shadow(5px 5px #082e4b);
       }
       .dog-select {
@@ -767,7 +762,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="time">朝</span
+        <b>星降る湖</b><span>v10</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -778,8 +773,7 @@
           <div class="lake"></div>
           <div class="shore"></div>
           <div class="dock"></div>
-          <div class="shop"></div>
-          <div class="sam" aria-label="サミュエル・オールドマン"></div>
+          <div class="shop"><div class="sam" aria-label="サミュエル・オールドマン"></div></div>
           <div class="building house-a" data-name="湖畔の民家"></div>
           <div class="building house-b" data-name="釣り宿"></div>
           <div class="building diner" data-name="ワカサギ食堂"></div>

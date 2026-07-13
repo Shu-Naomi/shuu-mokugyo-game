@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v9-canvas-dogs-haptics-2";
+const CACHE_NAME = "nushi-tsuri-v10-display-repair";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -16,6 +16,7 @@ const APP_ASSETS = [
   "./assets/fish-funa.png",
   "./assets/fish-koi.png",
   "./assets/fish-nushi.png",
+  "./assets/sam-front.png",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(
@@ -40,13 +41,27 @@ self.addEventListener("activate", (event) => {
   );
 });
 self.addEventListener("fetch", (event) => {
+  const request = event.request;
+  const url = new URL(request.url);
+  if (request.mode === "navigate" || url.pathname.endsWith("/index.html")) {
+    event.respondWith(
+      fetch(request, { cache: "no-store" })
+        .then((response) => {
+          const copy = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy));
+          return response;
+        })
+        .catch(() => caches.match("./index.html")),
+    );
+    return;
+  }
   event.respondWith(
     caches
-      .match(event.request)
+      .match(request)
       .then(
         (cached) =>
           cached ||
-          fetch(event.request).catch(() => caches.match("./index.html")),
+          fetch(request).catch(() => caches.match("./index.html")),
       ),
   );
 });
