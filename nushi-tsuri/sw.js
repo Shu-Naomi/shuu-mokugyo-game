@@ -1,17 +1,17 @@
-const CACHE_NAME = "nushi-tsuri-v11-dog-repair";
+const CACHE_NAME = "nushi-tsuri-v12-dog-assets";
 const APP_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./assets/riku-walk.png",
+  "./assets/riku-walk.png?v=12",
   "./assets/fish-shadows.png",
   "./assets/player-boy.png",
   "./assets/player-girl.png",
-  "./assets/shuu-walk.png",
-  "./assets/grey-walk.png",
-  "./assets/dog-idles.png",
+  "./assets/shuu-walk.png?v=12",
+  "./assets/grey-walk.png?v=12",
+  "./assets/dog-idles.png?v=12",
   "./assets/fish-moroko.png",
   "./assets/fish-funa.png",
   "./assets/fish-koi.png",
