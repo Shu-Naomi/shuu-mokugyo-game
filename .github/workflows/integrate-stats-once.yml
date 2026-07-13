@@ -1,6 +1,7 @@
 name: Integrate minigame ledger once
 
-# Second commit triggers the workflow after it exists on the default branch.
+# This one-time workflow is triggered through a normal pull request merge.
+# It removes itself after the integration succeeds.
 on:
   push:
     branches: [main]
