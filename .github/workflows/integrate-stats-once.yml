@@ -1,0 +1,162 @@
+name: Integrate minigame ledger once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/integrate-stats-once.yml
+
+permissions:
+  contents: write
+
+jobs:
+  integrate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch game result recording
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          def read(path):
+              return Path(path).read_text(encoding='utf-8')
+
+          def write(path, text):
+              Path(path).write_text(text, encoding='utf-8')
+
+          def add_script(path, src):
+              text = read(path)
+              tag = f'  <script src="{src}"></script>'
+              if tag not in text:
+                  if '</body>' not in text:
+                      raise SystemExit(f'{path}: </body> not found')
+                  text = text.replace('</body>', f'{tag}\n</body>', 1)
+                  write(path, text)
+
+          # Shared ledger loader.
+          add_script('index.html', 'assets/inugoya-stats.js')
+          add_script('othello/index.html', '../assets/inugoya-stats.js')
+          add_script('chess/index.html', '../assets/inugoya-stats.js')
+          add_script('shogi/index.html', '../assets/inugoya-stats.js')
+
+          # Othello: record result and stone count.
+          path = 'othello/index.html'
+          text = read(path)
+          marker = "window.InugoyaStats?.recordMatch('othello'"
+          if marker not in text:
+              needle = "        resultModal.classList.add('show');"
+              replacement = """        const ledgerOutcome = black > white ? 'win' : white > black ? 'loss' : 'draw';
+        window.InugoyaStats?.recordMatch('othello', ledgerOutcome, {
+          difficulty,
+          playerScore: black,
+          shuuScore: white,
+          score: black,
+          detail: `${black}対${white}`
+        });
+        resultModal.classList.add('show');"""
+              if needle not in text:
+                  raise SystemExit('othello result hook not found')
+              text = text.replace(needle, replacement, 1)
+              write(path, text)
+
+          # Chess: record checkmate/draw and difficulty.
+          path = 'chess/index.html'
+          text = read(path)
+          marker = "window.InugoyaStats?.recordMatch('chess'"
+          if marker not in text:
+              needle = "$('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultDetail').textContent=detail;$('#resultModal').classList.add('show');}"
+              replacement = "$('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultDetail').textContent=detail;const ledgerOutcome=st.kind==='mate'?(st.winner===W?'win':'loss'):'draw';window.InugoyaStats?.recordMatch('chess',ledgerOutcome,{difficulty,detail});$('#resultModal').classList.add('show');}"
+              if needle not in text:
+                  raise SystemExit('chess result hook not found')
+              text = text.replace(needle, replacement, 1)
+              write(path, text)
+
+          # Shogi: record mate/draw and move count.
+          path = 'shogi/index.html'
+          text = read(path)
+          marker = "window.InugoyaStats?.recordMatch('shogi'"
+          if marker not in text:
+              needle = "$('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultSummary').textContent=checked?'詰みで対局終了':'合法手なしで対局終了';$('#resultModal').classList.add('show');"
+              replacement = "$('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultSummary').textContent=checked?'詰みで対局終了':'合法手なしで対局終了';const ledgerOutcome=winner===SENTE?'win':winner===GOTE?'loss':'draw';window.InugoyaStats?.recordMatch('shogi',ledgerOutcome,{difficulty,detail:checked?'詰みで対局終了':'合法手なしで対局終了',moves:moveNumber});$('#resultModal').classList.add('show');"
+              if needle not in text:
+                  raise SystemExit('shogi result hook not found')
+              text = text.replace(needle, replacement, 1)
+              write(path, text)
+
+          # Main app: connect tail defense and rhythm score.
+          path = 'index.html'
+          text = read(path)
+          if "window.InugoyaStats?.recordMatch('tailDefense'" not in text:
+              needle = "      $('#tailDefenseResult').classList.remove('is-hidden');\n      renderTailDefense();"
+              replacement = """      $('#tailDefenseResult').classList.remove('is-hidden');
+      window.InugoyaStats?.recordMatch('tailDefense', reason === 'failed' ? 'loss' : 'win', {
+        score: tailDefense.score,
+        detail: `${tailDefense.elapsed}秒 / ライフ${tailDefense.life}`
+      });
+      renderTailDefense();"""
+              if needle not in text:
+                  raise SystemExit('tail defense result hook not found')
+              text = text.replace(needle, replacement, 1)
+
+          if "window.InugoyaStats?.recordScore('rhythm'" not in text:
+              needle = "      state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);"
+              replacement = """      state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);
+      window.InugoyaStats?.recordScore('rhythm', rhythm.score, {
+        detail: `ぽく度+${rewardPoku}${rewardSnack ? ` / おやつ+${rewardSnack}` : ''}`
+      });"""
+              if needle not in text:
+                  raise SystemExit('rhythm result hook not found')
+              text = text.replace(needle, replacement, 1)
+
+          write(path, text)
+
+          # Static integration checks.
+          checks = {
+              'index.html': [
+                  'assets/inugoya-stats.js',
+                  "recordMatch('tailDefense'",
+                  "recordScore('rhythm'"
+              ],
+              'othello/index.html': ['../assets/inugoya-stats.js', "recordMatch('othello'"],
+              'chess/index.html': ['../assets/inugoya-stats.js', "recordMatch('chess'"],
+              'shogi/index.html': ['../assets/inugoya-stats.js', "recordMatch('shogi'"]
+          }
+          for file, needles in checks.items():
+              content = read(file)
+              missing = [needle for needle in needles if needle not in content]
+              if missing:
+                  raise SystemExit(f'{file}: missing {missing}')
+          PY
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check assets/inugoya-stats.js
+          python3 - <<'PY'
+          import re
+          import subprocess
+          import tempfile
+          from pathlib import Path
+
+          for html_path in ['index.html', 'othello/index.html', 'chess/index.html', 'shogi/index.html']:
+              html = Path(html_path).read_text(encoding='utf-8')
+              scripts = re.findall(r'<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>', html, flags=re.S|re.I)
+              for index, script in enumerate(scripts):
+                  with tempfile.NamedTemporaryFile('w', suffix='.js', encoding='utf-8', delete=False) as handle:
+                      handle.write(script)
+                      name = handle.name
+                  subprocess.run(['node', '--check', name], check=True)
+              print(f'{html_path}: {len(scripts)} inline script(s) OK')
+          PY
+
+      - name: Remove one-time workflow and commit
+        run: |
+          rm .github/workflows/integrate-stats-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.html othello/index.html chess/index.html shogi/index.html .github/workflows/integrate-stats-once.yml
+          git commit -m "Integrate shared minigame ledger"
+          git push
