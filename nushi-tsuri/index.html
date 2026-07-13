@@ -284,10 +284,47 @@
       .player.walking {
         animation: player-step 0.24s steps(2) 2;
       }
+      .player.companion-pet {
+        animation: player-pet 0.72s ease-in-out infinite;
+        transform-origin: center bottom;
+      }
+      .player.companion-sit {
+        margin-top: 9px;
+        transform-origin: center bottom;
+        animation: player-sit-breathe 2.4s ease-in-out infinite;
+      }
+      .player.companion-pet::after {
+        display: block !important;
+        content: "";
+        position: absolute;
+        left: 27px;
+        top: 28px;
+        width: 18px;
+        height: 5px;
+        border-radius: 4px;
+        background: #f1c39a;
+        border: 2px solid #432c25;
+        transform: rotate(24deg);
+        transform-origin: left center;
+        box-shadow: none;
+      }
+      .player.companion-pet.face-left::after,
+      .player.companion-pet.face-up::after {
+        left: 1px;
+        transform: rotate(-24deg);
+        transform-origin: right center;
+      }
       @keyframes player-step {
         50% {
           margin-top: -3px;
         }
+      }
+      @keyframes player-pet {
+        0%, 100% { margin-top: 1px; }
+        50% { margin-top: 6px; }
+      }
+      @keyframes player-sit-breathe {
+        50% { margin-top: 10px; }
       }
       .player:before {
         content: "";
@@ -774,7 +811,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v14</span><span id="time">朝</span
+        <b>星降る湖</b><span>v15</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -945,7 +982,9 @@
         walkTimer = 0,
         idleTimer = 0,
         idleActionTimer = 0,
+        companionReactionTimer = 0,
         dogIdleMode = "",
+        companionReaction = "",
         dogWalking = false,
         dogAnimFrame = 0;
       function loadDogImage(src) {
@@ -994,6 +1033,17 @@
           top: Math.max(61, Math.min(93, s.y + offset.y)),
         };
       }
+      function oppositeDirection(direction) {
+        return { left: "right", right: "left", up: "down", down: "up" }[direction] || "down";
+      }
+      function renderPlayer() {
+        const direction = companionReaction ? oppositeDirection(s.direction) : s.direction;
+        const facing = direction === "up"
+          ? "face-up"
+          : ["left", "right"].includes(direction) ? "face-side" : "";
+        const reactionClass = companionReaction ? `companion-${companionReaction}` : "";
+        $("#player").className = `player ${s.avatar} ${facing} face-${direction} ${reactionClass}`;
+      }
       function render() {
         s.x = Math.max(5, Math.min(287, s.x));
         s.y = Math.max(61, Math.min(93, s.y));
@@ -1002,8 +1052,7 @@
         $("#map").style.transform = `translateX(${-camera / 3}%)`;
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${s.y}%`;
-        $("#player").className =
-          `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} face-${s.direction}`;
+        renderPlayer();
         const dogPosition = dogFollowPosition();
         $("#dog").style.left = `${dogPosition.left}%`;
         $("#dog").style.top = `${dogPosition.top}%`;
@@ -1077,16 +1126,32 @@
       function wakeDog() {
         clearTimeout(idleTimer);
         clearTimeout(idleActionTimer);
+        clearTimeout(companionReactionTimer);
         dogIdleMode = "";
+        companionReaction = "";
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
+        renderPlayer();
         drawDog();
+      }
+      function setCompanionReaction(reaction) {
+        if (battle || !dogIdleMode) return;
+        companionReaction = reaction;
+        renderPlayer();
       }
       function setDogIdle(mode) {
         if (battle) return;
+        clearTimeout(companionReactionTimer);
+        companionReaction = "";
         dogWalking = false;
         dogIdleMode = `idle-${mode}`;
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         drawDog();
+        renderPlayer();
+        // Give the dog a brief moment to settle before the owner responds.
+        if (mode === "beg")
+          companionReactionTimer = setTimeout(() => setCompanionReaction("pet"), 650);
+        else if (mode === "sleep")
+          companionReactionTimer = setTimeout(() => setCompanionReaction("sit"), 900);
       }
       function armDogIdle() {
         wakeDog();
