@@ -329,7 +329,8 @@
         background-repeat: no-repeat;
       }
       .companion.canvas-dog {
-        background: none !important;
+        /* Keep the sprite background as a fail-safe while Canvas is loading. */
+        background-color: transparent;
       }
       .companion canvas {
         display: block;
@@ -762,7 +763,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v10</span><span id="time">朝</span
+        <b>星降る湖</b><span>v11</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -936,13 +937,22 @@
         dogIdleMode = "",
         dogWalking = false,
         dogAnimFrame = 0;
+      function loadDogImage(src) {
+        const image = new Image();
+        image.onload = () => drawDog();
+        image.src = src;
+        // Some mobile browsers can finish a cached image before the normal
+        // load callback is observed. Decode gives that path a second redraw.
+        if (image.decode) image.decode().then(drawDog).catch(() => {});
+        setTimeout(drawDog, 300);
+        return image;
+      }
       const dogImages = {
-          shuu: Object.assign(new Image(), { src: "assets/shuu-walk.png" }),
-          riku: Object.assign(new Image(), { src: "assets/riku-walk.png" }),
-          grey: Object.assign(new Image(), { src: "assets/grey-walk.png" }),
+          shuu: loadDogImage("assets/shuu-walk.png"),
+          riku: loadDogImage("assets/riku-walk.png"),
+          grey: loadDogImage("assets/grey-walk.png"),
         },
-        dogIdleImage = Object.assign(new Image(), { src: "assets/dog-idles.png" });
-      Object.values(dogImages).concat(dogIdleImage).forEach(img => img.onload = drawDog);
+        dogIdleImage = loadDogImage("assets/dog-idles.png");
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
