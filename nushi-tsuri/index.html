@@ -277,8 +277,7 @@
       .player.face-up {
         background-position-x: 100%;
       }
-      .player.boy.face-right,
-      .player.girl.face-left {
+      .player.face-left {
         transform: translate(-50%, -50%) scaleX(-1);
       }
       .player.walking {
@@ -307,12 +306,6 @@
         transform: rotate(24deg);
         transform-origin: left center;
         box-shadow: none;
-      }
-      .player.companion-pet.face-left::after,
-      .player.companion-pet.face-up::after {
-        left: 1px;
-        transform: rotate(-24deg);
-        transform-origin: right center;
       }
       @keyframes player-step {
         50% {
@@ -380,6 +373,9 @@
         image-rendering: pixelated;
         pointer-events: none;
         transform-origin: center bottom;
+      }
+      .companion.face-player-right canvas {
+        transform: scaleX(-1);
       }
       .companion.shuu {
         background-image: url("assets/shuu-walk.png?v=12");
@@ -1141,6 +1137,8 @@
       function setCompanionReaction(reaction) {
         if (battle || !dogIdleMode) return;
         companionReaction = reaction;
+        const dogPosition = dogFollowPosition();
+        $("#dog").classList.toggle("face-player-right", dogPosition.left < s.x / 3);
         renderPlayer();
       }
       function setDogIdle(mode) {
