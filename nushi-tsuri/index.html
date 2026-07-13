@@ -327,6 +327,8 @@
         z-index: 4;
         image-rendering: pixelated;
         background-repeat: no-repeat;
+        transition: left 0.2s ease-out, top 0.2s ease-out;
+        will-change: left, top;
       }
       .companion.canvas-dog {
         /* Keep the sprite background as a fail-safe while Canvas is loading. */
@@ -338,6 +340,7 @@
         height: 100%;
         image-rendering: pixelated;
         pointer-events: none;
+        transform-origin: center bottom;
       }
       .companion.shuu {
         background-image: url("assets/shuu-walk.png?v=12");
@@ -368,6 +371,9 @@
       }
       .companion.walking {
         animation: dog-step 0.3s steps(1) infinite;
+      }
+      .companion.walking canvas {
+        animation: dog-paws 0.17s steps(2) infinite;
       }
       .companion.idle-sit,
       .companion.idle-sleep,
@@ -402,6 +408,9 @@
         100% {
           background-position-y: 0;
         }
+      }
+      @keyframes dog-paws {
+        50% { transform: translateY(-1px); }
       }
       @keyframes dog-breathe {
         50% { transform: translate(-50%, -50%) scale(1.03, .98); }
@@ -763,7 +772,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v12</span><span id="time">朝</span
+        <b>星降る湖</b><span>v13</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -971,6 +980,18 @@
       function near(x, y, r = 13) {
         return Math.hypot(s.x - x, s.y - y) < r;
       }
+      function dogFollowPosition() {
+        const offset = {
+          left: { x: 6, y: 3 },
+          right: { x: -6, y: 3 },
+          up: { x: -4, y: 7 },
+          down: { x: -4, y: -6 },
+        }[s.direction] || { x: -4, y: -6 };
+        return {
+          left: Math.max(1, Math.min(99, (s.x + offset.x) / 3)),
+          top: Math.max(61, Math.min(93, s.y + offset.y)),
+        };
+      }
       function render() {
         s.x = Math.max(5, Math.min(287, s.x));
         s.y = Math.max(61, Math.min(93, s.y));
@@ -981,8 +1002,10 @@
         $("#player").style.top = `${s.y}%`;
         $("#player").className =
           `player ${s.avatar} ${s.direction === "up" ? "face-up" : ["left", "right"].includes(s.direction) ? "face-side" : ""} face-${s.direction}`;
-        $("#dog").style.cssText =
-          `left:${Math.max(1, (s.x - 5) / 3)}%;top:${Math.min(94, s.y + 6)}%`;
+        const dogPosition = dogFollowPosition();
+        $("#dog").style.left = `${dogPosition.left}%`;
+        $("#dog").style.top = `${dogPosition.top}%`;
+        $("#dog").style.zIndex = dogPosition.top > s.y ? "6" : "4";
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         drawDog();
         $("#money").textContent = s.money;
@@ -1063,7 +1086,7 @@
       }
       function armDogIdle() {
         wakeDog();
-        idleTimer = setTimeout(() => setDogIdle("sit"), 900);
+        idleTimer = setTimeout(() => setDogIdle("sit"), 1000);
         idleActionTimer = setTimeout(randomDogIdle, 30000);
       }
       function randomDogIdle() {
