@@ -4301,6 +4301,10 @@
       $('#tailDefenseMessage').textContent = reason === 'failed' ? 'ゲームオーバー……しっぽ防衛線、いったん撤退。' : '30秒防衛成功！しっぽは無事だよ。';
       $('#tailDefenseResult').innerHTML = `スコア：<b>${tailDefense.score}</b><br />守り切った時間：<b>${tailDefense.elapsed}秒</b><br />残りしっぽ毛ライフ：<b>${tailDefense.life}</b><br />評価：${comment}`;
       $('#tailDefenseResult').classList.remove('is-hidden');
+      window.InugoyaStats?.recordMatch('tailDefense', reason === 'failed' ? 'loss' : 'win', {
+        score: tailDefense.score,
+        detail: `${tailDefense.elapsed}秒 / ライフ${tailDefense.life}`
+      });
       renderTailDefense();
     }
 
@@ -4747,6 +4751,9 @@
       applyDelta({ poku: rewardPoku }, { source: 'bonus' });
       state.snacks = Math.min(9, state.snacks + rewardSnack);
       state.rhythmBest = Math.max(state.rhythmBest, rhythm.score);
+      window.InugoyaStats?.recordScore('rhythm', rhythm.score, {
+        detail: `ぽく度+${rewardPoku}${rewardSnack ? ` / おやつ+${rewardSnack}` : ''}`
+      });
       state.lastLine = rhythm.score >= 150
         ? 'ぽくぽく大成功！ 木魚、ちょっとだけ光った。でも渡すとは言ってない。'
         : 'ぽく、ぽく。今のリズム、僕は好き。もう一回やる？';
@@ -5406,5 +5413,6 @@
     render();
     saveState();
   </script>
+  <script src="assets/inugoya-stats.js"></script>
 </body>
 </html>

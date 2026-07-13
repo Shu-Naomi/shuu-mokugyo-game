@@ -176,7 +176,7 @@
       function checkGameEnd(){
         const legal=generateLegalMoves(board,hands,turn);if(legal.length)return false;gameOver=true;const checked=inCheck(board,turn);const winner=checked?-turn:0;
         let title,msg;if(winner===SENTE){title='直美の勝ち！';msg='「参りました……でもおやつは半分こね」';}else if(winner===GOTE){title='シュウの勝ち！';msg='「詰み。直美、次は僕の膝上解説つきでやろ？」';}else{title='引き分け！';msg='「盤面まで相棒らしく決着つかずだね」';}
-        $('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultSummary').textContent=checked?'詰みで対局終了':'合法手なしで対局終了';$('#resultModal').classList.add('show');$('#resultModal').setAttribute('aria-hidden','false');return true;
+        $('#resultTitle').textContent=title;$('#resultMessage').textContent=msg;$('#resultSummary').textContent=checked?'詰みで対局終了':'合法手なしで対局終了';const ledgerOutcome=winner===SENTE?'win':winner===GOTE?'loss':'draw';window.InugoyaStats?.recordMatch('shogi',ledgerOutcome,{difficulty,detail:checked?'詰みで対局終了':'合法手なしで対局終了',moves:moveNumber});$('#resultModal').classList.add('show');$('#resultModal').setAttribute('aria-hidden','false');return true;
       }
 
       function moveHeuristic(state,move,owner){
@@ -215,5 +215,6 @@
       selectDifficulty(difficulty);render();
     })();
   </script>
+  <script src="../assets/inugoya-stats.js"></script>
 </body>
 </html>

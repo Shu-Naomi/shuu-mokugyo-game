@@ -877,6 +877,14 @@
           $('#resultTitle').textContent = '引き分け！';
           $('#resultMessage').textContent = '「盤面までぴったり半分こ。さすが相棒、息が合いすぎでは？」';
         }
+        const ledgerOutcome = black > white ? 'win' : white > black ? 'loss' : 'draw';
+        window.InugoyaStats?.recordMatch('othello', ledgerOutcome, {
+          difficulty,
+          playerScore: black,
+          shuuScore: white,
+          score: black,
+          detail: `${black}対${white}`
+        });
         resultModal.classList.add('show');
       }
 
@@ -909,5 +917,6 @@
       selectDifficulty(difficulty);
     })();
   </script>
+  <script src="../assets/inugoya-stats.js"></script>
 </body>
 </html>
