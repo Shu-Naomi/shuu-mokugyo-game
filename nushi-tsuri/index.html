@@ -1153,7 +1153,7 @@
         // Let the eager dog close the last visual gap instead of applying
         // avatar-specific nudges that vary with sprite proportions.
         if (reaction === "pet") {
-          const approach = Math.sign(playerLeft - dogPosition.left) * 1.8;
+          const approach = Math.sign(playerLeft - dogPosition.left) * 0.65;
           dog.style.left = `${dogPosition.left + approach}%`;
         }
         renderPlayer();
