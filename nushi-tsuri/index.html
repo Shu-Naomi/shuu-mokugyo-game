@@ -285,7 +285,6 @@
         animation: player-step 0.24s steps(2) 2;
       }
       .player.companion-pet {
-        animation: player-pet 0.72s ease-in-out infinite;
         transform-origin: center bottom;
       }
       .player.companion-sit {
@@ -310,21 +309,27 @@
         background: linear-gradient(90deg, #f1c39a 0 55%, #2c7883 56% 100%);
         transform: rotate(-24deg);
         transform-origin: right center;
+        animation: boy-pet-hand 0.72s ease-in-out infinite;
       }
       .player.girl.companion-pet::after {
         left: 27px;
         background: linear-gradient(90deg, #a92f39 0 44%, #f1c39a 45% 100%);
         transform: rotate(24deg);
         transform-origin: left center;
+        animation: girl-pet-hand 0.72s ease-in-out infinite;
       }
       @keyframes player-step {
         50% {
           margin-top: -3px;
         }
       }
-      @keyframes player-pet {
-        0%, 100% { margin-top: 1px; }
-        50% { margin-top: 6px; }
+      @keyframes boy-pet-hand {
+        0%, 100% { transform: rotate(-14deg); }
+        50% { transform: rotate(-30deg); }
+      }
+      @keyframes girl-pet-hand {
+        0%, 100% { transform: rotate(14deg); }
+        50% { transform: rotate(30deg); }
       }
       @keyframes player-sit-breathe {
         50% { margin-top: 10px; }
