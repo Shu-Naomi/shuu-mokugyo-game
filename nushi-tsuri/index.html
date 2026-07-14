@@ -316,13 +316,6 @@
         transform: rotate(24deg);
         transform-origin: left center;
       }
-      /* Her narrower side silhouette leaves a visible gap to the companion. */
-      .player.girl.companion-pet.face-left {
-        margin-left: -12px;
-      }
-      .player.girl.companion-pet.face-right {
-        margin-left: 12px;
-      }
       @keyframes player-step {
         50% {
           margin-top: -3px;
@@ -1154,7 +1147,15 @@
         if (battle || !dogIdleMode) return;
         companionReaction = reaction;
         const dogPosition = dogFollowPosition();
-        $("#dog").classList.toggle("face-player-right", dogPosition.left < s.x / 3);
+        const playerLeft = s.x / 3;
+        const dog = $("#dog");
+        dog.classList.toggle("face-player-right", dogPosition.left < playerLeft);
+        // Let the eager dog close the last visual gap instead of applying
+        // avatar-specific nudges that vary with sprite proportions.
+        if (reaction === "pet") {
+          const approach = Math.sign(playerLeft - dogPosition.left) * 1.8;
+          dog.style.left = `${dogPosition.left + approach}%`;
+        }
         renderPlayer();
       }
       function setDogIdle(mode) {
@@ -1163,6 +1164,8 @@
         companionReaction = "";
         dogWalking = false;
         dogIdleMode = `idle-${mode}`;
+        const dogPosition = dogFollowPosition();
+        $("#dog").style.left = `${dogPosition.left}%`;
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         drawDog();
         renderPlayer();
