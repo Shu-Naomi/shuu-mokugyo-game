@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v15-mutual-facing-fix";
+const CACHE_NAME = "nushi-tsuri-v15-avatar-facing-fix";
 const APP_ASSETS = [
   "./",
   "./index.html",
