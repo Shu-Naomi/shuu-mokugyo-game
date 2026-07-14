@@ -277,7 +277,8 @@
       .player.face-up {
         background-position-x: 100%;
       }
-      .player.face-left {
+      .player.boy.face-right,
+      .player.girl.face-left {
         transform: translate(-50%, -50%) scaleX(-1);
       }
       .player.walking {
@@ -296,16 +297,24 @@
         display: block !important;
         content: "";
         position: absolute;
-        left: 27px;
         top: 28px;
         width: 18px;
         height: 5px;
         border-radius: 4px;
         background: #f1c39a;
         border: 2px solid #432c25;
+        box-shadow: none;
+      }
+      /* The source side sprites face opposite ways: boy=left, girl=right. */
+      .player.boy.companion-pet::after {
+        left: 1px;
+        transform: rotate(-24deg);
+        transform-origin: right center;
+      }
+      .player.girl.companion-pet::after {
+        left: 27px;
         transform: rotate(24deg);
         transform-origin: left center;
-        box-shadow: none;
       }
       @keyframes player-step {
         50% {
