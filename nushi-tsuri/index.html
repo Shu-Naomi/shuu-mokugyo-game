@@ -299,20 +299,21 @@
         position: absolute;
         top: 28px;
         width: 18px;
-        height: 5px;
-        border-radius: 4px;
-        background: #f1c39a;
+        height: 7px;
+        border-radius: 7px 4px 6px 6px;
         border: 2px solid #432c25;
         box-shadow: none;
       }
       /* The source side sprites face opposite ways: boy=left, girl=right. */
       .player.boy.companion-pet::after {
         left: 1px;
+        background: linear-gradient(90deg, #f1c39a 0 55%, #2c7883 56% 100%);
         transform: rotate(-24deg);
         transform-origin: right center;
       }
       .player.girl.companion-pet::after {
         left: 27px;
+        background: linear-gradient(90deg, #a92f39 0 44%, #f1c39a 45% 100%);
         transform: rotate(24deg);
         transform-origin: left center;
       }
@@ -1153,7 +1154,7 @@
         // Let the eager dog close the last visual gap instead of applying
         // avatar-specific nudges that vary with sprite proportions.
         if (reaction === "pet") {
-          const approach = Math.sign(playerLeft - dogPosition.left) * 0.65;
+          const approach = Math.sign(playerLeft - dogPosition.left) * 0.85;
           dog.style.left = `${dogPosition.left + approach}%`;
         }
         renderPlayer();
