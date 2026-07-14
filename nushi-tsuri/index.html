@@ -316,6 +316,13 @@
         transform: rotate(24deg);
         transform-origin: left center;
       }
+      /* Her narrower side silhouette leaves a visible gap to the companion. */
+      .player.girl.companion-pet.face-left {
+        margin-left: -12px;
+      }
+      .player.girl.companion-pet.face-right {
+        margin-left: 12px;
+      }
       @keyframes player-step {
         50% {
           margin-top: -3px;
