@@ -319,8 +319,22 @@
         display: none !important;
       }
       .player.companion-sit {
+        background-size: 100% 100%;
+        background-position: center;
         transform-origin: center bottom;
         animation: none;
+      }
+      .player.boy.companion-sit {
+        background-image: url("assets/player-boy-sit.png?v=16");
+      }
+      .player.girl.companion-sit {
+        background-image: url("assets/player-girl-sit.png?v=16");
+      }
+      .player.companion-sit.face-left {
+        transform: translate(-50%, -50%);
+      }
+      .player.companion-sit.face-right {
+        transform: translate(-50%, -50%) scaleX(-1);
       }
       @keyframes player-step {
         50% {
