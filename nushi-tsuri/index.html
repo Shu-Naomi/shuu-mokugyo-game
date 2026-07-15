@@ -1010,6 +1010,8 @@
         dogApproachTopOffset = 0,
         dogMotionDirection = "",
         dogWalking = false,
+        rikuSettleProgress = 1,
+        rikuSettleFrame = 0,
         dogAnimFrame = 0;
       function loadDogImage(src) {
         const image = new Image();
@@ -1143,9 +1145,28 @@
         dogWalkTimer = setTimeout(() => {
           dogWalking = false;
           $("#dog").classList.remove("walking");
-          drawDog();
-          armDogIdle();
+          if (s.dog === "riku") settleRikuAfterRun();
+          else {
+            drawDog();
+            armDogIdle();
+          }
         }, 660);
+      }
+      function settleRikuAfterRun() {
+        cancelAnimationFrame(rikuSettleFrame);
+        rikuSettleProgress = 0;
+        const startedAt = performance.now();
+        const settle = (now) => {
+          rikuSettleProgress = Math.min(1, (now - startedAt) / 300);
+          drawDog();
+          if (rikuSettleProgress < 1)
+            rikuSettleFrame = requestAnimationFrame(settle);
+          else {
+            rikuSettleFrame = 0;
+            armDogIdle();
+          }
+        };
+        rikuSettleFrame = requestAnimationFrame(settle);
       }
       function drawDog() {
         const canvas = $("#dogSprite");
@@ -1190,6 +1211,15 @@
               2: [97, 104, 104, 97],
             }[row][direction]
           : 0;
+        // Riku's running body is much lower than his standing body. Ease the
+        // neutral frame upward from the run height instead of snapping to it.
+        const rikuSettling = image === dogImages.riku &&
+          !dogWalking && rikuSettleProgress < 1;
+        const settleEase = rikuSettling
+          ? 1 - Math.pow(1 - rikuSettleProgress, 3)
+          : 1;
+        const drawHeight = rikuSettling ? 240 + 80 * settleEase : 320;
+        const drawY = rikuSettling ? 300 - drawHeight : rikuBaselineY;
         ctx.drawImage(
           image,
           col * size,
@@ -1197,9 +1227,9 @@
           size,
           size,
           0,
-          rikuBaselineY,
+          drawY,
           320,
-          320,
+          drawHeight,
         );
       }
       function wakeDog() {
@@ -1208,6 +1238,9 @@
         clearTimeout(companionReactionTimer);
         clearTimeout(reactionTransitionTimer);
         clearTimeout(dogWalkTimer);
+        cancelAnimationFrame(rikuSettleFrame);
+        rikuSettleFrame = 0;
+        rikuSettleProgress = 1;
         dogIdleMode = "";
         companionReaction = "";
         dogApproachOffset = 0;
