@@ -1180,10 +1180,15 @@
             : 1;
         }
         if (!image.complete || !image.naturalWidth) return;
-        // Riku's third row was authored about 120 source pixels above the
-        // first row. Move only that frame down so his paws keep one baseline.
-        const rikuWalkY = s.dog === "riku" && dogWalking && row === 2
-          ? [113, 107, 106, 110][direction]
+        // Riku's walk, stand and idle cells use different transparent bottom
+        // margins. Align every non-idle frame to the idle sheet's y=300 paw
+        // line, so catching up, stopping and sitting share one ground axis.
+        const rikuBaselineY = image === dogImages.riku
+          ? {
+              0: [-16, -3, -2, -13],
+              1: [-20, -20, -20, -20],
+              2: [97, 104, 104, 97],
+            }[row][direction]
           : 0;
         ctx.drawImage(
           image,
@@ -1192,7 +1197,7 @@
           size,
           size,
           0,
-          rikuWalkY,
+          rikuBaselineY,
           320,
           320,
         );
