@@ -302,22 +302,30 @@
       .player.companion-pet.face-right {
         transform: translate(-50%, -50%) scaleX(-1);
       }
+      /* Every pose shares the standing sprite's shoe contact point. */
+      .player.boy.companion-pet.face-left {
+        margin-left: -4px;
+        margin-top: -1px;
+      }
+      .player.boy.companion-pet.face-right {
+        margin-left: 4px;
+        margin-top: -1px;
+      }
+      .player.girl.companion-pet {
+        margin-top: -2px;
+      }
       .player.companion-pet::before,
       .player.companion-pet::after {
         display: none !important;
       }
       .player.companion-sit {
-        margin-top: 9px;
         transform-origin: center bottom;
-        animation: player-sit-breathe 2.4s ease-in-out infinite;
+        animation: none;
       }
       @keyframes player-step {
         50% {
           margin-top: -3px;
         }
-      }
-      @keyframes player-sit-breathe {
-        50% { margin-top: 10px; }
       }
       .player:before {
         content: "";
@@ -357,7 +365,7 @@
         z-index: 4;
         image-rendering: pixelated;
         background-repeat: no-repeat;
-        transition: left 0.2s ease-out, top 0.2s ease-out;
+        transition: left 0.62s ease-in-out, top 0.28s ease-out;
         will-change: left, top;
       }
       .companion.canvas-dog {
@@ -979,8 +987,10 @@
         idleTimer = 0,
         idleActionTimer = 0,
         companionReactionTimer = 0,
+        reactionTransitionTimer = 0,
         dogIdleMode = "",
         companionReaction = "",
+        dogApproachOffset = 0,
         dogWalking = false,
         dogAnimFrame = 0;
       function loadDogImage(src) {
@@ -1037,6 +1047,9 @@
         // instead of making the player stare past it vertically.
         return dogPosition.left < playerLeft ? "left" : "right";
       }
+      function dogDisplayLeft(position = dogFollowPosition()) {
+        return Math.max(1, Math.min(99, position.left + dogApproachOffset));
+      }
       function renderPlayer() {
         const direction = companionReaction ? companionDirection() : s.direction;
         const facing = direction === "up"
@@ -1055,7 +1068,7 @@
         $("#player").style.top = `${s.y}%`;
         renderPlayer();
         const dogPosition = dogFollowPosition();
-        $("#dog").style.left = `${dogPosition.left}%`;
+        $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
         $("#dog").style.top = `${dogPosition.top}%`;
         $("#dog").style.zIndex = dogPosition.top > s.y ? "6" : "4";
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
@@ -1128,35 +1141,46 @@
         clearTimeout(idleTimer);
         clearTimeout(idleActionTimer);
         clearTimeout(companionReactionTimer);
+        clearTimeout(reactionTransitionTimer);
         dogIdleMode = "";
         companionReaction = "";
+        dogApproachOffset = 0;
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
+        $("#dog").style.left = `${dogDisplayLeft()}%`;
         renderPlayer();
         drawDog();
       }
       function setCompanionReaction(reaction) {
         if (battle || !dogIdleMode) return;
-        companionReaction = reaction;
+        clearTimeout(reactionTransitionTimer);
         const dogPosition = dogFollowPosition();
         const playerLeft = s.x / 3;
         const dog = $("#dog");
         dog.classList.toggle("face-player-right", dogPosition.left < playerLeft);
-        // Let the eager dog close the last visual gap instead of applying
-        // avatar-specific nudges that vary with sprite proportions.
+        // The dog walks into contact first.  Only then does the owner change
+        // pose, so neither sprite teleports between animation states.
         if (reaction === "pet") {
-          const approach = Math.sign(playerLeft - dogPosition.left) * 0.85;
-          dog.style.left = `${dogPosition.left + approach}%`;
+          dogApproachOffset = Math.sign(playerLeft - dogPosition.left) * 0.85;
+          dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
+          reactionTransitionTimer = setTimeout(() => {
+            if (battle || !dogIdleMode) return;
+            companionReaction = reaction;
+            renderPlayer();
+          }, 620);
+          return;
         }
+        companionReaction = reaction;
         renderPlayer();
       }
       function setDogIdle(mode) {
         if (battle) return;
         clearTimeout(companionReactionTimer);
+        clearTimeout(reactionTransitionTimer);
         companionReaction = "";
         dogWalking = false;
         dogIdleMode = `idle-${mode}`;
         const dogPosition = dogFollowPosition();
-        $("#dog").style.left = `${dogPosition.left}%`;
+        $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         drawDog();
         renderPlayer();
