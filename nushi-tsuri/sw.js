@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v16-still-petting";
+const CACHE_NAME = "nushi-tsuri-v16-foot-anchor";
 const APP_ASSETS = [
   "./",
   "./index.html",
