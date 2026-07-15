@@ -992,6 +992,7 @@
         dogIdleMode = "",
         companionReaction = "",
         dogApproachOffset = 0,
+        dogMotionDirection = "",
         dogWalking = false,
         dogAnimFrame = 0;
       function loadDogImage(src) {
@@ -1120,9 +1121,14 @@
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.imageSmoothingEnabled = false;
-        const direction = { down: 0, left: 1, right: 2, up: 3 }[s.direction] ?? 0;
+        const direction = {
+          down: 0,
+          left: 1,
+          right: 2,
+          up: 3,
+        }[dogMotionDirection || s.direction] ?? 0;
         let image, size, col, row;
-        if (dogIdleMode) {
+        if (dogIdleMode && !dogWalking) {
           image = dogIdleImage;
           size = 320;
           col = { "idle-sit": 0, "idle-sleep": 1, "idle-dig": 2, "idle-beg": 3 }[dogIdleMode] ?? 0;
@@ -1146,6 +1152,8 @@
         dogIdleMode = "";
         companionReaction = "";
         dogApproachOffset = 0;
+        dogMotionDirection = "";
+        dogWalking = false;
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
         $("#dog").style.left = `${dogDisplayLeft()}%`;
         renderPlayer();
@@ -1162,10 +1170,19 @@
         // pose, so neither sprite teleports between animation states.
         if (reaction === "pet") {
           dogApproachOffset = Math.sign(playerLeft - dogPosition.left) * 0.85;
+          dogMotionDirection = dogPosition.left < playerLeft ? "right" : "left";
+          dogWalking = true;
+          dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+          drawDog();
           dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
           reactionTransitionTimer = setTimeout(() => {
             if (battle || !dogIdleMode) return;
+            dogWalking = false;
+            dogMotionDirection = "";
             companionReaction = reaction;
+            dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+            dog.classList.toggle("face-player-right", dogPosition.left < playerLeft);
+            drawDog();
             renderPlayer();
           }, 620);
           return;
@@ -1179,6 +1196,7 @@
         clearTimeout(reactionTransitionTimer);
         companionReaction = "";
         dogWalking = false;
+        dogMotionDirection = "";
         dogIdleMode = `idle-${mode}`;
         const dogPosition = dogFollowPosition();
         $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
