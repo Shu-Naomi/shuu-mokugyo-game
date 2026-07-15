@@ -1010,8 +1010,6 @@
         dogApproachTopOffset = 0,
         dogMotionDirection = "",
         dogWalking = false,
-        rikuSettleProgress = 1,
-        rikuSettleFrame = 0,
         dogAnimFrame = 0;
       function loadDogImage(src) {
         const image = new Image();
@@ -1145,28 +1143,11 @@
         dogWalkTimer = setTimeout(() => {
           dogWalking = false;
           $("#dog").classList.remove("walking");
-          if (s.dog === "riku") settleRikuAfterRun();
-          else {
-            drawDog();
-            armDogIdle();
-          }
-        }, 660);
-      }
-      function settleRikuAfterRun() {
-        cancelAnimationFrame(rikuSettleFrame);
-        rikuSettleProgress = 0;
-        const startedAt = performance.now();
-        const settle = (now) => {
-          rikuSettleProgress = Math.min(1, (now - startedAt) / 300);
+          // All of Riku's poses are aligned to the same real paw line below,
+          // so changing back to standing no longer needs a vertical settle.
           drawDog();
-          if (rikuSettleProgress < 1)
-            rikuSettleFrame = requestAnimationFrame(settle);
-          else {
-            rikuSettleFrame = 0;
-            armDogIdle();
-          }
-        };
-        rikuSettleFrame = requestAnimationFrame(settle);
+          armDogIdle();
+        }, 660);
       }
       function drawDog() {
         const canvas = $("#dogSprite");
@@ -1202,24 +1183,15 @@
         }
         if (!image.complete || !image.naturalWidth) return;
         // Riku's walk, stand and idle cells use different transparent bottom
-        // margins. Align every non-idle frame to the idle sheet's y=300 paw
-        // line, so catching up, stopping and sitting share one ground axis.
+        // margins. Align the connected dog body (not the two stray pixels at
+        // the bottom of the standing cells) to the common y=300 paw line.
         const rikuBaselineY = image === dogImages.riku
           ? {
               0: [-16, -3, -2, -13],
-              1: [-20, -20, -20, -20],
+              1: [45, 47, 47, 43],
               2: [97, 104, 104, 97],
             }[row][direction]
           : 0;
-        // Riku's running body is much lower than his standing body. Ease the
-        // neutral frame upward from the run height instead of snapping to it.
-        const rikuSettling = image === dogImages.riku &&
-          !dogWalking && rikuSettleProgress < 1;
-        const settleEase = rikuSettling
-          ? 1 - Math.pow(1 - rikuSettleProgress, 3)
-          : 1;
-        const drawHeight = rikuSettling ? 240 + 80 * settleEase : 320;
-        const drawY = rikuSettling ? 300 - drawHeight : rikuBaselineY;
         ctx.drawImage(
           image,
           col * size,
@@ -1227,9 +1199,9 @@
           size,
           size,
           0,
-          drawY,
+          rikuBaselineY,
           320,
-          drawHeight,
+          320,
         );
       }
       function wakeDog() {
@@ -1238,9 +1210,6 @@
         clearTimeout(companionReactionTimer);
         clearTimeout(reactionTransitionTimer);
         clearTimeout(dogWalkTimer);
-        cancelAnimationFrame(rikuSettleFrame);
-        rikuSettleFrame = 0;
-        rikuSettleProgress = 1;
         dogIdleMode = "";
         companionReaction = "";
         dogApproachOffset = 0;
