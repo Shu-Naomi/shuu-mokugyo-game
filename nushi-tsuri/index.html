@@ -430,7 +430,7 @@
         animation: dog-step 0.3s steps(1) infinite;
       }
       .companion.walking canvas {
-        animation: dog-paws 0.17s steps(2) infinite;
+        animation: none;
       }
       .companion.idle-sit,
       .companion.idle-sleep,
@@ -1169,16 +1169,33 @@
           image = dogImages[s.dog] || dogImages.riku;
           size = s.dog === "riku" ? 362 : 320;
           col = direction;
-          // Riku's bottom frame sits much higher in its cell, so alternate his
-          // top and middle frames. His paws move without the old large hop.
+          // Grey needs a neutral pose between steps. Riku uses both true walk
+          // poses; his lower sheet row is baseline-corrected when drawn below.
           row = dogWalking
             ? s.dog === "riku"
-              ? (dogAnimFrame % 2 ? 0 : 1)
-              : (dogAnimFrame % 2 ? 0 : 2)
+              ? (dogAnimFrame % 2 ? 0 : 2)
+              : s.dog === "grey"
+                ? (dogAnimFrame % 2 ? 0 : 1)
+                : (dogAnimFrame % 2 ? 0 : 2)
             : 1;
         }
         if (!image.complete || !image.naturalWidth) return;
-        ctx.drawImage(image, col * size, row * size, size, size, 0, 0, 320, 320);
+        // Riku's third row was authored about 120 source pixels above the
+        // first row. Move only that frame down so his paws keep one baseline.
+        const rikuWalkY = s.dog === "riku" && dogWalking && row === 2
+          ? [113, 107, 106, 110][direction]
+          : 0;
+        ctx.drawImage(
+          image,
+          col * size,
+          row * size,
+          size,
+          size,
+          0,
+          rikuWalkY,
+          320,
+          320,
+        );
       }
       function wakeDog() {
         clearTimeout(idleTimer);
