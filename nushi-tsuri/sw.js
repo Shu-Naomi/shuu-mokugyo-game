@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v16-sleep-companion-sit";
+const CACHE_NAME = "nushi-tsuri-v16-linked-idle-facing";
 const APP_ASSETS = [
   "./",
   "./index.html",
