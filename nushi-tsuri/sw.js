@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v16-riku-ground-axis";
+const CACHE_NAME = "nushi-tsuri-v16-riku-run-settle";
 const APP_ASSETS = [
   "./",
   "./index.html",
