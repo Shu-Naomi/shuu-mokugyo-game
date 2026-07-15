@@ -379,7 +379,7 @@
         z-index: 4;
         image-rendering: pixelated;
         background-repeat: no-repeat;
-        transition: left 0.62s ease-in-out, top 0.28s ease-out;
+        transition: left 0.62s ease-in-out, top 0.62s ease-in-out;
         will-change: left, top;
       }
       .companion.canvas-dog {
@@ -1006,6 +1006,7 @@
         dogIdleMode = "",
         companionReaction = "",
         dogApproachOffset = 0,
+        dogApproachTopOffset = 0,
         dogMotionDirection = "",
         dogWalking = false,
         dogAnimFrame = 0;
@@ -1056,18 +1057,24 @@
         };
       }
       function companionDirection() {
-        const dogPosition = dogFollowPosition();
+        const dogLeft = dogDisplayLeft(dogFollowPosition());
         const playerLeft = s.x / 3;
         // The companion waits diagonally behind the player.  For reactions,
         // prefer the horizontal side so the hand reaches toward the dog
         // instead of making the player stare past it vertically.
-        return dogPosition.left < playerLeft ? "left" : "right";
+        return dogLeft < playerLeft ? "left" : "right";
       }
       function dogDisplayLeft(position = dogFollowPosition()) {
         return Math.max(1, Math.min(99, position.left + dogApproachOffset));
       }
+      function dogDisplayTop(position = dogFollowPosition()) {
+        return Math.max(61, Math.min(93, position.top + dogApproachTopOffset));
+      }
       function renderPlayer() {
-        const direction = companionReaction ? companionDirection() : s.direction;
+        const linkedIdle = ["idle-beg", "idle-sleep"].includes(dogIdleMode);
+        const direction = companionReaction || linkedIdle
+          ? companionDirection()
+          : s.direction;
         const facing = direction === "up"
           ? "face-up"
           : ["left", "right"].includes(direction) ? "face-side" : "";
@@ -1085,9 +1092,14 @@
         renderPlayer();
         const dogPosition = dogFollowPosition();
         $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
-        $("#dog").style.top = `${dogPosition.top}%`;
-        $("#dog").style.zIndex = dogPosition.top > s.y ? "6" : "4";
+        $("#dog").style.top = `${dogDisplayTop(dogPosition)}%`;
+        $("#dog").style.zIndex = dogDisplayTop(dogPosition) > s.y ? "6" : "4";
         $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        if (["idle-beg", "idle-sleep"].includes(dogIdleMode))
+          $("#dog").classList.toggle(
+            "face-player-right",
+            dogDisplayLeft(dogPosition) < mapX,
+          );
         drawDog();
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
@@ -1166,10 +1178,12 @@
         dogIdleMode = "";
         companionReaction = "";
         dogApproachOffset = 0;
+        dogApproachTopOffset = 0;
         dogMotionDirection = "";
         dogWalking = false;
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
         $("#dog").style.left = `${dogDisplayLeft()}%`;
+        $("#dog").style.top = `${dogDisplayTop()}%`;
         renderPlayer();
         drawDog();
       }
@@ -1213,15 +1227,62 @@
         dogMotionDirection = "";
         dogIdleMode = `idle-${mode}`;
         const dogPosition = dogFollowPosition();
-        $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
-        $("#dog").className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        const playerLeft = s.x / 3;
+        const dog = $("#dog");
+
+        // Sleeping together is a linked scene, so do not inherit the loose
+        // follow offset from the direction in which play happened to stop.
+        // Walk to a consistent spot beside the owner first, then lie down.
+        if (mode === "sleep") {
+          const currentLeft = dogDisplayLeft(dogPosition);
+          const currentTop = dogDisplayTop(dogPosition);
+          const side = currentLeft < playerLeft ? -1 : 1;
+          const targetLeft = playerLeft + side * 0.78;
+          const targetTop = s.y;
+          dogApproachOffset = targetLeft - dogPosition.left;
+          dogApproachTopOffset = targetTop - dogPosition.top;
+          dogMotionDirection = targetLeft < currentLeft ? "left" : "right";
+          dogWalking = Math.abs(targetLeft - currentLeft) > 0.08 ||
+            Math.abs(targetTop - currentTop) > 0.35;
+
+          if (dogWalking) {
+            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+            drawDog();
+            renderPlayer();
+            dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
+            dog.style.top = `${dogDisplayTop(dogPosition)}%`;
+            reactionTransitionTimer = setTimeout(() => {
+              if (battle || dogIdleMode !== "idle-sleep") return;
+              dogWalking = false;
+              dogMotionDirection = "";
+              dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+              dog.classList.toggle("face-player-right", targetLeft < playerLeft);
+              drawDog();
+              renderPlayer();
+              companionReactionTimer = setTimeout(
+                () => setCompanionReaction("sit"),
+                500,
+              );
+            }, 620);
+            return;
+          }
+        }
+
+        dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
+        dog.style.top = `${dogDisplayTop(dogPosition)}%`;
+        dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+        if (["beg", "sleep"].includes(mode))
+          dog.classList.toggle(
+            "face-player-right",
+            dogDisplayLeft(dogPosition) < playerLeft,
+          );
         drawDog();
         renderPlayer();
         // Give the dog a brief moment to settle before the owner responds.
         if (mode === "beg")
           companionReactionTimer = setTimeout(() => setCompanionReaction("pet"), 650);
         else if (mode === "sleep")
-          companionReactionTimer = setTimeout(() => setCompanionReaction("sit"), 900);
+          companionReactionTimer = setTimeout(() => setCompanionReaction("sit"), 500);
       }
       function armDogIdle() {
         wakeDog();
