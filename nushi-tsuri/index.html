@@ -288,13 +288,13 @@
         background-size: 200% 100%;
         background-position: 0 50%;
         transform-origin: center bottom;
-        animation: player-pet-sprite 1.05s steps(1, end) infinite;
+        animation: none;
       }
       .player.boy.companion-pet {
-        background-image: url("assets/player-boy-pet.png?v=16b");
+        background-image: url("assets/player-boy-pet.png?v=16c");
       }
       .player.girl.companion-pet {
-        background-image: url("assets/player-girl-pet.png?v=16b");
+        background-image: url("assets/player-girl-pet.png?v=16c");
       }
       .player.companion-pet.face-left {
         transform: translate(-50%, -50%);
@@ -315,10 +315,6 @@
         50% {
           margin-top: -3px;
         }
-      }
-      @keyframes player-pet-sprite {
-        0%, 49.9% { background-position-x: 0; }
-        50%, 100% { background-position-x: 100%; }
       }
       @keyframes player-sit-breathe {
         50% { margin-top: 10px; }
