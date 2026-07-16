@@ -399,6 +399,10 @@
       .companion.face-player-right canvas {
         transform: scaleX(-1);
       }
+      /* During petting the dog's head must cover the far-side hand. */
+      .companion.petting {
+        z-index: 6;
+      }
       .companion.shuu {
         background-image: url("assets/shuu-walk.png?v=12");
       }
@@ -1192,12 +1196,20 @@
               2: [97, 104, 104, 97],
             }[row][direction]
           : 0;
+        // Riku's idle-sit cell also has two detached marks near its bottom.
+        // Ground the real paws and discard that marked tail independently of
+        // the walk sheet cleanup below.
+        const rikuIdleSit = image === dogIdleImage &&
+          s.dog === "riku" && col === 0;
+        const drawY = rikuBaselineY + (rikuIdleSit ? 67 : 0);
         // The standing row contains two disconnected dark marks in its final
         // 12 source pixels. Crop that empty tail instead of merely moving the
         // marks off-screen, so they cannot reappear at another map position.
-        const sourceHeight = image === dogImages.riku && row === 1
-          ? size - 12
-          : size;
+        const sourceHeight = rikuIdleSit
+          ? 280
+          : image === dogImages.riku && row === 1
+            ? size - 12
+            : size;
         ctx.drawImage(
           image,
           col * size,
@@ -1205,7 +1217,7 @@
           size,
           sourceHeight,
           0,
-          rikuBaselineY,
+          drawY,
           320,
           320 * sourceHeight / size,
         );
@@ -1258,6 +1270,7 @@
             dogMotionDirection = "";
             companionReaction = reaction;
             dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
+            dog.classList.add("petting");
             dog.classList.toggle("face-player-right", targetLeft < playerLeft);
             drawDog();
             renderPlayer();
