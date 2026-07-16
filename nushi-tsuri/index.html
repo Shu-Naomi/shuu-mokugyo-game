@@ -1192,16 +1192,22 @@
               2: [97, 104, 104, 97],
             }[row][direction]
           : 0;
+        // The standing row contains two disconnected dark marks in its final
+        // 12 source pixels. Crop that empty tail instead of merely moving the
+        // marks off-screen, so they cannot reappear at another map position.
+        const sourceHeight = image === dogImages.riku && row === 1
+          ? size - 12
+          : size;
         ctx.drawImage(
           image,
           col * size,
           row * size,
           size,
-          size,
+          sourceHeight,
           0,
           rikuBaselineY,
           320,
-          320,
+          320 * sourceHeight / size,
         );
       }
       function wakeDog() {
@@ -1234,7 +1240,9 @@
         if (reaction === "pet") {
           const currentLeft = dogDisplayLeft(dogPosition);
           const side = currentLeft < playerLeft ? -1 : 1;
-          const targetLeft = playerLeft + side * 0.78;
+          // Keep the hand touching the dog's head without pushing their faces
+          // into a kiss-distance overlap.
+          const targetLeft = playerLeft + side * 1.0;
           const targetTop = s.y;
           dogApproachOffset = targetLeft - dogPosition.left;
           dogApproachTopOffset = targetTop - dogPosition.top;
