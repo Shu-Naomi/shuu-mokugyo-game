@@ -291,10 +291,10 @@
         animation: none;
       }
       .player.boy.companion-pet {
-        background-image: url("assets/player-boy-pet.png?v=16c");
+        background-image: url("assets/player-boy-pet-v17.svg");
       }
       .player.girl.companion-pet {
-        background-image: url("assets/player-girl-pet.png?v=16c");
+        background-image: url("assets/player-girl-pet-v17.svg");
       }
       .player.companion-pet.face-left {
         transform: translate(-50%, -50%);
@@ -448,7 +448,42 @@
       .companion.grey[class*="idle-"] { background-position-y: 100%; }
       .companion.idle-sit { background-position-x: 0; }
       .companion.idle-sleep { background-position-x: 33.333%; animation: dog-breathe 2.4s ease-in-out infinite; }
-      .companion.idle-dig { background-position-x: 66.667%; animation: dog-dig .28s steps(2) infinite; }
+      .companion.idle-dig {
+        background-position-x: 66.667%;
+        animation: none;
+      }
+      /* A planted body plus alternating paw scrapes reads as digging instead
+         of the whole dog sliding forward to sniff the ground. */
+      .companion.idle-dig canvas {
+        animation: dog-dig-paws .24s steps(2, jump-none) infinite;
+      }
+      .companion.idle-dig::before {
+        content: "";
+        position: absolute;
+        left: 2px;
+        bottom: 1px;
+        width: 15px;
+        height: 4px;
+        border-radius: 50%;
+        background: #6f431f;
+        box-shadow: inset 0 1px #a66a2e;
+        opacity: .9;
+        animation: dog-dig-soil .48s steps(2) infinite;
+        z-index: 7;
+      }
+      .companion.idle-dig::after {
+        content: "";
+        position: absolute;
+        left: 9px;
+        bottom: 7px;
+        width: 3px;
+        height: 3px;
+        background: #9a5e27;
+        box-shadow: -5px -2px #6f431f, 5px -5px #bd7a35;
+        image-rendering: pixelated;
+        animation: dog-dig-dirt .48s steps(3, jump-none) infinite;
+        z-index: 8;
+      }
       .companion.idle-beg { background-position-x: 100%; animation: dog-beg .8s ease-in-out infinite; }
       .companion.idle-beg::after {
         content: "♡";
@@ -477,8 +512,18 @@
       @keyframes dog-breathe {
         50% { transform: translate(-50%, -50%) scale(1.03, .98); }
       }
-      @keyframes dog-dig {
-        50% { transform: translate(-51%, -49%); filter: brightness(1.08); }
+      @keyframes dog-dig-paws {
+        0% { transform: translate(-1px, 0) rotate(-1deg); }
+        50% { transform: translate(1px, 1px) rotate(1deg); }
+        100% { transform: translate(-1px, 0) rotate(-1deg); }
+      }
+      @keyframes dog-dig-soil {
+        50% { transform: scaleX(1.18); filter: brightness(1.08); }
+      }
+      @keyframes dog-dig-dirt {
+        0% { transform: translate(0, 2px); opacity: 0; }
+        35% { opacity: 1; }
+        100% { transform: translate(-8px, -7px); opacity: 0; }
       }
       @keyframes dog-beg {
         50% { transform: translate(-50%, -53%); }
@@ -834,7 +879,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v16</span><span id="time">朝</span
+        <b>星降る湖</b><span>v17</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1129,55 +1174,34 @@
         s.direction = d;
         let n = 4;
         ({
-          left: () => (s.x -= n),
-          right: () => (s.x += n),
+          left: () => x += n),
           up: () => (s.y -= n),
-          down: () => (s.y += n),
-        })[d]();
-        render();
-        $("#player").classList.add("walking");
-        $("#dog").classList.add("walking");
-        clearTimeout(walkTimer);
-        clearTimeout(dogWalkTimer);
+          down:       })[d]();
+        rend      cleout(dogWalkTimer);
         walkTimer = setTimeout(() => {
           $("#player").classList.remove("walking");
         }, 320);
         // The player reaches the next step before the trailing dog finishes
-        // its longer CSS catch-up. Keep the paws moving for the whole chase.
-        dogWalkTimer = setTimeout(() => {
+        // its longer CSS catch-up. Keep the paws moving for the whole cha{
           dogWalking = false;
-          $("#dog").classList.remove("walking");
-          // All of Riku's poses are aligned to the same real paw line below,
+          dog"All of Riku's poses are aligned to the same real paw line below,
           // so changing back to standing no longer needs a vertical settle.
           drawDog();
-          armDogIdle();
-        }, 660);
-      }
-      function drawDog() {
-        const canvas = $("#dogSprite");
+             fion drawDog() {
+  s = $("#dogSprite");
         if (!canvas) return;
         const ctx = canvas.getContext("2d");
-        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.clearRect(0, 0, canvasth, canvas.height);
         ctx.imageSmoothingEnabled = false;
         const direction = {
           down: 0,
           left: 1,
           right: 2,
           up: 3,
-        }[dogMotionDirection || s.direction] ?? 0;
-        let image, size, col, row;
-        if (dogIdleMode && !dogWalking) {
-          image = dogIdleImage;
-          size = 320;
-          col = { "idle-sit": 0, "idle-sleep": 1, "idle-dig": 2, "idle-beg": 3 }[dogIdleMode] ?? 0;
-          row = { shuu: 0, riku: 1, grey: 2 }[s.dog] ?? 1;
-        } else {
-          image = dogImages[s.dog] || dogImages.riku;
-          size = s.dog === "riku" ? 362 : 320;
+        }      if === "riku" ? 362 : 320;
           col = direction;
-          // Grey needs a neutral pose between steps. Riku uses both true walk
-          // poses; his lower sheet row is baseline-corrected when drawn below.
-          row = dogWalking
+        needs a neutral pose between steps. Riku us
+          // poses; his lower sheet row is bate    row = dogWalking
             ? s.dog === "riku"
               ? (dogAnimFrame % 2 ? 0 : 2)
               : s.dog === "grey"
@@ -1211,13 +1235,7 @@
             ? size - 12
             : size;
         ctx.drawImage(
-          image,
-          col * size,
-          row * size,
-          size,
-          sourceHeight,
-          0,
-          drawY,
+                drawY,
           320,
           320 * sourceHeight / size,
         );
@@ -1302,24 +1320,10 @@
           const targetLeft = playerLeft + side * 0.78;
           const targetTop = s.y;
           dogApproachOffset = targetLeft - dogPosition.left;
-          dogApproachTopOffset = targetTop - dogPosition.top;
-          dogMotionDirection = targetLeft < currentLeft ? "left" : "right";
-          dogWalking = Math.abs(targetLeft - currentLeft) > 0.08 ||
-            Math.abs(targetTop - currentTop) > 0.35;
-
-          if (dogWalking) {
-            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
-            drawDog();
-            renderPlayer();
-            dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
-            dog.style.top = `${dogDisplayTop(dogPosition)}%`;
-            reactionTransitionTimer = setTimeout(() => {
-              if (battle || dogIdleMode !== "idle-sleep") return;
-              dogWalking = false;
+          dogApproachTopOffset = ta          dogWalking = false;
               dogMotionDirection = "";
-              dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
-              dog.classList.toggle("face-player-right", targetLeft < playerLeft);
-              drawDog();
+              dog.className = `companion canvas-dog ${s.s.direction} ${dogIdleMode}`;
+              dog.classList.togg      ();
               renderPlayer();
               companionReactionTimer = setTimeout(
                 () => setCompanionReaction("sit"),
@@ -1327,35 +1331,7 @@
               );
             }, 620);
             return;
-          }
-        }
-
-        dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
-        dog.style.top = `${dogDisplayTop(dogPosition)}%`;
-        dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
-        if (["beg", "sleep"].includes(mode))
-          dog.classList.toggle(
-            "face-player-right",
-            dogDisplayLeft(dogPosition) < playerLeft,
-          );
-        drawDog();
-        renderPlayer();
-        // Give the dog a brief moment to settle before the owner responds.
-        if (mode === "beg")
-          companionReactionTimer = setTimeout(() => setCompanionReaction("pet"), 650);
-        else if (mode === "sleep")
-          companionReactionTimer = setTimeout(() => setCompanionReaction("sit"), 500);
-      }
-      function armDogIdle() {
-        wakeDog();
-        idleTimer = setTimeout(() => setDogIdle("sit"), 1000);
-        idleActionTimer = setTimeout(randomDogIdle, 30000);
-      }
-      function randomDogIdle() {
-        if (battle) return;
-        const modes = ["sleep", "dig", "beg"];
-        setDogIdle(modes[Math.floor(Math.random() * modes.length)]);
-        idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
+          andomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
         if (near(130, 70)) cast();
