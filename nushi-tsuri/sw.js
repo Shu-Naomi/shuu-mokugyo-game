@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v16-clean-riku-pet-gap";
+const CACHE_NAME = "nushi-tsuri-v16-clean-idle-riku-pet-layer";
 const APP_ASSETS = [
   "./",
   "./index.html",
