@@ -288,7 +288,9 @@
         background-size: 200% 100%;
         background-position: 0 50%;
         transform-origin: center bottom;
-        animation: none;
+        /* Only the two drawn hand poses alternate.  The body and shoe axis
+           stay fixed, so petting reads as a small stroke instead of a shove. */
+        animation: player-pet-hand .72s steps(1, end) infinite;
       }
       .player.boy.companion-pet {
         background-image: url("assets/player-boy-pet-v17.svg");
@@ -317,6 +319,10 @@
       .player.companion-pet::before,
       .player.companion-pet::after {
         display: none !important;
+      }
+      @keyframes player-pet-hand {
+        0%, 49% { background-position-x: 0; }
+        50%, 100% { background-position-x: 100%; }
       }
       .player.companion-sit {
         background-size: 100% 100%;
@@ -452,11 +458,9 @@
         background-position-x: 66.667%;
         animation: none;
       }
-      /* A planted body plus alternating paw scrapes reads as digging instead
-         of the whole dog sliding forward to sniff the ground. */
-      .companion.idle-dig canvas {
-        animation: dog-dig-paws .24s steps(2, jump-none) infinite;
-      }
+      /* The canvas redraws two actual forepaw positions.  Keep the body
+         planted here; moving the whole dog looked like sniffing the soil. */
+      .companion.idle-dig canvas { animation: none; }
       .companion.idle-dig::before {
         content: "";
         position: absolute;
@@ -511,11 +515,6 @@
       }
       @keyframes dog-breathe {
         50% { transform: translate(-50%, -50%) scale(1.03, .98); }
-      }
-      @keyframes dog-dig-paws {
-        0% { transform: translate(-1px, 0) rotate(-1deg); }
-        50% { transform: translate(1px, 1px) rotate(1deg); }
-        100% { transform: translate(-1px, 0) rotate(-1deg); }
       }
       @keyframes dog-dig-soil {
         50% { transform: scaleX(1.18); filter: brightness(1.08); }
@@ -1266,6 +1265,33 @@
           320,
           320 * sourceHeight / size,
         );
+        if (image === dogIdleImage && dogIdleMode === "idle-dig") {
+          // Redraw the two forepaws in alternating positions.  This is kept
+          // deliberately local: head, shoulders and ground contact do not
+          // bob, while the left/right scrape is visible at game scale.
+          const pawRegions = {
+            shuu: [[151, 226, 43, 63], [192, 229, 44, 61]],
+            riku: [[143, 226, 44, 67], [186, 229, 47, 64]],
+            grey: [[150, 228, 43, 64], [191, 230, 46, 62]],
+          }[s.dog] || [[150, 228, 43, 64], [191, 230, 46, 62]];
+          const active = dogAnimFrame % 2;
+          pawRegions.forEach(([px, py, pw, ph], index) => {
+            ctx.clearRect(px - 2, py - 2, pw + 4, ph + 4);
+            const scrape = index === active ? 10 : -2;
+            const lift = index === active ? 5 : -3;
+            ctx.drawImage(
+              image,
+              col * size + px,
+              row * size + py,
+              pw,
+              ph,
+              px + scrape,
+              py + lift,
+              pw,
+              ph,
+            );
+          });
+        }
       }
       function wakeDog() {
         clearTimeout(idleTimer);
@@ -1316,6 +1342,9 @@
             companionReaction = reaction;
             dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
             dog.classList.add("petting");
+            // Inline depth from normal following otherwise beats the class
+            // rule and puts the far-side hand in front of the dog's face.
+            dog.style.zIndex = "6";
             dog.classList.toggle("face-player-right", targetLeft < playerLeft);
             drawDog();
             renderPlayer();
@@ -1758,7 +1787,7 @@
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
       setInterval(() => {
         dogAnimFrame++;
-        if (dogWalking) drawDog();
+        if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("./sw.js").catch(() => {});
