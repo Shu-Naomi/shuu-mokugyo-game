@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v17-startup-hotfix-1";
+const CACHE_NAME = "nushi-tsuri-v17-paws-and-hands-2";
 const APP_ASSETS = [
   "./",
   "./index.html",
