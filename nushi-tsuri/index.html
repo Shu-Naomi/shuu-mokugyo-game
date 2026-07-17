@@ -323,11 +323,11 @@
       .pet-hand {
         position: absolute;
         display: none;
-        width: 9px;
-        height: 5px;
+        width: 7px;
+        height: 4px;
         box-sizing: border-box;
         border: 1px solid #6b3f2c;
-        border-radius: 4px 3px 3px 4px;
+        border-radius: 3px 2px 2px 3px;
         background: #f2bd8d;
         box-shadow: inset 0 -1px #d79369;
         image-rendering: pixelated;
@@ -1163,8 +1163,11 @@
         const towardLeft = dogLeft < playerLeft;
         // Match the fixed sprite's shoulder-to-wrist line, then let this tiny
         // near-side hand sit over the dog's head.  Only margin-top animates.
-        hand.style.left = `calc(${playerLeft}% ${towardLeft ? "-" : "+"} 7px)`;
-        hand.style.top = `calc(${s.y}% - 6px)`;
+        // Anchor to the wrist drawn in the fixed owner sprite.  Using the
+        // dog's head height made this layer jump up to the owner's nose for
+        // Grey and other differently proportioned companions.
+        hand.style.left = `calc(${playerLeft}% ${towardLeft ? "-" : "+"} 11px)`;
+        hand.style.top = `calc(${s.y}% + 9px)`;
         hand.className = `pet-hand active ${towardLeft ? "toward-left" : "toward-right"}`;
       }
       function render() {
