@@ -288,9 +288,9 @@
         background-size: 200% 100%;
         background-position: 0 50%;
         transform-origin: center bottom;
-        /* Only the two drawn hand poses alternate.  The body and shoe axis
-           stay fixed, so petting reads as a small stroke instead of a shove. */
-        animation: player-pet-hand .72s steps(1, end) infinite;
+        /* The owner is one completely fixed frame.  A separate hand layer
+           below is the only moving part of the petting reaction. */
+        animation: none;
       }
       .player.boy.companion-pet {
         background-image: url("assets/player-boy-pet-v17.svg");
@@ -320,9 +320,27 @@
       .player.companion-pet::after {
         display: none !important;
       }
-      @keyframes player-pet-hand {
-        0%, 49% { background-position-x: 0; }
-        50%, 100% { background-position-x: 100%; }
+      .pet-hand {
+        position: absolute;
+        display: none;
+        width: 9px;
+        height: 5px;
+        box-sizing: border-box;
+        border: 1px solid #6b3f2c;
+        border-radius: 4px 3px 3px 4px;
+        background: #f2bd8d;
+        box-shadow: inset 0 -1px #d79369;
+        image-rendering: pixelated;
+        pointer-events: none;
+        z-index: 7;
+        animation: pet-hand-tap .72s steps(2, end) infinite;
+      }
+      .pet-hand.active { display: block; }
+      .pet-hand.toward-left { transform: translate(-50%, -50%) rotate(-14deg); }
+      .pet-hand.toward-right { transform: translate(-50%, -50%) rotate(14deg); }
+      @keyframes pet-hand-tap {
+        0%, 49% { margin-top: -2px; }
+        50%, 100% { margin-top: 1px; }
       }
       .player.companion-sit {
         background-size: 100% 100%;
@@ -899,6 +917,7 @@
           <div class="trees">🌲🌲🌲</div>
           <div id="player" class="player"></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
+          <div id="petHand" class="pet-hand" aria-hidden="true"></div>
         </div>
         <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
         <div class="controls">
@@ -1129,6 +1148,24 @@
           : ["left", "right"].includes(direction) ? "face-side" : "";
         const reactionClass = companionReaction ? `companion-${companionReaction}` : "";
         $("#player").className = `player ${s.avatar} ${facing} face-${direction} ${reactionClass}`;
+        renderPetHand();
+      }
+      function renderPetHand() {
+        const hand = $("#petHand");
+        if (!hand) return;
+        if (companionReaction !== "pet") {
+          hand.className = "pet-hand";
+          return;
+        }
+        const dogPosition = dogFollowPosition();
+        const playerLeft = s.x / 3;
+        const dogLeft = dogDisplayLeft(dogPosition);
+        const towardLeft = dogLeft < playerLeft;
+        // Match the fixed sprite's shoulder-to-wrist line, then let this tiny
+        // near-side hand sit over the dog's head.  Only margin-top animates.
+        hand.style.left = `calc(${playerLeft}% ${towardLeft ? "-" : "+"} 7px)`;
+        hand.style.top = `calc(${s.y}% - 6px)`;
+        hand.className = `pet-hand active ${towardLeft ? "toward-left" : "toward-right"}`;
       }
       function render() {
         s.x = Math.max(5, Math.min(287, s.x));
