@@ -288,9 +288,9 @@
         background-size: 200% 100%;
         background-position: 0 50%;
         transform-origin: center bottom;
-        /* Both frames share the exact same body pixels.  Only the arm area
-           changes, so the owner no longer rocks forward and backward. */
-        animation: player-pet-arm .72s steps(1, end) infinite;
+        /* Keep the complete owner sprite fixed.  Moving the arm by swapping
+           frames made the small in-game body appear to rock back and forth. */
+        animation: none;
       }
       .player.boy.companion-pet {
         background-image: url("assets/player-boy-pet-v18.svg");
@@ -319,10 +319,6 @@
       .player.companion-pet::before,
       .player.companion-pet::after {
         display: none !important;
-      }
-      @keyframes player-pet-arm {
-        0%, 49% { background-position-x: 0; }
-        50%, 100% { background-position-x: 100%; }
       }
       .player.companion-sit {
         background-size: 100% 100%;
