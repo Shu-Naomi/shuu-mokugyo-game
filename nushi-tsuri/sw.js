@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v17-fixed-pet-pose-6";
+const CACHE_NAME = "nushi-tsuri-v17-linked-pet-scenes-7";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -11,6 +11,7 @@ const APP_ASSETS = [
   "./assets/player-girl.png",
   "./assets/player-boy-pet-v18.svg",
   "./assets/player-girl-pet-v18.svg",
+  "./assets/pet-scenes-v18.svg",
   "./assets/player-boy-sit.png?v=16",
   "./assets/player-girl-sit.png?v=16",
   "./assets/shuu-walk.png?v=12",
