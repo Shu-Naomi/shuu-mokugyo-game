@@ -320,6 +320,36 @@
       .player.companion-pet::after {
         display: none !important;
       }
+      .pet-scene {
+        position: absolute;
+        display: none;
+        width: 80px;
+        height: 64px;
+        transform: translate(-50%, -50%);
+        background-image: url("assets/pet-scenes-v18.svg");
+        background-size: 600% 100%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        pointer-events: none;
+        z-index: 7;
+      }
+      .pet-scene.active { display: block; }
+      .pet-scene.dog-right { transform: translate(-50%, -50%) scaleX(-1); }
+      .pet-scene.boy.shuu { background-position: 0 50%; }
+      .pet-scene.boy.riku { background-position: 20% 50%; }
+      .pet-scene.boy.grey { background-position: 40% 50%; }
+      .pet-scene.girl.shuu { background-position: 60% 50%; }
+      .pet-scene.girl.riku { background-position: 80% 50%; }
+      .pet-scene.girl.grey { background-position: 100% 50%; }
+      .pet-scene::after {
+        content: "♡";
+        position: absolute;
+        left: 43%;
+        top: 1px;
+        color: #ff8fa8;
+        font-size: 16px;
+        text-shadow: 1px 1px #fff;
+      }
       .player.companion-sit {
         background-size: 100% 100%;
         background-position: center;
@@ -896,6 +926,7 @@
           <div class="trees">🌲🌲🌲</div>
           <div id="player" class="player"></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
+          <div id="petScene" class="pet-scene" aria-hidden="true"></div>
         </div>
         <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
         <div class="controls">
@@ -1126,6 +1157,27 @@
           : ["left", "right"].includes(direction) ? "face-side" : "";
         const reactionClass = companionReaction ? `companion-${companionReaction}` : "";
         $("#player").className = `player ${s.avatar} ${facing} face-${direction} ${reactionClass}`;
+        renderPetScene();
+      }
+      function renderPetScene() {
+        const scene = $("#petScene");
+        const player = $("#player");
+        const dog = $("#dog");
+        if (!scene || !player || !dog) return;
+        const active = companionReaction === "pet";
+        if (!active) {
+          scene.className = "pet-scene";
+          player.style.visibility = "visible";
+          dog.style.visibility = "visible";
+          return;
+        }
+        const playerLeft = s.x / 3;
+        const dogLeft = dogDisplayLeft(dogFollowPosition());
+        scene.style.left = `${(playerLeft + dogLeft) / 2}%`;
+        scene.style.top = `${s.y}%`;
+        scene.className = `pet-scene active ${s.avatar} ${s.dog} ${dogLeft > playerLeft ? "dog-right" : "dog-left"}`;
+        player.style.visibility = "hidden";
+        dog.style.visibility = "hidden";
       }
       function render() {
         s.x = Math.max(5, Math.min(287, s.x));
