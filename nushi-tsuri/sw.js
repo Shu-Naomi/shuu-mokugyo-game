@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v17-kneeling-pet-scenes-8";
+const CACHE_NAME = "nushi-tsuri-v20-canvas-tail-wag-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
