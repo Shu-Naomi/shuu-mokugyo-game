@@ -326,21 +326,18 @@
         width: 80px;
         height: 64px;
         transform: translate(-50%, -50%);
-        background-image: url("assets/pet-scenes-v19.svg");
-        background-size: 600% 100%;
-        background-repeat: no-repeat;
         image-rendering: pixelated;
         pointer-events: none;
         z-index: 7;
       }
+      .pet-scene canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+      }
       .pet-scene.active { display: block; }
       .pet-scene.dog-right { transform: translate(-50%, -50%) scaleX(-1); }
-      .pet-scene.boy.shuu { background-position: 0 50%; }
-      .pet-scene.boy.riku { background-position: 20% 50%; }
-      .pet-scene.boy.grey { background-position: 40% 50%; }
-      .pet-scene.girl.shuu { background-position: 60% 50%; }
-      .pet-scene.girl.riku { background-position: 80% 50%; }
-      .pet-scene.girl.grey { background-position: 100% 50%; }
       .pet-scene::after {
         content: "♡";
         position: absolute;
@@ -905,7 +902,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v17</span><span id="time">朝</span
+        <b>星降る湖</b><span>v20</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -926,7 +923,7 @@
           <div class="trees">🌲🌲🌲</div>
           <div id="player" class="player"></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
-          <div id="petScene" class="pet-scene" aria-hidden="true"></div>
+          <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
         <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
         <div class="controls">
@@ -1086,7 +1083,8 @@
         dogApproachTopOffset = 0,
         dogMotionDirection = "",
         dogWalking = false,
-        dogAnimFrame = 0;
+        dogAnimFrame = 0,
+        petSceneFrame = 0;
       function loadDogImage(src) {
         const image = new Image();
         image.onload = () => drawDog();
@@ -1097,12 +1095,20 @@
         setTimeout(drawDog, 300);
         return image;
       }
+      function loadPetSceneImage(src) {
+        const image = new Image();
+        image.onload = () => drawPetScene();
+        image.src = src;
+        if (image.decode) image.decode().then(drawPetScene).catch(() => {});
+        return image;
+      }
       const dogImages = {
           shuu: loadDogImage("assets/shuu-walk.png?v=12"),
           riku: loadDogImage("assets/riku-walk.png?v=12"),
           grey: loadDogImage("assets/grey-walk.png?v=12"),
         },
-        dogIdleImage = loadDogImage("assets/dog-idles.png?v=12");
+        dogIdleImage = loadDogImage("assets/dog-idles.png?v=12"),
+        petSceneImage = loadPetSceneImage("assets/pet-scenes-v19.svg");
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
@@ -1167,6 +1173,7 @@
         const active = companionReaction === "pet";
         if (!active) {
           scene.className = "pet-scene";
+          petSceneFrame = 0;
           player.style.visibility = "visible";
           dog.style.visibility = "visible";
           return;
@@ -1178,6 +1185,60 @@
         scene.className = `pet-scene active ${s.avatar} ${s.dog} ${dogLeft > playerLeft ? "dog-right" : "dog-left"}`;
         player.style.visibility = "hidden";
         dog.style.visibility = "hidden";
+        drawPetScene();
+      }
+      function tracePetTail(ctx, dog) {
+        ctx.beginPath();
+        if (dog === "shuu") {
+          ctx.moveTo(18, 116); ctx.lineTo(43, 116); ctx.lineTo(43, 128);
+          ctx.lineTo(48, 136); ctx.lineTo(48, 144); ctx.lineTo(43, 151);
+          ctx.lineTo(43, 157); ctx.lineTo(18, 157);
+        } else if (dog === "riku") {
+          ctx.moveTo(11, 132); ctx.lineTo(31, 132); ctx.lineTo(31, 139);
+          ctx.lineTo(38, 144); ctx.lineTo(38, 151); ctx.lineTo(31, 155);
+          ctx.lineTo(31, 159); ctx.lineTo(11, 159);
+        } else {
+          ctx.moveTo(20, 116); ctx.lineTo(41, 116); ctx.lineTo(41, 129);
+          ctx.lineTo(47, 137); ctx.lineTo(47, 145); ctx.lineTo(41, 151);
+          ctx.lineTo(41, 157); ctx.lineTo(20, 157);
+        }
+        ctx.closePath();
+      }
+      function drawPetScene() {
+        const canvas = $("#petSceneCanvas");
+        if (!canvas || !petSceneImage.complete || !petSceneImage.naturalWidth) return;
+        const ctx = canvas.getContext("2d");
+        const dogName = ["shuu", "riku", "grey"].includes(s.dog) ? s.dog : "shuu";
+        const dogIndex = { shuu: 0, riku: 1, grey: 2 }[dogName];
+        const sceneIndex = (s.avatar === "girl" ? 3 : 0) + dogIndex;
+        const sourceX = sceneIndex * 200;
+        const setup = {
+          shuu: { clear: [18, 116, 22, 41], pivot: [48, 140], angle: 12 },
+          riku: { clear: [11, 132, 17, 27], pivot: [38, 146], angle: 15 },
+          grey: { clear: [20, 116, 18, 41], pivot: [47, 140], angle: 13 },
+        }[dogName];
+        const phases = [0, Math.SQRT1_2, 1, Math.SQRT1_2, 0, -Math.SQRT1_2, -1, -Math.SQRT1_2];
+        const angle = setup.angle * phases[petSceneFrame] * Math.PI / 180;
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        ctx.drawImage(petSceneImage, sourceX, 0, 200, 160, 0, 0, 200, 160);
+        ctx.clearRect(...setup.clear);
+        ctx.save();
+        ctx.translate(...setup.pivot);
+        ctx.rotate(angle);
+        ctx.translate(-setup.pivot[0], -setup.pivot[1]);
+        tracePetTail(ctx, dogName);
+        ctx.clip();
+        ctx.drawImage(petSceneImage, sourceX, 0, 200, 160, 0, 0, 200, 160);
+        ctx.restore();
+      }
+      function advancePetSceneFrame() {
+        if (companionReaction !== "pet") return;
+        const scene = $("#petScene");
+        if (!scene?.classList.contains("active")) return;
+        petSceneFrame = (petSceneFrame + 1) % 8;
+        drawPetScene();
       }
       function render() {
         s.x = Math.max(5, Math.min(287, s.x));
@@ -1836,6 +1897,7 @@
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
+      setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
         navigator.serviceWorker.register("./sw.js").catch(() => {});
       renderRecord();
