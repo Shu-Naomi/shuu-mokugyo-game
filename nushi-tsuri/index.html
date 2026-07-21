@@ -917,7 +917,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v22</span><span id="time">朝</span
+        <b>星降る湖</b><span>v23</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1264,6 +1264,15 @@
         ctx.clip();
         ctx.drawImage(petSceneImage, sourceX, 0, 200, 160, 0, 0, 200, 160);
         ctx.restore();
+        if (dogName === "riku") {
+          // Both Riku cells contain one detached opaque island at the far
+          // right.  Clear it after every layer is drawn so it cannot return
+          // during the tail animation or when the whole scene is mirrored.
+          const stray = s.avatar === "girl"
+            ? [181, 124, 10, 29]
+            : [178, 127, 8, 25];
+          ctx.clearRect(...stray);
+        }
       }
       function advancePetSceneFrame() {
         if (companionReaction !== "pet") return;
