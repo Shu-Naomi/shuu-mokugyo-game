@@ -815,11 +815,11 @@
         display: none;
         position: absolute;
         z-index: 6;
-        left: 18%;
+        left: 12%;
         top: 11%;
         width: 190px;
         height: 105px;
-        transform: translate(-50%, -50%);
+        transform: translate(-50%, -50%) scale(var(--splash-scale, 1));
         pointer-events: none;
       }
       .surface-splash.show {
@@ -916,6 +916,24 @@
           saturate(1.12)
           drop-shadow(0 0 8px #8de9ff)
           drop-shadow(7px 7px 2px #02192dcc);
+      }
+      .battle-fish.gill-wash {
+        z-index: 6;
+        transition:
+          left 0.1s linear,
+          top 0.1s linear,
+          transform 0.1s linear,
+          filter 0.1s;
+        filter:
+          brightness(1.24)
+          saturate(1.2)
+          drop-shadow(0 0 13px #d8ffff)
+          drop-shadow(7px 8px 2px #02192dcc);
+      }
+      .fish-scene.gill-wash .surface {
+        height: 18%;
+        opacity: 0.78;
+        animation-duration: 0.48s;
       }
       .battle-fish.landing {
         transition:
@@ -1159,7 +1177,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v27</span><span id="time">朝</span
+        <b>星降る湖</b><span>v28</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2205,8 +2223,8 @@
           y: 55,
           startX: 68,
           startY: 55,
-          surfaceX: 18,
-          surfaceY: 15,
+          surfaceX: 12,
+          surfaceY: 14,
           retrieval: 0,
           startMeters: 0,
           distanceFactor: 1,
@@ -2225,6 +2243,10 @@
           pitch: 0,
           swimTick: 0,
           calmBoost: 0,
+          gillWash: null,
+          nextGillWashTick: 0,
+          gillRecovery: 0,
+          recoveryMessage: "",
         };
         resetWaterFx();
         $("#fishScene").classList.add("active");
@@ -2250,8 +2272,8 @@
         const fatigueScale = 1 - fatigue * (mood.danger ? 0.1 : 0.22);
         const speedX = (mood.speedX || 0.6) * fatigueScale;
         const speedY = (mood.speedY || 0.35) * fatigueScale;
-        const awayX = battle.x - (battle.surfaceX || 18);
-        const awayY = battle.y - (battle.surfaceY || 15);
+        const awayX = battle.x - (battle.surfaceX || 12);
+        const awayY = battle.y - (battle.surfaceY || 14);
         const awayLength = Math.max(1, Math.hypot(awayX, awayY));
         const outwardX = awayX / awayLength;
         const outwardY = awayY / awayLength;
@@ -2276,6 +2298,138 @@
           battle.targetVx = outwardX * speedX * 0.72 + tangentX * speedY * 0.42;
           battle.targetVy = outwardY * speedX * 0.72 + tangentY * speedY * 0.42;
         }
+      }
+      function maybeStartGillWash(mood) {
+        if (!battle || battle.gillWash || !mood.danger) return false;
+        const chance = { koi: 0.2, nushi: 0.34 }[battle.f.id] || 0;
+        const progress = battle.retrieval || 0;
+        if (
+          !chance ||
+          progress < 0.14 ||
+          progress > 0.9 ||
+          battle.swimTick < (battle.nextGillWashTick || 0) ||
+          Math.random() >= chance
+        ) return false;
+        battle.gillWash = {
+          tick: 0,
+          startX: battle.x,
+          startY: battle.y,
+          returnY: clampBattle(
+            battle.y + (battle.f.id === "nushi" ? 8 : 5),
+            34,
+            battle.f.id === "nushi" ? 70 : 78,
+          ),
+          facing: battle.facing || 1,
+          handled: false,
+          safeTicks: 0,
+          wrongTicks: 0,
+        };
+        battle.nextGillWashTick =
+          battle.swimTick + (battle.f.id === "nushi" ? 78 : 96);
+        $("#fishScene").classList.add("gill-wash");
+        $("#battleFish").classList.add("gill-wash");
+        $("#phaseLabel").textContent = " 🌊 エラ洗い！";
+        $("#battleMsg").textContent = "水面へ来る！Aを離すかBで糸を送れ！";
+        vibrate(battle.f.id === "nushi" ? [90, 35, 130] : [65, 30, 90]);
+        return true;
+      }
+      function finishGillWash() {
+        const event = battle.gillWash;
+        if (!event) return;
+        $("#fishScene").classList.remove("gill-wash", "water-rush");
+        $("#battleFish").classList.remove("gill-wash", "burst");
+        const rest = fightProfiles[battle.f.id].moods.find((mood) => mood.calm);
+        battle.gillWash = null;
+        battle.gillRecovery = 10;
+        if (event.handled) {
+          battle.recoveryMessage = "エラ洗いをいなした！魚が疲れた、今が巻き時！";
+          battle.calmBoost = Math.max(battle.calmBoost || 0, 1);
+          $("#phaseLabel").textContent = " ◎ 疲労";
+        } else {
+          battle.retrieval = clampBattle(
+            battle.retrieval - (battle.f.id === "nushi" ? 0.07 : 0.04),
+            0,
+            1,
+          );
+          battle.recoveryMessage = "エラ洗いに振り回され、距離を奪われた！";
+          $("#phaseLabel").textContent = " ↔ 立て直し";
+        }
+        battle.mood = rest;
+        battle.calm = true;
+        battle.moodTick = 0;
+        battle.nextMood = Date.now() + (event.handled ? 1450 : 850);
+        battle.motionX = battle.facing || 1;
+        battle.motionY = 1;
+        setFishCourse(rest);
+      }
+      function updateGillWash(control) {
+        const event = battle.gillWash;
+        if (!event) return;
+        event.tick++;
+        battle.swimTick++;
+        const waterY = 10;
+        const direction = event.facing;
+        if (event.tick <= 4) {
+          const progress = event.tick / 4;
+          const eased = 1 - (1 - progress) ** 2;
+          battle.x = event.startX + direction * 2.5 * eased;
+          battle.y = event.startY + (waterY - event.startY) * eased;
+          battle.renderAngle = direction < 0 ? 34 * eased : -34 * eased;
+        } else if (event.tick <= 9) {
+          const progress = (event.tick - 4) / 5;
+          battle.x =
+            event.startX + direction * (2.5 + Math.sin(progress * Math.PI) * 4.5);
+          battle.y = waterY - Math.sin(progress * Math.PI) * 7;
+          battle.renderAngle =
+            (direction < 0 ? 1 : -1) * (34 - progress * 62);
+        } else {
+          const progress = (event.tick - 9) / 5;
+          const eased = progress * progress;
+          battle.x = event.startX + direction * 2.5 * (1 - progress);
+          battle.y = waterY + (event.returnY - waterY) * eased;
+          battle.renderAngle = (direction < 0 ? -24 : 24) * (1 - progress);
+        }
+        battle.x = clampBattle(
+          battle.x,
+          5,
+          battle.f.id === "nushi" ? 90 : 96,
+        );
+        battle.y = clampBattle(battle.y, 3, 82);
+        battle.facing = direction;
+        battle.pitch = 0;
+        battle.speed = 4.8;
+        battle.frame = (battle.frame + 1) % 3;
+        battle.renderScale =
+          (battle.f.id === "nushi" ? 1.16 : 1.1) *
+          (1 + Math.sin(event.tick * 1.7) * 0.025);
+        if (event.tick === 3 || event.tick === 9)
+          showSurfaceSplash(
+            battle.x,
+            12,
+            battle.f.id === "nushi" ? 1.25 : 1,
+          );
+        if (battle.reeling) {
+          event.wrongTicks++;
+          battle.ten +=
+            (battle.f.id === "nushi" ? 9.4 : 7.8) / control;
+          battle.retrieval = clampBattle(
+            battle.retrieval - (battle.f.id === "nushi" ? 0.009 : 0.006),
+            0,
+            1,
+          );
+          $("#battleMsg").textContent =
+            "エラ洗い中に巻いている！Aを離せ、糸が切れる！";
+        } else {
+          event.safeTicks++;
+          event.handled = event.safeTicks >= 6;
+          battle.ten = Math.max(
+            3,
+            battle.ten - (battle.f.id === "nushi" ? 5.2 : 4.4) * control,
+          );
+          $("#battleMsg").textContent = "糸を送ってエラ洗いをいなす！";
+        }
+        battle.ten = Math.min(110, battle.ten);
+        if (event.tick >= 14) finishGillWash();
       }
       function chooseFishMood(force = false) {
         if (!battle?.f) return;
@@ -2315,20 +2469,21 @@
         $("#phaseLabel").textContent = ` ${selected.icon} ${selected.name}`;
         $("#battleFish").classList.toggle("burst", Boolean(selected.danger));
         $("#fishScene").classList.toggle("water-rush", Boolean(selected.danger));
-        if (selected.danger && previous && previous !== selected.id)
+        const startedGillWash = maybeStartGillWash(selected);
+        if (!startedGillWash && selected.danger && previous && previous !== selected.id)
           vibrate([35, 30, 55]);
       }
       function fishSwimBounds() {
         const base = battle.f.id === "nushi"
-          ? { minX: 44, maxX: 86, minY: 36, maxY: 72 }
+          ? { minX: 44, maxX: 90, minY: 36, maxY: 72 }
           : battle.f.id === "koi"
-            ? { minX: 43, maxX: 90, minY: 30, maxY: 80 }
-            : { minX: 42, maxX: 92, minY: 28, maxY: 84 };
+            ? { minX: 43, maxX: 94, minY: 30, maxY: 80 }
+            : { minX: 42, maxX: 96, minY: 28, maxY: 84 };
         const progress = battle.retrieval || 0;
         return {
-          minX: base.minX + (15 - base.minX) * progress,
-          maxX: base.maxX + ((battle.f.id === "nushi" ? 82 : 88) - base.maxX) * progress,
-          minY: base.minY + (9 - base.minY) * progress,
+          minX: base.minX + (7 - base.minX) * progress,
+          maxX: base.maxX + ((battle.f.id === "nushi" ? 88 : 92) - base.maxX) * progress,
+          minY: base.minY + (8 - base.minY) * progress,
           maxY: base.maxY + (74 - base.maxY) * progress,
         };
       }
@@ -2577,7 +2732,13 @@
       function resetBattleFeedback() {
         const scene = $("#fishScene");
         const fishElement = $("#battleFish");
-        scene.classList.remove("nushi-fight", "water-rush", "fighting", "landing");
+        scene.classList.remove(
+          "nushi-fight",
+          "water-rush",
+          "fighting",
+          "landing",
+          "gill-wash",
+        );
         scene.style.backgroundPosition = "50% 50%";
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
         fishElement.className = "battle-fish";
@@ -2586,6 +2747,7 @@
         fishElement.style.transform = "translate(-50%,-50%)";
         $("#distanceLabel").style.display = "none";
         $("#surfaceSplash").classList.remove("show");
+        $("#surfaceSplash").style.removeProperty("--splash-scale");
         for (const id of ["#ten", "#battleUi", "#linePath"])
           $(id).classList.remove("warn", "danger");
       }
@@ -2608,6 +2770,22 @@
         card.classList.add("show");
         vibrate(f.id === "nushi" ? [80, 45, 80, 45, 180] : [70, 40, 120]);
         catchTimer = setTimeout(hideCatchCard, 2300);
+      }
+      function renderBattleFish() {
+        const element = $("#battleFish");
+        element.style.left = battle.x + "%";
+        element.style.top = battle.y + "%";
+        element.style.backgroundPositionX = `${battle.frame * 50}%`;
+        element.style.transform =
+          `translate(-50%,-50%) rotate(${battle.renderAngle || 0}deg) ` +
+          `scaleX(${battle.facing || 1}) scale(${battle.renderScale || 1})`;
+        const depthLight = clampBattle(
+          1.11 - (battle.y - 28) * 0.006,
+          0.73,
+          1.08,
+        );
+        element.style.setProperty("--fish-light", depthLight.toFixed(2));
+        element.style.setProperty("--fish-color", battle.y > 68 ? "0.88" : "1");
       }
       function battleTick() {
         clearInterval(timer);
@@ -2638,19 +2816,18 @@
           const control = rodData[s.selectedRod].control;
           if (!battle.mood || Date.now() > battle.nextMood) chooseFishMood();
           const mood = battle.mood;
+          if (battle.gillWash) {
+            updateGillWash(control);
+            updateWaterFx();
+            renderBattleFish();
+            drawBattle();
+            if (battle.ten >= 100) return lose("エラ洗いで糸が切れた……");
+            return;
+          }
           updateRetrieval(mood);
           moveBattleFish(mood);
           updateWaterFx();
-          const el = $("#battleFish");
-          el.style.left = battle.x + "%";
-          el.style.top = battle.y + "%";
-          el.style.backgroundPositionX = `${battle.frame * 50}%`;
-          el.style.transform =
-            `translate(-50%,-50%) rotate(${battle.renderAngle || 0}deg) ` +
-            `scaleX(${battle.facing || 1}) scale(${battle.renderScale || 1})`;
-          const depthLight = clampBattle(1.11 - (battle.y - 28) * 0.006, 0.73, 1.08);
-          el.style.setProperty("--fish-light", depthLight.toFixed(2));
-          el.style.setProperty("--fish-color", battle.y > 68 ? "0.88" : "1");
+          renderBattleFish();
           if (battle.reeling) {
             battle.ten += mood.tension / control;
           } else {
@@ -2667,8 +2844,13 @@
             !battle.reeling && battle.retrievalDelta < -0.001
               ? "魚に糸を奪われる！ "
               : "";
-          $("#battleMsg").textContent =
-            warning + fishTakingLine + (battle.reeling ? mood.hold : mood.loose);
+          if (battle.gillRecovery > 0) {
+            battle.gillRecovery--;
+            $("#battleMsg").textContent = battle.recoveryMessage;
+          } else {
+            $("#battleMsg").textContent =
+              warning + fishTakingLine + (battle.reeling ? mood.hold : mood.loose);
+          }
           drawBattle();
           const arrival = Math.hypot(
             battle.x - battle.surfaceX,
@@ -2688,12 +2870,12 @@
           let f = pick();
           if (distance > 72 && Math.random() < .28) f = fish[Math.random() < .75 ? 2 : 3];
           battle.f = f;
-          battle.x = clampBattle(48 + distance * 0.4, 48, f.id === "nushi" ? 82 : 88);
+          battle.x = clampBattle(54 + distance * 0.4, 54, f.id === "nushi" ? 90 : 94);
           battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
           battle.startX = battle.x;
           battle.startY = battle.y;
-          battle.surfaceX = 18;
-          battle.surfaceY = 15;
+          battle.surfaceX = 12;
+          battle.surfaceY = 14;
           battle.retrieval = 0;
           battle.castDistance = distance;
           battle.startMeters = Math.max(6, Math.round(7 + distance * 0.26));
@@ -2772,7 +2954,7 @@
         const pitchRadians = (battle.pitch || 0) * Math.PI / 180;
         const mouthX = clampBattle(
           fx + (battle.facing || 1) * Math.cos(pitchRadians) * mouthOffset,
-          155,
+          35,
           985,
         );
         const mouthY = clampBattle(
@@ -2791,22 +2973,28 @@
           `${50 - (battle.x - 68) * 0.09}% ${50 - (battle.y - 55) * 0.07}%`;
         updateTensionFeedback();
       }
-      function showSurfaceSplash() {
-        const goalX = (battle.surfaceX || 18) * 10;
-        const goalY = (battle.surfaceY || 15) * 5;
-        for (let i = 0; i < 52; i++) {
+      function showSurfaceSplash(
+        x = battle.surfaceX || 12,
+        y = battle.surfaceY || 14,
+        intensity = 1,
+      ) {
+        const goalX = x * 10;
+        const goalY = y * 5;
+        const count = Math.round(38 + 14 * intensity);
+        for (let i = 0; i < count; i++) {
           waterFxState.bubbles.push({
-            x: goalX + (Math.random() - 0.5) * 145,
+            x: goalX + (Math.random() - 0.5) * (125 + 20 * intensity),
             y: goalY + 8 + Math.random() * 28,
-            vx: (Math.random() - 0.5) * 7,
-            vy: -3 - Math.random() * 5,
-            size: 4 + Math.floor(Math.random() * 7),
+            vx: (Math.random() - 0.5) * (6 + intensity),
+            vy: -3 - Math.random() * (4 + intensity),
+            size: 4 + Math.floor(Math.random() * (6 + intensity)),
             life: 20 + Math.floor(Math.random() * 16),
           });
         }
         const splash = $("#surfaceSplash");
-        splash.style.left = `${battle.surfaceX}%`;
-        splash.style.top = `${Math.max(10, battle.surfaceY - 3)}%`;
+        splash.style.left = `${x}%`;
+        splash.style.top = `${Math.max(9, y - 2)}%`;
+        splash.style.setProperty("--splash-scale", intensity.toFixed(2));
         splash.classList.remove("show");
         void splash.offsetWidth;
         splash.classList.add("show");
@@ -2818,7 +3006,7 @@
         battle.reeling = false;
         clearTimeout(landingTimer);
         const scene = $("#fishScene");
-        scene.classList.remove("water-rush", "fighting");
+        scene.classList.remove("water-rush", "fighting", "gill-wash");
         scene.classList.add("landing");
         const fishElement = $("#battleFish");
         fishElement.classList.remove("burst");
