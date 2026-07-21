@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v26-retrieval-fishing-1";
+const CACHE_NAME = "nushi-tsuri-v27-reverse-surface-catch-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
