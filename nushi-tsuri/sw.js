@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v24-fish-behaviors-1";
+const CACHE_NAME = "nushi-tsuri-v25-living-water-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -21,6 +21,7 @@ const APP_ASSETS = [
   "./assets/fish-funa.png",
   "./assets/fish-koi.png",
   "./assets/fish-nushi.png",
+  "./assets/lake-underwater-v25.svg",
   "./assets/sam-front.png",
 ];
 self.addEventListener("install", (event) => {
