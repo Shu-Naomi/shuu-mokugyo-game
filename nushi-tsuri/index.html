@@ -811,34 +811,65 @@
         pointer-events: none;
         image-rendering: pixelated;
       }
-      .landing-zone {
+      .surface-splash {
         display: none;
         position: absolute;
-        z-index: 3;
-        left: 22%;
-        top: 18%;
-        width: 42px;
-        height: 22px;
+        z-index: 6;
+        left: 18%;
+        top: 11%;
+        width: 190px;
+        height: 105px;
         transform: translate(-50%, -50%);
-        border: 2px dashed #d8ffffaa;
-        border-radius: 50%;
-        color: #eaffff;
-        font-size: 9px;
-        line-height: 18px;
-        text-align: center;
-        text-shadow: 1px 1px #07304d;
-        box-shadow: 0 0 10px #86efff55;
         pointer-events: none;
-        animation: landing-ring 1.5s ease-in-out infinite;
       }
-      .fish-scene.fighting .landing-zone,
-      .fish-scene.landing .landing-zone {
+      .surface-splash.show {
         display: block;
       }
-      .fish-scene.landing .landing-zone {
-        border-color: #fff3a3;
-        box-shadow: 0 0 18px #fff5a8cc;
+      .surface-splash::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 66%;
+        width: 12px;
+        height: 7px;
+        transform: translate(-50%, -50%);
+        border: 4px solid #eaffff;
+        border-top: 0;
+        box-shadow: 0 0 10px #8ff5ff;
+        opacity: 0;
       }
+      .surface-splash.show::after {
+        animation: splash-foam 0.9s steps(6) both;
+      }
+      .surface-splash i {
+        --dx: 0px;
+        --dy: -45px;
+        --delay: 0ms;
+        position: absolute;
+        left: 50%;
+        top: 65%;
+        width: 8px;
+        height: 8px;
+        border: 2px solid #eaffff;
+        background: #8fefff;
+        box-shadow: 0 0 7px #b9ffff;
+        opacity: 0;
+      }
+      .surface-splash.show i {
+        animation: splash-drop 0.82s steps(6) var(--delay) both;
+      }
+      .surface-splash i:nth-child(1) { --dx: -82px; --dy: -28px; --delay: 0ms; }
+      .surface-splash i:nth-child(2) { --dx: -65px; --dy: -57px; --delay: 20ms; }
+      .surface-splash i:nth-child(3) { --dx: -45px; --dy: -76px; --delay: 45ms; }
+      .surface-splash i:nth-child(4) { --dx: -20px; --dy: -88px; --delay: 10ms; }
+      .surface-splash i:nth-child(5) { --dx: 7px; --dy: -94px; --delay: 35ms; }
+      .surface-splash i:nth-child(6) { --dx: 34px; --dy: -82px; --delay: 55ms; }
+      .surface-splash i:nth-child(7) { --dx: 59px; --dy: -64px; --delay: 15ms; }
+      .surface-splash i:nth-child(8) { --dx: 82px; --dy: -35px; --delay: 50ms; }
+      .surface-splash i:nth-child(9) { --dx: -91px; --dy: -8px; --delay: 75ms; }
+      .surface-splash i:nth-child(10) { --dx: 92px; --dy: -10px; --delay: 80ms; }
+      .surface-splash i:nth-child(11) { --dx: -31px; --dy: -53px; --delay: 95ms; }
+      .surface-splash i:nth-child(12) { --dx: 45px; --dy: -46px; --delay: 100ms; }
       .battle-fish {
         position: absolute;
         z-index: 3;
@@ -927,7 +958,8 @@
       .battle-ui {
         position: absolute;
         z-index: 7;
-        top: 17%;
+        top: auto;
+        bottom: 4%;
         left: 3%;
         width: 34%;
         padding: 7px;
@@ -1051,8 +1083,17 @@
       @keyframes line-quiver {
         50% { stroke-width: 5; opacity: 0.78; }
       }
-      @keyframes landing-ring {
-        50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.12); }
+      @keyframes splash-drop {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
+        18% { opacity: 1; }
+        78% { opacity: .95; }
+        100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(.72); }
+      }
+      @keyframes splash-foam {
+        0% { width: 12px; opacity: 0; }
+        20% { opacity: 1; }
+        70% { width: 174px; opacity: .9; }
+        100% { width: 188px; opacity: 0; }
       }
       @keyframes danger-pulse {
         50% { background: #421f2fe8; }
@@ -1088,7 +1129,8 @@
           inset: 3%;
         }
         .battle-ui {
-          top: 20%;
+          top: auto;
+          bottom: 3%;
         }
       }
     </style>
@@ -1117,7 +1159,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v26</span><span id="time">朝</span
+        <b>星降る湖</b><span>v27</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1156,7 +1198,10 @@
         <div class="fish-scene" id="fishScene">
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
-          <div class="landing-zone" id="landingZone">取込</div>
+          <div class="surface-splash" id="surfaceSplash" aria-hidden="true">
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+            <i></i><i></i><i></i><i></i><i></i><i></i>
+          </div>
           <div class="fisher">🧑‍🌾🎣</div>
           <svg
             class="line-svg"
@@ -2160,8 +2205,8 @@
           y: 55,
           startX: 68,
           startY: 55,
-          landX: 22,
-          landY: 18,
+          surfaceX: 18,
+          surfaceY: 15,
           retrieval: 0,
           startMeters: 0,
           distanceFactor: 1,
@@ -2205,8 +2250,8 @@
         const fatigueScale = 1 - fatigue * (mood.danger ? 0.1 : 0.22);
         const speedX = (mood.speedX || 0.6) * fatigueScale;
         const speedY = (mood.speedY || 0.35) * fatigueScale;
-        const awayX = battle.x - (battle.landX || 22);
-        const awayY = battle.y - (battle.landY || 18);
+        const awayX = battle.x - (battle.surfaceX || 18);
+        const awayY = battle.y - (battle.surfaceY || 15);
         const awayLength = Math.max(1, Math.hypot(awayX, awayY));
         const outwardX = awayX / awayLength;
         const outwardY = awayY / awayLength;
@@ -2357,8 +2402,10 @@
         battle.vx *= drag;
         battle.vy *= drag;
         const progress = battle.retrieval || 0;
-        const baseX = battle.startX + (battle.landX - battle.startX) * progress;
-        const baseY = battle.startY + (battle.landY - battle.startY) * progress;
+        const baseX =
+          battle.startX + (battle.surfaceX - battle.startX) * progress;
+        const baseY =
+          battle.startY + (battle.surfaceY - battle.startY) * progress;
         const lineSpring = battle.reeling
           ? 0.24 + progress * 0.08
           : mood.calm
@@ -2538,6 +2585,7 @@
         fishElement.style.removeProperty("--fish-color");
         fishElement.style.transform = "translate(-50%,-50%)";
         $("#distanceLabel").style.display = "none";
+        $("#surfaceSplash").classList.remove("show");
         for (const id of ["#ten", "#battleUi", "#linePath"])
           $(id).classList.remove("warn", "danger");
       }
@@ -2623,12 +2671,12 @@
             warning + fishTakingLine + (battle.reeling ? mood.hold : mood.loose);
           drawBattle();
           const arrival = Math.hypot(
-            battle.x - battle.landX,
-            battle.y - battle.landY,
+            battle.x - battle.surfaceX,
+            battle.y - battle.surfaceY,
           );
           const landingRadius = battle.f.id === "nushi" ? 11 : 7;
           if (battle.retrieval >= 0.999 && arrival <= landingRadius)
-            return landFish();
+            return surfaceCatch();
           if (battle.ten >= 100) return lose("糸が切れた……");
         }, 120);
       }
@@ -2644,8 +2692,8 @@
           battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
           battle.startX = battle.x;
           battle.startY = battle.y;
-          battle.landX = 22;
-          battle.landY = 18;
+          battle.surfaceX = 18;
+          battle.surfaceY = 15;
           battle.retrieval = 0;
           battle.castDistance = distance;
           battle.startMeters = Math.max(6, Math.round(7 + distance * 0.26));
@@ -2696,7 +2744,7 @@
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
         chooseFishMood(true);
         $("#battleMsg").textContent =
-          `掛かった！Aの取り込み点まで寄せよう。${fightProfiles[f.id].intro}`;
+          `掛かった！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(`${f.name}が掛かった！`);
       }
@@ -2715,7 +2763,7 @@
         const remaining = Math.max(0, 1 - (battle.retrieval || 0));
         $("#distanceMeter").style.width = remaining * 100 + "%";
         const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
-        $("#distanceLabel").textContent = `取り込み点まで ${meters}m`;
+        $("#distanceLabel").textContent = `左の水面まで ${meters}m`;
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
         const fx = battle.x * 10;
         const fy = battle.y * 5;
@@ -2743,21 +2791,28 @@
           `${50 - (battle.x - 68) * 0.09}% ${50 - (battle.y - 55) * 0.07}%`;
         updateTensionFeedback();
       }
-      function spawnLandingSplash() {
-        const goalX = (battle.landX || 22) * 10;
-        const goalY = (battle.landY || 18) * 5;
-        for (let i = 0; i < 30; i++) {
+      function showSurfaceSplash() {
+        const goalX = (battle.surfaceX || 18) * 10;
+        const goalY = (battle.surfaceY || 15) * 5;
+        for (let i = 0; i < 52; i++) {
           waterFxState.bubbles.push({
-            x: goalX + (Math.random() - 0.5) * 80,
-            y: goalY + Math.random() * 22,
-            vx: (Math.random() - 0.5) * 5,
-            vy: -2 - Math.random() * 4,
-            size: 2 + Math.floor(Math.random() * 6),
-            life: 18 + Math.floor(Math.random() * 15),
+            x: goalX + (Math.random() - 0.5) * 145,
+            y: goalY + 8 + Math.random() * 28,
+            vx: (Math.random() - 0.5) * 7,
+            vy: -3 - Math.random() * 5,
+            size: 4 + Math.floor(Math.random() * 7),
+            life: 20 + Math.floor(Math.random() * 16),
           });
         }
+        const splash = $("#surfaceSplash");
+        splash.style.left = `${battle.surfaceX}%`;
+        splash.style.top = `${Math.max(10, battle.surfaceY - 3)}%`;
+        splash.classList.remove("show");
+        void splash.offsetWidth;
+        splash.classList.add("show");
+        drawWaterFx();
       }
-      function landFish() {
+      function surfaceCatch() {
         if (!battle || battle.phase !== "fight") return;
         battle.phase = "landing";
         battle.reeling = false;
@@ -2768,24 +2823,24 @@
         const fishElement = $("#battleFish");
         fishElement.classList.remove("burst");
         fishElement.classList.add("landing");
-        fishElement.style.left = `${battle.landX}%`;
-        fishElement.style.top = "9%";
+        fishElement.style.left = `${battle.surfaceX}%`;
+        fishElement.style.top = "7%";
         fishElement.style.transform =
-          `translate(-50%,-50%) rotate(-10deg) ` +
+          `translate(-50%,-50%) rotate(${battle.facing < 0 ? 14 : -14}deg) ` +
           `scaleX(${battle.facing || 1}) scale(1.08)`;
-        $("#phaseLabel").textContent = " ✦ 取り込み";
-        $("#distanceLabel").textContent = "取り込み点！";
+        $("#phaseLabel").textContent = " ✦ 水面到達";
+        $("#distanceLabel").textContent = "左の水面まで 0m";
         $("#distanceMeter").style.width = "0%";
-        $("#battleMsg").textContent = "水面まで寄せた！魚を取り込む！";
+        $("#battleMsg").textContent = "左の水面まで巻き上げた！釣り上げ成功！";
         $("#linePath").setAttribute(
           "d",
-          `M 150 48 Q 180 58 ${battle.landX * 10} 55`,
+          `M 150 48 Q 162 42 ${battle.surfaceX * 10} ${battle.surfaceY * 5}`,
         );
-        spawnLandingSplash();
+        showSurfaceSplash();
         vibrate([80, 35, 80, 35, 150]);
         landingTimer = setTimeout(() => {
           if (battle?.phase === "landing") caught();
-        }, 850);
+        }, 1100);
       }
       function lose(t) {
         log(t);
