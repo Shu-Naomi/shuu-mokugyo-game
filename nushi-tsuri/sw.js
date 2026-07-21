@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v25-living-water-1";
+const CACHE_NAME = "nushi-tsuri-v25-living-water-2";
 const APP_ASSETS = [
   "./",
   "./index.html",
