@@ -917,6 +917,9 @@
           drop-shadow(0 0 8px #8de9ff)
           drop-shadow(7px 7px 2px #02192dcc);
       }
+      .battle-fish.hooked {
+        animation: hooked-flash 0.34s steps(3);
+      }
       .battle-fish.gill-wash {
         z-index: 6;
         transition:
@@ -1101,6 +1104,18 @@
       @keyframes line-quiver {
         50% { stroke-width: 5; opacity: 0.78; }
       }
+      @keyframes hooked-flash {
+        0% { opacity: 0; }
+        34% {
+          opacity: 1;
+          filter:
+            brightness(1.65)
+            saturate(1.2)
+            drop-shadow(0 0 12px #e4ffff)
+            drop-shadow(5px 6px 2px #02192dbb);
+        }
+        100% { opacity: 1; }
+      }
       @keyframes splash-drop {
         0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
         18% { opacity: 1; }
@@ -1177,7 +1192,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v28</span><span id="time">朝</span
+        <b>星降る湖</b><span>v29</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2744,6 +2759,10 @@
         fishElement.className = "battle-fish";
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
+        fishElement.style.removeProperty("left");
+        fishElement.style.removeProperty("top");
+        fishElement.style.removeProperty("transition");
+        fishElement.style.opacity = "0";
         fishElement.style.transform = "translate(-50%,-50%)";
         $("#distanceLabel").style.display = "none";
         $("#surfaceSplash").classList.remove("show");
@@ -2915,9 +2934,13 @@
         scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
-        fishElement.style.opacity = "1";
         fishElement.style.backgroundImage = `url("${fishAssets[f.id]}")`;
         fishElement.style.backgroundPositionY = "0";
+        fishElement.style.transition = "none";
+        fishElement.style.opacity = "0";
+        renderBattleFish();
+        void fishElement.offsetWidth;
+        fishElement.style.removeProperty("transition");
         $("#distanceLabel").style.display = "inline";
         $("#distanceMeter").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
@@ -2925,6 +2948,8 @@
         $("#pull").innerHTML = "A<br><small>押して巻く</small>";
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
         chooseFishMood(true);
+        fishElement.classList.add("hooked");
+        fishElement.style.opacity = "1";
         $("#battleMsg").textContent =
           `掛かった！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
