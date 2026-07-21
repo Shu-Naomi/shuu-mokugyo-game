@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v27-reverse-surface-catch-1";
+const CACHE_NAME = "nushi-tsuri-v28-wide-gill-wash-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
