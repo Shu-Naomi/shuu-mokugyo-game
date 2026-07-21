@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v20-canvas-tail-wag-1";
+const CACHE_NAME = "nushi-tsuri-v21-player-edge-cleanup-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
