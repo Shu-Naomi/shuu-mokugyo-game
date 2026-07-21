@@ -811,6 +811,34 @@
         pointer-events: none;
         image-rendering: pixelated;
       }
+      .landing-zone {
+        display: none;
+        position: absolute;
+        z-index: 3;
+        left: 22%;
+        top: 18%;
+        width: 42px;
+        height: 22px;
+        transform: translate(-50%, -50%);
+        border: 2px dashed #d8ffffaa;
+        border-radius: 50%;
+        color: #eaffff;
+        font-size: 9px;
+        line-height: 18px;
+        text-align: center;
+        text-shadow: 1px 1px #07304d;
+        box-shadow: 0 0 10px #86efff55;
+        pointer-events: none;
+        animation: landing-ring 1.5s ease-in-out infinite;
+      }
+      .fish-scene.fighting .landing-zone,
+      .fish-scene.landing .landing-zone {
+        display: block;
+      }
+      .fish-scene.landing .landing-zone {
+        border-color: #fff3a3;
+        box-shadow: 0 0 18px #fff5a8cc;
+      }
       .battle-fish {
         position: absolute;
         z-index: 3;
@@ -857,6 +885,18 @@
           saturate(1.12)
           drop-shadow(0 0 8px #8de9ff)
           drop-shadow(7px 7px 2px #02192dcc);
+      }
+      .battle-fish.landing {
+        transition:
+          left 0.72s cubic-bezier(.2,.9,.25,1),
+          top 0.72s cubic-bezier(.2,.9,.25,1),
+          transform 0.72s cubic-bezier(.2,1.25,.3,1),
+          opacity 0.72s;
+        filter:
+          brightness(1.2)
+          saturate(1.15)
+          drop-shadow(0 0 12px #d7ffff)
+          drop-shadow(6px 7px 2px #02192dcc);
       }
       .dog-select {
         display: flex;
@@ -919,6 +959,13 @@
       }
       .tension {
         background: #e0b34e;
+      }
+      .distance {
+        background: linear-gradient(90deg, #56d6ef, #99f4d8);
+      }
+      #distanceLabel {
+        display: none;
+        color: #bff7ff;
       }
       .tension.warn { background: #f08b39; }
       .tension.danger { background: #f04449; }
@@ -1004,6 +1051,9 @@
       @keyframes line-quiver {
         50% { stroke-width: 5; opacity: 0.78; }
       }
+      @keyframes landing-ring {
+        50% { opacity: 0.55; transform: translate(-50%, -50%) scale(1.12); }
+      }
       @keyframes danger-pulse {
         50% { background: #421f2fe8; }
       }
@@ -1067,7 +1117,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v25</span><span id="time">朝</span
+        <b>星降る湖</b><span>v26</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1106,6 +1156,7 @@
         <div class="fish-scene" id="fishScene">
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
+          <div class="landing-zone" id="landingZone">取込</div>
           <div class="fisher">🧑‍🌾🎣</div>
           <svg
             class="line-svg"
@@ -1119,7 +1170,8 @@
           <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
             <div class="cast-meter" id="castMeter"><div class="cast-marker" id="castMarker"></div></div>
-            <div class="meter"><div class="fill" id="hp"></div></div>
+            <small id="distanceLabel">残り距離</small>
+            <div class="meter"><div class="fill distance" id="distanceMeter"></div></div>
             <small>糸テンション</small>
             <div class="meter"><div class="fill tension" id="ten"></div></div>
             <div class="battle-msg" id="battleMsg">魚の動きを見よう。</div>
@@ -1168,7 +1220,7 @@
             id: "moroko",
             name: "ホンモロコ",
             price: 90,
-            hp: 45,
+            resistance: 45,
             w: 0.44,
             icon: "🐟",
             shadowRow: 0,
@@ -1177,7 +1229,7 @@
             id: "funa",
             name: "フナ",
             price: 130,
-            hp: 65,
+            resistance: 65,
             w: 0.31,
             icon: "🐠",
             shadowRow: 1,
@@ -1186,7 +1238,7 @@
             id: "koi",
             name: "コイ",
             price: 260,
-            hp: 100,
+            resistance: 100,
             w: 0.2,
             icon: "🐡",
             shadowRow: 2,
@@ -1195,7 +1247,7 @@
             id: "nushi",
             name: "星湖のヌシ",
             price: 2000,
-            hp: 210,
+            resistance: 210,
             w: 0.05,
             icon: "🐋",
             shadowRow: 4,
@@ -1461,6 +1513,7 @@
         battle = null,
         timer = 0,
         catchTimer = 0,
+        landingTimer = 0,
         walkTimer = 0,
         dogWalkTimer = 0,
         idleTimer = 0,
@@ -2057,7 +2110,8 @@
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "none";
-        $("#hp").parentElement.style.display = "none";
+        $("#distanceLabel").style.display = "none";
+        $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
         $("#fishName").textContent = "釣行準備";
         $("#phaseLabel").textContent = " 仕掛け確認";
@@ -2100,12 +2154,17 @@
           cast: 0,
           castDir: 1,
           f: null,
-          hp: 1,
-          max: 1,
           ten: 18,
           calm: false,
           x: 68,
           y: 55,
+          startX: 68,
+          startY: 55,
+          landX: 22,
+          landY: 18,
+          retrieval: 0,
+          startMeters: 0,
+          distanceFactor: 1,
           frame: 0,
           reeling: false,
           mood: null,
@@ -2126,7 +2185,8 @@
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "block";
-        $("#hp").parentElement.style.display = "none";
+        $("#distanceLabel").style.display = "none";
+        $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
         $("#fishName").textContent = "キャスト";
         $("#phaseLabel").textContent = " 距離を決める";
@@ -2141,29 +2201,35 @@
         return Math.max(min, Math.min(max, value));
       }
       function setFishCourse(mood) {
-        const speedX = mood.speedX || 0.6;
-        const speedY = mood.speedY || 0.35;
+        const fatigue = battle.retrieval || 0;
+        const fatigueScale = 1 - fatigue * (mood.danger ? 0.1 : 0.22);
+        const speedX = (mood.speedX || 0.6) * fatigueScale;
+        const speedY = (mood.speedY || 0.35) * fatigueScale;
+        const awayX = battle.x - (battle.landX || 22);
+        const awayY = battle.y - (battle.landY || 18);
+        const awayLength = Math.max(1, Math.hypot(awayX, awayY));
+        const outwardX = awayX / awayLength;
+        const outwardY = awayY / awayLength;
+        const tangentX = -outwardY * (battle.motionY || 1);
+        const tangentY = outwardX * (battle.motionY || 1);
         if (mood.motion === "rest") {
-          battle.targetVx = 0.14 * (battle.facing || 1);
-          battle.targetVy = 0;
+          battle.targetVx = tangentX * 0.16;
+          battle.targetVy = tangentY * 0.16;
         } else if (mood.motion === "dart") {
-          battle.targetVx = speedX * battle.motionX;
-          battle.targetVy = speedY * 0.62 * battle.motionY;
+          battle.targetVx = outwardX * speedX * 0.68 + tangentX * speedY * 0.72;
+          battle.targetVy = outwardY * speedX * 0.68 + tangentY * speedY * 0.72;
         } else if (mood.motion === "rush") {
-          battle.targetVx = speedX * battle.motionX;
-          battle.targetVy = speedY * 0.72 * battle.motionY;
+          battle.targetVx = outwardX * speedX * 0.92 + tangentX * speedY * 0.36;
+          battle.targetVy = outwardY * speedX * 0.92 + tangentY * speedY * 0.36;
         } else if (mood.motion === "deep") {
-          battle.targetVx = speedX * 0.45 * battle.motionX;
-          battle.targetVy = Math.abs(speedY);
+          battle.targetVx = outwardX * speedX * 0.28 + tangentX * speedX * 0.18;
+          battle.targetVy = Math.abs(speedY) + outwardY * speedX * 0.32;
         } else if (mood.motion === "feint") {
-          battle.targetVx = speedX * 0.28 * battle.motionX;
-          battle.targetVy = speedY * 0.25 * battle.motionY;
+          battle.targetVx = outwardX * speedX * 0.12 + tangentX * speedX * 0.3;
+          battle.targetVy = outwardY * speedY * 0.12 + tangentY * speedY * 0.3;
         } else {
-          battle.targetVx = speedX * battle.motionX;
-          battle.targetVy =
-            battle.f.id === "funa"
-              ? Math.abs(speedY) * 0.55
-              : speedY * 0.55 * battle.motionY;
+          battle.targetVx = outwardX * speedX * 0.72 + tangentX * speedY * 0.42;
+          battle.targetVy = outwardY * speedX * 0.72 + tangentY * speedY * 0.42;
         }
       }
       function chooseFishMood(force = false) {
@@ -2174,6 +2240,8 @@
         const weighted = moods.map((mood) => {
           let weight = mood.weight;
           if (boosted && mood.calm) weight *= 3.4;
+          if (mood.calm) weight *= 1 + (battle.retrieval || 0) * 1.05;
+          if (mood.danger) weight *= 1 - (battle.retrieval || 0) * 0.18;
           if (!force && previous === mood.id) weight *= 0.38;
           return { mood, weight };
         });
@@ -2206,11 +2274,37 @@
           vibrate([35, 30, 55]);
       }
       function fishSwimBounds() {
-        if (battle.f.id === "nushi")
-          return { minX: 44, maxX: 86, minY: 36, maxY: 72 };
-        if (battle.f.id === "koi")
-          return { minX: 43, maxX: 90, minY: 30, maxY: 80 };
-        return { minX: 42, maxX: 92, minY: 28, maxY: 84 };
+        const base = battle.f.id === "nushi"
+          ? { minX: 44, maxX: 86, minY: 36, maxY: 72 }
+          : battle.f.id === "koi"
+            ? { minX: 43, maxX: 90, minY: 30, maxY: 80 }
+            : { minX: 42, maxX: 92, minY: 28, maxY: 84 };
+        const progress = battle.retrieval || 0;
+        return {
+          minX: base.minX + (15 - base.minX) * progress,
+          maxX: base.maxX + ((battle.f.id === "nushi" ? 82 : 88) - base.maxX) * progress,
+          minY: base.minY + (9 - base.minY) * progress,
+          maxY: base.maxY + (74 - base.maxY) * progress,
+        };
+      }
+      function updateRetrieval(mood) {
+        const control = rodData[s.selectedRod].control;
+        const before = battle.retrieval || 0;
+        if (battle.reeling) {
+          const pull =
+            ((s.power / 11) * mood.reel) /
+            battle.f.resistance /
+            (battle.distanceFactor || 1);
+          battle.retrieval = before + pull;
+        } else if (!mood.calm) {
+          const slip =
+            (mood.tension / control) *
+            0.00036 *
+            (0.72 + (1 - before) * 0.28);
+          battle.retrieval = before - slip;
+        }
+        battle.retrieval = clampBattle(battle.retrieval, 0, 1);
+        battle.retrievalDelta = battle.retrieval - before;
       }
       function moveBattleFish(mood) {
         battle.moodTick++;
@@ -2231,8 +2325,8 @@
           battle.motionY = Math.random() < 0.5 ? -1 : 1;
           setFishCourse(mood);
         } else if (mood.motion === "rest") {
-          battle.targetVx = 0.12 * (battle.facing || 1);
-          battle.targetVy = Math.sin(battle.swimTick * 0.42) * 0.12;
+          setFishCourse(mood);
+          battle.targetVy += Math.sin(battle.swimTick * 0.42) * 0.08;
         }
         const bounds = fishSwimBounds();
         if (battle.x < bounds.minX + 3 && battle.targetVx < 0) {
@@ -2262,6 +2356,18 @@
         const drag = mood.motion === "rest" ? 0.88 : 0.985;
         battle.vx *= drag;
         battle.vy *= drag;
+        const progress = battle.retrieval || 0;
+        const baseX = battle.startX + (battle.landX - battle.startX) * progress;
+        const baseY = battle.startY + (battle.landY - battle.startY) * progress;
+        const lineSpring = battle.reeling
+          ? 0.24 + progress * 0.08
+          : mood.calm
+            ? 0.14
+            : 0.08;
+        battle.vx += (baseX - battle.x) * lineSpring;
+        battle.vy += (baseY - battle.y) * lineSpring;
+        battle.vx = clampBattle(battle.vx, -6.5, 6.5);
+        battle.vy = clampBattle(battle.vy, -5.5, 5.5);
         let nextX = battle.x + battle.vx;
         let nextY = battle.y + battle.vy;
         if (nextX < bounds.minX || nextX > bounds.maxX) {
@@ -2424,13 +2530,14 @@
       function resetBattleFeedback() {
         const scene = $("#fishScene");
         const fishElement = $("#battleFish");
-        scene.classList.remove("nushi-fight", "water-rush");
+        scene.classList.remove("nushi-fight", "water-rush", "fighting", "landing");
         scene.style.backgroundPosition = "50% 50%";
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
         fishElement.className = "battle-fish";
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
         fishElement.style.transform = "translate(-50%,-50%)";
+        $("#distanceLabel").style.display = "none";
         for (const id of ["#ten", "#battleUi", "#linePath"])
           $(id).classList.remove("warn", "danger");
       }
@@ -2483,6 +2590,7 @@
           const control = rodData[s.selectedRod].control;
           if (!battle.mood || Date.now() > battle.nextMood) chooseFishMood();
           const mood = battle.mood;
+          updateRetrieval(mood);
           moveBattleFish(mood);
           updateWaterFx();
           const el = $("#battleFish");
@@ -2496,7 +2604,6 @@
           el.style.setProperty("--fish-light", depthLight.toFixed(2));
           el.style.setProperty("--fish-color", battle.y > 68 ? "0.88" : "1");
           if (battle.reeling) {
-            battle.hp -= (s.power / 11) * mood.reel;
             battle.ten += mood.tension / control;
           } else {
             battle.ten = Math.max(3, battle.ten - mood.release * control);
@@ -2508,9 +2615,20 @@
               : battle.ten >= 65
                 ? "！テンション高め。 "
                 : "";
-          $("#battleMsg").textContent = warning + (battle.reeling ? mood.hold : mood.loose);
+          const fishTakingLine =
+            !battle.reeling && battle.retrievalDelta < -0.001
+              ? "魚に糸を奪われる！ "
+              : "";
+          $("#battleMsg").textContent =
+            warning + fishTakingLine + (battle.reeling ? mood.hold : mood.loose);
           drawBattle();
-          if (battle.hp <= 0) return caught();
+          const arrival = Math.hypot(
+            battle.x - battle.landX,
+            battle.y - battle.landY,
+          );
+          const landingRadius = battle.f.id === "nushi" ? 11 : 7;
+          if (battle.retrieval >= 0.999 && arrival <= landingRadius)
+            return landFish();
           if (battle.ten >= 100) return lose("糸が切れた……");
         }, 120);
       }
@@ -2521,9 +2639,17 @@
           const distance = battle.cast;
           let f = pick();
           if (distance > 72 && Math.random() < .28) f = fish[Math.random() < .75 ? 2 : 3];
-          battle.f = f; battle.hp = f.hp; battle.max = f.hp;
+          battle.f = f;
           battle.x = clampBattle(48 + distance * 0.4, 48, f.id === "nushi" ? 82 : 88);
           battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
+          battle.startX = battle.x;
+          battle.startY = battle.y;
+          battle.landX = 22;
+          battle.landY = 18;
+          battle.retrieval = 0;
+          battle.castDistance = distance;
+          battle.startMeters = Math.max(6, Math.round(7 + distance * 0.26));
+          battle.distanceFactor = clampBattle(battle.startMeters / 18, 0.75, 1.55);
           battle.phase = "wait";
           battle.biteAt = Date.now() + (1500 + Math.random() * 2600) / baitData[s.selectedBait].bite;
           $("#linePath").setAttribute(
@@ -2552,20 +2678,25 @@
         }
         battle.mood = null;
         battle.nextMood = 0;
+        battle.retrieval = 0;
         battle.tensionBand = "safe";
-        $("#fishScene").classList.toggle("nushi-fight", f.id === "nushi");
+        const scene = $("#fishScene");
+        scene.classList.add("fighting");
+        scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
         fishElement.style.opacity = "1";
         fishElement.style.backgroundImage = `url("${fishAssets[f.id]}")`;
         fishElement.style.backgroundPositionY = "0";
-        $("#hp").parentElement.style.display = "block";
+        $("#distanceLabel").style.display = "inline";
+        $("#distanceMeter").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
         $("#fishName").textContent = ["細い魚影","丸い魚影","大きな魚影","長い魚影","巨大な魚影"][f.shadowRow];
         $("#pull").innerHTML = "A<br><small>押して巻く</small>";
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
         chooseFishMood(true);
-        $("#battleMsg").textContent = `掛かった！${fightProfiles[f.id].intro}`;
+        $("#battleMsg").textContent =
+          `掛かった！Aの取り込み点まで寄せよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(`${f.name}が掛かった！`);
       }
@@ -2575,13 +2706,16 @@
           renderTackle();
           return open("tackle");
         }
+        if (battle.phase === "landing") return;
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
         battle.reeling = false;
       }
       function drawBattle() {
         if (!battle || battle.phase !== "fight") return;
-        $("#hp").style.width =
-          Math.max(0, (battle.hp / battle.max) * 100) + "%";
+        const remaining = Math.max(0, 1 - (battle.retrieval || 0));
+        $("#distanceMeter").style.width = remaining * 100 + "%";
+        const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
+        $("#distanceLabel").textContent = `取り込み点まで ${meters}m`;
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
         const fx = battle.x * 10;
         const fy = battle.y * 5;
@@ -2609,6 +2743,50 @@
           `${50 - (battle.x - 68) * 0.09}% ${50 - (battle.y - 55) * 0.07}%`;
         updateTensionFeedback();
       }
+      function spawnLandingSplash() {
+        const goalX = (battle.landX || 22) * 10;
+        const goalY = (battle.landY || 18) * 5;
+        for (let i = 0; i < 30; i++) {
+          waterFxState.bubbles.push({
+            x: goalX + (Math.random() - 0.5) * 80,
+            y: goalY + Math.random() * 22,
+            vx: (Math.random() - 0.5) * 5,
+            vy: -2 - Math.random() * 4,
+            size: 2 + Math.floor(Math.random() * 6),
+            life: 18 + Math.floor(Math.random() * 15),
+          });
+        }
+      }
+      function landFish() {
+        if (!battle || battle.phase !== "fight") return;
+        battle.phase = "landing";
+        battle.reeling = false;
+        clearTimeout(landingTimer);
+        const scene = $("#fishScene");
+        scene.classList.remove("water-rush", "fighting");
+        scene.classList.add("landing");
+        const fishElement = $("#battleFish");
+        fishElement.classList.remove("burst");
+        fishElement.classList.add("landing");
+        fishElement.style.left = `${battle.landX}%`;
+        fishElement.style.top = "9%";
+        fishElement.style.transform =
+          `translate(-50%,-50%) rotate(-10deg) ` +
+          `scaleX(${battle.facing || 1}) scale(1.08)`;
+        $("#phaseLabel").textContent = " ✦ 取り込み";
+        $("#distanceLabel").textContent = "取り込み点！";
+        $("#distanceMeter").style.width = "0%";
+        $("#battleMsg").textContent = "水面まで寄せた！魚を取り込む！";
+        $("#linePath").setAttribute(
+          "d",
+          `M 150 48 Q 180 58 ${battle.landX * 10} 55`,
+        );
+        spawnLandingSplash();
+        vibrate([80, 35, 80, 35, 150]);
+        landingTimer = setTimeout(() => {
+          if (battle?.phase === "landing") caught();
+        }, 850);
+      }
       function lose(t) {
         log(t);
         endBattle();
@@ -2624,6 +2802,8 @@
       }
       function endBattle() {
         clearInterval(timer);
+        clearTimeout(landingTimer);
+        landingTimer = 0;
         battle = null;
         resetBattleFeedback();
         clearWaterFx();
