@@ -274,6 +274,15 @@
       .player.face-side {
         background-position-x: 50%;
       }
+      /* The standing sheets overlap their middle cell by a few source pixels.
+         Clip only the empty display edges so neighbouring poses cannot appear
+         as floating specks; linked companion poses use separate artwork. */
+      .player.boy.face-side:not(.companion-pet):not(.companion-sit) {
+        clip-path: inset(0 0 0 3px);
+      }
+      .player.girl.face-side:not(.companion-pet):not(.companion-sit) {
+        clip-path: inset(0 3px);
+      }
       .player.face-up {
         background-position-x: 100%;
       }
@@ -902,7 +911,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v20</span><span id="time">朝</span
+        <b>星降る湖</b><span>v21</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
