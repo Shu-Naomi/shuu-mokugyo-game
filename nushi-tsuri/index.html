@@ -878,7 +878,7 @@
         width: clamp(100px, 19vw, 190px);
         height: auto;
         aspect-ratio: 1.8;
-        background-size: 300% 100%;
+        background-size: 800% 100%;
         background-repeat: no-repeat;
         image-rendering: pixelated;
         transform: translate(-50%, -50%);
@@ -895,20 +895,20 @@
         will-change: left, top, transform;
       }
       .battle-fish.fish-moroko {
-        width: clamp(105px, 18vw, 190px);
-        aspect-ratio: 2.46;
+        width: clamp(100px, 14vw, 150px);
+        aspect-ratio: 24 / 11;
       }
       .battle-fish.fish-funa {
-        width: clamp(110px, 19vw, 205px);
-        aspect-ratio: 2.04;
+        width: clamp(115px, 16vw, 165px);
+        aspect-ratio: 144 / 95;
       }
       .battle-fish.fish-koi {
         width: clamp(125px, 21vw, 235px);
-        aspect-ratio: 1.71;
+        aspect-ratio: 28 / 15;
       }
       .battle-fish.fish-nushi {
-        width: clamp(165px, 25vw, 300px);
-        aspect-ratio: 1.16;
+        width: clamp(165px, 26vw, 310px);
+        aspect-ratio: 48 / 35;
       }
       .battle-fish.burst {
         filter:
@@ -1192,7 +1192,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v29</span><span id="time">朝</span
+        <b>星降る湖</b><span>v30</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1341,10 +1341,68 @@
           moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
         },
         fishAssets = {
-          moroko: "assets/fish-moroko.png",
-          funa: "assets/fish-funa.png",
-          koi: "assets/fish-koi.png",
-          nushi: "assets/fish-nushi.png",
+          moroko: "assets/fish-moroko-v30.png",
+          funa: "assets/fish-funa-v30.png",
+          koi: "assets/fish-koi-v30.png",
+          nushi: "assets/fish-nushi-v30.png",
+        },
+        fishMotionProfiles = {
+          moroko: {
+            beat: 0.92,
+            speedBeat: 0.13,
+            burst: 1.42,
+            thrust: 0.22,
+            stretch: 0.018,
+            squeeze: 0.014,
+            recoil: 2.7,
+            sway: 2.3,
+            roll: 1.9,
+            movingDrag: 0.98,
+            restingDrag: 0.9,
+            turnTicks: 1,
+          },
+          funa: {
+            beat: 0.54,
+            speedBeat: 0.09,
+            burst: 1.25,
+            thrust: 0.1,
+            stretch: 0.012,
+            squeeze: 0.01,
+            recoil: 1.35,
+            sway: 1.1,
+            roll: 0.9,
+            movingDrag: 0.986,
+            restingDrag: 0.92,
+            turnTicks: 2,
+          },
+          koi: {
+            beat: 0.48,
+            speedBeat: 0.1,
+            burst: 1.46,
+            thrust: 0.17,
+            stretch: 0.014,
+            squeeze: 0.011,
+            recoil: 1.8,
+            sway: 1.35,
+            roll: 1.15,
+            movingDrag: 0.988,
+            restingDrag: 0.93,
+            turnTicks: 2,
+          },
+          nushi: {
+            beat: 0.31,
+            speedBeat: 0.075,
+            burst: 1.34,
+            thrust: 0.2,
+            stretch: 0.011,
+            squeeze: 0.009,
+            recoil: 2.1,
+            sway: 0.85,
+            roll: 0.72,
+            movingDrag: 0.992,
+            restingDrag: 0.95,
+            turnTicks: 3,
+          },
         },
         fightProfiles = {
           moroko: {
@@ -1606,7 +1664,13 @@
         dogWalking = false,
         dogAnimFrame = 0,
         petSceneFrame = 0,
-        waterFxState = { tick: 0, particles: [], bubbles: [], silt: [] };
+        waterFxState = {
+          tick: 0,
+          particles: [],
+          bubbles: [],
+          wakes: [],
+          silt: [],
+        };
       function loadDogImage(src) {
         const image = new Image();
         image.onload = () => drawDog();
@@ -2244,6 +2308,13 @@
           startMeters: 0,
           distanceFactor: 1,
           frame: 0,
+          swimPhase: 0,
+          tailStroke: 0,
+          tailKick: false,
+          bodyStretch: 1,
+          bodySquash: 1,
+          visualOffsetX: 0,
+          visualOffsetY: 0,
           reeling: false,
           mood: null,
           moodTick: 0,
@@ -2255,6 +2326,8 @@
           targetVx: 0,
           targetVy: 0,
           facing: 1,
+          turnIntent: 1,
+          turnHold: 0,
           pitch: 0,
           swimTick: 0,
           calmBoost: 0,
@@ -2413,7 +2486,8 @@
         battle.facing = direction;
         battle.pitch = 0;
         battle.speed = 4.8;
-        battle.frame = (battle.frame + 1) % 3;
+        const bodyMotion = animateFishBody(battle.mood, battle.speed, 1.32);
+        battle.renderAngle += bodyMotion.roll * 0.45;
         battle.renderScale =
           (battle.f.id === "nushi" ? 1.16 : 1.1) *
           (1 + Math.sin(event.tick * 1.7) * 0.025);
@@ -2521,6 +2595,39 @@
         battle.retrieval = clampBattle(battle.retrieval, 0, 1);
         battle.retrievalDelta = battle.retrieval - before;
       }
+      function animateFishBody(mood, speed, intensity = 1) {
+        const profile = fishMotionProfiles[battle.f.id];
+        const calmFactor = mood?.calm ? 0.5 : 1;
+        const dangerFactor = mood?.danger ? profile.burst : 1;
+        const fatigueFactor = 1 - (battle.retrieval || 0) * 0.2;
+        const phaseAdvance =
+          (profile.beat + Math.min(6, speed) * profile.speedBeat) *
+          calmFactor *
+          dangerFactor *
+          fatigueFactor *
+          intensity;
+        const previousStroke = battle.tailStroke || 0;
+        battle.swimPhase = ((battle.swimPhase || 0) + phaseAdvance) % 8;
+        const radians = (battle.swimPhase / 8) * Math.PI * 2;
+        const wave = Math.sin(radians);
+        const stroke = Math.abs(wave);
+        const effort = (mood?.calm ? 0.58 : 1) *
+          (mood?.danger ? 1.18 : 1) * intensity;
+        battle.frame = Math.floor(battle.swimPhase) % 8;
+        battle.tailStroke = stroke;
+        battle.tailKick = stroke >= 0.82 && previousStroke < 0.82;
+        battle.bodyStretch = 1 + stroke * profile.stretch * effort;
+        battle.bodySquash = 1 - stroke * profile.squeeze * effort;
+        battle.visualOffsetX =
+          -(battle.facing || 1) * stroke * profile.recoil * effort;
+        battle.visualOffsetY = wave * profile.sway * effort;
+        return {
+          wave,
+          stroke,
+          roll: wave * profile.roll * effort,
+          thrust: Math.pow(stroke, 1.65) * profile.thrust * effort,
+        };
+      }
       function moveBattleFish(mood) {
         battle.moodTick++;
         battle.swimTick++;
@@ -2568,9 +2675,37 @@
         }[mood.motion] || 0.18;
         battle.vx += (battle.targetVx - battle.vx) * acceleration;
         battle.vy += (battle.targetVy - battle.vy) * acceleration;
-        const drag = mood.motion === "rest" ? 0.88 : 0.985;
+        const motionProfile = fishMotionProfiles[battle.f.id];
+        const drag = mood.motion === "rest"
+          ? motionProfile.restingDrag
+          : motionProfile.movingDrag;
         battle.vx *= drag;
         battle.vy *= drag;
+        const desiredFacing = battle.vx > 0.32 ? 1 : battle.vx < -0.32 ? -1 : 0;
+        if (desiredFacing && desiredFacing !== battle.facing) {
+          if (battle.turnIntent === desiredFacing) battle.turnHold++;
+          else {
+            battle.turnIntent = desiredFacing;
+            battle.turnHold = 1;
+          }
+          if (battle.turnHold >= motionProfile.turnTicks) {
+            battle.facing = desiredFacing;
+            battle.turnHold = 0;
+            battle.swimPhase = 0;
+          }
+        } else {
+          battle.turnIntent = battle.facing;
+          battle.turnHold = 0;
+        }
+        const bodyMotion = animateFishBody(
+          mood,
+          Math.hypot(battle.vx, battle.vy),
+        );
+        const courseLength = Math.hypot(battle.targetVx, battle.targetVy);
+        if (courseLength > 0.04) {
+          battle.vx += (battle.targetVx / courseLength) * bodyMotion.thrust;
+          battle.vy += (battle.targetVy / courseLength) * bodyMotion.thrust;
+        }
         const progress = battle.retrieval || 0;
         const baseX =
           battle.startX + (battle.surfaceX - battle.startX) * progress;
@@ -2597,24 +2732,18 @@
         }
         battle.x = nextX;
         battle.y = nextY;
-        if (battle.vx > 0.22) battle.facing = 1;
-        else if (battle.vx < -0.22) battle.facing = -1;
         const speed = Math.hypot(battle.vx, battle.vy);
-        const frameEvery = speed > 3 ? 1 : speed > 1.15 ? 2 : speed > 0.35 ? 3 : 5;
-        if (battle.swimTick % frameEvery === 0)
-          battle.frame = (battle.frame + 1) % 3;
         const targetPitch = clampBattle(
           (battle.vy / (Math.abs(battle.vx) + 0.75)) * 8.5,
-          -13,
-          13,
+          -16,
+          16,
         );
         battle.pitch += (targetPitch - battle.pitch) * 0.32;
-        const tailRoll =
-          Math.sin(battle.swimTick * (0.65 + Math.min(1.2, speed * 0.18))) *
-          Math.min(2.2, 0.35 + speed * 0.38);
-        battle.renderAngle = (battle.facing < 0 ? -battle.pitch : battle.pitch) + tailRoll;
+        battle.renderAngle =
+          (battle.facing < 0 ? -battle.pitch : battle.pitch) + bodyMotion.roll;
         battle.renderScale =
-          (mood.scale || 1) * (1 + Math.sin(battle.swimTick * 0.7) * 0.008);
+          (mood.scale || 1) *
+          (1 + Math.cos((battle.swimPhase / 8) * Math.PI * 4) * 0.006);
         battle.speed = speed;
       }
       function resetWaterFx() {
@@ -2628,6 +2757,7 @@
             phase: Math.random() * Math.PI * 2,
           })),
           bubbles: [],
+          wakes: [],
           silt: [],
         };
         drawWaterFx();
@@ -2635,22 +2765,51 @@
       function clearWaterFx() {
         const canvas = $("#waterFx");
         canvas.getContext("2d").clearRect(0, 0, canvas.width, canvas.height);
-        waterFxState = { tick: 0, particles: [], bubbles: [], silt: [] };
+        waterFxState = {
+          tick: 0,
+          particles: [],
+          bubbles: [],
+          wakes: [],
+          silt: [],
+        };
       }
       function spawnFishWake() {
         if (!battle?.f || battle.phase !== "fight") return;
         const mood = battle.mood;
         const speed = battle.speed || 0;
         let count = 0;
-        if (mood?.danger) count = 3;
-        else if (speed > 2 && waterFxState.tick % 2 === 0) count = 2;
-        else if (speed > 0.65 && waterFxState.tick % 4 === 0) count = 1;
-        else if (mood?.calm && waterFxState.tick % 8 === 0) count = 1;
+        if (battle.tailKick) count = mood?.danger ? 4 : speed > 1.2 ? 2 : 1;
+        else if (mood?.danger && waterFxState.tick % 3 === 0) count = 1;
+        else if (mood?.calm && waterFxState.tick % 12 === 0) count = 1;
         const fishX = battle.x * 10;
         const fishY = battle.y * 5;
+        const tailDistance = {
+          moroko: 52,
+          funa: 58,
+          koi: 88,
+          nushi: 122,
+        }[battle.f.id];
+        if (battle.tailKick) {
+          const wakeCount = mood?.danger ? 4 : battle.f.id === "nushi" ? 3 : 2;
+          const tailX = fishX - battle.facing * tailDistance;
+          for (let i = 0; i < wakeCount; i++) {
+            waterFxState.wakes.push({
+              x: tailX - battle.facing * i * 5,
+              y:
+                fishY +
+                (battle.visualOffsetY || 0) * 1.8 +
+                (Math.random() - 0.5) * (8 + i * 3),
+              vx: -battle.facing * (1.1 + speed * 0.38 + Math.random() * 0.7),
+              vy: (Math.random() - 0.5) * 0.7,
+              length: 6 + Math.floor(speed * 1.8) + i * 2,
+              life: 9 + i * 2,
+              maxLife: 9 + i * 2,
+            });
+          }
+        }
         for (let i = 0; i < count; i++) {
           waterFxState.bubbles.push({
-            x: fishX - battle.facing * (34 + Math.random() * 34),
+            x: fishX - battle.facing * (tailDistance * 0.7 + Math.random() * 24),
             y: fishY + (Math.random() - 0.5) * 24,
             vx: -battle.facing * (0.35 + Math.random() * 1.25),
             vy: -1.1 - Math.random() * 1.8,
@@ -2692,6 +2851,23 @@
             ctx.fillRect(Math.round(bubble.x + 1), Math.round(bubble.y), 1, 1);
           }
         }
+        for (const wake of waterFxState.wakes) {
+          const alpha = clampBattle(wake.life / wake.maxLife, 0.08, 0.58);
+          const length = Math.max(2, Math.round(wake.length * alpha));
+          const x = Math.round(wake.x);
+          const y = Math.round(wake.y);
+          ctx.fillStyle = `rgba(175, 242, 249, ${alpha})`;
+          ctx.fillRect(wake.vx < 0 ? x - length : x, y, length, 1);
+          if (wake.life > wake.maxLife * 0.55) {
+            ctx.fillStyle = `rgba(222, 255, 255, ${alpha * 0.62})`;
+            ctx.fillRect(
+              wake.vx < 0 ? x - Math.max(2, length - 3) : x,
+              y + 2,
+              Math.max(2, length - 3),
+              1,
+            );
+          }
+        }
         for (const grain of waterFxState.silt) {
           ctx.fillStyle = grain.life % 2 ? "#b5a36088" : "#74804f99";
           ctx.fillRect(Math.round(grain.x), Math.round(grain.y), 2, 2);
@@ -2714,6 +2890,13 @@
           bubble.vx *= 0.94;
           bubble.life--;
         }
+        for (const wake of waterFxState.wakes) {
+          wake.x += wake.vx;
+          wake.y += wake.vy;
+          wake.vx *= 0.88;
+          wake.vy *= 0.92;
+          wake.life--;
+        }
         for (const grain of waterFxState.silt) {
           grain.x += grain.vx;
           grain.y += grain.vy;
@@ -2723,6 +2906,9 @@
         waterFxState.bubbles = waterFxState.bubbles
           .filter((bubble) => bubble.life > 0 && bubble.y > 45)
           .slice(-120);
+        waterFxState.wakes = waterFxState.wakes
+          .filter((wake) => wake.life > 0)
+          .slice(-80);
         waterFxState.silt = waterFxState.silt
           .filter((grain) => grain.life > 0)
           .slice(-90);
@@ -2794,10 +2980,18 @@
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
         element.style.top = battle.y + "%";
-        element.style.backgroundPositionX = `${battle.frame * 50}%`;
+        element.style.backgroundPositionX =
+          `${(battle.frame || 0) * (100 / 7)}%`;
+        const offsetX = Number(battle.visualOffsetX || 0).toFixed(2);
+        const offsetY = Number(battle.visualOffsetY || 0).toFixed(2);
+        const facing = battle.facing || 1;
+        const stretch = battle.bodyStretch || 1;
+        const squash = battle.bodySquash || 1;
         element.style.transform =
-          `translate(-50%,-50%) rotate(${battle.renderAngle || 0}deg) ` +
-          `scaleX(${battle.facing || 1}) scale(${battle.renderScale || 1})`;
+          `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) ` +
+          `rotate(${battle.renderAngle || 0}deg) ` +
+          `scaleX(${facing * stretch}) scaleY(${squash}) ` +
+          `scale(${battle.renderScale || 1})`;
         const depthLight = clampBattle(
           1.11 - (battle.y - 28) * 0.006,
           0.73,
@@ -2929,6 +3123,16 @@
         battle.nextMood = 0;
         battle.retrieval = 0;
         battle.tensionBand = "safe";
+        battle.frame = 0;
+        battle.swimPhase = 0;
+        battle.tailStroke = 0;
+        battle.tailKick = false;
+        battle.bodyStretch = 1;
+        battle.bodySquash = 1;
+        battle.visualOffsetX = 0;
+        battle.visualOffsetY = 0;
+        battle.turnIntent = battle.facing || 1;
+        battle.turnHold = 0;
         const scene = $("#fishScene");
         scene.classList.add("fighting");
         scene.classList.toggle("nushi-fight", f.id === "nushi");
@@ -2975,7 +3179,10 @@
         const fx = battle.x * 10;
         const fy = battle.y * 5;
         const mouthOffsets = { moroko: 68, funa: 72, koi: 82, nushi: 112 };
-        const mouthOffset = mouthOffsets[battle.f.id] * (battle.renderScale || 1);
+        const mouthOffset =
+          mouthOffsets[battle.f.id] *
+          (battle.renderScale || 1) *
+          (battle.bodyStretch || 1);
         const pitchRadians = (battle.pitch || 0) * Math.PI / 180;
         const mouthX = clampBattle(
           fx + (battle.facing || 1) * Math.cos(pitchRadians) * mouthOffset,

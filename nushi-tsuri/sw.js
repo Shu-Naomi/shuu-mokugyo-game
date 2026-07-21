@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v29-hook-origin-fix-1";
+const CACHE_NAME = "nushi-tsuri-v30-living-fish-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
@@ -17,10 +17,10 @@ const APP_ASSETS = [
   "./assets/shuu-walk.png?v=12",
   "./assets/grey-walk.png?v=12",
   "./assets/dog-idles.png?v=12",
-  "./assets/fish-moroko.png",
-  "./assets/fish-funa.png",
-  "./assets/fish-koi.png",
-  "./assets/fish-nushi.png",
+  "./assets/fish-moroko-v30.png",
+  "./assets/fish-funa-v30.png",
+  "./assets/fish-koi-v30.png",
+  "./assets/fish-nushi-v30.png",
   "./assets/lake-underwater-v25.svg",
   "./assets/sam-front.png",
 ];
