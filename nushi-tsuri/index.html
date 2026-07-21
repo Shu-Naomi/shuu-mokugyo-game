@@ -486,7 +486,13 @@
       .companion.riku[class*="idle-"] { background-position-y: 50%; }
       .companion.grey[class*="idle-"] { background-position-y: 100%; }
       .companion.idle-sit { background-position-x: 0; }
-      .companion.idle-sleep { background-position-x: 33.333%; animation: dog-breathe 2.4s ease-in-out infinite; }
+      .companion.idle-sleep {
+        background-position-x: 33.333%;
+        /* The visible paws rest at roughly 76% of the element height.  Breathe
+           around that line so the sleeping dog never floats above the grass. */
+        transform-origin: center 76%;
+        animation: dog-breathe 2.4s ease-in-out infinite;
+      }
       .companion.idle-dig {
         background-position-x: 66.667%;
         animation: none;
@@ -547,7 +553,7 @@
         50% { transform: translateY(-1px); }
       }
       @keyframes dog-breathe {
-        50% { transform: translate(-50%, -50%) scale(1.03, .98); }
+        50% { transform: translate(-50%, -50%) scale(1.018, .985); }
       }
       @keyframes dog-dig-soil {
         50% { transform: scaleX(1.18); filter: brightness(1.08); }
@@ -911,7 +917,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v21</span><span id="time">朝</span
+        <b>星降る湖</b><span>v22</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1160,7 +1166,24 @@
         return Math.max(1, Math.min(99, position.left + dogApproachOffset));
       }
       function dogDisplayTop(position = dogFollowPosition()) {
-        return Math.max(61, Math.min(93, position.top + dogApproachTopOffset));
+        const maxTop = dogIdleMode === "idle-sleep" ? 97 : 93;
+        return Math.max(61, Math.min(maxTop, position.top + dogApproachTopOffset));
+      }
+      function sleepCompanionLayout() {
+        const map = $("#map");
+        const mapWidth = Math.max(1, map?.clientWidth || innerWidth * 3);
+        const mapHeight = Math.max(1, map?.clientHeight || innerHeight);
+        // These centre distances come from the real opaque bounds after the
+        // 480x640 owner art and 320x320 dog cells are drawn at game size.
+        const sidePixels = {
+          boy: { shuu: 37, riku: 38, grey: 37 },
+          girl: { shuu: 32, riku: 33, grey: 32 },
+        }[s.avatar]?.[s.dog] ?? 35;
+        const downPixels = { shuu: 16, riku: 15, grey: 15 }[s.dog] ?? 15;
+        return {
+          side: sidePixels * 100 / mapWidth,
+          down: downPixels * 100 / mapHeight,
+        };
       }
       function renderPlayer() {
         const linkedIdle = ["idle-beg", "idle-sleep"].includes(dogIdleMode);
@@ -1427,6 +1450,7 @@
         $("#dog")?.classList.remove("idle-sit", "idle-sleep", "idle-dig", "idle-beg");
         $("#dog").style.left = `${dogDisplayLeft()}%`;
         $("#dog").style.top = `${dogDisplayTop()}%`;
+        $("#dog").style.zIndex = dogDisplayTop() > s.y ? "6" : "4";
         renderPlayer();
         drawDog();
       }
@@ -1489,14 +1513,21 @@
         if (mode === "sleep") {
           const currentLeft = dogDisplayLeft(dogPosition);
           const currentTop = dogDisplayTop(dogPosition);
-          const side = currentLeft < playerLeft ? -1 : 1;
-          const targetLeft = playerLeft + side * 0.78;
-          const targetTop = s.y;
+          const layout = sleepCompanionLayout();
+          let side = currentLeft < playerLeft ? -1 : 1;
+          if (playerLeft + side * layout.side < 1)
+            side = 1;
+          else if (playerLeft + side * layout.side > 99)
+            side = -1;
+          const targetLeft = playerLeft + side * layout.side;
+          const targetTop = Math.min(97, s.y + layout.down);
           dogApproachOffset = targetLeft - dogPosition.left;
           dogApproachTopOffset = targetTop - dogPosition.top;
-          dogMotionDirection = targetLeft < currentLeft ? "left" : "right";
           dogWalking = Math.abs(targetLeft - currentLeft) > 0.08 ||
             Math.abs(targetTop - currentTop) > 0.35;
+          dogMotionDirection = dogWalking
+            ? targetLeft < currentLeft ? "left" : "right"
+            : "";
 
           if (dogWalking) {
             dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
@@ -1504,12 +1535,14 @@
             renderPlayer();
             dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
             dog.style.top = `${dogDisplayTop(dogPosition)}%`;
+            dog.style.zIndex = "6";
             reactionTransitionTimer = setTimeout(() => {
               if (battle || dogIdleMode !== "idle-sleep") return;
               dogWalking = false;
               dogMotionDirection = "";
               dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
               dog.classList.toggle("face-player-right", targetLeft < playerLeft);
+              dog.style.zIndex = "6";
               drawDog();
               renderPlayer();
               companionReactionTimer = setTimeout(
@@ -1523,6 +1556,7 @@
 
         dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
         dog.style.top = `${dogDisplayTop(dogPosition)}%`;
+        dog.style.zIndex = dogDisplayTop(dogPosition) > s.y ? "6" : "4";
         dog.className = `companion canvas-dog ${s.dog} dir-${s.direction} ${dogIdleMode}`;
         if (["beg", "sleep"].includes(mode))
           dog.classList.toggle(
@@ -1544,6 +1578,37 @@
       }
       function randomDogIdle() {
         if (battle) return;
+        // Leave the linked nap as a short wake-and-return sequence instead of
+        // turning a curled-up dog directly into a digging or begging sprite.
+        if (dogIdleMode === "idle-sleep") {
+          const dogPosition = dogFollowPosition();
+          const currentLeft = dogDisplayLeft(dogPosition);
+          const currentTop = dogDisplayTop(dogPosition);
+          wakeDog();
+          const targetLeft = dogDisplayLeft(dogPosition);
+          const targetTop = dogDisplayTop(dogPosition);
+          dogWalking = Math.abs(targetLeft - currentLeft) > 0.08 ||
+            Math.abs(targetTop - currentTop) > 0.35;
+          dogMotionDirection = dogWalking
+            ? targetLeft < currentLeft ? "left" : "right"
+            : "";
+          if (dogWalking) {
+            const dog = $("#dog");
+            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+            dog.style.left = `${targetLeft}%`;
+            dog.style.top = `${targetTop}%`;
+            dog.style.zIndex = targetTop > s.y ? "6" : "4";
+            drawDog();
+            dogWalkTimer = setTimeout(() => {
+              dogWalking = false;
+              dogMotionDirection = "";
+              dog.className = `companion canvas-dog ${s.dog} dir-${s.direction}`;
+              drawDog();
+            }, 660);
+          }
+          idleActionTimer = setTimeout(randomDogIdle, 900);
+          return;
+        }
         const modes = ["sleep", "dig", "beg"];
         setDogIdle(modes[Math.floor(Math.random() * modes.length)]);
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
