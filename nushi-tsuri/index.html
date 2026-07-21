@@ -708,6 +708,9 @@
       .fish-scene.active {
         display: block;
       }
+      .fish-scene.nushi-fight {
+        background: linear-gradient(#8ebbd5 0 18%, #174f79 19%, #251c53 72%, #0b1835);
+      }
       .surface {
         height: 18%;
         background: repeating-linear-gradient(
@@ -746,6 +749,11 @@
         filter: drop-shadow(1px 1px #06304c);
         transition: 0.22s;
       }
+      .line-svg path.warn { stroke: #ffd36b; }
+      .line-svg path.danger {
+        stroke: #ff6a68;
+        filter: drop-shadow(0 0 4px #ff3d45);
+      }
       .hook {
         position: absolute;
         left: calc(18% - 6px);
@@ -764,6 +772,9 @@
         transform: translate(-50%, -50%);
         transition: left 0.18s linear, top 0.18s linear, transform 0.15s ease;
         filter: drop-shadow(5px 5px #082e4b);
+      }
+      .battle-fish.burst {
+        filter: drop-shadow(0 0 8px #ffcf69) brightness(1.12);
       }
       .dog-select {
         display: flex;
@@ -802,6 +813,12 @@
         color: #fff;
         border-radius: 8px;
       }
+      .battle-ui.warn { box-shadow: 0 0 0 2px #f2b84b88; }
+      .battle-ui.danger {
+        border-color: #ff706d;
+        box-shadow: 0 0 12px #ff3d45bb;
+        animation: danger-pulse .42s steps(2) infinite;
+      }
       .meter {
         height: 12px;
         margin: 4px 0 8px;
@@ -819,6 +836,8 @@
       .tension {
         background: #e0b34e;
       }
+      .tension.warn { background: #f08b39; }
+      .tension.danger { background: #f04449; }
       .battle-msg {
         min-height: 2.7em;
         font-size: clamp(0.7rem, 1.5vw, 0.9rem);
@@ -853,6 +872,36 @@
       }
       .tackle-options { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
       .tackle-options button.selected { outline:3px solid #69d8ff; }
+      .catch-card {
+        display: none;
+        position: absolute;
+        z-index: 45;
+        left: 50%;
+        top: 48%;
+        min-width: min(76vw, 360px);
+        padding: 14px 22px;
+        transform: translate(-50%, -50%);
+        border: 4px double #ffe38a;
+        border-radius: 14px;
+        background: #10243ef2;
+        color: #fff;
+        text-align: center;
+        pointer-events: none;
+        box-shadow: 0 10px 30px #0009, 0 0 18px #71d8ff77;
+      }
+      .catch-card.show {
+        display: grid;
+        gap: 3px;
+        animation: catch-pop .42s cubic-bezier(.2,1.5,.45,1) both;
+      }
+      .catch-card.legend {
+        border-color: #ffd65a;
+        background: #281d4bf2;
+        box-shadow: 0 10px 30px #0009, 0 0 24px #ffd65aaa;
+      }
+      .catch-card span { color: #8fe8ff; font-weight: 900; }
+      .catch-card strong { color: #ffe89c; font-size: 1.35rem; }
+      .catch-card small { font-size: .86rem; }
       .landscape-warning {
         display: none;
       }
@@ -860,6 +909,13 @@
         to {
           background-position: 0 10px;
         }
+      }
+      @keyframes danger-pulse {
+        50% { background: #421f2fe8; }
+      }
+      @keyframes catch-pop {
+        from { opacity: 0; transform: translate(-50%, -45%) scale(.72); }
+        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
       }
       @media (orientation: portrait) {
         .landscape-warning {
@@ -917,7 +973,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v23</span><span id="time">朝</span
+        <b>星降る湖</b><span>v24</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -965,7 +1021,7 @@
           </svg>
           <div class="hook">🪝</div>
           <div class="battle-fish" id="battleFish"></div>
-          <div class="battle-ui">
+          <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
             <div class="cast-meter" id="castMeter"><div class="cast-marker" id="castMarker"></div></div>
             <div class="meter"><div class="fill" id="hp"></div></div>
@@ -977,6 +1033,11 @@
             <button id="pull">A<br /><small>投げる</small></button
             ><button id="wait">B<br /><small>やめる</small></button>
           </div>
+        </div>
+        <div class="catch-card" id="catchCard" aria-live="polite">
+          <span id="catchBadge">🎣 GET!</span>
+          <strong id="catchTitle"></strong>
+          <small id="catchDetail"></small>
         </div>
         <div class="modal" id="record">
           <button class="close" data-close>閉じる</button>
@@ -1060,6 +1121,224 @@
           koi: "assets/fish-koi.png",
           nushi: "assets/fish-nushi.png",
         },
+        fightProfiles = {
+          moroko: {
+            intro: "細かな動きをよく見よう。",
+            moods: [
+              {
+                id: "dart",
+                name: "小刻み",
+                icon: "↔",
+                weight: 0.56,
+                min: 420,
+                max: 700,
+                motion: "dart",
+                speedX: 5.5,
+                speedY: 3.2,
+                tension: 6.2,
+                release: 5.8,
+                reel: 0.72,
+                scale: 1.03,
+                frameEvery: 1,
+                hold: "ホンモロコが小刻みに走る！巻きすぎ注意！",
+                loose: "細かく糸を送り、走りが止まるのを待つ。",
+              },
+              {
+                id: "rest",
+                name: "停止",
+                icon: "◎",
+                weight: 0.44,
+                min: 420,
+                max: 680,
+                motion: "rest",
+                tension: 1.6,
+                release: 5.5,
+                reel: 2.1,
+                scale: 0.98,
+                frameEvery: 3,
+                calm: true,
+                hold: "動きが止まった！今が巻き時！",
+                loose: "糸が緩んだ。Aで一気に巻ける！",
+              },
+            ],
+          },
+          funa: {
+            intro: "底へ向かう重い引きだ。",
+            moods: [
+              {
+                id: "steady",
+                name: "底引き",
+                icon: "↓",
+                weight: 0.7,
+                min: 900,
+                max: 1450,
+                motion: "steady",
+                speedX: 1.25,
+                speedY: 0.7,
+                tension: 4.7,
+                release: 4.8,
+                reel: 0.9,
+                scale: 1,
+                frameEvery: 2,
+                hold: "フナが底へ重く引く。テンションを見て巻く！",
+                loose: "一定の引きだ。少しずつ糸を送っている。",
+              },
+              {
+                id: "rest",
+                name: "間",
+                icon: "◎",
+                weight: 0.3,
+                min: 650,
+                max: 950,
+                motion: "rest",
+                tension: 1.8,
+                release: 4.2,
+                reel: 1.7,
+                scale: 0.98,
+                frameEvery: 3,
+                calm: true,
+                hold: "フナの引きが緩んだ。着実に巻こう！",
+                loose: "今なら安全に巻ける！",
+              },
+            ],
+          },
+          koi: {
+            intro: "強い走りと休止を見極めよう。",
+            moods: [
+              {
+                id: "rush",
+                name: "突進",
+                icon: "⚡",
+                weight: 0.38,
+                min: 620,
+                max: 920,
+                motion: "rush",
+                speedX: 5,
+                speedY: 2.3,
+                tension: 9.2,
+                release: 6.8,
+                reel: 0.4,
+                scale: 1.08,
+                frameEvery: 1,
+                danger: true,
+                hold: "コイが一気に走った！Aを離せ！",
+                loose: "走りに合わせて糸を送る！",
+              },
+              {
+                id: "steady",
+                name: "抵抗",
+                icon: "↔",
+                weight: 0.35,
+                min: 720,
+                max: 1100,
+                motion: "steady",
+                speedX: 1.8,
+                speedY: 1.1,
+                tension: 5.5,
+                release: 5.2,
+                reel: 0.75,
+                scale: 1.03,
+                frameEvery: 2,
+                hold: "コイが重く抵抗する。無理は禁物！",
+                loose: "抵抗をいなし、次の隙を待つ。",
+              },
+              {
+                id: "rest",
+                name: "休止",
+                icon: "◎",
+                weight: 0.27,
+                min: 520,
+                max: 820,
+                motion: "rest",
+                tension: 2,
+                release: 4.8,
+                reel: 1.85,
+                scale: 0.98,
+                frameEvery: 3,
+                calm: true,
+                hold: "コイが止まった！巻く好機！",
+                loose: "休んでいる。Aで距離を詰めよう！",
+              },
+            ],
+          },
+          nushi: {
+            intro: "湖のヌシがこちらを試している……。",
+            moods: [
+              {
+                id: "feint",
+                name: "静寂",
+                icon: "?",
+                weight: 0.26,
+                min: 420,
+                max: 680,
+                motion: "feint",
+                speedX: 1.2,
+                speedY: 0.7,
+                tension: 3.3,
+                release: 4.5,
+                reel: 0.85,
+                scale: 1,
+                frameEvery: 3,
+                hold: "止まったように見える……フェイントか！",
+                loose: "静かすぎる。次の動きに備えよう。",
+              },
+              {
+                id: "deep",
+                name: "深潜り",
+                icon: "▼",
+                weight: 0.25,
+                min: 900,
+                max: 1350,
+                motion: "deep",
+                speedX: 0.9,
+                speedY: 2.5,
+                tension: 6.8,
+                release: 6.2,
+                reel: 0.55,
+                scale: 1.05,
+                frameEvery: 2,
+                hold: "ヌシが深く潜る！無理に巻くな！",
+                loose: "竿を送り、深場の力をいなす。",
+              },
+              {
+                id: "rush",
+                name: "猛進",
+                icon: "⚠",
+                weight: 0.34,
+                min: 780,
+                max: 1150,
+                motion: "rush",
+                speedX: 5.8,
+                speedY: 2.8,
+                tension: 10.5,
+                release: 7.6,
+                reel: 0.28,
+                scale: 1.11,
+                frameEvery: 1,
+                danger: true,
+                hold: "ヌシの猛進！今すぐAを離せ！",
+                loose: "激走に合わせて糸を送る！",
+              },
+              {
+                id: "rest",
+                name: "隙",
+                icon: "◎",
+                weight: 0.15,
+                min: 420,
+                max: 680,
+                motion: "rest",
+                tension: 2.4,
+                release: 5.2,
+                reel: 1.6,
+                scale: 0.98,
+                frameEvery: 3,
+                calm: true,
+                hold: "一瞬の隙だ！今だけ巻ける！",
+                loose: "隙を逃さずAで巻こう！",
+              },
+            ],
+          },
+        },
         key = "nushi-inugoya-v2";
       let s = Object.assign(
           {
@@ -1086,6 +1365,7 @@
         ),
         battle = null,
         timer = 0,
+        catchTimer = 0,
         walkTimer = 0,
         dogWalkTimer = 0,
         idleTimer = 0,
@@ -1674,6 +1954,8 @@
       }
       function cast() {
         wakeDog();
+        hideCatchCard();
+        resetBattleFeedback();
         battle = { phase: "prep", reeling: false };
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
@@ -1700,6 +1982,8 @@
       }
       function beginFishing() {
         wakeDog();
+        hideCatchCard();
+        resetBattleFeedback();
         s.bait = s.baits[s.selectedBait] || 0;
         if (s.bait < 1) {
           $("#hint").textContent =
@@ -1727,6 +2011,12 @@
           y: 55,
           frame: 0,
           reeling: false,
+          mood: null,
+          moodTick: 0,
+          tensionBand: "safe",
+          motionX: 1,
+          motionY: 1,
+          calmBoost: 0,
         };
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
@@ -1741,6 +2031,114 @@
         battleTick();
         drawBattle();
         render();
+      }
+      function clampBattle(value, min, max) {
+        return Math.max(min, Math.min(max, value));
+      }
+      function chooseFishMood(force = false) {
+        if (!battle?.f) return;
+        const moods = fightProfiles[battle.f.id].moods;
+        const previous = battle.mood?.id;
+        const boosted = battle.calmBoost > 0;
+        const weighted = moods.map((mood) => {
+          let weight = mood.weight;
+          if (boosted && mood.calm) weight *= 3.4;
+          if (!force && previous === mood.id) weight *= 0.38;
+          return { mood, weight };
+        });
+        let roll = Math.random() * weighted.reduce((sum, item) => sum + item.weight, 0);
+        let selected = weighted[weighted.length - 1].mood;
+        for (const item of weighted) {
+          roll -= item.weight;
+          if (roll <= 0) {
+            selected = item.mood;
+            break;
+          }
+        }
+        if (boosted) battle.calmBoost--;
+        battle.mood = selected;
+        battle.calm = Boolean(selected.calm);
+        battle.moodTick = 0;
+        battle.nextMood =
+          Date.now() + selected.min + Math.random() * (selected.max - selected.min);
+        battle.motionX = Math.random() < 0.5 ? -1 : 1;
+        battle.motionY = selected.motion === "deep" ? 1 : Math.random() < 0.5 ? -1 : 1;
+        $("#phaseLabel").textContent = ` ${selected.icon} ${selected.name}`;
+        $("#battleFish").classList.toggle("burst", Boolean(selected.danger));
+        if (selected.danger && previous && previous !== selected.id)
+          vibrate([35, 30, 55]);
+      }
+      function moveBattleFish(mood) {
+        battle.moodTick++;
+        let speedX = mood.speedX || 0;
+        let speedY = mood.speedY || 0;
+        if (mood.motion === "rest") return;
+        if (mood.motion === "dart") {
+          if (Math.random() < 0.32) battle.motionX *= -1;
+          if (Math.random() < 0.24) battle.motionY *= -1;
+        } else if (mood.motion === "feint") {
+          if (battle.moodTick % 3) return;
+          if (Math.random() < 0.5) battle.motionX *= -1;
+          if (Math.random() < 0.35) battle.motionY *= -1;
+        } else if (mood.motion === "deep") {
+          speedX *= 0.75;
+        }
+        let nextX = battle.x + speedX * battle.motionX;
+        let nextY = battle.y + speedY * battle.motionY;
+        if (nextX < 44 || nextX > 92) {
+          battle.motionX *= -1;
+          nextX = clampBattle(nextX, 44, 92);
+        }
+        if (nextY < 32 || nextY > 82) {
+          battle.motionY *= -1;
+          nextY = clampBattle(nextY, 32, 82);
+        }
+        battle.x = nextX;
+        battle.y = nextY;
+        if (battle.moodTick % (mood.frameEvery || 2) === 0)
+          battle.frame = (battle.frame + 1) % 3;
+      }
+      function tensionBand(value) {
+        return value >= 85 ? "danger" : value >= 65 ? "warn" : "safe";
+      }
+      function updateTensionFeedback() {
+        if (!battle) return;
+        const nextBand = tensionBand(battle.ten);
+        const rank = { safe: 0, warn: 1, danger: 2 };
+        if (rank[nextBand] > rank[battle.tensionBand || "safe"])
+          vibrate(nextBand === "danger" ? [80, 45, 110] : 55);
+        battle.tensionBand = nextBand;
+        for (const id of ["#ten", "#battleUi", "#linePath"]) {
+          const element = $(id);
+          element.classList.toggle("warn", nextBand === "warn");
+          element.classList.toggle("danger", nextBand === "danger");
+        }
+      }
+      function resetBattleFeedback() {
+        $("#fishScene").classList.remove("nushi-fight");
+        $("#battleFish").classList.remove("burst");
+        for (const id of ["#ten", "#battleUi", "#linePath"])
+          $(id).classList.remove("warn", "danger");
+      }
+      function hideCatchCard() {
+        clearTimeout(catchTimer);
+        $("#catchCard").classList.remove("show", "legend");
+      }
+      function showCatchCard(f, first) {
+        const card = $("#catchCard");
+        $("#catchBadge").textContent = f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!";
+        $("#catchTitle").textContent = `${f.icon} ${f.name}`;
+        const detail = first
+          ? `初釣果！ ＋${f.price}円`
+          : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
+        $("#catchDetail").textContent =
+          f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail;
+        card.classList.remove("show", "legend");
+        void card.offsetWidth;
+        card.classList.toggle("legend", f.id === "nushi");
+        card.classList.add("show");
+        vibrate(f.id === "nushi" ? [80, 45, 80, 45, 180] : [70, 40, 120]);
+        catchTimer = setTimeout(hideCatchCard, 2300);
       }
       function battleTick() {
         clearInterval(timer);
@@ -1768,34 +2166,31 @@
           }
           if (battle.phase !== "fight") return;
           const control = rodData[s.selectedRod].control;
-          if (!battle.nextMood || Date.now() > battle.nextMood) {
-            const wasCalm = battle.calm;
-            battle.calm = Math.random() < 0.34;
-            battle.nextMood = Date.now() + 650 + Math.random() * 450;
-            if (wasCalm && !battle.calm) vibrate([45, 35, 45]);
-          }
-          let el = $("#battleFish");
-          if (!battle.calm) {
-            battle.x = 46 + Math.random() * 44;
-            battle.y = 34 + Math.random() * 47;
-            battle.frame = (battle.frame + 1) % 3;
-          }
+          if (!battle.mood || Date.now() > battle.nextMood) chooseFishMood();
+          const mood = battle.mood;
+          moveBattleFish(mood);
+          const el = $("#battleFish");
           el.style.left = battle.x + "%";
           el.style.top = battle.y + "%";
           el.style.backgroundPositionX = `${battle.frame * 50}%`;
-          el.style.transform = battle.calm
-            ? "translate(-50%,-50%) scale(.98)"
-            : "translate(-50%,-50%) scale(1.04)";
+          el.style.transform = `translate(-50%,-50%) scale(${mood.scale || 1})`;
           if (battle.reeling) {
-            battle.hp -= (s.power / 11) * (battle.calm ? 1.8 : 0.7);
-            battle.ten += (battle.calm ? 2 : 7) / control;
-          } else battle.ten = Math.max(3, battle.ten - 5 * control);
-          $("#battleMsg").textContent = battle.calm
-            ? "糸が緩んだ！押して巻く好機！"
-            : battle.reeling ? "魚が暴れている！危険なら指を離す！" : "竿を送り、テンションを逃がしている。";
-          if (battle.hp <= 0) return caught();
-          if (battle.ten >= 100) lose("糸が切れた……");
+            battle.hp -= (s.power / 11) * mood.reel;
+            battle.ten += mood.tension / control;
+          } else {
+            battle.ten = Math.max(3, battle.ten - mood.release * control);
+          }
+          battle.ten = Math.min(110, battle.ten);
+          const warning =
+            battle.ten >= 85
+              ? "⚠ 糸が切れそう！ "
+              : battle.ten >= 65
+                ? "！テンション高め。 "
+                : "";
+          $("#battleMsg").textContent = warning + (battle.reeling ? mood.hold : mood.loose);
           drawBattle();
+          if (battle.hp <= 0) return caught();
+          if (battle.ten >= 100) return lose("糸が切れた……");
         }, 120);
       }
       function pull() {
@@ -1823,16 +2218,26 @@
       function startFight() {
         battle.phase = "fight";
         const f = battle.f;
+        battle.calmBoost = s.calmBonus > 0 ? 3 : 0;
+        if (s.calmBonus > 0) {
+          s.calmBonus = 0;
+          save();
+        }
+        battle.mood = null;
+        battle.nextMood = 0;
+        battle.tensionBand = "safe";
+        $("#fishScene").classList.toggle("nushi-fight", f.id === "nushi");
         $("#battleFish").style.opacity = "1";
         $("#battleFish").style.backgroundImage = `url("${fishAssets[f.id]}")`;
         $("#battleFish").style.backgroundPositionY = "0";
         $("#hp").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
         $("#fishName").textContent = ["細い魚影","丸い魚影","大きな魚影","長い魚影","巨大な魚影"][f.shadowRow];
-        $("#phaseLabel").textContent = " 水中戦";
         $("#pull").innerHTML = "A<br><small>押して巻く</small>";
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
-        $("#battleMsg").textContent = "掛かった！Aを押して巻く、暴れたら離す！";
+        chooseFishMood(true);
+        $("#battleMsg").textContent = `掛かった！${fightProfiles[f.id].intro}`;
+        drawBattle();
         log(`${f.name}が掛かった！`);
       }
       function wait() {
@@ -1858,25 +2263,26 @@
             : `M 150 48 Q 280 155 ${fx} ${fy}`,
         );
         $("#linePath").style.strokeDasharray = battle.calm ? "9 5" : "none";
+        updateTensionFeedback();
       }
       function lose(t) {
         log(t);
         endBattle();
       }
       function caught() {
-        let f = battle.f;
+        const f = battle.f;
+        const first = !s.caught[f.id];
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
         s.money += f.price;
         log(`${f.name}を釣り上げた！ ${f.price}円獲得。`);
-        if (f.id === "nushi")
-          alert(
-            `🌟 星湖のヌシを釣り上げた！\n${dogName()}が誇らしげにしっぽを振った。`,
-          );
         endBattle();
+        showCatchCard(f, first);
       }
       function endBattle() {
         clearInterval(timer);
         battle = null;
+        resetBattleFeedback();
+        $("#linePath").style.strokeDasharray = "none";
         $("#fishScene").classList.remove("active");
         render();
         armDogIdle();
