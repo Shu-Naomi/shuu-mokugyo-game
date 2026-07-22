@@ -752,6 +752,9 @@
         opacity: 0.5;
         animation-duration: 0.55s;
       }
+      .fish-scene.hook-reveal::after {
+        animation: hook-reveal-water 0.78s steps(6);
+      }
       .surface {
         position: absolute;
         z-index: 1;
@@ -891,12 +894,13 @@
         filter:
           brightness(var(--fish-light, 1))
           saturate(var(--fish-color, 1))
+          contrast(var(--fish-contrast, 1))
           drop-shadow(5px 6px 2px #02192dbb);
         will-change: left, top, transform;
       }
       .battle-fish.fish-moroko {
         width: clamp(100px, 14vw, 150px);
-        aspect-ratio: 24 / 11;
+        aspect-ratio: 128 / 55;
       }
       .battle-fish.fish-funa {
         width: clamp(115px, 16vw, 165px);
@@ -913,12 +917,17 @@
       .battle-fish.burst {
         filter:
           brightness(var(--fish-light, 1))
-          saturate(1.12)
+          saturate(1.18)
+          contrast(var(--fish-contrast, 1))
           drop-shadow(0 0 8px #8de9ff)
           drop-shadow(7px 7px 2px #02192dcc);
       }
       .battle-fish.hooked {
-        animation: hooked-flash 0.34s steps(3);
+        animation: hooked-reveal 0.78s steps(6);
+      }
+      .battle-fish.fish-nushi.hooked {
+        animation-duration: 1.05s;
+        animation-timing-function: steps(8);
       }
       .battle-fish.gill-wash {
         z-index: 6;
@@ -929,7 +938,8 @@
           filter 0.1s;
         filter:
           brightness(1.24)
-          saturate(1.2)
+          saturate(1.24)
+          contrast(1.08)
           drop-shadow(0 0 13px #d8ffff)
           drop-shadow(7px 8px 2px #02192dcc);
       }
@@ -946,7 +956,8 @@
           opacity 0.72s;
         filter:
           brightness(1.2)
-          saturate(1.15)
+          saturate(1.18)
+          contrast(1.05)
           drop-shadow(0 0 12px #d7ffff)
           drop-shadow(6px 7px 2px #02192dcc);
       }
@@ -1104,17 +1115,57 @@
       @keyframes line-quiver {
         50% { stroke-width: 5; opacity: 0.78; }
       }
-      @keyframes hooked-flash {
-        0% { opacity: 0; }
-        34% {
-          opacity: 1;
+      @keyframes hooked-reveal {
+        0% {
+          opacity: 0;
           filter:
-            brightness(1.65)
-            saturate(1.2)
-            drop-shadow(0 0 12px #e4ffff)
+            brightness(0.08)
+            saturate(0)
+            contrast(2)
+            drop-shadow(0 0 3px #b8f7ff)
             drop-shadow(5px 6px 2px #02192dbb);
         }
-        100% { opacity: 1; }
+        20% {
+          opacity: 1;
+          filter:
+            brightness(0.18)
+            saturate(0)
+            contrast(1.8)
+            drop-shadow(0 0 7px #c6fbff)
+            drop-shadow(5px 6px 2px #02192dbb);
+        }
+        48% {
+          opacity: 1;
+          filter:
+            brightness(1.72)
+            saturate(0.18)
+            contrast(1.35)
+            drop-shadow(0 0 16px #f2ffff)
+            drop-shadow(5px 6px 2px #02192dbb);
+        }
+        72% {
+          opacity: 1;
+          filter:
+            brightness(var(--fish-light, 1))
+            saturate(0.58)
+            contrast(var(--fish-contrast, 1))
+            drop-shadow(0 0 7px #b8f7ff)
+            drop-shadow(5px 6px 2px #02192dbb);
+        }
+        100% {
+          opacity: 1;
+          filter:
+            brightness(var(--fish-light, 1))
+            saturate(var(--fish-color, 1))
+            contrast(var(--fish-contrast, 1))
+            drop-shadow(5px 6px 2px #02192dbb);
+        }
+      }
+      @keyframes hook-reveal-water {
+        0%, 100% { opacity: 1; }
+        24% { opacity: 0.82; }
+        48% { opacity: 0.18; }
+        68% { opacity: 0.7; }
       }
       @keyframes splash-drop {
         0% { opacity: 0; transform: translate(-50%, -50%) scale(.45); }
@@ -1192,7 +1243,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v30</span><span id="time">朝</span
+        <b>星降る湖</b><span>v31</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1341,10 +1392,10 @@
           moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
         },
         fishAssets = {
-          moroko: "assets/fish-moroko-v30.png",
-          funa: "assets/fish-funa-v30.png",
-          koi: "assets/fish-koi-v30.png",
-          nushi: "assets/fish-nushi-v30.png",
+          moroko: "assets/fish-moroko-v31.png",
+          funa: "assets/fish-funa-v31.png",
+          koi: "assets/fish-koi-v31.png",
+          nushi: "assets/fish-nushi-v31.png",
         },
         fishMotionProfiles = {
           moroko: {
@@ -2939,12 +2990,14 @@
           "fighting",
           "landing",
           "gill-wash",
+          "hook-reveal",
         );
         scene.style.backgroundPosition = "50% 50%";
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
         fishElement.className = "battle-fish";
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
+        fishElement.style.removeProperty("--fish-contrast");
         fishElement.style.removeProperty("left");
         fishElement.style.removeProperty("top");
         fishElement.style.removeProperty("transition");
@@ -2997,8 +3050,24 @@
           0.73,
           1.08,
         );
+        const depth = clampBattle(
+          (battle.y - (battle.surfaceY || 14)) /
+            (82 - (battle.surfaceY || 14)),
+          0,
+          1,
+        );
+        const depthColor = clampBattle(
+          0.68 + (1 - depth) * 0.32 + (battle.retrieval || 0) * 0.08,
+          0.62,
+          1.08,
+        );
+        const depthContrast = 1.02 + depth * 0.12;
         element.style.setProperty("--fish-light", depthLight.toFixed(2));
-        element.style.setProperty("--fish-color", battle.y > 68 ? "0.88" : "1");
+        element.style.setProperty("--fish-color", depthColor.toFixed(2));
+        element.style.setProperty(
+          "--fish-contrast",
+          depthContrast.toFixed(2),
+        );
       }
       function battleTick() {
         clearInterval(timer);
@@ -3134,7 +3203,7 @@
         battle.turnIntent = battle.facing || 1;
         battle.turnHold = 0;
         const scene = $("#fishScene");
-        scene.classList.add("fighting");
+        scene.classList.add("fighting", "hook-reveal");
         scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
@@ -3148,14 +3217,14 @@
         $("#distanceLabel").style.display = "inline";
         $("#distanceMeter").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
-        $("#fishName").textContent = ["細い魚影","丸い魚影","大きな魚影","長い魚影","巨大な魚影"][f.shadowRow];
+        $("#fishName").textContent = f.name;
         $("#pull").innerHTML = "A<br><small>押して巻く</small>";
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
         chooseFishMood(true);
         fishElement.classList.add("hooked");
         fishElement.style.opacity = "1";
         $("#battleMsg").textContent =
-          `掛かった！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
+          `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(`${f.name}が掛かった！`);
       }
