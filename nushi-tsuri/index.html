@@ -782,7 +782,7 @@
       }
       .line-svg {
         position: absolute;
-        z-index: 4;
+        z-index: 2;
         inset: 0;
         width: 100%;
         height: 100%;
@@ -790,20 +790,93 @@
       }
       .line-svg path {
         fill: none;
-        stroke: #e8f4ed;
-        stroke-width: 3;
+        stroke: #d9ece7;
+        stroke-width: 1.55;
+        stroke-linecap: round;
+        opacity: 0.58;
         vector-effect: non-scaling-stroke;
-        filter: drop-shadow(1px 1px #06304c);
+        filter: drop-shadow(1px 1px 0 #06304c88);
         transition: 0.22s;
       }
-      .line-svg path.warn { stroke: #ffd36b; }
+      .line-svg path.slack {
+        stroke-dasharray: 7 8;
+        opacity: 0.38;
+      }
+      .line-svg path.warn {
+        stroke: #f7cf78;
+        stroke-width: 1.8;
+        opacity: 0.72;
+      }
       .line-svg path.danger {
-        stroke: #ff6a68;
-        filter: drop-shadow(0 0 4px #ff3d45);
+        stroke: #ff807b;
+        stroke-width: 2.05;
+        opacity: 0.88;
+        filter: drop-shadow(0 0 2px #ff3d45aa);
         animation: line-quiver 0.18s steps(2) infinite;
       }
-      .hook {
+      .fish-tackle {
         display: none;
+        position: absolute;
+        z-index: 6;
+        width: 24px;
+        height: 18px;
+        transform-origin: 0 50%;
+        pointer-events: none;
+        filter: drop-shadow(1px 1px 0 #032135aa);
+        transition:
+          left 0.12s linear,
+          top 0.12s linear,
+          transform 0.12s linear;
+        will-change: left, top, transform;
+      }
+      .fish-scene.fighting .fish-tackle {
+        display: block;
+      }
+      .fish-tackle svg {
+        display: block;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+      }
+      .fish-tackle .hook-metal,
+      .fish-tackle .hook-eye {
+        fill: none;
+        stroke: #cbd8d2;
+        stroke-width: 1.65;
+        stroke-linecap: square;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .hook-eye {
+        stroke-width: 1.35;
+      }
+      .fish-tackle .bait-shape {
+        display: none;
+      }
+      .fish-tackle.bait-worm .bait-worm-shape,
+      .fish-tackle.bait-river .bait-river-shape,
+      .fish-tackle.bait-paste .bait-paste-shape {
+        display: block;
+      }
+      .fish-tackle .bait-worm-shape {
+        fill: none;
+        stroke: #b85843;
+        stroke-width: 3.2;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-river-shape {
+        fill: #b97836;
+        stroke: #58301f;
+        stroke-width: 0.9;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-paste-shape {
+        fill: #c99c47;
+        stroke: #68411f;
+        stroke-width: 1;
+        vector-effect: non-scaling-stroke;
       }
       .water-fx {
         position: absolute;
@@ -1113,7 +1186,7 @@
         to { transform: translateX(5%); opacity: 0.36; }
       }
       @keyframes line-quiver {
-        50% { stroke-width: 5; opacity: 0.78; }
+        50% { stroke-width: 2.4; opacity: 0.96; }
       }
       @keyframes hooked-reveal {
         0% {
@@ -1243,7 +1316,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v31</span><span id="time">朝</span
+        <b>星降る湖</b><span>v32</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1294,8 +1367,30 @@
           >
             <path id="linePath" d="M 150 50 Q 180 220 650 310" />
           </svg>
-          <div class="hook">🪝</div>
           <div class="battle-fish" id="battleFish"></div>
+          <div class="fish-tackle" id="fishTackle" aria-hidden="true">
+            <svg viewBox="0 0 24 18">
+              <path
+                class="hook-metal"
+                d="M 22 3 H 12 V 9 C 12 14 5 16 2 11 C 1 9 2 7 4 7 M 4 7 L 2 5"
+              />
+              <circle class="hook-eye" cx="22" cy="3" r="1.55" />
+              <path
+                class="bait-shape bait-worm-shape"
+                d="M 1 10 C 3 6 6 12 9 8 C 11 6 13 8 14 10"
+              />
+              <g class="bait-shape bait-river-shape">
+                <ellipse cx="5.5" cy="9.5" rx="4" ry="2.7" />
+                <path d="M 3 7 L 1 4 M 7 7 L 9 4 M 3 11 L 1 14 M 7 11 L 9 14" />
+              </g>
+              <circle
+                class="bait-shape bait-paste-shape"
+                cx="4.5"
+                cy="10"
+                r="3.7"
+              />
+            </svg>
+          </div>
           <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
             <div class="cast-meter" id="castMeter"><div class="cast-marker" id="castMarker"></div></div>
@@ -1396,6 +1491,16 @@
           funa: "assets/fish-funa-v31.png",
           koi: "assets/fish-koi-v31.png",
           nushi: "assets/fish-nushi-v31.png",
+        },
+        fishMouthProfiles = {
+          // Coordinates are fractions of each untransformed sprite cell,
+          // measured from its centre to the lower lip.  Keeping these per
+          // species lets the hook follow the real mouth instead of aiming at
+          // an arbitrary distance from the fish's centre.
+          moroko: { x: 0.455, y: 0.075, tackleScale: 0.78 },
+          funa: { x: 0.365, y: 0.055, tackleScale: 0.86 },
+          koi: { x: 0.397, y: 0.06, tackleScale: 1 },
+          nushi: { x: 0.37, y: 0.04, tackleScale: 1.12 },
         },
         fishMotionProfiles = {
           moroko: {
@@ -2344,6 +2449,7 @@
         close();
         battle = {
           phase: "cast",
+          bait: s.selectedBait,
           cast: 0,
           castDir: 1,
           f: null,
@@ -2994,6 +3100,11 @@
         );
         scene.style.backgroundPosition = "50% 50%";
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
+        const tackle = $("#fishTackle");
+        tackle.className = "fish-tackle";
+        tackle.style.removeProperty("left");
+        tackle.style.removeProperty("top");
+        tackle.style.removeProperty("transform");
         fishElement.className = "battle-fish";
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
@@ -3007,7 +3118,7 @@
         $("#surfaceSplash").classList.remove("show");
         $("#surfaceSplash").style.removeProperty("--splash-scale");
         for (const id of ["#ten", "#battleUi", "#linePath"])
-          $(id).classList.remove("warn", "danger");
+          $(id).classList.remove("warn", "danger", "slack");
       }
       function hideCatchCard() {
         clearTimeout(catchTimer);
@@ -3068,6 +3179,73 @@
           "--fish-contrast",
           depthContrast.toFixed(2),
         );
+      }
+      function battleMouthAndHook() {
+        const scene = $("#fishScene");
+        const fishElement = $("#battleFish");
+        const profile = fishMouthProfiles[battle.f.id];
+        const sceneWidth = Math.max(1, scene.clientWidth);
+        const sceneHeight = Math.max(1, scene.clientHeight);
+        const facing = battle.facing || 1;
+        const scale = battle.renderScale || 1;
+        const angle = battle.renderAngle || 0;
+        const radians = angle * Math.PI / 180;
+        const cos = Math.cos(radians);
+        const sin = Math.sin(radians);
+
+        // Work in physical CSS pixels while rotating so the anchor follows
+        // the exact responsive sprite size, then convert to the line SVG's
+        // deliberately stretched 1000 x 500 coordinate space.
+        const localMouthX =
+          profile.x * fishElement.offsetWidth * scale *
+          (battle.bodyStretch || 1) * facing;
+        const localMouthY =
+          profile.y * fishElement.offsetHeight * scale *
+          (battle.bodySquash || 1);
+        const rotatedMouthX = localMouthX * cos - localMouthY * sin;
+        const rotatedMouthY = localMouthX * sin + localMouthY * cos;
+        const mouthX = clampBattle(
+          battle.x * 10 +
+            (rotatedMouthX + Number(battle.visualOffsetX || 0)) *
+              1000 / sceneWidth,
+          20,
+          990,
+        );
+        const mouthY = clampBattle(
+          battle.y * 5 +
+            (rotatedMouthY + Number(battle.visualOffsetY || 0)) *
+              500 / sceneHeight,
+          48,
+          490,
+        );
+
+        // The long line stops at the hook eye.  Only the tiny metal hook and
+        // bait continue back to the lip, so no line can cross the eye.
+        const hookEyeX = 22 * profile.tackleScale * facing;
+        const hookEyeY = -6 * profile.tackleScale;
+        const rotatedEyeX = hookEyeX * cos - hookEyeY * sin;
+        const rotatedEyeY = hookEyeX * sin + hookEyeY * cos;
+        const lineX = clampBattle(
+          mouthX + rotatedEyeX * 1000 / sceneWidth,
+          20,
+          995,
+        );
+        const lineY = clampBattle(
+          mouthY + rotatedEyeY * 500 / sceneHeight,
+          45,
+          495,
+        );
+        return { mouthX, mouthY, lineX, lineY, facing, angle, profile };
+      }
+      function drawFishTackle(anchor) {
+        const tackle = $("#fishTackle");
+        const bait = battle.bait || s.selectedBait || "worm";
+        tackle.className = `fish-tackle bait-${bait}`;
+        tackle.style.left = `${anchor.mouthX / 10}%`;
+        tackle.style.top = `calc(${anchor.mouthY / 5}% - 9px)`;
+        tackle.style.transform =
+          `rotate(${anchor.angle}deg) scaleX(${anchor.facing}) ` +
+          `scale(${anchor.profile.tackleScale})`;
       }
       function battleTick() {
         clearInterval(timer);
@@ -3211,6 +3389,8 @@
         fishElement.style.backgroundPositionY = "0";
         fishElement.style.transition = "none";
         fishElement.style.opacity = "0";
+        $("#fishTackle").className =
+          `fish-tackle bait-${battle.bait || s.selectedBait}`;
         renderBattleFish();
         void fishElement.offsetWidth;
         fishElement.style.removeProperty("transition");
@@ -3245,31 +3425,16 @@
         const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
         $("#distanceLabel").textContent = `左の水面まで ${meters}m`;
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
-        const fx = battle.x * 10;
-        const fy = battle.y * 5;
-        const mouthOffsets = { moroko: 68, funa: 72, koi: 82, nushi: 112 };
-        const mouthOffset =
-          mouthOffsets[battle.f.id] *
-          (battle.renderScale || 1) *
-          (battle.bodyStretch || 1);
-        const pitchRadians = (battle.pitch || 0) * Math.PI / 180;
-        const mouthX = clampBattle(
-          fx + (battle.facing || 1) * Math.cos(pitchRadians) * mouthOffset,
-          35,
-          985,
-        );
-        const mouthY = clampBattle(
-          fy + Math.sin(pitchRadians) * mouthOffset,
-          52,
-          488,
-        );
-        $("#linePath").setAttribute(
+        const anchor = battleMouthAndHook();
+        const linePath = $("#linePath");
+        linePath.setAttribute(
           "d",
           battle.calm
-            ? `M 150 48 Q 250 118 190 205 Q 270 310 ${mouthX} ${mouthY}`
-            : `M 150 48 Q 285 150 ${mouthX} ${mouthY}`,
+            ? `M 150 48 Q 250 118 190 205 Q 270 310 ${anchor.lineX} ${anchor.lineY}`
+            : `M 150 48 Q 285 150 ${anchor.lineX} ${anchor.lineY}`,
         );
-        $("#linePath").style.strokeDasharray = battle.calm ? "9 5" : "none";
+        linePath.classList.toggle("slack", battle.calm);
+        drawFishTackle(anchor);
         $("#fishScene").style.backgroundPosition =
           `${50 - (battle.x - 68) * 0.09}% ${50 - (battle.y - 55) * 0.07}%`;
         updateTensionFeedback();
@@ -3351,7 +3516,6 @@
         battle = null;
         resetBattleFeedback();
         clearWaterFx();
-        $("#linePath").style.strokeDasharray = "none";
         $("#fishScene").classList.remove("active");
         render();
         armDogIdle();
