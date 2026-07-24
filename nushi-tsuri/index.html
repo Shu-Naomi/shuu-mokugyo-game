@@ -817,17 +817,24 @@
       .fish-tackle {
         display: none;
         position: absolute;
-        z-index: 6;
-        width: 24px;
-        height: 18px;
+        width: 18px;
+        height: 14px;
         transform-origin: 0 50%;
         pointer-events: none;
-        filter: drop-shadow(1px 1px 0 #032135aa);
+        opacity: 0.86;
         transition:
           left 0.12s linear,
           top 0.12s linear,
           transform 0.12s linear;
         will-change: left, top, transform;
+      }
+      .fish-tackle-back {
+        z-index: 2;
+        filter: drop-shadow(1px 1px 0 #03213588);
+      }
+      .fish-tackle-front {
+        z-index: 4;
+        filter: drop-shadow(1px 1px 0 #032135aa);
       }
       .fish-scene.fighting .fish-tackle {
         display: block;
@@ -838,17 +845,22 @@
         height: 100%;
         overflow: visible;
       }
-      .fish-tackle .hook-metal,
+      .fish-tackle .hook-shank,
+      .fish-tackle .hook-bend,
       .fish-tackle .hook-eye {
         fill: none;
-        stroke: #cbd8d2;
-        stroke-width: 1.65;
-        stroke-linecap: square;
+        stroke: #9fb1ac;
+        stroke-width: 1.05;
+        stroke-linecap: round;
         stroke-linejoin: round;
         vector-effect: non-scaling-stroke;
       }
+      .fish-tackle .hook-bend {
+        stroke: #aebeb9;
+        stroke-width: 1.15;
+      }
       .fish-tackle .hook-eye {
-        stroke-width: 1.35;
+        stroke-width: 0.95;
       }
       .fish-tackle .bait-shape {
         display: none;
@@ -860,23 +872,28 @@
       }
       .fish-tackle .bait-worm-shape {
         fill: none;
-        stroke: #b85843;
-        stroke-width: 3.2;
+        stroke: #994d3c;
+        stroke-width: 2;
         stroke-linecap: round;
         stroke-linejoin: round;
         vector-effect: non-scaling-stroke;
       }
       .fish-tackle .bait-river-shape {
-        fill: #b97836;
+        fill: #a96a31;
         stroke: #58301f;
-        stroke-width: 0.9;
+        stroke-width: 0.7;
         vector-effect: non-scaling-stroke;
       }
       .fish-tackle .bait-paste-shape {
-        fill: #c99c47;
+        fill: #b98d3f;
         stroke: #68411f;
-        stroke-width: 1;
+        stroke-width: 0.75;
         vector-effect: non-scaling-stroke;
+      }
+      .fish-scene.fighting .fish-tackle-front .bait-shape {
+        transform-box: fill-box;
+        transform-origin: 20% 10%;
+        animation: bait-dangle 0.64s steps(2, end) infinite alternate;
       }
       .water-fx {
         position: absolute;
@@ -1188,6 +1205,9 @@
       @keyframes line-quiver {
         50% { stroke-width: 2.4; opacity: 0.96; }
       }
+      @keyframes bait-dangle {
+        to { transform: rotate(5deg) translateY(0.45px); }
+      }
       @keyframes hooked-reveal {
         0% {
           opacity: 0;
@@ -1316,7 +1336,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v32</span><span id="time">朝</span
+        <b>星降る湖</b><span>v33</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1367,27 +1387,43 @@
           >
             <path id="linePath" d="M 150 50 Q 180 220 650 310" />
           </svg>
-          <div class="battle-fish" id="battleFish"></div>
-          <div class="fish-tackle" id="fishTackle" aria-hidden="true">
-            <svg viewBox="0 0 24 18">
+          <div
+            class="fish-tackle fish-tackle-back"
+            id="fishTackleBack"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 18 14">
               <path
-                class="hook-metal"
-                d="M 22 3 H 12 V 9 C 12 14 5 16 2 11 C 1 9 2 7 4 7 M 4 7 L 2 5"
+                class="hook-shank"
+                d="M 8 3 C 6.7 4.2 5.8 6.5 5.2 9.2"
               />
-              <circle class="hook-eye" cx="22" cy="3" r="1.55" />
+              <circle class="hook-eye" cx="8" cy="3" r="0.55" />
+            </svg>
+          </div>
+          <div class="battle-fish" id="battleFish"></div>
+          <div
+            class="fish-tackle fish-tackle-front"
+            id="fishTackleFront"
+            aria-hidden="true"
+          >
+            <svg viewBox="0 0 18 14">
+              <path
+                class="hook-bend"
+                d="M 5.3 8.9 C 4.8 11.5 1.4 12 0.8 9.4 C 0.5 8 1.4 6.9 2.8 6.8 M 2.8 6.8 L 1.7 5.8"
+              />
               <path
                 class="bait-shape bait-worm-shape"
-                d="M 1 10 C 3 6 6 12 9 8 C 11 6 13 8 14 10"
+                d="M 2.2 9.2 C 3.2 10.8 4 12.7 5.3 12.4 C 6.4 12.2 6.7 13.5 7.8 13"
               />
               <g class="bait-shape bait-river-shape">
-                <ellipse cx="5.5" cy="9.5" rx="4" ry="2.7" />
-                <path d="M 3 7 L 1 4 M 7 7 L 9 4 M 3 11 L 1 14 M 7 11 L 9 14" />
+                <ellipse cx="3.4" cy="10.5" rx="2.1" ry="1.4" />
+                <path d="M 2 9.6 L 0.9 8.1 M 4.6 9.6 L 5.8 8.1 M 2 11.3 L 0.8 12.8 M 4.6 11.3 L 5.8 12.8" />
               </g>
               <circle
                 class="bait-shape bait-paste-shape"
-                cx="4.5"
-                cy="10"
-                r="3.7"
+                cx="2.8"
+                cy="10.5"
+                r="1.9"
               />
             </svg>
           </div>
@@ -1497,10 +1533,10 @@
           // measured from its centre to the lower lip.  Keeping these per
           // species lets the hook follow the real mouth instead of aiming at
           // an arbitrary distance from the fish's centre.
-          moroko: { x: 0.455, y: 0.075, tackleScale: 0.78 },
-          funa: { x: 0.365, y: 0.055, tackleScale: 0.86 },
-          koi: { x: 0.397, y: 0.06, tackleScale: 1 },
-          nushi: { x: 0.37, y: 0.04, tackleScale: 1.12 },
+          moroko: { x: 0.458, y: 0.1, tackleScale: 0.72, inset: 2.5, drop: 1 },
+          funa: { x: 0.368, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4 },
+          koi: { x: 0.397, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8 },
+          nushi: { x: 0.37, y: 0.075, tackleScale: 0.82, inset: 5, drop: 2.4 },
         },
         fishMotionProfiles = {
           moroko: {
@@ -3100,11 +3136,14 @@
         );
         scene.style.backgroundPosition = "50% 50%";
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
-        const tackle = $("#fishTackle");
-        tackle.className = "fish-tackle";
-        tackle.style.removeProperty("left");
-        tackle.style.removeProperty("top");
-        tackle.style.removeProperty("transform");
+        for (const id of ["#fishTackleBack", "#fishTackleFront"]) {
+          const tackle = $(id);
+          tackle.className =
+            `fish-tackle ${id.endsWith("Back") ? "fish-tackle-back" : "fish-tackle-front"}`;
+          tackle.style.removeProperty("left");
+          tackle.style.removeProperty("top");
+          tackle.style.removeProperty("transform");
+        }
         fishElement.className = "battle-fish";
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
@@ -3204,14 +3243,14 @@
           (battle.bodySquash || 1);
         const rotatedMouthX = localMouthX * cos - localMouthY * sin;
         const rotatedMouthY = localMouthX * sin + localMouthY * cos;
-        const mouthX = clampBattle(
+        const lipX = clampBattle(
           battle.x * 10 +
             (rotatedMouthX + Number(battle.visualOffsetX || 0)) *
               1000 / sceneWidth,
           20,
           990,
         );
-        const mouthY = clampBattle(
+        const lipY = clampBattle(
           battle.y * 5 +
             (rotatedMouthY + Number(battle.visualOffsetY || 0)) *
               500 / sceneHeight,
@@ -3219,33 +3258,56 @@
           490,
         );
 
-        // The long line stops at the hook eye.  Only the tiny metal hook and
-        // bait continue back to the lip, so no line can cross the eye.
-        const hookEyeX = 22 * profile.tackleScale * facing;
-        const hookEyeY = -6 * profile.tackleScale;
+        const outwardX = facing * cos;
+        const outwardY = facing * sin;
+        const downX = -sin;
+        const downY = cos;
+        const rootX = clampBattle(
+          lipX + (-outwardX * profile.inset + downX * profile.drop) *
+            1000 / sceneWidth,
+          20,
+          990,
+        );
+        const rootY = clampBattle(
+          lipY + (-outwardY * profile.inset + downY * profile.drop) *
+            500 / sceneHeight,
+          48,
+          490,
+        );
+
+        // The shank lives behind the fish and begins just inside the lower
+        // lip.  The long line ends at its tiny eye; the front layer shows only
+        // the small bend and bait below the jaw.
+        const hookEyeX = 8 * profile.tackleScale * facing;
+        const hookEyeY = -4 * profile.tackleScale;
         const rotatedEyeX = hookEyeX * cos - hookEyeY * sin;
         const rotatedEyeY = hookEyeX * sin + hookEyeY * cos;
         const lineX = clampBattle(
-          mouthX + rotatedEyeX * 1000 / sceneWidth,
+          rootX + rotatedEyeX * 1000 / sceneWidth,
           20,
           995,
         );
         const lineY = clampBattle(
-          mouthY + rotatedEyeY * 500 / sceneHeight,
+          rootY + rotatedEyeY * 500 / sceneHeight,
           45,
           495,
         );
-        return { mouthX, mouthY, lineX, lineY, facing, angle, profile };
+        return { rootX, rootY, lineX, lineY, facing, angle, profile };
       }
       function drawFishTackle(anchor) {
-        const tackle = $("#fishTackle");
         const bait = battle.bait || s.selectedBait || "worm";
-        tackle.className = `fish-tackle bait-${bait}`;
-        tackle.style.left = `${anchor.mouthX / 10}%`;
-        tackle.style.top = `calc(${anchor.mouthY / 5}% - 9px)`;
-        tackle.style.transform =
-          `rotate(${anchor.angle}deg) scaleX(${anchor.facing}) ` +
-          `scale(${anchor.profile.tackleScale})`;
+        for (const [id, layer] of [
+          ["#fishTackleBack", "fish-tackle-back"],
+          ["#fishTackleFront", "fish-tackle-front"],
+        ]) {
+          const tackle = $(id);
+          tackle.className = `fish-tackle ${layer} bait-${bait}`;
+          tackle.style.left = `${anchor.rootX / 10}%`;
+          tackle.style.top = `calc(${anchor.rootY / 5}% - 7px)`;
+          tackle.style.transform =
+            `rotate(${anchor.angle}deg) scaleX(${anchor.facing}) ` +
+            `scale(${anchor.profile.tackleScale})`;
+        }
       }
       function battleTick() {
         clearInterval(timer);
@@ -3389,8 +3451,10 @@
         fishElement.style.backgroundPositionY = "0";
         fishElement.style.transition = "none";
         fishElement.style.opacity = "0";
-        $("#fishTackle").className =
-          `fish-tackle bait-${battle.bait || s.selectedBait}`;
+        $("#fishTackleBack").className =
+          `fish-tackle fish-tackle-back bait-${battle.bait || s.selectedBait}`;
+        $("#fishTackleFront").className =
+          `fish-tackle fish-tackle-front bait-${battle.bait || s.selectedBait}`;
         renderBattleFish();
         void fishElement.offsetWidth;
         fishElement.style.removeProperty("transition");
