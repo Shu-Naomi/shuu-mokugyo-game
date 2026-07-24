@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v35-full-leg-steps-1";
+const CACHE_NAME = "nushi-tsuri-v36-synced-walk-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
