@@ -303,7 +303,7 @@
         transform: translate(-50%, -50%) scaleX(-1);
       }
       .player.walking {
-        animation: player-step 0.24s steps(2, end) infinite;
+        animation: player-step 0.36s steps(2, end) infinite;
       }
       .player.companion-pet {
         background-size: 200% 100%;
@@ -1352,7 +1352,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v34</span><span id="time">朝</span
+        <b>星降る湖</b><span>v35</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1910,6 +1910,10 @@
           boy: loadPlayerImage("assets/player-boy.png"),
           girl: loadPlayerImage("assets/player-girl.png"),
         },
+        playerWalkImages = {
+          boy: loadPlayerImage("assets/player-boy-walk-v35-final.png"),
+          girl: loadPlayerImage("assets/player-girl-walk-v35-final.png"),
+        },
         dogImages = {
           shuu: loadDogImage("assets/shuu-walk.png?v=12"),
           riku: loadDogImage("assets/riku-walk.png?v=12"),
@@ -1995,7 +1999,14 @@
       }
       function drawPlayer() {
         const canvas = $("#playerSprite");
-        const image = playerImages?.[s.avatar];
+        const linkedIdle = ["idle-beg", "idle-sleep"].includes(dogIdleMode);
+        const walking =
+          playerWalking && !companionReaction && !linkedIdle;
+        const walkImage = playerWalkImages?.[s.avatar];
+        const image =
+          walking && walkImage?.complete && walkImage.naturalWidth
+            ? walkImage
+            : playerImages?.[s.avatar];
         if (!canvas || !image?.complete || !image.naturalWidth) return;
         const ctx = canvas.getContext("2d");
         const width = canvas.width;
@@ -2005,69 +2016,27 @@
           : s.direction === "up" ? "up" : "down";
         const column = { down: 0, side: 1, up: 2 }[direction];
         const cellWidth = image.naturalWidth / 3;
+        const cellHeight = walking
+          ? image.naturalHeight / 2
+          : image.naturalHeight;
         const sourceX = column * cellWidth;
-        const drawStandingFrame = () => {
-          ctx.drawImage(
-            image,
-            sourceX,
-            0,
-            cellWidth,
-            image.naturalHeight,
-            0,
-            0,
-            width,
-            height,
-          );
-        };
+        const sourceY = walking
+          ? (playerAnimFrame % 2) * cellHeight
+          : 0;
 
         ctx.imageSmoothingEnabled = false;
         ctx.clearRect(0, 0, width, height);
-        drawStandingFrame();
-        if (
-          !playerWalking ||
-          companionReaction ||
-          ["idle-beg", "idle-sleep"].includes(dogIdleMode)
-        ) return;
-
-        // The source sheets contain one standing pose per direction.  Keep
-        // the upper body untouched and move only two small lower-leg windows,
-        // which creates a real alternating step without redrawing either
-        // owner's face, clothes, or linked companion poses.
-        const legProfiles = {
-          boy: {
-            down: [0.31, 0.63, 1],
-            side: [0.4, 0.58, 0.79],
-            up: [0.18, 0.52, 0.84],
-          },
-          girl: {
-            down: [0.25, 0.59, 0.98],
-            side: [0.34, 0.55, 0.77],
-            up: [0.02, 0.38, 0.73],
-          },
-        };
-        const [leftEdge, split, rightEdge] =
-          legProfiles[s.avatar][direction].map(value =>
-            Math.round(value * width),
-          );
-        const cutY = Math.round(height * (direction === "side" ? 0.73 : 0.72));
-        const phase = playerAnimFrame % 2 ? 1 : -1;
-        const redrawLeg = (x, right, moveX, moveY) => {
-          ctx.save();
-          ctx.beginPath();
-          ctx.rect(x, cutY, right - x, height - cutY);
-          ctx.clip();
-          ctx.clearRect(x, cutY, right - x, height - cutY);
-          ctx.translate(moveX, moveY);
-          drawStandingFrame();
-          ctx.restore();
-        };
-        if (direction === "side") {
-          redrawLeg(leftEdge, split, phase * 3, phase > 0 ? -2 : 0);
-          redrawLeg(split, rightEdge, phase * -3, phase < 0 ? -2 : 0);
-        } else {
-          redrawLeg(leftEdge, split, phase, phase > 0 ? -2 : 0);
-          redrawLeg(split, rightEdge, -phase, phase < 0 ? -2 : 0);
-        }
+        ctx.drawImage(
+          image,
+          sourceX,
+          sourceY,
+          cellWidth,
+          cellHeight,
+          0,
+          0,
+          width,
+          height,
+        );
       }
       function renderPetScene() {
         const scene = $("#petScene");
@@ -2213,7 +2182,7 @@
           playerAnimFrame = 0;
           $("#player").classList.remove("walking");
           drawPlayer();
-        }, 360);
+        }, 480);
         // The player reaches the next step before the trailing dog finishes
         // its longer CSS catch-up. Keep the paws moving for the whole chase.
         dogWalkTimer = setTimeout(() => {
@@ -3797,7 +3766,7 @@
         if (!playerWalking) return;
         playerAnimFrame = (playerAnimFrame + 1) % 2;
         drawPlayer();
-      }, 120);
+      }, 180);
       setInterval(() => {
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
