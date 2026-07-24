@@ -1355,7 +1355,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v36</span><span id="time">朝</span
+        <b>星降る湖</b><span>v37</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2007,13 +2007,18 @@
         const linkedIdle = ["idle-beg", "idle-sleep"].includes(dogIdleMode);
         const walking =
           playerWalking && !companionReaction && !linkedIdle;
+        const direction = ["left", "right"].includes(s.direction)
+          ? "side"
+          : s.direction === "up" ? "up" : "down";
         const walkImage = playerWalkImages?.[s.avatar];
-        // One movement cycle has four visible beats:
-        // left stride, feet together, right stride, feet together.
-        // The standing sheet supplies the two neutral beats so a stride
-        // cannot become a single frozen pose that slides across the map.
+        // Side and rear movement keep the four-beat gait from v36.  The
+        // front-facing standing cell has a deliberately broad boot stance,
+        // though, and flashing it between strides reads as bow-legged.
+        // Hold each real front stride for two beats instead.
         const phase = playerAnimFrame % 4;
-        const strideFrame = walking && phase % 2 === 0;
+        const frontWalk = walking && direction === "down";
+        const strideFrame =
+          walking && (frontWalk || phase % 2 === 0);
         const useWalkImage =
           strideFrame && walkImage?.complete && walkImage.naturalWidth;
         const image = useWalkImage ? walkImage : playerImages?.[s.avatar];
@@ -2021,9 +2026,6 @@
         const ctx = canvas.getContext("2d");
         const width = canvas.width;
         const height = canvas.height;
-        const direction = ["left", "right"].includes(s.direction)
-          ? "side"
-          : s.direction === "up" ? "up" : "down";
         const column = { down: 0, side: 1, up: 2 }[direction];
         const cellWidth = image.naturalWidth / 3;
         const cellHeight = useWalkImage
@@ -2031,7 +2033,11 @@
           : image.naturalHeight;
         const sourceX = column * cellWidth;
         const sourceY = useWalkImage
-          ? (phase === 0 ? 0 : cellHeight)
+          ? (
+              frontWalk
+                ? (phase < 2 ? 0 : cellHeight)
+                : (phase === 0 ? 0 : cellHeight)
+            )
           : 0;
 
         ctx.imageSmoothingEnabled = false;
