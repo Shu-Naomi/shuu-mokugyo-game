@@ -271,6 +271,18 @@
       .player.girl {
         background-image: url("assets/player-girl.png");
       }
+      .player > .player-sprite {
+        position: absolute;
+        inset: 0;
+        display: block;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        image-rendering: pixelated;
+      }
+      .player:not(.companion-pet):not(.companion-sit) {
+        background-image: none;
+      }
       .player.face-side {
         background-position-x: 50%;
       }
@@ -291,7 +303,7 @@
         transform: translate(-50%, -50%) scaleX(-1);
       }
       .player.walking {
-        animation: player-step 0.24s steps(2) 2;
+        animation: player-step 0.24s steps(2, end) infinite;
       }
       .player.companion-pet {
         background-size: 200% 100%;
@@ -328,6 +340,10 @@
       .player.companion-pet::before,
       .player.companion-pet::after {
         display: none !important;
+      }
+      .player.companion-pet > .player-sprite,
+      .player.companion-sit > .player-sprite {
+        display: none;
       }
       .pet-scene {
         position: absolute;
@@ -376,7 +392,7 @@
       }
       @keyframes player-step {
         50% {
-          margin-top: -3px;
+          margin-top: -1px;
         }
       }
       .player:before {
@@ -1336,7 +1352,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v33</span><span id="time">朝</span
+        <b>星降る湖</b><span>v34</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1355,7 +1371,7 @@
           <div class="building mystery" data-name="閉じた小屋"></div>
           <div class="rescue-spot" aria-label="エサ採集ポイント"></div>
           <div class="trees">🌲🌲🌲</div>
-          <div id="player" class="player"></div>
+          <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
@@ -1855,6 +1871,8 @@
         dogMotionDirection = "",
         dogWalking = false,
         dogAnimFrame = 0,
+        playerWalking = false,
+        playerAnimFrame = 0,
         petSceneFrame = 0,
         waterFxState = {
           tick: 0,
@@ -1873,6 +1891,14 @@
         setTimeout(drawDog, 300);
         return image;
       }
+      function loadPlayerImage(src) {
+        const image = new Image();
+        image.onload = () => drawPlayer();
+        image.src = src;
+        if (image.decode) image.decode().then(drawPlayer).catch(() => {});
+        setTimeout(drawPlayer, 300);
+        return image;
+      }
       function loadPetSceneImage(src) {
         const image = new Image();
         image.onload = () => drawPetScene();
@@ -1880,7 +1906,11 @@
         if (image.decode) image.decode().then(drawPetScene).catch(() => {});
         return image;
       }
-      const dogImages = {
+      const playerImages = {
+          boy: loadPlayerImage("assets/player-boy.png"),
+          girl: loadPlayerImage("assets/player-girl.png"),
+        },
+        dogImages = {
           shuu: loadDogImage("assets/shuu-walk.png?v=12"),
           riku: loadDogImage("assets/riku-walk.png?v=12"),
           grey: loadDogImage("assets/grey-walk.png?v=12"),
@@ -1957,8 +1987,87 @@
           ? "face-up"
           : ["left", "right"].includes(direction) ? "face-side" : "";
         const reactionClass = companionReaction ? `companion-${companionReaction}` : "";
-        $("#player").className = `player ${s.avatar} ${facing} face-${direction} ${reactionClass}`;
+        const walkingClass = playerWalking && !reactionClass ? "walking" : "";
+        $("#player").className =
+          `player ${s.avatar} ${facing} face-${direction} ${reactionClass} ${walkingClass}`;
+        drawPlayer();
         renderPetScene();
+      }
+      function drawPlayer() {
+        const canvas = $("#playerSprite");
+        const image = playerImages?.[s.avatar];
+        if (!canvas || !image?.complete || !image.naturalWidth) return;
+        const ctx = canvas.getContext("2d");
+        const width = canvas.width;
+        const height = canvas.height;
+        const direction = ["left", "right"].includes(s.direction)
+          ? "side"
+          : s.direction === "up" ? "up" : "down";
+        const column = { down: 0, side: 1, up: 2 }[direction];
+        const cellWidth = image.naturalWidth / 3;
+        const sourceX = column * cellWidth;
+        const drawStandingFrame = () => {
+          ctx.drawImage(
+            image,
+            sourceX,
+            0,
+            cellWidth,
+            image.naturalHeight,
+            0,
+            0,
+            width,
+            height,
+          );
+        };
+
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, width, height);
+        drawStandingFrame();
+        if (
+          !playerWalking ||
+          companionReaction ||
+          ["idle-beg", "idle-sleep"].includes(dogIdleMode)
+        ) return;
+
+        // The source sheets contain one standing pose per direction.  Keep
+        // the upper body untouched and move only two small lower-leg windows,
+        // which creates a real alternating step without redrawing either
+        // owner's face, clothes, or linked companion poses.
+        const legProfiles = {
+          boy: {
+            down: [0.31, 0.63, 1],
+            side: [0.4, 0.58, 0.79],
+            up: [0.18, 0.52, 0.84],
+          },
+          girl: {
+            down: [0.25, 0.59, 0.98],
+            side: [0.34, 0.55, 0.77],
+            up: [0.02, 0.38, 0.73],
+          },
+        };
+        const [leftEdge, split, rightEdge] =
+          legProfiles[s.avatar][direction].map(value =>
+            Math.round(value * width),
+          );
+        const cutY = Math.round(height * (direction === "side" ? 0.73 : 0.72));
+        const phase = playerAnimFrame % 2 ? 1 : -1;
+        const redrawLeg = (x, right, moveX, moveY) => {
+          ctx.save();
+          ctx.beginPath();
+          ctx.rect(x, cutY, right - x, height - cutY);
+          ctx.clip();
+          ctx.clearRect(x, cutY, right - x, height - cutY);
+          ctx.translate(moveX, moveY);
+          drawStandingFrame();
+          ctx.restore();
+        };
+        if (direction === "side") {
+          redrawLeg(leftEdge, split, phase * 3, phase > 0 ? -2 : 0);
+          redrawLeg(split, rightEdge, phase * -3, phase < 0 ? -2 : 0);
+        } else {
+          redrawLeg(leftEdge, split, phase, phase > 0 ? -2 : 0);
+          redrawLeg(split, rightEdge, -phase, phase < 0 ? -2 : 0);
+        }
       }
       function renderPetScene() {
         const scene = $("#petScene");
@@ -2084,6 +2193,8 @@
         if (battle) return;
         wakeDog();
         dogWalking = true;
+        playerWalking = true;
+        playerAnimFrame = (playerAnimFrame + 1) % 2;
         s.direction = d;
         let n = 4;
         ({
@@ -2098,8 +2209,11 @@
         clearTimeout(walkTimer);
         clearTimeout(dogWalkTimer);
         walkTimer = setTimeout(() => {
+          playerWalking = false;
+          playerAnimFrame = 0;
           $("#player").classList.remove("walking");
-        }, 320);
+          drawPlayer();
+        }, 360);
         // The player reaches the next step before the trailing dog finishes
         // its longer CSS catch-up. Keep the paws moving for the whole chase.
         dogWalkTimer = setTimeout(() => {
@@ -3679,6 +3793,11 @@
         if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
+      setInterval(() => {
+        if (!playerWalking) return;
+        playerAnimFrame = (playerAnimFrame + 1) % 2;
+        drawPlayer();
+      }, 120);
       setInterval(() => {
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
