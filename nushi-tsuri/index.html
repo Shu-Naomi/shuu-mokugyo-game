@@ -1249,7 +1249,7 @@
         left: 0;
         top: 0;
         width: 1px;
-        height: 52%;
+        height: 25%;
         background: linear-gradient(#d9f6ffcc, #c7e7ee88);
         box-shadow: 0 0 3px #d9fbff99;
       }
@@ -1257,7 +1257,7 @@
         position: absolute;
         z-index: 4;
         left: -2px;
-        top: calc(52% - 4px);
+        top: calc(25% - 4px);
         width: 9px;
         height: 11px;
         border: 2px solid #d9e4e6;
@@ -1267,12 +1267,22 @@
         transform-origin: 2px 2px;
         animation: catch-hook-twitch .72s ease-in-out infinite alternate;
       }
-      .catch-fish {
+      .catch-fish-turn {
         position: absolute;
         z-index: 3;
         left: 0;
-        top: 52%;
-        width: clamp(120px, 22vw, 235px);
+        top: 25%;
+        width: 0;
+        height: 0;
+        transform: rotate(-90deg);
+        transform-origin: 0 0;
+        animation: catch-fish-dangle .86s ease-in-out infinite alternate;
+      }
+      .catch-fish {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: clamp(105px, min(19vw, 36vh), 190px);
         aspect-ratio: 1.8;
         transform: translate(-90%, -56%);
         transform-origin: 90% 56%;
@@ -1288,25 +1298,25 @@
         animation: catch-fish-tail .68s steps(7, end) infinite alternate;
       }
       .catch-fish.fish-moroko {
-        width: clamp(105px, 18vw, 170px);
+        width: clamp(90px, min(17vw, 34vh), 160px);
         aspect-ratio: 128 / 55;
         transform: translate(-95.8%, -60%);
         transform-origin: 95.8% 60%;
       }
       .catch-fish.fish-funa {
-        width: clamp(120px, 20vw, 195px);
+        width: clamp(100px, min(19vw, 38vh), 185px);
         aspect-ratio: 144 / 95;
         transform: translate(-86.8%, -57.5%);
         transform-origin: 86.8% 57.5%;
       }
       .catch-fish.fish-koi {
-        width: clamp(145px, 25vw, 255px);
+        width: clamp(120px, min(23vw, 42vh), 220px);
         aspect-ratio: 28 / 15;
         transform: translate(-89.7%, -58%);
         transform-origin: 89.7% 58%;
       }
       .catch-fish.fish-nushi {
-        width: clamp(180px, 31vw, 320px);
+        width: clamp(145px, min(28vw, 46vh), 260px);
         aspect-ratio: 48 / 35;
         transform: translate(-87%, -57.5%);
         transform-origin: 87% 57.5%;
@@ -1319,6 +1329,9 @@
       }
       .catch-card.legend .catch-rig {
         animation-duration: 1.48s;
+      }
+      .catch-card.legend .catch-fish-turn {
+        animation-duration: 1.12s;
       }
       .catch-copy {
         position: relative;
@@ -1439,8 +1452,12 @@
         to { opacity: 1; filter: brightness(1); }
       }
       @keyframes catch-rig-swing {
-        0% { transform: translateX(-50%) rotate(-5deg); }
-        100% { transform: translateX(-50%) rotate(5deg); }
+        0% { transform: translateX(-50%) rotate(-3.5deg); }
+        100% { transform: translateX(-50%) rotate(3.5deg); }
+      }
+      @keyframes catch-fish-dangle {
+        0% { transform: rotate(-92deg); }
+        100% { transform: rotate(-88deg); }
       }
       @keyframes catch-fish-tail {
         to { background-position-x: 100%; }
@@ -1505,7 +1522,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v39</span><span id="time">朝</span
+        <b>星降る湖</b><span>v40</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1614,7 +1631,9 @@
           <div class="catch-showcase" aria-hidden="true">
             <div class="catch-rig">
               <i class="catch-line"></i>
-              <div class="catch-fish" id="catchFish"></div>
+              <div class="catch-fish-turn">
+                <div class="catch-fish" id="catchFish"></div>
+              </div>
               <i class="catch-hook"></i>
             </div>
           </div>
