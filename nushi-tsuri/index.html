@@ -1181,32 +1181,172 @@
         display: none;
         position: absolute;
         z-index: 45;
-        left: 50%;
-        top: 48%;
-        min-width: min(76vw, 360px);
-        padding: 14px 22px;
-        transform: translate(-50%, -50%);
-        border: 4px double #ffe38a;
-        border-radius: 14px;
-        background: #10243ef2;
+        inset: 0;
+        min-width: 0;
+        padding: clamp(8px, 2vh, 16px) clamp(16px, 4vw, 44px);
+        border: 0;
+        border-top: 3px double #ffe38a;
+        border-bottom: 3px double #ffe38a;
+        background:
+          radial-gradient(circle at 30% 45%, #267e9c88, transparent 33%),
+          linear-gradient(135deg, #071827f7, #102f49f7 55%, #071827f7);
         color: #fff;
         text-align: center;
-        pointer-events: none;
-        box-shadow: 0 10px 30px #0009, 0 0 18px #71d8ff77;
+        pointer-events: auto;
+        overflow: hidden;
+        box-shadow:
+          inset 0 0 42px #68ddff26,
+          0 10px 30px #0009;
       }
       .catch-card.show {
         display: grid;
-        gap: 3px;
-        animation: catch-pop .42s cubic-bezier(.2,1.5,.45,1) both;
+        grid-template-columns: minmax(0, 1.25fr) minmax(155px, .75fr);
+        align-items: center;
+        gap: clamp(10px, 3vw, 36px);
+        animation: catch-screen-in .42s ease-out both;
       }
       .catch-card.legend {
         border-color: #ffd65a;
-        background: #281d4bf2;
-        box-shadow: 0 10px 30px #0009, 0 0 24px #ffd65aaa;
+        background:
+          radial-gradient(circle at 31% 45%, #7d5bc780, transparent 37%),
+          linear-gradient(135deg, #100d27fa, #281d4bfa 55%, #100d27fa);
+        box-shadow:
+          inset 0 0 52px #ffd65a2e,
+          0 10px 30px #0009;
       }
-      .catch-card span { color: #8fe8ff; font-weight: 900; }
-      .catch-card strong { color: #ffe89c; font-size: 1.35rem; }
-      .catch-card small { font-size: .86rem; }
+      .catch-showcase {
+        position: relative;
+        min-width: 0;
+        height: clamp(165px, 52vh, 280px);
+        overflow: visible;
+      }
+      .catch-showcase::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        bottom: 3%;
+        width: min(72%, 330px);
+        height: 13%;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: #0007;
+        filter: blur(7px);
+      }
+      .catch-rig {
+        position: absolute;
+        z-index: 2;
+        left: 50%;
+        top: -8%;
+        width: 1px;
+        height: 112%;
+        transform: translateX(-50%);
+        transform-origin: 50% 0;
+        animation: catch-rig-swing 1.18s ease-in-out infinite alternate;
+      }
+      .catch-line {
+        position: absolute;
+        z-index: 1;
+        left: 0;
+        top: 0;
+        width: 1px;
+        height: 52%;
+        background: linear-gradient(#d9f6ffcc, #c7e7ee88);
+        box-shadow: 0 0 3px #d9fbff99;
+      }
+      .catch-hook {
+        position: absolute;
+        z-index: 4;
+        left: -2px;
+        top: calc(52% - 4px);
+        width: 9px;
+        height: 11px;
+        border: 2px solid #d9e4e6;
+        border-top: 0;
+        border-left: 0;
+        border-radius: 0 0 8px 7px;
+        transform-origin: 2px 2px;
+        animation: catch-hook-twitch .72s ease-in-out infinite alternate;
+      }
+      .catch-fish {
+        position: absolute;
+        z-index: 3;
+        left: 0;
+        top: 52%;
+        width: clamp(120px, 22vw, 235px);
+        aspect-ratio: 1.8;
+        transform: translate(-90%, -56%);
+        transform-origin: 90% 56%;
+        background-position: 0 0;
+        background-size: 800% 100%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        filter:
+          brightness(1.14)
+          saturate(1.13)
+          drop-shadow(6px 8px 2px #020c15aa)
+          drop-shadow(0 0 8px #a4efff77);
+        animation: catch-fish-tail .68s steps(7, end) infinite alternate;
+      }
+      .catch-fish.fish-moroko {
+        width: clamp(105px, 18vw, 170px);
+        aspect-ratio: 128 / 55;
+        transform: translate(-95.8%, -60%);
+        transform-origin: 95.8% 60%;
+      }
+      .catch-fish.fish-funa {
+        width: clamp(120px, 20vw, 195px);
+        aspect-ratio: 144 / 95;
+        transform: translate(-86.8%, -57.5%);
+        transform-origin: 86.8% 57.5%;
+      }
+      .catch-fish.fish-koi {
+        width: clamp(145px, 25vw, 255px);
+        aspect-ratio: 28 / 15;
+        transform: translate(-89.7%, -58%);
+        transform-origin: 89.7% 58%;
+      }
+      .catch-fish.fish-nushi {
+        width: clamp(180px, 31vw, 320px);
+        aspect-ratio: 48 / 35;
+        transform: translate(-87%, -57.5%);
+        transform-origin: 87% 57.5%;
+        filter:
+          brightness(1.18)
+          saturate(1.2)
+          drop-shadow(7px 10px 2px #020615bb)
+          drop-shadow(0 0 15px #ffd96c99);
+        animation-duration: .92s;
+      }
+      .catch-card.legend .catch-rig {
+        animation-duration: 1.48s;
+      }
+      .catch-copy {
+        position: relative;
+        z-index: 5;
+        display: grid;
+        justify-items: center;
+        gap: 5px;
+        padding: 12px 10px;
+        border: 2px solid #ffe38a55;
+        border-radius: 14px;
+        background: #071827b8;
+        box-shadow: 0 8px 22px #0007;
+      }
+      .catch-card span {
+        color: #8fe8ff;
+        font-weight: 900;
+        letter-spacing: .05em;
+      }
+      .catch-card strong {
+        color: #ffe89c;
+        font-size: clamp(1.1rem, 3.4vw, 1.75rem);
+      }
+      .catch-card small { font-size: clamp(.72rem, 1.8vw, .9rem); }
+      .catch-close {
+        margin-top: 5px;
+        padding: 7px 18px;
+        min-width: 118px;
+      }
       .landscape-warning {
         display: none;
       }
@@ -1294,9 +1434,19 @@
       @keyframes danger-pulse {
         50% { background: #421f2fe8; }
       }
-      @keyframes catch-pop {
-        from { opacity: 0; transform: translate(-50%, -45%) scale(.72); }
-        to { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+      @keyframes catch-screen-in {
+        from { opacity: 0; filter: brightness(.45); }
+        to { opacity: 1; filter: brightness(1); }
+      }
+      @keyframes catch-rig-swing {
+        0% { transform: translateX(-50%) rotate(-5deg); }
+        100% { transform: translateX(-50%) rotate(5deg); }
+      }
+      @keyframes catch-fish-tail {
+        to { background-position-x: 100%; }
+      }
+      @keyframes catch-hook-twitch {
+        100% { transform: rotate(7deg) translateY(1px); }
       }
       @media (orientation: portrait) {
         .landscape-warning {
@@ -1355,7 +1505,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v38</span><span id="time">朝</span
+        <b>星降る湖</b><span>v39</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1461,9 +1611,19 @@
           </div>
         </div>
         <div class="catch-card" id="catchCard" aria-live="polite">
-          <span id="catchBadge">🎣 GET!</span>
-          <strong id="catchTitle"></strong>
-          <small id="catchDetail"></small>
+          <div class="catch-showcase" aria-hidden="true">
+            <div class="catch-rig">
+              <i class="catch-line"></i>
+              <div class="catch-fish" id="catchFish"></div>
+              <i class="catch-hook"></i>
+            </div>
+          </div>
+          <div class="catch-copy">
+            <span id="catchBadge">🎣 GET!</span>
+            <strong id="catchTitle"></strong>
+            <small id="catchDetail"></small>
+            <button class="catch-close" id="catchClose">A　つづける</button>
+          </div>
         </div>
         <div class="modal" id="record">
           <button class="close" data-close>閉じる</button>
@@ -3275,19 +3435,23 @@
       }
       function showCatchCard(f, first) {
         const card = $("#catchCard");
+        const hangingFish = $("#catchFish");
         $("#catchBadge").textContent = f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!";
-        $("#catchTitle").textContent = `${f.icon} ${f.name}`;
+        $("#catchTitle").textContent = f.name;
         const detail = first
           ? `初釣果！ ＋${f.price}円`
           : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
         $("#catchDetail").textContent =
           f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail;
+        hangingFish.className = `catch-fish fish-${f.id}`;
+        hangingFish.style.backgroundImage = `url("${fishAssets[f.id]}")`;
+        hangingFish.style.backgroundPositionX = "0";
         card.classList.remove("show", "legend");
         void card.offsetWidth;
         card.classList.toggle("legend", f.id === "nushi");
         card.classList.add("show");
         vibrate(f.id === "nushi" ? [80, 45, 80, 45, 180] : [70, 40, 120]);
-        catchTimer = setTimeout(hideCatchCard, 2300);
+        catchTimer = setTimeout(hideCatchCard, 5200);
       }
       function renderBattleFish() {
         const element = $("#battleFish");
@@ -3759,6 +3923,7 @@
         b.onpointercancel = stopMoving;
         b.onlostpointercapture = stopMoving;
       });
+      $("#catchClose").onclick = hideCatchCard;
       $("#action").onclick = action;
       $("#back").onclick = close;
       $("#menu").onclick = () => open("record");
@@ -3788,6 +3953,12 @@
         log(`${rodData[id].name}を買った！`); render();
       });
       addEventListener("keydown", (e) => {
+        if ($("#catchCard").classList.contains("show")) {
+          if (["z", "x", "Enter", "Escape"].includes(e.key))
+            hideCatchCard();
+          e.preventDefault();
+          return;
+        }
         let m = {
           ArrowLeft: "left",
           ArrowRight: "right",
