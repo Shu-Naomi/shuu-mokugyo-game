@@ -1355,7 +1355,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v37</span><span id="time">朝</span
+        <b>星降る湖</b><span>v38</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2011,14 +2011,14 @@
           ? "side"
           : s.direction === "up" ? "up" : "down";
         const walkImage = playerWalkImages?.[s.avatar];
-        // Side and rear movement keep the four-beat gait from v36.  The
-        // front-facing standing cell has a deliberately broad boot stance,
-        // though, and flashing it between strides reads as bow-legged.
-        // Hold each real front stride for two beats instead.
+        // The front- and rear-facing standing cells both have a deliberately
+        // broad boot stance. Flashing either one between strides reads as
+        // bow-legged, so hold each real straight-on stride for two beats.
+        // Side movement keeps the four-beat gait from v36.
         const phase = playerAnimFrame % 4;
-        const frontWalk = walking && direction === "down";
+        const straightWalk = walking && direction !== "side";
         const strideFrame =
-          walking && (frontWalk || phase % 2 === 0);
+          walking && (straightWalk || phase % 2 === 0);
         const useWalkImage =
           strideFrame && walkImage?.complete && walkImage.naturalWidth;
         const image = useWalkImage ? walkImage : playerImages?.[s.avatar];
@@ -2034,7 +2034,7 @@
         const sourceX = column * cellWidth;
         const sourceY = useWalkImage
           ? (
-              frontWalk
+              straightWalk
                 ? (phase < 2 ? 0 : cellHeight)
                 : (phase === 0 ? 0 : cellHeight)
             )
