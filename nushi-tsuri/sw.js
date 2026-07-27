@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v41-expanded-lakeside-1";
+const CACHE_NAME = "nushi-tsuri-v42-full-map-1";
 const APP_ASSETS = [
   "./",
   "./index.html",
