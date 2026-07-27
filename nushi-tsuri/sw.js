@@ -1,36 +1,16 @@
-const CACHE_NAME = "nushi-tsuri-v42-full-map-1";
-const APP_ASSETS = [
+const CACHE_NAME = "nushi-tsuri-v43-light-map-1";
+const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./assets/riku-walk.png?v=12",
-  "./assets/fish-shadows.png",
-  "./assets/player-boy.png",
-  "./assets/player-girl.png",
-  "./assets/player-boy-walk-v35-final.png",
-  "./assets/player-girl-walk-v35-final.png",
-  "./assets/player-boy-pet-v18.svg",
-  "./assets/player-girl-pet-v18.svg",
-  "./assets/pet-scenes-v19.svg",
-  "./assets/player-boy-sit.png?v=16",
-  "./assets/player-girl-sit.png?v=16",
-  "./assets/shuu-walk.png?v=12",
-  "./assets/grey-walk.png?v=12",
-  "./assets/dog-idles.png?v=12",
-  "./assets/fish-moroko-v31.png",
-  "./assets/fish-funa-v31.png",
-  "./assets/fish-koi-v31.png",
-  "./assets/fish-nushi-v31.png",
-  "./assets/lake-underwater-v25.svg",
-  "./assets/sam-front.png",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(
     caches
       .open(CACHE_NAME)
-      .then((cache) => cache.addAll(APP_ASSETS))
+      .then((cache) => cache.addAll(CORE_ASSETS))
       .then(() => self.skipWaiting()),
   );
 });
@@ -66,10 +46,17 @@ self.addEventListener("fetch", (event) => {
   event.respondWith(
     caches
       .match(request)
-      .then(
-        (cached) =>
-          cached ||
-          fetch(request).catch(() => caches.match("./index.html")),
-      ),
+      .then((cached) => {
+        if (cached) return cached;
+        return fetch(request)
+          .then((response) => {
+            if (request.method === "GET" && response.ok) {
+              const copy = response.clone();
+              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+            }
+            return response;
+          })
+          .catch(() => caches.match("./index.html"));
+      }),
   );
 });

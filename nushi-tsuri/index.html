@@ -673,18 +673,20 @@
         height: 190%;
         transform-origin: left top;
         background:
-          radial-gradient(circle at 7% 67%, #d6cb7b 0 2px, transparent 3px),
-          radial-gradient(circle at 18% 86%, #577b3c 0 3px, transparent 4px),
-          radial-gradient(circle at 35% 72%, #e2d88b 0 2px, transparent 3px),
-          radial-gradient(circle at 52% 91%, #4f7339 0 3px, transparent 4px),
-          radial-gradient(circle at 71% 69%, #d9ca76 0 2px, transparent 3px),
-          radial-gradient(circle at 89% 87%, #4b7138 0 3px, transparent 4px),
+          radial-gradient(circle, #d6cb7b 0 1px, transparent 2px)
+            19px 13px / 137px 91px,
+          radial-gradient(circle, #52763a 0 2px, transparent 3px)
+            71px 48px / 173px 113px,
           repeating-linear-gradient(
             105deg,
             #719e51 0 5px,
             #759f52 6px 10px,
             #6b974b 11px 15px
           );
+        contain: layout paint style;
+        will-change: transform;
+        backface-visibility: hidden;
+        transition: transform 0.3s ease-out;
       }
       .lake {
         left: -2%;
@@ -692,6 +694,16 @@
         top: -2%;
         width: 104%;
         height: 53%;
+        background:
+          radial-gradient(ellipse at 52% 62%, #9bdbe03d 0 13%, transparent 30%),
+          repeating-linear-gradient(
+            0deg,
+            #1f7094 0 4px,
+            #2c83a4 5px 8px,
+            #246f91 9px 14px
+          );
+        animation: none;
+        contain: layout paint;
         clip-path: polygon(
           0 0, 100% 0, 100% 84%, 92% 78%, 84% 88%, 74% 82%,
           64% 92%, 52% 83%, 43% 94%, 32% 86%, 22% 96%, 11% 88%, 0 93%
@@ -706,17 +718,22 @@
       }
       .lake::after {
         inset: 23% 0 0;
+        background:
+          repeating-linear-gradient(
+            100deg,
+            transparent 0 105px,
+            #d5faf338 106px 126px,
+            transparent 127px 198px
+          );
+        opacity: .46;
       }
       .shore {
         inset: 40% 0 auto;
         height: 18%;
         border: 0;
         background:
-          radial-gradient(ellipse at 8% 47%, #805c39 0 4px, transparent 5px),
-          radial-gradient(ellipse at 26% 55%, #6b5037 0 3px, transparent 4px),
-          radial-gradient(ellipse at 47% 41%, #8b6740 0 5px, transparent 6px),
-          radial-gradient(ellipse at 69% 59%, #705238 0 4px, transparent 5px),
-          radial-gradient(ellipse at 91% 38%, #89623d 0 4px, transparent 5px),
+          radial-gradient(ellipse, #805c39 0 3px, transparent 4px)
+            17px 9px / 181px 73px,
           linear-gradient(#f0d58a 0 17%, #e1c276 18% 48%, #9bad5e 49% 72%, transparent 73%);
         clip-path: polygon(
           0 34%, 11% 18%, 22% 42%, 32% 21%, 43% 45%, 52% 14%,
@@ -746,6 +763,15 @@
         top: 72%;
         bottom: auto;
         height: 12%;
+        background:
+          radial-gradient(circle, #806746 0 2px, transparent 3px)
+            21px 17px / 119px 67px,
+          repeating-linear-gradient(
+            100deg,
+            #b99562 0 12px,
+            #bea06c 13px 23px,
+            #ae8b5b 24px 32px
+          );
         clip-path: polygon(
           0 45%, 9% 27%, 18% 42%, 29% 22%, 39% 38%, 49% 19%,
           60% 35%, 71% 23%, 82% 43%, 91% 29%, 100% 44%,
@@ -762,9 +788,8 @@
         height: 49%;
         border: 3px solid #6f5a3d;
         background:
-          radial-gradient(circle at 34% 8%, #95764f 0 3px, transparent 4px),
-          radial-gradient(circle at 61% 31%, #7f6546 0 3px, transparent 4px),
-          radial-gradient(circle at 38% 61%, #9d7b51 0 3px, transparent 4px),
+          radial-gradient(circle, #856a48 0 2px, transparent 3px)
+            13px 27px / 73px 91px,
           repeating-linear-gradient(11deg, #b99562 0 12px, #bea06c 13px 23px, #ae8b5b 24px 32px);
         clip-path: polygon(35% 0, 72% 0, 63% 13%, 77% 26%, 65% 39%, 79% 53%, 66% 67%, 78% 81%, 64% 100%, 27% 100%, 38% 83%, 24% 67%, 38% 52%, 25% 38%, 39% 24%, 28% 11%);
         opacity: .92;
@@ -796,10 +821,8 @@
         border: 4px solid #6c5d43;
         border-radius: 47% 53% 45% 55%;
         background:
-          radial-gradient(circle at 22% 27%, #d6c390 0 4px, transparent 5px),
-          radial-gradient(circle at 68% 22%, #8f8062 0 3px, transparent 4px),
-          radial-gradient(circle at 35% 70%, #a99972 0 4px, transparent 5px),
-          radial-gradient(circle at 76% 64%, #d4bf8c 0 3px, transparent 4px),
+          radial-gradient(circle, #978666 0 3px, transparent 4px)
+            21px 15px / 91px 73px,
           repeating-linear-gradient(18deg, #b9a477 0 13px, #c4b084 14px 25px, #aa956c 26px 32px);
         box-shadow: inset 0 0 0 4px #d1bd8a88, 4px 6px #46613b55;
         pointer-events: none;
@@ -894,6 +917,11 @@
         width: 3.5%;
         height: 20.5%;
       }
+      .spot-old-pier,
+      .tree-grove,
+      .rock-patch {
+        filter: none;
+      }
       .shop {
         left: 77%;
         top: 61%;
@@ -930,7 +958,15 @@
       .house-b { left: 23%; top: 79%; width: 10%; height: 13%; }
       .diner { left: 39%; top: 57%; width: 12%; height: 15%; }
       .market { left: 61%; top: 77%; width: 11%; height: 14%; }
-      .mystery { left: 89%; top: 83%; width: 8%; height: 12%; }
+      .mystery {
+        left: 89%;
+        top: 83%;
+        width: 8%;
+        height: 12%;
+        filter: none;
+        opacity: .76;
+      }
+      .building .window { box-shadow: none; }
       .rescue-spot {
         left: 47.5%;
         top: 86%;
@@ -2209,7 +2245,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v42</span><span id="time">朝</span
+        <b>星降る湖</b><span>v43</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2827,6 +2863,7 @@
         catchTimer = 0,
         landingTimer = 0,
         walkTimer = 0,
+        saveTimer = 0,
         playerWalkInterval = 0,
         moveHoldInterval = 0,
         dogWalkTimer = 0,
@@ -2882,26 +2919,48 @@
         if (image.decode) image.decode().then(drawPetScene).catch(() => {});
         return image;
       }
-      const playerImages = {
-          boy: loadPlayerImage("assets/player-boy.png"),
-          girl: loadPlayerImage("assets/player-girl.png"),
+      const playerImages = {},
+        playerWalkImages = {},
+        dogImages = {},
+        playerImageSources = {
+          boy: "assets/player-boy.png",
+          girl: "assets/player-girl.png",
         },
-        playerWalkImages = {
-          boy: loadPlayerImage("assets/player-boy-walk-v35-final.png"),
-          girl: loadPlayerImage("assets/player-girl-walk-v35-final.png"),
+        playerWalkSources = {
+          boy: "assets/player-boy-walk-v35-final.png",
+          girl: "assets/player-girl-walk-v35-final.png",
         },
-        dogImages = {
-          shuu: loadDogImage("assets/shuu-walk.png?v=12"),
-          riku: loadDogImage("assets/riku-walk.png?v=12"),
-          grey: loadDogImage("assets/grey-walk.png?v=12"),
-        },
-        dogIdleImage = loadDogImage("assets/dog-idles.png?v=12"),
+        dogImageSources = {
+          shuu: "assets/shuu-walk.png?v=12",
+          riku: "assets/riku-walk.png?v=12",
+          grey: "assets/grey-walk.png?v=12",
+        };
+      function ensureAvatarImages(avatar = s.avatar) {
+        if (!playerImages[avatar])
+          playerImages[avatar] = loadPlayerImage(playerImageSources[avatar]);
+        if (!playerWalkImages[avatar])
+          playerWalkImages[avatar] =
+            loadPlayerImage(playerWalkSources[avatar]);
+      }
+      function ensureDogImage(dog = s.dog) {
+        if (!dogImages[dog])
+          dogImages[dog] = loadDogImage(dogImageSources[dog]);
+      }
+      ensureAvatarImages();
+      ensureDogImage();
+      const dogIdleImage = loadDogImage("assets/dog-idles.png?v=12"),
         petSceneImage = loadPetSceneImage("assets/pet-scenes-v19.svg");
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       function save() {
+        clearTimeout(saveTimer);
+        saveTimer = 0;
         localStorage.setItem(key, JSON.stringify(s));
+      }
+      function scheduleSave() {
+        clearTimeout(saveTimer);
+        saveTimer = setTimeout(save, 700);
       }
       function vibrate(pattern) {
         try { navigator.vibrate?.(pattern); } catch (_) {}
@@ -3151,7 +3210,7 @@
         const cameraX = Math.max(0, Math.min(WORLD_WIDTH - 100, s.x - 50));
         const cameraY = Math.max(0, Math.min(WORLD_HEIGHT - 100, s.y - 50));
         $("#map").style.transform =
-          `translate(${-cameraX / WORLD_SCALE_X}%, ${-cameraY / WORLD_SCALE_Y}%)`;
+          `translate3d(${-cameraX / WORLD_SCALE_X}%, ${-cameraY / WORLD_SCALE_Y}%, 0)`;
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${mapY}%`;
         renderPlayer();
@@ -3181,7 +3240,7 @@
             : near(118, 169, 12)
               ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
               : "湖岸・広場・町・林を縦横に歩こう。気になる場所ではA。";
-        save();
+        scheduleSave();
       }
       function move(d) {
         if (battle) return;
@@ -4760,6 +4819,7 @@
         b.classList.toggle("active", b.dataset.dog === s.dog);
         b.onclick = () => {
           s.dog = b.dataset.dog;
+          ensureDogImage();
           document
             .querySelectorAll("[data-dog]")
             .forEach((x) => x.classList.toggle("active", x === b));
@@ -4772,6 +4832,7 @@
         b.classList.toggle("active", b.dataset.avatar === s.avatar);
         b.onclick = () => {
           s.avatar = b.dataset.avatar;
+          ensureAvatarImages();
           document
             .querySelectorAll("[data-avatar]")
             .forEach((x) => x.classList.toggle("active", x === b));
@@ -4844,6 +4905,10 @@
         if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
+      addEventListener("pagehide", save);
+      document.addEventListener("visibilitychange", () => {
+        if (document.hidden) save();
+      });
       setInterval(() => {
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
