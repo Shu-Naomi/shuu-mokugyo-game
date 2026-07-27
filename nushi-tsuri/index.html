@@ -115,60 +115,344 @@
         position: relative;
         min-height: 0;
         overflow: hidden;
-        background: #69a056;
+        background: #6f9b50;
       }
       .map {
         position: absolute;
         inset: 0 auto 0 0;
-        width: 300%;
+        width: 400%;
         overflow: hidden;
-        background: #69a056;
+        background:
+          radial-gradient(circle at 8% 83%, #d6cb7b 0 2px, transparent 3px),
+          radial-gradient(circle at 27% 78%, #577b3c 0 3px, transparent 4px),
+          radial-gradient(circle at 46% 91%, #e2d88b 0 2px, transparent 3px),
+          radial-gradient(circle at 72% 76%, #4f7339 0 3px, transparent 4px),
+          radial-gradient(circle at 91% 88%, #d9ca76 0 2px, transparent 3px),
+          repeating-linear-gradient(
+            105deg,
+            #719e51 0 5px,
+            #759f52 6px 10px,
+            #6b974b 11px 15px
+          );
         transition: transform 0.36s linear;
       }
       .lake {
         position: absolute;
+        z-index: 0;
         left: 0;
         right: 0;
         top: 0;
-        height: 57%;
-        background: repeating-linear-gradient(
-          0deg,
-          #277ea1 0 5px,
-          #318caf 6px 10px
-        );
+        height: 58%;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 12% 72%, #78c5ce33 0 9%, transparent 10%),
+          radial-gradient(ellipse at 38% 48%, #9bdbe044 0 8%, transparent 9%),
+          radial-gradient(ellipse at 65% 68%, #84cad33d 0 11%, transparent 12%),
+          radial-gradient(ellipse at 91% 42%, #a9e1e83b 0 7%, transparent 8%),
+          repeating-linear-gradient(
+            0deg,
+            #1f7094 0 3px,
+            #2c83a4 4px 7px,
+            #327f9d 8px 10px,
+            #246f91 11px 14px
+          );
         animation: water 3s linear infinite;
       }
+      .lake::before {
+        content: "";
+        position: absolute;
+        inset: 0 0 auto;
+        height: 33%;
+        background:
+          linear-gradient(150deg, transparent 0 13%, #274d4a 14% 20%, transparent 21%) 0 0 / 9% 100% repeat-x,
+          linear-gradient(210deg, transparent 0 16%, #1d4144 17% 24%, transparent 25%) 4% 0 / 11% 100% repeat-x,
+          linear-gradient(#153a49bb, #1f546855);
+        clip-path: polygon(0 0, 100% 0, 100% 56%, 94% 46%, 87% 63%, 79% 42%, 71% 60%, 62% 39%, 54% 64%, 45% 43%, 36% 58%, 27% 40%, 18% 62%, 9% 44%, 0 59%);
+        opacity: .8;
+      }
+      .lake::after {
+        content: "";
+        position: absolute;
+        inset: 28% 0 0;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 15px, #b9f1eb24 16px 18px, transparent 19px 31px),
+          repeating-linear-gradient(100deg, transparent 0 90px, #d5faf34d 91px 113px, transparent 114px 185px);
+        opacity: .65;
+      }
+      .lake-island {
+        position: absolute;
+        z-index: 1;
+        width: 3.3%;
+        height: 13%;
+        border: 3px solid #36513c;
+        border-radius: 52% 48% 44% 56%;
+        background:
+          radial-gradient(circle at 28% 42%, #557a48 0 12%, transparent 13%),
+          radial-gradient(circle at 53% 30%, #416d45 0 17%, transparent 18%),
+          radial-gradient(circle at 76% 46%, #5d834d 0 13%, transparent 14%),
+          linear-gradient(#6d8d55 0 60%, #b29c67 61%);
+        box-shadow:
+          0 5px 0 #d5c27caa,
+          0 9px 8px #123f5455;
+        opacity: .88;
+        pointer-events: none;
+      }
+      .lake-island::before {
+        content: "";
+        position: absolute;
+        left: 22%;
+        bottom: 44%;
+        width: 10px;
+        height: 24px;
+        background: linear-gradient(135deg, #234b37, #4d7b45);
+        clip-path: polygon(50% 0, 100% 54%, 72% 50%, 100% 88%, 58% 81%, 58% 100%, 42% 100%, 42% 81%, 0 88%, 28% 50%, 0 54%);
+        box-shadow: 18px 4px #315e3c, 39px -2px #3b6d41;
+      }
+      .lake-island::after {
+        content: "";
+        position: absolute;
+        left: 8%;
+        right: 8%;
+        bottom: -11px;
+        height: 7px;
+        border-top: 2px solid #c4ecdfaa;
+        border-radius: 50%;
+      }
+      .island-a { left: 18%; top: 25%; transform: scale(.8); }
+      .island-b { left: 48%; top: 34%; width: 2.4%; height: 9%; }
+      .island-c { left: 75%; top: 22%; transform: scale(1.08); }
+      .water-ripple {
+        position: absolute;
+        z-index: 2;
+        width: 54px;
+        height: 13px;
+        border-top: 2px solid #b9edf0aa;
+        border-bottom: 2px solid #b9edf077;
+        border-radius: 50%;
+        opacity: .7;
+        animation: lake-ripple 2.8s ease-in-out infinite alternate;
+        pointer-events: none;
+      }
+      .ripple-a { left: 9%; top: 36%; }
+      .ripple-b { left: 41%; top: 67%; animation-delay: -.8s; }
+      .ripple-c { left: 68%; top: 48%; animation-delay: -1.6s; }
+      .ripple-d { left: 94%; top: 63%; animation-delay: -2.1s; }
+      .lily-patch {
+        position: absolute;
+        z-index: 2;
+        width: 9px;
+        height: 5px;
+        border-radius: 50%;
+        background: #5f904f;
+        box-shadow:
+          15px 6px #6b9d58,
+          31px -1px #4f8147,
+          45px 8px #6f9e56,
+          61px 2px #54894a;
+        pointer-events: none;
+      }
+      .lilies-a { left: 13.8%; top: 49%; }
+      .lilies-b { left: 36.8%; top: 44%; }
       .shore {
         position: absolute;
-        inset: 54% 0 0;
-        background: linear-gradient(#d5b36b 0 10%, #6d9b50 11%);
-        border-top: 5px solid #f0d080;
+        z-index: 1;
+        inset: 52% 0 0;
+        overflow: hidden;
+        background:
+          radial-gradient(ellipse at 6% 16%, #805c39 0 4px, transparent 5px),
+          radial-gradient(ellipse at 21% 13%, #6b5037 0 3px, transparent 4px),
+          radial-gradient(ellipse at 43% 18%, #8b6740 0 5px, transparent 6px),
+          radial-gradient(ellipse at 68% 12%, #705238 0 4px, transparent 5px),
+          radial-gradient(ellipse at 91% 17%, #89623d 0 4px, transparent 5px),
+          linear-gradient(#e1c276 0 14%, #9bad5e 15% 21%, transparent 22%);
+        border-top: 4px solid #f0d58a;
+        pointer-events: none;
       }
-      .dock {
+      .shore::before {
+        content: "";
         position: absolute;
-        left: 42%;
-        top: 35%;
-        width: 19%;
-        height: 42%;
-        background: repeating-linear-gradient(
-          90deg,
-          #805128 0 13px,
-          #a66b32 14px 25px
-        );
-        border: 4px solid #55361f;
+        inset: 10% 0 0;
+        background:
+          radial-gradient(circle at 8% 62%, #4e7337 0 2px, transparent 3px),
+          radial-gradient(circle at 19% 76%, #e4d77c 0 2px, transparent 3px),
+          radial-gradient(circle at 37% 54%, #55783b 0 2px, transparent 3px),
+          radial-gradient(circle at 58% 79%, #ded17a 0 2px, transparent 3px),
+          radial-gradient(circle at 79% 57%, #52763a 0 2px, transparent 3px),
+          radial-gradient(circle at 95% 72%, #e2d47e 0 2px, transparent 3px);
+        background-size: 86px 57px, 104px 63px, 92px 66px, 117px 71px, 96px 58px, 125px 69px;
+        opacity: .8;
+      }
+      .shore::after {
+        content: "";
+        position: absolute;
+        left: 0;
+        right: 0;
+        top: 12%;
+        height: 8px;
+        background: repeating-linear-gradient(90deg, #678c45 0 9px, #86a95a 10px 17px, transparent 18px 24px);
+        clip-path: polygon(0 38%, 3% 5%, 7% 68%, 12% 19%, 18% 71%, 24% 13%, 31% 62%, 38% 6%, 46% 74%, 54% 18%, 63% 67%, 71% 4%, 80% 72%, 88% 17%, 95% 63%, 100% 29%, 100% 100%, 0 100%);
+      }
+      .village-road {
+        position: absolute;
+        z-index: 1;
+        left: 0;
+        right: 0;
+        bottom: 2%;
+        height: 24%;
+        background:
+          radial-gradient(ellipse at 5% 42%, #91734e 0 3px, transparent 4px),
+          radial-gradient(ellipse at 17% 58%, #7d6446 0 2px, transparent 3px),
+          radial-gradient(ellipse at 31% 37%, #9a7950 0 3px, transparent 4px),
+          radial-gradient(ellipse at 48% 62%, #816746 0 2px, transparent 3px),
+          radial-gradient(ellipse at 66% 39%, #98784f 0 3px, transparent 4px),
+          radial-gradient(ellipse at 83% 61%, #7d6345 0 2px, transparent 3px),
+          radial-gradient(ellipse at 96% 36%, #94734c 0 3px, transparent 4px),
+          repeating-linear-gradient(100deg, #b99562 0 12px, #bea06c 13px 23px, #ae8b5b 24px 32px);
+        border: 3px solid #6f5a3d;
+        clip-path: polygon(0 46%, 6% 35%, 13% 43%, 21% 27%, 30% 38%, 39% 22%, 49% 34%, 59% 25%, 69% 42%, 78% 31%, 88% 44%, 100% 30%, 100% 75%, 91% 83%, 81% 68%, 70% 78%, 61% 64%, 51% 78%, 41% 66%, 31% 81%, 21% 69%, 12% 82%, 4% 70%, 0 77%);
+        opacity: .9;
+        pointer-events: none;
+      }
+      .trail {
+        position: absolute;
+        z-index: 1;
+        top: 57%;
+        width: 2.2%;
+        height: 25%;
+        border-left: 5px dashed #b89968;
+        border-right: 4px dashed #816846;
+        transform: skewX(-9deg);
+        opacity: .78;
+        pointer-events: none;
+      }
+      .trail-a { left: 12%; }
+      .trail-b { left: 35%; transform: skewX(11deg); }
+      .trail-c { left: 61%; }
+      .trail-d { left: 88%; transform: skewX(9deg); }
+      .fishing-spot {
+        position: absolute;
+        z-index: 3;
+        top: 36%;
+        width: 4.2%;
+        height: 34%;
+        min-width: 74px;
+        border: 3px solid #4d341f;
+        background:
+          repeating-linear-gradient(90deg, #8d5b2e 0 9px, #b4783b 10px 18px),
+          #86562e;
+        box-shadow:
+          inset 0 0 0 2px #d39852,
+          5px 7px #0d304455;
+      }
+      .fishing-spot::before,
+      .fishing-spot::after {
+        content: "";
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 5px;
+        background: #4d341f;
+        box-shadow: 0 0 0 1px #bc854b;
+      }
+      .fishing-spot::before { left: 6%; }
+      .fishing-spot::after { right: 6%; }
+      .spot-name {
+        position: absolute;
+        z-index: 4;
+        left: 50%;
+        top: -24px;
+        min-width: max-content;
+        padding: 2px 7px;
+        transform: translateX(-50%);
+        color: #fff6c9;
+        border: 2px solid #503823;
+        border-radius: 4px;
+        background: #264a43ee;
+        box-shadow: 2px 3px #0004;
+        font-size: clamp(.52rem, 1.15vw, .72rem);
+        font-weight: 900;
+        white-space: nowrap;
+      }
+      .spot-lantern {
+        position: absolute;
+        z-index: 5;
+        right: -8px;
+        bottom: 7px;
+        width: 8px;
+        height: 13px;
+        border: 2px solid #4e3220;
+        background: #f6c75e;
+        box-shadow: 0 0 7px #ffd469;
+      }
+      .spot-cove {
+        left: 11.4%;
+        top: 53%;
+        width: 2.5%;
+        height: 16%;
+        border-radius: 48% 48% 5px 5px;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 20px, #6c6251 21px 23px),
+          repeating-linear-gradient(90deg, #b7a982 0 28px, #90836a 29px 32px);
+      }
+      .spot-cove::before,
+      .spot-cove::after { display: none; }
+      .spot-reeds {
+        left: 33.8%;
+        top: 46%;
+        width: 2.8%;
+        height: 23%;
+      }
+      .spot-old-pier {
+        left: 59.4%;
+        top: 40%;
+        width: 3.2%;
+        height: 29%;
+        filter: saturate(.8);
+        transform: rotate(-1deg);
+      }
+      .spot-old-pier::after {
+        right: 10%;
+        transform: rotate(2deg);
+      }
+      .spot-star-cape {
+        left: 86.7%;
+        top: 34%;
+        width: 3.5%;
+        height: 35%;
+        border-color: #392a2f;
+        background:
+          repeating-linear-gradient(90deg, #3e5661 0 10px, #627681 11px 20px),
+          #4c6672;
+        box-shadow:
+          inset 0 0 0 2px #a8c5ca,
+          0 0 13px #bdd9e566,
+          6px 8px #0b223866;
+      }
+      .spot-star-cape .spot-name {
+        color: #fff1a6;
+        border-color: #806642;
+        background: #272544f2;
+      }
+      .spot-star-cape .spot-lantern {
+        background: #bdeaff;
+        box-shadow: 0 0 10px #9ceaff;
       }
       .shop {
         position: absolute;
-        left: 84%;
+        z-index: 3;
+        left: 79%;
         bottom: 16%;
-        width: 18%;
+        width: 7.5%;
         height: 32%;
         min-width: 88px;
-        background: #a75a38;
+        background:
+          linear-gradient(90deg, transparent 0 16%, #df9d62 17% 19%, transparent 20% 80%, #df9d62 81% 83%, transparent 84%),
+          linear-gradient(#a75a38 0 68%, #7f402f 69%);
         border: 5px solid #552f24;
+        box-shadow: inset 0 -12px #623725, 6px 8px #0003;
       }
       .shop:before {
-        content: "釣具店";
+        content: "星湖釣具店";
         position: absolute;
         inset: -23px 5% auto;
         background: #f4d27c;
@@ -182,21 +466,99 @@
         right: -16px;
         top: 15%;
       }
-      .trees {
+      .tree-grove {
         position: absolute;
-        left: 2%;
-        bottom: 6%;
-        font-size: clamp(2rem, 7vw, 5rem);
-        letter-spacing: -0.5em;
-        filter: drop-shadow(3px 5px #294a2c);
+        z-index: 2;
+        display: flex;
+        align-items: flex-end;
+        gap: 2px;
+        pointer-events: none;
+        filter: drop-shadow(3px 5px #294a2c88);
       }
+      .tree-grove i {
+        position: relative;
+        display: block;
+        width: 22px;
+        height: 42px;
+        background: linear-gradient(135deg, #315c3b, #477a45 54%, #234a34 55%);
+        clip-path: polygon(50% 0, 88% 36%, 70% 35%, 100% 70%, 63% 66%, 78% 91%, 55% 87%, 55% 100%, 45% 100%, 45% 87%, 20% 91%, 37% 66%, 0 70%, 30% 35%, 12% 36%);
+      }
+      .tree-grove i:nth-child(2n) {
+        width: 18px;
+        height: 35px;
+        filter: brightness(.86);
+      }
+      .tree-grove i:nth-child(3n) {
+        width: 26px;
+        height: 49px;
+        filter: brightness(1.06);
+      }
+      .grove-a { left: 1.2%; bottom: 19%; }
+      .grove-b { left: 24.5%; bottom: 11%; }
+      .grove-c { left: 49.6%; bottom: 16%; }
+      .grove-d { left: 72.8%; bottom: 12%; }
+      .grove-e { left: 94.8%; bottom: 18%; }
+      .reed-bed {
+        position: absolute;
+        z-index: 2;
+        top: 48%;
+        width: 5%;
+        height: 13%;
+        background: repeating-linear-gradient(76deg, transparent 0 8px, #547744 9px 11px, transparent 12px 18px);
+        border-bottom: 4px solid #4e703e;
+        clip-path: polygon(0 100%, 4% 42%, 9% 100%, 15% 18%, 20% 100%, 27% 38%, 33% 100%, 39% 10%, 45% 100%, 52% 31%, 58% 100%, 66% 20%, 72% 100%, 79% 35%, 85% 100%, 92% 12%, 100% 100%);
+        pointer-events: none;
+      }
+      .reeds-a { left: 29.5%; }
+      .reeds-b { left: 38%; }
+      .reeds-c { left: 64.5%; width: 3.6%; }
+      .rock-patch {
+        position: absolute;
+        z-index: 2;
+        width: 8px;
+        height: 5px;
+        border-radius: 50%;
+        background: #776f62;
+        box-shadow:
+          12px -2px 0 2px #8a8172,
+          25px 3px 0 1px #68645b,
+          39px -1px 0 3px #81796a,
+          54px 4px 0 #5e5b54;
+        filter: drop-shadow(1px 2px #3f4936);
+        pointer-events: none;
+      }
+      .rocks-a { left: 15.6%; bottom: 26%; }
+      .rocks-b { left: 55%; bottom: 15%; }
+      .rocks-c { left: 89.8%; bottom: 23%; }
+      .flower-patch {
+        position: absolute;
+        z-index: 2;
+        width: 3px;
+        height: 3px;
+        border-radius: 50%;
+        background: #ffe58b;
+        box-shadow:
+          8px 5px #f7a9b8,
+          17px -3px #e8e2ff,
+          26px 7px #ffd36c,
+          37px 1px #f6a8bd,
+          48px 6px #e8e2ff,
+          58px -2px #ffd36c;
+        pointer-events: none;
+      }
+      .flowers-a { left: 7%; bottom: 18%; }
+      .flowers-b { left: 42%; bottom: 12%; }
+      .flowers-c { left: 76%; bottom: 20%; }
       .building {
         position: absolute;
+        z-index: 3;
         bottom: 15%;
-        width: 8%;
+        width: 6%;
         height: 29%;
         border: 4px solid #523426;
-        background: linear-gradient(#be6c48 0 68%, #8b4c38 69%);
+        background:
+          linear-gradient(90deg, transparent 0 15%, #e5ad78 16% 18%, transparent 19% 81%, #e5ad78 82% 84%, transparent 85%),
+          linear-gradient(#be6c48 0 68%, #8b4c38 69%);
         box-shadow:
           inset 0 -12px #623725,
           5px 6px #0003;
@@ -204,6 +566,7 @@
       .building::before {
         content: attr(data-name);
         position: absolute;
+        z-index: 4;
         inset: -22px 4% auto;
         padding: 2px;
         border: 2px solid #563721;
@@ -222,37 +585,84 @@
         background: #472d24;
         border: 2px solid #241917;
       }
+      .building .roof {
+        position: absolute;
+        z-index: 2;
+        left: -8%;
+        right: -8%;
+        top: -12px;
+        height: 18px;
+        border: 3px solid #49301f;
+        background: repeating-linear-gradient(90deg, #71402d 0 10px, #98523a 11px 20px);
+        transform: skewX(-8deg);
+        box-shadow: 3px 4px #0003;
+      }
+      .building .window {
+        position: absolute;
+        z-index: 1;
+        top: 31%;
+        width: 17%;
+        height: 19%;
+        border: 2px solid #493427;
+        background:
+          linear-gradient(90deg, transparent 44%, #f8e4a8 45% 55%, transparent 56%),
+          linear-gradient(#8dd0d4 0 44%, #f8e4a8 45% 55%, #6ba7ae 56%);
+        box-shadow: 0 0 4px #ffe7a755;
+      }
+      .building .window-a { left: 12%; }
+      .building .window-b { right: 12%; }
+      .building .chimney {
+        position: absolute;
+        z-index: 1;
+        right: 13%;
+        top: -28px;
+        width: 9px;
+        height: 20px;
+        border: 2px solid #4b3327;
+        background: #81604a;
+      }
       .house-a {
-        left: 7%;
+        left: 4%;
       }
       .house-b {
-        left: 18%;
-        background: linear-gradient(#587f87 0 68%, #3e5d67 69%);
+        left: 18.8%;
+        background:
+          linear-gradient(90deg, transparent 0 15%, #8bb3b7 16% 18%, transparent 19% 81%, #8bb3b7 82% 84%, transparent 85%),
+          linear-gradient(#587f87 0 68%, #3e5d67 69%);
       }
       .diner {
-        left: 54%;
-        width: 10%;
-        background: linear-gradient(#d47d3e 0 68%, #9f4d2f 69%);
+        left: 43%;
+        width: 7%;
+        background:
+          linear-gradient(90deg, transparent 0 15%, #f0b66f 16% 18%, transparent 19% 81%, #f0b66f 82% 84%, transparent 85%),
+          linear-gradient(#d47d3e 0 68%, #9f4d2f 69%);
       }
       .market {
-        left: 66%;
-        width: 11%;
-        background: linear-gradient(#658d58 0 68%, #45683f 69%);
+        left: 67%;
+        width: 7%;
+        background:
+          linear-gradient(90deg, transparent 0 15%, #a9c486 16% 18%, transparent 19% 81%, #a9c486 82% 84%, transparent 85%),
+          linear-gradient(#658d58 0 68%, #45683f 69%);
       }
       .mystery {
-        left: 78%;
-        width: 7%;
+        left: 93%;
+        width: 5%;
         filter: brightness(0.65);
       }
       .rescue-spot {
         position: absolute;
-        left: 31%;
+        z-index: 2;
+        left: 29%;
         bottom: 14%;
-        width: 5%;
+        width: 2.4%;
         height: 8%;
         border-radius: 50%;
-        background: #79502f;
-        box-shadow: inset 0 5px #4f3324;
+        background:
+          radial-gradient(ellipse at 38% 35%, #9c7043 0 10%, transparent 11%),
+          #79502f;
+        box-shadow:
+          inset 0 5px #4f3324,
+          0 0 0 3px #5e843f;
       }
       .player {
         position: absolute;
@@ -587,7 +997,7 @@
       }
       .sam {
         position: absolute;
-        left: 4%;
+        left: 42%;
         bottom: 1%;
         width: 52px;
         height: 70px;
@@ -1368,6 +1778,9 @@
           background-position: 0 10px;
         }
       }
+      @keyframes lake-ripple {
+        to { transform: scaleX(1.35); opacity: .35; }
+      }
       @keyframes water-surface {
         to { background-position: 0 14px; }
       }
@@ -1522,7 +1935,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v40</span><span id="time">朝</span
+        <b>星降る湖</b><span>v41</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -1530,22 +1943,71 @@
       </header>
       <main class="world" id="world">
         <div class="map" id="map">
-          <div class="lake"></div>
+          <div class="lake">
+            <i class="lake-island island-a"></i>
+            <i class="lake-island island-b"></i>
+            <i class="lake-island island-c"></i>
+            <i class="water-ripple ripple-a"></i>
+            <i class="water-ripple ripple-b"></i>
+            <i class="water-ripple ripple-c"></i>
+            <i class="water-ripple ripple-d"></i>
+            <i class="lily-patch lilies-a"></i>
+            <i class="lily-patch lilies-b"></i>
+          </div>
           <div class="shore"></div>
-          <div class="dock"></div>
+          <div class="village-road"></div>
+          <i class="trail trail-a"></i>
+          <i class="trail trail-b"></i>
+          <i class="trail trail-c"></i>
+          <i class="trail trail-d"></i>
+          <div class="fishing-spot spot-cove" data-spot="cove" aria-label="朝凪の入り江">
+            <span class="spot-name">朝凪の入り江・小魚</span>
+          </div>
+          <div class="fishing-spot spot-reeds" data-spot="reeds" aria-label="葦原の岸">
+            <span class="spot-name">葦原の岸・通常魚</span><i class="spot-lantern"></i>
+          </div>
+          <div class="fishing-spot spot-old-pier" data-spot="oldPier" aria-label="古い桟橋">
+            <span class="spot-name">古い桟橋・大物</span><i class="spot-lantern"></i>
+          </div>
+          <div class="fishing-spot spot-star-cape" data-spot="starCape" aria-label="星見岬">
+            <span class="spot-name">星見岬・ヌシの深み</span><i class="spot-lantern"></i>
+          </div>
+          <i class="reed-bed reeds-a"></i>
+          <i class="reed-bed reeds-b"></i>
+          <i class="reed-bed reeds-c"></i>
+          <i class="rock-patch rocks-a"></i>
+          <i class="rock-patch rocks-b"></i>
+          <i class="rock-patch rocks-c"></i>
+          <i class="flower-patch flowers-a"></i>
+          <i class="flower-patch flowers-b"></i>
+          <i class="flower-patch flowers-c"></i>
           <div class="shop"><div class="sam" aria-label="サミュエル・オールドマン"></div></div>
-          <div class="building house-a" data-name="湖畔の民家"></div>
-          <div class="building house-b" data-name="釣り宿"></div>
-          <div class="building diner" data-name="ワカサギ食堂"></div>
-          <div class="building market" data-name="魚市場"></div>
-          <div class="building mystery" data-name="閉じた小屋"></div>
+          <div class="building house-a" data-name="湖畔の民家">
+            <i class="roof"></i><i class="chimney"></i><i class="window window-a"></i><i class="window window-b"></i>
+          </div>
+          <div class="building house-b" data-name="釣り宿">
+            <i class="roof"></i><i class="chimney"></i><i class="window window-a"></i><i class="window window-b"></i>
+          </div>
+          <div class="building diner" data-name="ワカサギ食堂">
+            <i class="roof"></i><i class="window window-a"></i><i class="window window-b"></i>
+          </div>
+          <div class="building market" data-name="魚市場">
+            <i class="roof"></i><i class="window window-a"></i><i class="window window-b"></i>
+          </div>
+          <div class="building mystery" data-name="閉じた小屋">
+            <i class="roof"></i><i class="chimney"></i><i class="window window-a"></i>
+          </div>
           <div class="rescue-spot" aria-label="エサ採集ポイント"></div>
-          <div class="trees">🌲🌲🌲</div>
+          <div class="tree-grove grove-a"><i></i><i></i><i></i><i></i></div>
+          <div class="tree-grove grove-b"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tree-grove grove-c"><i></i><i></i><i></i><i></i></div>
+          <div class="tree-grove grove-d"><i></i><i></i><i></i><i></i><i></i></div>
+          <div class="tree-grove grove-e"><i></i><i></i><i></i></div>
           <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
-        <div class="hint" id="hint">十字キーで歩こう。桟橋ではAで釣り。</div>
+        <div class="hint" id="hint">湖畔を歩こう。4つの釣り場ではAで釣り。</div>
         <div class="controls">
           <div class="dpad">
             <button class="up" data-move="up">▲</button
@@ -1673,6 +2135,8 @@
     </section>
     <script>
       const $ = (s) => document.querySelector(s),
+        WORLD_WIDTH = 400,
+        WORLD_SCALE = WORLD_WIDTH / 100,
         fish = [
           {
             id: "moroko",
@@ -1709,6 +2173,44 @@
             w: 0.05,
             icon: "🐋",
             shadowRow: 4,
+          },
+        ],
+        fishingSpots = [
+          {
+            id: "cove",
+            name: "朝凪の入り江",
+            x: 51,
+            y: 70,
+            radius: 15,
+            role: "小魚の浅場・ヌシなし",
+            weights: { moroko: 0.72, funa: 0.28 },
+          },
+          {
+            id: "reeds",
+            name: "葦原の岸",
+            x: 141,
+            y: 70,
+            radius: 15,
+            role: "通常魚の岸・ヌシなし",
+            weights: { moroko: 0.45, funa: 0.45, koi: 0.1 },
+          },
+          {
+            id: "oldPier",
+            name: "古い桟橋",
+            x: 244,
+            y: 70,
+            radius: 15,
+            role: "フナとコイの深場・ヌシなし",
+            weights: { moroko: 0.18, funa: 0.44, koi: 0.38 },
+          },
+          {
+            id: "starCape",
+            name: "星見岬",
+            x: 354,
+            y: 70,
+            radius: 16,
+            role: "唯一ヌシが潜む深み",
+            weights: { moroko: 0.18, funa: 0.27, koi: 0.5, nushi: 0.05 },
           },
         ],
         baitData = {
@@ -2123,6 +2625,12 @@
       function near(x, y, r = 13) {
         return Math.hypot(s.x - x, s.y - y) < r;
       }
+      function fishingSpotById(id) {
+        return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
+      }
+      function nearbyFishingSpot() {
+        return fishingSpots.find((spot) => near(spot.x, spot.y, spot.radius));
+      }
       function dogFollowPosition() {
         const offset = {
           left: { x: 6, y: 3 },
@@ -2131,13 +2639,13 @@
           down: { x: -4, y: -6 },
         }[s.direction] || { x: -4, y: -6 };
         return {
-          left: Math.max(1, Math.min(99, (s.x + offset.x) / 3)),
+          left: Math.max(1, Math.min(99, (s.x + offset.x) / WORLD_SCALE)),
           top: Math.max(61, Math.min(93, s.y + offset.y)),
         };
       }
       function companionDirection() {
         const dogLeft = dogDisplayLeft(dogFollowPosition());
-        const playerLeft = s.x / 3;
+        const playerLeft = s.x / WORLD_SCALE;
         // The companion waits diagonally behind the player.  For reactions,
         // prefer the horizontal side so the hand reaches toward the dog
         // instead of making the player stare past it vertically.
@@ -2246,7 +2754,7 @@
           dog.style.visibility = "visible";
           return;
         }
-        const playerLeft = s.x / 3;
+        const playerLeft = s.x / WORLD_SCALE;
         const dogLeft = dogDisplayLeft(dogFollowPosition());
         scene.style.left = `${(playerLeft + dogLeft) / 2}%`;
         scene.style.top = `${s.y}%`;
@@ -2318,11 +2826,11 @@
         drawPetScene();
       }
       function render() {
-        s.x = Math.max(5, Math.min(287, s.x));
+        s.x = Math.max(5, Math.min(WORLD_WIDTH - 5, s.x));
         s.y = Math.max(61, Math.min(93, s.y));
-        const mapX = s.x / 3;
-        const camera = Math.max(0, Math.min(200, s.x - 50));
-        $("#map").style.transform = `translateX(${-camera / 3}%)`;
+        const mapX = s.x / WORLD_SCALE;
+        const camera = Math.max(0, Math.min(WORLD_WIDTH - 100, s.x - 50));
+        $("#map").style.transform = `translateX(${-camera / WORLD_SCALE}%)`;
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${s.y}%`;
         renderPlayer();
@@ -2344,13 +2852,14 @@
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
-        $("#hint").textContent = near(130, 70)
-          ? "桟橋だ。Aでエサと釣具を選ぶ。"
-          : near(258, 72)
-            ? "釣具店だ。Aで入る。"
-            : near(96, 82)
+        const spot = nearbyFishingSpot();
+        $("#hint").textContent = spot
+          ? `${spot.name}。Aで釣る（${spot.role}）。`
+          : near(331, 76)
+            ? "星湖釣具店だ。Aで入る。"
+            : near(120, 82)
               ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
-              : "湖畔の町を歩こう。建物や気になる場所ではA。";
+              : "広い湖畔を歩こう。釣り場や建物ではA。";
         save();
       }
       function move(d) {
@@ -2519,7 +3028,7 @@
         if (battle || !dogIdleMode) return;
         clearTimeout(reactionTransitionTimer);
         const dogPosition = dogFollowPosition();
-        const playerLeft = s.x / 3;
+        const playerLeft = s.x / WORLD_SCALE;
         const dog = $("#dog");
         dog.classList.toggle("face-player-right", dogPosition.left < playerLeft);
         // The dog walks into contact first.  Only then does the owner change
@@ -2565,7 +3074,7 @@
         dogMotionDirection = "";
         dogIdleMode = `idle-${mode}`;
         const dogPosition = dogFollowPosition();
-        const playerLeft = s.x / 3;
+        const playerLeft = s.x / WORLD_SCALE;
         const dog = $("#dog");
 
         // Sleeping together is a linked scene, so do not inherit the loose
@@ -2675,17 +3184,20 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
-        if (near(130, 70)) cast();
-        else if (near(258, 72)) open("store");
-        else if (near(96, 82)) rescue();
-        else if (near(23, 76))
-          log("民家のおばあさんが『夕方はフナが寄るよ』と教えてくれた。");
-        else if (near(55, 76)) log("釣り宿だ。二階から湖がよく見える。");
-        else if (near(174, 76))
-          log("ワカサギ食堂。釣った魚を料理する機能は準備中だ。");
-        else if (near(210, 76))
-          log("魚市場。大きな魚ほど高く買ってくれそうだ。");
-        else if (near(238, 76)) log("閉じた小屋だ。中から水音が聞こえる……。");
+        const spot = nearbyFishingSpot();
+        if (spot) cast(spot);
+        else if (near(331, 76)) open("store");
+        else if (near(120, 82)) rescue();
+        else if (near(28, 77))
+          log("湖畔の民家。おばあさんが『朝凪の入り江には小魚が寄るよ』と教えてくれた。");
+        else if (near(87, 77))
+          log("釣り宿だ。二階の窓から葦原の魚影がよく見える。");
+        else if (near(186, 77))
+          log("ワカサギ食堂。香ばしい匂いが街道まで流れている。");
+        else if (near(282, 77))
+          log("魚市場。古い桟橋で釣れた大物を高く買ってくれそうだ。");
+        else if (near(382, 77))
+          log("閉じた小屋だ。星見岬の方から低い水音が響いている……。");
         else log(`${dogName()}が辺りの匂いを確かめた。`);
       }
       function dogName() {
@@ -2715,20 +3227,34 @@
         }
         render();
       }
-      function pick() {
-        let r = Math.random(),
-          a = 0;
-        for (const f of fish) {
-          a += f.w;
-          if (r <= a) return f;
+      function pick(distance = 50, spotId = battle?.spot) {
+        const spot = fishingSpotById(spotId);
+        const weighted = Object.entries(spot.weights).map(([id, base]) => {
+          let weight = base;
+          if (distance > 72) {
+            if (id === "moroko") weight *= 0.6;
+            if (id === "koi") weight *= 1.45;
+            if (id === "nushi") weight *= 2.4;
+          } else if (distance < 34) {
+            if (id === "moroko") weight *= 1.45;
+            if (id === "koi") weight *= 0.65;
+            if (id === "nushi") weight *= 0.15;
+          }
+          return { fish: fish.find((candidate) => candidate.id === id), weight };
+        }).filter((entry) => entry.fish && entry.weight > 0);
+        const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = Math.random() * total;
+        for (const entry of weighted) {
+          roll -= entry.weight;
+          if (roll <= 0) return entry.fish;
         }
-        return fish[0];
+        return weighted[0]?.fish || fish[0];
       }
-      function cast() {
+      function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
-        battle = { phase: "prep", reeling: false };
+        battle = { phase: "prep", reeling: false, spot: spot.id };
         resetWaterFx();
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
@@ -2736,9 +3262,10 @@
         $("#distanceLabel").style.display = "none";
         $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
-        $("#fishName").textContent = "釣行準備";
+        $("#fishName").textContent = spot.name;
         $("#phaseLabel").textContent = " 仕掛け確認";
-        $("#battleMsg").textContent = `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+        $("#battleMsg").textContent =
+          `${spot.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
         $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
       }
@@ -2758,6 +3285,7 @@
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
+        const spot = fishingSpotById(battle?.spot);
         s.bait = s.baits[s.selectedBait] || 0;
         if (s.bait < 1) {
           $("#hint").textContent =
@@ -2774,6 +3302,7 @@
         close();
         battle = {
           phase: "cast",
+          spot: spot.id,
           bait: s.selectedBait,
           cast: 0,
           castDir: 1,
@@ -3682,8 +4211,7 @@
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") {
           const distance = battle.cast;
-          let f = pick();
-          if (distance > 72 && Math.random() < .28) f = fish[Math.random() < .75 ? 2 : 3];
+          const f = pick(distance, battle.spot);
           battle.f = f;
           battle.x = clampBattle(54 + distance * 0.4, 54, f.id === "nushi" ? 90 : 94);
           battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
@@ -3702,7 +4230,7 @@
             `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
           );
           $("#castMeter").style.display = "none";
-          $("#fishName").textContent = "水面を読む";
+          $("#fishName").textContent = fishingSpotById(battle.spot).name;
           $("#phaseLabel").textContent = distance > 67 ? " 深場" : distance > 34 ? " 中層" : " 岸際";
           $("#battleMsg").textContent = "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
           $("#pull").innerHTML = "A<br><small>合わせる</small>";
@@ -3763,7 +4291,7 @@
         $("#battleMsg").textContent =
           `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
-        log(`${f.name}が掛かった！`);
+        log(`${fishingSpotById(battle.spot).name}で${f.name}が掛かった！`);
       }
       function wait() {
         if (!battle) return;
@@ -3859,10 +4387,11 @@
       }
       function caught() {
         const f = battle.f;
+        const spot = fishingSpotById(battle.spot);
         const first = !s.caught[f.id];
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
         s.money += f.price;
-        log(`${f.name}を釣り上げた！ ${f.price}円獲得。`);
+        log(`${spot.name}で${f.name}を釣り上げた！ ${f.price}円獲得。`);
         endBattle();
         showCatchCard(f, first);
       }
