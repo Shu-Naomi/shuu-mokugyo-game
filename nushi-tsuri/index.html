@@ -974,6 +974,72 @@
         width: 3%;
         height: 5%;
       }
+      /* v44: one lightweight pixel-art atlas supplies the small field stories.
+         Reusing a single image keeps the richer map inexpensive on mobile. */
+      .pixel-prop {
+        position: absolute;
+        z-index: 2;
+        width: 78px;
+        height: 78px;
+        background-image: url("assets/field-props-v44.png");
+        background-size: 400% 400%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        pointer-events: none;
+        filter: drop-shadow(2px 3px 0 #29462f55);
+        contain: layout paint style;
+      }
+      .pixel-prop.prop-sm { width: 62px; height: 62px; }
+      .pixel-prop.prop-lg { width: 94px; height: 94px; }
+      .prop-grass { background-position: 0 0; }
+      .prop-flowers { background-position: 33.333% 0; }
+      .prop-stones { background-position: 66.667% 0; }
+      .prop-reeds { background-position: 100% 0; }
+      .prop-stump { background-position: 0 33.333%; }
+      .prop-log { background-position: 33.333% 33.333%; }
+      .prop-sign { background-position: 66.667% 33.333%; }
+      .prop-fence { background-position: 100% 33.333%; }
+      .prop-net { background-position: 0 66.667%; }
+      .prop-crates { background-position: 33.333% 66.667%; }
+      .prop-puddle { background-position: 66.667% 66.667%; }
+      .prop-steps { background-position: 100% 66.667%; }
+      .prop-lantern { background-position: 0 100%; }
+      .prop-rope { background-position: 33.333% 100%; }
+      .prop-driftwood { background-position: 66.667% 100%; }
+      .prop-garden { background-position: 100% 100%; }
+
+      /* Shoreline finds: washed-up shells, working tackle and reed pockets. */
+      .detail-reeds-a { left: 8.2%; top: 46.7%; transform: rotate(-4deg) scale(.86); }
+      .detail-reeds-b { left: 40.5%; top: 46.1%; transform: rotate(3deg) scale(.82); }
+      .detail-reeds-c { left: 67.2%; top: 45.4%; transform: rotate(-2deg) scale(.9); }
+      .detail-stones-a { left: 17.2%; top: 50.4%; transform: rotate(-5deg) scale(.82); }
+      .detail-stones-b { left: 91.2%; top: 50.1%; transform: rotate(7deg) scale(.78); }
+      .detail-net { left: 55.3%; top: 49.4%; transform: rotate(-8deg) scale(.8); }
+      .detail-rope { left: 62.1%; top: 50.2%; transform: rotate(8deg) scale(.76); }
+      .detail-driftwood-a { left: 5.7%; top: 51.3%; transform: rotate(-5deg) scale(.72); }
+      .detail-driftwood-b { left: 79.7%; top: 51.5%; transform: rotate(6deg) scale(.68); }
+      .detail-lantern-cape { left: 88.3%; top: 48.3%; transform: scale(.66); }
+
+      /* Paths and homes: evidence that people actually work around the lake. */
+      .detail-sign { left: 31.6%; top: 65.6%; transform: rotate(-2deg) scale(.76); }
+      .detail-crates { left: 74.8%; top: 68.7%; transform: rotate(2deg) scale(.8); }
+      .detail-puddle { left: 45.2%; top: 73.3%; transform: rotate(-7deg) scale(.8); }
+      .detail-steps { left: 52.1%; top: 58.9%; transform: rotate(8deg) scale(.72); }
+      .detail-lantern-town { left: 42.2%; top: 70.7%; transform: scale(.6); }
+      .detail-fence-a { left: 2.7%; top: 81.1%; transform: rotate(3deg) scale(.9); }
+      .detail-fence-b { left: 68.1%; top: 81.2%; transform: rotate(-5deg) scale(.86); }
+
+      /* Fields and woods: repeated sprites are rotated and scaled into variants. */
+      .detail-grass-a { left: 2.4%; top: 67%; transform: rotate(-5deg) scale(.66); }
+      .detail-grass-b { left: 21.1%; top: 72.8%; transform: rotate(7deg) scale(.58); }
+      .detail-grass-c { left: 53.4%; top: 88.1%; transform: rotate(-3deg) scale(.62); }
+      .detail-grass-d { left: 92%; top: 75.7%; transform: rotate(5deg) scale(.6); }
+      .detail-flowers-a { left: 10%; top: 71.4%; transform: rotate(3deg) scale(.62); }
+      .detail-flowers-b { left: 35.2%; top: 82.2%; transform: rotate(-7deg) scale(.58); }
+      .detail-stump { left: 26.8%; top: 68%; transform: rotate(-3deg) scale(.82); }
+      .detail-log { left: 71.8%; top: 59.2%; transform: rotate(9deg) scale(.85); }
+      .detail-garden-a { left: 14.6%; top: 84.2%; transform: rotate(2deg) scale(.78); }
+      .detail-garden-b { left: 78.2%; top: 85.4%; transform: rotate(-4deg) scale(.74); }
       .player {
         position: absolute;
         width: 46px;
@@ -2245,7 +2311,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v43</span><span id="time">朝</span
+        <b>星降る湖</b><span>v44</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2320,6 +2386,33 @@
           <div class="tree-grove grove-c"><i></i><i></i><i></i><i></i></div>
           <div class="tree-grove grove-d"><i></i><i></i><i></i><i></i><i></i></div>
           <div class="tree-grove grove-e"><i></i><i></i><i></i></div>
+          <i class="pixel-prop prop-reeds detail-reeds-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-reeds detail-reeds-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-reeds detail-reeds-c" aria-hidden="true"></i>
+          <i class="pixel-prop prop-stones prop-sm detail-stones-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-stones prop-sm detail-stones-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-net detail-net" aria-hidden="true"></i>
+          <i class="pixel-prop prop-rope detail-rope" aria-hidden="true"></i>
+          <i class="pixel-prop prop-driftwood detail-driftwood-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-driftwood detail-driftwood-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-lantern prop-sm detail-lantern-cape" aria-hidden="true"></i>
+          <i class="pixel-prop prop-sign detail-sign" aria-hidden="true"></i>
+          <i class="pixel-prop prop-crates detail-crates" aria-hidden="true"></i>
+          <i class="pixel-prop prop-puddle detail-puddle" aria-hidden="true"></i>
+          <i class="pixel-prop prop-steps detail-steps" aria-hidden="true"></i>
+          <i class="pixel-prop prop-lantern prop-sm detail-lantern-town" aria-hidden="true"></i>
+          <i class="pixel-prop prop-fence detail-fence-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-fence detail-fence-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-grass prop-sm detail-grass-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-grass prop-sm detail-grass-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-grass prop-sm detail-grass-c" aria-hidden="true"></i>
+          <i class="pixel-prop prop-grass prop-sm detail-grass-d" aria-hidden="true"></i>
+          <i class="pixel-prop prop-flowers prop-sm detail-flowers-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-flowers prop-sm detail-flowers-b" aria-hidden="true"></i>
+          <i class="pixel-prop prop-stump detail-stump" aria-hidden="true"></i>
+          <i class="pixel-prop prop-log detail-log" aria-hidden="true"></i>
+          <i class="pixel-prop prop-garden detail-garden-a" aria-hidden="true"></i>
+          <i class="pixel-prop prop-garden detail-garden-b" aria-hidden="true"></i>
           <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>

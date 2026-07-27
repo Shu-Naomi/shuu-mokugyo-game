@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v43-light-map-1";
+const CACHE_NAME = "nushi-tsuri-v44-pixel-field-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
