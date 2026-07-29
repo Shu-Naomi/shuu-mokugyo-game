@@ -1,10 +1,16 @@
-const CACHE_NAME = "nushi-tsuri-v44-pixel-field-1";
+const CACHE_NAME = "nushi-tsuri-v45-pixel-terrain-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
+  "./assets/terrain-water-v45.svg",
+  "./assets/terrain-grass-v45.svg",
+  "./assets/terrain-sand-v45.svg",
+  "./assets/terrain-dirt-v45.svg",
+  "./assets/terrain-stone-v45.svg",
+  "./assets/terrain-field-v45.svg",
 ];
 self.addEventListener("install", (event) => {
   event.waitUntil(

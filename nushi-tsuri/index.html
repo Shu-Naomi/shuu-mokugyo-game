@@ -664,25 +664,19 @@
           inset 0 5px #4f3324,
           0 0 0 3px #5e843f;
       }
-      /* v42: the lakeside is a real two-dimensional field rather than one
-         very long strip. Percentages below are relative to a 240vw x 190vh
-         map, while the player state continues to use viewport-sized units. */
+      /* v45: the field is painted from tiny, static pixel tiles.  They add
+         terrain detail without bringing back the costly full-map animation. */
       .map {
         inset: 0 auto auto 0;
         width: 240%;
         height: 190%;
         transform-origin: left top;
-        background:
-          radial-gradient(circle, #d6cb7b 0 1px, transparent 2px)
-            19px 13px / 137px 91px,
-          radial-gradient(circle, #52763a 0 2px, transparent 3px)
-            71px 48px / 173px 113px,
-          repeating-linear-gradient(
-            105deg,
-            #719e51 0 5px,
-            #759f52 6px 10px,
-            #6b974b 11px 15px
-          );
+        background-color: #6f9b50;
+        background-image: url("assets/terrain-grass-v45.svg");
+        background-position: 0 0;
+        background-size: 96px 96px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         contain: layout paint style;
         will-change: transform;
         backface-visibility: hidden;
@@ -694,14 +688,14 @@
         top: -2%;
         width: 104%;
         height: 53%;
-        background:
-          radial-gradient(ellipse at 52% 62%, #9bdbe03d 0 13%, transparent 30%),
-          repeating-linear-gradient(
-            0deg,
-            #1f7094 0 4px,
-            #2c83a4 5px 8px,
-            #246f91 9px 14px
-          );
+        background-color: #217695;
+        background-image:
+          url("assets/terrain-water-v45.svg"),
+          linear-gradient(#2b83a0 0 17%, #247895 18% 62%, #1b698b 100%);
+        background-position: 0 0, 0 0;
+        background-size: 128px 64px, 100% 100%;
+        background-repeat: repeat, no-repeat;
+        image-rendering: pixelated;
         animation: none;
         contain: layout paint;
         clip-path: polygon(
@@ -721,36 +715,102 @@
         background:
           repeating-linear-gradient(
             100deg,
-            transparent 0 105px,
-            #d5faf338 106px 126px,
-            transparent 127px 198px
+            transparent 0 112px,
+            #d5faf329 113px 132px,
+            transparent 133px 214px
           );
-        opacity: .46;
+        opacity: .34;
       }
       .shore {
         inset: 40% 0 auto;
         height: 18%;
         border: 0;
         background:
-          radial-gradient(ellipse, #805c39 0 3px, transparent 4px)
-            17px 9px / 181px 73px,
-          linear-gradient(#f0d58a 0 17%, #e1c276 18% 48%, #9bad5e 49% 72%, transparent 73%);
+          linear-gradient(
+            #a58e61 0 7%,
+            #c0a66d 8% 14%,
+            #efd68e 15% 24%,
+            #dfc176 25% 48%,
+            #82a657 49% 59%,
+            #70984d 60% 72%,
+            transparent 73%
+          );
+        image-rendering: pixelated;
         clip-path: polygon(
-          0 34%, 11% 18%, 22% 42%, 32% 21%, 43% 45%, 52% 14%,
-          64% 39%, 74% 18%, 84% 47%, 92% 7%, 100% 25%,
-          100% 82%, 91% 67%, 81% 89%, 70% 70%, 58% 91%,
-          46% 72%, 35% 92%, 23% 73%, 12% 88%, 0 76%
+          0 25%, 4% 25%, 4% 20%, 9% 20%, 9% 23%,
+          14% 23%, 14% 17%, 19% 17%, 19% 22%,
+          24% 22%, 24% 26%, 29% 26%, 29% 19%,
+          34% 19%, 34% 23%, 39% 23%, 39% 16%,
+          44% 16%, 44% 21%, 49% 21%, 49% 24%,
+          54% 24%, 54% 18%, 59% 18%, 59% 22%,
+          64% 22%, 64% 26%, 69% 26%, 69% 19%,
+          74% 19%, 74% 23%, 79% 23%, 79% 17%,
+          84% 17%, 84% 22%, 89% 22%, 89% 26%,
+          94% 26%, 94% 20%, 100% 20%,
+          100% 82%, 95% 82%, 95% 86%, 90% 86%,
+          90% 80%, 84% 80%, 84% 85%, 78% 85%,
+          78% 81%, 72% 81%, 72% 87%, 66% 87%,
+          66% 82%, 60% 82%, 60% 86%, 54% 86%,
+          54% 80%, 48% 80%, 48% 85%, 42% 85%,
+          42% 81%, 36% 81%, 36% 87%, 30% 87%,
+          30% 82%, 24% 82%, 24% 86%, 18% 86%,
+          18% 80%, 12% 80%, 12% 85%, 6% 85%,
+          6% 81%, 0 81%
         );
       }
       .shore::before {
-        inset: 26% 0 0;
+        inset: 0 0 50%;
+        background-image: url("assets/terrain-sand-v45.svg");
+        background-position: 0 0;
+        background-size: 96px 64px;
+        background-repeat: repeat;
+        opacity: 1;
       }
       .shore::after {
-        top: 32%;
+        inset: 47% 0 auto;
+        height: 27%;
+        background:
+          url("assets/terrain-grass-v45.svg") 0 0 / 96px 96px repeat,
+          repeating-linear-gradient(
+            90deg,
+            #557d3d 0 2px,
+            transparent 2px 7px,
+            #8daf61 7px 9px,
+            transparent 9px 16px
+          ) 0 0 / 64px 7px repeat-x;
+        clip-path: polygon(
+          0 20%, 4% 4%, 9% 28%, 14% 9%, 20% 34%, 26% 12%,
+          33% 30%, 39% 5%, 46% 34%, 53% 11%, 60% 29%,
+          67% 3%, 74% 33%, 81% 8%, 88% 27%, 94% 6%, 100% 22%,
+          100% 100%, 0 100%
+        );
       }
       .island-a { left: 15%; top: 30%; width: 5%; height: 15%; }
       .island-b { left: 48%; top: 42%; width: 3.8%; height: 11%; }
       .island-c { left: 78%; top: 25%; width: 5.2%; height: 16%; }
+      .water-ripple {
+        width: 64px;
+        height: 12px;
+        border: 0;
+        border-radius: 0;
+        background:
+          linear-gradient(
+            90deg,
+            transparent 0 7px,
+            #a4d9d3aa 7px 22px,
+            transparent 22px 29px,
+            #75bdc488 29px 51px,
+            transparent 51px
+          ) 0 2px / 100% 2px no-repeat,
+          linear-gradient(
+            90deg,
+            transparent 0 15px,
+            #75bdc477 15px 45px,
+            transparent 45px
+          ) 0 8px / 100% 1px no-repeat;
+        animation: none;
+        image-rendering: pixelated;
+      }
       .ripple-a { left: 8%; top: 46%; }
       .ripple-b { left: 38%; top: 70%; }
       .ripple-c { left: 67%; top: 53%; }
@@ -763,15 +823,12 @@
         top: 72%;
         bottom: auto;
         height: 12%;
-        background:
-          radial-gradient(circle, #806746 0 2px, transparent 3px)
-            21px 17px / 119px 67px,
-          repeating-linear-gradient(
-            100deg,
-            #b99562 0 12px,
-            #bea06c 13px 23px,
-            #ae8b5b 24px 32px
-          );
+        background-color: #b49361;
+        background-image: url("assets/terrain-dirt-v45.svg");
+        background-position: 0 0;
+        background-size: 96px 96px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         clip-path: polygon(
           0 45%, 9% 27%, 18% 42%, 29% 22%, 39% 38%, 49% 19%,
           60% 35%, 71% 23%, 82% 43%, 91% 29%, 100% 44%,
@@ -787,10 +844,12 @@
         width: 10%;
         height: 49%;
         border: 3px solid #6f5a3d;
-        background:
-          radial-gradient(circle, #856a48 0 2px, transparent 3px)
-            13px 27px / 73px 91px,
-          repeating-linear-gradient(11deg, #b99562 0 12px, #bea06c 13px 23px, #ae8b5b 24px 32px);
+        background-color: #b49361;
+        background-image: url("assets/terrain-dirt-v45.svg");
+        background-position: 31px 17px;
+        background-size: 96px 96px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         clip-path: polygon(35% 0, 72% 0, 63% 13%, 77% 26%, 65% 39%, 79% 53%, 66% 67%, 78% 81%, 64% 100%, 27% 100%, 38% 83%, 24% 67%, 38% 52%, 25% 38%, 39% 24%, 28% 11%);
         opacity: .92;
         pointer-events: none;
@@ -804,9 +863,12 @@
         height: 7%;
         border: 3px solid #6e614a;
         border-radius: 45%;
-        background:
-          radial-gradient(circle, #d2bd89 0 4px, #9f8b65 5px 7px, transparent 8px) 0 0 / 28px 19px,
-          #ad966b;
+        background-color: #ad9a73;
+        background-image: url("assets/terrain-stone-v45.svg");
+        background-position: 0 0;
+        background-size: 96px 96px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         transform: rotate(-7deg);
         opacity: .86;
         pointer-events: none;
@@ -820,10 +882,12 @@
         height: 21%;
         border: 4px solid #6c5d43;
         border-radius: 47% 53% 45% 55%;
-        background:
-          radial-gradient(circle, #978666 0 3px, transparent 4px)
-            21px 15px / 91px 73px,
-          repeating-linear-gradient(18deg, #b9a477 0 13px, #c4b084 14px 25px, #aa956c 26px 32px);
+        background-color: #ad9a73;
+        background-image: url("assets/terrain-stone-v45.svg");
+        background-position: 19px 11px;
+        background-size: 96px 96px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         box-shadow: inset 0 0 0 4px #d1bd8a88, 4px 6px #46613b55;
         pointer-events: none;
       }
@@ -860,8 +924,12 @@
         z-index: 1;
         border: 3px solid #6e5c3b;
         border-radius: 7px;
-        background:
-          repeating-linear-gradient(90deg, #9caf5d 0 12px, #788d49 13px 19px, #b59d5d 20px 24px);
+        background-color: #a88a50;
+        background-image: url("assets/terrain-field-v45.svg");
+        background-position: 0 0;
+        background-size: 96px 64px;
+        background-repeat: repeat;
+        image-rendering: pixelated;
         box-shadow: inset 0 0 0 4px #d4bb7588;
         opacity: .9;
         pointer-events: none;
@@ -2311,7 +2379,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v44</span><span id="time">朝</span
+        <b>星降る湖</b><span>v45</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
