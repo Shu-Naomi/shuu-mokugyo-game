@@ -1,0 +1,139 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1600" height="760" viewBox="0 0 1600 760" preserveAspectRatio="none" shape-rendering="crispEdges">
+  <defs>
+    <pattern id="grass" width="96" height="96" patternUnits="userSpaceOnUse">
+      <rect width="96" height="96" fill="#70964d"/>
+      <path fill="#769e53" d="M0 0h48v24H0zM48 48h48v24H48z"/>
+      <path fill="#668b46" d="M8 9h3v7H8zM5 13h3v3H5zM11 12h4v4h-4zM35 29h3v6h-3zM32 33h3v3h-3zM38 32h4v4h-4zM70 11h3v8h-3zM67 16h3v3h-3zM73 15h4v4h-4zM20 65h3v7h-3zM17 69h3v3h-3zM23 68h4v4h-4zM58 77h3v7h-3zM55 81h3v3h-3zM61 80h4v4h-4z"/>
+      <path fill="#8bae60" d="M20 6h8v2h-8zM47 14h5v3h-5zM83 25h8v2h-8zM5 41h6v3H5zM29 50h9v2h-9zM65 41h7v3h-7zM78 69h6v2h-6zM8 86h9v2H8z"/>
+      <path fill="#4f753b" d="M15 31h5v2h-5zM53 36h7v2h-7zM84 43h5v3h-5zM37 73h6v2h-6zM68 59h5v3h-5zM13 91h5v2h-5z"/>
+      <path fill="#c5bd6b" d="M42 50h3v3h-3zM90 76h3v3h-3zM12 78h3v3h-3z"/>
+    </pattern>
+    <pattern id="lake" width="128" height="64" patternUnits="userSpaceOnUse">
+      <rect width="128" height="64" fill="#247895"/>
+      <path fill="#2e86a0" d="M0 0h128v16H0zM0 33h128v12H0z"/>
+      <path fill="#3b94aa" d="M0 6h20v3H0zM27 6h11v3H27zM68 7h27v3H68zM104 7h16v3h-16zM8 25h12v2H8zM28 25h30v2H28zM87 26h23v2H87zM116 25h12v2h-12zM0 49h17v3H0zM35 49h28v3H35zM76 49h13v3H76zM105 49h23v3h-23z"/>
+      <path fill="#79c0c5" d="M15 13h20v2H15zM42 13h6v2h-6zM79 14h17v2H79zM3 39h8v2H3zM17 39h25v2H17zM62 38h18v2H62zM99 39h25v2H99zM27 59h15v2H27zM50 59h6v2h-6zM83 58h25v2H83z"/>
+      <path fill="#185f82" d="M46 3h14v3H46zM100 21h19v3h-19zM39 31h12v3H39zM69 30h8v3H69zM4 57h20v3H4zM65 54h17v3H65z"/>
+      <path fill="#b2e4dc" d="M61 18h3v3h-3zM20 44h4v2h-4zM48 43h3v2h-3zM93 57h4v2h-4z"/>
+    </pattern>
+    <pattern id="deep" width="160" height="96" patternUnits="userSpaceOnUse">
+      <rect width="160" height="96" fill="#17617f"/>
+      <path fill="#1c6b87" d="M0 0h160v20H0zM0 48h160v15H0z"/>
+      <path fill="#2c7c92" d="M8 14h39v3H8zM76 10h21v3H76zM119 16h34v3h-34zM23 41h28v2H23zM88 38h43v2H88zM5 75h34v3H5zM62 78h19v3H62zM107 71h45v3h-45z"/>
+      <path fill="#0f526f" d="M53 26h18v3H53zM132 33h21v3h-21zM30 62h29v3H30zM92 60h17v3H92zM139 87h15v3h-15z"/>
+    </pattern>
+    <pattern id="river" width="64" height="96" patternUnits="userSpaceOnUse">
+      <rect width="64" height="96" fill="#2b8096"/>
+      <path fill="#3b94a5" d="M0 0h64v15H0zM0 38h64v18H0zM0 79h64v17H0z"/>
+      <path fill="#7ac1bd" d="M4 21h22v2H4zM34 25h25v2H34zM10 65h31v2H10zM47 61h13v2H47zM1 88h18v2H1z"/>
+      <path fill="#175e7a" d="M38 8h18v3H38zM5 48h15v3H5zM27 75h24v3H27z"/>
+    </pattern>
+    <pattern id="sea" width="192" height="96" patternUnits="userSpaceOnUse">
+      <rect width="192" height="96" fill="#176585"/>
+      <path fill="#1d7290" d="M0 0h192v19H0zM0 43h192v18H0zM0 83h192v13H0z"/>
+      <path fill="#3c92a7" d="M0 9h31v3H0zM42 9h19v3H42zM95 11h42v3H95zM151 8h30v3h-30zM14 33h19v2H14zM44 34h45v2H44zM113 31h28v2h-28zM160 34h32v2h-32zM0 71h25v3H0zM54 70h38v3H54zM110 72h18v3H110zM153 69h39v3H153z"/>
+      <path fill="#75c2c8" d="M25 18h31v2H25zM65 18h9v2h-9zM122 20h25v2h-25zM4 52h13v2H4zM28 53h37v2H28zM88 50h23v2H88zM143 53h40v2h-40zM39 88h25v2H39zM75 88h8v2h-8zM127 86h37v2h-37z"/>
+      <path fill="#0e5576" d="M70 4h20v3H70zM147 27h30v3h-30zM57 41h17v3H57zM103 62h29v3h-29zM9 81h23v3H9zM169 78h18v3h-18z"/>
+    </pattern>
+    <pattern id="sand" width="128" height="64" patternUnits="userSpaceOnUse">
+      <rect width="128" height="64" fill="#ddc27b"/>
+      <path fill="#e8cf8c" d="M0 0h64v18H0zM64 31h64v19H64z"/>
+      <path fill="#b99459" d="M8 10h7v2H8zM21 13h3v3h-3zM55 7h5v2h-5zM91 14h9v2h-9zM116 8h4v3h-4zM34 34h7v2h-7zM73 28h4v3h-4zM104 39h8v2h-8zM5 54h8v2H5zM50 57h5v2h-5zM88 52h7v2h-7zM120 58h4v2h-4z"/>
+      <path fill="#f5e0a2" d="M29 19h5v2h-5zM72 12h8v2h-8zM15 42h6v2h-6zM58 45h4v2h-4zM94 48h8v2h-8z"/>
+      <path fill="#967347" d="M42 24h4v3h-4zM84 21h5v2h-5zM25 53h4v2h-4zM112 47h4v3h-4z"/>
+    </pattern>
+    <pattern id="road" width="96" height="64" patternUnits="userSpaceOnUse">
+      <rect width="96" height="64" fill="#b28e5d"/>
+      <path fill="#c2a273" d="M0 0h48v18H0zM48 32h48v20H48z"/>
+      <path fill="#836543" d="M7 9h9v3H7zM34 21h6v3h-6zM68 12h12v3H68zM88 29h6v3h-6zM17 45h11v3H17zM52 54h8v3h-8zM78 48h13v3H78z"/>
+      <path fill="#d2b884" d="M23 14h5v2h-5zM55 7h9v2h-9zM4 34h7v2H4zM43 42h5v2h-5zM71 36h10v2H71z"/>
+    </pattern>
+    <pattern id="stone" width="96" height="64" patternUnits="userSpaceOnUse">
+      <rect width="96" height="64" fill="#9c8c6b"/>
+      <path fill="#c9b88b" d="M3 3h24v14H3zM32 2h31v16H32zM68 4h25v13H68zM2 23h18v15H2zM25 24h34v13H25zM64 22h29v17H64zM5 45h28v15H5zM38 43h22v17H38zM65 46h28v14H65z"/>
+      <path fill="#756a54" d="M0 18h96v4H0zM0 39h96v4H0zM28 0h4v18h-4zM63 0h5v18h-5zM20 22h5v17h-5zM59 22h5v17h-5zM33 43h5v21h-5zM60 43h5v21h-5z"/>
+      <path fill="#e2d19e" d="M7 6h8v2H7zM37 5h11v2H37zM72 7h9v2h-9zM7 27h7v2H7zM31 27h10v2H31zM69 25h12v2H69zM10 49h9v2H10zM43 47h7v2h-7zM70 49h11v2H70z"/>
+    </pattern>
+    <pattern id="field" width="96" height="64" patternUnits="userSpaceOnUse">
+      <rect width="96" height="64" fill="#9d7d49"/>
+      <path fill="#735a3b" d="M0 0h10v64H0zM24 0h10v64H24zM48 0h10v64H48zM72 0h10v64H72z"/>
+      <path fill="#b49358" d="M10 0h14v64H10zM34 0h14v64H34zM58 0h14v64H58zM82 0h14v64H82z"/>
+      <path fill="#4f773c" d="M15 7h3v8h-3zM12 11h3v4h-3zM18 10h5v5h-5zM39 26h3v8h-3zM36 30h3v4h-3zM42 29h5v5h-5zM63 8h3v8h-3zM60 12h3v4h-3zM66 11h5v5h-5zM87 39h3v8h-3zM84 43h3v4h-3zM90 42h5v5h-5z"/>
+    </pattern>
+  </defs>
+
+  <rect width="1600" height="760" fill="url(#grass)"/>
+
+  <!-- Uneven meadow colour blocks break the tiled look without animation. -->
+  <path fill="#779e53" opacity=".52" d="M0 390h184v24h96v-13h136v31h104v-18h122v29h-96v21H318v-16H142v20H0zM1040 408h141v-21h132v28h144v-17h143v80h-126v-21h-172v18h-222z"/>
+  <path fill="#658946" opacity=".44" d="M0 544h133v-18h126v31h181v-19h98v46h-77v21H278v-16H98v23H0zM1122 532h134v22h163v-16h181v67h-117v-18h-164v15h-197z"/>
+
+  <!-- Central lake: four stepped bank rings create wet edge, sand and grass shelf. -->
+  <polygon fill="#56743f" points="70,40 1530,40 1530,310 1518,310 1518,334 1488,334 1488,350 1432,350 1432,366 1370,366 1370,382 1288,382 1288,398 1192,398 1192,414 1086,414 1086,430 978,430 978,444 864,444 864,454 746,454 746,446 628,446 628,434 514,434 514,420 402,420 402,406 302,406 302,390 218,390 218,374 148,374 148,354 102,354 102,334 70,334"/>
+  <polygon fill="#8e8e58" points="78,48 1522,48 1522,302 1508,302 1508,326 1478,326 1478,342 1422,342 1422,358 1360,358 1360,374 1278,374 1278,390 1182,390 1182,406 1076,406 1076,422 968,422 968,436 854,436 854,446 756,446 756,438 638,438 638,426 524,426 524,412 412,412 412,398 312,398 312,382 228,382 228,366 158,366 158,346 112,346 112,326 78,326"/>
+  <polygon fill="url(#sand)" points="86,56 1514,56 1514,294 1498,294 1498,318 1468,318 1468,334 1412,334 1412,350 1350,350 1350,366 1268,366 1268,382 1172,382 1172,398 1066,398 1066,414 958,414 958,428 844,428 844,438 766,438 766,430 648,430 648,418 534,418 534,404 422,404 422,390 322,390 322,374 238,374 238,358 168,358 168,338 122,338 122,318 86,318"/>
+  <polygon fill="#aa8e5d" points="94,64 1506,64 1506,286 1488,286 1488,310 1458,310 1458,326 1402,326 1402,342 1340,342 1340,358 1258,358 1258,374 1162,374 1162,390 1056,390 1056,406 948,406 948,420 834,420 834,430 776,430 776,422 658,422 658,410 544,410 544,396 432,396 432,382 332,382 332,366 248,366 248,350 178,350 178,330 132,330 132,310 94,310"/>
+  <polygon fill="url(#lake)" points="102,72 1498,72 1498,278 1478,278 1478,302 1448,302 1448,318 1392,318 1392,334 1330,334 1330,350 1248,350 1248,366 1152,366 1152,382 1046,382 1046,398 938,398 938,412 824,412 824,422 786,422 786,414 668,414 668,402 554,402 554,388 442,388 442,374 342,374 342,358 258,358 258,342 188,342 188,322 142,322 142,302 102,302"/>
+
+  <!-- Deep water in the middle marks the great lake's nushi basin. -->
+  <path fill="url(#deep)" opacity=".94" d="M554 128h492v16h82v18h52v24h34v68h-34v28h-52v20h-82v16H554v-16h-82v-20h-52v-28h-34v-68h34v-24h52v-18h82z"/>
+  <path fill="#7fc6c7" opacity=".48" d="M490 172h118v3H490zM636 145h72v2h-72zM840 154h126v3H840zM1018 195h82v2h-82zM460 286h96v2h-96zM722 318h144v3H722zM936 282h112v2H936z"/>
+  <path fill="#b8e8df" opacity=".65" d="M778 218h6v6h-6zM806 238h4v4h-4zM748 254h4v4h-4z"/>
+
+  <!-- Islands and shallows, all aligned to the 4px field grid. -->
+  <g>
+    <path fill="#a8905e" d="M260 176h92v8h28v48h-16v16h-88v-12h-32v-44h16z"/>
+    <path fill="#587944" d="M268 168h76v8h28v48h-20v12h-72v-8h-28v-36h16z"/>
+    <path fill="#315a3a" d="M286 150h12v34h-12zM278 158h28v12h-28zM322 164h12v32h-12zM314 171h28v11h-28z"/>
+    <path fill="#a8905e" d="M1204 164h108v8h28v52h-20v16h-96v-12h-36v-44h16z"/>
+    <path fill="#567842" d="M1212 156h92v8h28v52h-20v12h-80v-8h-36v-36h16z"/>
+    <path fill="#2f5938" d="M1236 138h12v34h-12zM1228 146h28v12h-28zM1282 150h12v38h-12zM1274 158h28v12h-28z"/>
+  </g>
+
+  <!-- River banks: the lake drains through the village and into the sea. -->
+  <polygon fill="#52713f" points="760,402 872,402 872,430 888,430 888,462 876,462 876,494 892,494 892,526 884,526 884,558 904,558 904,590 896,590 896,622 920,622 920,654 944,654 944,708 824,708 824,674 800,674 800,642 784,642 784,610 792,610 792,578 776,578 776,546 784,546 784,514 768,514 768,482 776,482 776,450 760,450"/>
+  <polygon fill="url(#sand)" points="772,402 860,402 860,438 876,438 876,462 864,462 864,494 880,494 880,526 872,526 872,558 892,558 892,590 884,590 884,622 908,622 908,654 932,654 932,708 836,708 836,666 812,666 812,634 796,634 796,610 804,610 804,578 788,578 788,546 796,546 796,514 780,514 780,482 788,482 788,450 772,450"/>
+  <polygon fill="#9a8055" points="782,402 850,402 850,442 866,442 866,462 854,462 854,494 870,494 870,526 862,526 862,558 882,558 882,590 874,590 874,622 898,622 898,654 922,654 922,708 846,708 846,662 822,662 822,630 806,630 806,610 814,610 814,578 798,578 798,546 806,546 806,514 790,514 790,482 798,482 798,450 782,450"/>
+  <polygon fill="url(#river)" points="790,402 842,402 842,446 858,446 858,462 846,462 846,494 862,494 862,526 854,526 854,558 874,558 874,590 866,590 866,622 890,622 890,654 914,654 914,708 854,708 854,658 830,658 830,626 814,626 814,610 822,610 822,578 806,578 806,546 814,546 814,514 798,514 798,482 806,482 806,450 790,450"/>
+  <path fill="#b7e5db" opacity=".7" d="M800 424h34v2h-34zM816 470h31v2h-31zM812 532h39v2h-39zM824 584h42v2h-42zM840 642h48v3h-48zM866 687h43v3h-43z"/>
+
+  <!-- Village roads stop at the river; the bridge joins them above the water. -->
+  <path fill="#70583d" d="M68 488h706v84H68zM890 488h642v84H890z"/>
+  <path fill="url(#road)" d="M76 496h698v68H76zM890 496h634v68H890z"/>
+  <path fill="url(#road)" d="M284 432h76v204h-76zM1116 424h76v218h-76z"/>
+  <path fill="#725f47" d="M410 548h296v16h32v80h-32v16H410v-16h-32v-80h32z"/>
+  <path fill="url(#stone)" d="M418 556h280v16h32v64h-32v16H418v-16h-32v-64h32z"/>
+  <path fill="#51493a" d="M538 584h40v28h-40z"/>
+  <path fill="#1c5669" d="M546 580h24v22h-24z"/>
+  <path fill="#b7a57c" d="M542 576h32v8h-32z"/>
+
+  <!-- Two working fields and their dark irrigation edges. -->
+  <rect x="78" y="588" width="224" height="104" fill="#67543a"/>
+  <rect x="86" y="596" width="208" height="88" fill="url(#field)"/>
+  <rect x="1214" y="584" width="226" height="108" fill="#67543a"/>
+  <rect x="1222" y="592" width="210" height="92" fill="url(#field)"/>
+
+  <!-- Coastal shelf: grass, dry sand, wet sand, foam, then a distinct sea. -->
+  <polygon fill="#5c7f42" points="0,612 112,612 112,604 240,604 240,616 372,616 372,606 520,606 520,620 664,620 664,610 812,610 812,624 968,624 968,614 1112,614 1112,626 1260,626 1260,612 1408,612 1408,622 1600,622 1600,760 0,760"/>
+  <polygon fill="url(#sand)" points="0,630 112,630 112,622 240,622 240,634 372,634 372,624 520,624 520,638 664,638 664,628 812,628 812,642 968,642 968,632 1112,632 1112,644 1260,644 1260,630 1408,630 1408,640 1600,640 1600,760 0,760"/>
+  <polygon fill="#b19059" points="0,680 126,680 126,674 260,674 260,686 396,686 396,678 548,678 548,690 704,690 704,680 856,680 856,694 1008,694 1008,682 1160,682 1160,692 1310,692 1310,680 1452,680 1452,688 1600,688 1600,760 0,760"/>
+  <polygon fill="url(#sea)" points="0,696 126,696 126,690 260,690 260,702 396,702 396,694 548,694 548,706 704,706 704,696 856,696 856,710 1008,710 1008,698 1160,698 1160,708 1310,708 1310,696 1452,696 1452,704 1600,704 1600,760 0,760"/>
+  <path fill="#d9f0dc" opacity=".88" d="M0 692h126v-6h134v12h136v-8h152v12h156v-10h152v14h152v-12h152v10h150v-12h142v8h148v5h-148v-7h-142v12h-150v-10h-152v12H856v-14H704v10H548v-12H396v8H260v-12H126v6H0z"/>
+  <path fill="#81c8c8" opacity=".75" d="M24 726h116v3H24zM188 742h68v2h-68zM342 720h132v3H342zM612 744h118v2h-118zM1010 730h146v3h-146zM1258 748h92v2h-92zM1428 723h128v3h-128z"/>
+
+  <!-- Beach stones, shells, dune grass and lake-edge reeds. -->
+  <g>
+    <path fill="#7d7464" d="M78 654h12v7H78zM102 647h8v6h-8zM148 666h16v8h-16zM354 650h10v7h-10zM386 666h14v8h-14zM1188 660h12v7h-12zM1344 648h16v8h-16zM1502 667h10v7h-10z"/>
+    <path fill="#f4e1b0" d="M208 655h4v4h-4zM216 651h3v3h-3zM512 668h5v4h-5zM1042 654h4v4h-4zM1458 650h5v4h-5z"/>
+    <path fill="#4f7540" d="M40 616h4v20h-4zM34 623h4v13h-4zM46 620h5v16h-5zM326 610h4v23h-4zM320 619h4v14h-4zM332 616h5v17h-5zM1298 614h4v21h-4zM1292 621h4v14h-4zM1304 618h5v17h-5zM1542 616h4v20h-4zM1536 623h4v13h-4zM1548 620h5v16h-5z"/>
+    <path fill="#496d3d" d="M182 338h4v28h-4zM176 348h4v18h-4zM188 342h5v24h-5zM364 366h4v27h-4zM358 375h4v18h-4zM370 370h5v23h-5zM1180 374h4v28h-4zM1174 383h4v19h-4zM1186 378h5v24h-5zM1418 330h4v28h-4zM1412 339h4v19h-4zM1424 334h5v24h-5z"/>
+  </g>
+
+  <!-- Small terrain stories: worn grass, roots, stones and flower pixels. -->
+  <g opacity=".9">
+    <path fill="#4e713c" d="M32 454h36v4H32zM180 470h44v4h-44zM502 468h38v4h-38zM1050 456h48v4h-48zM1450 470h42v4h-42z"/>
+    <path fill="#8eaa59" d="M130 444h5v13h-5zM126 451h4v6h-4zM135 448h5v9h-5zM642 464h5v14h-5zM638 472h4v6h-4zM647 469h5v9h-5zM1320 454h5v13h-5zM1316 461h4v6h-4zM1325 458h5v9h-5z"/>
+    <path fill="#e7d276" d="M214 596h4v4h-4zM226 602h4v4h-4zM372 588h4v4h-4zM1102 598h4v4h-4zM1130 590h4v4h-4zM1488 580h4v4h-4z"/>
+    <path fill="#d8a4b3" d="M220 590h4v4h-4zM380 596h4v4h-4zM1094 590h4v4h-4zM1498 588h4v4h-4z"/>
+  </g>
+</svg>

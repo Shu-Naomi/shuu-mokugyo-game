@@ -1108,6 +1108,259 @@
       .detail-log { left: 71.8%; top: 59.2%; transform: rotate(9deg) scale(.85); }
       .detail-garden-a { left: 14.6%; top: 84.2%; transform: rotate(2deg) scale(.78); }
       .detail-garden-b { left: 78.2%; top: 85.4%; transform: rotate(-4deg) scale(.74); }
+
+      /* v46: one large, static pixel field now establishes the whole watershed.
+         The great lake, village river and sea share one grid, so their banks no
+         longer read as unrelated CSS bands.  Small interactive landmarks stay
+         as DOM elements above it. */
+      .map {
+        background-color: #70964d;
+        background-image: url("assets/terrain-world-v46.svg");
+        background-position: 0 0;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+      }
+      .lake {
+        left: 5%;
+        right: auto;
+        top: 2%;
+        width: 90%;
+        height: 54%;
+        overflow: visible;
+        background: none;
+        clip-path: none;
+        contain: layout paint;
+      }
+      .lake::before,
+      .lake::after,
+      .lake-island {
+        display: none;
+      }
+      .water-ripple {
+        opacity: .72;
+      }
+      .ripple-a { left: 8%; top: 38%; }
+      .ripple-b { left: 36%; top: 66%; }
+      .ripple-c { left: 65%; top: 48%; }
+      .ripple-d { left: 89%; top: 61%; }
+      .lilies-a { left: 10%; top: 73%; }
+      .lilies-b { left: 82%; top: 67%; }
+      .shore,
+      .village-road,
+      .cross-road,
+      .stone-lane,
+      .field-patch,
+      .trail {
+        display: none;
+      }
+      .river-bridge {
+        position: absolute;
+        z-index: 4;
+        left: 46.7%;
+        top: 65.2%;
+        width: 11.7%;
+        height: 7.4%;
+        min-width: 128px;
+        border: 3px solid #49301f;
+        border-radius: 2px;
+        background:
+          linear-gradient(
+            0deg,
+            #5a351f 0 8%,
+            #c78a45 9% 18%,
+            transparent 19% 81%,
+            #d29a52 82% 91%,
+            #5a351f 92%
+          ),
+          repeating-linear-gradient(
+            90deg,
+            #6a3e24 0 3px,
+            #a96832 3px 13px,
+            #d18d45 13px 16px,
+            #7a4828 16px 19px
+          );
+        box-shadow:
+          inset 0 4px #edb766,
+          inset 0 -4px #704126,
+          4px 6px #234c4a66;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+      .river-bridge::before,
+      .river-bridge::after {
+        content: "";
+        position: absolute;
+        left: 2%;
+        right: 2%;
+        height: 4px;
+        border: 2px solid #412a1b;
+        background: repeating-linear-gradient(
+          90deg,
+          #7f4d2b 0 12px,
+          #c1823d 12px 19px,
+          #56331f 19px 23px
+        );
+        box-shadow: 0 3px #0003;
+      }
+      .river-bridge::before { top: 8%; }
+      .river-bridge::after { bottom: 8%; }
+      .river-bridge i {
+        position: absolute;
+        z-index: 2;
+        left: 4%;
+        top: -9%;
+        width: 7px;
+        height: 118%;
+        border: 2px solid #40291a;
+        background: #8f572f;
+        box-shadow:
+          35px 0 #8f572f,
+          70px 0 #8f572f,
+          105px 0 #8f572f,
+          140px 0 #8f572f,
+          175px 0 #8f572f,
+          210px 0 #8f572f;
+      }
+      .town-square {
+        left: 23.5%;
+        top: 72%;
+        width: 22%;
+        height: 15%;
+        border: 0;
+        border-radius: 0;
+        background: none;
+        box-shadow: none;
+      }
+      .town-square::before {
+        display: none;
+      }
+      .town-square::after {
+        bottom: 7%;
+        background: #f0d58ae6;
+      }
+      .fence-a {
+        left: 4.5%;
+        top: 77.1%;
+        width: 14.5%;
+        transform: none;
+      }
+      .fence-b {
+        left: 76.2%;
+        top: 76.8%;
+        width: 14%;
+        transform: none;
+      }
+      .spot-cove {
+        left: 12%;
+        top: 40%;
+        width: 5.5%;
+        height: 9%;
+      }
+      .spot-reeds {
+        left: 34%;
+        top: 40%;
+        width: 3.5%;
+        height: 14%;
+      }
+      .spot-old-pier {
+        left: 59.5%;
+        top: 38%;
+        width: 3.4%;
+        height: 17%;
+      }
+      .spot-star-cape {
+        left: 85.5%;
+        top: 34%;
+        width: 3.5%;
+        height: 14%;
+      }
+      .shop {
+        left: 69%;
+        top: 55%;
+        width: 11%;
+        height: 12%;
+      }
+      .building {
+        min-width: 104px;
+      }
+      .house-a {
+        left: 6%;
+        top: 55%;
+        width: 9%;
+        height: 12%;
+      }
+      .house-b {
+        left: 18%;
+        top: 69%;
+        width: 9%;
+        height: 10%;
+      }
+      .diner {
+        left: 35%;
+        top: 54%;
+        width: 10%;
+        height: 13%;
+      }
+      .market {
+        left: 58%;
+        top: 69%;
+        width: 10%;
+        height: 10%;
+      }
+      .mystery {
+        left: 85%;
+        top: 69%;
+        width: 8%;
+        height: 10%;
+        opacity: .82;
+      }
+      .rescue-spot {
+        left: 47%;
+        top: 77%;
+        width: 3%;
+        height: 5%;
+      }
+      .grove-a { left: 1.5%; top: 53%; }
+      .grove-b { left: 23%; top: 54%; }
+      .grove-c { display: none; }
+      .grove-d { left: 72%; top: 53%; }
+      .grove-e { left: 94%; top: 62%; }
+      .reeds-a { left: 20%; top: 43%; width: 5%; height: 9%; }
+      .reeds-b { left: 41%; top: 48%; width: 4%; height: 8%; }
+      .reeds-c { left: 73%; top: 45%; width: 4.5%; height: 9%; }
+      .rocks-a { left: 15%; top: 51%; }
+      .rocks-b { left: 65%; top: 51%; }
+      .rocks-c { left: 91%; top: 48%; }
+      .flowers-a { left: 11%; top: 73%; }
+      .flowers-b { left: 32%; top: 83%; }
+      .flowers-c { left: 72%; top: 72%; }
+      .detail-reeds-a { left: 8.5%; top: 43%; }
+      .detail-reeds-b { left: 42%; top: 48%; }
+      .detail-reeds-c { left: 73.5%; top: 45%; }
+      .detail-stones-a { left: 17%; top: 50%; }
+      .detail-stones-b { left: 91%; top: 48%; }
+      .detail-net { left: 55.4%; top: 49.2%; }
+      .detail-rope { left: 63%; top: 50%; }
+      .detail-driftwood-a { left: 4.8%; top: 83.5%; }
+      .detail-driftwood-b { left: 80%; top: 84%; }
+      .detail-lantern-cape { left: 88%; top: 48%; }
+      .detail-sign { left: 29%; top: 63%; }
+      .detail-crates { left: 80.5%; top: 64%; }
+      .detail-puddle { left: 43.2%; top: 69%; }
+      .detail-steps { left: 52.5%; top: 60%; }
+      .detail-lantern-town { left: 40.5%; top: 70%; }
+      .detail-fence-a { left: 3.6%; top: 77.2%; }
+      .detail-fence-b { left: 75%; top: 77.2%; }
+      .detail-grass-a { left: 2.4%; top: 68%; }
+      .detail-grass-b { left: 28%; top: 59%; }
+      .detail-grass-c { left: 53.5%; top: 80%; }
+      .detail-grass-d { left: 93%; top: 73%; }
+      .detail-flowers-a { left: 10%; top: 72%; }
+      .detail-flowers-b { left: 32%; top: 81%; }
+      .detail-stump { left: 26.8%; top: 62%; }
+      .detail-log { left: 71.8%; top: 57%; }
+      .detail-garden-a { left: 13%; top: 79%; }
+      .detail-garden-b { left: 82%; top: 79%; }
       .player {
         position: absolute;
         width: 46px;
@@ -2379,7 +2632,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v45</span><span id="time">朝</span
+        <b>星降る湖</b><span>v46</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2407,6 +2660,7 @@
           <div class="field-patch field-b"></div>
           <div class="fence-line fence-a"></div>
           <div class="fence-line fence-b"></div>
+          <div class="river-bridge" aria-label="湖と海をつなぐ川に架かる木橋"><i></i></div>
           <i class="trail trail-a"></i>
           <i class="trail trail-b"></i>
           <i class="trail trail-c"></i>
@@ -2678,7 +2932,7 @@
             id: "oldPier",
             name: "古い桟橋",
             x: 147,
-            y: 95,
+            y: 104,
             radius: 14,
             role: "フナとコイの深場・ヌシなし",
             weights: { moroko: 0.18, funa: 0.44, koi: 0.38 },
@@ -3015,7 +3269,7 @@
             direction: "up",
             rescueAt: -99,
             calmBonus: 0,
-            mapVersion: 0,
+            mapVersion: 46,
           },
           JSON.parse(localStorage.getItem(key) || "{}"),
         ),
@@ -3049,11 +3303,11 @@
           wakes: [],
           silt: [],
         };
-      if ((s.mapVersion || 0) < 42) {
+      if ((s.mapVersion || 0) < 46) {
         s.x = 112;
-        s.y = 153;
+        s.y = 145;
         s.direction = "up";
-        s.mapVersion = 42;
+        s.mapVersion = 46;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -3143,15 +3397,16 @@
       }
       function walkableMinY(x) {
         const shore = [
-          [5, 97],
-          [35, 97],
-          [66, 101],
-          [92, 102],
-          [120, 98],
-          [147, 93],
-          [177, 97],
-          [209, 88],
-          [235, 92],
+          [5, 77],
+          [28, 87],
+          [51, 91],
+          [83, 98],
+          [118, 105],
+          [124, 107],
+          [141, 104],
+          [173, 96],
+          [214, 86],
+          [235, 73],
         ];
         for (let i = 1; i < shore.length; i += 1) {
           const [x2, y2] = shore[i];
@@ -3162,6 +3417,70 @@
           }
         }
         return shore.at(-1)[1];
+      }
+      function walkableMaxY(x) {
+        const coast = [
+          [5, 170],
+          [35, 169],
+          [65, 172],
+          [95, 170],
+          [125, 173],
+          [155, 170],
+          [185, 172],
+          [215, 169],
+          [235, 171],
+        ];
+        for (let i = 1; i < coast.length; i += 1) {
+          const [x2, y2] = coast[i];
+          const [x1, y1] = coast[i - 1];
+          if (x <= x2) {
+            const t = Math.max(0, Math.min(1, (x - x1) / (x2 - x1)));
+            return y1 + (y2 - y1) * t;
+          }
+        }
+        return coast.at(-1)[1];
+      }
+      function riverCenterMapX(mapY) {
+        const bends = [
+          [52, 51],
+          [58, 51.4],
+          [64, 51.2],
+          [70, 52],
+          [76, 52.6],
+          [82, 53.8],
+          [90, 55],
+        ];
+        for (let i = 1; i < bends.length; i += 1) {
+          const [y2, x2] = bends[i];
+          const [y1, x1] = bends[i - 1];
+          if (mapY <= y2) {
+            const t = Math.max(0, Math.min(1, (mapY - y1) / (y2 - y1)));
+            return x1 + (x2 - x1) * t;
+          }
+        }
+        return bends.at(-1)[1];
+      }
+      function isRiverWater(x, y) {
+        const mapX = worldToMapX(x);
+        const mapY = worldToMapY(y);
+        if (mapY < 52 || mapY > 91) return false;
+        const onBridge =
+          mapY >= 65.2 &&
+          mapY <= 72.6 &&
+          mapX >= 46.7 &&
+          mapX <= 58.4;
+        if (onBridge) return false;
+        const halfWidth = mapY > 84 ? 2.8 : 2.25;
+        return Math.abs(mapX - riverCenterMapX(mapY)) < halfWidth;
+      }
+      function isWalkableWorld(x, y) {
+        return (
+          x >= 5 &&
+          x <= WORLD_WIDTH - 5 &&
+          y >= walkableMinY(x) &&
+          y <= walkableMaxY(x) &&
+          !isRiverWater(x, y)
+        );
       }
       function fishingSpotById(id) {
         return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
@@ -3365,7 +3684,10 @@
       }
       function render() {
         s.x = Math.max(5, Math.min(WORLD_WIDTH - 5, s.x));
-        s.y = Math.max(walkableMinY(s.x), Math.min(WORLD_HEIGHT - 5, s.y));
+        s.y = Math.max(
+          walkableMinY(s.x),
+          Math.min(walkableMaxY(s.x), s.y),
+        );
         const mapX = worldToMapX(s.x);
         const mapY = worldToMapY(s.y);
         const cameraX = Math.max(0, Math.min(WORLD_WIDTH - 100, s.x - 50));
@@ -3396,11 +3718,15 @@
         const spot = nearbyFishingSpot();
         $("#hint").textContent = spot
           ? `${spot.name}。Aで釣る（${spot.role}）。`
-          : near(199, 148, 15)
+          : near(178, 131, 15)
             ? "星湖釣具店だ。Aで入る。"
-            : near(118, 169, 12)
+            : near(116, 153, 12)
               ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
-              : "湖岸・広場・町・林を縦横に歩こう。気になる場所ではA。";
+              : near(126, 131, 15)
+                ? "川風橋だ。湖から海へ流れる小川を渡れる。"
+                : s.y > 159
+                  ? "潮見浜だ。波の向こうには、まだ見ぬ海の魚がいる。"
+                  : "湖岸・広場・川辺・海岸を歩こう。気になる場所ではA。";
         scheduleSave();
       }
       function move(d) {
@@ -3419,6 +3745,8 @@
           }, 90);
         }
         s.direction = d;
+        const previousX = s.x;
+        const previousY = s.y;
         let n = 4;
         ({
           left: () => (s.x -= n),
@@ -3426,6 +3754,10 @@
           up: () => (s.y -= n),
           down: () => (s.y += n),
         })[d]();
+        if (!isWalkableWorld(s.x, s.y)) {
+          s.x = previousX;
+          s.y = previousY;
+        }
         render();
         $("#player").classList.add("walking");
         $("#dog").classList.add("walking");
@@ -3729,17 +4061,17 @@
       function action() {
         const spot = nearbyFishingSpot();
         if (spot) cast(spot);
-        else if (near(199, 148, 15)) open("store");
-        else if (near(118, 169, 12)) rescue();
-        else if (near(34, 147, 14))
+        else if (near(178, 131, 15)) open("store");
+        else if (near(116, 153, 12)) rescue();
+        else if (near(25, 132, 14))
           log("湖畔の民家。おばあさんが『朝凪の入り江には小魚が寄るよ』と教えてくれた。");
-        else if (near(70, 176, 14))
+        else if (near(54, 154, 14))
           log("釣り宿だ。二階の窓から葦原の魚影がよく見える。");
-        else if (near(108, 140, 15))
+        else if (near(96, 132, 15))
           log("ワカサギ食堂。香ばしい匂いが街道まで流れている。");
-        else if (near(160, 174, 15))
+        else if (near(151, 154, 15))
           log("魚市場。古い桟橋で釣れた大物を高く買ってくれそうだ。");
-        else if (near(221, 181, 13))
+        else if (near(214, 154, 13))
           log("閉じた小屋だ。星見岬の方から低い水音が響いている……。");
         else log(`${dogName()}が辺りの匂いを確かめた。`);
       }
