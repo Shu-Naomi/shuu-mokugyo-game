@@ -1109,13 +1109,13 @@
       .detail-garden-a { left: 14.6%; top: 84.2%; transform: rotate(2deg) scale(.78); }
       .detail-garden-b { left: 78.2%; top: 85.4%; transform: rotate(-4deg) scale(.74); }
 
-      /* v47: one static, fine-grained 16-bit field establishes the watershed.
-         One-to-three-pixel texture marks, natural banks, forest and rock tiles
-         raise the detail density while all interactive landmarks remain DOM
-         elements above it. */
+      /* v48: one static, non-repeating 16-bit field establishes the watershed.
+         Grass, soil, waves, stones and forest spacing are placed once across
+         the whole map, removing the visible tile cycle while all interactive
+         landmarks remain DOM elements above it. */
       .map {
         background-color: #70964d;
-        background-image: url("assets/terrain-world-v47.svg");
+        background-image: url("assets/terrain-world-v48.png");
         background-position: 0 0;
         background-size: 100% 100%;
         background-repeat: no-repeat;
@@ -2632,7 +2632,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v47</span><span id="time">朝</span
+        <b>星降る湖</b><span>v48</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3269,7 +3269,7 @@
             direction: "up",
             rescueAt: -99,
             calmBonus: 0,
-            mapVersion: 47,
+            mapVersion: 48,
           },
           JSON.parse(localStorage.getItem(key) || "{}"),
         ),
@@ -3312,6 +3312,10 @@
       if ((s.mapVersion || 0) < 47) {
         // v47 only raises visual density; preserve the player's v46 position.
         s.mapVersion = 47;
+      }
+      if ((s.mapVersion || 0) < 48) {
+        // v48 removes repeated tiles without moving gameplay landmarks.
+        s.mapVersion = 48;
       }
       function loadDogImage(src) {
         const image = new Image();
