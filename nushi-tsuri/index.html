@@ -1109,13 +1109,13 @@
       .detail-garden-a { left: 14.6%; top: 84.2%; transform: rotate(2deg) scale(.78); }
       .detail-garden-b { left: 78.2%; top: 85.4%; transform: rotate(-4deg) scale(.74); }
 
-      /* v48: one static, non-repeating 16-bit field establishes the watershed.
-         Grass, soil, waves, stones and forest spacing are placed once across
-         the whole map, removing the visible tile cycle while all interactive
-         landmarks remain DOM elements above it. */
+      /* v49: a 2400x1140 hand-jagged field establishes the whole watershed.
+         Shorelines, roads, forests and texture clusters are all unique; the
+         old evenly spaced DOM groves and fixed fishing piers are no longer
+         part of the visible terrain. */
       .map {
         background-color: #70964d;
-        background-image: url("assets/terrain-world-v48.png");
+        background-image: url("assets/terrain-world-v49.png");
         background-position: 0 0;
         background-size: 100% 100%;
         background-repeat: no-repeat;
@@ -1137,7 +1137,7 @@
         display: none;
       }
       .water-ripple {
-        opacity: .72;
+        display: none;
       }
       .ripple-a { left: 8%; top: 38%; }
       .ripple-b { left: 36%; top: 66%; }
@@ -1145,6 +1145,11 @@
       .ripple-d { left: 89%; top: 61%; }
       .lilies-a { left: 10%; top: 73%; }
       .lilies-b { left: 82%; top: 67%; }
+      .lily-patch,
+      .fishing-spot,
+      .tree-grove {
+        display: none;
+      }
       .shore,
       .village-road,
       .cross-road,
@@ -1825,6 +1830,9 @@
         background: #ffffff0c;
       }
       .fish-scene {
+        --biome-x: 0%;
+        --depth-y: 0%;
+        --surface-colour: #d7ffff80;
         display: none;
         position: absolute;
         z-index: 20;
@@ -1832,13 +1840,19 @@
         overflow: hidden;
         isolation: isolate;
         background-color: #073f5d;
-        background-image: url("assets/lake-underwater-v25.svg");
-        background-position: 50% 50%;
-        background-size: 106% 106%;
+        background-image: url("assets/fishing-biomes-v49.png");
+        background-position: var(--biome-x) var(--depth-y);
+        background-size: 300% 300%;
         background-repeat: no-repeat;
         image-rendering: pixelated;
-        transition: background-position 0.55s ease-out;
+        transition: background-position 0.28s steps(3);
       }
+      .fish-scene.water-lake { --biome-x: 0%; }
+      .fish-scene.water-river { --biome-x: 50%; --surface-colour: #dfffd57d; }
+      .fish-scene.water-sea { --biome-x: 100%; --surface-colour: #dcffff8a; }
+      .fish-scene.depth-shallow { --depth-y: 0%; }
+      .fish-scene.depth-mid { --depth-y: 50%; }
+      .fish-scene.depth-deep { --depth-y: 100%; }
       .fish-scene.active {
         display: block;
       }
@@ -1848,13 +1862,10 @@
         z-index: 0;
         inset: -12% -18%;
         pointer-events: none;
-        opacity: 0.28;
-        background: repeating-linear-gradient(
-          103deg,
-          transparent 0 10%,
-          #c8ffff20 11% 14%,
-          transparent 15% 25%
-        );
+        opacity: 0.24;
+        background:
+          linear-gradient(103deg, transparent 8%, #c8ffff22 13%, transparent 20%),
+          linear-gradient(74deg, transparent 48%, #dfffff16 56%, transparent 64%);
         transform: translateX(-4%);
         animation: underwater-light 8s ease-in-out infinite alternate;
       }
@@ -1868,6 +1879,26 @@
           radial-gradient(ellipse at 54% 42%, transparent 22%, #021d3270 100%),
           linear-gradient(transparent 55%, #031a2e45);
         transition: background 0.45s;
+      }
+      .fish-scene.nushi-fight::after {
+        background:
+          radial-gradient(ellipse at 54% 42%, transparent 12%, #10092a99 100%),
+          linear-gradient(#17264b25, #09071eaa);
+      }
+      .fish-scene.depth-shallow::after {
+        background:
+          radial-gradient(ellipse at 54% 42%, transparent 34%, #07364f38 100%),
+          linear-gradient(transparent 70%, #173d3938);
+      }
+      .fish-scene.depth-mid::after {
+        background:
+          radial-gradient(ellipse at 54% 42%, transparent 26%, #031f3f62 100%),
+          linear-gradient(transparent 57%, #071d324b);
+      }
+      .fish-scene.depth-deep::after {
+        background:
+          radial-gradient(ellipse at 54% 40%, transparent 18%, #01142f88 100%),
+          linear-gradient(#061d3422, #010d24a3);
       }
       .fish-scene.nushi-fight::after {
         background:
@@ -1889,7 +1920,7 @@
         opacity: 0.42;
         background: repeating-linear-gradient(
           0deg,
-          #e3ffff80 0 2px,
+          var(--surface-colour) 0 2px,
           transparent 3px 7px
         );
         animation: water-surface 2.4s linear infinite;
@@ -2108,16 +2139,19 @@
           transform 0.12s linear,
           filter 0.18s;
         filter:
+          hue-rotate(var(--fish-hue, 0deg))
           brightness(var(--fish-light, 1))
           saturate(var(--fish-color, 1))
           contrast(var(--fish-contrast, 1))
           drop-shadow(5px 6px 2px #02192dbb);
         will-change: left, top, transform;
       }
-      .battle-fish.fish-moroko {
+      .battle-fish.fish-moroko,
+      .battle-fish.fish-aji {
         width: clamp(100px, 14vw, 150px);
         aspect-ratio: 128 / 55;
       }
+      .battle-fish.fish-aji { --fish-hue: 155deg; }
       .battle-fish.fish-funa {
         width: clamp(115px, 16vw, 165px);
         aspect-ratio: 144 / 95;
@@ -2132,6 +2166,7 @@
       }
       .battle-fish.burst {
         filter:
+          hue-rotate(var(--fish-hue, 0deg))
           brightness(var(--fish-light, 1))
           saturate(1.18)
           contrast(var(--fish-contrast, 1))
@@ -2398,18 +2433,21 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
         filter:
+          hue-rotate(var(--fish-hue, 0deg))
           brightness(1.14)
           saturate(1.13)
           drop-shadow(6px 8px 2px #020c15aa)
           drop-shadow(0 0 8px #a4efff77);
         animation: catch-fish-tail .68s steps(7, end) infinite alternate;
       }
-      .catch-fish.fish-moroko {
+      .catch-fish.fish-moroko,
+      .catch-fish.fish-aji {
         width: clamp(90px, min(17vw, 34vh), 160px);
         aspect-ratio: 128 / 55;
         transform: translate(-95.8%, -60%);
         transform-origin: 95.8% 60%;
       }
+      .catch-fish.fish-aji { --fish-hue: 155deg; }
       .catch-fish.fish-funa {
         width: clamp(100px, min(19vw, 38vh), 185px);
         aspect-ratio: 144 / 95;
@@ -2632,7 +2670,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v48</span><span id="time">朝</span
+        <b>星降る湖</b><span>v49</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -2665,18 +2703,6 @@
           <i class="trail trail-b"></i>
           <i class="trail trail-c"></i>
           <i class="trail trail-d"></i>
-          <div class="fishing-spot spot-cove" data-spot="cove" aria-label="朝凪の入り江">
-            <span class="spot-name">朝凪の入り江・小魚</span>
-          </div>
-          <div class="fishing-spot spot-reeds" data-spot="reeds" aria-label="葦原の岸">
-            <span class="spot-name">葦原の岸・通常魚</span><i class="spot-lantern"></i>
-          </div>
-          <div class="fishing-spot spot-old-pier" data-spot="oldPier" aria-label="古い桟橋">
-            <span class="spot-name">古い桟橋・大物</span><i class="spot-lantern"></i>
-          </div>
-          <div class="fishing-spot spot-star-cape" data-spot="starCape" aria-label="星見岬">
-            <span class="spot-name">星見岬・ヌシの深み</span><i class="spot-lantern"></i>
-          </div>
           <i class="reed-bed reeds-a"></i>
           <i class="reed-bed reeds-b"></i>
           <i class="reed-bed reeds-c"></i>
@@ -2739,7 +2765,7 @@
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
-        <div class="hint" id="hint">湖畔を歩こう。4つの釣り場ではAで釣り。</div>
+        <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
         <div class="controls">
           <div class="dpad">
             <button class="up" data-move="up">▲</button
@@ -2900,6 +2926,15 @@
             shadowRow: 2,
           },
           {
+            id: "aji",
+            name: "マアジ",
+            price: 180,
+            resistance: 72,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
+          {
             id: "nushi",
             name: "星湖のヌシ",
             price: 2000,
@@ -2911,40 +2946,76 @@
         ],
         fishingSpots = [
           {
-            id: "cove",
-            name: "朝凪の入り江",
-            x: 35,
-            y: 98,
-            radius: 14,
-            role: "小魚の浅場・ヌシなし",
-            weights: { moroko: 0.72, funa: 0.28 },
+            id: "lake-shallow",
+            zone: "lake",
+            depth: "shallow",
+            name: "星降る湖・岸際",
+            role: "湖の浅場・小魚中心",
+            weights: { moroko: 0.74, funa: 0.26 },
           },
           {
-            id: "reeds",
-            name: "葦原の岸",
-            x: 86,
-            y: 102,
-            radius: 14,
-            role: "通常魚の岸・ヌシなし",
-            weights: { moroko: 0.45, funa: 0.45, koi: 0.1 },
+            id: "lake-mid",
+            zone: "lake",
+            depth: "mid",
+            name: "星降る湖・中層",
+            role: "湖の中層・フナとコイ",
+            weights: { moroko: 0.35, funa: 0.47, koi: 0.18 },
           },
           {
-            id: "oldPier",
-            name: "古い桟橋",
-            x: 147,
-            y: 104,
-            radius: 14,
-            role: "フナとコイの深場・ヌシなし",
-            weights: { moroko: 0.18, funa: 0.44, koi: 0.38 },
+            id: "lake-deep",
+            zone: "lake",
+            depth: "deep",
+            name: "星降る湖・ヌシの深み",
+            role: "湖の深場・ヌシの生息域",
+            weights: { moroko: 0.12, funa: 0.3, koi: 0.5, nushi: 0.08 },
           },
           {
-            id: "starCape",
-            name: "星見岬",
-            x: 209,
-            y: 90,
-            radius: 15,
-            role: "唯一ヌシが潜む深み",
-            weights: { moroko: 0.18, funa: 0.27, koi: 0.5, nushi: 0.05 },
+            id: "river-shallow",
+            zone: "river",
+            depth: "shallow",
+            name: "民家川・瀬",
+            role: "流れの浅い瀬・小魚中心",
+            weights: { moroko: 0.62, funa: 0.38 },
+          },
+          {
+            id: "river-mid",
+            zone: "river",
+            depth: "mid",
+            name: "民家川・流心",
+            role: "川の流心・フナ中心",
+            weights: { moroko: 0.36, funa: 0.5, koi: 0.14 },
+          },
+          {
+            id: "river-deep",
+            zone: "river",
+            depth: "deep",
+            name: "民家川・淵",
+            role: "川の淵・大きな魚が潜む",
+            weights: { moroko: 0.22, funa: 0.48, koi: 0.3 },
+          },
+          {
+            id: "sea-shallow",
+            zone: "sea",
+            depth: "shallow",
+            name: "潮見浜・波打ち際",
+            role: "海の浅場・マアジの群れ",
+            weights: { aji: 1 },
+          },
+          {
+            id: "sea-mid",
+            zone: "sea",
+            depth: "mid",
+            name: "潮見浜・沿岸",
+            role: "海の中層・マアジの回遊路",
+            weights: { aji: 1 },
+          },
+          {
+            id: "sea-deep",
+            zone: "sea",
+            depth: "deep",
+            name: "潮見浜・沖",
+            role: "海の深場・海魚追加予定",
+            weights: { aji: 1 },
           },
         ],
         baitData = {
@@ -2960,6 +3031,7 @@
           moroko: "assets/fish-moroko-v31.png",
           funa: "assets/fish-funa-v31.png",
           koi: "assets/fish-koi-v31.png",
+          aji: "assets/fish-moroko-v31.png",
           nushi: "assets/fish-nushi-v31.png",
         },
         fishMouthProfiles = {
@@ -2968,6 +3040,7 @@
           // species lets the hook follow the real mouth instead of aiming at
           // an arbitrary distance from the fish's centre.
           moroko: { x: 0.458, y: 0.1, tackleScale: 0.72, inset: 2.5, drop: 1 },
+          aji: { x: 0.458, y: 0.1, tackleScale: 0.74, inset: 2.5, drop: 1 },
           funa: { x: 0.368, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4 },
           koi: { x: 0.397, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8 },
           nushi: { x: 0.37, y: 0.075, tackleScale: 0.82, inset: 5, drop: 2.4 },
@@ -3249,6 +3322,29 @@
           },
         },
         key = "nushi-inugoya-v2";
+      // v49's first sea species reuses the proven slender-fish rig while the
+      // dedicated sea-fish art set is prepared.  The water-zone tables are
+      // already independent, so later species only need a profile and weight.
+      fishMotionProfiles.aji = {
+        ...fishMotionProfiles.moroko,
+        beat: 0.72,
+        speedBeat: 0.11,
+        burst: 1.5,
+        thrust: 0.2,
+        sway: 1.8,
+      };
+      fightProfiles.aji = {
+        intro: "群れから外れ、銀色の体で鋭く走る。",
+        moods: fightProfiles.moroko.moods.map((mood) => ({
+          ...mood,
+          hold: mood.calm
+            ? "マアジの走りが止まった！今が巻き時！"
+            : "マアジが横へ鋭く走る！巻きすぎ注意！",
+          loose: mood.calm
+            ? "潮に乗って休んでいる。Aで距離を詰めよう！"
+            : "走りに合わせて糸を送り、群れから離す。",
+        })),
+      };
       let s = Object.assign(
           {
             money: 300,
@@ -3269,7 +3365,7 @@
             direction: "up",
             rescueAt: -99,
             calmBonus: 0,
-            mapVersion: 48,
+            mapVersion: 49,
           },
           JSON.parse(localStorage.getItem(key) || "{}"),
         ),
@@ -3316,6 +3412,10 @@
       if ((s.mapVersion || 0) < 48) {
         // v48 removes repeated tiles without moving gameplay landmarks.
         s.mapVersion = 48;
+      }
+      if ((s.mapVersion || 0) < 49) {
+        // v49 keeps saves while replacing fixed piers with water-edge fishing.
+        s.mapVersion = 49;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -3403,83 +3503,55 @@
       function worldToMapY(y) {
         return y / WORLD_SCALE_Y;
       }
-      function walkableMinY(x) {
-        const shore = [
-          [5, 77],
-          [28, 87],
-          [51, 91],
-          [83, 98],
-          [118, 105],
-          [124, 107],
-          [141, 104],
-          [173, 96],
-          [214, 86],
-          [235, 73],
+      const lakeShoreLine = [
+          [0, 84], [13, 82], [25, 88], [38, 86], [51, 92], [64, 89],
+          [77, 97], [90, 94], [103, 102], [116, 98], [129, 104],
+          [142, 100], [155, 97], [168, 100], [181, 91], [194, 94],
+          [207, 85], [220, 88], [240, 80],
+        ],
+        coastShoreLine = [
+          [0, 171], [15, 168], [29, 173], [43, 169], [57, 172],
+          [72, 168], [87, 174], [101, 170], [116, 173], [130, 168],
+          [145, 172], [159, 169], [174, 174], [188, 169], [203, 172],
+          [218, 168], [240, 171],
+        ],
+        riverBendLine = [
+          [96, 125], [106, 123], [116, 127], [126, 124], [136, 129],
+          [146, 127], [156, 133], [166, 130], [176, 135],
         ];
-        for (let i = 1; i < shore.length; i += 1) {
-          const [x2, y2] = shore[i];
-          const [x1, y1] = shore[i - 1];
-          if (x <= x2) {
-            const t = Math.max(0, Math.min(1, (x - x1) / (x2 - x1)));
-            return y1 + (y2 - y1) * t;
+      function sampleWorldLine(points, value) {
+        for (let i = 1; i < points.length; i += 1) {
+          const [value2, result2] = points[i];
+          const [value1, result1] = points[i - 1];
+          if (value <= value2) {
+            const amount = Math.max(
+              0,
+              Math.min(1, (value - value1) / (value2 - value1)),
+            );
+            return result1 + (result2 - result1) * amount;
           }
         }
-        return shore.at(-1)[1];
+        return points.at(-1)[1];
+      }
+      function walkableMinY(x) {
+        return sampleWorldLine(lakeShoreLine, x);
       }
       function walkableMaxY(x) {
-        const coast = [
-          [5, 170],
-          [35, 169],
-          [65, 172],
-          [95, 170],
-          [125, 173],
-          [155, 170],
-          [185, 172],
-          [215, 169],
-          [235, 171],
-        ];
-        for (let i = 1; i < coast.length; i += 1) {
-          const [x2, y2] = coast[i];
-          const [x1, y1] = coast[i - 1];
-          if (x <= x2) {
-            const t = Math.max(0, Math.min(1, (x - x1) / (x2 - x1)));
-            return y1 + (y2 - y1) * t;
-          }
-        }
-        return coast.at(-1)[1];
+        return sampleWorldLine(coastShoreLine, x);
       }
-      function riverCenterMapX(mapY) {
-        const bends = [
-          [52, 51],
-          [58, 51.4],
-          [64, 51.2],
-          [70, 52],
-          [76, 52.6],
-          [82, 53.8],
-          [90, 55],
-        ];
-        for (let i = 1; i < bends.length; i += 1) {
-          const [y2, x2] = bends[i];
-          const [y1, x1] = bends[i - 1];
-          if (mapY <= y2) {
-            const t = Math.max(0, Math.min(1, (mapY - y1) / (y2 - y1)));
-            return x1 + (x2 - x1) * t;
-          }
-        }
-        return bends.at(-1)[1];
+      function riverCenterWorldX(worldY) {
+        return sampleWorldLine(riverBendLine, worldY);
+      }
+      function riverHalfWidth(worldY) {
+        return 4.7 + Math.max(0, worldY - 94) * 0.018 +
+          Math.sin(worldY * 0.27) * 0.65;
+      }
+      function isOnRiverBridge(x, y) {
+        return x >= 112 && x <= 140 && y >= 124 && y <= 138;
       }
       function isRiverWater(x, y) {
-        const mapX = worldToMapX(x);
-        const mapY = worldToMapY(y);
-        if (mapY < 52 || mapY > 91) return false;
-        const onBridge =
-          mapY >= 65.2 &&
-          mapY <= 72.6 &&
-          mapX >= 46.7 &&
-          mapX <= 58.4;
-        if (onBridge) return false;
-        const halfWidth = mapY > 84 ? 2.8 : 2.25;
-        return Math.abs(mapX - riverCenterMapX(mapY)) < halfWidth;
+        if (y < 94 || y > 178 || isOnRiverBridge(x, y)) return false;
+        return Math.abs(x - riverCenterWorldX(y)) < riverHalfWidth(y);
       }
       function isWalkableWorld(x, y) {
         return (
@@ -3493,8 +3565,69 @@
       function fishingSpotById(id) {
         return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
       }
+      function waterZoneAtWorld(x, y) {
+        if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
+          return null;
+        const coast = walkableMaxY(x);
+        if (y >= coast + 1) return "sea";
+        if (
+          y >= 94 &&
+          y <= coast + 5 &&
+          Math.abs(x - riverCenterWorldX(y)) <= riverHalfWidth(y)
+        ) return "river";
+        if (y <= walkableMinY(x) - 2) return "lake";
+        return null;
+      }
+      function depthForCast(zone, distance) {
+        const limits = {
+          lake: [34, 68],
+          river: [42, 78],
+          sea: [30, 64],
+        }[zone] || [34, 68];
+        return distance < limits[0]
+          ? "shallow"
+          : distance < limits[1]
+            ? "mid"
+            : "deep";
+      }
+      function fishingWaterNearPlayer() {
+        // A bridge remains a crossing, never an invisible fishing hotspot.
+        if (isOnRiverBridge(s.x, s.y)) return null;
+        const facing = {
+          left: [-1, 0],
+          right: [1, 0],
+          up: [0, -1],
+          down: [0, 1],
+        }[s.direction] || [0, -1];
+        const vectors = [
+          facing,
+          [-facing[1], facing[0]],
+          [facing[1], -facing[0]],
+          [-facing[0], -facing[1]],
+        ];
+        for (const [dx, dy] of vectors) {
+          const sideX = -dy;
+          const sideY = dx;
+          for (const distance of [5, 8, 11, 14, 17]) {
+            for (const side of [0, -3, 3]) {
+              const x = s.x + dx * distance + sideX * side;
+              const y = s.y + dy * distance + sideY * side;
+              const zone = waterZoneAtWorld(x, y);
+              if (zone) return { zone, x, y };
+            }
+          }
+        }
+        return null;
+      }
       function nearbyFishingSpot() {
-        return fishingSpots.find((spot) => near(spot.x, spot.y, spot.radius));
+        const water = fishingWaterNearPlayer();
+        if (!water) return null;
+        return {
+          ...fishingSpotById(`${water.zone}-shallow`),
+          waterZone: water.zone,
+          waterX: water.x,
+          waterY: water.y,
+        };
       }
       function dogFollowPosition() {
         const offset = {
@@ -3725,16 +3858,16 @@
         $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
         const spot = nearbyFishingSpot();
         $("#hint").textContent = spot
-          ? `${spot.name}。Aで釣る（${spot.role}）。`
+          ? `${{ lake: "湖辺", river: "川辺", sea: "海辺" }[spot.waterZone]}だ。Aで釣る。投げる距離で水中の深さも変わる。`
           : near(178, 131, 15)
             ? "星湖釣具店だ。Aで入る。"
             : near(116, 153, 12)
               ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
               : near(126, 131, 15)
-                ? "川風橋だ。湖から海へ流れる小川を渡れる。"
+                ? "川風橋だ。ここは渡る場所。釣りは橋を降りて川辺から。"
                 : s.y > 159
                   ? "潮見浜だ。波の向こうには、まだ見ぬ海の魚がいる。"
-                  : "湖岸・広場・川辺・海岸を歩こう。気になる場所ではA。";
+                  : "湖・川・海の水辺なら、どこでもAで釣れる。";
         scheduleSave();
       }
       function move(d) {
@@ -4071,6 +4204,8 @@
         if (spot) cast(spot);
         else if (near(178, 131, 15)) open("store");
         else if (near(116, 153, 12)) rescue();
+        else if (near(126, 131, 15))
+          log("川風橋だ。橋は渡る場所。竿を出すなら川辺まで降りよう。");
         else if (near(25, 132, 14))
           log("湖畔の民家。おばあさんが『朝凪の入り江には小魚が寄るよ』と教えてくれた。");
         else if (near(54, 154, 14))
@@ -4133,11 +4268,32 @@
         }
         return weighted[0]?.fish || fish[0];
       }
+      function setFishingSceneTheme(zone = "lake", depth = "shallow") {
+        const scene = $("#fishScene");
+        scene.classList.remove(
+          "water-lake",
+          "water-river",
+          "water-sea",
+          "depth-shallow",
+          "depth-mid",
+          "depth-deep",
+        );
+        scene.classList.add(`water-${zone}`, `depth-${depth}`);
+      }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
-        battle = { phase: "prep", reeling: false, spot: spot.id };
+        const zone = spot.waterZone || spot.zone || "lake";
+        const profile = fishingSpotById(`${zone}-shallow`);
+        battle = {
+          phase: "prep",
+          reeling: false,
+          spot: profile.id,
+          waterZone: zone,
+          depth: "shallow",
+        };
+        setFishingSceneTheme(zone, "shallow");
         resetWaterFx();
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
@@ -4145,10 +4301,10 @@
         $("#distanceLabel").style.display = "none";
         $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
-        $("#fishName").textContent = spot.name;
+        $("#fishName").textContent = profile.name;
         $("#phaseLabel").textContent = " 仕掛け確認";
         $("#battleMsg").textContent =
-          `${spot.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+          `${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
         $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
       }
@@ -4169,6 +4325,7 @@
         hideCatchCard();
         resetBattleFeedback();
         const spot = fishingSpotById(battle?.spot);
+        const waterZone = battle?.waterZone || spot.zone || "lake";
         s.bait = s.baits[s.selectedBait] || 0;
         if (s.bait < 1) {
           $("#hint").textContent =
@@ -4186,6 +4343,8 @@
         battle = {
           phase: "cast",
           spot: spot.id,
+          waterZone,
+          depth: "shallow",
           bait: s.selectedBait,
           cast: 0,
           castDir: 1,
@@ -4835,7 +4994,7 @@
           "gill-wash",
           "hook-reveal",
         );
-        scene.style.backgroundPosition = "50% 50%";
+        scene.style.removeProperty("background-position");
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
         for (const id of ["#fishTackleBack", "#fishTackleFront"]) {
           const tackle = $(id);
@@ -5094,6 +5253,11 @@
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") {
           const distance = battle.cast;
+          const depth = depthForCast(battle.waterZone || "lake", distance);
+          battle.depth = depth;
+          battle.spot = `${battle.waterZone || "lake"}-${depth}`;
+          const spot = fishingSpotById(battle.spot);
+          setFishingSceneTheme(spot.zone, spot.depth);
           const f = pick(distance, battle.spot);
           battle.f = f;
           battle.x = clampBattle(54 + distance * 0.4, 54, f.id === "nushi" ? 90 : 94);
@@ -5113,8 +5277,12 @@
             `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
           );
           $("#castMeter").style.display = "none";
-          $("#fishName").textContent = fishingSpotById(battle.spot).name;
-          $("#phaseLabel").textContent = distance > 67 ? " 深場" : distance > 34 ? " 中層" : " 岸際";
+          $("#fishName").textContent = spot.name;
+          $("#phaseLabel").textContent = {
+            shallow: " 岸際",
+            mid: " 中層",
+            deep: " 深場",
+          }[depth];
           $("#battleMsg").textContent = "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
           $("#pull").innerHTML = "A<br><small>合わせる</small>";
           $("#wait").innerHTML = "B<br><small>竿を上げる</small>";
@@ -5203,8 +5371,6 @@
         );
         linePath.classList.toggle("slack", battle.calm);
         drawFishTackle(anchor);
-        $("#fishScene").style.backgroundPosition =
-          `${50 - (battle.x - 68) * 0.09}% ${50 - (battle.y - 55) * 0.07}%`;
         updateTensionFeedback();
       }
       function showSurfaceSplash(

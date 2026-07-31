@@ -1,11 +1,12 @@
-const CACHE_NAME = "nushi-tsuri-v48-nonrepeating-1";
+const CACHE_NAME = "nushi-tsuri-v49-water-zones-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
-  "./assets/terrain-world-v48.png",
+  "./assets/terrain-world-v49.png",
+  "./assets/fishing-biomes-v49.png",
   "./assets/terrain-water-v45.svg",
   "./assets/terrain-grass-v45.svg",
   "./assets/terrain-sand-v45.svg",
