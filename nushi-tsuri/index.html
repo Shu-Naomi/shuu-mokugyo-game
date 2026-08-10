@@ -2059,6 +2059,72 @@
         filter: grayscale(.65);
         opacity: .55;
       }
+      .pixel-item-icon {
+        display: block;
+        width: 24px;
+        height: 24px;
+        flex: 0 0 24px;
+        image-rendering: pixelated;
+        filter: drop-shadow(1px 2px 0 #07131d99);
+      }
+      .location-goods {
+        display: grid;
+        gap: 6px;
+        margin: 0 0 9px;
+      }
+      .location-goods[hidden] { display: none; }
+      .location-goods-heading {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+        color: #ffe6a0;
+        font-size: clamp(.62rem, 1vw, .72rem);
+      }
+      .location-good {
+        display: grid;
+        grid-template-columns: 28px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 7px;
+        width: 100%;
+        min-height: 43px;
+        padding: 5px 8px;
+        border: 2px solid #493225;
+        border-radius: 2px;
+        background:
+          linear-gradient(90deg, transparent 0 5px, #4f7e72 6px 8px, transparent 9px),
+          linear-gradient(#f6df92, #c99b4d);
+        color: #302319;
+        text-align: left;
+        box-shadow: inset 0 2px #fff1b0, inset 0 -3px #8f672f;
+      }
+      .location-good > span {
+        min-width: 0;
+        line-height: 1.12;
+      }
+      .location-good b,
+      .location-good small { display: block; }
+      .location-good b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .location-good small {
+        margin-top: 2px;
+        color: #4c4a38;
+        font-size: clamp(.54rem, .88vw, .64rem);
+      }
+      .location-good strong {
+        color: #493522;
+        font-size: clamp(.62rem, 1vw, .75rem);
+        white-space: nowrap;
+      }
+      .location-good.fortune {
+        border-color: #66528f;
+        background:
+          linear-gradient(90deg, transparent 0 5px, #7556a0 6px 8px, transparent 9px),
+          linear-gradient(#f5e3a0, #c8a45c);
+      }
       .vehicle-shop-shell {
         display: grid;
         grid-template-rows: auto auto auto 1fr auto;
@@ -2113,6 +2179,7 @@
         color: #302319;
         text-align: left;
       }
+      .location-action[hidden] { display: none; }
       .location-action small {
         color: #4b3925;
         font-weight: 900;
@@ -2917,8 +2984,14 @@
         gap: 7px;
       }
       .inventory-card i {
+        display: grid;
+        place-items: center;
         font-style: normal;
         font-size: 1.2rem;
+      }
+      .inventory-card i .pixel-item-icon {
+        width: 26px;
+        height: 26px;
       }
       .inventory-card-actions {
         display: grid;
@@ -2933,6 +3006,17 @@
         background: #3e6f60;
         color: #fff6c8;
         font-weight: 900;
+      }
+      .inventory-purpose {
+        min-width: 3.8em;
+        padding: 3px 6px;
+        border: 1px solid #b99adc;
+        border-radius: 2px;
+        background: #4d3c69;
+        color: #f4e8ff;
+        font-size: .62rem;
+        font-weight: 900;
+        text-align: center;
       }
       .inventory-card.inventory-empty {
         grid-column: 1 / -1;
@@ -3359,7 +3443,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v58</span><span id="time">朝</span
+        <b>星降る湖</b><span>v59</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3634,6 +3718,7 @@
               <small class="location-brand" id="locationBrand">STARFALL LAKE</small>
               <h2 id="locationTitle">施設</h2>
               <p class="location-dialogue" id="locationDialogue" aria-live="polite"></p>
+              <div class="location-goods" id="locationGoods" hidden></div>
               <button class="location-action" id="locationAction">
                 <span id="locationActionLabel">話を聞く</span>
                 <small id="locationActionCost">A</small>
@@ -3872,22 +3957,65 @@
         },
         rodData = {
           bamboo: { name: "竹の竿", power: 16, control: 1 },
+          youngBamboo: { name: "若竹の竿", power: 18, control: 1.08 },
+          clearStream: { name: "清流の竿", power: 22, control: 1.2 },
+          starGazer: { name: "星見の竿", power: 26, control: 1.48 },
           moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
         },
         fieldItemData = {
           vegetableOnigiri: {
             name: "野菜おにぎり",
-            icon: "🍙",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#271d1b" d="M6 1h4v1h2v3h1v2h1v8H2V7h1V5h1V3h2z"/><path fill="#fff1c7" d="M7 2h2v1h2v3h1v2h1v5H3V8h1V6h1V4h2z"/><path fill="#e5d69f" d="M5 7h1v1H5zm5-2h1v1h-1zM7 3h1v1H7z"/><path fill="#243d31" d="M5 10h6v4H5z"/><path fill="#39604a" d="M6 10h1v4H6z"/></svg>`,
             heal: 25,
             price: 120,
-            source: "八百屋",
+            source: "みなと食堂",
+            shop: "diner",
+            use: "recovery",
           },
           fishBento: {
             name: "地魚弁当",
-            icon: "🍱",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#34231c" d="M1 3h14v11H1z"/><path fill="#a65f35" d="M2 4h12v9H2z"/><path fill="#e6d08e" d="M3 5h5v3H3z"/><path fill="#f3eee0" d="M3 9h5v3H3z"/><path fill="#d65b42" d="M4 9h2v1H4z"/><path fill="#47794a" d="M9 5h4v3H9z"/><path fill="#d7973d" d="M9 9h4v3H9z"/><path fill="#f6c657" d="M10 10h2v1h-2z"/><path fill="#5f3827" d="M8 4h1v9H8z"/></svg>`,
             heal: 50,
             price: 180,
             source: "みなと食堂",
+            shop: "diner",
+            use: "recovery",
+          },
+          tomato: {
+            name: "朝採れトマト",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#283b24" d="M7 1h2v2h3v2h-2v1H6V5H4V3h3z"/><path fill="#7e241f" d="M4 5h8v1h2v6h-2v2H4v-1H2V7h2z"/><path fill="#d94a32" d="M5 5h5v1h2v5h-2v2H5v-1H3V8h1V6h1z"/><path fill="#f27845" d="M5 7h2v2H5z"/><path fill="#a33127" d="M10 10h2v2h-2z"/></svg>`,
+            heal: 15,
+            price: 80,
+            source: "八百屋",
+            shop: "yaoya",
+            use: "recovery",
+          },
+          apple: {
+            name: "湖畔りんご",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#4a2e1e" d="M8 1h2v4H8z"/><path fill="#326c36" d="M10 2h3v1h1v2h-4z"/><path fill="#812820" d="M4 5h3v1h2V5h3v1h2v6h-2v2H4v-1H2V7h2z"/><path fill="#d84532" d="M5 5h2v1h3V5h2v2h1v4h-2v2H5v-1H3V8h1V6h1z"/><path fill="#f17a4c" d="M5 7h2v3H5z"/><path fill="#a32e26" d="M10 10h2v2h-2z"/></svg>`,
+            heal: 30,
+            price: 140,
+            source: "八百屋",
+            shop: "yaoya",
+            use: "recovery",
+          },
+          offeringDaikon: {
+            name: "奉納だいこん",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#275432" d="M7 1h2v4H7zM4 2h3v2H5v2H3V4h1zm5 1h4v2h-2v2H9z"/><path fill="#b7ad8b" d="M5 5h7v3h-1v3h-1v2H8v2H6v-3H5v-2H4V7h1z"/><path fill="#f1e8c8" d="M6 5h5v3h-1v3H9v2H7v-2H6V9H5V7h1z"/><path fill="#d5c9a7" d="M7 7h1v4H7z"/></svg>`,
+            price: 100,
+            source: "八百屋",
+            shop: "yaoya",
+            use: "offering",
+            fortune: "standard",
+          },
+          starGrapes: {
+            name: "星ぶどう",
+            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#315934" d="M7 1h2v3H7zM9 2h4v2h-2v2H8V4h1z"/><path fill="#3d275e" d="M5 5h6v1h2v5h-2v2H9v2H7v-2H5v-2H3V7h2z"/><path fill="#714aa0" d="M6 5h2v2H6zm3 1h2v2H9zM4 8h2v2H4zm3 0h2v2H7zm3 1h2v2h-2zm-4 2h2v2H6zm3 1h2v2H9z"/><path fill="#a877c4" d="M6 5h1v1H6zM4 8h1v1H4zm3 0h1v1H7z"/></svg>`,
+            price: 240,
+            source: "八百屋",
+            shop: "yaoya",
+            use: "offering",
+            fortune: "lucky",
           },
         },
         handEquipmentData = {
@@ -4371,6 +4499,11 @@
         // v58 separates battle and catch artwork without changing saved play.
         s.mapVersion = 58;
       }
+      if ((s.mapVersion || 0) < 59) {
+        // v59 moves prepared food to the diner and adds produce, offerings
+        // and rod fortunes. Existing food, rods, catches and position remain.
+        s.mapVersion = 59;
+      }
       function loadDogImage(src) {
         const image = new Image();
         image.onload = () => drawDog();
@@ -4544,7 +4677,7 @@
           {
             id: "yaoya", x: 79, y: 77, radius: 8,
             hint: "八百屋だ。Aで中へ入る。",
-            message: "八百屋の軒先には採れたての野菜と、釣り人向けの握り飯が並んでいる。",
+            message: "八百屋の軒先には採れたての野菜と果物が並んでいる。祠へ供える品も選べるようだ。",
             interior: "yaoya",
           },
           {
@@ -4592,20 +4725,22 @@
           title: "八百屋",
           asset: "assets/interior-yaoya-v55.png",
           alt: "木箱に大根、白菜、ねぎ、なす、トマトなどが並ぶ八百屋",
-          dialogue: "「朝採れ野菜のおにぎりだよ。水辺で食べても崩れないよう、きゅっと握ってあるよ」",
-          actionLabel: "野菜おにぎりを買う",
-          actionCost: "120円",
-          note: "道具袋へ入る回復食。好きな時に使うと体力が25回復する。",
+          dialogue: "「朝採れの野菜と果物だよ。食べる品と、星占い神社へ供える品は札の色で分けてあるよ」",
+          goods: ["tomato", "apple", "offeringDaikon", "starGrapes"],
+          actionLabel: "品物を選ぶ",
+          actionCost: "八百屋",
+          note: "緑札は道具袋から食べる回復用。紫札は星占い神社の竿みくじ専用。",
         },
         diner: {
           brand: "MINATO DINER",
           title: "みなと食堂",
           asset: "assets/interior-minato-diner-v55.png",
           alt: "魚料理の厨房、カウンター席と木のテーブルがあるみなと食堂",
-          dialogue: "「釣り場へ持っていくなら地魚弁当！ 力が落ちた時に食べな」",
-          actionLabel: "地魚弁当を買う",
-          actionCost: "180円",
-          note: "道具袋へ入る回復食。好きな時に使うと体力が50回復する。",
+          dialogue: "「握り飯も弁当も、料理したものはうちへ任せな。釣り場へ持っていけるよう包んでやるよ」",
+          goods: ["vegetableOnigiri", "fishBento"],
+          actionLabel: "持ち帰り料理を選ぶ",
+          actionCost: "食堂",
+          note: "買った料理は道具袋へ入る。体力が減った時に好きな場所で食べられる。",
         },
         "main-shrine": {
           brand: "STAR DIVINATION SHRINE",
@@ -4615,7 +4750,7 @@
           dialogue: "静かな拝殿に鈴の余韻が残る。湖面の星が、次の一投を見守っているようだ。",
           actionLabel: "星へ願いを届ける",
           actionCost: "お参り",
-          note: "次の釣りで魚の動きが穏やかになる。何度祈っても効果は重ならない。",
+          note: "大根か星ぶどうを供えると竿みくじを引ける。竿が重なった時は、次の釣りが穏やかになる星守りへ変わる。",
         },
         "fish-market": {
           brand: "HARBOR FISHMONGER",
@@ -4747,12 +4882,133 @@
         $("#locationDialogue").textContent = interior.dialogue;
         $("#locationActionLabel").textContent = interior.actionLabel;
         $("#locationActionCost").textContent = interior.actionCost;
+        $("#locationAction").hidden = Boolean(interior.goods?.length);
         $("#locationNote").textContent = interior.note;
+        renderLocationGoods();
         open("locationInterior");
         return true;
       }
       function setLocationDialogue(message) {
         $("#locationDialogue").textContent = message;
+      }
+      function renderLocationGoods() {
+        const holder = $("#locationGoods");
+        const interior = locationInteriors[activeLocationId];
+        if (!holder || !interior) return;
+        let markup = "";
+        if (interior.goods?.length) {
+          markup = `<div class="location-goods-heading"><b>品ぞろえ</b><span>用途／価格</span></div>` +
+            interior.goods.map((id) => {
+              const item = fieldItemData[id];
+              if (!item) return "";
+              const purpose = item.use === "offering"
+                ? item.fortune === "lucky" ? "祠用・大吉率アップ" : "祠用・通常みくじ"
+                : `食べる・体力＋${item.heal}`;
+              const fortuneClass = item.use === "offering" ? " fortune" : "";
+              return `<button class="location-good${fortuneClass}" data-buy-location-item="${id}">` +
+                `${item.icon}<span><b>${item.name}</b><small>${purpose}</small></span>` +
+                `<strong>${item.price}円</strong></button>`;
+            }).join("");
+        } else if (activeLocationId === "main-shrine") {
+          const offerings = Object.entries(fieldItemData)
+            .filter(([, item]) => item.use === "offering");
+          markup = `<div class="location-goods-heading"><b>竿みくじ</b><span>奉納品の所持数</span></div>` +
+            offerings.map(([id, item]) => {
+              const count = s.items[id] || 0;
+              const purpose = item.fortune === "lucky"
+                ? "上向き運・大吉率アップ"
+                : "通常運・竿を一振り占う";
+              return `<button class="location-good fortune" data-draw-rod="${id}">` +
+                `${item.icon}<span><b>${item.name}を供える</b><small>${purpose}</small></span>` +
+                `<strong>×${count}</strong></button>`;
+            }).join("");
+        }
+        holder.innerHTML = markup;
+        holder.hidden = !markup;
+        document.querySelectorAll("[data-buy-location-item]").forEach((button) =>
+          button.onclick = () => buyLocationItem(button.dataset.buyLocationItem),
+        );
+        document.querySelectorAll("[data-draw-rod]").forEach((button) =>
+          button.onclick = () => drawRodFortune(button.dataset.drawRod),
+        );
+      }
+      function buyLocationItem(id) {
+        const item = fieldItemData[id];
+        if (!item || item.shop !== activeLocationId) return false;
+        if (s.money < item.price) {
+          setLocationDialogue(`「${item.name}は${item.price}円だよ。今は少し足りないみたいだね」`);
+          log(`${item.name}は${item.price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= item.price;
+        s.items[id] = (s.items[id] || 0) + 1;
+        const useMessage = item.use === "offering"
+          ? "星占い神社で竿みくじを引く時に供えてね"
+          : "体力が減ったら道具袋から食べてね";
+        setLocationDialogue(`「${item.name}を一つ。${useMessage}」`);
+        log(`${item.source}で${item.name}を買った。道具袋に入れた。`);
+        renderLocationGoods();
+        vibrate(20);
+        render();
+        save();
+        return true;
+      }
+      function rollRodFortune(tier = "standard") {
+        const pools = {
+          standard: [
+            ["youngBamboo", 0.55],
+            ["clearStream", 0.82],
+            ["starGazer", 0.96],
+            ["moroko", 1],
+          ],
+          lucky: [
+            ["youngBamboo", 0.2],
+            ["clearStream", 0.55],
+            ["starGazer", 0.85],
+            ["moroko", 1],
+          ],
+        };
+        const roll = Math.random();
+        return (pools[tier] || pools.standard)
+          .find(([, ceiling]) => roll < ceiling)?.[0] || "youngBamboo";
+      }
+      function drawRodFortune(offeringId) {
+        const offering = fieldItemData[offeringId];
+        if (
+          activeLocationId !== "main-shrine" ||
+          !offering ||
+          offering.use !== "offering"
+        ) return false;
+        if ((s.items[offeringId] || 0) < 1) {
+          setLocationDialogue(`「${offering.name}は八百屋にある。供える品を一つ持っておいで」`);
+          log(`${offering.name}を持っていないため、竿みくじは引けない。`);
+          return false;
+        }
+        s.items[offeringId]--;
+        const rodId = rollRodFortune(offering.fortune);
+        const rod = rodData[rodId];
+        const fortunes = {
+          youngBamboo: "小吉",
+          clearStream: "吉",
+          starGazer: "大吉",
+          moroko: "星大吉",
+        };
+        if (!s.ownedRods.includes(rodId)) {
+          s.ownedRods.push(rodId);
+          s.selectedRod = rodId;
+          setLocationDialogue(`鈴が鳴り、${fortunes[rodId]}の札が落ちた。「${rod.name}」を授かった！`);
+          log(`竿みくじは${fortunes[rodId]}。${rod.name}を授かり、そのまま装備した。`);
+          vibrate([35, 45, 90]);
+        } else {
+          s.calmBonus = Math.max(s.calmBonus, 2);
+          setLocationDialogue(`札には持っている「${rod.name}」が描かれていた。札は星守りへ変わり、次の釣りを静めてくれる。`);
+          log(`竿みくじで${rod.name}が重なり、次の釣りへ星守りの加護を受けた。`);
+          vibrate([20, 40, 45]);
+        }
+        renderLocationGoods();
+        render();
+        save();
+        return true;
       }
       function openVehicleShop() {
         const owned = s.ownedVehicles
@@ -4771,24 +5027,9 @@
           s.calmBonus = Math.max(s.calmBonus, 1);
           setLocationDialogue("布団へ横になると、湖と水車の音だけが聞こえた。傷も疲れもすっかり癒えた。");
           log("湖畔の釣り宿でひと休みした。体力が全回復し、次の釣りも少し穏やかになる。");
-        } else if (activeLocationId === "yaoya") {
-          if (s.money < 120) {
-            setLocationDialogue("「今はお金が足りないみたいだね。眺めるだけでもゆっくりしていきな」");
-            return log("野菜おにぎりは120円。今はお金が足りない。");
-          }
-          s.money -= 120;
-          s.items.vegetableOnigiri = (s.items.vegetableOnigiri || 0) + 1;
-          setLocationDialogue("「はい、野菜おにぎり一つ。体力が減ったら道具袋から食べるんだよ」");
-          log("八百屋で野菜おにぎりを買った。道具袋に入れた。");
-        } else if (activeLocationId === "diner") {
-          if (s.money < 180) {
-            setLocationDialogue("「地魚弁当は180円だよ。お腹が鳴ったら、またおいで」");
-            return log("地魚弁当は180円。今はお金が足りない。");
-          }
-          s.money -= 180;
-          s.items.fishBento = (s.items.fishBento || 0) + 1;
-          setLocationDialogue("「地魚弁当一つ、お待ち！ 体力が減ったら道具袋から食べな」");
-          log("みなと食堂で地魚弁当を買った。道具袋に入れた。");
+        } else if (activeLocationId === "yaoya" || activeLocationId === "diner") {
+          renderLocationGoods();
+          return false;
         } else if (activeLocationId === "main-shrine") {
           s.calmBonus = Math.max(s.calmBonus, 2);
           setLocationDialogue("鈴を鳴らして手を合わせた。暗い湖面に、一筋の星明かりが落ちた気がした。");
@@ -5666,6 +5907,10 @@
           log("その回復食は持っていない。");
           return false;
         }
+        if (item.use === "offering") {
+          log(`${item.name}は星占い神社の竿みくじへ供える品だ。`);
+          return false;
+        }
         if (s.hp >= s.maxHp) {
           log("体力は満タンだ。回復食は取っておこう。");
           return false;
@@ -5789,11 +6034,18 @@
         const itemMarkup = Object.entries(fieldItemData)
           .map(([id, item]) => {
             const count = s.items[id] || 0;
+            const offering = item.use === "offering";
             const disabled = count < 1 || s.hp >= s.maxHp ? " disabled" : "";
+            const detail = offering
+              ? `竿みくじ用／${item.source}`
+              : `体力＋${item.heal}／${item.source}`;
+            const action = offering
+              ? `<span class="inventory-purpose">祠用</span>`
+              : `<button class="inventory-use" data-use-item="${id}"${disabled}>食べる</button>`;
             return `<div class="inventory-card"><i>${item.icon}</i>` +
-              `<span><b>${item.name}</b><br><small>体力＋${item.heal}／${item.source}</small></span>` +
+              `<span><b>${item.name}</b><br><small>${detail}</small></span>` +
               `<div class="inventory-card-actions"><strong>×${count}</strong>` +
-              `<button class="inventory-use" data-use-item="${id}"${disabled}>使う</button></div></div>`;
+              `${action}</div></div>`;
           })
           .join("");
         $("#inventoryItems").innerHTML = baitMarkup + itemMarkup;
