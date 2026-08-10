@@ -3590,7 +3590,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v61</span><span id="time">朝</span
+        <b>星降る湖</b><span>v62</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3809,7 +3809,7 @@
                 viewBox="0 0 1536 1152"
                 preserveAspectRatio="xMidYMid meet"
                 role="img"
-                aria-label="レジの左にサムが立つ、木造の釣具店内"
+                aria-label="レジの右でサムが店番をする、木造の釣具店内"
               >
                 <defs>
                   <clipPath id="samCounterFront">
@@ -3820,7 +3820,7 @@
                 <image
                   class="shopkeeper-sam-svg"
                   href="assets/sam-front.png"
-                  x="382"
+                  x="570"
                   y="178"
                   width="142"
                   height="292"
@@ -4704,6 +4704,11 @@
         // v61 separates Sam's tackle and general-goods windows and fixes the
         // narrow two-column cards. Saved inventory and equipment stay intact.
         s.mapVersion = 61;
+      }
+      if ((s.mapVersion || 0) < 62) {
+        // v62 only moves Sam beside the register in the shop illustration.
+        // Gameplay position, purchases and every saved item stay untouched.
+        s.mapVersion = 62;
       }
       function loadDogImage(src) {
         const image = new Image();
