@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="360" height="180" viewBox="0 0 360 180" shape-rendering="crispEdges">
+  <rect width="360" height="180" fill="none"/>
+  <g shape-rendering="crispEdges">
+    <path fill="#17332f" opacity=".28" d="M27 143h310v15H27zM53 158h260v8H53z"/>
+
+    <path fill="#3a2a21" d="M31 17h298v7H31zM31 31h298v7H31z"/>
+    <path fill="#795032" d="M34 19h292v3H34zM34 33h292v3H34z"/>
+    <path fill="#493124" d="M34 9h9v38h-9zM76 9h9v38h-9zM118 9h9v38h-9zM160 9h9v38h-9zM202 9h9v38h-9zM244 9h9v38h-9zM286 9h9v38h-9z"/>
+    <path fill="#a36f41" d="M36 11h2v32h-2zM78 11h2v32h-2zM120 11h2v32h-2zM162 11h2v32h-2zM204 11h2v32h-2zM246 11h2v32h-2zM288 11h2v32h-2z"/>
+    <path fill="#2e211b" d="M276 3h75v35h-75z"/>
+    <path fill="#785133" d="M281 8h65v25h-65z"/>
+    <path fill="#a77445" d="M284 11h59v3h-59z"/>
+    <text x="313" y="22" text-anchor="middle" fill="#ffe39a" font-family="monospace" font-size="9" font-weight="900">SAM'S</text>
+    <text x="313" y="30" text-anchor="middle" fill="#e6c77e" font-family="monospace" font-size="7" font-weight="900">TRY POND</text>
+
+    <path fill="#3d3026" d="M44 38h272v4h14v7h9v13h6v65h-6v12h-11v8h-16v5H48v-5H32v-8H21v-12h-6V62h6V50h9v-8h14z"/>
+    <path fill="#766346" d="M48 44h264v4h14v8h8v70h-8v9h-15v6H49v-6H34v-9h-8V57h8v-8h14z"/>
+    <path fill="#94a85b" d="M50 48h260v4h13v8h6v63h-7v8h-13v5H51v-5H38v-8h-7V61h7v-8h12z"/>
+    <path fill="#625844" d="M42 43h14v7h-14zM42 138h14v7h-14zM60 41h14v7h-14zM60 141h14v7h-14zM78 45h14v7h-14zM78 138h14v7h-14zM96 43h14v7h-14zM96 141h14v7h-14zM114 41h14v7h-14zM114 138h14v7h-14zM132 45h14v7h-14zM132 141h14v7h-14zM150 43h14v7h-14zM150 138h14v7h-14zM168 41h14v7h-14zM168 141h14v7h-14zM186 45h14v7h-14zM186 138h14v7h-14zM204 43h14v7h-14zM204 141h14v7h-14zM222 41h14v7h-14zM222 138h14v7h-14zM240 45h14v7h-14zM240 141h14v7h-14zM258 43h14v7h-14zM258 138h14v7h-14zM276 41h14v7h-14zM276 141h14v7h-14zM294 45h14v7h-14zM294 138h14v7h-14zM312 43h14v7h-14zM312 141h14v7h-14zM29 58h8v11h-8zM324 58h8v11h-8zM26 72h8v11h-8zM327 72h8v11h-8zM29 86h8v11h-8zM324 86h8v11h-8zM26 100h8v11h-8zM327 100h8v11h-8zM29 114h8v11h-8zM324 114h8v11h-8z"/>
+    <path fill="#a89d79" opacity=".86" d="M44 44h8v2h-8zM44 139h8v2h-8zM62 42h8v2h-8zM62 142h8v2h-8zM80 46h8v2h-8zM80 139h8v2h-8zM98 44h8v2h-8zM98 142h8v2h-8zM116 42h8v2h-8zM116 139h8v2h-8zM134 46h8v2h-8zM134 142h8v2h-8zM152 44h8v2h-8zM152 139h8v2h-8zM170 42h8v2h-8zM170 142h8v2h-8zM188 46h8v2h-8zM188 139h8v2h-8zM206 44h8v2h-8zM206 142h8v2h-8zM224 42h8v2h-8zM224 139h8v2h-8zM242 46h8v2h-8zM242 142h8v2h-8zM260 44h8v2h-8zM260 139h8v2h-8zM278 42h8v2h-8zM278 142h8v2h-8zM296 46h8v2h-8zM296 139h8v2h-8zM314 44h8v2h-8zM314 142h8v2h-8zM30 59h5v2h-5zM325 59h5v2h-5zM27 73h5v2h-5zM328 73h5v2h-5zM30 87h5v2h-5zM325 87h5v2h-5zM27 101h5v2h-5zM328 101h5v2h-5zM30 115h5v2h-5zM325 115h5v2h-5z"/>
+
+    <path fill="#1b5363" d="M53 55h254v4h11v8h6v50h-6v8h-12v5H54v-5H42v-8h-6V68h6v-8h11z"/>
+    <path fill="#277181" d="M59 61h242v3h10v7h5v42h-6v7h-11v4H61v-4H50v-7h-5V72h5v-7h9z"/>
+    <path fill="#388a91" opacity=".74" d="M69 69h222v3h11v7h4v27h-5v7h-12v4H71v-4H59v-7h-4V80h4v-7h10z"/>
+    <path fill="#8fd1cb" opacity=".82" d="M58 72h42v2h-42zM112 62h28v2h-28zM154 82h54v2h-54zM232 68h38v2h-38zM272 96h32v2h-32zM72 111h48v2h-48zM142 122h34v2h-34zM244 116h46v2h-46z"/>
+    <path fill="#174d5d" opacity=".76" d="M84 89h28v1h-28zM198 104h38v1h-38zM128 101h20v1h-20zM276 82h24v1h-24z"/>
+    <path fill="#163d49" opacity=".58" d="M105 78h20v3h8v3h-8v3h-20v-2h-7v-5h7zM245 101h17v2h7v3h-7v3h-17v-2h-6v-4h6z"/>
+
+    <path fill="#43633f" d="M28 70h4v26h-4zM34 62h3v34h-3zM40 73h3v23h-3zM319 75h3v25h-3zM325 65h3v35h-3zM331 76h3v24h-3z"/>
+    <path fill="#7c914e" d="M30 66h2v28h-2zM36 58h2v36h-2zM41 68h2v26h-2zM321 71h2v27h-2zM327 61h2v37h-2zM332 71h2v27h-2z"/>
+
+    <path fill="#2f211b" d="M139 112h83v68h-83z"/>
+    <path fill="#69442b" d="M145 116h71v64h-71z"/>
+    <path fill="#a76e3c" d="M148 118h8v60h-8zM164 118h8v60h-8zM180 118h8v60h-8zM196 118h8v60h-8z"/>
+    <path fill="#d29854" d="M149 119h6v3h-6zM165 119h6v3h-6zM181 119h6v3h-6zM197 119h6v3h-6z"/>
+    <path fill="#3b291f" d="M137 112h87v8h-87zM137 145h87v6h-87z"/>
+    <path fill="#8b5a34" d="M142 113h77v3h-77zM142 146h77v2h-77z"/>
+    <path fill="#34251d" d="M143 106h8v18h-8zM210 106h8v18h-8z"/>
+    <path fill="#b47a43" d="M145 108h3v13h-3zM212 108h3v13h-3z"/>
+
+    <path fill="#f0dc8b" d="M94 92h5v5h-5zM96 89h1v11h-1zM265 79h5v5h-5zM267 76h1v11h-1z"/>
+    <path fill="#d95a47" d="M94 92h5v2h-5zM265 79h5v2h-5z"/>
+  </g>
+</svg>
