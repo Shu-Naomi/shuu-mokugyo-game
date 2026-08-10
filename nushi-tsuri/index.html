@@ -2033,6 +2033,30 @@
         grid-template-columns: 1fr;
         gap: 6px;
       }
+      .shop-category {
+        display: grid;
+        gap: 5px;
+        margin-top: 9px;
+        padding-top: 8px;
+        border-top: 1px solid #d5aa6355;
+      }
+      .shop-category:first-of-type {
+        margin-top: 0;
+        padding-top: 0;
+        border-top: 0;
+      }
+      .shop-category-heading {
+        display: flex;
+        align-items: end;
+        justify-content: space-between;
+        gap: 8px;
+        color: #ffe6a0;
+        font-size: clamp(.64rem, 1.05vw, .76rem);
+      }
+      .shop-category-heading small {
+        color: #afd2d8;
+        font-size: clamp(.52rem, .82vw, .62rem);
+      }
       .shop-goods button {
         display: grid;
         grid-template-columns: 1fr auto;
@@ -2049,15 +2073,60 @@
         text-align: left;
         box-shadow: inset 0 2px #a8784d, inset 0 -3px #4b3225;
       }
+      .shop-goods button > span {
+        min-width: 0;
+        line-height: 1.12;
+      }
+      .shop-goods button b,
+      .shop-goods button > span > small,
+      .shop-goods button strong > * {
+        display: block;
+      }
+      .shop-goods button b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
       .shop-goods button small {
         color: #ffe187;
         font-weight: 900;
+      }
+      .shop-goods button > span > small {
+        margin-top: 2px;
+        color: #e8d0a1;
+        font-size: clamp(.5rem, .8vw, .6rem);
+      }
+      .shop-goods button strong {
+        display: grid;
+        justify-items: end;
+        gap: 2px;
+        min-width: 50px;
+        font-size: clamp(.58rem, .9vw, .7rem);
+        white-space: nowrap;
+      }
+      .shop-goods button strong em {
+        color: #fff0a8;
+        font-style: normal;
+      }
+      .shop-goods button strong small {
+        color: #bfe4d4;
+        font-size: clamp(.48rem, .76vw, .57rem);
+      }
+      .shop-goods button.owned {
+        border-color: #4f7e72;
+        background:
+          linear-gradient(90deg, #4f7e72 0 7px, transparent 7px),
+          #4f604b;
       }
       .shop-goods button:disabled,
       .inventory-use:disabled {
         cursor: default;
         filter: grayscale(.65);
         opacity: .55;
+      }
+      .shop-goods button.owned:disabled {
+        filter: none;
+        opacity: .78;
       }
       .pixel-item-icon {
         display: block;
@@ -2115,9 +2184,25 @@
         font-size: clamp(.54rem, .88vw, .64rem);
       }
       .location-good strong {
+        display: grid;
+        justify-items: end;
+        gap: 2px;
         color: #493522;
         font-size: clamp(.62rem, 1vw, .75rem);
         white-space: nowrap;
+      }
+      .location-good strong span,
+      .location-good strong small {
+        display: block;
+      }
+      .location-good strong small {
+        margin: 0;
+        color: #315a4d;
+        font-size: clamp(.48rem, .76vw, .57rem);
+      }
+      .location-good.just-bought,
+      .shop-goods button.just-bought {
+        animation: purchase-confirm .85s steps(2, end);
       }
       .location-good.fortune {
         border-color: #66528f;
@@ -2193,6 +2278,13 @@
       }
       @keyframes sam-shop-idle {
         50% { transform: translateY(-2px); }
+      }
+      @keyframes purchase-confirm {
+        0%, 100% { outline: 0 solid transparent; }
+        35%, 70% {
+          outline: 4px solid #83e29b;
+          filter: brightness(1.24);
+        }
       }
       .hint {
         position: absolute;
@@ -3443,7 +3535,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v59</span><span id="time">朝</span
+        <b>星降る湖</b><span>v60</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3693,14 +3785,48 @@
               <button class="close" data-close>外へ出る</button>
               <small class="shop-brand">SAM'S FISHING SHOP</small>
               <h2>サミュエル・オールドマン</h2>
-              <p class="shop-dialogue" id="shopDialogue">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
-              <div class="grid shop-goods">
-                <button data-buy-bait="worm"><span>ミミズ ×3</span><small>120円</small></button>
-                <button data-buy-bait="river"><span>川虫 ×2</span><small>180円</small></button>
-                <button data-buy-bait="paste"><span>練りエサ ×2</span><small>240円</small></button>
-                <button data-buy-rod="moroko"><span>ホンモロコ竿</span><small>1500円</small></button>
-                <button data-buy-hand="gloves"><span>釣り手袋</span><small>900円</small></button>
-              </div>
+              <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
+              <section class="shop-category" aria-labelledby="samBaitHeading">
+                <div class="shop-category-heading">
+                  <b id="samBaitHeading">エサ・消耗品</b><small>何度でも購入可</small>
+                </div>
+                <div class="grid shop-goods">
+                  <button data-buy-bait="worm">
+                    <span><b>🪱 ミミズ ×3</b><small>基本の釣りエサ</small></span>
+                    <strong><em>120円</em><small data-sam-stock>所持 ×0</small></strong>
+                  </button>
+                  <button data-buy-bait="river">
+                    <span><b>🦟 川虫 ×2</b><small>食いつきが良い</small></span>
+                    <strong><em>180円</em><small data-sam-stock>所持 ×0</small></strong>
+                  </button>
+                  <button data-buy-bait="paste">
+                    <span><b>🍡 練りエサ ×2</b><small>扱いやすい配合エサ</small></span>
+                    <strong><em>240円</em><small data-sam-stock>所持 ×0</small></strong>
+                  </button>
+                </div>
+              </section>
+              <section class="shop-category" aria-labelledby="samRodHeading">
+                <div class="shop-category-heading">
+                  <b id="samRodHeading">釣り竿</b><small>一本物</small>
+                </div>
+                <div class="grid shop-goods">
+                  <button data-buy-rod="moroko">
+                    <span><b>🎣 ホンモロコ竿</b><small>力30・制御1.35</small></span>
+                    <strong><em>1500円</em><small data-sam-stock>未購入</small></strong>
+                  </button>
+                </div>
+              </section>
+              <section class="shop-category" aria-labelledby="samHandHeading">
+                <div class="shop-category-heading">
+                  <b id="samHandHeading">手装備</b><small>道具袋で装備変更</small>
+                </div>
+                <div class="grid shop-goods">
+                  <button data-buy-hand="gloves">
+                    <span><b>🧤 釣り手袋</b><small>危険魚の棘を防ぐ</small></span>
+                    <strong><em>900円</em><small data-sam-stock>未購入</small></strong>
+                  </button>
+                </div>
+              </section>
               <button class="shop-practice" id="practiceOffer">
                 <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
                 <small id="practiceOfferStatus">初回講習</small>
@@ -4504,6 +4630,11 @@
         // and rod fortunes. Existing food, rods, catches and position remain.
         s.mapVersion = 59;
       }
+      if ((s.mapVersion || 0) < 60) {
+        // v60 only clarifies shop categories, stock counts and purchase
+        // feedback. All owned items, rods, equipment and field state remain.
+        s.mapVersion = 60;
+      }
       function loadDogImage(src) {
         const image = new Image();
         image.onload = () => drawDog();
@@ -4891,6 +5022,13 @@
       function setLocationDialogue(message) {
         $("#locationDialogue").textContent = message;
       }
+      function markPurchaseButton(button) {
+        if (!button) return;
+        button.classList.remove("just-bought");
+        void button.offsetWidth;
+        button.classList.add("just-bought");
+        setTimeout(() => button.classList.remove("just-bought"), 900);
+      }
       function renderLocationGoods() {
         const holder = $("#locationGoods");
         const interior = locationInteriors[activeLocationId];
@@ -4901,13 +5039,14 @@
             interior.goods.map((id) => {
               const item = fieldItemData[id];
               if (!item) return "";
+              const count = s.items[id] || 0;
               const purpose = item.use === "offering"
                 ? item.fortune === "lucky" ? "祠用・大吉率アップ" : "祠用・通常みくじ"
                 : `食べる・体力＋${item.heal}`;
               const fortuneClass = item.use === "offering" ? " fortune" : "";
               return `<button class="location-good${fortuneClass}" data-buy-location-item="${id}">` +
                 `${item.icon}<span><b>${item.name}</b><small>${purpose}</small></span>` +
-                `<strong>${item.price}円</strong></button>`;
+                `<strong><span>${item.price}円</span><small>所持 ×${count}</small></strong></button>`;
             }).join("");
         } else if (activeLocationId === "main-shrine") {
           const offerings = Object.entries(fieldItemData)
@@ -4948,9 +5087,120 @@
         setLocationDialogue(`「${item.name}を一つ。${useMessage}」`);
         log(`${item.source}で${item.name}を買った。道具袋に入れた。`);
         renderLocationGoods();
+        markPurchaseButton(
+          document.querySelector?.(`[data-buy-location-item="${id}"]`),
+        );
         vibrate(20);
         render();
         save();
+        return true;
+      }
+      function renderSamShop() {
+        document.querySelectorAll("[data-buy-bait]").forEach((button) => {
+          const id = button.dataset.buyBait;
+          const item = baitData[id];
+          const stock = button.querySelector("[data-sam-stock]");
+          if (!item || !stock) return;
+          stock.textContent = `所持 ×${s.baits[id] || 0}`;
+          button.classList.remove("owned");
+          button.disabled = false;
+          button.setAttribute(
+            "aria-label",
+            `${item.name}${item.amount}個、${item.price}円、現在${s.baits[id] || 0}個所持`,
+          );
+        });
+        document.querySelectorAll("[data-buy-rod]").forEach((button) => {
+          const id = button.dataset.buyRod;
+          const item = rodData[id];
+          const stock = button.querySelector("[data-sam-stock]");
+          if (!item || !stock) return;
+          const owned = s.ownedRods.includes(id);
+          stock.textContent = owned ? "✓ 購入済み" : "未購入";
+          button.classList.toggle("owned", owned);
+          button.disabled = owned;
+          button.setAttribute(
+            "aria-label",
+            `${item.name}、${owned ? "購入済み" : "未購入"}`,
+          );
+        });
+        document.querySelectorAll("[data-buy-hand]").forEach((button) => {
+          const id = button.dataset.buyHand;
+          const item = handEquipmentData[id];
+          const stock = button.querySelector("[data-sam-stock]");
+          if (!item || !stock) return;
+          const owned = s.ownedHands.includes(id);
+          stock.textContent = owned ? "✓ 購入済み" : "未購入";
+          button.classList.toggle("owned", owned);
+          button.disabled = owned;
+          button.setAttribute(
+            "aria-label",
+            `${item.name}、${owned ? "購入済み" : "未購入"}`,
+          );
+        });
+      }
+      function setSamShopDialogue(message) {
+        $("#shopDialogue").textContent = message;
+      }
+      function buySamBait(id) {
+        const item = baitData[id];
+        if (!item) return false;
+        if (s.money < item.price) {
+          setSamShopDialogue(`「${item.name}は${item.price}円じゃ。今は少し足りんようじゃな」`);
+          log(`${item.name}は${item.price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= item.price;
+        s.baits[id] = (s.baits[id] || 0) + item.amount;
+        log(`${item.name}を${item.amount}個買った。`);
+        render();
+        renderSamShop();
+        setSamShopDialogue(
+          `「${item.name}を${item.amount}個じゃ。これで所持は${s.baits[id]}個になったぞ」`,
+        );
+        markPurchaseButton(document.querySelector(`[data-buy-bait="${id}"]`));
+        save();
+        return true;
+      }
+      function buySamRod(id) {
+        const item = rodData[id];
+        const price = id === "moroko" ? 1500 : item?.price;
+        if (!item || !price) return false;
+        if (s.ownedRods.includes(id)) {
+          setSamShopDialogue(`「${item.name}はもう購入済みじゃ。装備は道具袋で替えられるぞ」`);
+          return false;
+        }
+        if (s.money < price) {
+          setSamShopDialogue(`「${item.name}は${price}円じゃ。今は少し足りんようじゃな」`);
+          log(`${item.name}は${price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= price;
+        s.ownedRods.push(id);
+        s.selectedRod = id;
+        log(`${item.name}を買って装備した！`);
+        render();
+        renderSamShop();
+        setSamShopDialogue(`「${item.name}は購入済みじゃ。そのまま装備しておいたぞ」`);
+        markPurchaseButton(document.querySelector(`[data-buy-rod="${id}"]`));
+        save();
+        return true;
+      }
+      function buySamHand(id) {
+        const item = handEquipmentData[id];
+        if (!item) return false;
+        if (s.ownedHands.includes(id)) {
+          setSamShopDialogue(`「${item.name}はもう購入済みじゃ。装備は道具袋で替えられるぞ」`);
+          renderSamShop();
+          return false;
+        }
+        const purchased = buyHandEquipment(id);
+        if (!purchased) {
+          setSamShopDialogue(`「${item.name}は${item.price}円じゃ。今は少し足りんようじゃな」`);
+          return false;
+        }
+        renderSamShop();
+        setSamShopDialogue(`「${item.name}は購入済みじゃ。危険魚の棘から手を守ってくれるぞ」`);
+        markPurchaseButton(document.querySelector(`[data-buy-hand="${id}"]`));
         return true;
       }
       function rollRodFortune(tier = "standard") {
@@ -5750,7 +6000,10 @@
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
         const landmark = nearbyWorldLandmark();
-        if (near(196, 94, 9)) open("store");
+        if (near(196, 94, 9)) {
+          renderSamShop();
+          open("store");
+        }
         else if (near(67, 108, 8)) rescue();
         else if (near(109, 84, 7))
           log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
@@ -7484,21 +7737,14 @@
       document
         .querySelectorAll("[data-close]")
         .forEach((b) => (b.onclick = close));
-      document.querySelectorAll("[data-buy-bait]").forEach(button => button.onclick = () => {
-        const id = button.dataset.buyBait, item = baitData[id];
-        if (s.money < item.price) return log("お金が足りない。");
-        s.money -= item.price; s.baits[id] = (s.baits[id] || 0) + item.amount;
-        log(`${item.name}を${item.amount}個買った。`); render();
-      });
-      document.querySelectorAll("[data-buy-rod]").forEach(button => button.onclick = () => {
-        const id = button.dataset.buyRod;
-        if (s.ownedRods.includes(id)) return log("もう持っている。");
-        if (s.money < 1500) return log("お金が足りない。");
-        s.money -= 1500; s.ownedRods.push(id); s.selectedRod = id;
-        log(`${rodData[id].name}を買った！`); render();
-      });
+      document.querySelectorAll("[data-buy-bait]").forEach((button) =>
+        button.onclick = () => buySamBait(button.dataset.buyBait),
+      );
+      document.querySelectorAll("[data-buy-rod]").forEach((button) =>
+        button.onclick = () => buySamRod(button.dataset.buyRod),
+      );
       document.querySelectorAll("[data-buy-hand]").forEach((button) =>
-        button.onclick = () => buyHandEquipment(button.dataset.buyHand),
+        button.onclick = () => buySamHand(button.dataset.buyHand),
       );
       document.querySelectorAll("[data-buy-vehicle]").forEach((button) =>
         button.onclick = () => buyVehicle(button.dataset.buyVehicle),
