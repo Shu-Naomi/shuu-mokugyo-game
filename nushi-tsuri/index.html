@@ -111,6 +111,14 @@
       .hud .grow {
         flex: 1;
       }
+      .hud button {
+        min-width: 52px;
+        padding: 4px 8px;
+        border-width: 1px;
+        border-radius: 7px;
+        box-shadow: 0 2px 0 #6c4025;
+        font-size: inherit;
+      }
       .world {
         position: relative;
         min-height: 0;
@@ -1367,12 +1375,10 @@
       .detail-garden-a { left: 13%; top: 79%; }
       .detail-garden-b { left: 82%; top: 79%; }
 
-      /* v50: keep the original watershed layout, but redraw every material
-         with one- and two-pixel accents.  Coarse legacy decorations are
-         replaced by unique details painted directly into the world asset. */
+      /* v53 ground pass: coherent fine grass replaces broad angular colour fields. */
       .map {
-        background-color: #668f48;
-        background-image: url("assets/terrain-world-v50.png");
+        background-color: #6c924f;
+        background-image: url("assets/terrain-world-v53.png");
       }
       .tree-grove,
       .reed-bed,
@@ -1384,6 +1390,11 @@
         display: none;
       }
       .river-bridge {
+        left: 48.3%;
+        top: 65.3%;
+        width: 8.4%;
+        height: 5.8%;
+        min-width: 96px;
         border-width: 2px;
         border-color: #3c2a20;
         background:
@@ -1422,6 +1433,43 @@
           inset 0 -5px #684033,
           inset 0 2px #d88a5d,
           2px 3px #152a243d;
+      }
+      .shop {
+        left: 71.5%;
+        top: 56.5%;
+        width: 8%;
+        height: 10%;
+        min-width: 92px;
+      }
+      .house-a {
+        left: 7%;
+        top: 57%;
+        width: 6.8%;
+        height: 10%;
+      }
+      .house-b {
+        left: 20%;
+        top: 70%;
+        width: 6.8%;
+        height: 8.8%;
+      }
+      .diner {
+        left: 37%;
+        top: 56%;
+        width: 7.3%;
+        height: 10.5%;
+      }
+      .market {
+        left: 60%;
+        top: 70%;
+        width: 7.4%;
+        height: 9%;
+      }
+      .mystery {
+        left: 86%;
+        top: 70%;
+        width: 6%;
+        height: 8.5%;
       }
       .house-b {
         background:
@@ -1462,7 +1510,18 @@
         border-width: 1px;
         background: repeating-linear-gradient(0deg, #725240 0 3px, #8c6850 3px 5px);
       }
+      .building::before,
+      .shop::before {
+        inset: -18px 3% auto;
+        padding: 1px;
+        border-width: 1px;
+        font-size: clamp(0.48rem, 1vw, 0.66rem);
+      }
       .rescue-spot {
+        left: 48.1%;
+        top: 77.5%;
+        width: 1.5%;
+        height: 2.8%;
         border: 1px solid #4c6137;
         border-radius: 45%;
         background:
@@ -1470,6 +1529,22 @@
           radial-gradient(circle at 67% 58%, #5f432e 0 1px, transparent 2px),
           repeating-linear-gradient(105deg, #745238 0 2px, #825d3d 2px 4px, #69472f 4px 6px);
         box-shadow: inset 0 2px #4e3628, 1px 2px #28442d55;
+      }
+      /* v54: the Chat-side master painting is the complete static world.
+         Keep its native 16:9 ratio and retain only the live character layers. */
+      .map.v54-map {
+        width: 240%;
+        height: auto;
+        aspect-ratio: 16 / 9;
+        background-color: #183b31;
+        background-image: url("assets/terrain-world-v54.png");
+        background-position: 0 0;
+        background-size: 100% 100%;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+      }
+      .map.v54-map > :not(#player):not(#dog):not(#petScene) {
+        display: none !important;
       }
       .player {
         position: absolute;
@@ -1825,6 +1900,233 @@
         font: 900 9px monospace;
         text-shadow: 1px 1px #000;
       }
+      .shop.sam-shop {
+        left: 69.4%;
+        top: 51.8%;
+        bottom: auto;
+        width: 11%;
+        min-width: 0;
+        height: auto;
+        aspect-ratio: 320 / 210;
+        border: 0;
+        background: url("assets/sam-shop-exterior-v53.png") center / contain no-repeat;
+        box-shadow: none;
+        image-rendering: pixelated;
+        overflow: visible;
+      }
+      .shop.sam-shop::before,
+      .shop.sam-shop::after {
+        content: none;
+        display: none;
+      }
+      .sam-practice-pond {
+        position: absolute;
+        z-index: 2;
+        left: 81.7%;
+        top: 45.8%;
+        width: 11%;
+        height: 12%;
+        background: url("assets/sam-practice-pond-v53.png") center / 100% 100% no-repeat;
+        filter: drop-shadow(2px 3px 0 #17362f55);
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+      .sam-practice-pond::before {
+        content: "";
+        position: absolute;
+        left: 21%;
+        top: 42%;
+        width: 22%;
+        height: 7%;
+        border-top: 1px solid #b5e1d4aa;
+        border-bottom: 1px solid #72b9b6aa;
+        opacity: .72;
+        animation: pond-ripple 2.4s steps(3, end) infinite;
+      }
+      @keyframes pond-ripple {
+        50% { transform: translateX(5px) scaleX(1.14); opacity: .42; }
+      }
+      .shop-modal {
+        inset: 3%;
+        padding: 0;
+        border-color: #d8a85b;
+        border-radius: 4px;
+        background: #251b18;
+        overflow: hidden;
+        box-shadow: inset 0 0 0 2px #4b3024, 0 10px 35px #000b;
+      }
+      .shop-layout,
+      .location-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 4fr) minmax(235px, 1.35fr);
+        width: 100%;
+        height: 100%;
+        min-height: 0;
+      }
+      .shop-interior,
+      .location-visual {
+        position: relative;
+        display: grid;
+        place-items: center;
+        min-width: 0;
+        min-height: 0;
+        overflow: hidden;
+        border-right: 4px solid #3b281f;
+        background: #070706;
+        image-rendering: pixelated;
+      }
+      .shop-art,
+      .location-visual img {
+        display: block;
+        width: 100%;
+        height: 100%;
+        object-fit: contain;
+        image-rendering: pixelated;
+      }
+      .shopkeeper-sam-svg {
+        transform-box: fill-box;
+        transform-origin: center bottom;
+        animation: sam-shop-idle 1.8s steps(2, end) infinite;
+        filter: drop-shadow(3px 4px 0 #2c211c66);
+      }
+      .shop-panel,
+      .location-panel {
+        position: relative;
+        min-width: 0;
+        padding: 12px;
+        overflow: auto;
+        background:
+          repeating-linear-gradient(0deg, #30231d 0 2px, transparent 2px 21px),
+          linear-gradient(135deg, #172434, #21364a 58%, #172434);
+        color: #f7eed0;
+      }
+      .shop-panel .close,
+      .location-panel .close {
+        float: none;
+        display: block;
+        margin: 0 0 8px auto;
+        padding: 5px 10px;
+      }
+      .shop-brand,
+      .location-brand {
+        display: block;
+        color: #d3a45e;
+        font: 900 .68rem monospace;
+        letter-spacing: .08em;
+      }
+      .shop-panel h2,
+      .location-panel h2 {
+        margin: 2px 0 5px;
+        color: #ffe6a0;
+        font-size: clamp(.95rem, 1.7vw, 1.25rem);
+      }
+      .shop-dialogue,
+      .location-dialogue {
+        margin: 0 0 9px;
+        padding: 7px;
+        border: 1px solid #d5aa63;
+        background: #0d1b29cc;
+        color: #fff6d0;
+        font-size: clamp(.68rem, 1.2vw, .82rem);
+      }
+      .shop-goods {
+        grid-template-columns: 1fr;
+        gap: 6px;
+      }
+      .shop-goods button {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+        min-height: 42px;
+        padding: 6px 9px;
+        border: 2px solid #493225;
+        border-radius: 2px;
+        background:
+          linear-gradient(90deg, transparent 0 7px, #b27b48 8px 10px, transparent 11px),
+          #765034;
+        color: #fff1c0;
+        text-align: left;
+        box-shadow: inset 0 2px #a8784d, inset 0 -3px #4b3225;
+      }
+      .shop-goods button small {
+        color: #ffe187;
+        font-weight: 900;
+      }
+      .shop-goods button:disabled,
+      .inventory-use:disabled {
+        cursor: default;
+        filter: grayscale(.65);
+        opacity: .55;
+      }
+      .vehicle-shop-shell {
+        display: grid;
+        grid-template-rows: auto auto auto 1fr auto;
+        gap: 9px;
+        height: 100%;
+        padding: clamp(12px, 3vw, 28px);
+        background:
+          linear-gradient(#102538e8, #172434f2),
+          repeating-linear-gradient(90deg, #604329 0 3px, #3f2b20 3px 28px);
+        color: #f8edc9;
+      }
+      .vehicle-shop-shell .close { justify-self: end; }
+      .vehicle-shop-shell h2 { margin: 0; color: #ffe39a; }
+      .vehicle-shop-shell .shop-goods {
+        align-self: start;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .vehicle-shop-note { color: #afd2d8; line-height: 1.5; }
+      .shop-practice {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        margin-top: 9px;
+        padding: 8px 9px;
+        border-color: #6a4b25;
+        border-radius: 2px;
+        background:
+          linear-gradient(90deg, #4f7e72 0 7px, transparent 7px),
+          linear-gradient(#f6df92, #c99b4d);
+        color: #302319;
+        text-align: left;
+      }
+      .shop-practice small {
+        color: #4b3925;
+        font-weight: 900;
+      }
+      .location-action {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-height: 46px;
+        padding: 9px 10px;
+        border-color: #6a4b25;
+        border-radius: 2px;
+        background:
+          linear-gradient(90deg, #4f7e72 0 7px, transparent 7px),
+          linear-gradient(#f6df92, #c99b4d);
+        color: #302319;
+        text-align: left;
+      }
+      .location-action small {
+        color: #4b3925;
+        font-weight: 900;
+      }
+      .location-note {
+        display: block;
+        margin-top: 10px;
+        color: #c8d6d7;
+        font-size: clamp(.62rem, 1vw, .74rem);
+        line-height: 1.45;
+      }
+      @keyframes sam-shop-idle {
+        50% { transform: translateY(-2px); }
+      }
       .hint {
         position: absolute;
         left: 50%;
@@ -1959,6 +2261,22 @@
       .fish-scene.depth-mid { --depth-y: 50%; }
       .fish-scene.depth-deep { --depth-y: 100%; }
       .fish-scene.active {
+        display: block;
+      }
+      .practice-badge {
+        display: none;
+        position: absolute;
+        z-index: 7;
+        right: 12px;
+        top: 10px;
+        padding: 4px 8px;
+        border: 2px solid #f1cf77;
+        background: #183b36e8;
+        color: #fff0a7;
+        font: 900 clamp(.58rem, 1.1vw, .76rem) monospace;
+        box-shadow: 2px 3px #061b1b77;
+      }
+      .fish-scene.practice-fishing .practice-badge {
         display: block;
       }
       .fish-scene::before {
@@ -2265,6 +2583,10 @@
         width: clamp(125px, 21vw, 235px);
         aspect-ratio: 28 / 15;
       }
+      .battle-fish.fish-kasago {
+        width: clamp(125px, 19vw, 215px);
+        aspect-ratio: 8 / 5;
+      }
       .battle-fish.fish-nushi {
         width: clamp(165px, 26vw, 310px);
         aspect-ratio: 48 / 35;
@@ -2424,6 +2746,246 @@
       }
       .tackle-options { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
       .tackle-options button.selected { outline:3px solid #69d8ff; }
+      .idle-status {
+        position: absolute;
+        z-index: 9;
+        left: 11px;
+        top: 10px;
+        width: min(230px, 34vw);
+        padding: 7px 9px;
+        border: 2px solid #e5bd68;
+        border-radius: 7px;
+        background: #102033e8;
+        color: #fff4ca;
+        font-size: clamp(.58rem, 1.25vw, .74rem);
+        line-height: 1.35;
+        opacity: 0;
+        transform: translateY(-6px);
+        pointer-events: none;
+        transition: opacity .18s steps(2, end), transform .18s steps(2, end);
+        box-shadow: 3px 4px 0 #07131d77;
+      }
+      .idle-status.show {
+        opacity: 1;
+        transform: translateY(0);
+      }
+      .idle-status header {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        margin-bottom: 4px;
+        padding-bottom: 3px;
+        border-bottom: 1px solid #e5bd6855;
+        color: #ffe28b;
+      }
+      .idle-status div {
+        display: grid;
+        grid-template-columns: 4.6em minmax(0, 1fr);
+        gap: 6px;
+      }
+      .idle-status div span { color: #acd4dc; }
+      .idle-status div b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      #statusHp {
+        position: relative;
+        isolation: isolate;
+        padding: 0 5px;
+        border: 1px solid #d9c17088;
+        border-radius: 2px;
+        background: #07131d;
+        text-align: center;
+      }
+      #statusHp::before {
+        position: absolute;
+        z-index: -1;
+        inset: 0 auto 0 0;
+        width: var(--hp, 100%);
+        background: linear-gradient(90deg, #3d8c54, #79bd62);
+        content: "";
+      }
+      #statusHp.low::before { background: linear-gradient(90deg, #a33b31, #e17a43); }
+      .inventory-modal {
+        inset: 4%;
+        padding: 0;
+        overflow: hidden;
+        border-color: #d8a85b;
+        border-radius: 4px;
+        background: #172434f7;
+      }
+      .inventory-shell {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        height: 100%;
+        min-height: 0;
+      }
+      .inventory-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 12px 7px;
+        border-bottom: 2px solid #5d432f;
+        background: linear-gradient(90deg, #30231d, #1c3041);
+      }
+      .inventory-heading h2 {
+        flex: 1;
+        margin: 0;
+      }
+      .inventory-heading .close {
+        float: none;
+        padding: 5px 10px;
+      }
+      .inventory-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        padding: 7px 10px;
+        background: #0d1b29;
+      }
+      .inventory-tabs button {
+        min-height: 34px;
+        padding: 5px 8px;
+        border-radius: 3px;
+        background: #4b3a2f;
+        color: #f7e9bd;
+        box-shadow: inset 0 1px #77583e, 0 2px #080d12;
+      }
+      .inventory-tabs button.active {
+        border-color: #f1ce73;
+        background: #356577;
+        color: #fff5bd;
+      }
+      .inventory-content {
+        min-height: 0;
+        overflow: auto;
+        padding: 10px 12px;
+        background:
+          repeating-linear-gradient(0deg, #ffffff08 0 1px, transparent 1px 24px),
+          linear-gradient(135deg, #172434, #21364a 60%, #172434);
+      }
+      .inventory-panel { display: none; }
+      .inventory-panel.active { display: block; }
+      .inventory-panel h3 {
+        margin: 0 0 8px;
+        color: #ffe6a0;
+        font-size: clamp(.85rem, 1.7vw, 1.05rem);
+      }
+      .inventory-vitals {
+        display: grid;
+        grid-template-columns: auto minmax(90px, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+        padding: 7px 9px;
+        border: 1px solid #d4ad6766;
+        border-radius: 4px;
+        background: #0d1b29c7;
+      }
+      .inventory-hp-meter {
+        height: 10px;
+        overflow: hidden;
+        border: 1px solid #dbc777;
+        background: #07131d;
+      }
+      .inventory-hp-meter i {
+        display: block;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, #3f9658, #87c96a);
+        transition: width .18s steps(6, end);
+      }
+      .inventory-hp-meter i.low { background: linear-gradient(90deg, #a93e35, #eb8145); }
+      .inventory-card-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 7px;
+      }
+      .inventory-card,
+      .equipment-row,
+      .tackle-summary {
+        padding: 8px 9px;
+        border: 1px solid #d4ad6766;
+        border-radius: 4px;
+        background: #0d1b29c7;
+      }
+      .inventory-card {
+        display: grid;
+        grid-template-columns: auto 1fr auto;
+        align-items: center;
+        gap: 7px;
+      }
+      .inventory-card i {
+        font-style: normal;
+        font-size: 1.2rem;
+      }
+      .inventory-card-actions {
+        display: grid;
+        justify-items: end;
+        gap: 3px;
+      }
+      .inventory-use {
+        min-width: 3.8em;
+        padding: 3px 6px;
+        border: 1px solid #e2c46e;
+        border-radius: 2px;
+        background: #3e6f60;
+        color: #fff6c8;
+        font-weight: 900;
+      }
+      .inventory-card.inventory-empty {
+        grid-column: 1 / -1;
+        opacity: .72;
+      }
+      .inventory-card small,
+      .equipment-row small { color: #a9cbd0; }
+      .equipment-list {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+      }
+      .equipment-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 3px 8px;
+      }
+      .equipment-row small { grid-column: 1 / -1; }
+      .equipment-options {
+        display: grid;
+        grid-column: 1 / -1;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 5px;
+        margin-top: 4px;
+      }
+      .equipment-options button {
+        padding: 5px 6px;
+        border-radius: 2px;
+        background: #4b3a2f;
+        color: #f5e8bd;
+      }
+      .equipment-options button.selected {
+        border-color: #f1ce73;
+        outline: 2px solid #69d8ff;
+        background: #356577;
+      }
+      .inventory-tackle-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+      .inventory-tackle-grid h3 { margin-top: 0; }
+      .tackle-summary {
+        margin-top: 9px;
+        color: #fff2be;
+      }
+      .inventory-footer {
+        padding: 7px 12px 9px;
+        border-top: 2px solid #5d432f;
+        background: #142230;
+        color: #a9cbd0;
+        font-size: clamp(.58rem, 1.1vw, .7rem);
+      }
       .catch-card {
         display: none;
         position: absolute;
@@ -2564,6 +3126,12 @@
         aspect-ratio: 28 / 15;
         transform: translate(-89.7%, -58%);
         transform-origin: 89.7% 58%;
+      }
+      .catch-fish.fish-kasago {
+        width: clamp(115px, min(22vw, 40vh), 210px);
+        aspect-ratio: 8 / 5;
+        transform: translate(-97.2%, -56%);
+        transform-origin: 97.2% 56%;
       }
       .catch-fish.fish-nushi {
         width: clamp(145px, min(28vw, 46vh), 260px);
@@ -2737,7 +3305,23 @@
       @media (max-height: 420px) {
         .hud {
           font-size: 0.65rem;
+          gap: 4px;
+          padding-bottom: 3px;
         }
+        .hud span,
+        .hud button {
+          padding: 3px 6px;
+        }
+        .idle-status {
+          width: min(200px, 33vw);
+          padding: 5px 7px;
+        }
+        .inventory-modal { inset: 2%; }
+        .inventory-heading { padding: 6px 9px 4px; }
+        .inventory-tabs { padding: 5px 8px; }
+        .inventory-tabs button { min-height: 29px; }
+        .inventory-content { padding: 7px 9px; }
+        .inventory-footer { padding: 4px 9px 6px; }
         .controls {
           bottom: 4px;
         }
@@ -2775,14 +3359,15 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v50</span><span id="time">朝</span
+        <b>星降る湖</b><span>v58</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
+        ><button id="itemMenuButton">道具</button
         ><button id="menu">記録</button>
       </header>
       <main class="world" id="world">
-        <div class="map" id="map">
+        <div class="map v54-map" id="map">
           <div class="lake">
             <i class="lake-island island-a"></i>
             <i class="lake-island island-b"></i>
@@ -2817,7 +3402,8 @@
           <i class="flower-patch flowers-a"></i>
           <i class="flower-patch flowers-b"></i>
           <i class="flower-patch flowers-c"></i>
-          <div class="shop"><div class="sam" aria-label="サミュエル・オールドマン"></div></div>
+          <div class="shop sam-shop" aria-label="SAM'S FISHING SHOP。タモと釣具が並ぶ湖畔のログハウス"></div>
+          <div class="sam-practice-pond" aria-label="サムの店に併設された柵付きの試し釣り池"></div>
           <div class="building house-a" data-name="湖畔の民家">
             <i class="roof"></i><i class="chimney"></i><i class="window window-a"></i><i class="window window-b"></i>
           </div>
@@ -2871,6 +3457,13 @@
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
         <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
+        <aside class="idle-status" id="idleStatus" aria-live="polite">
+          <header><b id="statusAvatar">主人公</b><span id="statusCondition">準備よし</span></header>
+          <div id="statusHpRow"><span>体力</span><b id="statusHp">100 / 100</b></div>
+          <div><span>装備</span><b id="statusRod">竹の竿</b></div>
+          <div><span>仕掛け</span><b id="statusBait">ミミズ ×5</b></div>
+          <div><span>同行</span><b id="statusDog">リク</b></div>
+        </aside>
         <div class="controls">
           <div class="dpad">
             <button class="up" data-move="up">▲</button
@@ -2891,6 +3484,7 @@
             <i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
           <div class="fisher">🧑‍🌾🎣</div>
+          <div class="practice-badge" id="practiceBadge">SAM'S TRY POND　練習中</div>
           <svg
             class="line-svg"
             viewBox="0 0 1000 500"
@@ -2976,15 +3570,153 @@
           <h3>最近の出来事</h3>
           <div id="log"></div>
         </div>
-        <div class="modal" id="store">
-          <button class="close" data-close>閉じる</button>
-          <h2>サミュエル・オールドマン</h2>
-          <p>「釣具は未来を引き寄せるんじゃよ」</p>
-          <div class="grid">
-            <button data-buy-bait="worm">ミミズ3個・120円</button>
-            <button data-buy-bait="river">川虫2個・180円</button>
-            <button data-buy-bait="paste">練りエサ2個・240円</button>
-            <button data-buy-rod="moroko">ホンモロコ竿・1500円</button>
+        <div class="modal shop-modal" id="store">
+          <div class="shop-layout">
+            <div class="shop-interior" aria-label="木の棚に釣り竿、ルアー、釣り糸が並ぶサムの釣具店内">
+              <svg
+                class="shop-art"
+                viewBox="0 0 1536 1152"
+                preserveAspectRatio="xMidYMid meet"
+                role="img"
+                aria-label="レジの左にサムが立つ、木造の釣具店内"
+              >
+                <defs>
+                  <clipPath id="samCounterFront">
+                    <path d="M408 334H924V468H408ZM454 270H570V371H454Z" />
+                  </clipPath>
+                </defs>
+                <image href="assets/interior-sam-shop-v55.png" width="1536" height="1152" />
+                <image
+                  class="shopkeeper-sam-svg"
+                  href="assets/sam-front.png"
+                  x="382"
+                  y="178"
+                  width="142"
+                  height="292"
+                  preserveAspectRatio="xMidYMax meet"
+                  aria-label="サミュエル・オールドマン"
+                />
+                <image
+                  href="assets/interior-sam-shop-v55.png"
+                  width="1536"
+                  height="1152"
+                  clip-path="url(#samCounterFront)"
+                  aria-hidden="true"
+                />
+              </svg>
+            </div>
+            <div class="shop-panel">
+              <button class="close" data-close>外へ出る</button>
+              <small class="shop-brand">SAM'S FISHING SHOP</small>
+              <h2>サミュエル・オールドマン</h2>
+              <p class="shop-dialogue" id="shopDialogue">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
+              <div class="grid shop-goods">
+                <button data-buy-bait="worm"><span>ミミズ ×3</span><small>120円</small></button>
+                <button data-buy-bait="river"><span>川虫 ×2</span><small>180円</small></button>
+                <button data-buy-bait="paste"><span>練りエサ ×2</span><small>240円</small></button>
+                <button data-buy-rod="moroko"><span>ホンモロコ竿</span><small>1500円</small></button>
+                <button data-buy-hand="gloves"><span>釣り手袋</span><small>900円</small></button>
+              </div>
+              <button class="shop-practice" id="practiceOffer">
+                <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
+                <small id="practiceOfferStatus">初回講習</small>
+              </button>
+            </div>
+          </div>
+        </div>
+        <div class="modal shop-modal" id="locationInterior">
+          <div class="location-layout">
+            <div class="location-visual">
+              <img id="locationImage" alt="施設の内装" />
+            </div>
+            <div class="location-panel">
+              <button class="close" data-close>外へ出る</button>
+              <small class="location-brand" id="locationBrand">STARFALL LAKE</small>
+              <h2 id="locationTitle">施設</h2>
+              <p class="location-dialogue" id="locationDialogue" aria-live="polite"></p>
+              <button class="location-action" id="locationAction">
+                <span id="locationActionLabel">話を聞く</span>
+                <small id="locationActionCost">A</small>
+              </button>
+              <small class="location-note" id="locationNote"></small>
+            </div>
+          </div>
+        </div>
+        <div class="modal shop-modal" id="vehicleShop">
+          <div class="vehicle-shop-shell">
+            <button class="close" data-close>港へ戻る</button>
+            <small class="shop-brand">HOSHIMI HARBOR BOAT GEAR</small>
+            <h2>港の舟具屋</h2>
+            <p class="shop-dialogue" id="vehicleShopDialogue">「島へ渡る日が来たら、相棒になる舟を選びな」</p>
+            <div class="grid shop-goods">
+              <button data-buy-vehicle="tarai"><span>タライ</span><small>600円</small></button>
+              <button data-buy-vehicle="canoe"><span>カヌー</span><small>3500円</small></button>
+            </div>
+            <small class="vehicle-shop-note">買った舟は道具袋の「装備」で選べる。南の島への進水地点は今後追加予定。</small>
+          </div>
+        </div>
+        <div class="modal inventory-modal" id="inventory">
+          <div class="inventory-shell">
+            <div class="inventory-heading">
+              <small class="location-brand">FIELD ITEM MENU</small>
+              <h2>道具袋</h2>
+              <button class="close" data-close>閉じる</button>
+            </div>
+            <nav class="inventory-tabs" aria-label="道具袋の分類">
+              <button data-inventory-tab="items" class="active">持ち物</button>
+              <button data-inventory-tab="equipment">装備</button>
+              <button data-inventory-tab="tackle">タックル</button>
+            </nav>
+            <div class="inventory-content">
+              <section class="inventory-panel active" data-inventory-panel="items">
+                <h3>持ち物</h3>
+                <div class="inventory-vitals">
+                  <span>❤️ 体力</span>
+                  <div class="inventory-hp-meter"><i id="inventoryHpFill"></i></div>
+                  <b id="inventoryHpText">100 / 100</b>
+                </div>
+                <div class="inventory-card-grid" id="inventoryItems"></div>
+              </section>
+              <section class="inventory-panel" data-inventory-panel="equipment">
+                <h3>主人公の装備</h3>
+                <div class="equipment-list">
+                  <div class="equipment-row">
+                    <span>🎣 釣り竿</span><b id="equipmentRod">竹の竿</b>
+                    <small>タックル画面で変更できる。</small>
+                  </div>
+                  <div class="equipment-row">
+                    <span>🧤 手装備</span><b id="equipmentHands">なし</b>
+                    <small>釣り手袋は危険魚の棘から手を守る。</small>
+                    <div class="equipment-options" id="handEquipmentOptions"></div>
+                  </div>
+                  <div class="equipment-row">
+                    <span>🛶 乗り物</span><b id="equipmentVehicle">なし</b>
+                    <small>南の島用。今のフィールドでは進水できない。</small>
+                    <div class="equipment-options" id="vehicleEquipmentOptions"></div>
+                  </div>
+                  <div class="equipment-row">
+                    <span>🐕 同行</span><b id="equipmentDog">リク</b>
+                    <small>今いっしょに歩いている相棒。</small>
+                  </div>
+                </div>
+              </section>
+              <section class="inventory-panel" data-inventory-panel="tackle">
+                <div class="inventory-tackle-grid">
+                  <div>
+                    <h3>エサを選ぶ</h3>
+                    <div class="tackle-options" id="inventoryBaitOptions"></div>
+                  </div>
+                  <div>
+                    <h3>釣り竿を選ぶ</h3>
+                    <div class="tackle-options" id="inventoryRodOptions"></div>
+                  </div>
+                </div>
+                <div class="tackle-summary" id="inventoryTackleSummary"></div>
+              </section>
+            </div>
+            <div class="inventory-footer">
+              道具ボタンを押した時だけ開く。食料の使用、装備、次の釣りの仕掛け変更ができる。
+            </div>
           </div>
         </div>
         <div class="modal" id="tackle">
@@ -2999,7 +3731,7 @@
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
-        WORLD_HEIGHT = 190,
+        WORLD_HEIGHT = 135,
         WORLD_SCALE_X = WORLD_WIDTH / 100,
         WORLD_SCALE_Y = WORLD_HEIGHT / 100,
         fish = [
@@ -3037,6 +3769,16 @@
             resistance: 72,
             w: 0,
             icon: "🐟",
+            shadowRow: 3,
+          },
+          {
+            id: "kasago",
+            name: "カサゴ",
+            price: 320,
+            resistance: 92,
+            hazardDamage: 12,
+            w: 0,
+            icon: "🐡",
             shadowRow: 3,
           },
           {
@@ -3103,24 +3845,24 @@
             zone: "sea",
             depth: "shallow",
             name: "潮見浜・波打ち際",
-            role: "海の浅場・マアジの群れ",
-            weights: { aji: 1 },
+            role: "海の浅場・マアジと岩陰のカサゴ",
+            weights: { aji: 0.72, kasago: 0.28 },
           },
           {
             id: "sea-mid",
             zone: "sea",
             depth: "mid",
             name: "潮見浜・沿岸",
-            role: "海の中層・マアジの回遊路",
-            weights: { aji: 1 },
+            role: "海の中層・回遊魚と根魚",
+            weights: { aji: 0.68, kasago: 0.32 },
           },
           {
             id: "sea-deep",
             zone: "sea",
             depth: "deep",
             name: "潮見浜・沖",
-            role: "海の深場・海魚追加予定",
-            weights: { aji: 1 },
+            role: "海の深場・大きなカサゴが潜む",
+            weights: { aji: 0.6, kasago: 0.4 },
           },
         ],
         baitData = {
@@ -3132,12 +3874,44 @@
           bamboo: { name: "竹の竿", power: 16, control: 1 },
           moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
         },
+        fieldItemData = {
+          vegetableOnigiri: {
+            name: "野菜おにぎり",
+            icon: "🍙",
+            heal: 25,
+            price: 120,
+            source: "八百屋",
+          },
+          fishBento: {
+            name: "地魚弁当",
+            icon: "🍱",
+            heal: 50,
+            price: 180,
+            source: "みなと食堂",
+          },
+        },
+        handEquipmentData = {
+          gloves: {
+            name: "釣り手袋",
+            icon: "🧤",
+            price: 900,
+            protection: 1,
+          },
+        },
+        vehicleData = {
+          tarai: { name: "タライ", icon: "🛁", price: 600 },
+          canoe: { name: "カヌー", icon: "🛶", price: 3500 },
+        },
         fishAssets = {
           moroko: "assets/fish-moroko-v31.png",
           funa: "assets/fish-funa-v31.png",
           koi: "assets/fish-koi-v31.png",
           aji: "assets/fish-moroko-v31.png",
+          kasago: "assets/fish-kasago-v57.png",
           nushi: "assets/fish-nushi-v31.png",
+        },
+        fishCatchAssets = {
+          kasago: "assets/fish-kasago-catch-v58.png",
         },
         fishMouthProfiles = {
           // Coordinates are fractions of each untransformed sprite cell,
@@ -3148,6 +3922,7 @@
           aji: { x: 0.458, y: 0.1, tackleScale: 0.74, inset: 2.5, drop: 1 },
           funa: { x: 0.368, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4 },
           koi: { x: 0.397, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8 },
+          kasago: { x: 0.41, y: 0.085, tackleScale: 0.82, inset: 4, drop: 1.7 },
           nushi: { x: 0.37, y: 0.075, tackleScale: 0.82, inset: 5, drop: 2.4 },
         },
         fishMotionProfiles = {
@@ -3450,6 +4225,28 @@
             : "走りに合わせて糸を送り、群れから離す。",
         })),
       };
+      fishMotionProfiles.kasago = {
+        ...fishMotionProfiles.funa,
+        beat: 0.46,
+        speedBeat: 0.085,
+        burst: 1.38,
+        thrust: 0.16,
+        recoil: 1.75,
+        sway: 1.25,
+        roll: 1.05,
+      };
+      fightProfiles.kasago = {
+        intro: "岩陰から飛び出し、棘のある体をくねらせて底へ潜る。",
+        moods: fightProfiles.koi.moods.map((mood) => ({
+          ...mood,
+          hold: mood.calm
+            ? "カサゴが岩陰で止まった！今なら巻ける！"
+            : "カサゴが底へ潜る！強引に巻かず棘にも注意！",
+          loose: mood.calm
+            ? "岩陰で息を整えている。Aで寄せよう！"
+            : "竿を送り、根へ潜る力をいなす。",
+        })),
+      };
       let s = Object.assign(
           {
             money: 300,
@@ -3458,6 +4255,12 @@
             selectedBait: "worm",
             selectedRod: "bamboo",
             ownedRods: ["bamboo"],
+            hp: 100,
+            maxHp: 100,
+            items: null,
+            equipment: null,
+            ownedHands: null,
+            ownedVehicles: null,
             rod: "竹の竿",
             power: 16,
             caught: {},
@@ -3470,6 +4273,7 @@
             direction: "up",
             rescueAt: -99,
             calmBonus: 0,
+            practiceTutorialComplete: false,
             mapVersion: 49,
           },
           JSON.parse(localStorage.getItem(key) || "{}"),
@@ -3480,6 +4284,7 @@
         landingTimer = 0,
         walkTimer = 0,
         saveTimer = 0,
+        idleStatusTimer = 0,
         playerWalkInterval = 0,
         moveHoldInterval = 0,
         dogWalkTimer = 0,
@@ -3497,6 +4302,7 @@
         playerWalking = false,
         playerAnimFrame = 0,
         petSceneFrame = 0,
+        inventoryTab = "items",
         waterFxState = {
           tick: 0,
           particles: [],
@@ -3525,6 +4331,45 @@
       if ((s.mapVersion || 0) < 50) {
         // v50 is a visual redraw; positions and water-edge fishing stay put.
         s.mapVersion = 50;
+      }
+      if ((s.mapVersion || 0) < 51) {
+        // The first v51 render restores any save stranded in river water.
+        s.mapVersion = 51;
+      }
+      if ((s.mapVersion || 0) < 52) {
+        // v52 straightens the river; the render guard moves stranded saves.
+        s.mapVersion = 52;
+      }
+      if ((s.mapVersion || 0) < 53) {
+        // v53 only refines the grass ground; gameplay coordinates stay fixed.
+        s.mapVersion = 53;
+      }
+      if ((s.mapVersion || 0) < 54) {
+        // v54 is a new 16:9 world painting, so old field coordinates cannot
+        // be carried over safely. Inventory, catches and companions remain.
+        s.x = 123;
+        s.y = 92;
+        s.direction = "up";
+        s.mapVersion = 54;
+      }
+      if ((s.mapVersion || 0) < 55) {
+        // v55 adds indoor scenes without changing field geometry or position.
+        s.mapVersion = 55;
+      }
+      if ((s.mapVersion || 0) < 56) {
+        // v56 adds menu and idle-status state without moving the player.
+        s.mapVersion = 56;
+      }
+      if ((s.mapVersion || 0) < 57) {
+        // Existing saves begin the survival system at full health. Purchases,
+        // catches, records and the player's field position stay untouched.
+        if (!Number.isFinite(s.maxHp) || s.maxHp < 1) s.maxHp = 100;
+        if (!Number.isFinite(s.hp)) s.hp = s.maxHp;
+        s.mapVersion = 57;
+      }
+      if ((s.mapVersion || 0) < 58) {
+        // v58 separates battle and catch artwork without changing saved play.
+        s.mapVersion = 58;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -3583,6 +4428,23 @@
       const dogIdleImage = loadDogImage("assets/dog-idles.png?v=12"),
         petSceneImage = loadPetSceneImage("assets/pet-scenes-v19.svg");
       if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
+      if (!s.items || typeof s.items !== "object") s.items = {};
+      for (const id of Object.keys(fieldItemData))
+        s.items[id] = Math.max(0, Number(s.items[id]) || 0);
+      if (!s.equipment || typeof s.equipment !== "object")
+        s.equipment = { hands: null, vehicle: null };
+      if (!("hands" in s.equipment)) s.equipment.hands = null;
+      if (!("vehicle" in s.equipment)) s.equipment.vehicle = null;
+      if (!Array.isArray(s.ownedHands)) s.ownedHands = [];
+      if (!Array.isArray(s.ownedVehicles)) s.ownedVehicles = [];
+      s.ownedHands = [...new Set(s.ownedHands)].filter((id) => handEquipmentData[id]);
+      s.ownedVehicles = [...new Set(s.ownedVehicles)].filter((id) => vehicleData[id]);
+      if (!s.ownedHands.includes(s.equipment.hands)) s.equipment.hands = null;
+      if (!s.ownedVehicles.includes(s.equipment.vehicle)) s.equipment.vehicle = null;
+      s.maxHp = Number.isFinite(s.maxHp) && s.maxHp > 0 ? Math.round(s.maxHp) : 100;
+      s.hp = Number.isFinite(s.hp)
+        ? Math.max(0, Math.min(s.maxHp, Math.round(s.hp)))
+        : s.maxHp;
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       function save() {
@@ -3612,22 +4474,161 @@
       function worldToMapY(y) {
         return y / WORLD_SCALE_Y;
       }
-      const lakeShoreLine = [
-          [0, 84], [13, 82], [25, 88], [38, 86], [51, 92], [64, 89],
-          [77, 97], [90, 94], [103, 102], [116, 98], [129, 104],
-          [142, 100], [155, 97], [168, 100], [181, 91], [194, 94],
-          [207, 85], [220, 88], [240, 80],
+      const lakeWaterPolygon = [
+          [91, 15], [104, 13], [119, 13], [134, 14], [148, 17],
+          [156, 21], [159, 28], [157, 36], [152, 43], [142, 47],
+          [130, 50], [123, 51], [118, 49], [111, 51], [100, 49],
+          [90, 46], [83, 41], [79, 35], [79, 28], [82, 21],
         ],
-        coastShoreLine = [
-          [0, 171], [15, 168], [29, 173], [43, 169], [57, 172],
-          [72, 168], [87, 174], [101, 170], [116, 173], [130, 168],
-          [145, 172], [159, 169], [174, 174], [188, 169], [203, 172],
-          [218, 168], [240, 171],
+        riverCenterLine = [
+          [50, 118], [58, 116], [68, 113.5], [76, 111], [84, 108.5],
+          [92, 108], [101, 108], [110, 106.5], [120, 106],
+          [128, 104.5], [135, 104],
         ],
-        riverBendLine = [
-          [96, 125], [106, 123], [116, 127], [126, 124], [136, 129],
-          [146, 127], [156, 133], [166, 130], [176, 135],
+        riverWidthLine = [
+          [50, 2.2], [68, 2.5], [84, 3.1], [101, 3.2],
+          [120, 3.8], [128, 4.3], [135, 4.8],
+        ],
+        seaShoreLine = [
+          [0, 111], [15, 109], [30, 110], [45, 113], [60, 115],
+          [75, 119], [90, 124], [102, 130], [108, 134], [116, 128],
+          [125, 119], [135, 115], [145, 113], [155, 111], [165, 108],
+          [175, 105], [185, 102], [195, 99], [205, 98], [215, 99],
+          [225, 101], [240, 104],
+        ],
+        practicePondBounds = {
+          centerX: 222.5,
+          centerY: 78.5,
+          radiusX: 11.2,
+          radiusY: 7.2,
+          entryX: 212,
+          entryY: 87,
+        },
+        riverBridgeBounds = { left: 99, right: 119, top: 75, bottom: 88 },
+        harborWalkwayBounds = [
+          { left: 174, right: 226, top: 92, bottom: 101.5 },
+          { left: 176, right: 226, top: 99, bottom: 104 },
+          { left: 180, right: 186, top: 99, bottom: 113 },
+          { left: 198, right: 204, top: 99, bottom: 111 },
+          { left: 207, right: 236, top: 100, bottom: 114 },
+          { left: 224, right: 232, top: 100, bottom: 121 },
+          { left: 144, right: 178, top: 99, bottom: 108 },
+          { left: 123, right: 161, top: 112, bottom: 128 },
+          { left: 151, right: 173, top: 105, bottom: 114 },
+          { left: 151, right: 158, top: 110, bottom: 127 },
+        ],
+        structureBounds = [
+          { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
+          { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
+          { id: "west-shrine", left: 27, right: 55, top: 41, bottom: 62 },
+          { id: "wayside-shrine", left: 8, right: 17, top: 50, bottom: 61 },
+          { id: "yaoya", left: 66, right: 91, top: 55, bottom: 75 },
+          { id: "diner", left: 130, right: 158, top: 55, bottom: 75 },
+          { id: "main-shrine", left: 178, right: 211, top: 36, bottom: 64 },
+          { id: "sam-shop", left: 182, right: 211, top: 70, bottom: 92 },
+          { id: "fish-market", left: 146, right: 174, top: 86, bottom: 103 },
+          { id: "harbor-shop", left: 123, right: 147, top: 104, bottom: 121 },
+        ],
+        worldLandmarks = [
+          {
+            id: "farmhouse", x: 43, y: 34, radius: 8,
+            hint: "湖畔の釣り宿だ。Aで中へ入る。",
+            message: "湖畔の釣り宿。畳の匂いと湯気の向こうで、静かな湖が見える。",
+            interior: "farmhouse",
+          },
+          {
+            id: "west-shrine", x: 40, y: 65, radius: 8,
+            hint: "水守りの社だ。Aでお参りする。",
+            message: "水守りの社に手を合わせた。湖から海まで、穏やかな水音が続いている。",
+          },
+          {
+            id: "yaoya", x: 79, y: 77, radius: 8,
+            hint: "八百屋だ。Aで中へ入る。",
+            message: "八百屋の軒先には採れたての野菜と、釣り人向けの握り飯が並んでいる。",
+            interior: "yaoya",
+          },
+          {
+            id: "diner", x: 144, y: 77, radius: 9,
+            hint: "みなと食堂だ。Aで中へ入る。",
+            message: "みなと食堂。焼き魚と味噌汁の香りが、川風に乗って漂っている。",
+            interior: "diner",
+          },
+          {
+            id: "main-shrine", x: 193, y: 66, radius: 9,
+            hint: "星占い神社だ。Aで拝殿へ入る。",
+            message: "星占い神社。ヌシを釣った者には、湖面の星が道を示すという。",
+            interior: "main-shrine",
+          },
+          {
+            id: "watermill", x: 198, y: 33, radius: 8,
+            hint: "水車の家だ。Aで水音を聞く。",
+            message: "森の水車小屋。苔むした水路から、湖へ細い水が注いでいる。",
+          },
+          {
+            id: "fish-market", x: 160, y: 105, radius: 9,
+            hint: "港の魚屋だ。Aで中へ入る。",
+            message: "港の魚屋。朝に揚がった魚が氷の上で銀色に光っている。",
+            interior: "fish-market",
+          },
+          {
+            id: "harbor-shop", x: 135, y: 123, radius: 8,
+            hint: "港の舟具屋だ。Aでタライやカヌーを見る。",
+            message: "港の舟具屋。南の島へ渡る日のための舟が並んでいる。",
+          },
         ];
+      const locationInteriors = {
+        farmhouse: {
+          brand: "LAKESIDE FISHING INN",
+          title: "湖畔の釣り宿",
+          asset: "assets/interior-fishing-inn-v55.png",
+          alt: "畳の間、寝具、釣り竿と台所が整った湖畔の釣り宿",
+          dialogue: "「釣りの合間に休んでいきな。湖の音を聞けば、糸を張りすぎる癖も抜けるよ」",
+          actionLabel: "ひと休みする",
+          actionCost: "無料",
+          note: "時間が一つ進み、次の釣りで魚の動きが少し穏やかになる。",
+        },
+        yaoya: {
+          brand: "YAOYA VEGETABLES",
+          title: "八百屋",
+          asset: "assets/interior-yaoya-v55.png",
+          alt: "木箱に大根、白菜、ねぎ、なす、トマトなどが並ぶ八百屋",
+          dialogue: "「朝採れ野菜のおにぎりだよ。水辺で食べても崩れないよう、きゅっと握ってあるよ」",
+          actionLabel: "野菜おにぎりを買う",
+          actionCost: "120円",
+          note: "道具袋へ入る回復食。好きな時に使うと体力が25回復する。",
+        },
+        diner: {
+          brand: "MINATO DINER",
+          title: "みなと食堂",
+          asset: "assets/interior-minato-diner-v55.png",
+          alt: "魚料理の厨房、カウンター席と木のテーブルがあるみなと食堂",
+          dialogue: "「釣り場へ持っていくなら地魚弁当！ 力が落ちた時に食べな」",
+          actionLabel: "地魚弁当を買う",
+          actionCost: "180円",
+          note: "道具袋へ入る回復食。好きな時に使うと体力が50回復する。",
+        },
+        "main-shrine": {
+          brand: "STAR DIVINATION SHRINE",
+          title: "星占い神社",
+          asset: "assets/interior-star-shrine-v55.png",
+          alt: "星の幕、しめ縄、賽銭箱、おみくじがある星占い神社の拝殿",
+          dialogue: "静かな拝殿に鈴の余韻が残る。湖面の星が、次の一投を見守っているようだ。",
+          actionLabel: "星へ願いを届ける",
+          actionCost: "お参り",
+          note: "次の釣りで魚の動きが穏やかになる。何度祈っても効果は重ならない。",
+        },
+        "fish-market": {
+          brand: "HARBOR FISHMONGER",
+          title: "港の魚屋",
+          asset: "assets/interior-fish-market-v55.png",
+          alt: "石床に氷詰めの鮮魚、水槽、まな板が並ぶ港の魚屋",
+          dialogue: "「今朝の魚は潮目の外から来た群れだ。海で銀色が跳ねたら、少し深めへ投げてみな」",
+          actionLabel: "本日の水揚げを聞く",
+          actionCost: "話す",
+          note: "港の魚と潮の様子を教えてもらえる。",
+        },
+      };
+      let activeLocationId = null;
       function sampleWorldLine(points, value) {
         for (let i = 1; i < points.length; i += 1) {
           const [value2, result2] = points[i];
@@ -3642,34 +4643,73 @@
         }
         return points.at(-1)[1];
       }
-      function walkableMinY(x) {
-        return sampleWorldLine(lakeShoreLine, x);
+      function pointInPolygon(x, y, polygon) {
+        let inside = false;
+        for (let i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+          const [xi, yi] = polygon[i];
+          const [xj, yj] = polygon[j];
+          const crosses = yi > y !== yj > y &&
+            x < ((xj - xi) * (y - yi)) / (yj - yi) + xi;
+          if (crosses) inside = !inside;
+        }
+        return inside;
       }
-      function walkableMaxY(x) {
-        return sampleWorldLine(coastShoreLine, x);
+      function inWorldRect(x, y, bounds) {
+        return x >= bounds.left && x <= bounds.right &&
+          y >= bounds.top && y <= bounds.bottom;
+      }
+      function isOnLakeDock(x, y) {
+        return x >= 105.5 && x <= 114 && y >= 10.5 && y <= 19.5;
+      }
+      function isLakeWater(x, y) {
+        return !isOnLakeDock(x, y) && pointInPolygon(x, y, lakeWaterPolygon);
       }
       function riverCenterWorldX(worldY) {
-        return sampleWorldLine(riverBendLine, worldY);
+        return sampleWorldLine(riverCenterLine, worldY);
       }
       function riverHalfWidth(worldY) {
-        return 4.7 + Math.max(0, worldY - 94) * 0.018 +
-          Math.sin(worldY * 0.27) * 0.65;
+        return sampleWorldLine(riverWidthLine, worldY);
       }
       function isOnRiverBridge(x, y) {
-        return x >= 112 && x <= 140 && y >= 124 && y <= 138;
+        return inWorldRect(x, y, riverBridgeBounds);
       }
       function isRiverWater(x, y) {
-        if (y < 94 || y > 178 || isOnRiverBridge(x, y)) return false;
+        if (y < 50 || y > 132 || isOnRiverBridge(x, y)) return false;
         return Math.abs(x - riverCenterWorldX(y)) < riverHalfWidth(y);
       }
+      function isOnHarborWalkway(x, y) {
+        return harborWalkwayBounds.some((bounds) => inWorldRect(x, y, bounds));
+      }
+      function seaWaterY(x) {
+        return sampleWorldLine(seaShoreLine, x);
+      }
+      function isSeaWater(x, y) {
+        return y >= seaWaterY(x) && !isOnHarborWalkway(x, y);
+      }
+      function isPracticePondWater(x, y) {
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+        const dx = (x - practicePondBounds.centerX) / practicePondBounds.radiusX;
+        const dy = (y - practicePondBounds.centerY) / practicePondBounds.radiusY;
+        return dx * dx + dy * dy < 1;
+      }
+      function isNearPracticePond(x = s.x, y = s.y) {
+        return Math.hypot(
+          x - practicePondBounds.entryX,
+          y - practicePondBounds.entryY,
+        ) < 9;
+      }
+      function isBlockedStructure(x, y) {
+        return structureBounds.some((bounds) => inWorldRect(x, y, bounds));
+      }
       function isWalkableWorld(x, y) {
-        return (
-          x >= 5 &&
-          x <= WORLD_WIDTH - 5 &&
-          y >= walkableMinY(x) &&
-          y <= walkableMaxY(x) &&
-          !isRiverWater(x, y)
-        );
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+        if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
+          return false;
+        if (isBlockedStructure(x, y)) return false;
+        return !isLakeWater(x, y) &&
+          !isRiverWater(x, y) &&
+          !isSeaWater(x, y) &&
+          !isPracticePondWater(x, y);
       }
       function fishingSpotById(id) {
         return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
@@ -3677,27 +4717,105 @@
       function waterZoneAtWorld(x, y) {
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
           return null;
-        const coast = walkableMaxY(x);
-        if (y >= coast + 1) return "sea";
-        if (
-          y >= 94 &&
-          y <= coast + 5 &&
-          Math.abs(x - riverCenterWorldX(y)) <= riverHalfWidth(y)
-        ) return "river";
-        if (y <= walkableMinY(x) - 2) return "lake";
+        if (isPracticePondWater(x, y)) return null;
+        if (isLakeWater(x, y)) return "lake";
+        if (isRiverWater(x, y)) return "river";
+        if (isSeaWater(x, y)) return "sea";
         return null;
       }
-      function depthForCast(zone, distance) {
+      function isCapeDeepWater(x, y) {
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
+        return isSeaWater(x, y) && (x >= 176 || y >= 125);
+      }
+      function nearbyWorldLandmark(x = s.x, y = s.y) {
+        return worldLandmarks.find((landmark) =>
+          Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
+        ) || null;
+      }
+      function openLocationInterior(landmarkOrId) {
+        const id = typeof landmarkOrId === "string"
+          ? landmarkOrId
+          : landmarkOrId?.interior;
+        const interior = locationInteriors[id];
+        if (!interior) return false;
+        activeLocationId = id;
+        const image = $("#locationImage");
+        image.src = interior.asset;
+        image.alt = interior.alt;
+        $("#locationBrand").textContent = interior.brand;
+        $("#locationTitle").textContent = interior.title;
+        $("#locationDialogue").textContent = interior.dialogue;
+        $("#locationActionLabel").textContent = interior.actionLabel;
+        $("#locationActionCost").textContent = interior.actionCost;
+        $("#locationNote").textContent = interior.note;
+        open("locationInterior");
+        return true;
+      }
+      function setLocationDialogue(message) {
+        $("#locationDialogue").textContent = message;
+      }
+      function openVehicleShop() {
+        const owned = s.ownedVehicles
+          .map((id) => vehicleData[id]?.name)
+          .filter(Boolean);
+        $("#vehicleShopDialogue").textContent = owned.length
+          ? `「今持っている舟は${owned.join("と")}だ。装備し直すなら道具袋を開きな」`
+          : "「島へ渡る日が来たら、相棒になる舟を選びな」";
+        open("vehicleShop");
+      }
+      function useLocationService() {
+        if (!activeLocationId || !locationInteriors[activeLocationId]) return;
+        if (activeLocationId === "farmhouse") {
+          s.time += 1;
+          s.hp = s.maxHp;
+          s.calmBonus = Math.max(s.calmBonus, 1);
+          setLocationDialogue("布団へ横になると、湖と水車の音だけが聞こえた。傷も疲れもすっかり癒えた。");
+          log("湖畔の釣り宿でひと休みした。体力が全回復し、次の釣りも少し穏やかになる。");
+        } else if (activeLocationId === "yaoya") {
+          if (s.money < 120) {
+            setLocationDialogue("「今はお金が足りないみたいだね。眺めるだけでもゆっくりしていきな」");
+            return log("野菜おにぎりは120円。今はお金が足りない。");
+          }
+          s.money -= 120;
+          s.items.vegetableOnigiri = (s.items.vegetableOnigiri || 0) + 1;
+          setLocationDialogue("「はい、野菜おにぎり一つ。体力が減ったら道具袋から食べるんだよ」");
+          log("八百屋で野菜おにぎりを買った。道具袋に入れた。");
+        } else if (activeLocationId === "diner") {
+          if (s.money < 180) {
+            setLocationDialogue("「地魚弁当は180円だよ。お腹が鳴ったら、またおいで」");
+            return log("地魚弁当は180円。今はお金が足りない。");
+          }
+          s.money -= 180;
+          s.items.fishBento = (s.items.fishBento || 0) + 1;
+          setLocationDialogue("「地魚弁当一つ、お待ち！ 体力が減ったら道具袋から食べな」");
+          log("みなと食堂で地魚弁当を買った。道具袋に入れた。");
+        } else if (activeLocationId === "main-shrine") {
+          s.calmBonus = Math.max(s.calmBonus, 2);
+          setLocationDialogue("鈴を鳴らして手を合わせた。暗い湖面に、一筋の星明かりが落ちた気がした。");
+          log("星占い神社で次の一投を祈った。魚の動きが穏やかになる御加護を受けた。");
+        } else if (activeLocationId === "fish-market") {
+          setLocationDialogue("「今日は沖から冷たい潮が入った。港なら岸壁の影、浜なら深い色の境目を狙うといい」");
+          log("港の魚屋で水揚げを見た。海は水色が濃く変わる境目が狙い目らしい。");
+        }
+        vibrate(20);
+        render();
+        save();
+      }
+      function depthForCast(zone, distance, minimumDepth = "shallow") {
         const limits = {
           lake: [34, 68],
           river: [42, 78],
           sea: [30, 64],
         }[zone] || [34, 68];
-        return distance < limits[0]
+        const measured = distance < limits[0]
           ? "shallow"
           : distance < limits[1]
             ? "mid"
             : "deep";
+        const order = ["shallow", "mid", "deep"];
+        return order.indexOf(measured) < order.indexOf(minimumDepth)
+          ? minimumDepth
+          : measured;
       }
       function fishingWaterNearPlayer() {
         // A bridge remains a crossing, never an invisible fishing hotspot.
@@ -3717,8 +4835,8 @@
         for (const [dx, dy] of vectors) {
           const sideX = -dy;
           const sideY = dx;
-          for (const distance of [5, 8, 11, 14, 17]) {
-            for (const side of [0, -3, 3]) {
+          for (const distance of [3, 5, 8, 11, 14]) {
+            for (const side of [0, -2, 2, -4, 4]) {
               const x = s.x + dx * distance + sideX * side;
               const y = s.y + dy * distance + sideY * side;
               const zone = waterZoneAtWorld(x, y);
@@ -3768,7 +4886,7 @@
       function sleepCompanionLayout() {
         const map = $("#map");
         const mapWidth = Math.max(1, map?.clientWidth || innerWidth * 2.4);
-        const mapHeight = Math.max(1, map?.clientHeight || innerHeight * 1.9);
+        const mapHeight = Math.max(1, map?.clientHeight || mapWidth * 9 / 16);
         // These centre distances come from the real opaque bounds after the
         // 480x640 owner art and 320x320 dog cells are drawn at game size.
         const sidePixels = {
@@ -3933,16 +5051,32 @@
         drawPetScene();
       }
       function render() {
-        s.x = Math.max(5, Math.min(WORLD_WIDTH - 5, s.x));
-        s.y = Math.max(
-          walkableMinY(s.x),
-          Math.min(walkableMaxY(s.x), s.y),
-        );
+        s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
+        s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
+        if (!isWalkableWorld(s.x, s.y)) {
+          s.x = 123;
+          s.y = 92;
+          s.direction = "up";
+        }
         const mapX = worldToMapX(s.x);
         const mapY = worldToMapY(s.y);
-        const cameraX = Math.max(0, Math.min(WORLD_WIDTH - 100, s.x - 50));
-        const cameraY = Math.max(0, Math.min(WORLD_HEIGHT - 100, s.y - 50));
-        $("#map").style.transform =
+        const mapElement = $("#map");
+        const worldElement = $("#world");
+        const mapWidth = Math.max(1, mapElement.clientWidth || innerWidth * 2.4);
+        const mapHeight = Math.max(1, mapElement.clientHeight || mapWidth * 9 / 16);
+        const viewWidth = Math.max(1, worldElement.clientWidth || innerWidth);
+        const viewHeight = Math.max(1, worldElement.clientHeight || innerHeight);
+        const viewportWorldWidth = WORLD_WIDTH * viewWidth / mapWidth;
+        const viewportWorldHeight = WORLD_HEIGHT * viewHeight / mapHeight;
+        const cameraX = Math.max(
+          0,
+          Math.min(WORLD_WIDTH - viewportWorldWidth, s.x - viewportWorldWidth / 2),
+        );
+        const cameraY = Math.max(
+          0,
+          Math.min(WORLD_HEIGHT - viewportWorldHeight, s.y - viewportWorldHeight / 2),
+        );
+        mapElement.style.transform =
           `translate3d(${-cameraX / WORLD_SCALE_X}%, ${-cameraY / WORLD_SCALE_Y}%, 0)`;
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${mapY}%`;
@@ -3965,22 +5099,84 @@
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
+        renderIdleStatus();
+        const practiceComplete = Boolean(s.practiceTutorialComplete);
+        $("#practiceOfferStatus").textContent = practiceComplete
+          ? "自由練習"
+          : "初回講習";
+        $("#practiceOfferTitle").textContent = practiceComplete
+          ? "🎣 サムの試し釣り"
+          : "🎓 サムの試し釣り";
+        $("#shopDialogue").textContent = practiceComplete
+          ? "「道具の調子を確かめたくなったら、隣の池でまた一匹いこう」"
+          : "「買う前に一本やってみるかい？ 隣の池ならワシが教えよう」";
+        const nearPracticePond = isNearPracticePond();
+        const landmark = nearbyWorldLandmark();
         const spot = nearbyFishingSpot();
-        $("#hint").textContent = spot
-          ? `${{ lake: "湖辺", river: "川辺", sea: "海辺" }[spot.waterZone]}だ。Aで釣る。投げる距離で水中の深さも変わる。`
-          : near(178, 131, 15)
-            ? "星湖釣具店だ。Aで入る。"
-            : near(116, 153, 12)
-              ? "柔らかい土だ。エサが無い時はワンコに相談できそう。"
-              : near(126, 131, 15)
-                ? "川風橋だ。ここは渡る場所。釣りは橋を降りて川辺から。"
-                : s.y > 159
-                  ? "潮見浜だ。波の向こうには、まだ見ぬ海の魚がいる。"
-                  : "湖・川・海の水辺なら、どこでもAで釣れる。";
+        $("#hint").textContent = nearPracticePond
+          ? practiceComplete
+            ? "サムの試し釣り池だ。Aで自由練習する。エサは減らない。"
+            : "サムの試し釣り池だ。Aで初回講習を受ける。"
+          : near(196, 94, 9)
+            ? "SAM'S FISHING SHOPだ。Aで店内へ入る。"
+            : near(67, 108, 8)
+              ? "砂浜の柔らかい土だ。エサが無い時はワンコに相談できそう。"
+              : near(109, 84, 7)
+                ? "石造りの湖見橋だ。ここは渡る場所。釣りは岸へ降りてから。"
+                : landmark
+                  ? landmark.hint
+                  : spot
+                    ? `${{ lake: "湖辺", river: "川辺", sea: "海辺" }[spot.waterZone]}だ。Aで釣る。投げる距離で水中の深さも変わる。`
+                    : s.y > 104
+                      ? "潮見浜と星見港だ。海の水辺ならどこでも釣れる。"
+                      : "湖・川・海の水辺なら、どこでもAで釣れる。";
         scheduleSave();
       }
+      function renderIdleStatus() {
+        const condition = s.hp <= Math.ceil(s.maxHp * 0.25)
+          ? "危険"
+          : s.hp < s.maxHp * 0.6
+            ? "負傷"
+            : s.calmBonus > 1
+              ? "星の加護"
+              : s.calmBonus > 0
+                ? "落ち着いている"
+                : "元気";
+        const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
+        $("#statusAvatar").textContent = s.avatar === "girl" ? "女の子" : "男の子";
+        $("#statusCondition").textContent = condition;
+        $("#statusHp").textContent = `${s.hp} / ${s.maxHp}`;
+        $("#statusHp").style.setProperty("--hp", `${hpPercent}%`);
+        $("#statusHp").classList.toggle("low", hpPercent <= 35);
+        $("#statusRod").textContent = rodData[s.selectedRod].name;
+        $("#statusBait").textContent =
+          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}`;
+        $("#statusDog").textContent = dogName();
+      }
+      function hideIdleStatus() {
+        clearTimeout(idleStatusTimer);
+        idleStatusTimer = 0;
+        $("#idleStatus")?.classList.remove("show");
+      }
+      function canShowIdleStatus() {
+        return $("#game").classList.contains("active") &&
+          !playerWalking &&
+          !battle &&
+          !document.querySelector(".modal.open") &&
+          !$("#catchCard").classList.contains("show");
+      }
+      function scheduleIdleStatus(delay = 650) {
+        hideIdleStatus();
+        idleStatusTimer = setTimeout(() => {
+          idleStatusTimer = 0;
+          if (!canShowIdleStatus()) return;
+          renderIdleStatus();
+          $("#idleStatus").classList.add("show");
+        }, delay);
+      }
       function move(d) {
-        if (battle) return;
+        if (battle || document.querySelector(".modal.open")) return;
+        hideIdleStatus();
         wakeDog();
         dogWalking = true;
         const startingWalk = !playerWalking;
@@ -4020,6 +5216,7 @@
           playerWalkInterval = 0;
           $("#player").classList.remove("walking");
           drawPlayer();
+          scheduleIdleStatus();
         }, 365);
         // The player reaches the next step before the trailing dog finishes
         // its longer CSS catch-up. Keep the paws moving for the whole chase.
@@ -4309,22 +5506,17 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
+        if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
-        if (spot) cast(spot);
-        else if (near(178, 131, 15)) open("store");
-        else if (near(116, 153, 12)) rescue();
-        else if (near(126, 131, 15))
-          log("川風橋だ。橋は渡る場所。竿を出すなら川辺まで降りよう。");
-        else if (near(25, 132, 14))
-          log("湖畔の民家。おばあさんが『朝凪の入り江には小魚が寄るよ』と教えてくれた。");
-        else if (near(54, 154, 14))
-          log("釣り宿だ。二階の窓から葦原の魚影がよく見える。");
-        else if (near(96, 132, 15))
-          log("ワカサギ食堂。香ばしい匂いが街道まで流れている。");
-        else if (near(151, 154, 15))
-          log("魚市場。古い桟橋で釣れた大物を高く買ってくれそうだ。");
-        else if (near(214, 154, 13))
-          log("閉じた小屋だ。星見岬の方から低い水音が響いている……。");
+        const landmark = nearbyWorldLandmark();
+        if (near(196, 94, 9)) open("store");
+        else if (near(67, 108, 8)) rescue();
+        else if (near(109, 84, 7))
+          log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
+        else if (landmark?.id === "harbor-shop") openVehicleShop();
+        else if (landmark?.interior) openLocationInterior(landmark);
+        else if (landmark) log(landmark.message);
+        else if (spot) cast(spot);
         else log(`${dogName()}が辺りの匂いを確かめた。`);
       }
       function dogName() {
@@ -4390,19 +5582,26 @@
         scene.classList.add(`water-${zone}`, `depth-${depth}`);
       }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
+        hideIdleStatus();
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
         const zone = spot.waterZone || spot.zone || "lake";
-        const profile = fishingSpotById(`${zone}-shallow`);
+        const minimumDepth = zone === "sea" && isCapeDeepWater(spot.waterX, spot.waterY)
+          ? "mid"
+          : "shallow";
+        const profile = fishingSpotById(`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
           reeling: false,
           spot: profile.id,
           waterZone: zone,
-          depth: "shallow",
+          depth: minimumDepth,
+          minimumDepth,
+          waterX: spot.waterX,
+          waterY: spot.waterY,
         };
-        setFishingSceneTheme(zone, "shallow");
+        setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
         $("#fishScene").classList.add("active");
         $("#battleFish").style.opacity = "0";
@@ -4417,44 +5616,279 @@
         $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
       }
+      function openPracticePond({ fromShop = false } = {}) {
+        hideIdleStatus();
+        close();
+        if (fromShop) {
+          s.x = practicePondBounds.entryX;
+          s.y = practicePondBounds.entryY;
+          s.direction = "up";
+          render();
+        }
+        wakeDog();
+        hideCatchCard();
+        resetBattleFeedback();
+        const tutorial = !s.practiceTutorialComplete;
+        battle = {
+          phase: "prep",
+          practice: true,
+          tutorial,
+          reeling: false,
+          spot: "lake-shallow",
+          waterZone: "lake",
+          depth: "shallow",
+          minimumDepth: "shallow",
+          waterX: practicePondBounds.centerX,
+          waterY: practicePondBounds.centerY,
+          bait: "paste",
+        };
+        setFishingSceneTheme("lake", "shallow");
+        resetWaterFx();
+        $("#fishScene").classList.add("active", "practice-fishing");
+        $("#battleFish").style.opacity = "0";
+        $("#castMeter").style.display = "none";
+        $("#distanceLabel").style.display = "none";
+        $("#distanceMeter").parentElement.style.display = "none";
+        $("#ten").parentElement.style.display = "none";
+        $("#fishName").textContent = "サムの試し釣り池";
+        $("#phaseLabel").textContent = tutorial ? " 初回講習" : " 自由練習";
+        $("#battleMsg").textContent = tutorial
+          ? "サム「練習竿と練りエサは貸すよ。Aで始めて、まず投げてみよう」"
+          : "サム「エサもお金も気にせず、納得するまで試していきな」";
+        $("#pull").innerHTML = tutorial
+          ? "A<br><small>講習開始</small>"
+          : "A<br><small>練習開始</small>";
+        $("#wait").innerHTML = "B<br><small>やめる</small>";
+      }
+      function useFieldItem(id) {
+        const item = fieldItemData[id];
+        if (!item || (s.items[id] || 0) < 1) {
+          log("その回復食は持っていない。");
+          return false;
+        }
+        if (s.hp >= s.maxHp) {
+          log("体力は満タンだ。回復食は取っておこう。");
+          return false;
+        }
+        const before = s.hp;
+        s.items[id]--;
+        s.hp = Math.min(s.maxHp, s.hp + item.heal);
+        log(`${item.name}を食べ、体力が${s.hp - before}回復した。`);
+        vibrate([25, 30, 55]);
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function equipHand(id) {
+        const next = id || null;
+        if (next && !s.ownedHands.includes(next)) {
+          log("その手装備はまだ持っていない。");
+          return false;
+        }
+        s.equipment.hands = next;
+        log(next
+          ? `${handEquipmentData[next].name}を装備した。`
+          : "手装備を外し、素手にした。");
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function equipVehicle(id) {
+        const next = id || null;
+        if (next && !s.ownedVehicles.includes(next)) {
+          log("その乗り物はまだ持っていない。");
+          return false;
+        }
+        s.equipment.vehicle = next;
+        log(next
+          ? `${vehicleData[next].name}を次の進水用に装備した。`
+          : "乗り物装備を外した。");
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function buyHandEquipment(id) {
+        const item = handEquipmentData[id];
+        if (!item) return false;
+        if (s.ownedHands.includes(id)) return equipHand(id);
+        if (s.money < item.price) {
+          log(`${item.name}は${item.price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= item.price;
+        s.ownedHands.push(id);
+        s.equipment.hands = id;
+        log(`${item.name}を買って装備した。危険魚の棘を防げる。`);
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function buyVehicle(id) {
+        const item = vehicleData[id];
+        if (!item) return false;
+        if (s.ownedVehicles.includes(id)) return equipVehicle(id);
+        if (s.money < item.price) {
+          log(`${item.name}は${item.price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= item.price;
+        s.ownedVehicles.push(id);
+        s.equipment.vehicle = id;
+        log(`${item.name}を買って装備した。南の島への進水地点で使える予定だ。`);
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function renderEquipment() {
+        const handName = s.equipment.hands
+          ? handEquipmentData[s.equipment.hands]?.name
+          : "素手";
+        const vehicleName = s.equipment.vehicle
+          ? vehicleData[s.equipment.vehicle]?.name
+          : "なし";
+        $("#equipmentHands").textContent = handName || "素手";
+        $("#equipmentVehicle").textContent = vehicleName || "なし";
+        $("#equipmentDog").textContent = dogName();
+        $("#handEquipmentOptions").innerHTML = [
+          `<button data-equip-hand="" class="${s.equipment.hands ? "" : "selected"}">素手</button>`,
+          ...s.ownedHands.map((id) =>
+            `<button data-equip-hand="${id}" class="${s.equipment.hands === id ? "selected" : ""}">` +
+            `${handEquipmentData[id].icon} ${handEquipmentData[id].name}</button>`),
+        ].join("");
+        $("#vehicleEquipmentOptions").innerHTML = [
+          `<button data-equip-vehicle="" class="${s.equipment.vehicle ? "" : "selected"}">徒歩</button>`,
+          ...s.ownedVehicles.map((id) =>
+            `<button data-equip-vehicle="${id}" class="${s.equipment.vehicle === id ? "selected" : ""}">` +
+            `${vehicleData[id].icon} ${vehicleData[id].name}</button>`),
+        ].join("");
+        document.querySelectorAll("[data-equip-hand]").forEach((button) =>
+          button.onclick = () => equipHand(button.dataset.equipHand),
+        );
+        document.querySelectorAll("[data-equip-vehicle]").forEach((button) =>
+          button.onclick = () => equipVehicle(button.dataset.equipVehicle),
+        );
+      }
+      function renderInventory() {
+        const baitIcons = { worm: "🪱", river: "🦟", paste: "🍡" };
+        const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
+        $("#inventoryHpText").textContent = `${s.hp} / ${s.maxHp}`;
+        $("#inventoryHpFill").style.width = `${hpPercent}%`;
+        $("#inventoryHpFill").classList.toggle("low", hpPercent <= 35);
+        const baitMarkup = Object.entries(baitData)
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${baitIcons[id] || "🎒"}</i>` +
+            `<span><b>${item.name}</b><br><small>釣りエサ</small></span>` +
+            `<strong>×${s.baits[id] || 0}</strong></div>`,
+          )
+          .join("");
+        const itemMarkup = Object.entries(fieldItemData)
+          .map(([id, item]) => {
+            const count = s.items[id] || 0;
+            const disabled = count < 1 || s.hp >= s.maxHp ? " disabled" : "";
+            return `<div class="inventory-card"><i>${item.icon}</i>` +
+              `<span><b>${item.name}</b><br><small>体力＋${item.heal}／${item.source}</small></span>` +
+              `<div class="inventory-card-actions"><strong>×${count}</strong>` +
+              `<button class="inventory-use" data-use-item="${id}"${disabled}>使う</button></div></div>`;
+          })
+          .join("");
+        $("#inventoryItems").innerHTML = baitMarkup + itemMarkup;
+        document.querySelectorAll("[data-use-item]").forEach((button) =>
+          button.onclick = () => useFieldItem(button.dataset.useItem),
+        );
+        renderEquipment();
+        renderTackle();
+      }
+      function setInventoryTab(tab = "items") {
+        inventoryTab = ["items", "equipment", "tackle"].includes(tab)
+          ? tab
+          : "items";
+        document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
+          button.classList.toggle("active", button.dataset.inventoryTab === inventoryTab),
+        );
+        document.querySelectorAll("[data-inventory-panel]").forEach((panel) =>
+          panel.classList.toggle("active", panel.dataset.inventoryPanel === inventoryTab),
+        );
+      }
+      function openInventory() {
+        if (
+          battle ||
+          document.querySelector(".modal.open") ||
+          $("#catchCard").classList.contains("show")
+        ) return;
+        renderInventory();
+        setInventoryTab(inventoryTab);
+        open("inventory");
+      }
       function renderTackle() {
-        $("#baitOptions").innerHTML = Object.entries(baitData).map(([id,b]) =>
+        const baitMarkup = Object.entries(baitData).map(([id,b]) =>
           `<button data-pick-bait="${id}" class="${s.selectedBait === id ? "selected" : ""}">${b.name} ×${s.baits[id] || 0}</button>`).join("");
-        $("#rodOptions").innerHTML = s.ownedRods.map(id =>
+        const rodMarkup = s.ownedRods.map(id =>
           `<button data-pick-rod="${id}" class="${s.selectedRod === id ? "selected" : ""}">${rodData[id].name}</button>`).join("");
+        for (const id of ["#baitOptions", "#inventoryBaitOptions"])
+          $(id).innerHTML = baitMarkup;
+        for (const id of ["#rodOptions", "#inventoryRodOptions"])
+          $(id).innerHTML = rodMarkup;
+        $("#equipmentRod").textContent = rodData[s.selectedRod].name;
+        $("#inventoryTackleSummary").textContent =
+          `現在の仕掛け：${rodData[s.selectedRod].name} ＋ ` +
+          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}`;
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
-          s.selectedBait = b.dataset.pickBait; renderTackle(); render();
+          s.selectedBait = b.dataset.pickBait;
+          renderTackle();
+          render();
+          save();
         });
         document.querySelectorAll("[data-pick-rod]").forEach(b => b.onclick = () => {
-          s.selectedRod = b.dataset.pickRod; renderTackle(); render();
+          s.selectedRod = b.dataset.pickRod;
+          renderTackle();
+          render();
+          save();
         });
       }
       function beginFishing() {
+        const practice = Boolean(battle?.practice);
+        const tutorial = Boolean(battle?.tutorial);
+        const practiceBait = battle?.bait || "paste";
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
         const spot = fishingSpotById(battle?.spot);
         const waterZone = battle?.waterZone || spot.zone || "lake";
-        s.bait = s.baits[s.selectedBait] || 0;
-        if (s.bait < 1) {
-          $("#hint").textContent =
-            s.money >= 120
-              ? "エサがない！釣具店を開くよ。エサを買おう。"
-              : `エサもお金もない！${dogName()}が助けに来た。`;
-          close();
-          if (s.money >= 120) open("store");
-          else rescue();
-          return;
+        const minimumDepth = battle?.minimumDepth || "shallow";
+        const waterX = battle?.waterX;
+        const waterY = battle?.waterY;
+        if (!practice) {
+          s.bait = s.baits[s.selectedBait] || 0;
+          if (s.bait < 1) {
+            $("#hint").textContent =
+              s.money >= 120
+                ? "エサがない！釣具店を開くよ。エサを買おう。"
+                : `エサもお金もない！${dogName()}が助けに来た。`;
+            close();
+            if (s.money >= 120) open("store");
+            else rescue();
+            return;
+          }
+          s.baits[s.selectedBait]--;
+          s.time++;
         }
-        s.baits[s.selectedBait]--;
-        s.time++;
         close();
         battle = {
           phase: "cast",
+          practice,
+          tutorial,
           spot: spot.id,
           waterZone,
-          depth: "shallow",
-          bait: s.selectedBait,
+          depth: minimumDepth,
+          minimumDepth,
+          waterX,
+          waterY,
+          bait: practice ? practiceBait : s.selectedBait,
           cast: 0,
           castDir: 1,
           f: null,
@@ -4500,14 +5934,19 @@
         };
         resetWaterFx();
         $("#fishScene").classList.add("active");
+        $("#fishScene").classList.toggle("practice-fishing", practice);
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "block";
         $("#distanceLabel").style.display = "none";
         $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
         $("#fishName").textContent = "キャスト";
-        $("#phaseLabel").textContent = " 距離を決める";
-        $("#battleMsg").textContent = "Aを押して投げる！遠いほど大物が狙える。";
+        $("#phaseLabel").textContent = practice
+          ? tutorial ? " ① 投げる" : " 練習キャスト"
+          : " 距離を決める";
+        $("#battleMsg").textContent = practice
+          ? "サム「動く目盛りを見てAだ。池ではどこに投げても大丈夫」"
+          : "Aを押して投げる！遠いほど大物が狙える。";
         $("#pull").innerHTML = "A<br><small>投げる！</small>";
         $("#wait").innerHTML = "B<br><small>やめる</small>";
         battleTick();
@@ -4739,11 +6178,14 @@
         };
       }
       function updateRetrieval(mood) {
-        const control = rodData[s.selectedRod].control;
+        const control = battle.practice
+          ? Math.max(1.7, rodData[s.selectedRod].control)
+          : rodData[s.selectedRod].control;
+        const power = battle.practice ? Math.max(20, s.power) : s.power;
         const before = battle.retrieval || 0;
         if (battle.reeling) {
           const pull =
-            ((s.power / 11) * mood.reel) /
+            ((power / 11) * mood.reel) /
             battle.f.resistance /
             (battle.distanceFactor || 1);
           battle.retrieval = before + pull;
@@ -5102,6 +6544,7 @@
           "landing",
           "gill-wash",
           "hook-reveal",
+          "practice-fishing",
         );
         scene.style.removeProperty("background-position");
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
@@ -5131,19 +6574,23 @@
       function hideCatchCard() {
         clearTimeout(catchTimer);
         $("#catchCard").classList.remove("show", "legend");
+        scheduleIdleStatus(450);
       }
-      function showCatchCard(f, first) {
+      function showCatchCard(f, first, detailOverride = "", badgeOverride = "") {
+        hideIdleStatus();
         const card = $("#catchCard");
         const hangingFish = $("#catchFish");
-        $("#catchBadge").textContent = f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!";
+        $("#catchBadge").textContent = badgeOverride ||
+          (f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!");
         $("#catchTitle").textContent = f.name;
         const detail = first
           ? `初釣果！ ＋${f.price}円`
           : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
-        $("#catchDetail").textContent =
-          f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail;
+        $("#catchDetail").textContent = detailOverride ||
+          (f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail);
         hangingFish.className = `catch-fish fish-${f.id}`;
-        hangingFish.style.backgroundImage = `url("${fishAssets[f.id]}")`;
+        hangingFish.style.backgroundImage =
+          `url("${fishCatchAssets[f.id] || fishAssets[f.id]}")`;
         hangingFish.style.backgroundPositionX = "0";
         card.classList.remove("show", "legend");
         void card.offsetWidth;
@@ -5282,6 +6729,18 @@
             `scale(${anchor.profile.tackleScale})`;
         }
       }
+      function queuePracticeBite(message) {
+        if (!battle?.practice) return;
+        battle.phase = "wait";
+        battle.reeling = false;
+        battle.biteAt = Date.now() + 850 + Math.random() * 650;
+        $("#phaseLabel").textContent = battle.tutorial
+          ? " ② ウキを見る"
+          : " アタリ待ち";
+        $("#battleMsg").textContent = message;
+        $("#pull").innerHTML = "A<br><small>合わせる</small>";
+        $("#wait").innerHTML = "B<br><small>練習終了</small>";
+      }
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
@@ -5295,20 +6754,33 @@
           }
           if (battle.phase === "wait") {
             const now = Date.now();
-            if (now >= battle.biteAt && now <= battle.biteAt + 1050) {
+            const biteWindow = battle.practice ? 2800 : 1050;
+            if (now >= battle.biteAt && now <= battle.biteAt + biteWindow) {
               battle.phase = "bite";
               vibrate([90, 55, 170]);
-              $("#battleMsg").textContent = "消し込んだ！！今だ、Aで合わせる！";
+              $("#phaseLabel").textContent = battle.practice
+                ? " ③ 合わせる！"
+                : $("#phaseLabel").textContent;
+              $("#battleMsg").textContent = battle.practice
+                ? "サム「ウキが消えた！今だ、Aで合わせる！」"
+                : "消し込んだ！！今だ、Aで合わせる！";
               $("#pull").innerHTML = "A<br><small>合わせる！</small>";
             }
             return;
           }
           if (battle.phase === "bite") {
-            if (Date.now() > battle.biteAt + 1050) lose("合わせが遅れた……魚はエサだけ持っていった。");
+            const biteWindow = battle.practice ? 2800 : 1050;
+            if (Date.now() > battle.biteAt + biteWindow) {
+              if (battle.practice)
+                queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
+              else lose("合わせが遅れた……魚はエサだけ持っていった。");
+            }
             return;
           }
           if (battle.phase !== "fight") return;
-          const control = rodData[s.selectedRod].control;
+          const control = battle.practice
+            ? Math.max(1.7, rodData[s.selectedRod].control)
+            : rodData[s.selectedRod].control;
           if (!battle.mood || Date.now() > battle.nextMood) chooseFishMood();
           const mood = battle.mood;
           if (battle.gillWash) {
@@ -5328,7 +6800,7 @@
           } else {
             battle.ten = Math.max(3, battle.ten - mood.release * control);
           }
-          battle.ten = Math.min(110, battle.ten);
+          battle.ten = Math.min(battle.practice ? 88 : 110, battle.ten);
           const warning =
             battle.ten >= 85
               ? "⚠ 糸が切れそう！ "
@@ -5362,12 +6834,20 @@
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") {
           const distance = battle.cast;
-          const depth = depthForCast(battle.waterZone || "lake", distance);
+          const depth = battle.practice
+            ? "shallow"
+            : depthForCast(
+                battle.waterZone || "lake",
+                distance,
+                battle.minimumDepth || "shallow",
+              );
           battle.depth = depth;
           battle.spot = `${battle.waterZone || "lake"}-${depth}`;
           const spot = fishingSpotById(battle.spot);
           setFishingSceneTheme(spot.zone, spot.depth);
-          const f = pick(distance, battle.spot);
+          const f = battle.practice
+            ? fish.find((candidate) => candidate.id === "funa")
+            : pick(distance, battle.spot);
           battle.f = f;
           battle.x = clampBattle(54 + distance * 0.4, 54, f.id === "nushi" ? 90 : 94);
           battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
@@ -5377,35 +6857,63 @@
           battle.surfaceY = 14;
           battle.retrieval = 0;
           battle.castDistance = distance;
-          battle.startMeters = Math.max(6, Math.round(7 + distance * 0.26));
-          battle.distanceFactor = clampBattle(battle.startMeters / 18, 0.75, 1.55);
+          battle.startMeters = battle.practice
+            ? Math.max(6, Math.round(6 + distance * 0.12))
+            : Math.max(6, Math.round(7 + distance * 0.26));
+          battle.distanceFactor = battle.practice
+            ? 0.72
+            : clampBattle(battle.startMeters / 18, 0.75, 1.55);
           battle.phase = "wait";
-          battle.biteAt = Date.now() + (1500 + Math.random() * 2600) / baitData[s.selectedBait].bite;
+          battle.biteAt = Date.now() +
+            (battle.practice
+              ? 850 + Math.random() * 650
+              : (1500 + Math.random() * 2600) /
+                baitData[battle.bait || s.selectedBait].bite);
           $("#linePath").setAttribute(
             "d",
             `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
           );
           $("#castMeter").style.display = "none";
-          $("#fishName").textContent = spot.name;
-          $("#phaseLabel").textContent = {
-            shallow: " 岸際",
-            mid: " 中層",
-            deep: " 深場",
-          }[depth];
-          $("#battleMsg").textContent = "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
+          $("#fishName").textContent = battle.practice
+            ? "試し釣り池のフナ"
+            : spot.name;
+          $("#phaseLabel").textContent = battle.practice
+            ? battle.tutorial ? " ② ウキを見る" : " アタリ待ち"
+            : {
+                shallow: " 岸際",
+                mid: " 中層",
+                deep: " 深場",
+              }[depth];
+          $("#battleMsg").textContent = battle.practice
+            ? "サム「小さな揺れは待つ。ウキが水中へ消えたらAだ」"
+            : "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
           $("#pull").innerHTML = "A<br><small>合わせる</small>";
-          $("#wait").innerHTML = "B<br><small>竿を上げる</small>";
+          $("#wait").innerHTML = battle.practice
+            ? "B<br><small>練習終了</small>"
+            : "B<br><small>竿を上げる</small>";
           return;
         }
-        if (battle.phase === "wait") return lose("まだ前アタリだった。早合わせで逃げられた……。");
+        if (battle.phase === "wait") {
+          if (battle.practice)
+            return queuePracticeBite(
+              "サム「今のは早かったな。失敗にはしない、もう一度ウキを見よう」",
+            );
+          return lose("まだ前アタリだった。早合わせで逃げられた……。");
+        }
         if (battle.phase === "bite") startFight();
         if (battle.phase === "fight") battle.reeling = true;
       }
       function startFight() {
         battle.phase = "fight";
         const f = battle.f;
-        battle.calmBoost = s.calmBonus > 0 ? 3 : 0;
-        if (s.calmBonus > 0) {
+        battle.calmBoost = battle.practice
+          ? 5
+          : s.calmBonus > 1
+            ? 5
+            : s.calmBonus > 0
+              ? 3
+              : 0;
+        if (!battle.practice && s.calmBonus > 0) {
           s.calmBonus = 0;
           save();
         }
@@ -5448,18 +6956,32 @@
         chooseFishMood(true);
         fishElement.classList.add("hooked");
         fishElement.style.opacity = "1";
-        $("#battleMsg").textContent =
-          `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
+        $("#phaseLabel").textContent = battle.practice
+          ? " ④ 巻く／送る"
+          : $("#phaseLabel").textContent;
+        $("#battleMsg").textContent = battle.practice
+          ? "サム「掛かった！Aを押して巻く。赤くなったら離して糸を送るんだ」"
+          : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
-        log(`${fishingSpotById(battle.spot).name}で${f.name}が掛かった！`);
+        log(battle.practice
+          ? "サムの試し釣り池で、練習用のフナが掛かった！"
+          : `${fishingSpotById(battle.spot).name}で${f.name}が掛かった！`);
       }
       function wait() {
         if (!battle) return;
         if (battle.phase === "prep") {
+          if (battle.practice) {
+            log("サム「気が向いたら、いつでも試しにおいで」");
+            return endBattle();
+          }
           renderTackle();
           return open("tackle");
         }
         if (battle.phase === "landing") return;
+        if (battle.practice && battle.phase !== "fight") {
+          log("サム「今日はここまでだな。またいつでも練習できるぞ」");
+          return endBattle();
+        }
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
         battle.reeling = false;
       }
@@ -5528,7 +7050,9 @@
         $("#phaseLabel").textContent = " ✦ 水面到達";
         $("#distanceLabel").textContent = "左の水面まで 0m";
         $("#distanceMeter").style.width = "0%";
-        $("#battleMsg").textContent = "左の水面まで巻き上げた！釣り上げ成功！";
+        $("#battleMsg").textContent = battle.practice
+          ? "サム「そう、それでいい！ゆっくり水面へ寄せられたな」"
+          : "左の水面まで巻き上げた！釣り上げ成功！";
         $("#linePath").setAttribute(
           "d",
           `M 150 48 Q 162 42 ${battle.surfaceX * 10} ${battle.surfaceY * 5}`,
@@ -5543,15 +7067,65 @@
         log(t);
         endBattle();
       }
+      function resolveCatchHazard(f) {
+        const damage = Math.max(0, Math.round(f?.hazardDamage || 0));
+        if (!damage) return "";
+        const protectedHands = s.equipment.hands === "gloves" &&
+          s.ownedHands.includes("gloves") &&
+          handEquipmentData.gloves.protection >= 1;
+        if (protectedHands) {
+          log(`釣り手袋が${f.name}の棘を受け止めた。体力ダメージなし。`);
+          return " ・ 釣り手袋で棘を防いだ";
+        }
+        s.hp = Math.max(0, s.hp - damage);
+        vibrate([90, 45, 130]);
+        if (s.hp > 0) {
+          log(`${f.name}の棘で手を傷つけ、${damage}ダメージ。残り体力${s.hp}。`);
+          return ` ・ 棘で${damage}ダメージ（HP ${s.hp}/${s.maxHp}）`;
+        }
+        const recoveryHp = Math.ceil(s.maxHp / 2);
+        s.hp = recoveryHp;
+        s.time += 1;
+        s.x = 43;
+        s.y = 34;
+        s.direction = "down";
+        log(`${f.name}の棘で力尽きた。${dogName()}に導かれて釣り宿へ運ばれ、体力${recoveryHp}で目を覚ました。`);
+        return ` ・ 棘で${damage}ダメージ／宿でHP ${recoveryHp}まで回復`;
+      }
       function caught() {
         const f = battle.f;
+        if (battle.practice) {
+          const tutorialClear = battle.tutorial && !s.practiceTutorialComplete;
+          if (tutorialClear) {
+            s.practiceTutorialComplete = true;
+            s.baits.worm = (s.baits.worm || 0) + 3;
+            save();
+            log("サムの初回講習を修了！フナを池へ戻し、祝いにミミズを3匹もらった。");
+          } else {
+            log("試し釣り成功！フナを傷つけないようサムの池へリリースした。");
+          }
+          endBattle();
+          showCatchCard(
+            f,
+            false,
+            tutorialClear
+              ? "講習修了！ 池へリリース ・ ミミズ×3"
+              : "練習成功！ 池へやさしくリリース",
+            tutorialClear ? "🎓 LESSON!" : "🎣 PRACTICE",
+          );
+          return;
+        }
         const spot = fishingSpotById(battle.spot);
         const first = !s.caught[f.id];
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
         s.money += f.price;
         log(`${spot.name}で${f.name}を釣り上げた！ ${f.price}円獲得。`);
+        const hazardDetail = resolveCatchHazard(f);
+        const catchDetail = first
+          ? `初釣果！ ＋${f.price}円`
+          : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
         endBattle();
-        showCatchCard(f, first);
+        showCatchCard(f, first, hazardDetail ? catchDetail + hazardDetail : "");
       }
       function endBattle() {
         clearInterval(timer);
@@ -5560,11 +7134,13 @@
         battle = null;
         resetBattleFeedback();
         clearWaterFx();
-        $("#fishScene").classList.remove("active");
+        $("#fishScene").classList.remove("active", "practice-fishing");
         render();
         armDogIdle();
+        scheduleIdleStatus(900);
       }
       function open(id) {
+        hideIdleStatus();
         $("#" + id).classList.add("open");
         renderRecord();
       }
@@ -5572,6 +7148,8 @@
         document
           .querySelectorAll(".modal.open")
           .forEach((x) => x.classList.remove("open"));
+        activeLocationId = null;
+        scheduleIdleStatus(450);
       }
       function renderRecord() {
         $("#book").innerHTML = fish
@@ -5589,6 +7167,7 @@
         $("#game").classList.add("active");
         render();
         armDogIdle();
+        scheduleIdleStatus(750);
         log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
       };
       document.querySelectorAll("[data-dog]").forEach((b) => {
@@ -5634,6 +7213,7 @@
       $("#catchClose").onclick = hideCatchCard;
       $("#action").onclick = action;
       $("#back").onclick = close;
+      $("#itemMenuButton").onclick = openInventory;
       $("#menu").onclick = () => open("record");
       $("#pull").onpointerdown = (e) => {
         e.preventDefault();
@@ -5644,6 +7224,11 @@
       $("#pull").onpointercancel = () => { if (battle) battle.reeling = false; };
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
+      $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
+      $("#locationAction").onclick = useLocationService;
+      document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
+        button.onclick = () => setInventoryTab(button.dataset.inventoryTab),
+      );
       document
         .querySelectorAll("[data-close]")
         .forEach((b) => (b.onclick = close));
@@ -5660,6 +7245,12 @@
         s.money -= 1500; s.ownedRods.push(id); s.selectedRod = id;
         log(`${rodData[id].name}を買った！`); render();
       });
+      document.querySelectorAll("[data-buy-hand]").forEach((button) =>
+        button.onclick = () => buyHandEquipment(button.dataset.buyHand),
+      );
+      document.querySelectorAll("[data-buy-vehicle]").forEach((button) =>
+        button.onclick = () => buyVehicle(button.dataset.buyVehicle),
+      );
       addEventListener("keydown", (e) => {
         if ($("#catchCard").classList.contains("show")) {
           if (["z", "x", "Enter", "Escape"].includes(e.key))
@@ -5679,6 +7270,10 @@
       });
       addEventListener("keyup", (e) => {
         if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
+      });
+      addEventListener("resize", () => {
+        if ($("#game").classList.contains("active"))
+          requestAnimationFrame(render);
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
       addEventListener("pagehide", save);
