@@ -2033,6 +2033,57 @@
         grid-template-columns: 1fr;
         gap: 6px;
       }
+      #store .shop-goods {
+        grid-template-columns: minmax(0, 1fr);
+      }
+      .shop-tabs {
+        position: sticky;
+        top: -12px;
+        z-index: 4;
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+        margin: 0 0 8px;
+        padding: 10px 0 7px;
+        background: linear-gradient(#172434 78%, transparent);
+      }
+      .shop-tabs button {
+        min-height: 36px;
+        padding: 6px 8px;
+        border: 2px solid #725033;
+        border-radius: 3px;
+        background: #493526;
+        color: #dbcba7;
+        font-weight: 900;
+        font-size: clamp(.62rem, 1vw, .74rem);
+        box-shadow: inset 0 2px #73533c, inset 0 -2px #2c211b;
+      }
+      .shop-tabs button.active {
+        border-color: #e1b75f;
+        background: linear-gradient(#e6bf68, #a66d35);
+        color: #241b16;
+        box-shadow: inset 0 2px #fff0a5, inset 0 -3px #75451f;
+      }
+      .sam-shop-window {
+        display: none;
+        gap: 7px;
+        padding: 8px;
+        border: 1px solid #d5aa6377;
+        background: #102033a8;
+        box-shadow: inset 0 0 0 2px #06142166;
+      }
+      .sam-shop-window.active {
+        display: grid;
+      }
+      .sam-shop-window[hidden] {
+        display: none;
+      }
+      .sam-window-note {
+        margin: 0;
+        color: #bfd2ce;
+        font-size: clamp(.54rem, .86vw, .64rem);
+        line-height: 1.4;
+      }
       .shop-category {
         display: grid;
         gap: 5px;
@@ -2072,6 +2123,10 @@
         color: #fff1c0;
         text-align: left;
         box-shadow: inset 0 2px #a8784d, inset 0 -3px #4b3225;
+      }
+      #store .shop-goods button {
+        grid-template-columns: minmax(0, 1fr) minmax(70px, auto);
+        min-height: 50px;
       }
       .shop-goods button > span {
         min-width: 0;
@@ -3535,7 +3590,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v60</span><span id="time">朝</span
+        <b>星降る湖</b><span>v61</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3786,47 +3841,56 @@
               <small class="shop-brand">SAM'S FISHING SHOP</small>
               <h2>サミュエル・オールドマン</h2>
               <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
-              <section class="shop-category" aria-labelledby="samBaitHeading">
-                <div class="shop-category-heading">
-                  <b id="samBaitHeading">エサ・消耗品</b><small>何度でも購入可</small>
-                </div>
-                <div class="grid shop-goods">
-                  <button data-buy-bait="worm">
-                    <span><b>🪱 ミミズ ×3</b><small>基本の釣りエサ</small></span>
-                    <strong><em>120円</em><small data-sam-stock>所持 ×0</small></strong>
-                  </button>
-                  <button data-buy-bait="river">
-                    <span><b>🦟 川虫 ×2</b><small>食いつきが良い</small></span>
-                    <strong><em>180円</em><small data-sam-stock>所持 ×0</small></strong>
-                  </button>
-                  <button data-buy-bait="paste">
-                    <span><b>🍡 練りエサ ×2</b><small>扱いやすい配合エサ</small></span>
-                    <strong><em>240円</em><small data-sam-stock>所持 ×0</small></strong>
-                  </button>
-                </div>
-              </section>
-              <section class="shop-category" aria-labelledby="samRodHeading">
-                <div class="shop-category-heading">
-                  <b id="samRodHeading">釣り竿</b><small>一本物</small>
-                </div>
-                <div class="grid shop-goods">
-                  <button data-buy-rod="moroko">
-                    <span><b>🎣 ホンモロコ竿</b><small>力30・制御1.35</small></span>
-                    <strong><em>1500円</em><small data-sam-stock>未購入</small></strong>
-                  </button>
-                </div>
-              </section>
-              <section class="shop-category" aria-labelledby="samHandHeading">
-                <div class="shop-category-heading">
-                  <b id="samHandHeading">手装備</b><small>道具袋で装備変更</small>
-                </div>
-                <div class="grid shop-goods">
-                  <button data-buy-hand="gloves">
-                    <span><b>🧤 釣り手袋</b><small>危険魚の棘を防ぐ</small></span>
-                    <strong><em>900円</em><small data-sam-stock>未購入</small></strong>
-                  </button>
-                </div>
-              </section>
+              <div class="shop-tabs" role="tablist" aria-label="サムの店の売り場">
+                <button class="active" data-sam-shop-tab="tackle" role="tab" aria-controls="samTackleWindow" aria-selected="true">🎣 釣具</button>
+                <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false">🧤 装備・雑貨</button>
+              </div>
+              <div class="sam-shop-window active" id="samTackleWindow" data-sam-shop-panel="tackle" role="tabpanel">
+                <section class="shop-category" aria-labelledby="samBaitHeading">
+                  <div class="shop-category-heading">
+                    <b id="samBaitHeading">エサ・消耗品</b><small>何度でも購入可</small>
+                  </div>
+                  <div class="grid shop-goods">
+                    <button data-buy-bait="worm">
+                      <span><b>🪱 ミミズ ×3</b><small>基本の釣りエサ</small></span>
+                      <strong><em>120円</em><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                    <button data-buy-bait="river">
+                      <span><b>🦟 川虫 ×2</b><small>食いつきが良い</small></span>
+                      <strong><em>180円</em><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                    <button data-buy-bait="paste">
+                      <span><b>🍡 練りエサ ×2</b><small>扱いやすい配合エサ</small></span>
+                      <strong><em>240円</em><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                  </div>
+                </section>
+                <section class="shop-category" aria-labelledby="samRodHeading">
+                  <div class="shop-category-heading">
+                    <b id="samRodHeading">釣り竿</b><small>一本物</small>
+                  </div>
+                  <div class="grid shop-goods">
+                    <button data-buy-rod="moroko">
+                      <span><b>🎣 ホンモロコ竿</b><small>力30・制御1.35</small></span>
+                      <strong><em>1500円</em><small data-sam-stock>未購入</small></strong>
+                    </button>
+                  </div>
+                </section>
+              </div>
+              <div class="sam-shop-window" id="samGoodsWindow" data-sam-shop-panel="goods" role="tabpanel" hidden>
+                <section class="shop-category" aria-labelledby="samHandHeading">
+                  <div class="shop-category-heading">
+                    <b id="samHandHeading">手装備</b><small>道具袋で装備変更</small>
+                  </div>
+                  <div class="grid shop-goods">
+                    <button data-buy-hand="gloves">
+                      <span><b>🧤 釣り手袋</b><small>危険魚の棘を防ぐ</small></span>
+                      <strong><em>900円</em><small data-sam-stock>未購入</small></strong>
+                    </button>
+                  </div>
+                </section>
+                <p class="sam-window-note">手袋など、釣り人の身支度に使う品はこちら。購入後は道具袋の「装備」で着け替えられる。</p>
+              </div>
               <button class="shop-practice" id="practiceOffer">
                 <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
                 <small id="practiceOfferStatus">初回講習</small>
@@ -4557,6 +4621,7 @@
         playerAnimFrame = 0,
         petSceneFrame = 0,
         inventoryTab = "items",
+        samShopTab = "tackle",
         waterFxState = {
           tick: 0,
           particles: [],
@@ -4634,6 +4699,11 @@
         // v60 only clarifies shop categories, stock counts and purchase
         // feedback. All owned items, rods, equipment and field state remain.
         s.mapVersion = 60;
+      }
+      if ((s.mapVersion || 0) < 61) {
+        // v61 separates Sam's tackle and general-goods windows and fixes the
+        // narrow two-column cards. Saved inventory and equipment stay intact.
+        s.mapVersion = 61;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -5136,6 +5206,20 @@
             "aria-label",
             `${item.name}、${owned ? "購入済み" : "未購入"}`,
           );
+        });
+        setSamShopTab(samShopTab);
+      }
+      function setSamShopTab(tab = "tackle") {
+        samShopTab = ["tackle", "goods"].includes(tab) ? tab : "tackle";
+        document.querySelectorAll("[data-sam-shop-tab]").forEach((button) => {
+          const active = button.dataset.samShopTab === samShopTab;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-selected", String(active));
+        });
+        document.querySelectorAll("[data-sam-shop-panel]").forEach((panel) => {
+          const active = panel.dataset.samShopPanel === samShopTab;
+          panel.classList.toggle("active", active);
+          panel.hidden = !active;
         });
       }
       function setSamShopDialogue(message) {
@@ -7737,6 +7821,9 @@
       document
         .querySelectorAll("[data-close]")
         .forEach((b) => (b.onclick = close));
+      document.querySelectorAll("[data-sam-shop-tab]").forEach((button) =>
+        button.onclick = () => setSamShopTab(button.dataset.samShopTab),
+      );
       document.querySelectorAll("[data-buy-bait]").forEach((button) =>
         button.onclick = () => buySamBait(button.dataset.buyBait),
       );
