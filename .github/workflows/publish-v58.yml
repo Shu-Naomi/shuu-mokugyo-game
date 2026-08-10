@@ -1,0 +1,84 @@
+name: Prepare nushi-tsuri v58
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Create release branch
+        run: git switch -c release/nushi-tsuri-v58
+
+      - name: Download and extract v58
+        shell: bash
+        run: |
+          set -euo pipefail
+          curl -fL --retry 3 \
+            -o /tmp/nushi-v58.zip \
+            "https://github.com/${GITHUB_REPOSITORY}/releases/latest/download/nushi-tsuri-v58-toolbox.zip"
+
+          rm -rf /tmp/nushi-v58
+          mkdir -p /tmp/nushi-v58
+          unzip -q /tmp/nushi-v58.zip -d /tmp/nushi-v58
+
+          test -f /tmp/nushi-v58/nushi-tsuri-v58-toolbox/nushi-tsuri/index.html
+
+      - name: Run all tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          toolbox=/tmp/nushi-v58/nushi-tsuri-v58-toolbox
+
+          if ! command -v identify >/dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y imagemagick
+          fi
+
+          for test_file in "$toolbox"/tools/test-*.cjs; do
+            node "$test_file"
+          done
+
+      - name: Synchronize nushi-tsuri
+        shell: bash
+        run: |
+          set -euo pipefail
+          toolbox=/tmp/nushi-v58/nushi-tsuri-v58-toolbox
+
+          mkdir -p nushi-tsuri
+          rsync -a --delete "$toolbox/nushi-tsuri/" nushi-tsuri/
+          diff -qr "$toolbox/nushi-tsuri" nushi-tsuri
+          git diff --check
+
+      - name: Commit and push release branch
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add -A nushi-tsuri
+
+          if git diff --cached --quiet; then
+            echo "The repository already matches v58."
+            exit 0
+          fi
+
+          git commit -m "Update nushi-tsuri to v58 release"
+          git push --set-upstream origin release/nushi-tsuri-v58
+
+          echo "[Pull Requestを作成](https://github.com/${GITHUB_REPOSITORY}/compare/main...release/nushi-tsuri-v58?expand=1)" >> "$GITHUB_STEP_SUMMARY"
