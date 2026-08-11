@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v64-underwater-scenes-46";
+const CACHE_NAME = "nushi-tsuri-v65-sea-underwater-scenes-47";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -13,6 +13,9 @@ const CORE_ASSETS = [
   "./assets/underwater-river-shallow-v64.jpg",
   "./assets/underwater-river-mid-v64.jpg",
   "./assets/underwater-river-deep-v64.jpg",
+  "./assets/underwater-sea-shallow-v65.jpg",
+  "./assets/underwater-sea-mid-v65.jpg",
+  "./assets/underwater-sea-deep-v65.jpg",
   "./assets/sam-shop-exterior-v53.png",
   "./assets/interior-sam-shop-v55.png",
   "./assets/interior-yaoya-v55.png",
