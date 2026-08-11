@@ -2451,8 +2451,10 @@
         background: #ffffff0c;
       }
       .fish-scene {
-        --biome-x: 0%;
         --depth-y: 0%;
+        --underwater-image: url("assets/fishing-biomes-v49.png");
+        --underwater-position: 0% 0%;
+        --underwater-size: 300% 300%;
         --surface-colour: #d7ffff80;
         display: none;
         position: absolute;
@@ -2461,21 +2463,76 @@
         overflow: hidden;
         isolation: isolate;
         background-color: #073f5d;
-        background-image: url("assets/fishing-biomes-v49.png");
-        background-position: var(--biome-x) var(--depth-y);
-        background-size: 300% 300%;
-        background-repeat: no-repeat;
-        image-rendering: pixelated;
-        transition: background-position 0.28s steps(3);
       }
-      .fish-scene.water-lake { --biome-x: 0%; }
-      .fish-scene.water-river { --biome-x: 50%; --surface-colour: #dfffd57d; }
-      .fish-scene.water-sea { --biome-x: 100%; --surface-colour: #dcffff8a; }
+      .fish-scene.water-river { --surface-colour: #dfffd57d; }
+      .fish-scene.water-sea {
+        --underwater-position: 100% var(--depth-y);
+        --surface-colour: #dcffff8a;
+      }
       .fish-scene.depth-shallow { --depth-y: 0%; }
       .fish-scene.depth-mid { --depth-y: 50%; }
       .fish-scene.depth-deep { --depth-y: 100%; }
+      .fish-scene.water-lake.depth-shallow {
+        --underwater-image: url("assets/underwater-lake-shallow-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-lake.depth-mid {
+        --underwater-image: url("assets/underwater-lake-mid-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-lake.depth-deep {
+        --underwater-image: url("assets/underwater-lake-deep-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-river.depth-shallow {
+        --underwater-image: url("assets/underwater-river-shallow-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-river.depth-mid {
+        --underwater-image: url("assets/underwater-river-mid-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-river.depth-deep {
+        --underwater-image: url("assets/underwater-river-deep-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
       .fish-scene.active {
         display: block;
+      }
+      .underwater-backdrop {
+        position: absolute;
+        z-index: 0;
+        inset: -3%;
+        pointer-events: none;
+        background-image: var(--underwater-image);
+        background-position: var(--underwater-position);
+        background-size: var(--underwater-size);
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        transform: scale(1.035) translate3d(0, 0, 0);
+        transform-origin: center;
+        animation: underwater-current 7.2s steps(18, end) infinite alternate;
+        will-change: transform;
+      }
+      .fish-scene.water-river .underwater-backdrop {
+        animation-duration: 5.2s;
+      }
+      .fish-scene.fighting .underwater-backdrop {
+        animation-name: underwater-battle-sway;
+        animation-duration: 1.8s;
+        animation-timing-function: steps(8, end);
+      }
+      .fish-scene.water-rush .underwater-backdrop,
+      .fish-scene.gill-wash .underwater-backdrop {
+        animation-name: underwater-struggle-shake;
+        animation-duration: 0.3s;
+        animation-timing-function: steps(4, end);
       }
       .practice-badge {
         display: none;
@@ -2496,7 +2553,7 @@
       .fish-scene::before {
         content: "";
         position: absolute;
-        z-index: 0;
+        z-index: 1;
         inset: -12% -18%;
         pointer-events: none;
         opacity: 0.24;
@@ -3426,6 +3483,29 @@
       @keyframes underwater-light {
         to { transform: translateX(5%); opacity: 0.36; }
       }
+      @keyframes underwater-current {
+        0% { transform: scale(1.035) translate3d(-2px, -1px, 0); }
+        35% { transform: scale(1.04) translate3d(1px, 1px, 0); }
+        68% { transform: scale(1.037) translate3d(2px, -1px, 0); }
+        100% { transform: scale(1.04) translate3d(-1px, 2px, 0); }
+      }
+      @keyframes underwater-battle-sway {
+        0%, 100% { transform: scale(1.04) translate3d(-2px, 0, 0); }
+        25% { transform: scale(1.042) translate3d(1px, -1px, 0); }
+        50% { transform: scale(1.04) translate3d(2px, 1px, 0); }
+        75% { transform: scale(1.042) translate3d(-1px, 2px, 0); }
+      }
+      @keyframes underwater-struggle-shake {
+        0%, 100% { transform: scale(1.045) translate3d(-4px, 1px, 0); }
+        33% { transform: scale(1.047) translate3d(4px, -2px, 0); }
+        66% { transform: scale(1.045) translate3d(-1px, 3px, 0); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .underwater-backdrop {
+          animation: none !important;
+          transform: scale(1.035);
+        }
+      }
       @keyframes line-quiver {
         50% { stroke-width: 2.4; opacity: 0.96; }
       }
@@ -3590,7 +3670,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v63</span><span id="time">朝</span
+        <b>星降る湖</b><span>v64</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3708,6 +3788,7 @@
           </div>
         </div>
         <div class="fish-scene" id="fishScene">
+          <div class="underwater-backdrop" aria-hidden="true"></div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
           <div class="surface-splash" id="surfaceSplash" aria-hidden="true">
@@ -4714,6 +4795,11 @@
         // v63 opens the visible stone passage between the fish market and
         // harbor shop. Saved position, inventory and purchases stay intact.
         s.mapVersion = 63;
+      }
+      if ((s.mapVersion || 0) < 64) {
+        // v64 replaces lake and river battle scenery and adds background-only
+        // underwater sway. Every saved item and field position stays intact.
+        s.mapVersion = 64;
       }
       function loadDogImage(src) {
         const image = new Image();
