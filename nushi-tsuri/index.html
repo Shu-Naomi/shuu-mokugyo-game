@@ -2926,6 +2926,7 @@
           top 0.72s cubic-bezier(.2,.9,.25,1),
           transform 0.72s cubic-bezier(.2,1.25,.3,1),
           opacity 0.72s;
+        animation: landing-fish-kick .42s steps(7, end) infinite alternate;
         filter:
           brightness(1.2)
           saturate(1.18)
@@ -3416,7 +3417,7 @@
           saturate(1.13)
           drop-shadow(6px 8px 2px #020c15aa)
           drop-shadow(0 0 8px #a4efff77);
-        animation: catch-fish-tail .68s steps(7, end) infinite alternate;
+        will-change: background-position, filter;
       }
       .catch-fish.fish-moroko,
       .catch-fish.fish-aji {
@@ -3425,7 +3426,7 @@
         transform: translate(-95.8%, -60%);
         transform-origin: 95.8% 60%;
       }
-      .catch-fish.fish-aji { --fish-hue: 155deg; }
+      .catch-fish.fish-aji { --fish-hue: 0deg; }
       .catch-fish.fish-funa {
         width: clamp(100px, min(19vw, 38vh), 185px);
         aspect-ratio: 144 / 95;
@@ -3614,7 +3615,7 @@
         0% { transform: rotate(-92deg); }
         100% { transform: rotate(-88deg); }
       }
-      @keyframes catch-fish-tail {
+      @keyframes landing-fish-kick {
         to { background-position-x: 100%; }
       }
       @keyframes catch-hook-twitch {
@@ -3693,7 +3694,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v68</span><span id="time">朝</span
+        <b>星降る湖</b><span>v69</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4395,7 +4396,7 @@
             movingDrag: 0.98,
             restingDrag: 0.9,
             turnTicks: 1,
-            turnFrames: 6,
+            turnFrames: 4,
             turnArc: 3.8,
             turnRoll: 6.5,
           },
@@ -4411,8 +4412,8 @@
             roll: 0.9,
             movingDrag: 0.986,
             restingDrag: 0.92,
-            turnTicks: 2,
-            turnFrames: 8,
+            turnTicks: 1,
+            turnFrames: 5,
             turnArc: 3,
             turnRoll: 5,
           },
@@ -4428,8 +4429,8 @@
             roll: 1.15,
             movingDrag: 0.988,
             restingDrag: 0.93,
-            turnTicks: 2,
-            turnFrames: 9,
+            turnTicks: 1,
+            turnFrames: 6,
             turnArc: 4.8,
             turnRoll: 7,
           },
@@ -4445,8 +4446,8 @@
             roll: 0.72,
             movingDrag: 0.992,
             restingDrag: 0.95,
-            turnTicks: 3,
-            turnFrames: 12,
+            turnTicks: 2,
+            turnFrames: 7,
             turnArc: 6.5,
             turnRoll: 8.5,
           },
@@ -4679,7 +4680,7 @@
         burst: 1.5,
         thrust: 0.2,
         sway: 1.8,
-        turnFrames: 6,
+        turnFrames: 4,
       };
       fightProfiles.aji = {
         intro: "群れから外れ、銀色の体で鋭く走る。",
@@ -4702,7 +4703,8 @@
         recoil: 1.75,
         sway: 1.25,
         roll: 1.05,
-        turnFrames: 10,
+        turnTicks: 1,
+        turnFrames: 6,
         turnArc: 4.2,
         turnRoll: 6.5,
       };
@@ -4752,6 +4754,8 @@
         battle = null,
         timer = 0,
         catchTimer = 0,
+        catchAnimationTimer = 0,
+        catchAnimationStep = 0,
         landingTimer = 0,
         walkTimer = 0,
         saveTimer = 0,
@@ -4892,6 +4896,11 @@
         // v68 replaces the generic mouth and turn overlays with complete,
         // hand-crafted pixel poses for every species. Save data is unchanged.
         s.mapVersion = 68;
+      }
+      if ((s.mapVersion || 0) < 69) {
+        // v69 speeds up species turns and animates the complete mouth, fin and
+        // tail poses while a landed fish hangs from the line. Saves are intact.
+        s.mapVersion = 69;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -7473,8 +7482,57 @@
       }
       function hideCatchCard() {
         clearTimeout(catchTimer);
+        clearInterval(catchAnimationTimer);
+        catchAnimationTimer = 0;
+        catchAnimationStep = 0;
         $("#catchCard").classList.remove("show", "legend");
         scheduleIdleStatus(450);
+      }
+      function renderCatchFishLife(f, step) {
+        const hangingFish = $("#catchFish");
+        // Animate complete fish drawings only. Closed swimming poses move the
+        // real fins and tail, then the v68 mouth sheet advances through its
+        // closed, half-open and open drawings without a detached overlay.
+        const cycle = [
+          ["swim", 0],
+          ["swim", 2],
+          ["swim", 4],
+          ["mouth", 0],
+          ["mouth", 1],
+          ["mouth", 2],
+          ["mouth", 1],
+          ["mouth", 0],
+          ["swim", 6],
+          ["swim", 7],
+        ];
+        const [mode, frame] = cycle[step % cycle.length];
+        const cells = mode === "mouth" ? 3 : 8;
+        const asset = mode === "mouth"
+          ? fishMouthAssets[f.id]
+          : fishCatchAssets[f.id] || fishAssets[f.id];
+        hangingFish.style.backgroundImage = `url("${asset}")`;
+        hangingFish.style.backgroundSize = `${cells * 100}% 100%`;
+        hangingFish.style.backgroundPositionX =
+          `${frame * (100 / (cells - 1))}%`;
+        hangingFish.dataset.catchPose = mode;
+        hangingFish.dataset.catchFrame = String(frame);
+      }
+      function startCatchFishLife(f) {
+        clearInterval(catchAnimationTimer);
+        catchAnimationStep = 0;
+        renderCatchFishLife(f, catchAnimationStep);
+        const frameDelay = {
+          moroko: 105,
+          aji: 100,
+          funa: 130,
+          koi: 140,
+          kasago: 135,
+          nushi: 165,
+        }[f.id] || 130;
+        catchAnimationTimer = setInterval(() => {
+          catchAnimationStep++;
+          renderCatchFishLife(f, catchAnimationStep);
+        }, frameDelay);
       }
       function showCatchCard(f, first, detailOverride = "", badgeOverride = "") {
         hideIdleStatus();
@@ -7489,9 +7547,7 @@
         $("#catchDetail").textContent = detailOverride ||
           (f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail);
         hangingFish.className = `catch-fish fish-${f.id}`;
-        hangingFish.style.backgroundImage =
-          `url("${fishCatchAssets[f.id] || fishAssets[f.id]}")`;
-        hangingFish.style.backgroundPositionX = "0";
+        startCatchFishLife(f);
         card.classList.remove("show", "legend");
         void card.offsetWidth;
         card.classList.toggle("legend", f.id === "nushi");
