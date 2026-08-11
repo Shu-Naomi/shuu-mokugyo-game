@@ -2466,7 +2466,6 @@
       }
       .fish-scene.water-river { --surface-colour: #dfffd57d; }
       .fish-scene.water-sea {
-        --underwater-position: 100% var(--depth-y);
         --surface-colour: #dcffff8a;
       }
       .fish-scene.depth-shallow { --depth-y: 0%; }
@@ -2499,6 +2498,21 @@
       }
       .fish-scene.water-river.depth-deep {
         --underwater-image: url("assets/underwater-river-deep-v64.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-sea.depth-shallow {
+        --underwater-image: url("assets/underwater-sea-shallow-v65.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-sea.depth-mid {
+        --underwater-image: url("assets/underwater-sea-mid-v65.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
+      .fish-scene.water-sea.depth-deep {
+        --underwater-image: url("assets/underwater-sea-deep-v65.jpg");
         --underwater-position: center;
         --underwater-size: cover;
       }
@@ -3670,7 +3684,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v64</span><span id="time">朝</span
+        <b>星降る湖</b><span>v65</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4800,6 +4814,11 @@
         // v64 replaces lake and river battle scenery and adds background-only
         // underwater sway. Every saved item and field position stays intact.
         s.mapVersion = 64;
+      }
+      if ((s.mapVersion || 0) < 65) {
+        // v65 completes the depth-specific scenery with three sea paintings.
+        // Every saved item, catch, purchase and field position stays intact.
+        s.mapVersion = 65;
       }
       function loadDogImage(src) {
         const image = new Image();
