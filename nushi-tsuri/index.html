@@ -3590,7 +3590,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v62</span><span id="time">朝</span
+        <b>星降る湖</b><span>v63</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4710,6 +4710,11 @@
         // Gameplay position, purchases and every saved item stay untouched.
         s.mapVersion = 62;
       }
+      if ((s.mapVersion || 0) < 63) {
+        // v63 opens the visible stone passage between the fish market and
+        // harbor shop. Saved position, inventory and purchases stay intact.
+        s.mapVersion = 63;
+      }
       function loadDogImage(src) {
         const image = new Image();
         image.onload = () => drawDog();
@@ -4856,6 +4861,15 @@
           { left: 151, right: 173, top: 105, bottom: 114 },
           { left: 151, right: 158, top: 110, bottom: 127 },
         ],
+        // The two rectangular building bounds meet diagonally here even
+        // though the painted map has a stone path. Keep this small cut-out
+        // wide enough for the game's four-unit, axis-aligned movement step.
+        harborCornerPassageBounds = {
+          left: 143,
+          right: 151,
+          top: 98,
+          bottom: 108,
+        },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
           { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
@@ -5040,7 +5054,13 @@
         ) < 9;
       }
       function isBlockedStructure(x, y) {
-        return structureBounds.some((bounds) => inWorldRect(x, y, bounds));
+        return structureBounds.some((bounds) => {
+          if (!inWorldRect(x, y, bounds)) return false;
+          const isHarborCornerBuilding =
+            bounds.id === "fish-market" || bounds.id === "harbor-shop";
+          return !(isHarborCornerBuilding &&
+            inWorldRect(x, y, harborCornerPassageBounds));
+        });
       }
       function isWalkableWorld(x, y) {
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
