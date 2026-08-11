@@ -7054,7 +7054,9 @@
             battle.swimPhase = 0;
             turn.flipped = true;
           }
-          battle.turnVisualScale = 0.26 + edgeOn * 0.74;
+          // Keep only a thin edge at the midpoint so the facing flip and the
+          // mouth-mounted hook cross the centre without a visible sideways jump.
+          battle.turnVisualScale = 0.1 + edgeOn * 0.9;
           battle.turnVisualSquash = 1 + curve * 0.08;
           battle.turnArcY = -curve * (motionProfile.turnArc || 4);
           battle.turnRoll =
