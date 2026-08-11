@@ -2829,6 +2829,13 @@
       .surface-splash i:nth-child(11) { --dx: -31px; --dy: -53px; --delay: 95ms; }
       .surface-splash i:nth-child(12) { --dx: 45px; --dy: -46px; --delay: 100ms; }
       .battle-fish {
+        --mouth-open: 0;
+        --mouth-x: 92%;
+        --mouth-y: 57%;
+        --mouth-width: 7%;
+        --mouth-height: 7%;
+        --mouth-inner: #26100d;
+        --mouth-lip: #a4663d;
         position: absolute;
         z-index: 3;
         left: 68%;
@@ -2853,6 +2860,45 @@
           contrast(var(--fish-contrast, 1))
           drop-shadow(5px 6px 2px #02192dbb);
         will-change: left, top, transform;
+      }
+      .battle-fish .fish-mouth {
+        position: absolute;
+        z-index: 2;
+        left: var(--mouth-x);
+        top: var(--mouth-y);
+        width: var(--mouth-width);
+        height: var(--mouth-height);
+        pointer-events: none;
+        opacity: 0;
+        overflow: visible;
+        background: var(--mouth-inner);
+        clip-path: polygon(0 34%, 68% 0, 100% 25%, 100% 75%, 68% 100%, 0 66%);
+        transform: translate(-100%, -50%)
+          scaleY(calc(0.16 + var(--mouth-open) * 0.84));
+        transform-origin: 100% 50%;
+        transition: transform 0.1s steps(2, end), opacity 0.14s;
+        image-rendering: pixelated;
+      }
+      .battle-fish .fish-mouth::after {
+        content: "";
+        position: absolute;
+        left: 18%;
+        right: 0;
+        bottom: -1px;
+        height: 2px;
+        background: var(--mouth-lip);
+        box-shadow: 1px 0 0 #160a08;
+        opacity: calc(0.62 + var(--mouth-open) * 0.34);
+      }
+      .fish-scene.fighting .battle-fish .fish-mouth {
+        opacity: 0.96;
+      }
+      .battle-fish.turning {
+        transition:
+          left 0.12s linear,
+          top 0.12s linear,
+          transform 0.09s linear,
+          filter 0.18s;
       }
       .battle-fish.fish-moroko,
       .battle-fish.fish-aji {
@@ -3684,7 +3730,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v65</span><span id="time">朝</span
+        <b>星降る湖</b><span>v66</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -3831,7 +3877,9 @@
               <circle class="hook-eye" cx="8" cy="3" r="0.55" />
             </svg>
           </div>
-          <div class="battle-fish" id="battleFish"></div>
+          <div class="battle-fish" id="battleFish">
+            <i class="fish-mouth" aria-hidden="true"></i>
+          </div>
           <div
             class="fish-tackle fish-tackle-front"
             id="fishTackleFront"
@@ -4331,12 +4379,36 @@
           // measured from its centre to the lower lip.  Keeping these per
           // species lets the hook follow the real mouth instead of aiming at
           // an arbitrary distance from the fish's centre.
-          moroko: { x: 0.458, y: 0.1, tackleScale: 0.72, inset: 2.5, drop: 1 },
-          aji: { x: 0.458, y: 0.1, tackleScale: 0.74, inset: 2.5, drop: 1 },
-          funa: { x: 0.368, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4 },
-          koi: { x: 0.397, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8 },
-          kasago: { x: 0.41, y: 0.085, tackleScale: 0.82, inset: 4, drop: 1.7 },
-          nushi: { x: 0.37, y: 0.075, tackleScale: 0.82, inset: 5, drop: 2.4 },
+          moroko: {
+            x: 0.458, y: 0.1, tackleScale: 0.72, inset: 2.5, drop: 1,
+            mouthWidth: 0.075, mouthHeight: 0.075, breath: 0.72,
+            inner: "#25100d", lip: "#b47742",
+          },
+          aji: {
+            x: 0.458, y: 0.1, tackleScale: 0.74, inset: 2.5, drop: 1,
+            mouthWidth: 0.075, mouthHeight: 0.075, breath: 0.66,
+            inner: "#17171d", lip: "#a8c2bd",
+          },
+          funa: {
+            x: 0.368, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4,
+            mouthWidth: 0.075, mouthHeight: 0.07, breath: 0.48,
+            inner: "#26110d", lip: "#9a5b32",
+          },
+          koi: {
+            x: 0.397, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8,
+            mouthWidth: 0.07, mouthHeight: 0.075, breath: 0.42,
+            inner: "#250e0d", lip: "#a85f33",
+          },
+          kasago: {
+            x: 0.41, y: 0.085, tackleScale: 0.82, inset: 4, drop: 1.7,
+            mouthWidth: 0.085, mouthHeight: 0.09, breath: 0.38,
+            inner: "#2a0b0b", lip: "#d16a42",
+          },
+          nushi: {
+            x: 0.37, y: 0.075, tackleScale: 0.82, inset: 5, drop: 2.4,
+            mouthWidth: 0.08, mouthHeight: 0.075, breath: 0.3,
+            inner: "#1d0a08", lip: "#b07a38",
+          },
         },
         fishMotionProfiles = {
           moroko: {
@@ -4352,6 +4424,9 @@
             movingDrag: 0.98,
             restingDrag: 0.9,
             turnTicks: 1,
+            turnFrames: 4,
+            turnArc: 3.8,
+            turnRoll: 6.5,
           },
           funa: {
             beat: 0.54,
@@ -4366,6 +4441,9 @@
             movingDrag: 0.986,
             restingDrag: 0.92,
             turnTicks: 2,
+            turnFrames: 5,
+            turnArc: 3,
+            turnRoll: 5,
           },
           koi: {
             beat: 0.48,
@@ -4380,6 +4458,9 @@
             movingDrag: 0.988,
             restingDrag: 0.93,
             turnTicks: 2,
+            turnFrames: 6,
+            turnArc: 4.8,
+            turnRoll: 7,
           },
           nushi: {
             beat: 0.31,
@@ -4394,6 +4475,9 @@
             movingDrag: 0.992,
             restingDrag: 0.95,
             turnTicks: 3,
+            turnFrames: 8,
+            turnArc: 6.5,
+            turnRoll: 8.5,
           },
         },
         fightProfiles = {
@@ -4625,6 +4709,7 @@
         burst: 1.5,
         thrust: 0.2,
         sway: 1.8,
+        turnFrames: 4,
       };
       fightProfiles.aji = {
         intro: "群れから外れ、銀色の体で鋭く走る。",
@@ -4647,6 +4732,9 @@
         recoil: 1.75,
         sway: 1.25,
         roll: 1.05,
+        turnFrames: 6,
+        turnArc: 4.2,
+        turnRoll: 6.5,
       };
       fightProfiles.kasago = {
         intro: "岩陰から飛び出し、棘のある体をくねらせて底へ潜る。",
@@ -4819,6 +4907,11 @@
         // v65 completes the depth-specific scenery with three sea paintings.
         // Every saved item, catch, purchase and field position stays intact.
         s.mapVersion = 65;
+      }
+      if ((s.mapVersion || 0) < 66) {
+        // v66 only adds breathing mouths and progressive turns to hooked fish.
+        // Every saved item, catch, purchase and field position stays intact.
+        s.mapVersion = 66;
       }
       function loadDogImage(src) {
         const image = new Image();
@@ -6628,6 +6721,8 @@
           tailKick: false,
           bodyStretch: 1,
           bodySquash: 1,
+          mouthPhase: 0,
+          mouthOpen: 0,
           visualOffsetX: 0,
           visualOffsetY: 0,
           reeling: false,
@@ -6643,6 +6738,11 @@
           facing: 1,
           turnIntent: 1,
           turnHold: 0,
+          turning: null,
+          turnVisualScale: 1,
+          turnVisualSquash: 1,
+          turnArcY: 0,
+          turnRoll: 0,
           pitch: 0,
           swimTick: 0,
           calmBoost: 0,
@@ -6734,6 +6834,11 @@
         };
         battle.nextGillWashTick =
           battle.swimTick + (battle.f.id === "nushi" ? 78 : 96);
+        battle.turning = null;
+        battle.turnVisualScale = 1;
+        battle.turnVisualSquash = 1;
+        battle.turnArcY = 0;
+        battle.turnRoll = 0;
         $("#fishScene").classList.add("gill-wash");
         $("#battleFish").classList.add("gill-wash");
         $("#phaseLabel").textContent = " 🌊 エラ洗い！";
@@ -6918,6 +7023,80 @@
         battle.retrieval = clampBattle(battle.retrieval, 0, 1);
         battle.retrievalDelta = battle.retrieval - before;
       }
+      function animateFishMouth(mood, speed, intensity = 1) {
+        const profile = fishMouthProfiles[battle.f.id];
+        const breathingEffort =
+          (mood?.calm ? 0.72 : 1) *
+          (mood?.danger ? 1.32 : 1) *
+          (battle.reeling ? 1.12 : 1) *
+          Math.min(1.28, 0.88 + Math.min(6, speed) * 0.065) *
+          intensity;
+        battle.mouthPhase =
+          ((battle.mouthPhase || 0) + profile.breath * breathingEffort) %
+          (Math.PI * 2);
+        const breathingWave = (Math.sin(battle.mouthPhase) + 1) / 2;
+        const opening = breathingWave < 0.34
+          ? 0
+          : (breathingWave - 0.34) / 0.66;
+        // Three crisp steps keep the movement readable at sprite scale while
+        // still looking like a breathing mouth rather than a blinking light.
+        battle.mouthOpen = Math.round(clampBattle(opening, 0, 1) * 3) / 3;
+      }
+      function updateFishTurn(desiredFacing, motionProfile) {
+        const turn = battle.turning;
+        if (turn) {
+          turn.frame++;
+          const progress = clampBattle(turn.frame / turn.frames, 0, 1);
+          const curve = Math.sin(progress * Math.PI);
+          const edgeOn = Math.abs(Math.cos(progress * Math.PI));
+          if (!turn.flipped && progress >= 0.5) {
+            battle.facing = turn.to;
+            battle.swimPhase = 0;
+            turn.flipped = true;
+          }
+          battle.turnVisualScale = 0.26 + edgeOn * 0.74;
+          battle.turnVisualSquash = 1 + curve * 0.08;
+          battle.turnArcY = -curve * (motionProfile.turnArc || 4);
+          battle.turnRoll =
+            (turn.to > turn.from ? -1 : 1) *
+            curve *
+            (motionProfile.turnRoll || 6);
+          if (progress >= 1) {
+            battle.facing = turn.to;
+            battle.turnIntent = turn.to;
+            battle.turning = null;
+            battle.turnVisualScale = 1;
+            battle.turnVisualSquash = 1;
+            battle.turnArcY = 0;
+            battle.turnRoll = 0;
+          }
+          return;
+        }
+        battle.turnVisualScale = 1;
+        battle.turnVisualSquash = 1;
+        battle.turnArcY = 0;
+        battle.turnRoll = 0;
+        if (desiredFacing && desiredFacing !== battle.facing) {
+          if (battle.turnIntent === desiredFacing) battle.turnHold++;
+          else {
+            battle.turnIntent = desiredFacing;
+            battle.turnHold = 1;
+          }
+          if (battle.turnHold >= motionProfile.turnTicks) {
+            battle.turning = {
+              from: battle.facing || 1,
+              to: desiredFacing,
+              frame: 0,
+              frames: motionProfile.turnFrames || 4,
+              flipped: false,
+            };
+            battle.turnHold = 0;
+          }
+        } else {
+          battle.turnIntent = battle.facing;
+          battle.turnHold = 0;
+        }
+      }
       function animateFishBody(mood, speed, intensity = 1) {
         const profile = fishMotionProfiles[battle.f.id];
         const calmFactor = mood?.calm ? 0.5 : 1;
@@ -6944,6 +7123,7 @@
         battle.visualOffsetX =
           -(battle.facing || 1) * stroke * profile.recoil * effort;
         battle.visualOffsetY = wave * profile.sway * effort;
+        animateFishMouth(mood, speed, intensity);
         return {
           wave,
           stroke,
@@ -7005,21 +7185,7 @@
         battle.vx *= drag;
         battle.vy *= drag;
         const desiredFacing = battle.vx > 0.32 ? 1 : battle.vx < -0.32 ? -1 : 0;
-        if (desiredFacing && desiredFacing !== battle.facing) {
-          if (battle.turnIntent === desiredFacing) battle.turnHold++;
-          else {
-            battle.turnIntent = desiredFacing;
-            battle.turnHold = 1;
-          }
-          if (battle.turnHold >= motionProfile.turnTicks) {
-            battle.facing = desiredFacing;
-            battle.turnHold = 0;
-            battle.swimPhase = 0;
-          }
-        } else {
-          battle.turnIntent = battle.facing;
-          battle.turnHold = 0;
-        }
+        updateFishTurn(desiredFacing, motionProfile);
         const bodyMotion = animateFishBody(
           mood,
           Math.hypot(battle.vx, battle.vy),
@@ -7279,6 +7445,17 @@
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
         fishElement.style.removeProperty("--fish-contrast");
+        for (const property of [
+          "--mouth-open",
+          "--mouth-x",
+          "--mouth-y",
+          "--mouth-width",
+          "--mouth-height",
+          "--mouth-inner",
+          "--mouth-lip",
+        ]) fishElement.style.removeProperty(property);
+        delete fishElement.dataset.turnState;
+        delete fishElement.dataset.mouthState;
         fishElement.style.removeProperty("left");
         fishElement.style.removeProperty("top");
         fishElement.style.removeProperty("transition");
@@ -7325,15 +7502,31 @@
         element.style.backgroundPositionX =
           `${(battle.frame || 0) * (100 / 7)}%`;
         const offsetX = Number(battle.visualOffsetX || 0).toFixed(2);
-        const offsetY = Number(battle.visualOffsetY || 0).toFixed(2);
+        const offsetY = Number(
+          (battle.visualOffsetY || 0) + (battle.turnArcY || 0),
+        ).toFixed(2);
         const facing = battle.facing || 1;
-        const stretch = battle.bodyStretch || 1;
-        const squash = battle.bodySquash || 1;
+        const stretch =
+          (battle.bodyStretch || 1) * (battle.turnVisualScale || 1);
+        const squash =
+          (battle.bodySquash || 1) * (battle.turnVisualSquash || 1);
+        const rotation = (battle.renderAngle || 0) + (battle.turnRoll || 0);
         element.style.transform =
           `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) ` +
-          `rotate(${battle.renderAngle || 0}deg) ` +
+          `rotate(${rotation}deg) ` +
           `scaleX(${facing * stretch}) scaleY(${squash}) ` +
           `scale(${battle.renderScale || 1})`;
+        element.style.setProperty(
+          "--mouth-open",
+          Number(battle.mouthOpen || 0).toFixed(2),
+        );
+        element.classList.toggle("turning", Boolean(battle.turning));
+        element.dataset.turnState = battle.turning ? "turning" : "swimming";
+        element.dataset.mouthState = battle.mouthOpen >= 0.67
+          ? "open"
+          : battle.mouthOpen >= 0.33
+            ? "part"
+            : "closed";
         const depthLight = clampBattle(
           1.11 - (battle.y - 28) * 0.006,
           0.73,
@@ -7366,7 +7559,7 @@
         const sceneHeight = Math.max(1, scene.clientHeight);
         const facing = battle.facing || 1;
         const scale = battle.renderScale || 1;
-        const angle = battle.renderAngle || 0;
+        const angle = (battle.renderAngle || 0) + (battle.turnRoll || 0);
         const radians = angle * Math.PI / 180;
         const cos = Math.cos(radians);
         const sin = Math.sin(radians);
@@ -7376,10 +7569,13 @@
         // deliberately stretched 1000 x 500 coordinate space.
         const localMouthX =
           profile.x * fishElement.offsetWidth * scale *
-          (battle.bodyStretch || 1) * facing;
+          (battle.bodyStretch || 1) *
+          (battle.turnVisualScale || 1) *
+          facing;
         const localMouthY =
           profile.y * fishElement.offsetHeight * scale *
-          (battle.bodySquash || 1);
+          (battle.bodySquash || 1) *
+          (battle.turnVisualSquash || 1);
         const rotatedMouthX = localMouthX * cos - localMouthY * sin;
         const rotatedMouthY = localMouthX * sin + localMouthY * cos;
         const lipX = clampBattle(
@@ -7391,7 +7587,9 @@
         );
         const lipY = clampBattle(
           battle.y * 5 +
-            (rotatedMouthY + Number(battle.visualOffsetY || 0)) *
+            (rotatedMouthY +
+              Number(battle.visualOffsetY || 0) +
+              Number(battle.turnArcY || 0)) *
               500 / sceneHeight,
           48,
           490,
@@ -7646,10 +7844,17 @@
         battle.tailKick = false;
         battle.bodyStretch = 1;
         battle.bodySquash = 1;
+        battle.mouthPhase = 0;
+        battle.mouthOpen = 0;
         battle.visualOffsetX = 0;
         battle.visualOffsetY = 0;
         battle.turnIntent = battle.facing || 1;
         battle.turnHold = 0;
+        battle.turning = null;
+        battle.turnVisualScale = 1;
+        battle.turnVisualSquash = 1;
+        battle.turnArcY = 0;
+        battle.turnRoll = 0;
         const scene = $("#fishScene");
         scene.classList.add("fighting", "hook-reveal");
         scene.classList.toggle("nushi-fight", f.id === "nushi");
@@ -7657,6 +7862,25 @@
         fishElement.className = `battle-fish fish-${f.id}`;
         fishElement.style.backgroundImage = `url("${fishAssets[f.id]}")`;
         fishElement.style.backgroundPositionY = "0";
+        const mouthProfile = fishMouthProfiles[f.id];
+        fishElement.style.setProperty(
+          "--mouth-x",
+          `${50 + mouthProfile.x * 100}%`,
+        );
+        fishElement.style.setProperty(
+          "--mouth-y",
+          `${50 + mouthProfile.y * 100}%`,
+        );
+        fishElement.style.setProperty(
+          "--mouth-width",
+          `${mouthProfile.mouthWidth * 100}%`,
+        );
+        fishElement.style.setProperty(
+          "--mouth-height",
+          `${mouthProfile.mouthHeight * 100}%`,
+        );
+        fishElement.style.setProperty("--mouth-inner", mouthProfile.inner);
+        fishElement.style.setProperty("--mouth-lip", mouthProfile.lip);
         fishElement.style.transition = "none";
         fishElement.style.opacity = "0";
         $("#fishTackleBack").className =
@@ -7759,7 +7983,12 @@
         scene.classList.remove("water-rush", "fighting", "gill-wash");
         scene.classList.add("landing");
         const fishElement = $("#battleFish");
-        fishElement.classList.remove("burst");
+        fishElement.classList.remove("burst", "turning");
+        battle.turning = null;
+        battle.turnVisualScale = 1;
+        battle.turnVisualSquash = 1;
+        battle.turnArcY = 0;
+        battle.turnRoll = 0;
         fishElement.classList.add("landing");
         fishElement.style.left = `${battle.surfaceX}%`;
         fishElement.style.top = "7%";
