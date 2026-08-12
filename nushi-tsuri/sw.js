@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v74-illustrated-lake-cast-56";
+const CACHE_NAME = "nushi-tsuri-v75-illustrated-water-casts-57";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -12,6 +12,16 @@ const CORE_ASSETS = [
   "./assets/cast-lake-day-bright-v74.jpg",
   "./assets/cast-lake-evening-v74.jpg",
   "./assets/cast-lake-night-v74.jpg",
+  "./assets/cast-river-morning-v75.jpg",
+  "./assets/cast-river-day-soft-v75.jpg",
+  "./assets/cast-river-day-bright-v75.jpg",
+  "./assets/cast-river-evening-v75.jpg",
+  "./assets/cast-river-night-v75.jpg",
+  "./assets/cast-sea-morning-v75.jpg",
+  "./assets/cast-sea-day-soft-v75.jpg",
+  "./assets/cast-sea-day-bright-v75.jpg",
+  "./assets/cast-sea-evening-v75.jpg",
+  "./assets/cast-sea-night-v75.jpg",
   "./assets/terrain-world-v54.png",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
