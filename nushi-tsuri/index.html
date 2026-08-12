@@ -2519,6 +2519,366 @@
       .fish-scene.active {
         display: block;
       }
+      .cast-surface {
+        --cast-target-x: 53%;
+        --cast-target-y: 58%;
+        --cast-sky-a: #6d91a6;
+        --cast-sky-b: #efd6a0;
+        --cast-water-a: #378da5;
+        --cast-water-b: #0c5372;
+        --cast-water-glint: #c9f6e8;
+        --cast-shore: #294e3e;
+        display: none;
+        position: absolute;
+        z-index: 6;
+        inset: 0;
+        overflow: hidden;
+        color: #fff;
+        background: var(--cast-sky-a);
+        image-rendering: pixelated;
+      }
+      .fish-scene.surface-casting .cast-surface,
+      .fish-scene.surface-diving .cast-surface {
+        display: block;
+      }
+      .fish-scene.surface-diving .cast-surface {
+        pointer-events: none;
+        animation: cast-surface-dive .34s steps(7, end) both;
+      }
+      .fish-scene.water-river .cast-surface {
+        --cast-water-a: #4d967d;
+        --cast-water-b: #1d635e;
+        --cast-water-glint: #d8f5bd;
+        --cast-shore: #47633c;
+      }
+      .fish-scene.water-sea .cast-surface {
+        --cast-water-a: #318fa9;
+        --cast-water-b: #075275;
+        --cast-water-glint: #d9ffff;
+        --cast-shore: #465f4c;
+      }
+      .cast-surface.time-morning {
+        --cast-sky-a: #587f9b;
+        --cast-sky-b: #f2c98d;
+      }
+      .cast-surface.time-day {
+        --cast-sky-a: #4b99be;
+        --cast-sky-b: #cde8d3;
+      }
+      .cast-surface.time-evening {
+        --cast-sky-a: #484f78;
+        --cast-sky-b: #e79064;
+        --cast-water-a: #34798e;
+      }
+      .cast-surface.time-night {
+        --cast-sky-a: #101d3d;
+        --cast-sky-b: #364d69;
+        --cast-water-a: #1b607a;
+        --cast-water-b: #052e4e;
+      }
+      .cast-sky {
+        position: absolute;
+        inset: 0 0 58%;
+        background:
+          linear-gradient(176deg, transparent 0 63%, #fff2b51f 64% 66%, transparent 67%),
+          linear-gradient(var(--cast-sky-a), var(--cast-sky-b));
+      }
+      .cast-stars {
+        position: absolute;
+        inset: 7% 7% 31%;
+        opacity: 0;
+        background:
+          radial-gradient(circle at 8% 38%, #fff4b6 0 2px, transparent 3px),
+          radial-gradient(circle at 23% 17%, #fff 0 1px, transparent 2px),
+          radial-gradient(circle at 41% 35%, #ffeaa5 0 2px, transparent 3px),
+          radial-gradient(circle at 63% 14%, #fff 0 1px, transparent 2px),
+          radial-gradient(circle at 78% 31%, #fff0a3 0 2px, transparent 3px),
+          radial-gradient(circle at 92% 11%, #fff 0 1px, transparent 2px);
+      }
+      .cast-surface.time-night .cast-stars { opacity: .92; }
+      .cast-surface.time-evening .cast-stars { opacity: .28; }
+      .cast-far-shore {
+        position: absolute;
+        z-index: 1;
+        left: -3%;
+        right: -3%;
+        top: 26%;
+        height: 17%;
+        background:
+          linear-gradient(150deg, transparent 0 22%, #1d3e36 23% 37%, transparent 38%) 0 0 / 18% 100% repeat-x,
+          linear-gradient(210deg, transparent 0 28%, var(--cast-shore) 29% 50%, transparent 51%) 5% 0 / 21% 100% repeat-x,
+          linear-gradient(transparent 58%, #334e3b 59% 71%, #5f6946 72%);
+        filter: drop-shadow(0 4px 0 #102f32aa);
+      }
+      .fish-scene.water-sea .cast-far-shore {
+        top: 33%;
+        height: 8%;
+        opacity: .32;
+        background: linear-gradient(transparent 54%, #344d53 55% 64%, #6b755a 65%);
+      }
+      .cast-water {
+        position: absolute;
+        z-index: 2;
+        inset: 36% -4% -8%;
+        background:
+          repeating-linear-gradient(176deg, transparent 0 13px, #efffff1e 14px 16px, transparent 17px 31px),
+          repeating-linear-gradient(94deg, transparent 0 65px, #ffffff22 66px 90px, transparent 91px 156px),
+          linear-gradient(var(--cast-water-a), var(--cast-water-b));
+        transform: perspective(420px) rotateX(2deg);
+        transform-origin: top;
+        animation: cast-water-drift 3.2s steps(16, end) infinite;
+      }
+      .cast-water::before {
+        content: "";
+        position: absolute;
+        inset: 0;
+        opacity: .52;
+        background:
+          linear-gradient(103deg, transparent 0 13%, var(--cast-water-glint) 14% 16%, transparent 17% 37%, #ffffff20 38% 40%, transparent 41%),
+          repeating-linear-gradient(0deg, transparent 0 25px, #e8ffff1e 26px 28px, transparent 29px 48px);
+      }
+      .fish-scene.water-river .cast-surface::before,
+      .fish-scene.water-river .cast-surface::after {
+        content: "";
+        position: absolute;
+        z-index: 3;
+        top: 34%;
+        bottom: -3%;
+        width: 27%;
+        pointer-events: none;
+        background:
+          radial-gradient(circle at 64% 22%, #9a9864 0 2px, transparent 3px),
+          repeating-linear-gradient(105deg, #50693f 0 7px, #597247 8px 14px, #3e5a3b 15px 20px);
+        box-shadow: inset 0 0 0 3px #9b9865aa;
+      }
+      .fish-scene.water-river .cast-surface::before {
+        left: -4%;
+        clip-path: polygon(0 0, 100% 0, 56% 100%, 0 100%);
+      }
+      .fish-scene.water-river .cast-surface::after {
+        right: -4%;
+        clip-path: polygon(0 0, 100% 0, 100% 100%, 44% 100%);
+      }
+      .cast-zone-name {
+        position: absolute;
+        z-index: 5;
+        left: 50%;
+        top: 6%;
+        transform: translateX(-50%);
+        padding: 3px 10px;
+        border: 1px solid #fff4ad88;
+        border-radius: 3px;
+        background: #10253c99;
+        color: #fff1b0;
+        font: 900 clamp(.58rem, 1.35vw, .78rem) monospace;
+        letter-spacing: .08em;
+        text-shadow: 1px 2px #06111d;
+      }
+      .cast-depth-label {
+        position: absolute;
+        z-index: 5;
+        left: 50%;
+        top: 55%;
+        transform: translate(-50%, -50%);
+        padding: 2px 5px;
+        border: 1px solid #eaffff52;
+        border-radius: 8px;
+        background: #08273c87;
+        color: #eaffff;
+        font: 900 clamp(.48rem, 1vw, .64rem) monospace;
+        white-space: nowrap;
+        opacity: .78;
+        transition: opacity .18s;
+      }
+      .cast-depth-label.unreachable {
+        opacity: .2;
+        filter: saturate(.2);
+      }
+      .cast-target {
+        position: absolute;
+        z-index: 6;
+        left: var(--cast-target-x);
+        top: var(--cast-target-y);
+        width: clamp(34px, 6vw, 58px);
+        aspect-ratio: 1;
+        transform: translate(-50%, -50%) rotate(45deg);
+        border: 3px solid #fff3a4;
+        border-radius: 50%;
+        background: #fff6bc1f;
+        box-shadow:
+          0 0 0 5px #13283c88,
+          0 0 14px #fff4a6aa,
+          inset 0 0 0 3px #ffffff45;
+        transition:
+          left .1s linear,
+          top .1s linear,
+          opacity .18s;
+        animation: cast-target-pulse .72s steps(4, end) infinite alternate;
+      }
+      .cast-target::before,
+      .cast-target::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        background: #fff6b0;
+        transform: translate(-50%, -50%);
+      }
+      .cast-target::before { width: 120%; height: 2px; }
+      .cast-target::after { width: 2px; height: 120%; }
+      .cast-target small {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%) rotate(-45deg);
+        padding: 1px 3px;
+        background: #0b2438d9;
+        color: #fff6b0;
+        font: 900 clamp(.48rem, 1vw, .64rem) monospace;
+      }
+      .cast-target.target-shallow { border-color: #bdf3a9; }
+      .cast-target.target-mid { border-color: #ffe08a; }
+      .cast-target.target-deep { border-color: #f0b8ff; }
+      .cast-surface.cast-throwing .cast-target { opacity: .22; }
+      .cast-surface.cast-landed .cast-target { opacity: 0; }
+      .cast-surface.surface-prep .cast-target,
+      .cast-surface.surface-prep .cast-depth-label {
+        opacity: 0;
+      }
+      .cast-line-flight {
+        position: absolute;
+        z-index: 6;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        overflow: visible;
+        pointer-events: none;
+      }
+      .cast-line-flight path {
+        fill: none;
+        stroke: #e9f8f0;
+        stroke-width: 1.8;
+        stroke-linecap: round;
+        opacity: 0;
+        filter: drop-shadow(1px 1px 0 #173649aa);
+        vector-effect: non-scaling-stroke;
+      }
+      .cast-surface.cast-throwing .cast-line-flight path {
+        opacity: .9;
+        stroke-dasharray: 1200;
+        stroke-dashoffset: 1200;
+        animation: cast-line-flight .58s steps(12, end) forwards;
+      }
+      .cast-surface.cast-landed .cast-line-flight path {
+        opacity: .68;
+        stroke-dasharray: none;
+        stroke-dashoffset: 0;
+      }
+      .cast-angler {
+        position: absolute;
+        z-index: 7;
+        left: 4%;
+        bottom: -7%;
+        width: clamp(72px, 12vw, 132px);
+        height: clamp(155px, 64vh, 310px);
+        background-position: center bottom;
+        background-repeat: no-repeat;
+        background-size: contain;
+        image-rendering: pixelated;
+        filter: drop-shadow(5px 7px 2px #03152299);
+      }
+      .cast-angler.boy { background-image: url("assets/player-boy-cast-v73.png"); }
+      .cast-angler.girl { background-image: url("assets/player-girl-cast-v73.png"); }
+      .cast-rod {
+        position: absolute;
+        z-index: 8;
+        left: clamp(89px, 14vw, 154px);
+        bottom: 17%;
+        width: 5px;
+        height: clamp(142px, 46vh, 250px);
+        transform: rotate(39deg);
+        transform-origin: 50% 100%;
+        border: 1px solid #2f2119;
+        border-radius: 70% 70% 20% 20%;
+        background: linear-gradient(90deg, #4d2e1e, #e1bc67 48%, #704624);
+        box-shadow: 2px 1px #09151a88;
+        animation: cast-rod-ready .85s steps(4, end) infinite alternate;
+      }
+      .cast-rod::before {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: -3px;
+        width: 4px;
+        height: 13%;
+        transform: translateX(-50%);
+        border-radius: 50%;
+        background: #d6e2c8;
+      }
+      .cast-surface.cast-throwing .cast-rod {
+        animation: cast-rod-swing .58s steps(9, end) both;
+      }
+      .cast-float {
+        position: absolute;
+        z-index: 7;
+        left: var(--cast-target-x);
+        top: var(--cast-target-y);
+        width: 8px;
+        height: 25px;
+        transform: translate(-50%, -58%);
+        border: 2px solid #281c19;
+        border-radius: 5px 5px 45% 45%;
+        background: linear-gradient(#f3e6bf 0 38%, #e84843 39% 67%, #f2d36e 68%);
+        box-shadow: 1px 2px #061d2a88;
+        opacity: 0;
+      }
+      .cast-float::after {
+        content: "";
+        position: absolute;
+        left: 50%;
+        top: 71%;
+        width: 38px;
+        height: 10px;
+        transform: translate(-50%, -50%);
+        border: 2px solid #d9ffff99;
+        border-top-color: transparent;
+        border-radius: 50%;
+      }
+      .cast-surface.cast-landed .cast-float {
+        opacity: 1;
+        animation: cast-float-bob 1.15s steps(4, end) infinite alternate;
+      }
+      .cast-surface.nibbling .cast-float {
+        animation: cast-float-nibble .24s steps(3, end) infinite;
+      }
+      .cast-surface.bite .cast-float {
+        animation: cast-float-bite .36s steps(5, end) forwards;
+      }
+      .cast-splash {
+        position: absolute;
+        z-index: 6;
+        left: var(--cast-target-x);
+        top: var(--cast-target-y);
+        width: 20px;
+        height: 8px;
+        transform: translate(-50%, -50%);
+        border: 3px solid #efffff;
+        border-radius: 50%;
+        opacity: 0;
+        pointer-events: none;
+      }
+      .cast-surface.cast-landed .cast-splash {
+        animation: cast-surface-splash .78s steps(7, end) both;
+      }
+      .cast-range-fill {
+        position: absolute;
+        inset: 0 auto 0 0;
+        width: 100%;
+        border-right: 2px solid #fff4a8;
+        background: linear-gradient(90deg, #7bd6ad99, #ffe48a99);
+        opacity: .72;
+      }
+      .cast-marker { z-index: 2; }
       .underwater-backdrop {
         position: absolute;
         z-index: 0;
@@ -3178,17 +3538,6 @@
         background: #356577;
         color: #fff5bd;
       }
-      .inventory-tabs small {
-        display: inline-grid;
-        min-width: 1.5em;
-        margin-left: 3px;
-        padding: 1px 4px;
-        border-radius: 999px;
-        background: #07131d99;
-        color: #fff2be;
-        font: inherit;
-        font-size: .7em;
-      }
       .inventory-content {
         min-height: 0;
         overflow: auto;
@@ -3204,14 +3553,6 @@
         color: #ffe6a0;
         font-size: clamp(.85rem, 1.7vw, 1.05rem);
       }
-      .inventory-section-heading {
-        display: flex;
-        align-items: baseline;
-        justify-content: space-between;
-        margin-top: 10px;
-      }
-      .inventory-section-heading h3 { margin-bottom: 5px; }
-      .inventory-section-heading small { color: #a9cbd0; }
       .inventory-vitals {
         display: grid;
         grid-template-columns: auto minmax(90px, 1fr) auto;
@@ -3549,6 +3890,48 @@
       @keyframes water-surface {
         to { background-position: 0 14px; }
       }
+      @keyframes cast-water-drift {
+        to { background-position: 0 17px, 36px 0, 0 0; }
+      }
+      @keyframes cast-target-pulse {
+        to { transform: translate(-50%, -50%) rotate(45deg) scale(1.12); }
+      }
+      @keyframes cast-rod-ready {
+        to { transform: rotate(37deg); }
+      }
+      @keyframes cast-rod-swing {
+        0% { transform: rotate(39deg); }
+        28% { transform: rotate(-27deg); }
+        58% { transform: rotate(62deg); }
+        100% { transform: rotate(43deg); }
+      }
+      @keyframes cast-line-flight {
+        0% { stroke-dashoffset: 1200; opacity: .1; }
+        35% { opacity: 1; }
+        100% { stroke-dashoffset: 0; opacity: .76; }
+      }
+      @keyframes cast-float-bob {
+        to { transform: translate(-50%, -46%) rotate(2deg); }
+      }
+      @keyframes cast-float-nibble {
+        0%, 100% { transform: translate(-50%, -58%) rotate(-4deg); }
+        50% { transform: translate(-50%, -45%) rotate(5deg); }
+      }
+      @keyframes cast-float-bite {
+        0% { opacity: 1; transform: translate(-50%, -58%); }
+        65% { opacity: 1; transform: translate(-50%, 40%); }
+        100% { opacity: .12; transform: translate(-50%, 92%); }
+      }
+      @keyframes cast-surface-splash {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.25); }
+        20% { opacity: 1; }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(5.5, 3); }
+      }
+      @keyframes cast-surface-dive {
+        0% { opacity: 1; filter: brightness(1); transform: translateY(0); }
+        60% { opacity: .62; filter: brightness(1.35) blur(1px); }
+        100% { opacity: 0; filter: brightness(.7) blur(3px); transform: translateY(-5%); }
+      }
       @keyframes underwater-light {
         to { transform: translateX(5%); opacity: 0.36; }
       }
@@ -3573,6 +3956,13 @@
         .underwater-backdrop {
           animation: none !important;
           transform: scale(1.035);
+        }
+        .cast-water,
+        .cast-target,
+        .cast-rod,
+        .cast-float {
+          animation-duration: .001ms !important;
+          animation-iteration-count: 1 !important;
         }
       }
       @keyframes line-quiver {
@@ -3859,6 +4249,23 @@
         </div>
         <div class="fish-scene" id="fishScene">
           <div class="underwater-backdrop" aria-hidden="true"></div>
+          <div class="cast-surface" id="castSurface" aria-hidden="true">
+            <div class="cast-sky"><div class="cast-stars"></div></div>
+            <div class="cast-far-shore"></div>
+            <div class="cast-water"></div>
+            <div class="cast-zone-name" id="castZoneName">星降る湖・湖面</div>
+            <span class="cast-depth-label" id="castDepthShallow">岸際</span>
+            <span class="cast-depth-label" id="castDepthMid">中層</span>
+            <span class="cast-depth-label" id="castDepthDeep">深場</span>
+            <div class="cast-target" id="castTarget"><small id="castTargetDistance">40</small></div>
+            <svg class="cast-line-flight" viewBox="0 0 1000 500" preserveAspectRatio="none">
+              <path id="castLinePath" d="M 145 330 Q 390 85 650 270" />
+            </svg>
+            <div class="cast-splash"></div>
+            <div class="cast-float" id="castFloat"></div>
+            <div class="cast-angler boy" id="castAngler"></div>
+            <div class="cast-rod"></div>
+          </div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
           <div class="surface-splash" id="surfaceSplash" aria-hidden="true">
@@ -3916,7 +4323,7 @@
           </div>
           <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
-            <div class="cast-meter" id="castMeter"><div class="cast-marker" id="castMarker"></div></div>
+            <div class="cast-meter" id="castMeter"><div class="cast-range-fill" id="castRangeFill"></div><div class="cast-marker" id="castMarker"></div></div>
             <small id="distanceLabel">残り距離</small>
             <div class="meter"><div class="fill distance" id="distanceMeter"></div></div>
             <small>糸テンション</small>
@@ -4089,8 +4496,8 @@
               <button class="close" data-close>閉じる</button>
             </div>
             <nav class="inventory-tabs" aria-label="道具袋の分類">
-              <button data-inventory-tab="items" class="active">持ち物 <small id="inventoryItemCount">0</small></button>
-              <button data-inventory-tab="equipment">装備 <small id="inventoryEquipmentCount">0</small></button>
+              <button data-inventory-tab="items" class="active">持ち物</button>
+              <button data-inventory-tab="equipment">装備</button>
               <button data-inventory-tab="tackle">タックル</button>
             </nav>
             <div class="inventory-content">
@@ -4101,9 +4508,6 @@
                   <div class="inventory-hp-meter"><i id="inventoryHpFill"></i></div>
                   <b id="inventoryHpText">100 / 100</b>
                 </div>
-                <div class="inventory-section-heading"><h3>釣りエサ</h3><small id="inventoryBaitCount"></small></div>
-                <div class="inventory-card-grid" id="inventoryBaits"></div>
-                <div class="inventory-section-heading"><h3>食べ物・お供え</h3><small id="inventoryFoodCount"></small></div>
                 <div class="inventory-card-grid" id="inventoryItems"></div>
               </section>
               <section class="inventory-panel" data-inventory-panel="equipment">
@@ -4144,7 +4548,7 @@
               </section>
             </div>
             <div class="inventory-footer">
-              所持数0の品は表示しない。食料の使用、装備、次の釣りの仕掛け変更ができる。
+              道具ボタンを押した時だけ開く。食料の使用、装備、次の釣りの仕掛け変更ができる。
             </div>
           </div>
         </div>
@@ -4300,11 +4704,26 @@
           paste: { name: "練りエサ", price: 240, amount: 2, bite: 1.15 },
         },
         rodData = {
-          bamboo: { name: "竹の竿", power: 16, control: 1 },
-          youngBamboo: { name: "若竹の竿", power: 18, control: 1.08 },
-          clearStream: { name: "清流の竿", power: 22, control: 1.2 },
-          starGazer: { name: "星見の竿", power: 26, control: 1.48 },
-          moroko: { name: "ホンモロコ竿", power: 30, control: 1.35 },
+          bamboo: {
+            name: "竹の竿", power: 16, control: 1,
+            castMin: 8, castMax: 72, castSpeed: 3.2,
+          },
+          youngBamboo: {
+            name: "若竹の竿", power: 18, control: 1.08,
+            castMin: 8, castMax: 80, castSpeed: 3,
+          },
+          clearStream: {
+            name: "清流の竿", power: 22, control: 1.2,
+            castMin: 12, castMax: 90, castSpeed: 2.8,
+          },
+          starGazer: {
+            name: "星見の竿", power: 26, control: 1.48,
+            castMin: 18, castMax: 100, castSpeed: 2.45,
+          },
+          moroko: {
+            name: "ホンモロコ竿", power: 30, control: 1.35,
+            castMin: 10, castMax: 100, castSpeed: 2.25,
+          },
         },
         fieldItemData = {
           vegetableOnigiri: {
@@ -4807,6 +5226,8 @@
         catchAnimationStep = 0,
         landingTimer = 0,
         hookRevealTimer = 0,
+        castLandingTimer = 0,
+        surfaceTransitionTimer = 0,
         fishAnimationPreloads = new Map(),
         walkTimer = 0,
         saveTimer = 0,
@@ -4964,9 +5385,14 @@
         // landing sprite frame. Inventory and all field state stay untouched.
         s.mapVersion = 71;
       }
+      if ((s.mapVersion || 0) < 72) {
+        // v72 repairs install icons and offline metadata only. Inventory,
+        // catches, equipment, health, money and field position stay untouched.
+        s.mapVersion = 72;
+      }
       if ((s.mapVersion || 0) < 73) {
-        // v73 reorganizes the toolbox display without rewriting possessions,
-        // equipment or tackle selections from an existing save.
+        // v73 adds the water-surface cast and float sequence. Inventory,
+        // catches, equipment, health, money and field position stay untouched.
         s.mapVersion = 73;
       }
       function preloadFishAnimation(fishId) {
@@ -5670,12 +6096,15 @@
         render();
         save();
       }
-      function depthForCast(zone, distance, minimumDepth = "shallow") {
-        const limits = {
+      function castDepthLimits(zone = "lake") {
+        return {
           lake: [34, 68],
           river: [42, 78],
           sea: [30, 64],
         }[zone] || [34, 68];
+      }
+      function depthForCast(zone, distance, minimumDepth = "shallow") {
+        const limits = castDepthLimits(zone);
         const measured = distance < limits[0]
           ? "shallow"
           : distance < limits[1]
@@ -5685,6 +6114,113 @@
         return order.indexOf(measured) < order.indexOf(minimumDepth)
           ? minimumDepth
           : measured;
+      }
+      function rodCastProfile(rodId = s.selectedRod, practice = false) {
+        if (practice) {
+          return { min: 6, max: 86, speed: 3, name: "サムの練習竿" };
+        }
+        const rod = rodData[rodId] || rodData.bamboo || {};
+        const min = Number.isFinite(rod.castMin) ? rod.castMin : 8;
+        const max = Number.isFinite(rod.castMax) ? rod.castMax : 72;
+        const speed = Number.isFinite(rod.castSpeed) ? rod.castSpeed : 3.2;
+        return {
+          min: Math.max(0, Math.min(98, min)),
+          max: Math.max(min + 2, Math.min(100, max)),
+          speed: Math.max(.8, Math.min(6, speed)),
+          name: rod.name || "竹の竿",
+        };
+      }
+      function castSurfacePoint(distance = 50) {
+        const value = Math.max(0, Math.min(100, Number(distance) || 0));
+        return {
+          x: 30 + value * .6,
+          y: 77 - value * .42,
+        };
+      }
+      function castMetersForDistance(distance = 0, practice = false) {
+        return practice
+          ? Math.max(6, Math.round(6 + distance * .12))
+          : Math.max(6, Math.round(7 + distance * .26));
+      }
+      function castDepthName(depth = "shallow") {
+        return { shallow: "岸際", mid: "中層", deep: "深場" }[depth] || "岸際";
+      }
+      function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
+        const limits = castDepthLimits(zone);
+        const bands = [
+          { id: "#castDepthShallow", depth: "shallow", from: 0, to: limits[0] },
+          { id: "#castDepthMid", depth: "mid", from: limits[0], to: limits[1] },
+          { id: "#castDepthDeep", depth: "deep", from: limits[1], to: 100 },
+        ];
+        const order = ["shallow", "mid", "deep"];
+        const minimumIndex = order.indexOf(minimumDepth);
+        for (const [index, band] of bands.entries()) {
+          const midpoint = (band.from + band.to) / 2;
+          const point = castSurfacePoint(midpoint);
+          const label = $(band.id);
+          label.style.left = `${point.x}%`;
+          label.style.top = `${point.y}%`;
+          label.classList.toggle(
+            "unreachable",
+            index < minimumIndex || profile.max < band.from || profile.min >= band.to,
+          );
+        }
+      }
+      function updateSurfaceCastAim(distance = battle?.cast || 0) {
+        if (!battle) return;
+        const point = castSurfacePoint(distance);
+        const surface = $("#castSurface");
+        surface.style.setProperty("--cast-target-x", `${point.x}%`);
+        surface.style.setProperty("--cast-target-y", `${point.y}%`);
+        const depth = battle.practice
+          ? "shallow"
+          : depthForCast(
+              battle.waterZone || "lake",
+              distance,
+              battle.minimumDepth || "shallow",
+            );
+        const target = $("#castTarget");
+        target.classList.remove("target-shallow", "target-mid", "target-deep");
+        target.classList.add(`target-${depth}`);
+        $("#castTargetDistance").textContent =
+          `${castMetersForDistance(distance, battle.practice)}m`;
+        $("#castMarker").style.left = `${distance}%`;
+        if (battle.phase === "cast") {
+          const aim = `${castDepthName(depth)}・約${castMetersForDistance(distance, battle.practice)}m`;
+          $("#battleMsg").textContent = battle.practice
+            ? `サム「動く投点を見てAだ。今は${aim}だぞ」`
+            : `${aim}。動く投点をAで決める。`;
+        }
+      }
+      function prepareSurfaceCastScene() {
+        if (!battle) return;
+        const profile = rodCastProfile(s.selectedRod, battle.practice);
+        battle.castMin = profile.min;
+        battle.castMax = profile.max;
+        battle.castSpeed = profile.speed;
+        battle.cast = profile.min;
+        battle.castDir = 1;
+        const scene = $("#fishScene");
+        const surface = $("#castSurface");
+        scene.classList.remove("surface-diving");
+        scene.classList.add("surface-casting");
+        surface.className = `cast-surface time-${["morning", "day", "evening", "night"][s.time % 4]}`;
+        $("#castAngler").className = `cast-angler ${s.avatar === "girl" ? "girl" : "boy"}`;
+        $("#castZoneName").textContent = battle.practice
+          ? "SAM'S TRY POND・水面"
+          : {
+              lake: "星降る湖・湖面",
+              river: "民家川・水面",
+              sea: "潮見浜・海面",
+            }[battle.waterZone || "lake"];
+        $("#castRangeFill").style.left = `${profile.min}%`;
+        $("#castRangeFill").style.width = `${profile.max - profile.min}%`;
+        positionCastDepthLabels(
+          battle.waterZone || "lake",
+          profile,
+          battle.minimumDepth || "shallow",
+        );
+        updateSurfaceCastAim(battle.cast);
       }
       function fishingWaterNearPlayer() {
         // A bridge remains a crossing, never an invisible fishing hotspot.
@@ -6476,6 +7012,8 @@
         setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
         $("#fishScene").classList.add("active");
+        prepareSurfaceCastScene();
+        $("#castSurface").classList.add("surface-prep");
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "none";
         $("#distanceLabel").style.display = "none";
@@ -6517,6 +7055,8 @@
         setFishingSceneTheme("lake", "shallow");
         resetWaterFx();
         $("#fishScene").classList.add("active", "practice-fishing");
+        prepareSurfaceCastScene();
+        $("#castSurface").classList.add("surface-prep");
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "none";
         $("#distanceLabel").style.display = "none";
@@ -6655,18 +7195,14 @@
         $("#inventoryHpText").textContent = `${s.hp} / ${s.maxHp}`;
         $("#inventoryHpFill").style.width = `${hpPercent}%`;
         $("#inventoryHpFill").classList.toggle("low", hpPercent <= 35);
-        const ownedBaits = Object.entries(baitData)
-          .filter(([id]) => (s.baits[id] || 0) > 0);
-        const baitMarkup = ownedBaits
+        const baitMarkup = Object.entries(baitData)
           .map(([id, item]) =>
             `<div class="inventory-card"><i>${baitIcons[id] || "🎒"}</i>` +
             `<span><b>${item.name}</b><br><small>釣りエサ</small></span>` +
             `<strong>×${s.baits[id] || 0}</strong></div>`,
           )
           .join("");
-        const ownedItems = Object.entries(fieldItemData)
-          .filter(([id]) => (s.items[id] || 0) > 0);
-        const itemMarkup = ownedItems
+        const itemMarkup = Object.entries(fieldItemData)
           .map(([id, item]) => {
             const count = s.items[id] || 0;
             const offering = item.use === "offering";
@@ -6683,24 +7219,7 @@
               `${action}</div></div>`;
           })
           .join("");
-        const totalBaits = ownedBaits.reduce(
-          (total, [id]) => total + s.baits[id], 0,
-        );
-        const totalItems = ownedItems.reduce(
-          (total, [id]) => total + s.items[id], 0,
-        );
-        $("#inventoryBaitCount").textContent =
-          `${ownedBaits.length}種類・合計${totalBaits}個`;
-        $("#inventoryFoodCount").textContent =
-          `${ownedItems.length}種類・合計${totalItems}個`;
-        $("#inventoryItemCount").textContent = totalBaits + totalItems;
-        $("#inventoryEquipmentCount").textContent =
-          2 + Number(Boolean(s.equipment.hands)) +
-          Number(Boolean(s.equipment.vehicle));
-        $("#inventoryBaits").innerHTML = baitMarkup ||
-          `<div class="inventory-card inventory-empty">釣りエサを持っていない。サムの店で補充しよう。</div>`;
-        $("#inventoryItems").innerHTML = itemMarkup ||
-          `<div class="inventory-card inventory-empty">食べ物もお供えも持っていない。</div>`;
+        $("#inventoryItems").innerHTML = baitMarkup + itemMarkup;
         document.querySelectorAll("[data-use-item]").forEach((button) =>
           button.onclick = () => useFieldItem(button.dataset.useItem),
         );
@@ -6778,8 +7297,6 @@
             else rescue();
             return;
           }
-          s.baits[s.selectedBait]--;
-          s.time++;
         }
         close();
         battle = {
@@ -6793,7 +7310,11 @@
           waterX,
           waterY,
           bait: practice ? practiceBait : s.selectedBait,
+          baitCommitted: false,
           cast: 0,
+          castMin: 0,
+          castMax: 100,
+          castSpeed: 3,
           castDir: 1,
           f: null,
           ten: 18,
@@ -6849,23 +7370,161 @@
         resetWaterFx();
         $("#fishScene").classList.add("active");
         $("#fishScene").classList.toggle("practice-fishing", practice);
+        prepareSurfaceCastScene();
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "block";
         $("#distanceLabel").style.display = "none";
         $("#distanceMeter").parentElement.style.display = "none";
         $("#ten").parentElement.style.display = "none";
-        $("#fishName").textContent = "キャスト";
+        $("#fishName").textContent = practice ? "水面キャスト練習" : "水面キャスト";
         $("#phaseLabel").textContent = practice
-          ? tutorial ? " ① 投げる" : " 練習キャスト"
-          : " 距離を決める";
-        $("#battleMsg").textContent = practice
-          ? "サム「動く目盛りを見てAだ。池ではどこに投げても大丈夫」"
-          : "Aを押して投げる！遠いほど大物が狙える。";
-        $("#pull").innerHTML = "A<br><small>投げる！</small>";
+          ? tutorial ? " ① 投点を決める" : " 投点を決める"
+          : ` ${rodCastProfile(s.selectedRod).name}`;
+        updateSurfaceCastAim(battle.cast);
+        $("#pull").innerHTML = "A<br><small>ここへ投げる</small>";
         $("#wait").innerHTML = "B<br><small>やめる</small>";
         battleTick();
         drawBattle();
         render();
+      }
+      function commitCastResources() {
+        if (!battle || battle.practice || battle.baitCommitted) return true;
+        const baitId = battle.bait || s.selectedBait;
+        if ((s.baits[baitId] || 0) < 1) {
+          lose("投げる直前にエサがないことへ気づき、竿を戻した。");
+          return false;
+        }
+        s.baits[baitId]--;
+        s.bait = s.baits[s.selectedBait] || 0;
+        s.time++;
+        const surface = $("#castSurface");
+        surface.classList.remove(
+          "time-morning",
+          "time-day",
+          "time-evening",
+          "time-night",
+        );
+        surface.classList.add(
+          `time-${["morning", "day", "evening", "night"][s.time % 4]}`,
+        );
+        battle.baitCommitted = true;
+        render();
+        save();
+        return true;
+      }
+      function resolveSurfaceCast(distance) {
+        const depth = battle.practice
+          ? "shallow"
+          : depthForCast(
+              battle.waterZone || "lake",
+              distance,
+              battle.minimumDepth || "shallow",
+            );
+        battle.depth = depth;
+        battle.spot = `${battle.waterZone || "lake"}-${depth}`;
+        const spot = fishingSpotById(battle.spot);
+        setFishingSceneTheme(spot.zone, spot.depth);
+        const f = battle.practice
+          ? fish.find((candidate) => candidate.id === "funa")
+          : pick(distance, battle.spot);
+        battle.f = f;
+        preloadFishAnimation(f.id);
+        battle.x = clampBattle(54 + distance * .4, 54, f.id === "nushi" ? 90 : 94);
+        battle.y = clampBattle(44 + distance * .18, 44, f.id === "nushi" ? 66 : 72);
+        battle.startX = battle.x;
+        battle.startY = battle.y;
+        battle.surfaceX = 12;
+        battle.surfaceY = 14;
+        battle.retrieval = 0;
+        battle.castDistance = distance;
+        battle.startMeters = castMetersForDistance(distance, battle.practice);
+        battle.distanceFactor = battle.practice
+          ? .72
+          : clampBattle(battle.startMeters / 18, .75, 1.55);
+        $("#linePath").setAttribute(
+          "d",
+          `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
+        );
+        return { depth, spot, f };
+      }
+      function launchSurfaceCast() {
+        if (!battle || battle.phase !== "cast") return false;
+        const distance = clampBattle(
+          Number(battle.cast) || 0,
+          battle.castMin ?? 0,
+          battle.castMax ?? 100,
+        );
+        if (!commitCastResources()) return false;
+        const resolved = resolveSurfaceCast(distance);
+        battle.phase = "cast-flight";
+        updateSurfaceCastAim(distance);
+        const surface = $("#castSurface");
+        surface.classList.remove("cast-landed", "nibbling", "bite");
+        surface.classList.add("cast-throwing");
+        const point = castSurfacePoint(distance);
+        const targetX = point.x * 10;
+        const targetY = point.y * 5;
+        const controlX = Math.round((145 + targetX) * .5 + 105);
+        $("#castLinePath").setAttribute(
+          "d",
+          `M 145 330 Q ${controlX} 38 ${targetX} ${targetY}`,
+        );
+        $("#castMeter").style.display = "none";
+        $("#phaseLabel").textContent = " 竿を振る";
+        $("#battleMsg").textContent = battle.practice
+          ? "サム「いい投点だ。竿を振り切って、水面を見ろ！」"
+          : `${castDepthName(resolved.depth)}へ竿を振り切った！`;
+        $("#pull").innerHTML = "A<br><small>投げ込み中</small>";
+        vibrate(35);
+        clearTimeout(castLandingTimer);
+        castLandingTimer = setTimeout(settleSurfaceCast, 620);
+        return true;
+      }
+      function settleSurfaceCast() {
+        if (!battle || battle.phase !== "cast-flight") return false;
+        clearTimeout(castLandingTimer);
+        castLandingTimer = 0;
+        const delay = battle.practice
+          ? 850 + Math.random() * 650
+          : (1500 + Math.random() * 2600) /
+            baitData[battle.bait || s.selectedBait].bite;
+        battle.phase = "wait";
+        battle.biteAt = Date.now() + delay;
+        battle.nibbleAt = battle.biteAt - Math.min(850, Math.max(420, delay * .42));
+        battle.nibbleShown = false;
+        const surface = $("#castSurface");
+        surface.classList.remove("cast-throwing", "nibbling", "bite");
+        surface.classList.add("cast-landed");
+        const point = castSurfacePoint(battle.castDistance);
+        $("#castLinePath").setAttribute(
+          "d",
+          `M 145 330 Q 260 270 ${point.x * 10} ${point.y * 5}`,
+        );
+        $("#fishName").textContent = battle.practice
+          ? "試し釣り池のウキ"
+          : fishingSpotById(battle.spot).name;
+        $("#phaseLabel").textContent = battle.practice
+          ? battle.tutorial ? " ② ウキを見る" : " アタリ待ち"
+          : ` ${castDepthName(battle.depth)}`;
+        $("#battleMsg").textContent = battle.practice
+          ? "サム「着水した。小さな揺れにはまだ合わせるな」"
+          : "着水した。小さな前アタリに惑わされず、ウキを見る。";
+        $("#pull").innerHTML = "A<br><small>合わせる</small>";
+        $("#wait").innerHTML = battle.practice
+          ? "B<br><small>練習終了</small>"
+          : "B<br><small>竿を上げる</small>";
+        vibrate([28, 25, 48]);
+        return true;
+      }
+      function beginUnderwaterFromSurface() {
+        const scene = $("#fishScene");
+        scene.classList.remove("surface-casting");
+        scene.classList.add("surface-diving");
+        clearTimeout(surfaceTransitionTimer);
+        surfaceTransitionTimer = setTimeout(() => {
+          surfaceTransitionTimer = 0;
+          scene.classList.remove("surface-diving");
+        }, 360);
       }
       function clampBattle(value, min, max) {
         return Math.max(min, Math.min(max, value));
@@ -7546,6 +8205,10 @@
         const fishElement = $("#battleFish");
         clearTimeout(hookRevealTimer);
         hookRevealTimer = 0;
+        clearTimeout(castLandingTimer);
+        castLandingTimer = 0;
+        clearTimeout(surfaceTransitionTimer);
+        surfaceTransitionTimer = 0;
         scene.classList.remove(
           "nushi-fight",
           "water-rush",
@@ -7554,7 +8217,16 @@
           "gill-wash",
           "hook-reveal",
           "practice-fishing",
+          "surface-casting",
+          "surface-diving",
         );
+        const castSurface = $("#castSurface");
+        castSurface.className = "cast-surface";
+        castSurface.style.removeProperty("--cast-target-x");
+        castSurface.style.removeProperty("--cast-target-y");
+        $("#castLinePath").setAttribute("d", "M 145 330 Q 390 85 650 270");
+        $("#castRangeFill").style.removeProperty("left");
+        $("#castRangeFill").style.removeProperty("width");
         scene.style.removeProperty("background-position");
         $("#linePath").setAttribute("d", "M 150 48 Q 245 145 650 275");
         for (const id of ["#fishTackleBack", "#fishTackleFront"]) {
@@ -7869,7 +8541,12 @@
         if (!battle?.practice) return;
         battle.phase = "wait";
         battle.reeling = false;
-        battle.biteAt = Date.now() + 850 + Math.random() * 650;
+        const delay = 850 + Math.random() * 650;
+        battle.biteAt = Date.now() + delay;
+        battle.nibbleAt = battle.biteAt - Math.min(520, delay * .4);
+        battle.nibbleShown = false;
+        $("#castSurface").classList.remove("nibbling", "bite");
+        $("#castSurface").classList.add("cast-landed");
         $("#phaseLabel").textContent = battle.tutorial
           ? " ② ウキを見る"
           : " アタリ待ち";
@@ -7883,20 +8560,38 @@
           if (!battle) return;
           if (battle.phase !== "fight") updateWaterFx();
           if (battle.phase === "cast") {
-            battle.cast += battle.castDir * 3;
-            if (battle.cast >= 100 || battle.cast <= 0) battle.castDir *= -1;
-            $("#castMarker").style.left = `${battle.cast}%`;
+            const min = battle.castMin ?? 0;
+            const max = battle.castMax ?? 100;
+            let next = battle.cast + battle.castDir * (battle.castSpeed || 3);
+            if (next >= max) {
+              next = max;
+              battle.castDir = -1;
+            } else if (next <= min) {
+              next = min;
+              battle.castDir = 1;
+            }
+            battle.cast = next;
+            updateSurfaceCastAim(battle.cast);
             return;
           }
           if (battle.phase === "wait") {
             const now = Date.now();
             const biteWindow = battle.practice ? 2800 : 1050;
+            if (!battle.nibbleShown && now >= battle.nibbleAt && now < battle.biteAt) {
+              battle.nibbleShown = true;
+              $("#castSurface").classList.add("nibbling");
+              $("#battleMsg").textContent = battle.practice
+                ? "サム「ウキが揺れたが、まだだ。沈み切るまで待て」"
+                : "ウキが小さく揺れた……まだ前アタリだ。";
+            }
             if (now >= battle.biteAt && now <= battle.biteAt + biteWindow) {
               battle.phase = "bite";
+              $("#castSurface").classList.remove("nibbling");
+              $("#castSurface").classList.add("bite");
               vibrate([90, 55, 170]);
               $("#phaseLabel").textContent = battle.practice
                 ? " ③ 合わせる！"
-                : $("#phaseLabel").textContent;
+                : " アタリ！";
               $("#battleMsg").textContent = battle.practice
                 ? "サム「ウキが消えた！今だ、Aで合わせる！」"
                 : "消し込んだ！！今だ、Aで合わせる！";
@@ -7968,68 +8663,8 @@
       function pull() {
         if (!battle) return;
         if (battle.phase === "prep") return beginFishing();
-        if (battle.phase === "cast") {
-          const distance = battle.cast;
-          const depth = battle.practice
-            ? "shallow"
-            : depthForCast(
-                battle.waterZone || "lake",
-                distance,
-                battle.minimumDepth || "shallow",
-              );
-          battle.depth = depth;
-          battle.spot = `${battle.waterZone || "lake"}-${depth}`;
-          const spot = fishingSpotById(battle.spot);
-          setFishingSceneTheme(spot.zone, spot.depth);
-          const f = battle.practice
-            ? fish.find((candidate) => candidate.id === "funa")
-            : pick(distance, battle.spot);
-          battle.f = f;
-          preloadFishAnimation(f.id);
-          battle.x = clampBattle(54 + distance * 0.4, 54, f.id === "nushi" ? 90 : 94);
-          battle.y = clampBattle(44 + distance * 0.18, 44, f.id === "nushi" ? 66 : 72);
-          battle.startX = battle.x;
-          battle.startY = battle.y;
-          battle.surfaceX = 12;
-          battle.surfaceY = 14;
-          battle.retrieval = 0;
-          battle.castDistance = distance;
-          battle.startMeters = battle.practice
-            ? Math.max(6, Math.round(6 + distance * 0.12))
-            : Math.max(6, Math.round(7 + distance * 0.26));
-          battle.distanceFactor = battle.practice
-            ? 0.72
-            : clampBattle(battle.startMeters / 18, 0.75, 1.55);
-          battle.phase = "wait";
-          battle.biteAt = Date.now() +
-            (battle.practice
-              ? 850 + Math.random() * 650
-              : (1500 + Math.random() * 2600) /
-                baitData[battle.bait || s.selectedBait].bite);
-          $("#linePath").setAttribute(
-            "d",
-            `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
-          );
-          $("#castMeter").style.display = "none";
-          $("#fishName").textContent = battle.practice
-            ? "試し釣り池のフナ"
-            : spot.name;
-          $("#phaseLabel").textContent = battle.practice
-            ? battle.tutorial ? " ② ウキを見る" : " アタリ待ち"
-            : {
-                shallow: " 岸際",
-                mid: " 中層",
-                deep: " 深場",
-              }[depth];
-          $("#battleMsg").textContent = battle.practice
-            ? "サム「小さな揺れは待つ。ウキが水中へ消えたらAだ」"
-            : "小さな揺れは前アタリ。ウキが消し込むまで待つ。";
-          $("#pull").innerHTML = "A<br><small>合わせる</small>";
-          $("#wait").innerHTML = battle.practice
-            ? "B<br><small>練習終了</small>"
-            : "B<br><small>竿を上げる</small>";
-          return;
-        }
+        if (battle.phase === "cast") return launchSurfaceCast();
+        if (battle.phase === "cast-flight") return;
         if (battle.phase === "wait") {
           if (battle.practice)
             return queuePracticeBite(
@@ -8041,6 +8676,7 @@
         if (battle.phase === "fight") battle.reeling = true;
       }
       function startFight() {
+        beginUnderwaterFromSurface();
         battle.phase = "fight";
         const f = battle.f;
         battle.calmBoost = battle.practice
@@ -8131,6 +8767,18 @@
           return open("tackle");
         }
         if (battle.phase === "landing") return;
+        if (battle.phase === "cast") {
+          log(battle.practice
+            ? "サム「投点を選び直したくなったら、またいつでも始めよう」"
+            : "投げる前に竿を戻した。エサと時間は使っていない。");
+          return endBattle();
+        }
+        if (battle.phase === "cast-flight") {
+          log(battle.practice
+            ? "サム「途中で止めても大丈夫だ。また構え直そう」"
+            : "投げた仕掛けをすぐに回収した。");
+          return endBattle();
+        }
         if (battle.practice && battle.phase !== "fight") {
           log("サム「今日はここまでだな。またいつでも練習できるぞ」");
           return endBattle();
