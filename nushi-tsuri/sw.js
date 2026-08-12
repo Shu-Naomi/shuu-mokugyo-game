@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v71-turn-landing-stability-53";
+const CACHE_NAME = "nushi-tsuri-v73-toolbox-contents-54";
 const CORE_ASSETS = [
   "./",
   "./index.html",
