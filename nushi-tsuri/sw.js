@@ -1,10 +1,12 @@
-const CACHE_NAME = "nushi-tsuri-v71-turn-landing-stability-53";
+const CACHE_NAME = "nushi-tsuri-v73-surface-cast-55";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",
+  "./assets/player-boy-cast-v73.png",
+  "./assets/player-girl-cast-v73.png",
   "./assets/terrain-world-v54.png",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
