@@ -2576,6 +2576,48 @@
         --cast-water-a: #1b607a;
         --cast-water-b: #052e4e;
       }
+      .cast-surface.art-lake {
+        background-color: #173c55;
+        background-image: url("assets/cast-lake-day-soft-v74.jpg");
+        background-position: center;
+        background-repeat: no-repeat;
+        background-size: cover;
+      }
+      .cast-surface.art-lake.time-morning {
+        background-image: url("assets/cast-lake-morning-v74.jpg");
+      }
+      .cast-surface.art-lake.time-day.lake-day-soft {
+        background-image: url("assets/cast-lake-day-soft-v74.jpg");
+      }
+      .cast-surface.art-lake.time-day.lake-day-bright {
+        background-image: url("assets/cast-lake-day-bright-v74.jpg");
+      }
+      .cast-surface.art-lake.time-evening {
+        background-image: url("assets/cast-lake-evening-v74.jpg");
+      }
+      .cast-surface.art-lake.time-night {
+        background-image: url("assets/cast-lake-night-v74.jpg");
+      }
+      .art-lake .cast-sky,
+      .art-lake .cast-far-shore,
+      .art-lake .cast-water,
+      .art-lake .cast-angler,
+      .art-lake .cast-rod {
+        display: none;
+      }
+      .cast-surface.art-lake::before {
+        content: "";
+        position: absolute;
+        z-index: 3;
+        inset: 36% 0 0;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(176deg, transparent 0 17px, #eaffff14 18px 20px, transparent 21px 38px),
+          repeating-linear-gradient(94deg, transparent 0 92px, #ffffff12 93px 116px, transparent 117px 194px);
+        mix-blend-mode: screen;
+        opacity: .22;
+        animation: cast-lake-glimmer 4.6s steps(14, end) infinite;
+      }
       .cast-sky {
         position: absolute;
         inset: 0 0 58%;
@@ -3893,6 +3935,9 @@
       @keyframes cast-water-drift {
         to { background-position: 0 17px, 36px 0, 0 0; }
       }
+      @keyframes cast-lake-glimmer {
+        to { background-position: 0 28px, 42px 0; }
+      }
       @keyframes cast-target-pulse {
         to { transform: translate(-50%, -50%) rotate(45deg) scale(1.12); }
       }
@@ -3958,6 +4003,7 @@
           transform: scale(1.035);
         }
         .cast-water,
+        .cast-surface.art-lake::before,
         .cast-target,
         .cast-rod,
         .cast-float {
@@ -4130,7 +4176,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v73</span><span id="time">朝</span
+        <b>星降る湖</b><span>v74</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5395,6 +5441,11 @@
         // catches, equipment, health, money and field position stay untouched.
         s.mapVersion = 73;
       }
+      if ((s.mapVersion || 0) < 74) {
+        // v74 replaces only the natural lake's cast surface with illustrated
+        // time-of-day scenes. All save data and other waters stay untouched.
+        s.mapVersion = 74;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6145,6 +6196,32 @@
       function castDepthName(depth = "shallow") {
         return { shallow: "岸際", mid: "中層", deep: "深場" }[depth] || "岸際";
       }
+      function castTimeTheme(time = s.time) {
+        const period = ["morning", "day", "evening", "night"][time % 4];
+        const dayVariant = Math.floor(time / 4) % 2
+          ? "lake-day-soft"
+          : "lake-day-bright";
+        return { period, dayVariant };
+      }
+      function applyCastTimeTheme(surface, time = s.time) {
+        const theme = castTimeTheme(time);
+        surface.classList.remove(
+          "time-morning",
+          "time-day",
+          "time-evening",
+          "time-night",
+          "lake-day-soft",
+          "lake-day-bright",
+        );
+        surface.classList.add(`time-${theme.period}`);
+        if (theme.period === "day") surface.classList.add(theme.dayVariant);
+        return theme;
+      }
+      function castLineOrigin() {
+        return $("#castSurface").classList.contains("art-lake")
+          ? { x: 368, y: 222 }
+          : { x: 145, y: 330 };
+      }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
         const bands = [
@@ -6195,6 +6272,8 @@
       function prepareSurfaceCastScene() {
         if (!battle) return;
         const profile = rodCastProfile(s.selectedRod, battle.practice);
+        const zone = battle.waterZone || "lake";
+        const illustratedLake = !battle.practice && zone === "lake";
         battle.castMin = profile.min;
         battle.castMax = profile.max;
         battle.castSpeed = profile.speed;
@@ -6204,7 +6283,8 @@
         const surface = $("#castSurface");
         scene.classList.remove("surface-diving");
         scene.classList.add("surface-casting");
-        surface.className = `cast-surface time-${["morning", "day", "evening", "night"][s.time % 4]}`;
+        surface.className = `cast-surface${illustratedLake ? " art-lake" : ""}`;
+        applyCastTimeTheme(surface, s.time);
         $("#castAngler").className = `cast-angler ${s.avatar === "girl" ? "girl" : "boy"}`;
         $("#castZoneName").textContent = battle.practice
           ? "SAM'S TRY POND・水面"
@@ -6212,11 +6292,11 @@
               lake: "星降る湖・湖面",
               river: "民家川・水面",
               sea: "潮見浜・海面",
-            }[battle.waterZone || "lake"];
+            }[zone];
         $("#castRangeFill").style.left = `${profile.min}%`;
         $("#castRangeFill").style.width = `${profile.max - profile.min}%`;
         positionCastDepthLabels(
-          battle.waterZone || "lake",
+          zone,
           profile,
           battle.minimumDepth || "shallow",
         );
@@ -7397,16 +7477,7 @@
         s.baits[baitId]--;
         s.bait = s.baits[s.selectedBait] || 0;
         s.time++;
-        const surface = $("#castSurface");
-        surface.classList.remove(
-          "time-morning",
-          "time-day",
-          "time-evening",
-          "time-night",
-        );
-        surface.classList.add(
-          `time-${["morning", "day", "evening", "night"][s.time % 4]}`,
-        );
+        applyCastTimeTheme($("#castSurface"), s.time);
         battle.baitCommitted = true;
         render();
         save();
@@ -7464,10 +7535,11 @@
         const point = castSurfacePoint(distance);
         const targetX = point.x * 10;
         const targetY = point.y * 5;
-        const controlX = Math.round((145 + targetX) * .5 + 105);
+        const origin = castLineOrigin();
+        const controlX = Math.round((origin.x + targetX) * .5 + 105);
         $("#castLinePath").setAttribute(
           "d",
-          `M 145 330 Q ${controlX} 38 ${targetX} ${targetY}`,
+          `M ${origin.x} ${origin.y} Q ${controlX} 38 ${targetX} ${targetY}`,
         );
         $("#castMeter").style.display = "none";
         $("#phaseLabel").textContent = " 竿を振る";
@@ -7496,9 +7568,14 @@
         surface.classList.remove("cast-throwing", "nibbling", "bite");
         surface.classList.add("cast-landed");
         const point = castSurfacePoint(battle.castDistance);
+        const origin = castLineOrigin();
+        const targetX = point.x * 10;
+        const targetY = point.y * 5;
+        const controlX = Math.round((origin.x + targetX) * .5);
+        const controlY = Math.round(Math.min(origin.y, targetY) - 18);
         $("#castLinePath").setAttribute(
           "d",
-          `M 145 330 Q 260 270 ${point.x * 10} ${point.y * 5}`,
+          `M ${origin.x} ${origin.y} Q ${controlX} ${controlY} ${targetX} ${targetY}`,
         );
         $("#fishName").textContent = battle.practice
           ? "試し釣り池のウキ"

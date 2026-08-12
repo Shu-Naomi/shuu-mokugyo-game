@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v73-surface-cast-55";
+const CACHE_NAME = "nushi-tsuri-v74-illustrated-lake-cast-56";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,11 @@ const CORE_ASSETS = [
   "./icon-512.png",
   "./assets/player-boy-cast-v73.png",
   "./assets/player-girl-cast-v73.png",
+  "./assets/cast-lake-morning-v74.jpg",
+  "./assets/cast-lake-day-soft-v74.jpg",
+  "./assets/cast-lake-day-bright-v74.jpg",
+  "./assets/cast-lake-evening-v74.jpg",
+  "./assets/cast-lake-night-v74.jpg",
   "./assets/terrain-world-v54.png",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
