@@ -2950,6 +2950,25 @@
         left: var(--cast-rod-hand-x, calc(38% + clamp(64px, 9vw, 78px)));
         bottom: var(--cast-rod-hand-y, 17%);
       }
+      /* v80: the rod sits behind the real fist pixel and a tiny ring above it
+         makes the overlap readable without painting a second fake hand. */
+      .art-layered-avatar .cast-rod-grip {
+        display: block;
+        position: absolute;
+        z-index: 9;
+        left: var(--cast-rod-hand-x, 50%);
+        bottom: var(--cast-rod-hand-y, 17%);
+        width: var(--cast-hand-grip-size, 12px);
+        height: var(--cast-hand-grip-size, 12px);
+        transform: translate(-50%, 50%);
+        border: solid #47261a;
+        border-width: 0 2px 0 0;
+        border-radius: 50%;
+        background: transparent;
+        box-shadow: 1px 0 0 #d69a6f;
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
       /* v78: Sam's pond has a purpose-drawn foreground landing at center.
          The selectable player stands larger on its dock and faces the water. */
       .art-sam-pond.art-layered-avatar .cast-angler {
@@ -2975,7 +2994,7 @@
       }
       .cast-rod {
         position: absolute;
-        z-index: 8;
+        z-index: 6;
         left: clamp(89px, 14vw, 154px);
         bottom: 17%;
         width: 5px;
@@ -4333,7 +4352,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v79</span><span id="time">朝</span
+        <b>星降る湖</b><span>v80</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4468,6 +4487,7 @@
             <div class="cast-float" id="castFloat"></div>
             <div class="cast-angler boy" id="castAngler"></div>
             <div class="cast-rod"><i class="cast-rod-tip" id="castRodTip"></i></div>
+            <i class="cast-rod-grip" id="castRodGrip" aria-hidden="true"></i>
           </div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
@@ -5632,6 +5652,12 @@
         // Every saved catch, item, purchase and field position stays intact.
         s.mapVersion = 79;
       }
+      if ((s.mapVersion || 0) < 80) {
+        // v80 narrows harbor collision to the painted quays, restores saves
+        // stranded in water to their nearest shore and masks every cast lane.
+        // Inventory, catches, equipment, health and money stay untouched.
+        s.mapVersion = 80;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -5781,17 +5807,15 @@
           entryY: 87,
         },
         riverBridgeBounds = { left: 99, right: 119, top: 75, bottom: 88 },
-        harborWalkwayBounds = [
-          { left: 174, right: 226, top: 92, bottom: 101.5 },
-          { left: 176, right: 226, top: 99, bottom: 104 },
-          { left: 180, right: 186, top: 99, bottom: 113 },
-          { left: 198, right: 204, top: 99, bottom: 111 },
-          { left: 207, right: 236, top: 100, bottom: 114 },
-          { left: 224, right: 232, top: 100, bottom: 121 },
-          { left: 144, right: 178, top: 99, bottom: 108 },
-          { left: 123, right: 161, top: 112, bottom: 128 },
-          { left: 151, right: 173, top: 105, bottom: 114 },
-          { left: 151, right: 158, top: 110, bottom: 127 },
+        // v80: only the painted stone quays and wooden piers are walkable.
+        // The old broad rectangles covered boats and open harbor water, which
+        // let both the player and the following dog appear to walk on the sea.
+        harborWalkwayPolygons = [
+          [[143, 98], [226, 91], [226, 100], [174, 102], [174, 110], [143, 109]],
+          [[123, 119], [123, 128], [158, 128], [158, 119]],
+          [[151, 108], [158, 108], [158, 113], [151, 113]],
+          [[207, 105], [236, 104], [236, 114], [207, 114]],
+          [[224, 109], [232, 109], [232, 121], [224, 121]],
         ],
         // The two rectangular building bounds meet diagonally here even
         // though the painted map has a stone path. Keep this small cut-out
@@ -5965,7 +5989,7 @@
         return Math.abs(x - riverCenterWorldX(y)) < riverHalfWidth(y);
       }
       function isOnHarborWalkway(x, y) {
-        return harborWalkwayBounds.some((bounds) => inWorldRect(x, y, bounds));
+        return harborWalkwayPolygons.some((polygon) => pointInPolygon(x, y, polygon));
       }
       function seaWaterY(x) {
         return sampleWorldLine(seaShoreLine, x);
@@ -6003,6 +6027,20 @@
           !isRiverWater(x, y) &&
           !isSeaWater(x, y) &&
           !isPracticePondWater(x, y);
+      }
+      function nearestWalkableWorld(x, y, maxRadius = 28) {
+        if (isWalkableWorld(x, y)) return { x, y };
+        for (let radius = 1; radius <= maxRadius; radius += 1) {
+          const samples = Math.max(16, radius * 8);
+          for (let index = 0; index < samples; index += 1) {
+            const angle = index / samples * Math.PI * 2;
+            const candidateX = x + Math.cos(angle) * radius;
+            const candidateY = y + Math.sin(angle) * radius;
+            if (isWalkableWorld(candidateX, candidateY))
+              return { x: candidateX, y: candidateY };
+          }
+        }
+        return { x: 123, y: 92 };
       }
       function fishingSpotById(id) {
         return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
@@ -6372,24 +6410,38 @@
         const surface = $("#castSurface");
         const practicePond = surface.classList.contains("art-sam-pond");
         if (practicePond) {
-          // Keep every practice cast inside the open center of the oval pond.
-          return { x: 57 + value * .2, y: 59 - value * .25 };
+          // Open center of the oval pond, clear of the entry dock and rocks.
+          return castLanePoint([[58, 58], [65, 49], [71, 39]], value);
         }
         if (surface.classList.contains("art-river")) {
-          // The river narrows toward the horizon, so long casts converge on it.
-          return { x: 56 + value * .16, y: 68 - value * .34 };
+          // Follow the curved channel itself; the old straight diagonal put
+          // deep casts on the right bank once the river narrowed upstream.
+          return castLanePoint([[58, 67], [58, 55], [55, 43], [52, 34]], value);
         }
         if (surface.classList.contains("art-sea-harbor")) {
-          // Avoid the quay, boats and right-hand pier; use the clear harbor basin.
-          return { x: 57 + value * .15, y: 75 - value * .21 };
+          // Clear harbor basin, kept left of the large right-hand pier.
+          return castLanePoint([[60, 75], [62, 66], [63, 57], [61, 48]], value);
         }
         if (surface.classList.contains("art-sea-beach")) {
-          return { x: 61 + value * .23, y: 73 - value * .31 };
+          // Bend left into the open sea so deep casts avoid the right rocks.
+          return castLanePoint([[59, 67], [61, 57], [58, 47], [54, 38]], value);
         }
         if (surface.classList.contains("art-lake")) {
-          return { x: 59 + value * .24, y: 72 - value * .32 };
+          return castLanePoint([[58, 68], [65, 58], [72, 48], [77, 39]], value);
         }
         return { x: 30 + value * .6, y: 77 - value * .42 };
+      }
+      function castLanePoint(points, distance = 0) {
+        const value = Math.max(0, Math.min(100, Number(distance) || 0));
+        const progress = value / 100 * (points.length - 1);
+        const index = Math.min(points.length - 2, Math.floor(progress));
+        const amount = Math.min(1, progress - index);
+        const [x1, y1] = points[index];
+        const [x2, y2] = points[index + 1];
+        return {
+          x: x1 + (x2 - x1) * amount,
+          y: y1 + (y2 - y1) * amount,
+        };
       }
       function castMetersForDistance(distance = 0, practice = false) {
         return practice
@@ -6452,27 +6504,39 @@
         const surface = $("#castSurface");
         if (!surface.classList.contains("art-layered-avatar")) return;
         const surfaceBox = surface.getBoundingClientRect?.();
-        const anglerBox = $("#castAngler").getBoundingClientRect?.();
-        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width) return;
-        // Both selectable back-facing sprites hold the rod in their left-side
-        // on-screen hand. Anchor the butt there from the actual rendered box,
-        // so every viewport and Sam's larger pond pose stays connected.
-        const handX = anglerBox.left - surfaceBox.left + anglerBox.width * .865;
-        const handY = anglerBox.top - surfaceBox.top + anglerBox.height * .565;
-        surface.style.setProperty("--cast-rod-hand-x", `${handX}px`);
+        const grip = castRodHandPoint();
+        if (!surfaceBox?.width || !surfaceBox.height || !grip) return;
+        surface.style.setProperty("--cast-rod-hand-x", `${grip.x}px`);
         surface.style.setProperty(
           "--cast-rod-hand-y",
-          `${surfaceBox.height - handY}px`,
+          `${surfaceBox.height - grip.y}px`,
         );
+        surface.style.setProperty("--cast-hand-grip-size", `${grip.size}px`);
       }
       function castRodHandPoint() {
         const surfaceBox = $("#castSurface").getBoundingClientRect?.();
-        const anglerBox = $("#castAngler").getBoundingClientRect?.();
+        const angler = $("#castAngler");
+        const anglerBox = angler.getBoundingClientRect?.();
         if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width)
           return null;
+        // Source-pixel landmarks point at the actual closed right fist, not a
+        // percentage of the transparent PNG canvas. Reproduce background-size:
+        // contain + center bottom so the landmark stays exact at every ratio.
+        const sprite = angler.classList.contains("girl")
+          ? { width: 138, height: 326, gripX: 120, gripY: 219 }
+          : { width: 146, height: 339, gripX: 127, gripY: 226 };
+        const scale = Math.min(
+          anglerBox.width / sprite.width,
+          anglerBox.height / sprite.height,
+        );
+        const renderedWidth = sprite.width * scale;
+        const renderedHeight = sprite.height * scale;
+        const imageLeft = anglerBox.left + (anglerBox.width - renderedWidth) / 2;
+        const imageTop = anglerBox.top + anglerBox.height - renderedHeight;
         return {
-          x: anglerBox.left - surfaceBox.left + anglerBox.width * .865,
-          y: anglerBox.top - surfaceBox.top + anglerBox.height * .565,
+          x: imageLeft - surfaceBox.left + sprite.gripX * scale,
+          y: imageTop - surfaceBox.top + sprite.gripY * scale,
+          size: Math.max(7, Math.min(14, 14 * scale)),
         };
       }
       function syncSurfaceCastRig() {
@@ -6631,9 +6695,10 @@
           up: { x: -4, y: 7 },
           down: { x: -4, y: -6 },
         }[s.direction] || { x: -4, y: -6 };
+        const desired = nearestWalkableWorld(s.x + offset.x, s.y + offset.y, 12);
         return {
-          left: Math.max(1, Math.min(99, worldToMapX(s.x + offset.x))),
-          top: Math.max(1, Math.min(99, worldToMapY(s.y + offset.y))),
+          left: Math.max(1, Math.min(99, worldToMapX(desired.x))),
+          top: Math.max(1, Math.min(99, worldToMapY(desired.y))),
         };
       }
       function companionDirection() {
@@ -6822,9 +6887,9 @@
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
         if (!isWalkableWorld(s.x, s.y)) {
-          s.x = 123;
-          s.y = 92;
-          s.direction = "up";
+          const rescued = nearestWalkableWorld(s.x, s.y);
+          s.x = rescued.x;
+          s.y = rescued.y;
         }
         const mapX = worldToMapX(s.x);
         const mapY = worldToMapY(s.y);
