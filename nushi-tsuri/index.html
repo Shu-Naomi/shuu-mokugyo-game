@@ -2947,7 +2947,8 @@
         height: clamp(165px, 52vh, 220px);
       }
       .art-layered-avatar .cast-rod {
-        left: calc(38% + clamp(64px, 9vw, 78px));
+        left: var(--cast-rod-hand-x, calc(38% + clamp(64px, 9vw, 78px)));
+        bottom: var(--cast-rod-hand-y, 17%);
       }
       /* v78: Sam's pond has a purpose-drawn foreground landing at center.
          The selectable player stands larger on its dock and faces the water. */
@@ -2959,10 +2960,9 @@
         transform: translateX(-50%);
       }
       .art-sam-pond.art-layered-avatar .cast-rod {
-        left: calc(46% + clamp(46px, 7vw, 68px));
-        bottom: 25%;
+        left: var(--cast-rod-hand-x, calc(46% + clamp(46px, 7vw, 68px)));
+        bottom: var(--cast-rod-hand-y, 25%);
         height: clamp(136px, 43vh, 216px);
-        transform: rotate(44deg);
       }
       .art-layered-avatar.time-morning .cast-angler {
         filter: brightness(.9) saturate(.94) drop-shadow(5px 7px 2px #03152299);
@@ -4333,7 +4333,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v78</span><span id="time">朝</span
+        <b>星降る湖</b><span>v79</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5626,6 +5626,12 @@
         // Every saved catch, item, purchase and field position stays intact.
         s.mapVersion = 78;
       }
+      if ((s.mapVersion || 0) < 79) {
+        // v79 reconnects every layered rod to the rendered player's hand and
+        // gives each illustrated water body its own safe landing lane.
+        // Every saved catch, item, purchase and field position stays intact.
+        s.mapVersion = 79;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6365,15 +6371,25 @@
         const value = Math.max(0, Math.min(100, Number(distance) || 0));
         const surface = $("#castSurface");
         const practicePond = surface.classList.contains("art-sam-pond");
-        const layeredWater = surface.classList.contains("art-layered-avatar");
-        return {
-          x: practicePond
-            ? 75 + value * .2
-            : layeredWater
-              ? 60 + value * .3
-              : 30 + value * .6,
-          y: practicePond ? 76 - value * .38 : 77 - value * .42,
-        };
+        if (practicePond) {
+          // Keep every practice cast inside the open center of the oval pond.
+          return { x: 57 + value * .2, y: 59 - value * .25 };
+        }
+        if (surface.classList.contains("art-river")) {
+          // The river narrows toward the horizon, so long casts converge on it.
+          return { x: 56 + value * .16, y: 68 - value * .34 };
+        }
+        if (surface.classList.contains("art-sea-harbor")) {
+          // Avoid the quay, boats and right-hand pier; use the clear harbor basin.
+          return { x: 57 + value * .15, y: 75 - value * .21 };
+        }
+        if (surface.classList.contains("art-sea-beach")) {
+          return { x: 61 + value * .23, y: 73 - value * .31 };
+        }
+        if (surface.classList.contains("art-lake")) {
+          return { x: 59 + value * .24, y: 72 - value * .32 };
+        }
+        return { x: 30 + value * .6, y: 77 - value * .42 };
       }
       function castMetersForDistance(distance = 0, practice = false) {
         return practice
@@ -6431,6 +6447,51 @@
           return { x: 276, y: 236 };
         }
         return { x: 145, y: 330 };
+      }
+      function positionCastRodAtHand() {
+        const surface = $("#castSurface");
+        if (!surface.classList.contains("art-layered-avatar")) return;
+        const surfaceBox = surface.getBoundingClientRect?.();
+        const anglerBox = $("#castAngler").getBoundingClientRect?.();
+        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width) return;
+        // Both selectable back-facing sprites hold the rod in their left-side
+        // on-screen hand. Anchor the butt there from the actual rendered box,
+        // so every viewport and Sam's larger pond pose stays connected.
+        const handX = anglerBox.left - surfaceBox.left + anglerBox.width * .865;
+        const handY = anglerBox.top - surfaceBox.top + anglerBox.height * .565;
+        surface.style.setProperty("--cast-rod-hand-x", `${handX}px`);
+        surface.style.setProperty(
+          "--cast-rod-hand-y",
+          `${surfaceBox.height - handY}px`,
+        );
+      }
+      function castRodHandPoint() {
+        const surfaceBox = $("#castSurface").getBoundingClientRect?.();
+        const anglerBox = $("#castAngler").getBoundingClientRect?.();
+        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width)
+          return null;
+        return {
+          x: anglerBox.left - surfaceBox.left + anglerBox.width * .865,
+          y: anglerBox.top - surfaceBox.top + anglerBox.height * .565,
+        };
+      }
+      function syncSurfaceCastRig() {
+        if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
+          return;
+        positionCastRodAtHand();
+        if (!["cast-flight", "wait", "bite"].includes(battle.phase)) return;
+        const point = castSurfacePoint(battle.castDistance ?? battle.cast ?? 0);
+        const origin = castLineOrigin();
+        const targetX = point.x * 10;
+        const targetY = point.y * 5;
+        const controlX = Math.round((origin.x + targetX) * .5);
+        const controlY = battle.phase === "cast-flight"
+          ? 38
+          : Math.round(Math.min(origin.y, targetY) - 18);
+        $("#castLinePath").setAttribute(
+          "d",
+          `M ${origin.x} ${origin.y} Q ${controlX} ${controlY} ${targetX} ${targetY}`,
+        );
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
@@ -6521,6 +6582,8 @@
           battle.minimumDepth || "shallow",
         );
         updateSurfaceCastAim(battle.cast);
+        if (globalThis.requestAnimationFrame)
+          requestAnimationFrame(syncSurfaceCastRig);
       }
       function fishingWaterNearPlayer() {
         // A bridge remains a crossing, never an invisible fishing hotspot.
@@ -8867,6 +8930,8 @@
         timer = setInterval(() => {
           if (!battle) return;
           if (battle.phase !== "fight") updateWaterFx();
+          if (["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
+            syncSurfaceCastRig();
           if (battle.phase === "cast") {
             const min = battle.castMin ?? 0;
             const max = battle.castMax ?? 100;
@@ -9399,8 +9464,10 @@
         if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
       });
       addEventListener("resize", () => {
-        if ($("#game").classList.contains("active"))
+        if ($("#game").classList.contains("active")) {
           requestAnimationFrame(render);
+          requestAnimationFrame(syncSurfaceCastRig);
+        }
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
       addEventListener("pagehide", save);
