@@ -2356,6 +2356,31 @@
         font-size: clamp(0.7rem, 1.7vw, 0.9rem);
         text-align: center;
       }
+      .rescue-toast {
+        position: absolute;
+        left: 50%;
+        top: 18%;
+        transform: translate(-50%, -8px);
+        z-index: 18;
+        width: max-content;
+        max-width: min(78%, 620px);
+        padding: 8px 14px;
+        border: 2px solid #ffe69a;
+        border-radius: 9px;
+        background: #102033ee;
+        box-shadow: 0 4px 0 #07111caa, 0 0 20px #ffd97855;
+        color: #fff5c8;
+        font-size: clamp(0.76rem, 1.9vw, 1rem);
+        font-weight: 800;
+        text-align: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease, transform .18s ease;
+      }
+      .rescue-toast.show {
+        opacity: 1;
+        transform: translate(-50%, 0);
+      }
       .controls {
         position: absolute;
         inset: auto 0 7px;
@@ -4352,7 +4377,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v80</span><span id="time">朝</span
+        <b>星降る湖</b><span>v81</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4450,6 +4475,7 @@
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
         <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
+        <div class="rescue-toast" id="rescueToast" role="status" aria-live="assertive"></div>
         <aside class="idle-status" id="idleStatus" aria-live="polite">
           <header><b id="statusAvatar">主人公</b><span id="statusCondition">準備よし</span></header>
           <div id="statusHpRow"><span>体力</span><b id="statusHp">100 / 100</b></div>
@@ -5462,6 +5488,9 @@
         idleActionTimer = 0,
         companionReactionTimer = 0,
         reactionTransitionTimer = 0,
+        rescueTimer = 0,
+        rescueToastTimer = 0,
+        rescueInProgress = false,
         dogIdleMode = "",
         companionReaction = "",
         dogApproachOffset = 0,
@@ -5657,6 +5686,11 @@
         // stranded in water to their nearest shore and masks every cast lane.
         // Inventory, catches, equipment, health and money stay untouched.
         s.mapVersion = 80;
+      }
+      if ((s.mapVersion || 0) < 81) {
+        // v81 changes only the empty-tackle rescue sequence and its feedback.
+        // Inventory, catches, equipment, health, money and position stay intact.
+        s.mapVersion = 81;
       }
       function preloadFishAnimation(fishId) {
         const sources = [
@@ -6042,8 +6076,9 @@
         }
         return { x: 123, y: 92 };
       }
-      function fishingSpotById(id) {
-        return fishingSpots.find((spot) => spot.id === id) || fishingSpots[0];
+      function fishingSpotById(id, fallback = true) {
+        return fishingSpots.find((spot) => spot.id === id) ||
+          (fallback ? fishingSpots[0] : null);
       }
       function waterZoneAtWorld(x, y) {
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
@@ -6952,7 +6987,7 @@
             : "サムの試し釣り池だ。Aで初回講習を受ける。"
           : near(196, 94, 9)
             ? "SAM'S FISHING SHOPだ。Aで店内へ入る。"
-            : near(67, 108, 8)
+            : near(67, 108, 8) && canReceiveDogRescue()
               ? "砂浜の柔らかい土だ。エサが無い時はワンコに相談できそう。"
               : near(109, 84, 7)
                 ? "石造りの湖見橋だ。ここは渡る場所。釣りは岸へ降りてから。"
@@ -6994,6 +7029,7 @@
       function canShowIdleStatus() {
         return $("#game").classList.contains("active") &&
           !playerWalking &&
+          !rescueInProgress &&
           !battle &&
           !document.querySelector(".modal.open") &&
           !$("#catchCard").classList.contains("show");
@@ -7008,7 +7044,7 @@
         }, delay);
       }
       function move(d) {
-        if (battle || document.querySelector(".modal.open")) return;
+        if (battle || rescueInProgress || document.querySelector(".modal.open")) return;
         hideIdleStatus();
         wakeDog();
         dogWalking = true;
@@ -7339,6 +7375,7 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
+        if (rescueInProgress) return;
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
         const landmark = nearbyWorldLandmark();
@@ -7346,7 +7383,7 @@
           renderSamShop();
           open("store");
         }
-        else if (near(67, 108, 8)) rescue();
+        else if (near(67, 108, 8) && canReceiveDogRescue()) rescue();
         else if (near(109, 84, 7))
           log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
         else if (landmark?.id === "harbor-shop") openVehicleShop();
@@ -7358,29 +7395,84 @@
       function dogName() {
         return { shuu: "シュウ", riku: "リク", grey: "Grey" }[s.dog] || "リク";
       }
-      function rescue() {
-        const totalBait = Object.values(s.baits).reduce((a,b) => a + b, 0);
-        if (totalBait > 0 || s.money >= 120)
-          return log(`${dogName()}「まだ自分の力で準備できるよ」`);
-        if (s.time - s.rescueAt < 2)
-          return log(
-            `${dogName()}はさっき探した場所を見つめている。少し時間を置こう。`,
-          );
-        s.rescueAt = s.time;
+      function totalBaitCount() {
+        return Object.values(s.baits).reduce((total, count) =>
+          total + Math.max(0, Number(count) || 0), 0);
+      }
+      function canReceiveDogRescue() {
+        return totalBaitCount() < 1 && s.money < baitData.worm.price;
+      }
+      function showRescueToast(message, duration = 2600) {
+        const toast = $("#rescueToast");
+        clearTimeout(rescueToastTimer);
+        toast.textContent = message;
+        toast.classList.add("show");
+        rescueToastTimer = setTimeout(() => {
+          toast.classList.remove("show");
+          rescueToastTimer = 0;
+        }, duration);
+      }
+      function dogRescueReward() {
         if (s.dog === "shuu") {
-          s.baits.worm += 3;
-          log("シュウが夢中で土を掘り、ミミズを3匹見つけた！");
-        } else if (s.dog === "grey") {
-          s.baits.worm += 2;
-          s.money += 40;
-          log("Greyが落とし物の40円とエサ2匹を静かに見つけた。");
-        } else {
-          s.baits.river += 2;
-          s.selectedBait = "river";
-          s.calmBonus = 1;
-          log("リクが水辺を観察して川虫を2匹発見。次の魚が止まりやすくなる！");
+          return {
+            message: "シュウが夢中で土を掘り、ミミズを3匹見つけた！",
+            grant() { s.baits.worm += 3; },
+          };
         }
-        render();
+        if (s.dog === "grey") {
+          return {
+            message: "Greyが土の中から落とし物の40円とミミズ2匹を見つけた！",
+            grant() {
+              s.baits.worm += 2;
+              s.money += 40;
+            },
+          };
+        }
+        return {
+          message: "リクが水辺の土を掘り、川虫を2匹見つけた！ 次の魚が止まりやすくなる！",
+          grant() {
+            s.baits.river += 2;
+            s.selectedBait = "river";
+            s.calmBonus = 1;
+          },
+        };
+      }
+      function rescue() {
+        if (rescueInProgress) return false;
+        if (!canReceiveDogRescue()) {
+          log(`${dogName()}「まだ自分の力で準備できるよ」`);
+          showRescueToast(`${dogName()}「まだ自分の力で準備できるよ」`);
+          return false;
+        }
+        if (s.time - s.rescueAt < 2) {
+          const message = `${dogName()}はさっき探した場所を見つめている。少し時間を置こう。`;
+          log(message);
+          showRescueToast(message);
+          return false;
+        }
+        rescueInProgress = true;
+        hideIdleStatus();
+        close();
+        battle = null;
+        resetBattleFeedback();
+        clearWaterFx();
+        $("#fishScene").classList.remove("active", "practice-fishing");
+        wakeDog();
+        setDogIdle("dig");
+        $("#hint").textContent = `${dogName()}がエサを探して土を掘っている……`;
+        rescueTimer = setTimeout(() => {
+          rescueTimer = 0;
+          const reward = dogRescueReward();
+          s.rescueAt = s.time;
+          reward.grant();
+          rescueInProgress = false;
+          log(reward.message);
+          render();
+          showRescueToast(`🪱 ${reward.message}`);
+          armDogIdle();
+          scheduleIdleStatus(3000);
+        }, 1500);
+        return true;
       }
       function pick(distance = 50, spotId = battle?.spot) {
         const spot = fishingSpotById(spotId);
@@ -7418,6 +7510,11 @@
         scene.classList.add(`water-${zone}`, `depth-${depth}`);
       }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
+        if (rescueInProgress) return;
+        if ((s.baits[s.selectedBait] || 0) < 1 && canReceiveDogRescue()) {
+          rescue();
+          return;
+        }
         hideIdleStatus();
         wakeDog();
         hideCatchCard();
@@ -7708,10 +7805,39 @@
         const practice = Boolean(battle?.practice);
         const tutorial = Boolean(battle?.tutorial);
         const practiceBait = battle?.bait || "paste";
+        if (!practice) {
+          s.bait = s.baits[s.selectedBait] || 0;
+          if (s.bait < 1) {
+            if (canReceiveDogRescue()) {
+              battle = null;
+              $("#fishScene").classList.remove("active", "practice-fishing");
+              rescue();
+            } else if (totalBaitCount() > 0) {
+              renderTackle();
+              open("tackle");
+              showRescueToast("使えるエサを選んでから釣りを始めよう。");
+            } else {
+              battle = null;
+              $("#fishScene").classList.remove("active", "practice-fishing");
+              close();
+              renderSamShop();
+              open("store");
+              showRescueToast("エサがない！ サムの店でエサを買おう。");
+            }
+            return;
+          }
+        }
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
-        const spot = fishingSpotById(battle?.spot);
+        const spot = fishingSpotById(battle?.spot, false);
+        if (!spot) {
+          battle = null;
+          $("#fishScene").classList.remove("active", "practice-fishing");
+          render();
+          showRescueToast("釣り場を見失った。もう一度、水辺でAを押そう。");
+          return;
+        }
         const waterZone = battle?.waterZone || spot.zone || "lake";
         const minimumDepth = battle?.minimumDepth || "shallow";
         const waterX = battle?.waterX;
@@ -7721,19 +7847,6 @@
         const castLocale = waterZone === "sea"
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
-        if (!practice) {
-          s.bait = s.baits[s.selectedBait] || 0;
-          if (s.bait < 1) {
-            $("#hint").textContent =
-              s.money >= 120
-                ? "エサがない！釣具店を開くよ。エサを買おう。"
-                : `エサもお金もない！${dogName()}が助けに来た。`;
-            close();
-            if (s.money >= 120) open("store");
-            else rescue();
-            return;
-          }
-        }
         close();
         battle = {
           phase: "cast",
