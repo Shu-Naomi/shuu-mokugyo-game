@@ -2578,43 +2578,43 @@
       }
       .cast-surface.art-water {
         background-color: #173c55;
-        background-image: url("assets/cast-lake-day-soft-v74.jpg");
+        background-image: url("assets/cast-lake-day-soft-v77.jpg");
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
       }
       .cast-surface.art-lake.time-morning {
-        background-image: url("assets/cast-lake-morning-v74.jpg");
+        background-image: url("assets/cast-lake-morning-v77.jpg");
       }
       .cast-surface.art-lake.time-day.cast-day-soft {
-        background-image: url("assets/cast-lake-day-soft-v74.jpg");
+        background-image: url("assets/cast-lake-day-soft-v77.jpg");
       }
       .cast-surface.art-lake.time-day.cast-day-bright {
-        background-image: url("assets/cast-lake-day-bright-v74.jpg");
+        background-image: url("assets/cast-lake-day-bright-v77.jpg");
       }
       .cast-surface.art-lake.time-evening {
-        background-image: url("assets/cast-lake-evening-v74.jpg");
+        background-image: url("assets/cast-lake-evening-v77.jpg");
       }
       .cast-surface.art-lake.time-night {
-        background-image: url("assets/cast-lake-night-v74.jpg");
+        background-image: url("assets/cast-lake-night-v77.jpg");
       }
       .cast-surface.art-river {
-        background-image: url("assets/cast-river-day-soft-v75.jpg");
+        background-image: url("assets/cast-river-day-soft-v77.jpg");
       }
       .cast-surface.art-river.time-morning {
-        background-image: url("assets/cast-river-morning-v75.jpg");
+        background-image: url("assets/cast-river-morning-v77.jpg");
       }
       .cast-surface.art-river.time-day.cast-day-soft {
-        background-image: url("assets/cast-river-day-soft-v75.jpg");
+        background-image: url("assets/cast-river-day-soft-v77.jpg");
       }
       .cast-surface.art-river.time-day.cast-day-bright {
-        background-image: url("assets/cast-river-day-bright-v75.jpg");
+        background-image: url("assets/cast-river-day-bright-v77.jpg");
       }
       .cast-surface.art-river.time-evening {
-        background-image: url("assets/cast-river-evening-v75.jpg");
+        background-image: url("assets/cast-river-evening-v77.jpg");
       }
       .cast-surface.art-river.time-night {
-        background-image: url("assets/cast-river-night-v75.jpg");
+        background-image: url("assets/cast-river-night-v77.jpg");
       }
       .cast-surface.art-sea-beach {
         background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
@@ -4299,7 +4299,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v76</span><span id="time">朝</span
+        <b>星降る湖</b><span>v77</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5580,6 +5580,12 @@
         // Every saved catch, item, purchase and field position stays intact.
         s.mapVersion = 76;
       }
+      if ((s.mapVersion || 0) < 77) {
+        // v77 replaces the lake and river's embedded-player paintings with
+        // protagonist-free scenes, then layers the selected player and rod.
+        // Every saved catch, item, purchase and field position stays intact.
+        s.mapVersion = 77;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6317,10 +6323,10 @@
       }
       function castSurfacePoint(distance = 50) {
         const value = Math.max(0, Math.min(100, Number(distance) || 0));
-        const layeredSea = battle?.waterZone === "sea" &&
-          $("#castSurface").classList.contains("art-layered-avatar");
+        const layeredWater = $("#castSurface")
+          .classList.contains("art-layered-avatar");
         return {
-          x: layeredSea ? 60 + value * .3 : 30 + value * .6,
+          x: layeredWater ? 60 + value * .3 : 30 + value * .6,
           y: 77 - value * .42,
         };
       }
@@ -6379,22 +6385,7 @@
           }
           return { x: 276, y: 236 };
         }
-        if (surface.classList.contains("art-lake")) return { x: 368, y: 222 };
-        const period = ["morning", "day", "evening", "night"]
-          .find((name) => surface.classList.contains(`time-${name}`));
-        const scene = period === "day"
-          ? surface.classList.contains("cast-day-soft") ? "day-soft" : "day-bright"
-          : period;
-        const origins = {
-          river: {
-            morning: { x: 354, y: 221 },
-            "day-soft": { x: 363, y: 239 },
-            "day-bright": { x: 358, y: 221 },
-            evening: { x: 364, y: 226 },
-            night: { x: 370, y: 186 },
-          },
-        };
-        return origins.river[scene] || { x: 368, y: 222 };
+        return { x: 145, y: 330 };
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
@@ -6460,10 +6451,11 @@
         const surface = $("#castSurface");
         scene.classList.remove("surface-diving");
         scene.classList.add("surface-casting");
+        const illustratedClass = zone === "sea"
+          ? `art-sea art-sea-${castLocale}`
+          : `art-${zone}`;
         surface.className = illustratedZone
-          ? zone === "sea"
-            ? `cast-surface art-water art-sea art-sea-${castLocale} art-layered-avatar`
-            : `cast-surface art-water art-${zone} art-embedded-avatar`
+          ? `cast-surface art-water ${illustratedClass} art-layered-avatar`
           : "cast-surface";
         applyCastTimeTheme(surface, s.time);
         $("#castAngler").className = `cast-angler ${s.avatar === "girl" ? "girl" : "boy"}`;
