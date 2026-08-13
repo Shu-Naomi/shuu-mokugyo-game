@@ -2616,29 +2616,47 @@
       .cast-surface.art-river.time-night {
         background-image: url("assets/cast-river-night-v75.jpg");
       }
-      .cast-surface.art-sea {
-        background-image: url("assets/cast-sea-day-soft-v75.jpg");
+      .cast-surface.art-sea-beach {
+        background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
       }
-      .cast-surface.art-sea.time-morning {
-        background-image: url("assets/cast-sea-morning-v75.jpg");
+      .cast-surface.art-sea-beach.time-morning {
+        background-image: url("assets/cast-sea-beach-morning-v76.jpg");
       }
-      .cast-surface.art-sea.time-day.cast-day-soft {
-        background-image: url("assets/cast-sea-day-soft-v75.jpg");
+      .cast-surface.art-sea-beach.time-day.cast-day-soft {
+        background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
       }
-      .cast-surface.art-sea.time-day.cast-day-bright {
-        background-image: url("assets/cast-sea-day-bright-v75.jpg");
+      .cast-surface.art-sea-beach.time-day.cast-day-bright {
+        background-image: url("assets/cast-sea-beach-day-bright-v76.jpg");
       }
-      .cast-surface.art-sea.time-evening {
-        background-image: url("assets/cast-sea-evening-v75.jpg");
+      .cast-surface.art-sea-beach.time-evening {
+        background-image: url("assets/cast-sea-beach-evening-v76.jpg");
       }
-      .cast-surface.art-sea.time-night {
-        background-image: url("assets/cast-sea-night-v75.jpg");
+      .cast-surface.art-sea-beach.time-night {
+        background-image: url("assets/cast-sea-beach-night-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor {
+        background-image: url("assets/cast-sea-harbor-day-soft-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor.time-morning {
+        background-image: url("assets/cast-sea-harbor-morning-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor.time-day.cast-day-soft {
+        background-image: url("assets/cast-sea-harbor-day-soft-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor.time-day.cast-day-bright {
+        background-image: url("assets/cast-sea-harbor-day-bright-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor.time-evening {
+        background-image: url("assets/cast-sea-harbor-evening-v76.jpg");
+      }
+      .cast-surface.art-sea-harbor.time-night {
+        background-image: url("assets/cast-sea-harbor-night-v76.jpg");
       }
       .art-water .cast-sky,
       .art-water .cast-far-shore,
       .art-water .cast-water,
-      .art-water .cast-angler,
-      .art-water .cast-rod {
+      .art-embedded-avatar .cast-angler,
+      .art-embedded-avatar .cast-rod {
         display: none;
       }
       .cast-sky {
@@ -2743,6 +2761,35 @@
       }
       .fish-scene.water-river .cast-surface.art-water::after {
         content: none;
+      }
+      .cast-surface.art-sea-beach::before {
+        inset: 34% 0 22%;
+      }
+      .cast-surface.art-sea-harbor::after {
+        content: "";
+        position: absolute;
+        z-index: 4;
+        left: 33%;
+        bottom: -4%;
+        width: 29%;
+        height: 22%;
+        pointer-events: none;
+        background:
+          repeating-linear-gradient(0deg, transparent 0 25px, #21150dcc 26px 29px),
+          repeating-linear-gradient(90deg, #6d4629 0 17px, #392317 18px 21px, #805332 22px 39px, #2b1a11 40px 43px);
+        border-top: 4px solid #ad7a49;
+        box-shadow: inset 0 6px #2c1a10aa, 7px -5px 0 #07182466;
+        clip-path: polygon(7% 17%, 93% 17%, 100% 100%, 0 100%);
+        image-rendering: pixelated;
+      }
+      .cast-surface.art-sea-harbor.time-morning::after {
+        filter: sepia(.16) brightness(.84) saturate(.92);
+      }
+      .cast-surface.art-sea-harbor.time-evening::after {
+        filter: sepia(.32) brightness(.66) saturate(1.06);
+      }
+      .cast-surface.art-sea-harbor.time-night::after {
+        filter: brightness(.34) saturate(.72) hue-rotate(7deg);
       }
       .cast-zone-name {
         position: absolute;
@@ -2874,6 +2921,24 @@
       }
       .cast-angler.boy { background-image: url("assets/player-boy-cast-v73.png"); }
       .cast-angler.girl { background-image: url("assets/player-girl-cast-v73.png"); }
+      .art-layered-avatar .cast-angler {
+        left: 38%;
+        bottom: -2%;
+        width: clamp(72px, 10vw, 100px);
+        height: clamp(165px, 52vh, 220px);
+      }
+      .art-layered-avatar .cast-rod {
+        left: calc(38% + clamp(64px, 9vw, 78px));
+      }
+      .art-layered-avatar.time-morning .cast-angler {
+        filter: brightness(.9) saturate(.94) drop-shadow(5px 7px 2px #03152299);
+      }
+      .art-layered-avatar.time-evening .cast-angler {
+        filter: sepia(.16) brightness(.78) saturate(1.08) drop-shadow(5px 7px 2px #2c160c99);
+      }
+      .art-layered-avatar.time-night .cast-angler {
+        filter: brightness(.46) saturate(.72) hue-rotate(7deg) drop-shadow(5px 7px 2px #020918cc);
+      }
       .cast-rod {
         position: absolute;
         z-index: 8;
@@ -2888,6 +2953,21 @@
         background: linear-gradient(90deg, #4d2e1e, #e1bc67 48%, #704624);
         box-shadow: 2px 1px #09151a88;
         animation: cast-rod-ready .85s steps(4, end) infinite alternate;
+      }
+      .art-layered-avatar.time-evening .cast-rod {
+        filter: sepia(.2) brightness(.82) saturate(1.12);
+      }
+      .art-layered-avatar.time-night .cast-rod {
+        filter: brightness(.5) saturate(.7);
+      }
+      .cast-rod-tip {
+        position: absolute;
+        left: 50%;
+        top: 0;
+        width: 2px;
+        height: 2px;
+        transform: translate(-50%, -50%);
+        pointer-events: none;
       }
       .cast-rod::before {
         content: "";
@@ -4219,7 +4299,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v75</span><span id="time">朝</span
+        <b>星降る湖</b><span>v76</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4353,7 +4433,7 @@
             <div class="cast-splash"></div>
             <div class="cast-float" id="castFloat"></div>
             <div class="cast-angler boy" id="castAngler"></div>
-            <div class="cast-rod"></div>
+            <div class="cast-rod"><i class="cast-rod-tip" id="castRodTip"></i></div>
           </div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
@@ -5494,6 +5574,12 @@
         // Existing catches, equipment, health, money and position stay intact.
         s.mapVersion = 75;
       }
+      if ((s.mapVersion || 0) < 76) {
+        // v76 separates beach and harbor casting, then layers the selected
+        // player and rod over scenery without an embedded protagonist.
+        // Every saved catch, item, purchase and field position stays intact.
+        s.mapVersion = 76;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6231,8 +6317,10 @@
       }
       function castSurfacePoint(distance = 50) {
         const value = Math.max(0, Math.min(100, Number(distance) || 0));
+        const layeredSea = battle?.waterZone === "sea" &&
+          $("#castSurface").classList.contains("art-layered-avatar");
         return {
-          x: 30 + value * .6,
+          x: layeredSea ? 60 + value * .3 : 30 + value * .6,
           y: 77 - value * .42,
         };
       }
@@ -6243,6 +6331,10 @@
       }
       function castDepthName(depth = "shallow") {
         return { shallow: "岸際", mid: "中層", deep: "深場" }[depth] || "岸際";
+      }
+      function seaCastLocaleAtWorld(x = s.x, y = s.y) {
+        if (!Number.isFinite(x) || !Number.isFinite(y)) return "beach";
+        return x >= 120 ? "harbor" : "beach";
       }
       function castTimeTheme(time = s.time) {
         const period = ["morning", "day", "evening", "night"][time % 4];
@@ -6270,6 +6362,23 @@
       function castLineOrigin() {
         const surface = $("#castSurface");
         if (!surface.classList.contains("art-water")) return { x: 145, y: 330 };
+        if (surface.classList.contains("art-layered-avatar")) {
+          const surfaceBox = surface.getBoundingClientRect?.();
+          const tipBox = $("#castRodTip").getBoundingClientRect?.();
+          if (surfaceBox?.width > 0 && surfaceBox.height > 0 && tipBox) {
+            return {
+              x: Math.round(
+                ((tipBox.left + tipBox.width / 2 - surfaceBox.left) /
+                  surfaceBox.width) * 1000,
+              ),
+              y: Math.round(
+                ((tipBox.top + tipBox.height / 2 - surfaceBox.top) /
+                  surfaceBox.height) * 500,
+              ),
+            };
+          }
+          return { x: 276, y: 236 };
+        }
         if (surface.classList.contains("art-lake")) return { x: 368, y: 222 };
         const period = ["morning", "day", "evening", "night"]
           .find((name) => surface.classList.contains(`time-${name}`));
@@ -6284,16 +6393,8 @@
             evening: { x: 364, y: 226 },
             night: { x: 370, y: 186 },
           },
-          sea: {
-            morning: { x: 326, y: 150 },
-            "day-soft": { x: 337, y: 199 },
-            "day-bright": { x: 393, y: 213 },
-            evening: { x: 349, y: 185 },
-            night: { x: 327, y: 228 },
-          },
         };
-        const zone = surface.classList.contains("art-river") ? "river" : "sea";
-        return origins[zone][scene] || { x: 368, y: 222 };
+        return origins.river[scene] || { x: 368, y: 222 };
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
@@ -6346,6 +6447,9 @@
         if (!battle) return;
         const profile = rodCastProfile(s.selectedRod, battle.practice);
         const zone = battle.waterZone || "lake";
+        const castLocale = zone === "sea"
+          ? battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
+          : zone;
         const illustratedZone = !battle.practice && ["lake", "river", "sea"].includes(zone);
         battle.castMin = profile.min;
         battle.castMax = profile.max;
@@ -6357,7 +6461,9 @@
         scene.classList.remove("surface-diving");
         scene.classList.add("surface-casting");
         surface.className = illustratedZone
-          ? `cast-surface art-water art-${zone}`
+          ? zone === "sea"
+            ? `cast-surface art-water art-sea art-sea-${castLocale} art-layered-avatar`
+            : `cast-surface art-water art-${zone} art-embedded-avatar`
           : "cast-surface";
         applyCastTimeTheme(surface, s.time);
         $("#castAngler").className = `cast-angler ${s.avatar === "girl" ? "girl" : "boy"}`;
@@ -6366,7 +6472,7 @@
           : {
               lake: "星降る湖・湖面",
               river: "民家川・水面",
-              sea: "潮見浜・海面",
+              sea: castLocale === "harbor" ? "星見港・海面" : "潮見浜・海面",
             }[zone];
         $("#castRangeFill").style.left = `${profile.min}%`;
         $("#castRangeFill").style.width = `${profile.max - profile.min}%`;
@@ -7163,6 +7269,9 @@
           minimumDepth,
           waterX: spot.waterX,
           waterY: spot.waterY,
+          playerX: s.x,
+          playerY: s.y,
+          castLocale: zone === "sea" ? seaCastLocaleAtWorld(s.x, s.y) : zone,
         };
         setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
@@ -7440,6 +7549,11 @@
         const minimumDepth = battle?.minimumDepth || "shallow";
         const waterX = battle?.waterX;
         const waterY = battle?.waterY;
+        const playerX = battle?.playerX ?? s.x;
+        const playerY = battle?.playerY ?? s.y;
+        const castLocale = waterZone === "sea"
+          ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
+          : waterZone;
         if (!practice) {
           s.bait = s.baits[s.selectedBait] || 0;
           if (s.bait < 1) {
@@ -7464,6 +7578,9 @@
           minimumDepth,
           waterX,
           waterY,
+          playerX,
+          playerY,
+          castLocale,
           bait: practice ? practiceBait : s.selectedBait,
           baitCommitted: false,
           cast: 0,
