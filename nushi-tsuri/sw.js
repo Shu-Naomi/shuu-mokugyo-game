@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v77-layered-natural-casts-59";
+const CACHE_NAME = "nushi-tsuri-v78-layered-sam-pond-60";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -17,6 +17,11 @@ const CORE_ASSETS = [
   "./assets/cast-river-day-bright-v77.jpg",
   "./assets/cast-river-evening-v77.jpg",
   "./assets/cast-river-night-v77.jpg",
+  "./assets/cast-sam-pond-morning-v78.jpg",
+  "./assets/cast-sam-pond-day-soft-v78.jpg",
+  "./assets/cast-sam-pond-day-bright-v78.jpg",
+  "./assets/cast-sam-pond-evening-v78.jpg",
+  "./assets/cast-sam-pond-night-v78.jpg",
   "./assets/cast-sea-beach-morning-v76.jpg",
   "./assets/cast-sea-beach-day-soft-v76.jpg",
   "./assets/cast-sea-beach-day-bright-v76.jpg",
