@@ -2616,6 +2616,25 @@
       .cast-surface.art-river.time-night {
         background-image: url("assets/cast-river-night-v77.jpg");
       }
+      .cast-surface.art-sam-pond {
+        background-image: url("assets/cast-sam-pond-day-soft-v78.jpg");
+        background-position: center bottom;
+      }
+      .cast-surface.art-sam-pond.time-morning {
+        background-image: url("assets/cast-sam-pond-morning-v78.jpg");
+      }
+      .cast-surface.art-sam-pond.time-day.cast-day-soft {
+        background-image: url("assets/cast-sam-pond-day-soft-v78.jpg");
+      }
+      .cast-surface.art-sam-pond.time-day.cast-day-bright {
+        background-image: url("assets/cast-sam-pond-day-bright-v78.jpg");
+      }
+      .cast-surface.art-sam-pond.time-evening {
+        background-image: url("assets/cast-sam-pond-evening-v78.jpg");
+      }
+      .cast-surface.art-sam-pond.time-night {
+        background-image: url("assets/cast-sam-pond-night-v78.jpg");
+      }
       .cast-surface.art-sea-beach {
         background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
       }
@@ -2929,6 +2948,21 @@
       }
       .art-layered-avatar .cast-rod {
         left: calc(38% + clamp(64px, 9vw, 78px));
+      }
+      /* v78: Sam's pond has a purpose-drawn foreground landing at center.
+         The selectable player stands larger on its dock and faces the water. */
+      .art-sam-pond.art-layered-avatar .cast-angler {
+        left: 46%;
+        bottom: 10%;
+        width: clamp(92px, 13vw, 126px);
+        height: clamp(205px, 67vh, 286px);
+        transform: translateX(-50%);
+      }
+      .art-sam-pond.art-layered-avatar .cast-rod {
+        left: calc(46% + clamp(46px, 7vw, 68px));
+        bottom: 25%;
+        height: clamp(136px, 43vh, 216px);
+        transform: rotate(44deg);
       }
       .art-layered-avatar.time-morning .cast-angler {
         filter: brightness(.9) saturate(.94) drop-shadow(5px 7px 2px #03152299);
@@ -4299,7 +4333,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v77</span><span id="time">朝</span
+        <b>星降る湖</b><span>v78</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5586,6 +5620,12 @@
         // Every saved catch, item, purchase and field position stays intact.
         s.mapVersion = 77;
       }
+      if ((s.mapVersion || 0) < 78) {
+        // v78 illustrates Sam's practice pond at five times of day and layers
+        // the selected player, loan rod and line on its foreground dock.
+        // Every saved catch, item, purchase and field position stays intact.
+        s.mapVersion = 78;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6323,11 +6363,16 @@
       }
       function castSurfacePoint(distance = 50) {
         const value = Math.max(0, Math.min(100, Number(distance) || 0));
-        const layeredWater = $("#castSurface")
-          .classList.contains("art-layered-avatar");
+        const surface = $("#castSurface");
+        const practicePond = surface.classList.contains("art-sam-pond");
+        const layeredWater = surface.classList.contains("art-layered-avatar");
         return {
-          x: layeredWater ? 60 + value * .3 : 30 + value * .6,
-          y: 77 - value * .42,
+          x: practicePond
+            ? 75 + value * .2
+            : layeredWater
+              ? 60 + value * .3
+              : 30 + value * .6,
+          y: practicePond ? 76 - value * .38 : 77 - value * .42,
         };
       }
       function castMetersForDistance(distance = 0, practice = false) {
@@ -6441,7 +6486,7 @@
         const castLocale = zone === "sea"
           ? battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
           : zone;
-        const illustratedZone = !battle.practice && ["lake", "river", "sea"].includes(zone);
+        const illustratedZone = battle.practice || ["lake", "river", "sea"].includes(zone);
         battle.castMin = profile.min;
         battle.castMax = profile.max;
         battle.castSpeed = profile.speed;
@@ -6451,9 +6496,11 @@
         const surface = $("#castSurface");
         scene.classList.remove("surface-diving");
         scene.classList.add("surface-casting");
-        const illustratedClass = zone === "sea"
-          ? `art-sea art-sea-${castLocale}`
-          : `art-${zone}`;
+        const illustratedClass = battle.practice
+          ? "art-sam-pond"
+          : zone === "sea"
+            ? `art-sea art-sea-${castLocale}`
+            : `art-${zone}`;
         surface.className = illustratedZone
           ? `cast-surface art-water ${illustratedClass} art-layered-avatar`
           : "cast-surface";
