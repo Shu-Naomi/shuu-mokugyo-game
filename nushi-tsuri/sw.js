@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v79-held-rods-safe-casts-61";
+const CACHE_NAME = "nushi-tsuri-v80-gripped-rods-water-masks-62";
 const CORE_ASSETS = [
   "./",
   "./index.html",
