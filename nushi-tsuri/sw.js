@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v75-illustrated-water-casts-57";
+const CACHE_NAME = "nushi-tsuri-v76-layered-sea-casts-58";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -17,11 +17,16 @@ const CORE_ASSETS = [
   "./assets/cast-river-day-bright-v75.jpg",
   "./assets/cast-river-evening-v75.jpg",
   "./assets/cast-river-night-v75.jpg",
-  "./assets/cast-sea-morning-v75.jpg",
-  "./assets/cast-sea-day-soft-v75.jpg",
-  "./assets/cast-sea-day-bright-v75.jpg",
-  "./assets/cast-sea-evening-v75.jpg",
-  "./assets/cast-sea-night-v75.jpg",
+  "./assets/cast-sea-beach-morning-v76.jpg",
+  "./assets/cast-sea-beach-day-soft-v76.jpg",
+  "./assets/cast-sea-beach-day-bright-v76.jpg",
+  "./assets/cast-sea-beach-evening-v76.jpg",
+  "./assets/cast-sea-beach-night-v76.jpg",
+  "./assets/cast-sea-harbor-morning-v76.jpg",
+  "./assets/cast-sea-harbor-day-soft-v76.jpg",
+  "./assets/cast-sea-harbor-day-bright-v76.jpg",
+  "./assets/cast-sea-harbor-evening-v76.jpg",
+  "./assets/cast-sea-harbor-night-v76.jpg",
   "./assets/terrain-world-v54.png",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
