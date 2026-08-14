@@ -4377,7 +4377,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v81</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5099,6 +5099,29 @@
             breath: 0.3,
           },
         },
+        // The pose sheets move the lower lip as the fish breathes and turns.
+        // These frame-specific factors keep the hook at that painted lip
+        // instead of reusing the side-on anchor for every drawing.
+        fishHookPoseFrames = {
+          mouth: [
+            { xScale: 1, yOffset: 0 },
+            { xScale: 1.012, yOffset: 0.018 },
+            { xScale: 1.02, yOffset: 0.035 },
+          ],
+          turn: [
+            { xScale: 0.92, yOffset: 0 },
+            { xScale: 0.72, yOffset: 0.045 },
+            { xScale: 0, yOffset: 0.135 },
+            { xScale: -0.72, yOffset: 0.045 },
+            { xScale: -0.92, yOffset: 0 },
+          ],
+        },
+        // The last cell of the current funa mouth sheet contains a pale block
+        // behind its tail. Quarantine just that damaged cell until the art is
+        // redrawn; the clean half-open drawing still supplies a full fish.
+        fishMouthFrameOverrides = {
+          funa: { open: 1 },
+        },
         fishMotionProfiles = {
           moroko: {
             beat: 0.92,
@@ -5692,6 +5715,12 @@
         // Inventory, catches, equipment, health, money and position stay intact.
         s.mapVersion = 81;
       }
+      if ((s.mapVersion || 0) < 82) {
+        // v82 opens the painted shrine approach, retunes rod fortunes and
+        // repairs visual fish/hook alignment only. Every saved catch, item,
+        // purchase, health value, coin and field position stays intact.
+        s.mapVersion = 82;
+      }
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -5859,6 +5888,15 @@
           right: 151,
           top: 98,
           bottom: 108,
+        },
+        // The shrine is a wide rectangle, but its painted centre is a real
+        // flight of steps. Let the four-unit movement grid reach the door
+        // while the building and both planted sides remain solid.
+        mainShrineApproachBounds = {
+          left: 188,
+          right: 201,
+          top: 55,
+          bottom: 65,
         },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
@@ -6046,10 +6084,13 @@
       function isBlockedStructure(x, y) {
         return structureBounds.some((bounds) => {
           if (!inWorldRect(x, y, bounds)) return false;
+          const isShrineApproach = bounds.id === "main-shrine" &&
+            inWorldRect(x, y, mainShrineApproachBounds);
           const isHarborCornerBuilding =
             bounds.id === "fish-market" || bounds.id === "harbor-shop";
-          return !(isHarborCornerBuilding &&
-            inWorldRect(x, y, harborCornerPassageBounds));
+          const isHarborCornerPassage = isHarborCornerBuilding &&
+            inWorldRect(x, y, harborCornerPassageBounds);
+          return !(isShrineApproach || isHarborCornerPassage);
         });
       }
       function isWalkableWorld(x, y) {
@@ -6319,16 +6360,18 @@
       }
       function rollRodFortune(tier = "standard") {
         const pools = {
+          // Standard offerings have a 5% combined top-rod chance. Lucky
+          // offerings improve that to 15% without making rare rods routine.
           standard: [
-            ["youngBamboo", 0.55],
-            ["clearStream", 0.82],
-            ["starGazer", 0.96],
+            ["youngBamboo", 0.65],
+            ["clearStream", 0.95],
+            ["starGazer", 0.99],
             ["moroko", 1],
           ],
           lucky: [
-            ["youngBamboo", 0.2],
-            ["clearStream", 0.55],
-            ["starGazer", 0.85],
+            ["youngBamboo", 0.4],
+            ["clearStream", 0.85],
+            ["starGazer", 0.97],
             ["moroko", 1],
           ],
         };
@@ -8837,7 +8880,11 @@
           ["swim", 6],
           ["swim", 7],
         ];
-        const [mode, frame] = cycle[step % cycle.length];
+        const [mode, requestedFrame] = cycle[step % cycle.length];
+        const frame = mode === "mouth" && f.id === "funa" &&
+            requestedFrame === 2
+          ? fishMouthFrameOverrides.funa.open
+          : requestedFrame;
         const cells = mode === "mouth" ? 3 : 8;
         const asset = mode === "mouth"
           ? fishMouthAssets[f.id]
@@ -8909,7 +8956,9 @@
         } else if (mouthState !== "closed") {
           spriteAsset = fishMouthAssets[battle.f.id];
           spriteCells = 3;
-          spriteFrame = mouthState === "open" ? 2 : 1;
+          const requestedFrame = mouthState === "open" ? 2 : 1;
+          spriteFrame = fishMouthFrameOverrides[battle.f.id]?.[mouthState] ??
+            requestedFrame;
           spriteMode = "mouth";
         }
         element.style.backgroundImage = `url("${spriteAsset}")`;
@@ -8986,9 +9035,13 @@
         const sceneWidth = Math.max(1, scene.clientWidth);
         const sceneHeight = Math.max(1, scene.clientHeight);
         const facing = battle.facing || 1;
-        const mouthProjection = Number.isFinite(battle.turnMouthProjection)
-          ? battle.turnMouthProjection
-          : facing;
+        const spriteMode = fishElement.dataset.spriteMode || "swim";
+        const spriteFrame = Number(fishElement.dataset.spriteFrame || 0);
+        const pose = fishHookPoseFrames[spriteMode]?.[spriteFrame];
+        const mouthProjection = spriteMode === "turn" && pose
+          ? pose.xScale
+          : facing * (pose?.xScale || 1);
+        const mouthYOffset = pose?.yOffset || 0;
         const tackleFacing = Math.abs(mouthProjection) > 0.06
           ? Math.sign(mouthProjection)
           : battle.turning?.to || facing;
@@ -9006,7 +9059,7 @@
           (battle.bodyStretch || 1) *
           mouthProjection;
         const localMouthY =
-          profile.y * fishElement.offsetHeight * scale *
+          (profile.y + mouthYOffset) * fishElement.offsetHeight * scale *
           (battle.bodySquash || 1);
         const rotatedMouthX = localMouthX * cos - localMouthY * sin;
         const rotatedMouthY = localMouthX * sin + localMouthY * cos;
