@@ -2957,9 +2957,9 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.5: every atlas cell is isolated and registered at the real grip.
-         The rod stays behind the character so the drawn fist closes over the
-         shaft instead of the handle floating beside the hand. */
+      /* v82.6: every pose registers the character's palm to the lower handle,
+         beneath the reel. The rod stays behind the character so the drawn fist
+         closes over the shaft throughout the complete casting motion. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -3031,8 +3031,12 @@
         top: 72%;
         width: clamp(176px, 46vh, 232px);
         height: clamp(220px, 58vh, 290px);
-        transform: translate(-50%, -71.484375%);
-        transform-origin: 50% 71.484375%;
+        transform: translate(
+          var(--cast-rod-grip-shift-x, -50%),
+          var(--cast-rod-grip-shift-y, -92.96875%)
+        );
+        transform-origin:
+          var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 92.96875%);
         background-image: url("assets/rod-cast-atlas-v82-5.png");
         background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
         background-repeat: no-repeat;
@@ -4352,7 +4356,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.5</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.6</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5394,16 +5398,16 @@
             width: 220,
             height: 339,
             grips: [
-              [162, 201], [166, 188], [165, 87],
-              [174, 124], [179, 229], [162, 201],
+              [164, 218], [182, 190], [169, 70],
+              [203, 99], [192, 239], [164, 217],
             ],
           },
           girl: {
             width: 220,
             height: 326,
             grips: [
-              [159, 181], [161, 177], [156, 54],
-              [174, 88], [173, 199], [160, 181],
+              [161, 200], [164, 185], [158, 34],
+              [188, 79], [187, 213], [161, 200],
             ],
           },
         },
@@ -5415,10 +5419,31 @@
             starGazer: 75,
             moroko: 100,
           },
-          // All 30 isolated cells share the same 100px / 183px grip point in
-          // a 200px / 256px cell. Each design keeps its own measured tip so
-          // the cast line begins at the visible tip rather than a rough pose.
-          grip: [50, 71.484375],
+          // Every cell has a measured lower-handle landmark below its reel.
+          // X follows the bent butt section in each pose; Y=238px leaves a
+          // visible butt cap below the fist without placing the palm on a reel.
+          grips: {
+            bamboo: [
+              [47.75, 92.96875], [49.75, 92.96875], [48.25, 92.96875],
+              [51.25, 92.96875], [48, 92.96875], [51, 92.96875],
+            ],
+            youngBamboo: [
+              [47.5, 92.96875], [49.75, 92.96875], [48, 92.96875],
+              [50.75, 92.96875], [48, 92.96875], [51.25, 92.96875],
+            ],
+            clearStream: [
+              [48, 92.96875], [49.25, 92.96875], [50, 92.96875],
+              [50.75, 92.96875], [48, 92.96875], [51, 92.96875],
+            ],
+            starGazer: [
+              [47.75, 92.96875], [49.5, 92.96875], [50.25, 92.96875],
+              [50.5, 92.96875], [47.75, 92.96875], [51, 92.96875],
+            ],
+            moroko: [
+              [48, 92.96875], [49.25, 92.96875], [51, 92.96875],
+              [50.25, 92.96875], [47.75, 92.96875], [51.25, 92.96875],
+            ],
+          },
           tips: {
             bamboo: [
               [76.5, 19.921875], [74.5, 23.828125], [15.5, 32.421875],
@@ -6660,7 +6685,11 @@
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
         const tipFrames = SURFACE_CAST_ROD_SPRITES.tips[key] ||
           SURFACE_CAST_ROD_SPRITES.tips;
+        const gripFrames = SURFACE_CAST_ROD_SPRITES.grips
+          ? SURFACE_CAST_ROD_SPRITES.grips[key] || SURFACE_CAST_ROD_SPRITES.grips
+          : Array.from({ length: 6 }, () => [50, 92.96875]);
         const [tipX, tipY] = tipFrames[next];
+        const [gripX, gripY] = gripFrames[next];
         rod.className = `cast-rod rod-${cssKey}`;
         rod.style.setProperty(
           "--cast-rod-column",
@@ -6669,6 +6698,10 @@
         rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
         rod.style.setProperty("--cast-rod-tip-x", `${tipX}%`);
         rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
+        rod.style.setProperty("--cast-rod-grip-x", `${gripX}%`);
+        rod.style.setProperty("--cast-rod-grip-y", `${gripY}%`);
+        rod.style.setProperty("--cast-rod-grip-shift-x", `${-gripX}%`);
+        rod.style.setProperty("--cast-rod-grip-shift-y", `${-gripY}%`);
         return true;
       }
       function setSurfaceCastMotionFrame(frame, force = false) {
