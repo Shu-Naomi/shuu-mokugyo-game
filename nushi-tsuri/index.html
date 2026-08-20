@@ -2957,9 +2957,9 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.4: the body and equipped rod both advance through six hand-drawn
-         pixel poses. The reel stays behind the real fist, while every rod has
-         its own taper, fittings and directional flex. */
+      /* v82.5: every atlas cell is isolated and registered at the real grip.
+         The rod stays behind the character so the drawn fist closes over the
+         shaft instead of the handle floating beside the hand. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -3031,9 +3031,9 @@
         top: 72%;
         width: clamp(176px, 46vh, 232px);
         height: clamp(220px, 58vh, 290px);
-        transform: translate(-50%, -84%);
-        transform-origin: 50% 84%;
-        background-image: url("assets/rod-cast-atlas-v82-4.png");
+        transform: translate(-50%, -71.484375%);
+        transform-origin: 50% 71.484375%;
+        background-image: url("assets/rod-cast-atlas-v82-5.png");
         background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
         background-repeat: no-repeat;
         background-size: 500% 600%;
@@ -4352,7 +4352,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.4</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.5</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5415,12 +5415,32 @@
             starGazer: 75,
             moroko: 100,
           },
-          // Normalized tip landmarks in each of the six atlas rows. The rods
-          // share one 50% / 84% hand registration point across all five columns.
-          tips: [
-            [96, 8], [72, 10], [29, 17],
-            [26, 25], [96, 23], [96, 12],
-          ],
+          // All 30 isolated cells share the same 100px / 183px grip point in
+          // a 200px / 256px cell. Each design keeps its own measured tip so
+          // the cast line begins at the visible tip rather than a rough pose.
+          grip: [50, 71.484375],
+          tips: {
+            bamboo: [
+              [76.5, 19.921875], [74.5, 23.828125], [15.5, 32.421875],
+              [24, 37.5], [72.5, 40.234375], [72.5, 32.421875],
+            ],
+            youngBamboo: [
+              [72, 19.921875], [70, 24.21875], [15.5, 32.421875],
+              [24, 37.5], [71, 40.234375], [70, 32.421875],
+            ],
+            clearStream: [
+              [76, 19.921875], [71.5, 23.828125], [15.5, 32.8125],
+              [24, 37.5], [72, 40.234375], [71, 32.421875],
+            ],
+            starGazer: [
+              [74, 19.921875], [71.5, 23.828125], [15.5, 32.421875],
+              [24, 37.109375], [71.5, 40.234375], [70.5, 32.421875],
+            ],
+            moroko: [
+              [73.5, 19.921875], [68, 24.21875], [15.5, 32.421875],
+              [23.5, 37.5], [71.5, 40.234375], [70.5, 32.421875],
+            ],
+          },
         };
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
@@ -6638,7 +6658,9 @@
         const key = activeSurfaceCastRodKey();
         const cssKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
-        const [tipX, tipY] = SURFACE_CAST_ROD_SPRITES.tips[next];
+        const tipFrames = SURFACE_CAST_ROD_SPRITES.tips[key] ||
+          SURFACE_CAST_ROD_SPRITES.tips;
+        const [tipX, tipY] = tipFrames[next];
         rod.className = `cast-rod rod-${cssKey}`;
         rod.style.setProperty(
           "--cast-rod-column",

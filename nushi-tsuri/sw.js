@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-4-rod-atlas-arm-ring-68";
+const CACHE_NAME = "nushi-tsuri-v82-5-rod-grip-registration-69";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -9,7 +9,7 @@ const CORE_ASSETS = [
   "./assets/player-girl-cast-v73.png",
   "./assets/player-boy-cast-motion-v82-3.png",
   "./assets/player-girl-cast-motion-v82-3.png",
-  "./assets/rod-cast-atlas-v82-4.png",
+  "./assets/rod-cast-atlas-v82-5.png",
   "./assets/cast-lake-morning-v77.jpg",
   "./assets/cast-lake-day-soft-v77.jpg",
   "./assets/cast-lake-day-bright-v77.jpg",
