@@ -2957,9 +2957,10 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.7: the rod is split around the real sprite hand. Most of the rod
-         stays behind the character, a short handle window passes through the
-         palm, and the original finger pixels are painted over that window. */
+      /* v82.8: the narrow middle of the lower handle is registered inside the
+         real sprite fist. The entire rod stays behind the character, so the
+         painted hand hides the middle while the handle remains visible above
+         and below it. This reads as a grip without a pasted cap or fake hand. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -2983,17 +2984,6 @@
         image-rendering: pixelated;
         filter: drop-shadow(5px 7px 2px #03152299);
         will-change: background-position;
-      }
-      .cast-grip-fingers {
-        z-index: 9;
-        clip-path: inset(
-          var(--cast-finger-clip-top, 100%)
-          var(--cast-finger-clip-right, 0%)
-          var(--cast-finger-clip-bottom, 0%)
-          var(--cast-finger-clip-left, 0%)
-        );
-        filter: none;
-        pointer-events: none;
       }
       .cast-angler.boy {
         background-image: url("assets/player-boy-cast-motion-v82-3.png");
@@ -3035,15 +3025,6 @@
       .art-layered-avatar.time-night .cast-angler {
         filter: brightness(.46) saturate(.72) hue-rotate(7deg) drop-shadow(5px 7px 2px #020918cc);
       }
-      .art-layered-avatar.time-morning .cast-grip-fingers {
-        filter: brightness(.9) saturate(.94);
-      }
-      .art-layered-avatar.time-evening .cast-grip-fingers {
-        filter: sepia(.16) brightness(.78) saturate(1.08);
-      }
-      .art-layered-avatar.time-night .cast-grip-fingers {
-        filter: brightness(.46) saturate(.72) hue-rotate(7deg);
-      }
       .cast-rod {
         position: absolute;
         z-index: 6;
@@ -3053,10 +3034,10 @@
         height: clamp(220px, 58vh, 290px);
         transform: translate(
           var(--cast-rod-grip-shift-x, -50%),
-          var(--cast-rod-grip-shift-y, -92.96875%)
+          var(--cast-rod-grip-shift-y, -87.5%)
         );
         transform-origin:
-          var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 92.96875%);
+          var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 87.5%);
         background-image: url("assets/rod-cast-atlas-v82-5.png");
         background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
         background-repeat: no-repeat;
@@ -3064,17 +3045,6 @@
         image-rendering: pixelated;
         filter: drop-shadow(2px 3px 1px #07141c88);
         will-change: background-position;
-      }
-      .cast-rod.cast-rod-front {
-        z-index: 8;
-        clip-path: inset(
-          var(--cast-rod-window-top, 100%)
-          var(--cast-rod-window-right, 0%)
-          var(--cast-rod-window-bottom, 0%)
-          var(--cast-rod-window-left, 0%)
-        );
-        filter: none;
-        pointer-events: none;
       }
       .cast-rod.rod-bamboo { --cast-rod-column: 0%; }
       .cast-rod.rod-young-bamboo { --cast-rod-column: 25%; }
@@ -4387,7 +4357,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.7</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.8</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4524,8 +4494,6 @@
             <div class="cast-motion-rig" id="castMotionRig" aria-hidden="true">
               <div class="cast-rod rod-bamboo" id="castRod"><i class="cast-rod-tip" id="castRodTip"></i></div>
               <div class="cast-angler boy" id="castAngler"></div>
-              <div class="cast-rod cast-rod-front rod-bamboo" id="castRodFront"></div>
-              <div class="cast-angler cast-grip-fingers boy" id="castGripFingers"></div>
             </div>
           </div>
           <div class="surface"></div>
@@ -5452,29 +5420,29 @@
             starGazer: 75,
             moroko: 100,
           },
-          // Every cell has a measured lower-handle landmark below its reel.
-          // X follows the bent butt section in each pose; Y=238px leaves a
-          // visible butt cap below the fist without placing the palm on a reel.
+          // Every cell has a measured grip at y=224px: the narrow lower handle
+          // between reel and butt cap. The old y=238px point was the wide cap,
+          // which painted a horizontal purple band across the closed fist.
           grips: {
             bamboo: [
-              [47.75, 92.96875], [49.75, 92.96875], [48.25, 92.96875],
-              [51.25, 92.96875], [48, 92.96875], [51, 92.96875],
+              [49, 87.5], [50.5, 87.5], [47.5, 87.5],
+              [52, 87.5], [49, 87.5], [52.25, 87.5],
             ],
             youngBamboo: [
-              [47.5, 92.96875], [49.75, 92.96875], [48, 92.96875],
-              [50.75, 92.96875], [48, 92.96875], [51.25, 92.96875],
+              [48.75, 87.5], [50.5, 87.5], [49.25, 87.5],
+              [51.5, 87.5], [48.5, 87.5], [52, 87.5],
             ],
             clearStream: [
-              [48, 92.96875], [49.25, 92.96875], [50, 92.96875],
-              [50.75, 92.96875], [48, 92.96875], [51, 92.96875],
+              [49, 87.5], [50, 87.5], [48.75, 87.5],
+              [51.5, 87.5], [48.75, 87.5], [52, 87.5],
             ],
             starGazer: [
-              [47.75, 92.96875], [49.5, 92.96875], [50.25, 92.96875],
-              [50.5, 92.96875], [47.75, 92.96875], [51, 92.96875],
+              [48.5, 87.5], [50, 87.5], [49.25, 87.5],
+              [51.5, 87.5], [48.75, 87.5], [51.75, 87.5],
             ],
             moroko: [
-              [48, 92.96875], [49.25, 92.96875], [51, 92.96875],
-              [50.25, 92.96875], [47.75, 92.96875], [51.25, 92.96875],
+              [48.5, 87.5], [49.75, 87.5], [49.25, 87.5],
+              [51, 87.5], [48.75, 87.5], [51.75, 87.5],
             ],
           },
           tips: {
@@ -6711,8 +6679,8 @@
           : "bamboo";
       }
       function syncSurfaceCastRodSprite(frame = surfaceCastMotionFrame) {
-        const rods = [$("#castRod"), $("#castRodFront")].filter(Boolean);
-        if (!rods.length) return false;
+        const rod = $("#castRod");
+        if (!rod) return false;
         const key = activeSurfaceCastRodKey();
         const cssKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
@@ -6720,67 +6688,30 @@
           SURFACE_CAST_ROD_SPRITES.tips;
         const gripFrames = SURFACE_CAST_ROD_SPRITES.grips
           ? SURFACE_CAST_ROD_SPRITES.grips[key] || SURFACE_CAST_ROD_SPRITES.grips
-          : Array.from({ length: 6 }, () => [50, 92.96875]);
+          : Array.from({ length: 6 }, () => [50, 87.5]);
         const [tipX, tipY] = tipFrames[next];
         const [gripX, gripY] = gripFrames[next];
-        for (const [index, rod] of rods.entries()) {
-          rod.className = `cast-rod${index ? " cast-rod-front" : ""} rod-${cssKey}`;
-          rod.style.setProperty(
-            "--cast-rod-column",
-            `${SURFACE_CAST_ROD_SPRITES.columns[key]}%`,
-          );
-          rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
-          rod.style.setProperty("--cast-rod-tip-x", `${tipX}%`);
-          rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
-          rod.style.setProperty("--cast-rod-grip-x", `${gripX}%`);
-          rod.style.setProperty("--cast-rod-grip-y", `${gripY}%`);
-          rod.style.setProperty("--cast-rod-grip-shift-x", `${-gripX}%`);
-          rod.style.setProperty("--cast-rod-grip-shift-y", `${-gripY}%`);
-        }
-        const front = rods[1];
-        if (front) {
-          const halfWidth = 3.4;
-          const above = 3.6;
-          const below = 3;
-          front.style.setProperty("--cast-rod-window-left", `${Math.max(0, gripX - halfWidth)}%`);
-          front.style.setProperty("--cast-rod-window-right", `${Math.max(0, 100 - gripX - halfWidth)}%`);
-          front.style.setProperty("--cast-rod-window-top", `${Math.max(0, gripY - above)}%`);
-          front.style.setProperty("--cast-rod-window-bottom", `${Math.max(0, 100 - gripY - below)}%`);
-        }
-        return true;
-      }
-      function syncSurfaceCastGripOcclusion(frame = surfaceCastMotionFrame) {
-        const angler = $("#castAngler");
-        const fingers = $("#castGripFingers");
-        if (
-          !angler ||
-          !fingers ||
-          typeof SURFACE_CAST_SPRITES !== "object"
-        ) return false;
-        const sprite = SURFACE_CAST_SPRITES[
-          angler.classList.contains("girl") ? "girl" : "boy"
-        ];
-        const next = Math.max(0, Math.min(5, Number(frame) || 0));
-        const [gripX, gripY] = sprite.grips[next];
-        const left = Math.max(0, gripX - 14) / sprite.width * 100;
-        const right = Math.max(0, sprite.width - gripX - 14) / sprite.width * 100;
-        const top = Math.max(0, gripY - 5) / sprite.height * 100;
-        const bottom = Math.max(0, sprite.height - gripY - 5) / sprite.height * 100;
-        fingers.style.setProperty("--cast-finger-clip-left", `${left}%`);
-        fingers.style.setProperty("--cast-finger-clip-right", `${right}%`);
-        fingers.style.setProperty("--cast-finger-clip-top", `${top}%`);
-        fingers.style.setProperty("--cast-finger-clip-bottom", `${bottom}%`);
+        rod.className = `cast-rod rod-${cssKey}`;
+        rod.style.setProperty(
+          "--cast-rod-column",
+          `${SURFACE_CAST_ROD_SPRITES.columns[key]}%`,
+        );
+        rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
+        rod.style.setProperty("--cast-rod-tip-x", `${tipX}%`);
+        rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
+        rod.style.setProperty("--cast-rod-grip-x", `${gripX}%`);
+        rod.style.setProperty("--cast-rod-grip-y", `${gripY}%`);
+        rod.style.setProperty("--cast-rod-grip-shift-x", `${-gripX}%`);
+        rod.style.setProperty("--cast-rod-grip-shift-y", `${-gripY}%`);
         return true;
       }
       function setSurfaceCastMotionFrame(frame, force = false) {
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
         if (!force && surfaceCastMotionFrame === next) return false;
         surfaceCastMotionFrame = next;
-        const anglers = [$("#castAngler"), $("#castGripFingers")].filter(Boolean);
-        for (const angler of anglers)
-          angler.style.backgroundPosition = `${next * 20}% 0`;
+        const angler = $("#castAngler");
+        if (angler) angler.style.backgroundPosition = `${next * 20}% 0`;
         syncSurfaceCastRodSprite(next);
-        syncSurfaceCastGripOcclusion(next);
         positionCastRodAtHand();
         return true;
       }
@@ -6801,8 +6732,8 @@
         if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width)
           return null;
         // Every hand-drawn pose has its own source-pixel palm landmark. The
-        // matching handle window and finger overlay use this same point, so
-        // the shaft visibly enters the fist instead of touching its outside.
+        // rod origin uses this same point, so the narrow handle stays behind
+        // the painted fist instead of touching or crossing its outside.
         const sprite = SURFACE_CAST_SPRITES[
           angler.classList.contains("girl") ? "girl" : "boy"
         ];
@@ -6910,7 +6841,6 @@
         applyCastTimeTheme(surface, s.time);
         const avatarClass = s.avatar === "girl" ? "girl" : "boy";
         $("#castAngler").className = `cast-angler ${avatarClass}`;
-        $("#castGripFingers").className = `cast-angler cast-grip-fingers ${avatarClass}`;
         surfaceCastMotionStartedAt = 0;
         setSurfaceCastMotionFrame(0, true);
         $("#castZoneName").textContent = battle.practice
