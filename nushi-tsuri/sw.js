@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-1-sam-shop-hook-sync-65";
+const CACHE_NAME = "nushi-tsuri-v82-2-cast-motion-66";
 const CORE_ASSETS = [
   "./",
   "./index.html",
