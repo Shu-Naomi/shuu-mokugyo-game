@@ -2957,9 +2957,9 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.3: the body now advances through six hand-drawn pixel poses. The
-         rig still groups body, rod and foreground grip so each frame's real
-         fist landmark can carry the rod without a detached-hand illusion. */
+      /* v82.4: the body and equipped rod both advance through six hand-drawn
+         pixel poses. The reel stays behind the real fist, while every rod has
+         its own taper, fittings and directional flex. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -2998,26 +2998,7 @@
       }
       .art-layered-avatar .cast-rod {
         left: var(--cast-rod-hand-x, calc(38% + clamp(64px, 9vw, 78px)));
-        bottom: var(--cast-rod-hand-y, 17%);
-      }
-      /* v80: the rod sits behind the real fist pixel and a tiny ring above it
-         makes the overlap readable without painting a second fake hand. */
-      .art-layered-avatar .cast-rod-grip {
-        display: block;
-        position: absolute;
-        z-index: 9;
-        left: var(--cast-rod-hand-x, 50%);
-        bottom: var(--cast-rod-hand-y, 17%);
-        width: var(--cast-hand-grip-size, 12px);
-        height: var(--cast-hand-grip-size, 12px);
-        transform: translate(-50%, 50%);
-        border: solid #47261a;
-        border-width: 0 2px 0 0;
-        border-radius: 50%;
-        background: transparent;
-        box-shadow: 1px 0 0 #d69a6f;
-        image-rendering: pixelated;
-        pointer-events: none;
+        top: var(--cast-rod-hand-y, 72%);
       }
       /* v78: Sam's pond has a purpose-drawn foreground landing at center.
          The selectable player stands larger on its dock and faces the water. */
@@ -3030,8 +3011,9 @@
       }
       .art-sam-pond.art-layered-avatar .cast-rod {
         left: var(--cast-rod-hand-x, calc(46% + clamp(46px, 7vw, 68px)));
-        bottom: var(--cast-rod-hand-y, 25%);
-        height: clamp(136px, 43vh, 216px);
+        top: var(--cast-rod-hand-y, 67%);
+        width: clamp(200px, 62vh, 272px);
+        height: clamp(250px, 78vh, 340px);
       }
       .art-layered-avatar.time-morning .cast-angler {
         filter: brightness(.9) saturate(.94) drop-shadow(5px 7px 2px #03152299);
@@ -3046,17 +3028,24 @@
         position: absolute;
         z-index: 6;
         left: clamp(89px, 14vw, 154px);
-        bottom: 17%;
-        width: 5px;
-        height: clamp(142px, 46vh, 250px);
-        transform: rotate(39deg);
-        transform-origin: 50% 100%;
-        border: 1px solid #2f2119;
-        border-radius: 70% 70% 20% 20%;
-        background: linear-gradient(90deg, #4d2e1e, #e1bc67 48%, #704624);
-        box-shadow: 2px 1px #09151a88;
-        animation: cast-rod-ready .85s steps(4, end) infinite alternate;
+        top: 72%;
+        width: clamp(176px, 46vh, 232px);
+        height: clamp(220px, 58vh, 290px);
+        transform: translate(-50%, -84%);
+        transform-origin: 50% 84%;
+        background-image: url("assets/rod-cast-atlas-v82-4.png");
+        background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
+        background-repeat: no-repeat;
+        background-size: 500% 600%;
+        image-rendering: pixelated;
+        filter: drop-shadow(2px 3px 1px #07141c88);
+        will-change: background-position;
       }
+      .cast-rod.rod-bamboo { --cast-rod-column: 0%; }
+      .cast-rod.rod-young-bamboo { --cast-rod-column: 25%; }
+      .cast-rod.rod-clear-stream { --cast-rod-column: 50%; }
+      .cast-rod.rod-star-gazer { --cast-rod-column: 75%; }
+      .cast-rod.rod-moroko { --cast-rod-column: 100%; }
       .art-layered-avatar.time-evening .cast-rod {
         filter: sepia(.2) brightness(.82) saturate(1.12);
       }
@@ -3065,26 +3054,12 @@
       }
       .cast-rod-tip {
         position: absolute;
-        left: 50%;
-        top: 0;
+        left: var(--cast-rod-tip-x, 96%);
+        top: var(--cast-rod-tip-y, 8%);
         width: 2px;
         height: 2px;
         transform: translate(-50%, -50%);
         pointer-events: none;
-      }
-      .cast-rod::before {
-        content: "";
-        position: absolute;
-        left: 50%;
-        top: -3px;
-        width: 4px;
-        height: 13%;
-        transform: translateX(-50%);
-        border-radius: 50%;
-        background: #d6e2c8;
-      }
-      .cast-surface.cast-throwing .cast-rod {
-        animation: cast-rod-swing .76s steps(10, end) both;
       }
       .cast-float {
         position: absolute;
@@ -4150,18 +4125,6 @@
       @keyframes cast-target-pulse {
         to { transform: translate(-50%, -50%) rotate(45deg) scale(1.12); }
       }
-      @keyframes cast-rod-ready {
-        to { transform: rotate(37deg); }
-      }
-      @keyframes cast-rod-swing {
-        0% { transform: rotate(39deg); }
-        18% { transform: rotate(18deg); }
-        36% { transform: rotate(-34deg); }
-        48% { transform: rotate(-25deg); }
-        62% { transform: rotate(66deg); }
-        78% { transform: rotate(51deg); }
-        100% { transform: rotate(43deg); }
-      }
       @keyframes cast-line-flight {
         0%, 42% { stroke-dashoffset: 1200; opacity: 0; }
         48% { stroke-dashoffset: 1160; opacity: 1; }
@@ -4389,7 +4352,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.3</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.4</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4525,8 +4488,7 @@
             <div class="cast-float" id="castFloat"></div>
             <div class="cast-motion-rig" id="castMotionRig" aria-hidden="true">
               <div class="cast-angler boy" id="castAngler"></div>
-              <div class="cast-rod"><i class="cast-rod-tip" id="castRodTip"></i></div>
-              <i class="cast-rod-grip" id="castRodGrip"></i>
+              <div class="cast-rod rod-bamboo" id="castRod"><i class="cast-rod-tip" id="castRodTip"></i></div>
             </div>
           </div>
           <div class="surface"></div>
@@ -5444,6 +5406,21 @@
               [174, 88], [173, 199], [160, 181],
             ],
           },
+        },
+        SURFACE_CAST_ROD_SPRITES = {
+          columns: {
+            bamboo: 0,
+            youngBamboo: 25,
+            clearStream: 50,
+            starGazer: 75,
+            moroko: 100,
+          },
+          // Normalized tip landmarks in each of the six atlas rows. The rods
+          // share one 50% / 84% hand registration point across all five columns.
+          tips: [
+            [96, 8], [72, 10], [29, 17],
+            [26, 25], [96, 23], [96, 12],
+          ],
         };
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
@@ -6647,11 +6624,30 @@
         const grip = castRodHandPoint();
         if (!surfaceBox?.width || !surfaceBox.height || !grip) return;
         surface.style.setProperty("--cast-rod-hand-x", `${grip.x}px`);
-        surface.style.setProperty(
-          "--cast-rod-hand-y",
-          `${surfaceBox.height - grip.y}px`,
+        surface.style.setProperty("--cast-rod-hand-y", `${grip.y}px`);
+      }
+      function activeSurfaceCastRodKey() {
+        const key = battle?.practice ? "bamboo" : s.selectedRod;
+        return Object.hasOwn(SURFACE_CAST_ROD_SPRITES.columns, key)
+          ? key
+          : "bamboo";
+      }
+      function syncSurfaceCastRodSprite(frame = surfaceCastMotionFrame) {
+        const rod = $("#castRod");
+        if (!rod) return false;
+        const key = activeSurfaceCastRodKey();
+        const cssKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
+        const next = Math.max(0, Math.min(5, Number(frame) || 0));
+        const [tipX, tipY] = SURFACE_CAST_ROD_SPRITES.tips[next];
+        rod.className = `cast-rod rod-${cssKey}`;
+        rod.style.setProperty(
+          "--cast-rod-column",
+          `${SURFACE_CAST_ROD_SPRITES.columns[key]}%`,
         );
-        surface.style.setProperty("--cast-hand-grip-size", `${grip.size}px`);
+        rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
+        rod.style.setProperty("--cast-rod-tip-x", `${tipX}%`);
+        rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
+        return true;
       }
       function setSurfaceCastMotionFrame(frame, force = false) {
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
@@ -6659,6 +6655,7 @@
         surfaceCastMotionFrame = next;
         const angler = $("#castAngler");
         if (angler) angler.style.backgroundPosition = `${next * 20}% 0`;
+        syncSurfaceCastRodSprite(next);
         positionCastRodAtHand();
         return true;
       }
@@ -6686,14 +6683,9 @@
         ];
         const frame = Math.max(0, Math.min(5, surfaceCastMotionFrame));
         const [gripX, gripY] = sprite.grips[frame];
-        const scale = Math.min(
-          anglerBox.width / sprite.width,
-          anglerBox.height / sprite.height,
-        );
         return {
           x: anglerBox.left - surfaceBox.left + gripX / sprite.width * anglerBox.width,
           y: anglerBox.top - surfaceBox.top + gripY / sprite.height * anglerBox.height,
-          size: Math.max(7, Math.min(14, 14 * scale)),
         };
       }
       function syncSurfaceCastRig() {
