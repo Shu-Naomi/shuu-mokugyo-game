@@ -3463,13 +3463,10 @@
           top 0.12s linear,
           transform 0.09s linear,
           filter 0.18s;
-        animation-name: fish-turn-five;
-        animation-duration: var(--turn-duration, 480ms);
-        animation-timing-function: steps(1, end);
-        animation-fill-mode: both;
-      }
-      .battle-fish.turning[data-turn-from="left"] {
-        animation-direction: reverse;
+        /* v82.1: renderBattleFish owns the visible turn cell.  A second CSS
+           clock used to advance the same sheet independently, so the hook
+           could follow the JS cell while a neighbouring mouth was painted. */
+        animation: none;
       }
       .battle-fish.fish-moroko,
       .battle-fish.fish-aji {
@@ -3511,17 +3508,10 @@
         animation-duration: 1.05s;
         animation-timing-function: steps(8);
       }
-      /* The one-time hooked reveal is declared after the base turn rule and
-         otherwise wins the cascade forever. Re-assert the five-pose turn at
-         higher specificity so hooked fish actually play every new drawing. */
+      /* A turn retires the one-time reveal in JS. Keep this explicit fallback
+         animation-free so no cascade can start a second sprite-cell clock. */
       .battle-fish.hooked.turning {
-        animation-name: fish-turn-five;
-        animation-duration: var(--turn-duration, 480ms);
-        animation-timing-function: steps(1, end);
-        animation-fill-mode: both;
-      }
-      .battle-fish.hooked.turning[data-turn-from="left"] {
-        animation-direction: reverse;
+        animation: none;
       }
       .battle-fish.gill-wash {
         z-index: 6;
@@ -3536,13 +3526,6 @@
           contrast(1.08)
           drop-shadow(0 0 13px #d8ffff)
           drop-shadow(7px 8px 2px #02192dcc);
-      }
-      @keyframes fish-turn-five {
-        0%, 19.99% { background-position-x: 0%; }
-        20%, 39.99% { background-position-x: 25%; }
-        40%, 59.99% { background-position-x: 50%; }
-        60%, 79.99% { background-position-x: 75%; }
-        80%, 100% { background-position-x: 100%; }
       }
       .fish-scene.gill-wash .surface {
         height: 18%;
@@ -4377,7 +4360,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.1</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5898,6 +5881,15 @@
           top: 55,
           bottom: 65,
         },
+        // Sam's shop has the same painted-doorway shape as the shrine. Open
+        // only the centre steps so the player can stand at the door without
+        // walking through the display windows or the rest of the building.
+        samShopApproachBounds = {
+          left: 195,
+          right: 201,
+          top: 86,
+          bottom: 93,
+        },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
           { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
@@ -6086,11 +6078,15 @@
           if (!inWorldRect(x, y, bounds)) return false;
           const isShrineApproach = bounds.id === "main-shrine" &&
             inWorldRect(x, y, mainShrineApproachBounds);
+          const isSamShopApproach = bounds.id === "sam-shop" &&
+            inWorldRect(x, y, samShopApproachBounds);
           const isHarborCornerBuilding =
             bounds.id === "fish-market" || bounds.id === "harbor-shop";
           const isHarborCornerPassage = isHarborCornerBuilding &&
             inWorldRect(x, y, harborCornerPassageBounds);
-          return !(isShrineApproach || isHarborCornerPassage);
+          return !(
+            isShrineApproach || isSamShopApproach || isHarborCornerPassage
+          );
         });
       }
       function isWalkableWorld(x, y) {
@@ -8409,9 +8405,9 @@
             turn.flipped = true;
           }
           // v70 inserts two shallow three-quarter drawings around the three
-          // successful v68 poses. CSS advances these five drawings within the
-          // existing v69 turn duration; this JS frame remains the deterministic
-          // fallback used by reduced-motion or delayed-render browsers.
+          // successful v68 poses. v82.1 makes this JS value the only visible
+          // sprite clock, so the painted mouth and the hook always read the
+          // same exact frame on fast and delayed-render browsers alike.
           const phaseFrame = Math.min(4, Math.floor(progress * 5));
           battle.turnSpriteFrame = turn.from > 0
             ? phaseFrame
@@ -8970,13 +8966,8 @@
         element.dataset.spriteFrame = String(spriteFrame);
         if (battle.turning) {
           element.dataset.turnFrom = battle.turning.from > 0 ? "right" : "left";
-          element.style.setProperty(
-            "--turn-duration",
-            `${battle.turning.frames * 120}ms`,
-          );
         } else {
           delete element.dataset.turnFrom;
-          element.style.removeProperty("--turn-duration");
         }
         const offsetX = Number(battle.visualOffsetX || 0).toFixed(2);
         const offsetY = Number(
