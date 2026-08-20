@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-5-rod-grip-registration-69";
+const CACHE_NAME = "nushi-tsuri-v82-6-lower-handle-lock-70";
 const CORE_ASSETS = [
   "./",
   "./index.html",
