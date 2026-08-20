@@ -1728,8 +1728,15 @@
         z-index: 4;
         image-rendering: pixelated;
         background-repeat: no-repeat;
-        transition: left 0.62s ease-in-out, top 0.62s ease-in-out;
+        /* Grid-following is intentionally untweened: interpolating two safe
+           endpoints can still draw a diagonal through water or a building. */
+        transition: none;
         will-change: left, top;
+      }
+      /* Close-range pet/sleep approaches may animate only after JS proves the
+         whole short segment walkable. */
+      .companion.reaction-walk {
+        transition: left 0.62s ease-in-out, top 0.62s ease-in-out;
       }
       .companion.canvas-dog {
         /* The dog assets are now pre-cached; avoid drawing a second sprite
@@ -2950,9 +2957,9 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.2: move the angler, rod and foreground grip as one casting rig.
-         The pivot is measured from the rendered player's planted feet, so the
-         existing real-fist rod anchor remains connected during every pose. */
+      /* v82.3: the body now advances through six hand-drawn pixel poses. The
+         rig still groups body, rod and foreground grip so each frame's real
+         fist landmark can carry the rod without a detached-hand illusion. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -2963,9 +2970,6 @@
         pointer-events: none;
         will-change: transform;
       }
-      .art-layered-avatar.cast-throwing .cast-motion-rig {
-        animation: cast-angler-motion .76s steps(8, end) both;
-      }
       .cast-angler {
         position: absolute;
         z-index: 7;
@@ -2973,18 +2977,23 @@
         bottom: -7%;
         width: clamp(72px, 12vw, 132px);
         height: clamp(155px, 64vh, 310px);
-        background-position: center bottom;
+        background-position: 0 0;
         background-repeat: no-repeat;
-        background-size: contain;
+        background-size: 600% 100%;
         image-rendering: pixelated;
         filter: drop-shadow(5px 7px 2px #03152299);
+        will-change: background-position;
       }
-      .cast-angler.boy { background-image: url("assets/player-boy-cast-v73.png"); }
-      .cast-angler.girl { background-image: url("assets/player-girl-cast-v73.png"); }
+      .cast-angler.boy {
+        background-image: url("assets/player-boy-cast-motion-v82-3.png");
+      }
+      .cast-angler.girl {
+        background-image: url("assets/player-girl-cast-motion-v82-3.png");
+      }
       .art-layered-avatar .cast-angler {
-        left: 38%;
+        left: 37%;
         bottom: -2%;
-        width: clamp(72px, 10vw, 100px);
+        width: clamp(104px, 16vw, 144px);
         height: clamp(165px, 52vh, 220px);
       }
       .art-layered-avatar .cast-rod {
@@ -3015,7 +3024,7 @@
       .art-sam-pond.art-layered-avatar .cast-angler {
         left: 46%;
         bottom: 10%;
-        width: clamp(92px, 13vw, 126px);
+        width: clamp(144px, 20vw, 175px);
         height: clamp(205px, 67vh, 286px);
         transform: translateX(-50%);
       }
@@ -4144,15 +4153,6 @@
       @keyframes cast-rod-ready {
         to { transform: rotate(37deg); }
       }
-      @keyframes cast-angler-motion {
-        0% { transform: translate3d(0, 0, 0) rotate(0); }
-        18% { transform: translate3d(-2px, 2px, 0) rotate(-.8deg); }
-        36% { transform: translate3d(-4px, 3px, 0) rotate(-2.2deg); }
-        48% { transform: translate3d(-2px, 1px, 0) rotate(-1deg); }
-        62% { transform: translate3d(6px, -2px, 0) rotate(2.6deg); }
-        78% { transform: translate3d(4px, 0, 0) rotate(1.2deg); }
-        100% { transform: translate3d(0, 0, 0) rotate(0); }
-      }
       @keyframes cast-rod-swing {
         0% { transform: rotate(39deg); }
         18% { transform: rotate(18deg); }
@@ -4389,7 +4389,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.2</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.3</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5425,7 +5425,26 @@
           },
         },
         key = "nushi-inugoya-v2";
-      const SURFACE_CAST_MOTION_MS = 760;
+      const SURFACE_CAST_MOTION_MS = 760,
+        SURFACE_CAST_FRAME_STOPS = [0, .16, .34, .5, .68, .86],
+        SURFACE_CAST_SPRITES = {
+          boy: {
+            width: 220,
+            height: 339,
+            grips: [
+              [162, 201], [166, 188], [165, 87],
+              [174, 124], [179, 229], [162, 201],
+            ],
+          },
+          girl: {
+            width: 220,
+            height: 326,
+            grips: [
+              [159, 181], [161, 177], [156, 54],
+              [174, 88], [173, 199], [160, 181],
+            ],
+          },
+        };
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
       fishMotionProfiles.aji = {
@@ -5514,6 +5533,8 @@
         landingTimer = 0,
         hookRevealTimer = 0,
         castLandingTimer = 0,
+        surfaceCastMotionStartedAt = 0,
+        surfaceCastMotionFrame = 0,
         surfaceTransitionTimer = 0,
         fishAnimationPreloads = new Map(),
         walkTimer = 0,
@@ -5535,6 +5556,7 @@
         dogApproachTopOffset = 0,
         dogMotionDirection = "",
         dogWalking = false,
+        dogWorldPosition = null,
         dogAnimFrame = 0,
         playerWalking = false,
         playerAnimFrame = 0,
@@ -6131,6 +6153,18 @@
           !isSeaWater(x, y) &&
           !isPracticePondWater(x, y);
       }
+      function isWalkableWorldSegment(fromX, fromY, toX, toY, step = 0.75) {
+        if (![fromX, fromY, toX, toY].every(Number.isFinite)) return false;
+        const distance = Math.hypot(toX - fromX, toY - fromY);
+        const samples = Math.max(1, Math.ceil(distance / step));
+        for (let index = 0; index <= samples; index += 1) {
+          const amount = index / samples;
+          const x = fromX + (toX - fromX) * amount;
+          const y = fromY + (toY - fromY) * amount;
+          if (!isWalkableWorld(x, y)) return false;
+        }
+        return true;
+      }
       function nearestWalkableWorld(x, y, maxRadius = 28) {
         if (isWalkableWorld(x, y)) return { x, y };
         for (let radius = 1; radius <= maxRadius; radius += 1) {
@@ -6618,21 +6652,25 @@
           `${surfaceBox.height - grip.y}px`,
         );
         surface.style.setProperty("--cast-hand-grip-size", `${grip.size}px`);
-        positionCastRigPivot();
       }
-      function positionCastRigPivot() {
+      function setSurfaceCastMotionFrame(frame, force = false) {
+        const next = Math.max(0, Math.min(5, Number(frame) || 0));
+        if (!force && surfaceCastMotionFrame === next) return false;
+        surfaceCastMotionFrame = next;
+        const angler = $("#castAngler");
+        if (angler) angler.style.backgroundPosition = `${next * 20}% 0`;
+        positionCastRodAtHand();
+        return true;
+      }
+      function advanceSurfaceCastMotionFrame(now = Date.now()) {
         const surface = $("#castSurface");
-        const surfaceBox = surface.getBoundingClientRect?.();
-        const anglerBox = $("#castAngler").getBoundingClientRect?.();
-        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.height)
-          return null;
-        const pivot = {
-          x: anglerBox.left - surfaceBox.left + anglerBox.width * .5,
-          y: anglerBox.bottom - surfaceBox.top - 2,
-        };
-        surface.style.setProperty("--cast-rig-pivot-x", `${pivot.x}px`);
-        surface.style.setProperty("--cast-rig-pivot-y", `${pivot.y}px`);
-        return pivot;
+        if (!surface.classList.contains("cast-throwing")) return false;
+        const elapsed = Math.max(0, now - surfaceCastMotionStartedAt);
+        const progress = Math.min(1, elapsed / SURFACE_CAST_MOTION_MS);
+        let frame = 0;
+        for (let index = 1; index < SURFACE_CAST_FRAME_STOPS.length; index += 1)
+          if (progress >= SURFACE_CAST_FRAME_STOPS[index]) frame = index;
+        return setSurfaceCastMotionFrame(frame);
       }
       function castRodHandPoint() {
         const surfaceBox = $("#castSurface").getBoundingClientRect?.();
@@ -6640,23 +6678,21 @@
         const anglerBox = angler.getBoundingClientRect?.();
         if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width)
           return null;
-        // Source-pixel landmarks point at the actual closed right fist, not a
-        // percentage of the transparent PNG canvas. Reproduce background-size:
-        // contain + center bottom so the landmark stays exact at every ratio.
-        const sprite = angler.classList.contains("girl")
-          ? { width: 138, height: 326, gripX: 120, gripY: 219 }
-          : { width: 146, height: 339, gripX: 127, gripY: 226 };
+        // Every hand-drawn pose has its own source-pixel fist landmark. The
+        // six cells are stretched exactly to the same DOM box, so mapping the
+        // active cell is stable at every mobile aspect ratio and pond scale.
+        const sprite = SURFACE_CAST_SPRITES[
+          angler.classList.contains("girl") ? "girl" : "boy"
+        ];
+        const frame = Math.max(0, Math.min(5, surfaceCastMotionFrame));
+        const [gripX, gripY] = sprite.grips[frame];
         const scale = Math.min(
           anglerBox.width / sprite.width,
           anglerBox.height / sprite.height,
         );
-        const renderedWidth = sprite.width * scale;
-        const renderedHeight = sprite.height * scale;
-        const imageLeft = anglerBox.left + (anglerBox.width - renderedWidth) / 2;
-        const imageTop = anglerBox.top + anglerBox.height - renderedHeight;
         return {
-          x: imageLeft - surfaceBox.left + sprite.gripX * scale,
-          y: imageTop - surfaceBox.top + sprite.gripY * scale,
+          x: anglerBox.left - surfaceBox.left + gripX / sprite.width * anglerBox.width,
+          y: anglerBox.top - surfaceBox.top + gripY / sprite.height * anglerBox.height,
           size: Math.max(7, Math.min(14, 14 * scale)),
         };
       }
@@ -6664,10 +6700,9 @@
         if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
           return;
         const surface = $("#castSurface");
-        // During the throw, the outer motion rig already carries the real-fist
-        // anchor and rod together. Re-measuring the transformed avatar here
-        // would apply that movement twice and pull the butt away from the hand.
-        if (!surface.classList.contains("cast-throwing"))
+        if (surface.classList.contains("cast-throwing"))
+          advanceSurfaceCastMotionFrame();
+        else
           positionCastRodAtHand();
         if (!["cast-flight", "wait", "bite"].includes(battle.phase)) return;
         const point = castSurfacePoint(battle.castDistance ?? battle.cast ?? 0);
@@ -6757,6 +6792,8 @@
           : "cast-surface";
         applyCastTimeTheme(surface, s.time);
         $("#castAngler").className = `cast-angler ${s.avatar === "girl" ? "girl" : "boy"}`;
+        surfaceCastMotionStartedAt = 0;
+        setSurfaceCastMotionFrame(0, true);
         $("#castZoneName").textContent = battle.practice
           ? "SAM'S TRY POND・水面"
           : {
@@ -6815,6 +6852,13 @@
         };
       }
       function dogFollowPosition() {
+        const world = ensureDogWorldPosition();
+        return {
+          left: Math.max(1, Math.min(99, worldToMapX(world.x))),
+          top: Math.max(1, Math.min(99, worldToMapY(world.y))),
+        };
+      }
+      function initialDogWorldPosition() {
         const offset = {
           left: { x: 6, y: 3 },
           right: { x: -6, y: 3 },
@@ -6822,10 +6866,50 @@
           down: { x: -4, y: -6 },
         }[s.direction] || { x: -4, y: -6 };
         const desired = nearestWalkableWorld(s.x + offset.x, s.y + offset.y, 12);
-        return {
-          left: Math.max(1, Math.min(99, worldToMapX(desired.x))),
-          top: Math.max(1, Math.min(99, worldToMapY(desired.y))),
+        if (isWalkableWorldSegment(s.x, s.y, desired.x, desired.y))
+          return desired;
+        // Never obtain a visually convenient trailing point by hopping over
+        // a wall or a strip of water. Sharing the player's valid tile for the
+        // first frame is preferable to showing the dog on forbidden terrain.
+        return { x: s.x, y: s.y };
+      }
+      function ensureDogWorldPosition() {
+        const valid = dogWorldPosition &&
+          isWalkableWorld(dogWorldPosition.x, dogWorldPosition.y);
+        const closeEnough = valid &&
+          Math.hypot(dogWorldPosition.x - s.x, dogWorldPosition.y - s.y) <= 24;
+        if (!closeEnough) dogWorldPosition = initialDogWorldPosition();
+        return dogWorldPosition;
+      }
+      function advanceDogTrail(previousX, previousY) {
+        const current = ensureDogWorldPosition();
+        if (
+          isWalkableWorld(previousX, previousY) &&
+          isWalkableWorldSegment(current.x, current.y, previousX, previousY)
+        ) {
+          dogWorldPosition = { x: previousX, y: previousY };
+        } else if (Math.hypot(current.x - s.x, current.y - s.y) > 20) {
+          dogWorldPosition = initialDogWorldPosition();
+        }
+      }
+      function safeDogDisplayPosition(position = dogFollowPosition()) {
+        const base = {
+          x: position.left * WORLD_SCALE_X,
+          y: position.top * WORLD_SCALE_Y,
         };
+        const maxTop = dogIdleMode === "idle-sleep" ? 97 : 99;
+        const candidate = {
+          left: Math.max(1, Math.min(99, position.left + dogApproachOffset)),
+          top: Math.max(1, Math.min(maxTop, position.top + dogApproachTopOffset)),
+        };
+        const target = {
+          x: candidate.left * WORLD_SCALE_X,
+          y: candidate.top * WORLD_SCALE_Y,
+        };
+        return isWalkableWorld(target.x, target.y) &&
+            isWalkableWorldSegment(base.x, base.y, target.x, target.y)
+          ? candidate
+          : { left: position.left, top: Math.min(maxTop, position.top) };
       }
       function companionDirection() {
         const dogLeft = dogDisplayLeft(dogFollowPosition());
@@ -6836,11 +6920,10 @@
         return dogLeft < playerLeft ? "left" : "right";
       }
       function dogDisplayLeft(position = dogFollowPosition()) {
-        return Math.max(1, Math.min(99, position.left + dogApproachOffset));
+        return safeDogDisplayPosition(position).left;
       }
       function dogDisplayTop(position = dogFollowPosition()) {
-        const maxTop = dogIdleMode === "idle-sleep" ? 97 : 99;
-        return Math.max(1, Math.min(maxTop, position.top + dogApproachTopOffset));
+        return safeDogDisplayPosition(position).top;
       }
       function sleepCompanionLayout() {
         const map = $("#map");
@@ -7160,9 +7243,17 @@
           up: () => (s.y -= n),
           down: () => (s.y += n),
         })[d]();
-        if (!isWalkableWorld(s.x, s.y)) {
+        if (
+          !isWalkableWorld(s.x, s.y) ||
+          !isWalkableWorldSegment(previousX, previousY, s.x, s.y)
+        ) {
           s.x = previousX;
           s.y = previousY;
+        } else {
+          // The dog follows the exact tile the player just proved walkable.
+          // It therefore rounds piers and buildings through the same gaps,
+          // instead of tweening diagonally between two unrelated safe points.
+          advanceDogTrail(previousX, previousY);
         }
         render();
         $("#player").classList.add("walking");
@@ -7325,7 +7416,7 @@
           dogApproachTopOffset = targetTop - dogPosition.top;
           dogMotionDirection = targetLeft < currentLeft ? "left" : "right";
           dogWalking = true;
-          dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+          dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking reaction-walk`;
           drawDog();
           dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
           dog.style.top = `${dogDisplayTop(dogPosition)}%`;
@@ -7381,7 +7472,7 @@
             : "";
 
           if (dogWalking) {
-            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking reaction-walk`;
             drawDog();
             renderPlayer();
             dog.style.left = `${dogDisplayLeft(dogPosition)}%`;
@@ -7446,7 +7537,7 @@
             : "";
           if (dogWalking) {
             const dog = $("#dog");
-            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking`;
+            dog.className = `companion canvas-dog ${s.dog} dir-${dogMotionDirection} walking reaction-walk`;
             dog.style.left = `${targetLeft}%`;
             dog.style.top = `${targetTop}%`;
             dog.style.zIndex = targetTop > worldToMapY(s.y) ? "6" : "4";
@@ -8093,11 +8184,12 @@
         battle.phase = "cast-flight";
         updateSurfaceCastAim(distance);
         const surface = $("#castSurface");
-        positionCastRodAtHand();
         surface.classList.remove("cast-landed", "nibbling", "bite");
-        // Restart from the planted stance even after a cancelled cast or a
-        // browser restoring this scene from its back-forward cache.
+        // Restart the six-cell sheet from its planted pose even after a
+        // cancelled cast or a browser restoring this scene from history.
         surface.classList.remove("cast-throwing");
+        surfaceCastMotionStartedAt = Date.now();
+        setSurfaceCastMotionFrame(0, true);
         void $("#castMotionRig").offsetWidth;
         surface.classList.add("cast-throwing");
         const point = castSurfacePoint(distance);
@@ -8138,7 +8230,8 @@
         const surface = $("#castSurface");
         surface.classList.remove("cast-throwing", "nibbling", "bite");
         surface.classList.add("cast-landed");
-        positionCastRodAtHand();
+        surfaceCastMotionStartedAt = 0;
+        setSurfaceCastMotionFrame(0, true);
         const point = castSurfacePoint(battle.castDistance);
         const origin = castLineOrigin();
         const targetX = point.x * 10;

@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-2-cast-motion-66";
+const CACHE_NAME = "nushi-tsuri-v82-3-cast-sprites-dog-path-67";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -7,6 +7,8 @@ const CORE_ASSETS = [
   "./icon-512.png",
   "./assets/player-boy-cast-v73.png",
   "./assets/player-girl-cast-v73.png",
+  "./assets/player-boy-cast-motion-v82-3.png",
+  "./assets/player-girl-cast-motion-v82-3.png",
   "./assets/cast-lake-morning-v77.jpg",
   "./assets/cast-lake-day-soft-v77.jpg",
   "./assets/cast-lake-day-bright-v77.jpg",
