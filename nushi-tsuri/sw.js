@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-7-hand-sandwich-71";
+const CACHE_NAME = "nushi-tsuri-v82-8-real-handle-grip-72";
 const CORE_ASSETS = [
   "./",
   "./index.html",
