@@ -2943,12 +2943,28 @@
         opacity: .9;
         stroke-dasharray: 1200;
         stroke-dashoffset: 1200;
-        animation: cast-line-flight .58s steps(12, end) forwards;
+        animation: cast-line-flight .76s steps(12, end) forwards;
       }
       .cast-surface.cast-landed .cast-line-flight path {
         opacity: .68;
         stroke-dasharray: none;
         stroke-dashoffset: 0;
+      }
+      /* v82.2: move the angler, rod and foreground grip as one casting rig.
+         The pivot is measured from the rendered player's planted feet, so the
+         existing real-fist rod anchor remains connected during every pose. */
+      .cast-motion-rig {
+        position: absolute;
+        z-index: 7;
+        inset: 0;
+        transform: translate3d(0, 0, 0);
+        transform-origin:
+          var(--cast-rig-pivot-x, 42%) var(--cast-rig-pivot-y, 92%);
+        pointer-events: none;
+        will-change: transform;
+      }
+      .art-layered-avatar.cast-throwing .cast-motion-rig {
+        animation: cast-angler-motion .76s steps(8, end) both;
       }
       .cast-angler {
         position: absolute;
@@ -3059,7 +3075,7 @@
         background: #d6e2c8;
       }
       .cast-surface.cast-throwing .cast-rod {
-        animation: cast-rod-swing .58s steps(9, end) both;
+        animation: cast-rod-swing .76s steps(10, end) both;
       }
       .cast-float {
         position: absolute;
@@ -4128,15 +4144,27 @@
       @keyframes cast-rod-ready {
         to { transform: rotate(37deg); }
       }
+      @keyframes cast-angler-motion {
+        0% { transform: translate3d(0, 0, 0) rotate(0); }
+        18% { transform: translate3d(-2px, 2px, 0) rotate(-.8deg); }
+        36% { transform: translate3d(-4px, 3px, 0) rotate(-2.2deg); }
+        48% { transform: translate3d(-2px, 1px, 0) rotate(-1deg); }
+        62% { transform: translate3d(6px, -2px, 0) rotate(2.6deg); }
+        78% { transform: translate3d(4px, 0, 0) rotate(1.2deg); }
+        100% { transform: translate3d(0, 0, 0) rotate(0); }
+      }
       @keyframes cast-rod-swing {
         0% { transform: rotate(39deg); }
-        28% { transform: rotate(-27deg); }
-        58% { transform: rotate(62deg); }
+        18% { transform: rotate(18deg); }
+        36% { transform: rotate(-34deg); }
+        48% { transform: rotate(-25deg); }
+        62% { transform: rotate(66deg); }
+        78% { transform: rotate(51deg); }
         100% { transform: rotate(43deg); }
       }
       @keyframes cast-line-flight {
-        0% { stroke-dashoffset: 1200; opacity: .1; }
-        35% { opacity: 1; }
+        0%, 42% { stroke-dashoffset: 1200; opacity: 0; }
+        48% { stroke-dashoffset: 1160; opacity: 1; }
         100% { stroke-dashoffset: 0; opacity: .76; }
       }
       @keyframes cast-float-bob {
@@ -4189,6 +4217,7 @@
         .cast-water,
         .cast-surface.art-water::before,
         .cast-target,
+        .cast-motion-rig,
         .cast-rod,
         .cast-float {
           animation-duration: .001ms !important;
@@ -4360,7 +4389,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.1</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.2</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4494,9 +4523,11 @@
             </svg>
             <div class="cast-splash"></div>
             <div class="cast-float" id="castFloat"></div>
-            <div class="cast-angler boy" id="castAngler"></div>
-            <div class="cast-rod"><i class="cast-rod-tip" id="castRodTip"></i></div>
-            <i class="cast-rod-grip" id="castRodGrip" aria-hidden="true"></i>
+            <div class="cast-motion-rig" id="castMotionRig" aria-hidden="true">
+              <div class="cast-angler boy" id="castAngler"></div>
+              <div class="cast-rod"><i class="cast-rod-tip" id="castRodTip"></i></div>
+              <i class="cast-rod-grip" id="castRodGrip"></i>
+            </div>
           </div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
@@ -5394,6 +5425,7 @@
           },
         },
         key = "nushi-inugoya-v2";
+      const SURFACE_CAST_MOTION_MS = 760;
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
       fishMotionProfiles.aji = {
@@ -6586,6 +6618,21 @@
           `${surfaceBox.height - grip.y}px`,
         );
         surface.style.setProperty("--cast-hand-grip-size", `${grip.size}px`);
+        positionCastRigPivot();
+      }
+      function positionCastRigPivot() {
+        const surface = $("#castSurface");
+        const surfaceBox = surface.getBoundingClientRect?.();
+        const anglerBox = $("#castAngler").getBoundingClientRect?.();
+        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.height)
+          return null;
+        const pivot = {
+          x: anglerBox.left - surfaceBox.left + anglerBox.width * .5,
+          y: anglerBox.bottom - surfaceBox.top - 2,
+        };
+        surface.style.setProperty("--cast-rig-pivot-x", `${pivot.x}px`);
+        surface.style.setProperty("--cast-rig-pivot-y", `${pivot.y}px`);
+        return pivot;
       }
       function castRodHandPoint() {
         const surfaceBox = $("#castSurface").getBoundingClientRect?.();
@@ -6616,7 +6663,12 @@
       function syncSurfaceCastRig() {
         if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
           return;
-        positionCastRodAtHand();
+        const surface = $("#castSurface");
+        // During the throw, the outer motion rig already carries the real-fist
+        // anchor and rod together. Re-measuring the transformed avatar here
+        // would apply that movement twice and pull the butt away from the hand.
+        if (!surface.classList.contains("cast-throwing"))
+          positionCastRodAtHand();
         if (!["cast-flight", "wait", "bite"].includes(battle.phase)) return;
         const point = castSurfacePoint(battle.castDistance ?? battle.cast ?? 0);
         const origin = castLineOrigin();
@@ -8041,7 +8093,12 @@
         battle.phase = "cast-flight";
         updateSurfaceCastAim(distance);
         const surface = $("#castSurface");
+        positionCastRodAtHand();
         surface.classList.remove("cast-landed", "nibbling", "bite");
+        // Restart from the planted stance even after a cancelled cast or a
+        // browser restoring this scene from its back-forward cache.
+        surface.classList.remove("cast-throwing");
+        void $("#castMotionRig").offsetWidth;
         surface.classList.add("cast-throwing");
         const point = castSurfacePoint(distance);
         const targetX = point.x * 10;
@@ -8060,7 +8117,10 @@
         $("#pull").innerHTML = "A<br><small>投げ込み中</small>";
         vibrate(35);
         clearTimeout(castLandingTimer);
-        castLandingTimer = setTimeout(settleSurfaceCast, 620);
+        const castMotionMs = typeof SURFACE_CAST_MOTION_MS === "number"
+          ? SURFACE_CAST_MOTION_MS
+          : 760;
+        castLandingTimer = setTimeout(settleSurfaceCast, castMotionMs);
         return true;
       }
       function settleSurfaceCast() {
@@ -8078,6 +8138,7 @@
         const surface = $("#castSurface");
         surface.classList.remove("cast-throwing", "nibbling", "bite");
         surface.classList.add("cast-landed");
+        positionCastRodAtHand();
         const point = castSurfacePoint(battle.castDistance);
         const origin = castLineOrigin();
         const targetX = point.x * 10;
