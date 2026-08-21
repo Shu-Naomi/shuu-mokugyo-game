@@ -2957,10 +2957,10 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.8: the narrow middle of the lower handle is registered inside the
-         real sprite fist. The entire rod stays behind the character, so the
-         painted hand hides the middle while the handle remains visible above
-         and below it. This reads as a grip without a pasted cap or fake hand. */
+      /* v82.9: the old round fist is cut out per pose, then a purpose-drawn
+         C-shaped hand is painted in front of the rod. The handle therefore
+         passes through real transparent palm space and is enclosed by the
+         thumb/fingers instead of being pasted onto a closed fist. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -2990,6 +2990,37 @@
       }
       .cast-angler.girl {
         background-image: url("assets/player-girl-cast-motion-v82-3.png");
+      }
+      .cast-angler.grip-hand-redrawn {
+        -webkit-mask-image: radial-gradient(
+          ellipse var(--cast-hand-mask-rx, 9px) var(--cast-hand-mask-ry, 11px)
+            at var(--cast-hand-mask-x, 75%) var(--cast-hand-mask-y, 65%),
+          transparent 0 91%, #000 93%
+        );
+        -webkit-mask-repeat: no-repeat;
+        -webkit-mask-size: 100% 100%;
+        mask-image: radial-gradient(
+          ellipse var(--cast-hand-mask-rx, 9px) var(--cast-hand-mask-ry, 11px)
+            at var(--cast-hand-mask-x, 75%) var(--cast-hand-mask-y, 65%),
+          transparent 0 91%, #000 93%
+        );
+        mask-repeat: no-repeat;
+        mask-size: 100% 100%;
+      }
+      .cast-grip-hand {
+        position: absolute;
+        z-index: 8;
+        display: none;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        pointer-events: none;
+        will-change: left, top, background-position;
+      }
+      .cast-grip-hand.boy {
+        background-image: url("assets/player-boy-grip-hands-v82-9.png");
+      }
+      .cast-grip-hand.girl {
+        background-image: url("assets/player-girl-grip-hands-v82-9.png");
       }
       .art-layered-avatar .cast-angler {
         left: 37%;
@@ -3024,6 +3055,15 @@
       }
       .art-layered-avatar.time-night .cast-angler {
         filter: brightness(.46) saturate(.72) hue-rotate(7deg) drop-shadow(5px 7px 2px #020918cc);
+      }
+      .art-layered-avatar.time-morning .cast-grip-hand {
+        filter: brightness(.9) saturate(.94);
+      }
+      .art-layered-avatar.time-evening .cast-grip-hand {
+        filter: sepia(.16) brightness(.78) saturate(1.08);
+      }
+      .art-layered-avatar.time-night .cast-grip-hand {
+        filter: brightness(.46) saturate(.72) hue-rotate(7deg);
       }
       .cast-rod {
         position: absolute;
@@ -4357,7 +4397,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.8</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.9</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4494,6 +4534,7 @@
             <div class="cast-motion-rig" id="castMotionRig" aria-hidden="true">
               <div class="cast-rod rod-bamboo" id="castRod"><i class="cast-rod-tip" id="castRodTip"></i></div>
               <div class="cast-angler boy" id="castAngler"></div>
+              <div class="cast-grip-hand boy" id="castGripHand"></div>
             </div>
           </div>
           <div class="surface"></div>
@@ -5409,6 +5450,38 @@
             grips: [
               [161, 200], [164, 185], [158, 34],
               [188, 79], [187, 213], [161, 200],
+            ],
+          },
+        },
+        SURFACE_CAST_HAND_SPRITES = {
+          boy: {
+            width: 2022,
+            height: 778,
+            cellWidth: 337,
+            boxes: [
+              [109, 299, 145, 172], [97, 299, 145, 172],
+              [82, 299, 146, 172], [69, 291, 184, 172],
+              [65, 332, 176, 131], [81, 299, 146, 172],
+            ],
+            targetWidths: [25, 25, 24, 27, 27, 25],
+            openings: [
+              [.67, .46], [.67, .46], [.66, .46],
+              [.87, .42], [.69, .56], [.67, .46],
+            ],
+          },
+          girl: {
+            width: 2172,
+            height: 724,
+            cellWidth: 362,
+            boxes: [
+              [132, 261, 155, 194], [113, 261, 158, 194],
+              [117, 212, 146, 233], [72, 249, 168, 191],
+              [47, 272, 202, 183], [90, 263, 147, 203],
+            ],
+            targetWidths: [24, 24, 23, 26, 27, 24],
+            openings: [
+              [.66, .46], [.66, .46], [.64, .5],
+              [.68, .48], [.69, .54], [.66, .48],
             ],
           },
         },
@@ -6665,12 +6738,71 @@
       }
       function positionCastRodAtHand() {
         const surface = $("#castSurface");
-        if (!surface.classList.contains("art-layered-avatar")) return;
+        if (!surface.classList.contains("art-layered-avatar")) {
+          $("#castGripHand").style.display = "none";
+          return;
+        }
         const surfaceBox = surface.getBoundingClientRect?.();
         const grip = castRodHandPoint();
         if (!surfaceBox?.width || !surfaceBox.height || !grip) return;
         surface.style.setProperty("--cast-rod-hand-x", `${grip.x}px`);
         surface.style.setProperty("--cast-rod-hand-y", `${grip.y}px`);
+        positionSurfaceCastGripHand(grip);
+      }
+      function positionSurfaceCastGripHand(grip = castRodHandPoint()) {
+        const surface = $("#castSurface");
+        const angler = $("#castAngler");
+        const hand = $("#castGripHand");
+        const anglerBox = angler.getBoundingClientRect?.();
+        if (
+          !surface.classList.contains("art-layered-avatar") ||
+          !grip || !anglerBox?.width || !anglerBox.height
+        ) {
+          hand.style.display = "none";
+          angler.classList.remove("grip-hand-redrawn");
+          return false;
+        }
+        // Older isolated regression harnesses intentionally load only the
+        // legacy cast constants. Keep that diagnostic path usable while the
+        // full game always supplies the v82.9 hand atlas metadata.
+        if (typeof SURFACE_CAST_HAND_SPRITES !== "object") {
+          hand.style.display = "none";
+          angler.classList.remove("grip-hand-redrawn");
+          return false;
+        }
+        const avatar = angler.classList.contains("girl") ? "girl" : "boy";
+        const sprite = SURFACE_CAST_SPRITES[avatar];
+        const overlay = SURFACE_CAST_HAND_SPRITES[avatar];
+        const frame = Math.max(0, Math.min(5, surfaceCastMotionFrame));
+        const [boxX, boxY, boxWidth, boxHeight] = overlay.boxes[frame];
+        const [openingX, openingY] = overlay.openings[frame];
+        const targetWidth = overlay.targetWidths[frame];
+        const renderedWidth = targetWidth / sprite.width * anglerBox.width;
+        const scale = renderedWidth / boxWidth;
+        const renderedHeight = boxHeight * scale;
+        const sourceX = frame * overlay.cellWidth + boxX;
+
+        hand.className = `cast-grip-hand ${avatar}`;
+        hand.style.display = "block";
+        hand.style.left = `${grip.x - renderedWidth * openingX}px`;
+        hand.style.top = `${grip.y - renderedHeight * openingY}px`;
+        hand.style.width = `${renderedWidth}px`;
+        hand.style.height = `${renderedHeight}px`;
+        hand.style.backgroundSize =
+          `${overlay.width * scale}px ${overlay.height * scale}px`;
+        hand.style.backgroundPosition =
+          `${-sourceX * scale}px ${-boxY * scale}px`;
+
+        angler.classList.add("grip-hand-redrawn");
+        angler.style.setProperty(
+          "--cast-hand-mask-x", `${sprite.grips[frame][0] / sprite.width * 100}%`,
+        );
+        angler.style.setProperty(
+          "--cast-hand-mask-y", `${sprite.grips[frame][1] / sprite.height * 100}%`,
+        );
+        angler.style.setProperty("--cast-hand-mask-rx", `${renderedWidth * .48}px`);
+        angler.style.setProperty("--cast-hand-mask-ry", `${renderedHeight * .43}px`);
+        return true;
       }
       function activeSurfaceCastRodKey() {
         const key = battle?.practice ? "bamboo" : s.selectedRod;
