@@ -2957,9 +2957,9 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.10: display rods and held rods are separate assets. The held atlas
-         has a short transparent grip interruption in every cell, so the real
-         painted fist hides the handle without a synthetic hand overlay. */
+      /* v82.11: display rods stay neutral, while the held rods use separate
+         boy/girl atlases. Their horizontal density and palm interruption are
+         tuned to each painted fist instead of forcing one thick shared rod. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -3037,7 +3037,7 @@
         );
         transform-origin:
           var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 87.5%);
-        background-image: url("assets/rod-held-atlas-v82-10.png");
+        background-image: url("assets/rod-held-boy-atlas-v82-11.png");
         background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
         background-repeat: no-repeat;
         background-size: 500% 600%;
@@ -3050,6 +3050,12 @@
       .cast-rod.rod-clear-stream { --cast-rod-column: 50%; }
       .cast-rod.rod-star-gazer { --cast-rod-column: 75%; }
       .cast-rod.rod-moroko { --cast-rod-column: 100%; }
+      .cast-rod.held-boy {
+        background-image: url("assets/rod-held-boy-atlas-v82-11.png");
+      }
+      .cast-rod.held-girl {
+        background-image: url("assets/rod-held-girl-atlas-v82-11.png");
+      }
       .art-layered-avatar.time-evening .cast-rod {
         filter: sepia(.2) brightness(.82) saturate(1.12);
       }
@@ -4397,7 +4403,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.10</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.11</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5453,6 +5459,7 @@
           },
         },
         SURFACE_CAST_ROD_SPRITES = {
+          horizontalScales: { boy: .84, girl: .78 },
           columns: {
             bamboo: 0,
             youngBamboo: 25,
@@ -6722,6 +6729,11 @@
         const rod = $("#castRod");
         if (!rod) return false;
         const key = activeSurfaceCastRodKey();
+        const angler = $("#castAngler");
+        const avatar = angler?.classList?.contains("girl") ||
+            (!angler && s.avatar === "girl")
+          ? "girl"
+          : "boy";
         const cssKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
         const next = Math.max(0, Math.min(5, Number(frame) || 0));
         const tipFrames = SURFACE_CAST_ROD_SPRITES.tips[key] ||
@@ -6731,13 +6743,16 @@
           : Array.from({ length: 6 }, () => [50, 87.5]);
         const [tipX, tipY] = tipFrames[next];
         const [gripX, gripY] = gripFrames[next];
-        rod.className = `cast-rod rod-${cssKey}`;
+        const horizontalScale =
+          SURFACE_CAST_ROD_SPRITES.horizontalScales?.[avatar] || 1;
+        const heldTipX = gripX + (tipX - gripX) * horizontalScale;
+        rod.className = `cast-rod held-${avatar} rod-${cssKey}`;
         rod.style.setProperty(
           "--cast-rod-column",
           `${SURFACE_CAST_ROD_SPRITES.columns[key]}%`,
         );
         rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
-        rod.style.setProperty("--cast-rod-tip-x", `${tipX}%`);
+        rod.style.setProperty("--cast-rod-tip-x", `${heldTipX}%`);
         rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
         rod.style.setProperty("--cast-rod-grip-x", `${gripX}%`);
         rod.style.setProperty("--cast-rod-grip-y", `${gripY}%`);
