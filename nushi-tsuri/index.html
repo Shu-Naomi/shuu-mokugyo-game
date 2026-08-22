@@ -108,6 +108,10 @@
         border-radius: 7px;
         background: #ffffff10;
       }
+      .hud-clock {
+        white-space: nowrap;
+        font-variant-numeric: tabular-nums;
+      }
       .hud .grow {
         flex: 1;
       }
@@ -4404,7 +4408,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.12</span><span id="time">朝</span
+        <b>星降る湖</b><span>v83</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5565,6 +5569,92 @@
             : "竿を送り、根へ潜る力をいなす。",
         })),
       };
+      const GAME_MINUTES_PER_DAY = 24 * 60,
+        GAME_START_MINUTES = 6 * 60,
+        CAST_TIME_MINUTES = 10,
+        RESCUE_COOLDOWN_MINUTES = CAST_TIME_MINUTES * 2,
+        LEGACY_TIME_ANCHORS = [6 * 60, 12 * 60, 17 * 60, 19 * 60];
+      function normalizeGameMinutes(value) {
+        const minutes = Number(value);
+        return Number.isFinite(minutes) && minutes >= 0
+          ? Math.floor(minutes)
+          : GAME_START_MINUTES;
+      }
+      function legacyTimeToGameMinutes(value) {
+        const legacyTick = Math.max(0, Math.floor(Number(value) || 0));
+        const dayIndex = Math.floor(legacyTick / LEGACY_TIME_ANCHORS.length);
+        const phaseIndex = legacyTick % LEGACY_TIME_ANCHORS.length;
+        return dayIndex * GAME_MINUTES_PER_DAY + LEGACY_TIME_ANCHORS[phaseIndex];
+      }
+      function gameClockAt(value) {
+        const totalMinutes = normalizeGameMinutes(value);
+        const dayIndex = Math.floor(totalMinutes / GAME_MINUTES_PER_DAY);
+        const minuteOfDay = totalMinutes % GAME_MINUTES_PER_DAY;
+        const hour = Math.floor(minuteOfDay / 60);
+        const minute = minuteOfDay % 60;
+        const period = minuteOfDay >= 5 * 60 && minuteOfDay < 10 * 60
+          ? "morning"
+          : minuteOfDay >= 10 * 60 && minuteOfDay < 17 * 60
+            ? "day"
+            : minuteOfDay >= 17 * 60 && minuteOfDay < 19 * 60
+              ? "evening"
+              : "night";
+        const periodLabel = {
+          morning: "朝",
+          day: "昼",
+          evening: "夕",
+          night: "夜",
+        }[period];
+        return {
+          totalMinutes,
+          day: dayIndex + 1,
+          dayIndex,
+          minuteOfDay,
+          hour,
+          minute,
+          period,
+          periodLabel,
+          dayVariant: dayIndex % 2
+            ? "cast-day-soft"
+            : "cast-day-bright",
+        };
+      }
+      function gameClockLabel(value) {
+        const clock = gameClockAt(value);
+        const hour = String(clock.hour).padStart(2, "0");
+        const minute = String(clock.minute).padStart(2, "0");
+        return `${clock.day}日目 ${hour}:${minute} ${clock.periodLabel}`;
+      }
+      function advanceGameTime(state, minutes = CAST_TIME_MINUTES) {
+        const amount = Math.max(0, Math.floor(Number(minutes) || 0));
+        state.gameMinutes = normalizeGameMinutes(state.gameMinutes) + amount;
+        return gameClockAt(state.gameMinutes);
+      }
+      function sleepUntilNextMorning(state) {
+        const current = gameClockAt(state.gameMinutes);
+        state.gameMinutes = (current.dayIndex + 1) * GAME_MINUTES_PER_DAY +
+          GAME_START_MINUTES;
+        return gameClockAt(state.gameMinutes);
+      }
+      function migrateLegacyGameClock(state) {
+        const legacyTime = Math.max(0, Math.floor(Number(state.time) || 0));
+        if (!Number.isFinite(state.gameMinutes)) {
+          state.gameMinutes = legacyTimeToGameMinutes(legacyTime);
+        } else {
+          state.gameMinutes = normalizeGameMinutes(state.gameMinutes);
+        }
+        if (!Number.isFinite(state.rescueAtMinutes)) {
+          const legacyRescueAt = Number(state.rescueAt);
+          state.rescueAtMinutes = Number.isFinite(legacyRescueAt) &&
+              legacyRescueAt > -90
+            ? state.gameMinutes - Math.max(0, legacyTime - legacyRescueAt) *
+              CAST_TIME_MINUTES
+            : -1000000;
+        }
+        delete state.time;
+        delete state.rescueAt;
+        return state;
+      }
       let s = Object.assign(
           {
             money: 300,
@@ -5583,13 +5673,13 @@
             power: 16,
             caught: {},
             log: [],
-            time: 0,
+            gameMinutes: null,
             x: 112,
             y: 153,
             dog: "riku",
             avatar: "boy",
             direction: "up",
-            rescueAt: -99,
+            rescueAtMinutes: null,
             calmBonus: 0,
             practiceTutorialComplete: false,
             mapVersion: 49,
@@ -5829,6 +5919,19 @@
         // purchase, health value, coin and field position stays intact.
         s.mapVersion = 82;
       }
+      if ((s.mapVersion || 0) < 83) {
+        // v83 replaces the four-step cast counter with a real day clock.
+        // Legacy morning/day/evening/night saves keep the same visible period,
+        // while inventory, catches, equipment, health, money and position stay.
+        migrateLegacyGameClock(s);
+        s.mapVersion = 83;
+      }
+      s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      s.rescueAtMinutes = Number.isFinite(s.rescueAtMinutes)
+        ? Math.floor(s.rescueAtMinutes)
+        : -1000000;
+      delete s.time;
+      delete s.rescueAt;
       function preloadFishAnimation(fishId) {
         const sources = [
           fishAssets[fishId],
@@ -6080,10 +6183,10 @@
           title: "湖畔の釣り宿",
           asset: "assets/interior-fishing-inn-v55.png",
           alt: "畳の間、寝具、釣り竿と台所が整った湖畔の釣り宿",
-          dialogue: "「釣りの合間に休んでいきな。湖の音を聞けば、糸を張りすぎる癖も抜けるよ」",
-          actionLabel: "ひと休みする",
+          dialogue: "「今日はここへ泊まっていきな。湖の音を聞いて眠れば、朝六時にはすっきり起きられるよ」",
+          actionLabel: "宿泊する",
           actionCost: "無料",
-          note: "時間が一つ進み、次の釣りで魚の動きが少し穏やかになる。",
+          note: "翌日の06:00まで休み、体力を全回復する。次の釣りも少し穏やかになる。",
         },
         yaoya: {
           brand: "YAOYA VEGETABLES",
@@ -6562,11 +6665,11 @@
       function useLocationService() {
         if (!activeLocationId || !locationInteriors[activeLocationId]) return;
         if (activeLocationId === "farmhouse") {
-          s.time += 1;
+          sleepUntilNextMorning(s);
           s.hp = s.maxHp;
           s.calmBonus = Math.max(s.calmBonus, 1);
-          setLocationDialogue("布団へ横になると、湖と水車の音だけが聞こえた。傷も疲れもすっかり癒えた。");
-          log("湖畔の釣り宿でひと休みした。体力が全回復し、次の釣りも少し穏やかになる。");
+          setLocationDialogue("布団へ横になると、湖と水車の音だけが聞こえた。翌朝六時、傷も疲れもすっかり癒えて目を覚ました。");
+          log(`湖畔の釣り宿へ泊まり、${gameClockLabel(s.gameMinutes)}に起きた。体力が全回復し、次の釣りも少し穏やかになる。`);
         } else if (activeLocationId === "yaoya" || activeLocationId === "diner") {
           renderLocationGoods();
           return false;
@@ -6666,14 +6769,11 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return "beach";
         return x >= 120 ? "harbor" : "beach";
       }
-      function castTimeTheme(time = s.time) {
-        const period = ["morning", "day", "evening", "night"][time % 4];
-        const dayVariant = Math.floor(time / 4) % 2
-          ? "cast-day-soft"
-          : "cast-day-bright";
-        return { period, dayVariant };
+      function castTimeTheme(time = s.gameMinutes) {
+        const clock = gameClockAt(time);
+        return { period: clock.period, dayVariant: clock.dayVariant };
       }
-      function applyCastTimeTheme(surface, time = s.time) {
+      function applyCastTimeTheme(surface, time = s.gameMinutes) {
         const theme = castTimeTheme(time);
         surface.classList.remove(
           "time-morning",
@@ -6894,7 +6994,7 @@
         surface.className = illustratedZone
           ? `cast-surface art-water ${illustratedClass} art-layered-avatar`
           : "cast-surface";
-        applyCastTimeTheme(surface, s.time);
+        applyCastTimeTheme(surface, s.gameMinutes);
         const avatarClass = s.avatar === "girl" ? "girl" : "boy";
         $("#castAngler").className = `cast-angler ${avatarClass}`;
         surfaceCastMotionStartedAt = 0;
@@ -7245,7 +7345,7 @@
         s.power = rodData[s.selectedRod].power;
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
-        $("#time").textContent = ["朝", "昼", "夕", "夜"][s.time % 4];
+        $("#time").textContent = gameClockLabel(s.gameMinutes);
         renderIdleStatus();
         const practiceComplete = Boolean(s.practiceTutorialComplete);
         $("#practiceOfferStatus").textContent = practiceComplete
@@ -7732,7 +7832,7 @@
           showRescueToast(`${dogName()}「まだ自分の力で準備できるよ」`);
           return false;
         }
-        if (s.time - s.rescueAt < 2) {
+        if (s.gameMinutes - s.rescueAtMinutes < RESCUE_COOLDOWN_MINUTES) {
           const message = `${dogName()}はさっき探した場所を見つめている。少し時間を置こう。`;
           log(message);
           showRescueToast(message);
@@ -7751,7 +7851,7 @@
         rescueTimer = setTimeout(() => {
           rescueTimer = 0;
           const reward = dogRescueReward();
-          s.rescueAt = s.time;
+          s.rescueAtMinutes = s.gameMinutes;
           reward.grant();
           rescueInProgress = false;
           log(reward.message);
@@ -8250,8 +8350,8 @@
         }
         s.baits[baitId]--;
         s.bait = s.baits[s.selectedBait] || 0;
-        s.time++;
-        applyCastTimeTheme($("#castSurface"), s.time);
+        advanceGameTime(s);
+        applyCastTimeTheme($("#castSurface"), s.gameMinutes);
         battle.baitCommitted = true;
         render();
         save();
@@ -9777,7 +9877,7 @@
         }
         const recoveryHp = Math.ceil(s.maxHp / 2);
         s.hp = recoveryHp;
-        s.time += 1;
+        sleepUntilNextMorning(s);
         s.x = 43;
         s.y = 34;
         s.direction = "down";
