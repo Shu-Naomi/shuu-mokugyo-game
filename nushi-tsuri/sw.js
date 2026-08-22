@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v82-12-locked-hand-reel-76";
+const CACHE_NAME = "nushi-tsuri-v83-ten-minute-clock-77";
 const CORE_ASSETS = [
   "./",
   "./index.html",
