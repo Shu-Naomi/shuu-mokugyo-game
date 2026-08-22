@@ -2957,9 +2957,10 @@
         stroke-dasharray: none;
         stroke-dashoffset: 0;
       }
-      /* v82.11: display rods stay neutral, while the held rods use separate
-         boy/girl atlases. Their horizontal density and palm interruption are
-         tuned to each painted fist instead of forcing one thick shared rod. */
+      /* v82.12: display rods stay neutral. The held rods use separate boy/girl
+         atlases with a palm-sized interruption immediately above the reel.
+         Body motion stays untouched; the rod is registered to the painted
+         hand and the reel remains on the same side through all six poses. */
       .cast-motion-rig {
         position: absolute;
         z-index: 7;
@@ -3033,11 +3034,11 @@
         height: clamp(220px, 58vh, 290px);
         transform: translate(
           var(--cast-rod-grip-shift-x, -50%),
-          var(--cast-rod-grip-shift-y, -87.5%)
+          var(--cast-rod-grip-shift-y, -74.21875%)
         );
         transform-origin:
-          var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 87.5%);
-        background-image: url("assets/rod-held-boy-atlas-v82-11.png");
+          var(--cast-rod-grip-x, 50%) var(--cast-rod-grip-y, 74.21875%);
+        background-image: url("assets/rod-held-boy-atlas-v82-12.png");
         background-position: var(--cast-rod-column, 0%) var(--cast-rod-frame, 0%);
         background-repeat: no-repeat;
         background-size: 500% 600%;
@@ -3051,10 +3052,10 @@
       .cast-rod.rod-star-gazer { --cast-rod-column: 75%; }
       .cast-rod.rod-moroko { --cast-rod-column: 100%; }
       .cast-rod.held-boy {
-        background-image: url("assets/rod-held-boy-atlas-v82-11.png");
+        background-image: url("assets/rod-held-boy-atlas-v82-12.png");
       }
       .cast-rod.held-girl {
-        background-image: url("assets/rod-held-girl-atlas-v82-11.png");
+        background-image: url("assets/rod-held-girl-atlas-v82-12.png");
       }
       .art-layered-avatar.time-evening .cast-rod {
         filter: sepia(.2) brightness(.82) saturate(1.12);
@@ -4403,7 +4404,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v82.11</span><span id="time">朝</span
+        <b>星降る湖</b><span>v82.12</span><span id="time">朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5459,7 +5460,7 @@
           },
         },
         SURFACE_CAST_ROD_SPRITES = {
-          horizontalScales: { boy: .84, girl: .78 },
+          horizontalScales: { boy: .80, girl: .72 },
           columns: {
             bamboo: 0,
             youngBamboo: 25,
@@ -5467,29 +5468,29 @@
             starGazer: 75,
             moroko: 100,
           },
-          // Every cell has a measured grip at y=224px: the narrow lower handle
-          // between reel and butt cap. The old y=238px point was the wide cap,
-          // which painted a horizontal purple band across the closed fist.
+          // Every held cell is registered at y=190px, immediately above the
+          // reel seat. The transparent interruption is covered by the painted
+          // palm, while the reel remains directly below that same hand point.
           grips: {
             bamboo: [
-              [49, 87.5], [50.5, 87.5], [47.5, 87.5],
-              [52, 87.5], [49, 87.5], [52.25, 87.5],
+              [51.5, 74.21875], [53, 74.21875], [45, 74.21875],
+              [52.5, 74.21875], [52, 74.21875], [55, 74.21875],
             ],
             youngBamboo: [
-              [48.75, 87.5], [50.5, 87.5], [49.25, 87.5],
-              [51.5, 87.5], [48.5, 87.5], [52, 87.5],
+              [51, 74.21875], [52.5, 74.21875], [46, 74.21875],
+              [52.5, 74.21875], [51.5, 74.21875], [54, 74.21875],
             ],
             clearStream: [
-              [49, 87.5], [50, 87.5], [48.75, 87.5],
-              [51.5, 87.5], [48.75, 87.5], [52, 87.5],
+              [51, 74.21875], [52.5, 74.21875], [46.5, 74.21875],
+              [52.5, 74.21875], [52, 74.21875], [54.5, 74.21875],
             ],
             starGazer: [
-              [48.5, 87.5], [50, 87.5], [49.25, 87.5],
-              [51.5, 87.5], [48.75, 87.5], [51.75, 87.5],
+              [51, 74.21875], [52.5, 74.21875], [47, 74.21875],
+              [52, 74.21875], [52, 74.21875], [54.5, 74.21875],
             ],
             moroko: [
-              [48.5, 87.5], [49.75, 87.5], [49.25, 87.5],
-              [51, 87.5], [48.75, 87.5], [51.75, 87.5],
+              [51, 74.21875], [52, 74.21875], [46.5, 74.21875],
+              [52, 74.21875], [52, 74.21875], [54, 74.21875],
             ],
           },
           tips: {
