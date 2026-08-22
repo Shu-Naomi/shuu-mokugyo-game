@@ -4408,7 +4408,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v83</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v84</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5443,6 +5443,64 @@
           },
         },
         key = "nushi-inugoya-v2";
+      const fishSizeProfiles = {
+        moroko: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 500,
+            maxHundredths: 699,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 700,
+            maxHundredths: 899,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 900,
+            maxHundredths: 1099,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 1100,
+            maxHundredths: 1299,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 1300,
+            maxHundredths: 1499,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 1500,
+            maxHundredths: 1799,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 2.6,
+          },
+        ],
+      };
       const SURFACE_CAST_MOTION_MS = 760,
         SURFACE_CAST_FRAME_STOPS = [0, .16, .34, .5, .68, .86],
         SURFACE_CAST_SPRITES = {
@@ -5569,6 +5627,70 @@
             : "竿を送り、根へ潜る力をいなす。",
         })),
       };
+      function boundedRandom(random = Math.random) {
+        const value = Number(random());
+        return Number.isFinite(value)
+          ? Math.min(0.999999999, Math.max(0, value))
+          : 0;
+      }
+      function fishSizeTierById(fishId, tierId) {
+        return fishSizeProfiles[fishId]?.find((tier) => tier.id === tierId) || null;
+      }
+      function fishSizeTierAt(fishId, hundredths) {
+        return fishSizeProfiles[fishId]?.find((tier) =>
+          hundredths >= tier.minHundredths &&
+          hundredths <= tier.maxHundredths) || null;
+      }
+      function rollFishSpecimen(f, random = Math.random) {
+        const tiers = fishSizeProfiles[f?.id];
+        if (!tiers?.length) return null;
+        const totalWeight = tiers.reduce((sum, tier) => sum + tier.weight, 0);
+        let tierRoll = boundedRandom(random) * totalWeight;
+        let selected = tiers[tiers.length - 1];
+        for (const tier of tiers) {
+          tierRoll -= tier.weight;
+          if (tierRoll < 0) {
+            selected = tier;
+            break;
+          }
+        }
+        const span = selected.maxHundredths - selected.minHundredths + 1;
+        const hundredths = selected.minHundredths +
+          Math.floor(boundedRandom(random) * span);
+        return {
+          fishId: f.id,
+          tierId: selected.id,
+          tierLabel: selected.label,
+          hundredths,
+          cm: hundredths / 100,
+          cmText: (hundredths / 100).toFixed(2),
+          pullMultiplier: selected.pullMultiplier,
+          price: Math.max(10, Math.round(f.price * selected.priceMultiplier)),
+        };
+      }
+      function fishPullMultiplier() {
+        return Math.max(0.1, Number(battle?.specimen?.pullMultiplier) || 1);
+      }
+      function updateFishSizeRecord(state, specimen) {
+        if (!specimen) return false;
+        if (!state.sizeRecords || typeof state.sizeRecords !== "object")
+          state.sizeRecords = {};
+        const previous = Number(state.sizeRecords[specimen.fishId]?.hundredths);
+        if (Number.isFinite(previous) && previous >= specimen.hundredths) return false;
+        state.sizeRecords[specimen.fishId] = {
+          hundredths: specimen.hundredths,
+          tierId: specimen.tierId,
+        };
+        return true;
+      }
+      function fishSizeRecordText(f) {
+        const record = s.sizeRecords?.[f.id];
+        const hundredths = Number(record?.hundredths);
+        const tier = fishSizeTierById(f.id, record?.tierId);
+        return Number.isFinite(hundredths) && tier
+          ? `最大 ${(hundredths / 100).toFixed(2)}cm（${tier.label}）`
+          : "";
+      }
       const GAME_MINUTES_PER_DAY = 24 * 60,
         GAME_START_MINUTES = 6 * 60,
         CAST_TIME_MINUTES = 10,
@@ -5672,6 +5794,7 @@
             rod: "竹の竿",
             power: 16,
             caught: {},
+            sizeRecords: {},
             log: [],
             gameMinutes: null,
             x: 112,
@@ -5925,6 +6048,22 @@
         // while inventory, catches, equipment, health, money and position stay.
         migrateLegacyGameClock(s);
         s.mapVersion = 83;
+      }
+      if ((s.mapVersion || 0) < 84) {
+        // v84 starts per-catch sizes with Honmoroko only. Existing counts,
+        // money, inventory, equipment, health, time and position stay intact.
+        if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
+        s.mapVersion = 84;
+      }
+      if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
+          Array.isArray(s.sizeRecords)) s.sizeRecords = {};
+      for (const [fishId, record] of Object.entries(s.sizeRecords)) {
+        const hundredths = Math.floor(Number(record?.hundredths));
+        const tier = Number.isFinite(hundredths)
+          ? fishSizeTierAt(fishId, hundredths)
+          : null;
+        if (!tier) delete s.sizeRecords[fishId];
+        else s.sizeRecords[fishId] = { hundredths, tierId: tier.id };
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
       s.rescueAtMinutes = Number.isFinite(s.rescueAtMinutes)
@@ -8373,6 +8512,7 @@
           ? fish.find((candidate) => candidate.id === "funa")
           : pick(distance, battle.spot);
         battle.f = f;
+        battle.specimen = battle.practice ? null : rollFishSpecimen(f);
         preloadFishAnimation(f.id);
         battle.x = clampBattle(54 + distance * .4, 54, f.id === "nushi" ? 90 : 94);
         battle.y = clampBattle(44 + distance * .18, 44, f.id === "nushi" ? 66 : 72);
@@ -8728,12 +8868,12 @@
         if (battle.reeling) {
           const pull =
             ((power / 11) * mood.reel) /
-            battle.f.resistance /
+            (battle.f.resistance * fishPullMultiplier()) /
             (battle.distanceFactor || 1);
           battle.retrieval = before + pull;
         } else if (!mood.calm) {
           const slip =
-            (mood.tension / control) *
+            ((mood.tension * fishPullMultiplier()) / control) *
             0.00036 *
             (0.72 + (1 - before) * 0.28);
           battle.retrieval = before - slip;
@@ -9596,7 +9736,7 @@
           updateWaterFx();
           renderBattleFish();
           if (battle.reeling) {
-            battle.ten += mood.tension / control;
+            battle.ten += (mood.tension * fishPullMultiplier()) / control;
           } else {
             battle.ten = Math.max(3, battle.ten - mood.release * control);
           }
@@ -9703,7 +9843,12 @@
         $("#distanceLabel").style.display = "inline";
         $("#distanceMeter").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
-        $("#fishName").textContent = f.name;
+        const specimenLabel = battle.specimen
+          ? `${battle.specimen.tierLabel} ${battle.specimen.cmText}cm`
+          : "";
+        $("#fishName").textContent = specimenLabel
+          ? `${f.name} ${specimenLabel}`
+          : f.name;
         $("#pull").innerHTML = "A<br><small>押して巻く</small>";
         $("#wait").innerHTML = "B<br><small>糸を送る</small>";
         chooseFishMood(true);
@@ -9719,7 +9864,7 @@
           : $("#phaseLabel").textContent;
         $("#battleMsg").textContent = battle.practice
           ? "サム「掛かった！Aを押して巻く。赤くなったら離して糸を送るんだ」"
-          : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
+          : `${specimenLabel ? `【${specimenLabel}】` : ""}${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(battle.practice
           ? "サムの試し釣り池で、練習用のフナが掛かった！"
@@ -9886,6 +10031,7 @@
       }
       function caught() {
         const f = battle.f;
+        const specimen = battle.specimen;
         if (battle.practice) {
           const tutorialClear = battle.tutorial && !s.practiceTutorialComplete;
           if (tutorialClear) {
@@ -9910,14 +10056,27 @@
         const spot = fishingSpotById(battle.spot);
         const first = !s.caught[f.id];
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
-        s.money += f.price;
-        log(`${spot.name}で${f.name}を釣り上げた！ ${f.price}円獲得。`);
+        const salePrice = specimen?.price ?? f.price;
+        const newSizeRecord = updateFishSizeRecord(s, specimen);
+        s.money += salePrice;
+        log(specimen
+          ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}`
+          : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。`);
         const hazardDetail = resolveCatchHazard(f);
         const catchDetail = first
-          ? `初釣果！ ＋${f.price}円`
-          : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
+          ? `初釣果！ ＋${salePrice}円`
+          : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`;
+        const specimenDetail = specimen
+          ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
+            (newSizeRecord ? " ・ 最大記録！" : "")
+          : "";
         endBattle();
-        showCatchCard(f, first, hazardDetail ? catchDetail + hazardDetail : "");
+        showCatchCard(
+          f,
+          first,
+          specimenDetail || (hazardDetail ? catchDetail + hazardDetail : ""),
+          specimen ? `🎣 ${specimen.tierLabel} GET!` : "",
+        );
       }
       function endBattle() {
         clearInterval(timer);
@@ -9945,10 +10104,10 @@
       }
       function renderRecord() {
         $("#book").innerHTML = fish
-          .map(
-            (f) =>
-              `<div class="item"><b>${f.icon} ${f.name}</b><br>${s.caught[f.id] || 0}匹</div>`,
-          )
+          .map((f) => {
+            const sizeRecord = fishSizeRecordText(f);
+            return `<div class="item"><b>${f.icon} ${f.name}</b><br>${s.caught[f.id] || 0}匹${sizeRecord ? `<br><small>${sizeRecord}</small>` : ""}</div>`;
+          })
           .join("");
         $("#log").innerHTML =
           s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
