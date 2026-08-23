@@ -4408,7 +4408,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v86</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v87</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5449,7 +5449,7 @@
             id: "tiny",
             label: "極小",
             minHundredths: 500,
-            maxHundredths: 699,
+            maxHundredths: 749,
             weight: 10,
             pullMultiplier: 0.68,
             priceMultiplier: 0.45,
@@ -5457,8 +5457,8 @@
           {
             id: "small",
             label: "小さい",
-            minHundredths: 700,
-            maxHundredths: 899,
+            minHundredths: 750,
+            maxHundredths: 999,
             weight: 22,
             pullMultiplier: 0.84,
             priceMultiplier: 0.7,
@@ -5466,8 +5466,8 @@
           {
             id: "normal",
             label: "普通",
-            minHundredths: 900,
-            maxHundredths: 1099,
+            minHundredths: 1000,
+            maxHundredths: 1149,
             weight: 34,
             pullMultiplier: 1,
             priceMultiplier: 1,
@@ -5475,8 +5475,8 @@
           {
             id: "medium",
             label: "中",
-            minHundredths: 1100,
-            maxHundredths: 1299,
+            minHundredths: 1150,
+            maxHundredths: 1249,
             weight: 20,
             pullMultiplier: 1.18,
             priceMultiplier: 1.3,
@@ -5484,8 +5484,8 @@
           {
             id: "large",
             label: "大",
-            minHundredths: 1300,
-            maxHundredths: 1499,
+            minHundredths: 1250,
+            maxHundredths: 1349,
             weight: 11,
             pullMultiplier: 1.42,
             priceMultiplier: 1.75,
@@ -5493,11 +5493,11 @@
           {
             id: "giant",
             label: "巨大",
-            minHundredths: 1500,
+            minHundredths: 1350,
             maxHundredths: 1799,
             weight: 3,
             pullMultiplier: 1.75,
-            priceMultiplier: 2.6,
+            priceMultiplier: 3.2,
           },
         ],
         funa: [
@@ -5553,7 +5553,7 @@
             maxHundredths: 4999,
             weight: 3,
             pullMultiplier: 1.75,
-            priceMultiplier: 2.6,
+            priceMultiplier: 3.2,
           },
         ],
         koi: [
@@ -5609,7 +5609,7 @@
             maxHundredths: 9999,
             weight: 3,
             pullMultiplier: 1.75,
-            priceMultiplier: 2.6,
+            priceMultiplier: 3.2,
           },
         ],
       };
@@ -6196,6 +6196,12 @@
         // catches, inventory, equipment, health, money, time and position stay.
         if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
         s.mapVersion = 86;
+      }
+      if ((s.mapVersion || 0) < 87) {
+        // v87 retunes Honmoroko's real-world size bands and the giant sale
+        // bonus. Saved maximum lengths are kept and reclassified just below.
+        if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
+        s.mapVersion = 87;
       }
       if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
           Array.isArray(s.sizeRecords)) s.sizeRecords = {};
