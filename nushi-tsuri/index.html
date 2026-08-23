@@ -4408,7 +4408,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v85</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v86</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5556,6 +5556,62 @@
             priceMultiplier: 2.6,
           },
         ],
+        koi: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 1500,
+            maxHundredths: 2499,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 2500,
+            maxHundredths: 3499,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 3500,
+            maxHundredths: 4999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 5000,
+            maxHundredths: 6499,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 6500,
+            maxHundredths: 7999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 8000,
+            maxHundredths: 9999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 2.6,
+          },
+        ],
       };
       const SURFACE_CAST_MOTION_MS = 760,
         SURFACE_CAST_FRAME_STOPS = [0, .16, .34, .5, .68, .86],
@@ -6134,6 +6190,12 @@
         // Sam's practice Funa and all prior progress stay unchanged.
         if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
         s.mapVersion = 85;
+      }
+      if ((s.mapVersion || 0) < 86) {
+        // v86 adds Koi to the per-catch size system. Existing size records,
+        // catches, inventory, equipment, health, money, time and position stay.
+        if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
+        s.mapVersion = 86;
       }
       if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
           Array.isArray(s.sizeRecords)) s.sizeRecords = {};
