@@ -134,6 +134,9 @@
         opacity: .62;
         filter: grayscale(1);
       }
+      .hud .sound-toggle.audio-ready {
+        animation: sound-ready-pop .38s ease-out both;
+      }
       .world {
         position: relative;
         min-height: 0;
@@ -4367,7 +4370,8 @@
         .catch-card.special-nushi,
         .catch-special-fx::before,
         .catch-special-fx::after,
-        .catch-special-fx i {
+        .catch-special-fx i,
+        .hud .sound-toggle.audio-ready {
           animation-duration: .001ms !important;
           animation-iteration-count: 1 !important;
         }
@@ -4465,6 +4469,9 @@
         35% { opacity: 1; transform: scale(1.35) rotate(90deg); }
         62% { opacity: .82; transform: scale(.7) rotate(180deg); }
       }
+      @keyframes sound-ready-pop {
+        35% { transform: scale(1.18); filter: brightness(1.45); }
+      }
       @keyframes catch-rig-swing {
         0% { transform: translateX(-50%) rotate(-3.5deg); }
         100% { transform: translateX(-50%) rotate(3.5deg); }
@@ -4553,7 +4560,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v89</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v89.1</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6548,15 +6555,19 @@
       function vibrate(pattern) {
         try { navigator.vibrate?.(pattern); } catch (_) {}
       }
-      const GAME_AUDIO_MASTER_LEVEL = .28,
+      const GAME_AUDIO_MASTER_LEVEL = .48,
         gameAudio = {
           context: null,
           master: null,
           underwater: null,
           noiseBuffer: null,
           lastBubbleAt: -10,
+          primed: false,
+          unlocked: false,
+          readyCuePlayed: false,
+          unlockPromise: null,
         };
-      function ensureAudioContext() {
+      function ensureAudioContext(resume = true) {
         if (!s.soundEnabled) return null;
         let context = gameAudio.context;
         if (!context || context.state === "closed") {
@@ -6564,19 +6575,49 @@
             globalThis.webkitAudioContext;
           if (!AudioContextClass) return null;
           try {
-            context = new AudioContextClass();
+            try {
+              context = new AudioContextClass({ latencyHint: "interactive" });
+            } catch (_) {
+              context = new AudioContextClass();
+            }
             const master = context.createGain();
             master.gain.value = GAME_AUDIO_MASTER_LEVEL;
             master.connect(context.destination);
             gameAudio.context = context;
             gameAudio.master = master;
             gameAudio.noiseBuffer = null;
+            gameAudio.primed = false;
+            gameAudio.unlocked = false;
+            gameAudio.readyCuePlayed = false;
           } catch (_) {
             return null;
           }
         }
-        if (context.state === "suspended") context.resume().catch(() => {});
+        if (resume && context.state === "suspended") {
+          try { context.resume()?.catch?.(() => {}); } catch (_) {}
+        }
         return context;
+      }
+      function primeAudioContext(context) {
+        if (!context || gameAudio.primed || !gameAudio.master) return false;
+        try {
+          const buffer = context.createBuffer(1, 1, context.sampleRate);
+          const source = context.createBufferSource();
+          const gain = context.createGain();
+          source.buffer = buffer;
+          gain.gain.value = .0001;
+          source.connect(gain);
+          gain.connect(gameAudio.master);
+          source.onended = () => {
+            try { source.disconnect(); } catch (_) {}
+            try { gain.disconnect(); } catch (_) {}
+          };
+          source.start(0);
+          gameAudio.primed = true;
+          return true;
+        } catch (_) {
+          return false;
+        }
       }
       function setMasterAudioLevel(enabled) {
         const context = gameAudio.context;
@@ -6622,9 +6663,9 @@
         noise.buffer = underwaterNoiseBuffer(context);
         noise.loop = true;
         noiseFilter.type = "lowpass";
-        noiseFilter.frequency.value = legend ? 390 : 520;
-        noiseFilter.Q.value = legend ? 2.1 : 1.35;
-        noiseGain.gain.value = legend ? .13 : .105;
+        noiseFilter.frequency.value = legend ? 740 : 980;
+        noiseFilter.Q.value = legend ? 1.65 : 1.15;
+        noiseGain.gain.value = legend ? .15 : .135;
         noise.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
         noiseGain.connect(layerGain);
@@ -6632,33 +6673,50 @@
         const hum = context.createOscillator();
         const humGain = context.createGain();
         hum.type = "sine";
-        hum.frequency.value = legend ? 42 : 58;
-        humGain.gain.value = legend ? .052 : .034;
+        hum.frequency.value = legend ? 88 : 128;
+        humGain.gain.value = legend ? .04 : .032;
         hum.connect(humGain);
         humGain.connect(layerGain);
 
         const current = context.createOscillator();
         const currentGain = context.createGain();
         current.type = "triangle";
-        current.frequency.value = legend ? 74 : 92;
-        currentGain.gain.value = legend ? .014 : .009;
+        current.frequency.value = legend ? 148 : 206;
+        currentGain.gain.value = legend ? .027 : .022;
         current.connect(currentGain);
         currentGain.connect(layerGain);
+
+        // Small phone speakers lose most sub-bass, so retain the deep bed but
+        // add a quiet mid-band harmonic that remains audible on mobile.
+        const presence = context.createOscillator();
+        const presenceGain = context.createGain();
+        presence.type = "sine";
+        presence.frequency.value = legend ? 232 : 318;
+        presenceGain.gain.value = legend ? .021 : .017;
+        presence.connect(presenceGain);
+        presenceGain.connect(layerGain);
 
         const lfo = context.createOscillator();
         const lfoGain = context.createGain();
         lfo.type = "sine";
         lfo.frequency.value = legend ? .1 : .14;
-        lfoGain.gain.value = legend ? .035 : .024;
+        lfoGain.gain.value = legend ? .042 : .03;
         lfo.connect(lfoGain);
         lfoGain.connect(noiseGain.gain);
 
-        for (const source of [noise, hum, current, lfo]) source.start(now);
+        for (const source of [noise, hum, current, presence, lfo]) source.start(now);
         gameAudio.lastBubbleAt = now - 1;
         gameAudio.underwater = {
           gain: layerGain,
-          sources: [noise, hum, current, lfo],
-          nodes: [noiseFilter, noiseGain, humGain, currentGain, lfoGain],
+          sources: [noise, hum, current, presence, lfo],
+          nodes: [
+            noiseFilter,
+            noiseGain,
+            humGain,
+            currentGain,
+            presenceGain,
+            lfoGain,
+          ],
         };
         return true;
       }
@@ -6763,10 +6821,10 @@
         gameAudio.lastBubbleAt = context.currentTime;
         const amount = Math.max(.4, Math.min(1.5, Number(strength) || 1));
         return scheduleAudioTone({
-          frequency: 250 + amount * 45,
-          endFrequency: 82 + amount * 18,
-          duration: .11 + amount * .025,
-          volume: .012 + amount * .006,
+          frequency: 620 + amount * 90,
+          endFrequency: 170 + amount * 34,
+          duration: .13 + amount * .03,
+          volume: .038 + amount * .012,
           type: "sine",
         });
       }
@@ -6774,16 +6832,24 @@
         if (!s.soundEnabled) return false;
         const splash = scheduleNoiseBurst({
           duration: .3,
-          volume: .095,
-          frequency: 920,
+          volume: .16,
+          frequency: 1450,
           filterType: "bandpass",
         });
         scheduleAudioTone({
-          frequency: 138,
-          endFrequency: 62,
+          frequency: 280,
+          endFrequency: 110,
           duration: .26,
-          volume: .035,
+          volume: .065,
           type: "sine",
+        });
+        scheduleAudioTone({
+          frequency: 760,
+          endFrequency: 260,
+          start: .035,
+          duration: .18,
+          volume: .055,
+          type: "triangle",
         });
         return splash;
       }
@@ -6791,14 +6857,14 @@
         if (!s.soundEnabled || !["giant", "nushi"].includes(kind)) return false;
         stopUnderwaterSound(.12);
         if (kind === "giant") {
-          scheduleNoiseBurst({ duration: .34, volume: .13, frequency: 760 });
+          scheduleNoiseBurst({ duration: .34, volume: .18, frequency: 1180 });
           [392, 523.25, 659.25, 783.99].forEach((frequency, index) =>
             scheduleAudioTone({
               frequency,
               endFrequency: frequency * 1.018,
               start: .06 + index * .105,
               duration: .34,
-              volume: .105,
+              volume: .145,
               type: "triangle",
             }),
           );
@@ -6807,21 +6873,21 @@
             endFrequency: 392,
             start: .08,
             duration: .7,
-            volume: .055,
+            volume: .08,
             type: "sine",
           });
         } else {
           scheduleNoiseBurst({
             duration: .68,
-            volume: .17,
-            frequency: 320,
+            volume: .2,
+            frequency: 520,
             filterType: "lowpass",
           });
           scheduleAudioTone({
-            frequency: 58,
-            endFrequency: 39,
+            frequency: 92,
+            endFrequency: 48,
             duration: 1.45,
-            volume: .14,
+            volume: .15,
             type: "sawtooth",
           });
           [196, 246.94, 293.66, 392, 523.25].forEach((frequency, index) =>
@@ -6830,12 +6896,35 @@
               endFrequency: frequency * 1.01,
               start: .18 + index * .14,
               duration: .58,
-              volume: .11,
+              volume: .14,
               type: index < 2 ? "triangle" : "sine",
             }),
           );
         }
         return true;
+      }
+      function playAudioReadySound() {
+        const drop = scheduleAudioTone({
+          frequency: 820,
+          endFrequency: 280,
+          duration: .17,
+          volume: .105,
+          type: "sine",
+        });
+        scheduleAudioTone({
+          frequency: 330,
+          endFrequency: 440,
+          start: .11,
+          duration: .19,
+          volume: .075,
+          type: "triangle",
+        });
+        return drop;
+      }
+      function flashSoundToggle() {
+        const button = $("#soundToggle");
+        button?.classList.add?.("audio-ready");
+        setTimeout(() => button?.classList.remove?.("audio-ready"), 420);
       }
       function renderSoundToggle() {
         const button = $("#soundToggle");
@@ -6850,21 +6939,46 @@
       function setSoundEnabled(enabled) {
         s.soundEnabled = Boolean(enabled);
         if (s.soundEnabled) {
-          ensureAudioContext();
-          setMasterAudioLevel(true);
+          unlockGameAudio({ announce: true });
           if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
         } else {
           stopUnderwaterSound(.06);
           setMasterAudioLevel(false);
+          gameAudio.unlocked = false;
         }
         renderSoundToggle();
         save();
         return s.soundEnabled;
       }
-      function unlockGameAudio() {
-        if (!s.soundEnabled) return;
-        ensureAudioContext();
-        setMasterAudioLevel(true);
+      function unlockGameAudio(options = null) {
+        if (!s.soundEnabled) return null;
+        const context = ensureAudioContext(false);
+        if (!context) return null;
+        primeAudioContext(context);
+        const announce = options?.announce === true;
+        const finishUnlock = () => {
+          if (context.state !== "running") return false;
+          gameAudio.unlocked = true;
+          setMasterAudioLevel(true);
+          if (announce || !gameAudio.readyCuePlayed) {
+            gameAudio.readyCuePlayed = true;
+            playAudioReadySound();
+            flashSoundToggle();
+          }
+          return true;
+        };
+        try {
+          if (context.state === "suspended") {
+            const resume = context.resume();
+            if (resume?.then) {
+              gameAudio.unlockPromise = resume
+                .then(finishUnlock)
+                .catch(() => false);
+            }
+          }
+        } catch (_) {}
+        finishUnlock();
+        return context;
       }
       function log(t) {
         s.log.unshift(t);
@@ -10953,8 +11067,15 @@
       document.querySelectorAll("[data-buy-vehicle]").forEach((button) =>
         button.onclick = () => buyVehicle(button.dataset.buyVehicle),
       );
-      addEventListener("pointerdown", unlockGameAudio, { passive: true });
-      addEventListener("keydown", unlockGameAudio);
+      addEventListener("pointerdown", unlockGameAudio, {
+        capture: true,
+        passive: true,
+      });
+      addEventListener("touchstart", unlockGameAudio, {
+        capture: true,
+        passive: true,
+      });
+      addEventListener("keydown", unlockGameAudio, { capture: true });
       addEventListener("keydown", (e) => {
         if ($("#catchCard").classList.contains("show")) {
           if (["z", "x", "Enter", "Escape"].includes(e.key))
@@ -10986,15 +11107,16 @@
         save();
         stopUnderwaterSound(.05);
         setMasterAudioLevel(false);
+        gameAudio.unlocked = false;
       });
       document.addEventListener("visibilitychange", () => {
         if (document.hidden) {
           save();
           stopUnderwaterSound(.05);
           setMasterAudioLevel(false);
+          gameAudio.unlocked = false;
         } else if (s.soundEnabled) {
-          ensureAudioContext();
-          setMasterAudioLevel(true);
+          unlockGameAudio();
           if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
         }
       });
