@@ -4560,7 +4560,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v89.1</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v89.2</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6562,6 +6562,8 @@
           underwater: null,
           noiseBuffer: null,
           lastBubbleAt: -10,
+          lastStrokeAt: -10,
+          nextGurgleAt: 0,
           primed: false,
           unlocked: false,
           readyCuePlayed: false,
@@ -6586,6 +6588,8 @@
             gameAudio.context = context;
             gameAudio.master = master;
             gameAudio.noiseBuffer = null;
+            gameAudio.lastStrokeAt = -10;
+            gameAudio.nextGurgleAt = 0;
             gameAudio.primed = false;
             gameAudio.unlocked = false;
             gameAudio.readyCuePlayed = false;
@@ -6646,7 +6650,33 @@
         gameAudio.noiseBuffer = buffer;
         return buffer;
       }
-      function startUnderwaterSound(fishId = "") {
+      function fishWaterWeight(
+        fishId = battle?.f?.id || "",
+        specimenScale = battle?.specimenVisualScale,
+        hasSpecimen = Boolean(battle?.specimen),
+      ) {
+        const speciesWeight = {
+          moroko: .65,
+          aji: .75,
+          funa: .95,
+          koi: 1.15,
+          kasago: 1.05,
+          nushi: 1.75,
+        }[fishId] || .9;
+        if (!hasSpecimen) return Math.max(.36, Math.min(1.8, speciesWeight));
+        const scale = Math.max(
+          FISH_VISUAL_MIN_SCALE,
+          Math.min(FISH_VISUAL_MAX_SCALE, Number(specimenScale) || 1),
+        );
+        const progress = (scale - FISH_VISUAL_MIN_SCALE) /
+          (FISH_VISUAL_MAX_SCALE - FISH_VISUAL_MIN_SCALE);
+        const sizeFactor = .6 + progress * .8;
+        return Math.max(.36, Math.min(1.8, speciesWeight * sizeFactor));
+      }
+      function startUnderwaterSound(
+        fishId = "",
+        waterWeight = fishWaterWeight(fishId),
+      ) {
         if (gameAudio.underwater || !s.soundEnabled) return false;
         const context = ensureAudioContext();
         if (!context || !gameAudio.master) return false;
@@ -6663,9 +6693,9 @@
         noise.buffer = underwaterNoiseBuffer(context);
         noise.loop = true;
         noiseFilter.type = "lowpass";
-        noiseFilter.frequency.value = legend ? 740 : 980;
-        noiseFilter.Q.value = legend ? 1.65 : 1.15;
-        noiseGain.gain.value = legend ? .15 : .135;
+        noiseFilter.frequency.value = legend ? 360 : 460;
+        noiseFilter.Q.value = legend ? 1.1 : .8;
+        noiseGain.gain.value = legend ? .032 : .026;
         noise.connect(noiseFilter);
         noiseFilter.connect(noiseGain);
         noiseGain.connect(layerGain);
@@ -6673,16 +6703,16 @@
         const hum = context.createOscillator();
         const humGain = context.createGain();
         hum.type = "sine";
-        hum.frequency.value = legend ? 88 : 128;
-        humGain.gain.value = legend ? .04 : .032;
+        hum.frequency.value = legend ? 72 : 104;
+        humGain.gain.value = legend ? .018 : .012;
         hum.connect(humGain);
         humGain.connect(layerGain);
 
         const current = context.createOscillator();
         const currentGain = context.createGain();
         current.type = "triangle";
-        current.frequency.value = legend ? 148 : 206;
-        currentGain.gain.value = legend ? .027 : .022;
+        current.frequency.value = legend ? 126 : 168;
+        currentGain.gain.value = legend ? .009 : .007;
         current.connect(currentGain);
         currentGain.connect(layerGain);
 
@@ -6691,23 +6721,26 @@
         const presence = context.createOscillator();
         const presenceGain = context.createGain();
         presence.type = "sine";
-        presence.frequency.value = legend ? 232 : 318;
-        presenceGain.gain.value = legend ? .021 : .017;
+        presence.frequency.value = legend ? 210 : 270;
+        presenceGain.gain.value = legend ? .006 : .005;
         presence.connect(presenceGain);
         presenceGain.connect(layerGain);
 
         const lfo = context.createOscillator();
         const lfoGain = context.createGain();
         lfo.type = "sine";
-        lfo.frequency.value = legend ? .1 : .14;
-        lfoGain.gain.value = legend ? .042 : .03;
+        lfo.frequency.value = legend ? .09 : .12;
+        lfoGain.gain.value = legend ? .016 : .012;
         lfo.connect(lfoGain);
         lfoGain.connect(noiseGain.gain);
 
         for (const source of [noise, hum, current, presence, lfo]) source.start(now);
         gameAudio.lastBubbleAt = now - 1;
+        gameAudio.lastStrokeAt = now - 1;
+        gameAudio.nextGurgleAt = now;
         gameAudio.underwater = {
           gain: layerGain,
+          weight: Math.max(.36, Math.min(1.8, Number(waterWeight) || 1)),
           sources: [noise, hum, current, presence, lfo],
           nodes: [
             noiseFilter,
@@ -6718,6 +6751,7 @@
             lfoGain,
           ],
         };
+        playUnderwaterGurgle(gameAudio.underwater.weight, true);
         return true;
       }
       function stopUnderwaterSound(fadeSeconds = .24) {
@@ -6750,6 +6784,8 @@
         duration = .3,
         volume = .1,
         type = "sine",
+        attack = .025,
+        release = 0,
       }) {
         const context = ensureAudioContext();
         if (!context || !gameAudio.master) return false;
@@ -6764,7 +6800,16 @@
           end,
         );
         gain.gain.setValueAtTime(.0001, when);
-        gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume), when + .025);
+        const peak = Math.max(.0001, volume);
+        const peakAt = Math.min(end - .01, when + Math.max(.006, attack));
+        gain.gain.exponentialRampToValueAtTime(peak, peakAt);
+        if (release > 0) {
+          const releaseAt = Math.max(
+            peakAt,
+            end - Math.max(.02, Math.min(duration * .7, release)),
+          );
+          gain.gain.setValueAtTime(peak * .88, releaseAt);
+        }
         gain.gain.exponentialRampToValueAtTime(.0001, end);
         oscillator.connect(gain);
         gain.connect(gameAudio.master);
@@ -6781,7 +6826,10 @@
         duration = .3,
         volume = .1,
         frequency = 700,
+        endFrequency = frequency,
         filterType = "bandpass",
+        attack = .02,
+        q = .85,
       } = {}) {
         const context = ensureAudioContext();
         if (!context || !gameAudio.master) return false;
@@ -6797,10 +6845,17 @@
         const end = when + Math.max(.03, duration);
         source.buffer = buffer;
         filter.type = filterType;
-        filter.frequency.value = frequency;
-        filter.Q.value = .85;
+        filter.frequency.setValueAtTime(Math.max(1, frequency), when);
+        filter.frequency.exponentialRampToValueAtTime(
+          Math.max(1, endFrequency),
+          end,
+        );
+        filter.Q.value = q;
         gain.gain.setValueAtTime(.0001, when);
-        gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume), when + .02);
+        gain.gain.exponentialRampToValueAtTime(
+          Math.max(.0001, volume),
+          Math.min(end - .01, when + Math.max(.006, attack)),
+        );
         gain.gain.exponentialRampToValueAtTime(.0001, end);
         source.connect(filter);
         filter.connect(gain);
@@ -6814,92 +6869,269 @@
         };
         return true;
       }
-      function playUnderwaterBubble(strength = 1) {
+      function playUnderwaterGurgle(
+        weight = gameAudio.underwater?.weight || fishWaterWeight(),
+        force = false,
+      ) {
         const context = gameAudio.context;
         if (!gameAudio.underwater || !context || !s.soundEnabled) return false;
-        if (context.currentTime - gameAudio.lastBubbleAt < .22) return false;
-        gameAudio.lastBubbleAt = context.currentTime;
-        const amount = Math.max(.4, Math.min(1.5, Number(strength) || 1));
-        return scheduleAudioTone({
-          frequency: 620 + amount * 90,
-          endFrequency: 170 + amount * 34,
-          duration: .13 + amount * .03,
-          volume: .038 + amount * .012,
-          type: "sine",
+        if (!force && context.currentTime < gameAudio.nextGurgleAt) return false;
+        const amount = Math.max(.36, Math.min(1.8, Number(weight) || 1));
+        gameAudio.nextGurgleAt = context.currentTime +
+          Math.max(.72, 1.22 + Math.random() * .72 - amount * .18);
+        const bubbleCount = amount >= 1.3 ? 3 : 2;
+        for (let i = 0; i < bubbleCount; i++) {
+          const start = .025 + i * (.085 + Math.random() * .035);
+          const frequency = Math.max(
+            180,
+            420 - amount * 92 + Math.random() * 46,
+          );
+          scheduleAudioTone({
+            frequency,
+            endFrequency: Math.max(62, 138 - amount * 32 + Math.random() * 18),
+            start,
+            duration: .16 + amount * .055 + i * .018,
+            volume: .026 + amount * .016,
+            type: "sine",
+            attack: .018,
+          });
+        }
+        scheduleNoiseBurst({
+          start: .015,
+          duration: .2 + amount * .07,
+          volume: .018 + amount * .01,
+          frequency: 390 - amount * 55,
+          endFrequency: 145 - amount * 22,
+          filterType: "lowpass",
+          attack: .035,
+          q: .7,
         });
+        return true;
       }
-      function playSurfaceSplashSound() {
-        if (!s.soundEnabled) return false;
-        const splash = scheduleNoiseBurst({
-          duration: .3,
-          volume: .16,
-          frequency: 1450,
+      function playFishWaterStroke(
+        weight = gameAudio.underwater?.weight || fishWaterWeight(),
+        speed = 1,
+        danger = false,
+      ) {
+        const context = gameAudio.context;
+        if (!gameAudio.underwater || !context || !s.soundEnabled) return false;
+        if (context.currentTime - gameAudio.lastStrokeAt < .13) return false;
+        gameAudio.lastStrokeAt = context.currentTime;
+        gameAudio.lastBubbleAt = context.currentTime;
+        const baseWeight = Math.max(.36, Math.min(1.8, Number(weight) || 1));
+        const effort = Math.max(
+          .78,
+          Math.min(1.45, .82 + Math.max(0, Number(speed) || 0) * .1 +
+            (danger ? .16 : 0)),
+        );
+        const amount = Math.max(.36, Math.min(1.9, baseWeight * effort));
+        gameAudio.nextGurgleAt = Math.max(
+          gameAudio.nextGurgleAt,
+          context.currentTime + .38,
+        );
+        const swish = scheduleNoiseBurst({
+          duration: .11 + amount * .14,
+          volume: .034 + amount * .052,
+          frequency: Math.max(520, 1580 - amount * 480),
+          endFrequency: Math.max(190, 520 - amount * 105),
           filterType: "bandpass",
+          attack: .018,
+          q: .62,
+        });
+        const bubbleCount = amount >= 1.35 ? 3 : amount >= .72 ? 2 : 1;
+        for (let i = 0; i < bubbleCount; i++) {
+          scheduleAudioTone({
+            frequency: Math.max(185, 520 - amount * 155 + i * 42),
+            endFrequency: Math.max(55, 165 - amount * 48 + i * 12),
+            start: .025 + i * .065,
+            duration: .13 + amount * .09 + i * .025,
+            volume: .027 + amount * .027,
+            type: "sine",
+            attack: .015,
+          });
+        }
+        if (amount >= 1.08) {
+          scheduleAudioTone({
+            frequency: Math.max(112, 205 - amount * 34),
+            endFrequency: Math.max(42, 78 - amount * 14),
+            start: .018,
+            duration: .22 + amount * .1,
+            volume: .028 + amount * .023,
+            type: "triangle",
+            attack: .025,
+          });
+        }
+        return swish;
+      }
+      function playUnderwaterBubble(strength = 1) {
+        return playFishWaterStroke(
+          Math.max(.36, Math.min(1.8, Number(strength) || 1)),
+        );
+      }
+      function playSurfaceSplashSound(weight = fishWaterWeight()) {
+        if (!s.soundEnabled) return false;
+        const amount = Math.max(.36, Math.min(1.8, Number(weight) || 1));
+        const splash = scheduleNoiseBurst({
+          duration: .34 + amount * .12,
+          volume: .14 + amount * .035,
+          frequency: Math.max(680, 1180 - amount * 185),
+          endFrequency: Math.max(220, 430 - amount * 75),
+          filterType: "bandpass",
+          attack: .018,
+          q: .55,
+        });
+        scheduleNoiseBurst({
+          start: .025,
+          duration: .42 + amount * .14,
+          volume: .095 + amount * .04,
+          frequency: Math.max(290, 560 - amount * 72),
+          endFrequency: 125,
+          filterType: "lowpass",
+          attack: .045,
+          q: .72,
+        });
+        scheduleNoiseBurst({
+          start: .07,
+          duration: .24 + amount * .06,
+          volume: .052 + amount * .018,
+          frequency: 1750,
+          endFrequency: 2650,
+          filterType: "highpass",
+          attack: .012,
+          q: .5,
         });
         scheduleAudioTone({
-          frequency: 280,
-          endFrequency: 110,
-          duration: .26,
-          volume: .065,
+          frequency: Math.max(175, 350 - amount * 66),
+          endFrequency: Math.max(48, 105 - amount * 24),
+          duration: .3 + amount * .11,
+          volume: .052 + amount * .027,
           type: "sine",
+          attack: .018,
         });
         scheduleAudioTone({
-          frequency: 760,
-          endFrequency: 260,
-          start: .035,
-          duration: .18,
-          volume: .055,
+          frequency: Math.max(360, 720 - amount * 105),
+          endFrequency: Math.max(105, 230 - amount * 46),
+          start: .055,
+          duration: .2 + amount * .055,
+          volume: .04 + amount * .015,
           type: "triangle",
+          attack: .014,
         });
         return splash;
+      }
+      function scheduleFanfareChord(
+        frequencies,
+        start,
+        duration,
+        volume,
+      ) {
+        for (const [index, frequency] of frequencies.entries()) {
+          scheduleAudioTone({
+            frequency,
+            endFrequency: frequency * 1.002,
+            start,
+            duration,
+            volume: volume * (index ? .72 : 1),
+            type: index === 0 ? "triangle" : "sine",
+            attack: .035,
+            release: Math.min(.22, duration * .36),
+          });
+        }
       }
       function playSpecialCatchSound(kind) {
         if (!s.soundEnabled || !["giant", "nushi"].includes(kind)) return false;
         stopUnderwaterSound(.12);
         if (kind === "giant") {
-          scheduleNoiseBurst({ duration: .34, volume: .18, frequency: 1180 });
-          [392, 523.25, 659.25, 783.99].forEach((frequency, index) =>
-            scheduleAudioTone({
-              frequency,
-              endFrequency: frequency * 1.018,
-              start: .06 + index * .105,
-              duration: .34,
-              volume: .145,
-              type: "triangle",
-            }),
-          );
-          scheduleAudioTone({
-            frequency: 196,
-            endFrequency: 392,
-            start: .08,
-            duration: .7,
-            volume: .08,
-            type: "sine",
+          scheduleNoiseBurst({
+            duration: .42,
+            volume: .12,
+            frequency: 1320,
+            endFrequency: 620,
+            filterType: "bandpass",
           });
+          [[392, .06], [523.25, .31], [659.25, .56], [783.99, .84]]
+            .forEach(([frequency, start], index) => scheduleAudioTone({
+              frequency,
+              endFrequency: frequency * 1.004,
+              start,
+              duration: index === 3 ? .72 : .34,
+              volume: .11,
+              type: "triangle",
+              attack: .026,
+              release: index === 3 ? .2 : .09,
+            }));
+          scheduleFanfareChord([392, 493.88, 587.33], .9, .72, .075);
         } else {
           scheduleNoiseBurst({
-            duration: .68,
-            volume: .2,
-            frequency: 520,
+            duration: .56,
+            volume: .11,
+            frequency: 310,
+            endFrequency: 92,
             filterType: "lowpass",
+            attack: .035,
           });
-          scheduleAudioTone({
-            frequency: 92,
-            endFrequency: 48,
-            duration: 1.45,
-            volume: .15,
-            type: "sawtooth",
-          });
-          [196, 246.94, 293.66, 392, 523.25].forEach((frequency, index) =>
+          const melody = [
+            [261.63, .08, .3],
+            [329.63, .36, .3],
+            [392, .64, .38],
+            [523.25, 1.02, .5],
+          ];
+          for (const [frequency, start, duration] of melody) {
             scheduleAudioTone({
               frequency,
-              endFrequency: frequency * 1.01,
-              start: .18 + index * .14,
-              duration: .58,
-              volume: .14,
-              type: index < 2 ? "triangle" : "sine",
-            }),
+              endFrequency: frequency * 1.003,
+              start,
+              duration,
+              volume: .105,
+              type: "triangle",
+              attack: .032,
+              release: .11,
+            });
+            scheduleAudioTone({
+              frequency: frequency * 2,
+              endFrequency: frequency * 2.002,
+              start: start + .008,
+              duration,
+              volume: .027,
+              type: "sine",
+              attack: .038,
+              release: .1,
+            });
+          }
+          scheduleAudioTone({
+            frequency: 130.81,
+            start: .08,
+            duration: .82,
+            volume: .06,
+            type: "triangle",
+            attack: .045,
+            release: .18,
+          });
+          scheduleAudioTone({
+            frequency: 196,
+            start: .64,
+            duration: .76,
+            volume: .055,
+            type: "triangle",
+            attack: .04,
+            release: .18,
+          });
+          scheduleFanfareChord(
+            [261.63, 329.63, 392, 523.25],
+            1.48,
+            1.18,
+            .105,
           );
+          scheduleNoiseBurst({
+            start: 1.43,
+            duration: .44,
+            volume: .065,
+            frequency: 2150,
+            endFrequency: 3200,
+            filterType: "highpass",
+            attack: .018,
+            q: .5,
+          });
         }
         return true;
       }
@@ -9219,6 +9451,7 @@
           f: null,
           specimen: null,
           specimenVisualScale: 1,
+          waterAudioWeight: 1,
           ten: 18,
           calm: false,
           x: 68,
@@ -10002,7 +10235,10 @@
             life: 15 + Math.floor(Math.random() * 12),
           });
         }
-        if (battle.tailKick) playUnderwaterBubble(1 + speed * .18);
+        const waterWeight = battle.waterAudioWeight || fishWaterWeight();
+        if (battle.tailKick)
+          playFishWaterStroke(waterWeight, speed, Boolean(mood?.danger));
+        else playUnderwaterGurgle(waterWeight);
         if (mood?.motion === "deep" && battle.y > 64 && waterFxState.tick % 2 === 0) {
           for (let i = 0; i < 3; i++) {
             waterFxState.silt.push({
@@ -10652,7 +10888,12 @@
         beginUnderwaterFromSurface();
         battle.phase = "fight";
         const f = battle.f;
-        startUnderwaterSound(f.id);
+        battle.waterAudioWeight = fishWaterWeight(
+          f.id,
+          battle.specimenVisualScale,
+          Boolean(battle.specimen),
+        );
+        startUnderwaterSound(f.id, battle.waterAudioWeight);
         battle.calmBoost = battle.practice
           ? 5
           : s.calmBonus > 1
@@ -10860,7 +11101,7 @@
           `M 150 48 Q 162 42 ${battle.surfaceX * 10} ${battle.surfaceY * 5}`,
         );
         showSurfaceSplash();
-        playSurfaceSplashSound();
+        playSurfaceSplashSound(battle.waterAudioWeight || fishWaterWeight());
         vibrate([80, 35, 80, 35, 150]);
         landingTimer = setTimeout(() => {
           if (battle?.phase === "landing") caught();
