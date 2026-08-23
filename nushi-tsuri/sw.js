@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v89-2-underwater-audio-86";
+const CACHE_NAME = "nushi-tsuri-v89-3-water-audio-87";
 const CORE_ASSETS = [
   "./",
   "./index.html",
