@@ -123,6 +123,17 @@
         box-shadow: 0 2px 0 #6c4025;
         font-size: inherit;
       }
+      .hud .sound-toggle {
+        min-width: 38px;
+        width: 38px;
+        padding-inline: 4px;
+        font-size: 1rem;
+        line-height: 1;
+      }
+      .hud .sound-toggle.muted {
+        opacity: .62;
+        filter: grayscale(1);
+      }
       .world {
         position: relative;
         min-height: 0;
@@ -4003,6 +4014,116 @@
           inset 0 0 52px #ffd65a2e,
           0 10px 30px #0009;
       }
+      .catch-card.special-giant {
+        border-color: #fff09b;
+        background:
+          radial-gradient(circle at 31% 46%, #ffe76863, transparent 35%),
+          radial-gradient(circle at 76% 38%, #ff9f3561, transparent 30%),
+          linear-gradient(135deg, #21130bfa, #5b3511fa 52%, #17101afa);
+        box-shadow:
+          inset 0 0 60px #fff1a13d,
+          inset 0 0 16px #ff9f4f55,
+          0 0 24px #ffd45d8c,
+          0 10px 30px #0009;
+        animation:
+          catch-screen-in .42s ease-out both,
+          giant-catch-aura 1.05s ease-in-out .42s infinite alternate;
+      }
+      .catch-card.special-nushi {
+        border-color: #fff3a5;
+        background:
+          radial-gradient(circle at 28% 45%, #ffd86670, transparent 34%),
+          radial-gradient(circle at 72% 42%, #b16cff6b, transparent 36%),
+          linear-gradient(135deg, #110b29fa, #44215cfa 52%, #130b24fa);
+        box-shadow:
+          inset 0 0 72px #ffd75c47,
+          inset 0 0 24px #c16dff55,
+          0 0 34px #ffe477a6,
+          0 10px 30px #0009;
+        animation:
+          catch-screen-in .52s ease-out both,
+          nushi-catch-aura 1.35s ease-in-out .52s infinite alternate;
+      }
+      .catch-special-fx {
+        position: absolute;
+        z-index: 1;
+        inset: 0;
+        opacity: 0;
+        pointer-events: none;
+        overflow: hidden;
+      }
+      .catch-card.special-giant .catch-special-fx,
+      .catch-card.special-nushi .catch-special-fx {
+        opacity: 1;
+      }
+      .catch-special-fx::before,
+      .catch-special-fx::after {
+        content: "";
+        position: absolute;
+        left: 31%;
+        top: 49%;
+        width: min(44vw, 330px);
+        aspect-ratio: 1;
+        border: 2px solid #fff1a9c7;
+        border-radius: 50%;
+        transform: translate(-50%, -50%) scale(.15);
+        opacity: 0;
+        animation: catch-special-ring 1.5s ease-out infinite;
+      }
+      .catch-special-fx::after {
+        border-color: #ffba66a8;
+        animation-delay: .52s;
+      }
+      .catch-card.special-nushi .catch-special-fx::before,
+      .catch-card.special-nushi .catch-special-fx::after {
+        border-width: 3px;
+        border-color: #fff5b8d9;
+        box-shadow: 0 0 18px #d991ff9c;
+      }
+      .catch-special-fx i {
+        position: absolute;
+        left: var(--spark-x);
+        top: var(--spark-y);
+        width: clamp(4px, .75vw, 8px);
+        aspect-ratio: 1;
+        border-radius: 50%;
+        background: #fff7bd;
+        box-shadow:
+          0 0 5px #fff,
+          0 0 13px #ffd85f;
+        opacity: 0;
+        transform: scale(.2) rotate(0deg);
+        animation: catch-special-spark 1.25s ease-in-out var(--spark-delay) infinite;
+      }
+      .catch-card.special-nushi .catch-special-fx i {
+        background: #fff;
+        box-shadow:
+          0 0 6px #fff,
+          0 0 15px #d98cff,
+          0 0 24px #ffe56f;
+      }
+      .catch-card.special-giant .catch-fish,
+      .catch-card.special-nushi .catch-fish {
+        filter:
+          hue-rotate(var(--fish-hue, 0deg))
+          brightness(1.24)
+          saturate(1.22)
+          drop-shadow(7px 9px 2px #020c15aa)
+          drop-shadow(0 0 12px #fff1a7c4);
+      }
+      .catch-card.special-nushi .catch-fish {
+        filter:
+          brightness(1.3)
+          saturate(1.3)
+          drop-shadow(8px 10px 2px #020615bb)
+          drop-shadow(0 0 18px #ffe778d1)
+          drop-shadow(0 0 28px #bd73ff8f);
+      }
+      .catch-card.special-giant .catch-copy,
+      .catch-card.special-nushi .catch-copy {
+        border-color: #fff0a7a8;
+        background: #181018d4;
+      }
       .catch-showcase {
         position: relative;
         min-width: 0;
@@ -4242,6 +4363,14 @@
           animation-duration: .001ms !important;
           animation-iteration-count: 1 !important;
         }
+        .catch-card.special-giant,
+        .catch-card.special-nushi,
+        .catch-special-fx::before,
+        .catch-special-fx::after,
+        .catch-special-fx i {
+          animation-duration: .001ms !important;
+          animation-iteration-count: 1 !important;
+        }
       }
       @keyframes line-quiver {
         50% { stroke-width: 2.4; opacity: 0.96; }
@@ -4319,6 +4448,22 @@
       @keyframes catch-screen-in {
         from { opacity: 0; filter: brightness(.45); }
         to { opacity: 1; filter: brightness(1); }
+      }
+      @keyframes giant-catch-aura {
+        to { box-shadow: inset 0 0 74px #fff1a153, 0 0 36px #ffd45da8, 0 10px 30px #0009; }
+      }
+      @keyframes nushi-catch-aura {
+        to { box-shadow: inset 0 0 90px #ffd75c5c, 0 0 48px #db91ffd1, 0 10px 30px #0009; }
+      }
+      @keyframes catch-special-ring {
+        0% { opacity: 0; transform: translate(-50%, -50%) scale(.15); }
+        18% { opacity: .9; }
+        100% { opacity: 0; transform: translate(-50%, -50%) scale(1.25); }
+      }
+      @keyframes catch-special-spark {
+        0%, 100% { opacity: 0; transform: scale(.2) rotate(0deg); }
+        35% { opacity: 1; transform: scale(1.35) rotate(90deg); }
+        62% { opacity: .82; transform: scale(.7) rotate(180deg); }
       }
       @keyframes catch-rig-swing {
         0% { transform: translateX(-50%) rotate(-3.5deg); }
@@ -4408,10 +4553,11 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v88</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v89</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
+        ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
         ><button id="itemMenuButton">道具</button
         ><button id="menu">記録</button>
       </header>
@@ -4617,6 +4763,16 @@
           </div>
         </div>
         <div class="catch-card" id="catchCard" aria-live="polite">
+          <div class="catch-special-fx" id="catchSpecialFx" aria-hidden="true">
+            <i style="--spark-x:10%;--spark-y:20%;--spark-delay:.05s"></i>
+            <i style="--spark-x:24%;--spark-y:70%;--spark-delay:.42s"></i>
+            <i style="--spark-x:38%;--spark-y:15%;--spark-delay:.22s"></i>
+            <i style="--spark-x:52%;--spark-y:78%;--spark-delay:.66s"></i>
+            <i style="--spark-x:65%;--spark-y:24%;--spark-delay:.34s"></i>
+            <i style="--spark-x:76%;--spark-y:66%;--spark-delay:.12s"></i>
+            <i style="--spark-x:88%;--spark-y:18%;--spark-delay:.58s"></i>
+            <i style="--spark-x:92%;--spark-y:82%;--spark-delay:.28s"></i>
+          </div>
           <div class="catch-showcase" aria-hidden="true">
             <div class="catch-rig">
               <i class="catch-line"></i>
@@ -5991,6 +6147,7 @@
             rescueAtMinutes: null,
             calmBonus: 0,
             practiceTutorialComplete: false,
+            soundEnabled: true,
             mapVersion: 49,
           },
           JSON.parse(localStorage.getItem(key) || "{}"),
@@ -6265,6 +6422,13 @@
         if (!s.sizeRecords || typeof s.sizeRecords !== "object") s.sizeRecords = {};
         s.mapVersion = 88;
       }
+      if ((s.mapVersion || 0) < 89) {
+        // v89 adds procedural sound and catch celebrations without external
+        // audio files. Existing progress stays intact and sound begins on.
+        if (typeof s.soundEnabled !== "boolean") s.soundEnabled = true;
+        s.mapVersion = 89;
+      }
+      s.soundEnabled = s.soundEnabled !== false;
       if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
           Array.isArray(s.sizeRecords)) s.sizeRecords = {};
       for (const [fishId, record] of Object.entries(s.sizeRecords)) {
@@ -6383,6 +6547,324 @@
       }
       function vibrate(pattern) {
         try { navigator.vibrate?.(pattern); } catch (_) {}
+      }
+      const GAME_AUDIO_MASTER_LEVEL = .28,
+        gameAudio = {
+          context: null,
+          master: null,
+          underwater: null,
+          noiseBuffer: null,
+          lastBubbleAt: -10,
+        };
+      function ensureAudioContext() {
+        if (!s.soundEnabled) return null;
+        let context = gameAudio.context;
+        if (!context || context.state === "closed") {
+          const AudioContextClass = globalThis.AudioContext ||
+            globalThis.webkitAudioContext;
+          if (!AudioContextClass) return null;
+          try {
+            context = new AudioContextClass();
+            const master = context.createGain();
+            master.gain.value = GAME_AUDIO_MASTER_LEVEL;
+            master.connect(context.destination);
+            gameAudio.context = context;
+            gameAudio.master = master;
+            gameAudio.noiseBuffer = null;
+          } catch (_) {
+            return null;
+          }
+        }
+        if (context.state === "suspended") context.resume().catch(() => {});
+        return context;
+      }
+      function setMasterAudioLevel(enabled) {
+        const context = gameAudio.context;
+        const master = gameAudio.master;
+        if (!context || !master) return;
+        const now = context.currentTime;
+        const target = enabled ? GAME_AUDIO_MASTER_LEVEL : .0001;
+        master.gain.cancelScheduledValues(now);
+        master.gain.setValueAtTime(
+          Math.max(.0001, Number(master.gain.value) || .0001),
+          now,
+        );
+        master.gain.linearRampToValueAtTime(target, now + .08);
+      }
+      function underwaterNoiseBuffer(context) {
+        if (gameAudio.noiseBuffer) return gameAudio.noiseBuffer;
+        const length = Math.max(1, Math.floor(context.sampleRate * 2));
+        const buffer = context.createBuffer(1, length, context.sampleRate);
+        const data = buffer.getChannelData(0);
+        let current = 0;
+        for (let i = 0; i < length; i++) {
+          const white = Math.random() * 2 - 1;
+          current = (current + white * .055) / 1.045;
+          data[i] = Math.max(-1, Math.min(1, current * 3.1));
+        }
+        gameAudio.noiseBuffer = buffer;
+        return buffer;
+      }
+      function startUnderwaterSound(fishId = "") {
+        if (gameAudio.underwater || !s.soundEnabled) return false;
+        const context = ensureAudioContext();
+        if (!context || !gameAudio.master) return false;
+        const legend = fishId === "nushi";
+        const now = context.currentTime;
+        const layerGain = context.createGain();
+        layerGain.gain.setValueAtTime(.0001, now);
+        layerGain.gain.exponentialRampToValueAtTime(1, now + .55);
+        layerGain.connect(gameAudio.master);
+
+        const noise = context.createBufferSource();
+        const noiseFilter = context.createBiquadFilter();
+        const noiseGain = context.createGain();
+        noise.buffer = underwaterNoiseBuffer(context);
+        noise.loop = true;
+        noiseFilter.type = "lowpass";
+        noiseFilter.frequency.value = legend ? 390 : 520;
+        noiseFilter.Q.value = legend ? 2.1 : 1.35;
+        noiseGain.gain.value = legend ? .13 : .105;
+        noise.connect(noiseFilter);
+        noiseFilter.connect(noiseGain);
+        noiseGain.connect(layerGain);
+
+        const hum = context.createOscillator();
+        const humGain = context.createGain();
+        hum.type = "sine";
+        hum.frequency.value = legend ? 42 : 58;
+        humGain.gain.value = legend ? .052 : .034;
+        hum.connect(humGain);
+        humGain.connect(layerGain);
+
+        const current = context.createOscillator();
+        const currentGain = context.createGain();
+        current.type = "triangle";
+        current.frequency.value = legend ? 74 : 92;
+        currentGain.gain.value = legend ? .014 : .009;
+        current.connect(currentGain);
+        currentGain.connect(layerGain);
+
+        const lfo = context.createOscillator();
+        const lfoGain = context.createGain();
+        lfo.type = "sine";
+        lfo.frequency.value = legend ? .1 : .14;
+        lfoGain.gain.value = legend ? .035 : .024;
+        lfo.connect(lfoGain);
+        lfoGain.connect(noiseGain.gain);
+
+        for (const source of [noise, hum, current, lfo]) source.start(now);
+        gameAudio.lastBubbleAt = now - 1;
+        gameAudio.underwater = {
+          gain: layerGain,
+          sources: [noise, hum, current, lfo],
+          nodes: [noiseFilter, noiseGain, humGain, currentGain, lfoGain],
+        };
+        return true;
+      }
+      function stopUnderwaterSound(fadeSeconds = .24) {
+        const layer = gameAudio.underwater;
+        const context = gameAudio.context;
+        if (!layer || !context) return false;
+        gameAudio.underwater = null;
+        const now = context.currentTime;
+        const fade = Math.max(.03, Number(fadeSeconds) || .03);
+        layer.gain.gain.cancelScheduledValues(now);
+        layer.gain.gain.setValueAtTime(
+          Math.max(.0001, Number(layer.gain.gain.value) || 1),
+          now,
+        );
+        layer.gain.gain.exponentialRampToValueAtTime(.0001, now + fade);
+        for (const source of layer.sources) {
+          try { source.stop(now + fade + .04); } catch (_) {}
+        }
+        setTimeout(() => {
+          for (const node of [...layer.sources, ...layer.nodes, layer.gain]) {
+            try { node.disconnect(); } catch (_) {}
+          }
+        }, Math.ceil((fade + .12) * 1000));
+        return true;
+      }
+      function scheduleAudioTone({
+        frequency,
+        endFrequency = frequency,
+        start = 0,
+        duration = .3,
+        volume = .1,
+        type = "sine",
+      }) {
+        const context = ensureAudioContext();
+        if (!context || !gameAudio.master) return false;
+        const when = context.currentTime + Math.max(0, start);
+        const end = when + Math.max(.03, duration);
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = type;
+        oscillator.frequency.setValueAtTime(Math.max(1, frequency), when);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          Math.max(1, endFrequency),
+          end,
+        );
+        gain.gain.setValueAtTime(.0001, when);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume), when + .025);
+        gain.gain.exponentialRampToValueAtTime(.0001, end);
+        oscillator.connect(gain);
+        gain.connect(gameAudio.master);
+        oscillator.start(when);
+        oscillator.stop(end + .04);
+        oscillator.onended = () => {
+          try { oscillator.disconnect(); } catch (_) {}
+          try { gain.disconnect(); } catch (_) {}
+        };
+        return true;
+      }
+      function scheduleNoiseBurst({
+        start = 0,
+        duration = .3,
+        volume = .1,
+        frequency = 700,
+        filterType = "bandpass",
+      } = {}) {
+        const context = ensureAudioContext();
+        if (!context || !gameAudio.master) return false;
+        const sampleCount = Math.max(1, Math.floor(context.sampleRate * duration));
+        const buffer = context.createBuffer(1, sampleCount, context.sampleRate);
+        const data = buffer.getChannelData(0);
+        for (let i = 0; i < sampleCount; i++)
+          data[i] = (Math.random() * 2 - 1) * (1 - i / sampleCount);
+        const source = context.createBufferSource();
+        const filter = context.createBiquadFilter();
+        const gain = context.createGain();
+        const when = context.currentTime + Math.max(0, start);
+        const end = when + Math.max(.03, duration);
+        source.buffer = buffer;
+        filter.type = filterType;
+        filter.frequency.value = frequency;
+        filter.Q.value = .85;
+        gain.gain.setValueAtTime(.0001, when);
+        gain.gain.exponentialRampToValueAtTime(Math.max(.0001, volume), when + .02);
+        gain.gain.exponentialRampToValueAtTime(.0001, end);
+        source.connect(filter);
+        filter.connect(gain);
+        gain.connect(gameAudio.master);
+        source.start(when);
+        source.stop(end + .04);
+        source.onended = () => {
+          for (const node of [source, filter, gain]) {
+            try { node.disconnect(); } catch (_) {}
+          }
+        };
+        return true;
+      }
+      function playUnderwaterBubble(strength = 1) {
+        const context = gameAudio.context;
+        if (!gameAudio.underwater || !context || !s.soundEnabled) return false;
+        if (context.currentTime - gameAudio.lastBubbleAt < .22) return false;
+        gameAudio.lastBubbleAt = context.currentTime;
+        const amount = Math.max(.4, Math.min(1.5, Number(strength) || 1));
+        return scheduleAudioTone({
+          frequency: 250 + amount * 45,
+          endFrequency: 82 + amount * 18,
+          duration: .11 + amount * .025,
+          volume: .012 + amount * .006,
+          type: "sine",
+        });
+      }
+      function playSurfaceSplashSound() {
+        if (!s.soundEnabled) return false;
+        const splash = scheduleNoiseBurst({
+          duration: .3,
+          volume: .095,
+          frequency: 920,
+          filterType: "bandpass",
+        });
+        scheduleAudioTone({
+          frequency: 138,
+          endFrequency: 62,
+          duration: .26,
+          volume: .035,
+          type: "sine",
+        });
+        return splash;
+      }
+      function playSpecialCatchSound(kind) {
+        if (!s.soundEnabled || !["giant", "nushi"].includes(kind)) return false;
+        stopUnderwaterSound(.12);
+        if (kind === "giant") {
+          scheduleNoiseBurst({ duration: .34, volume: .13, frequency: 760 });
+          [392, 523.25, 659.25, 783.99].forEach((frequency, index) =>
+            scheduleAudioTone({
+              frequency,
+              endFrequency: frequency * 1.018,
+              start: .06 + index * .105,
+              duration: .34,
+              volume: .105,
+              type: "triangle",
+            }),
+          );
+          scheduleAudioTone({
+            frequency: 196,
+            endFrequency: 392,
+            start: .08,
+            duration: .7,
+            volume: .055,
+            type: "sine",
+          });
+        } else {
+          scheduleNoiseBurst({
+            duration: .68,
+            volume: .17,
+            frequency: 320,
+            filterType: "lowpass",
+          });
+          scheduleAudioTone({
+            frequency: 58,
+            endFrequency: 39,
+            duration: 1.45,
+            volume: .14,
+            type: "sawtooth",
+          });
+          [196, 246.94, 293.66, 392, 523.25].forEach((frequency, index) =>
+            scheduleAudioTone({
+              frequency,
+              endFrequency: frequency * 1.01,
+              start: .18 + index * .14,
+              duration: .58,
+              volume: .11,
+              type: index < 2 ? "triangle" : "sine",
+            }),
+          );
+        }
+        return true;
+      }
+      function renderSoundToggle() {
+        const button = $("#soundToggle");
+        if (!button) return;
+        const enabled = s.soundEnabled !== false;
+        button.textContent = enabled ? "🔊" : "🔇";
+        button.classList.toggle("muted", !enabled);
+        button.setAttribute("aria-pressed", String(enabled));
+        button.setAttribute("aria-label", enabled ? "音を切る" : "音を入れる");
+        button.title = enabled ? "音を切る" : "音を入れる";
+      }
+      function setSoundEnabled(enabled) {
+        s.soundEnabled = Boolean(enabled);
+        if (s.soundEnabled) {
+          ensureAudioContext();
+          setMasterAudioLevel(true);
+          if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
+        } else {
+          stopUnderwaterSound(.06);
+          setMasterAudioLevel(false);
+        }
+        renderSoundToggle();
+        save();
+        return s.soundEnabled;
+      }
+      function unlockGameAudio() {
+        if (!s.soundEnabled) return;
+        ensureAudioContext();
+        setMasterAudioLevel(true);
       }
       function log(t) {
         s.log.unshift(t);
@@ -7695,6 +8177,7 @@
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = gameClockLabel(s.gameMinutes);
+        renderSoundToggle();
         renderIdleStatus();
         const practiceComplete = Boolean(s.practiceTutorialComplete);
         $("#practiceOfferStatus").textContent = practiceComplete
@@ -9405,6 +9888,7 @@
             life: 15 + Math.floor(Math.random() * 12),
           });
         }
+        if (battle.tailKick) playUnderwaterBubble(1 + speed * .18);
         if (mood?.motion === "deep" && battle.y > 64 && waterFxState.tick % 2 === 0) {
           for (let i = 0; i < 3; i++) {
             waterFxState.silt.push({
@@ -9587,7 +10071,14 @@
         clearInterval(catchAnimationTimer);
         catchAnimationTimer = 0;
         catchAnimationStep = 0;
-        $("#catchCard").classList.remove("show", "legend");
+        const card = $("#catchCard");
+        card.classList.remove(
+          "show",
+          "legend",
+          "special-giant",
+          "special-nushi",
+        );
+        delete card.dataset.specialCatch;
         scheduleIdleStatus(450);
       }
       function renderCatchFishLife(f, step) {
@@ -9650,6 +10141,11 @@
         hideIdleStatus();
         const card = $("#catchCard");
         const hangingFish = $("#catchFish");
+        const specialCatch = f.id === "nushi"
+          ? "nushi"
+          : specimen?.tierId === "giant"
+            ? "giant"
+            : "";
         $("#catchBadge").textContent = badgeOverride ||
           (f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!");
         $("#catchTitle").textContent = f.name;
@@ -9666,12 +10162,28 @@
         );
         hangingFish.dataset.specimenScale = specimenScale.toFixed(3);
         startCatchFishLife(f);
-        card.classList.remove("show", "legend");
+        card.classList.remove(
+          "show",
+          "legend",
+          "special-giant",
+          "special-nushi",
+        );
         void card.offsetWidth;
         card.classList.toggle("legend", f.id === "nushi");
+        card.classList.toggle("special-giant", specialCatch === "giant");
+        card.classList.toggle("special-nushi", specialCatch === "nushi");
+        card.dataset.specialCatch = specialCatch || "normal";
         card.classList.add("show");
-        vibrate(f.id === "nushi" ? [80, 45, 80, 45, 180] : [70, 40, 120]);
-        catchTimer = setTimeout(hideCatchCard, 5200);
+        if (specialCatch) playSpecialCatchSound(specialCatch);
+        vibrate(specialCatch === "nushi"
+          ? [90, 40, 90, 40, 90, 55, 220]
+          : specialCatch === "giant"
+            ? [70, 35, 70, 35, 160]
+            : [70, 40, 120]);
+        catchTimer = setTimeout(
+          hideCatchCard,
+          specialCatch === "nushi" ? 7000 : specialCatch === "giant" ? 6200 : 5200,
+        );
       }
       function renderBattleFish() {
         const element = $("#battleFish");
@@ -10026,6 +10538,7 @@
         beginUnderwaterFromSurface();
         battle.phase = "fight";
         const f = battle.f;
+        startUnderwaterSound(f.id);
         battle.calmBoost = battle.practice
           ? 5
           : s.calmBonus > 1
@@ -10189,6 +10702,7 @@
         if (!battle || battle.phase !== "fight") return;
         battle.phase = "landing";
         battle.reeling = false;
+        stopUnderwaterSound(.42);
         clearTimeout(landingTimer);
         const scene = $("#fishScene");
         finishHookReveal();
@@ -10232,6 +10746,7 @@
           `M 150 48 Q 162 42 ${battle.surfaceX * 10} ${battle.surfaceY * 5}`,
         );
         showSurfaceSplash();
+        playSurfaceSplashSound();
         vibrate([80, 35, 80, 35, 150]);
         landingTimer = setTimeout(() => {
           if (battle?.phase === "landing") caught();
@@ -10320,6 +10835,7 @@
         clearInterval(timer);
         clearTimeout(landingTimer);
         landingTimer = 0;
+        stopUnderwaterSound(.14);
         battle = null;
         resetBattleFeedback();
         clearWaterFx();
@@ -10400,6 +10916,7 @@
         b.onlostpointercapture = stopMoving;
       });
       $("#catchClose").onclick = hideCatchCard;
+      $("#soundToggle").onclick = () => setSoundEnabled(!s.soundEnabled);
       $("#action").onclick = action;
       $("#back").onclick = close;
       $("#itemMenuButton").onclick = openInventory;
@@ -10436,6 +10953,8 @@
       document.querySelectorAll("[data-buy-vehicle]").forEach((button) =>
         button.onclick = () => buyVehicle(button.dataset.buyVehicle),
       );
+      addEventListener("pointerdown", unlockGameAudio, { passive: true });
+      addEventListener("keydown", unlockGameAudio);
       addEventListener("keydown", (e) => {
         if ($("#catchCard").classList.contains("show")) {
           if (["z", "x", "Enter", "Escape"].includes(e.key))
@@ -10463,9 +10982,21 @@
         }
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
-      addEventListener("pagehide", save);
+      addEventListener("pagehide", () => {
+        save();
+        stopUnderwaterSound(.05);
+        setMasterAudioLevel(false);
+      });
       document.addEventListener("visibilitychange", () => {
-        if (document.hidden) save();
+        if (document.hidden) {
+          save();
+          stopUnderwaterSound(.05);
+          setMasterAudioLevel(false);
+        } else if (s.soundEnabled) {
+          ensureAudioContext();
+          setMasterAudioLevel(true);
+          if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
+        }
       });
       setInterval(() => {
         dogAnimFrame++;
