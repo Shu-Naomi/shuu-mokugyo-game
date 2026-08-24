@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v89-3-water-audio-87";
+const CACHE_NAME = "nushi-tsuri-v90-sampled-audio-88";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -76,6 +76,16 @@ const CORE_ASSETS = [
   "./assets/fish-kasago-turn-v70.png",
   "./assets/fish-nushi-mouth-v68.png",
   "./assets/fish-nushi-turn-v70.png",
+  "./assets/audio/underwater-loop.mp3",
+  "./assets/audio/fish-swim-small.mp3",
+  "./assets/audio/fish-swim-medium.mp3",
+  "./assets/audio/fish-swim-large.mp3",
+  "./assets/audio/cast-lake-pond.mp3",
+  "./assets/audio/cast-river.mp3",
+  "./assets/audio/cast-sea-beach.mp3",
+  "./assets/audio/cast-sea-harbor.mp3",
+  "./assets/audio/dog-bark-before-dig.mp3",
+  "./assets/audio/dog-dig.mp3",
   "./assets/terrain-water-v45.svg",
   "./assets/terrain-grass-v45.svg",
   "./assets/terrain-sand-v45.svg",

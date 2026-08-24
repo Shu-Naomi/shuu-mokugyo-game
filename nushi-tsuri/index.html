@@ -4560,7 +4560,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v89.3</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v90</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6556,16 +6556,69 @@
         try { navigator.vibrate?.(pattern); } catch (_) {}
       }
       const GAME_AUDIO_MASTER_LEVEL = .48,
+        DOG_BARK_LEAD_MS = 620,
+        DOG_DIG_DURATION_MS = 3700,
+        GAME_AUDIO_ASSETS = Object.freeze({
+          underwater: {
+            src: "assets/audio/underwater-loop.mp3",
+            volume: .52,
+            loop: true,
+          },
+          swimSmall: {
+            src: "assets/audio/fish-swim-small.mp3",
+            volume: .76,
+          },
+          swimMedium: {
+            src: "assets/audio/fish-swim-medium.mp3",
+            volume: .64,
+          },
+          swimLarge: {
+            src: "assets/audio/fish-swim-large.mp3",
+            volume: .68,
+          },
+          castLake: {
+            src: "assets/audio/cast-lake-pond.mp3",
+            volume: .88,
+            loop: true,
+          },
+          castRiver: {
+            src: "assets/audio/cast-river.mp3",
+            volume: .38,
+            loop: true,
+          },
+          castBeach: {
+            src: "assets/audio/cast-sea-beach.mp3",
+            volume: .58,
+            loop: true,
+          },
+          castHarbor: {
+            src: "assets/audio/cast-sea-harbor.mp3",
+            volume: .76,
+            loop: true,
+          },
+          dogBark: {
+            src: "assets/audio/dog-bark-before-dig.mp3",
+            volume: .78,
+          },
+          dogDig: {
+            src: "assets/audio/dog-dig.mp3",
+            volume: .92,
+          },
+        }),
+        CASTING_AUDIO_IDS = Object.freeze([
+          "castLake",
+          "castRiver",
+          "castBeach",
+          "castHarbor",
+        ]),
         gameAudio = {
           context: null,
           master: null,
+          media: Object.create(null),
           surface: null,
           underwater: null,
-          noiseBuffer: null,
           lastBubbleAt: -10,
           lastStrokeAt: -10,
-          nextGurgleAt: 0,
-          gurgleTimer: 0,
           primed: false,
           unlocked: false,
           readyCuePlayed: false,
@@ -6579,10 +6632,6 @@
             globalThis.webkitAudioContext;
           if (!AudioContextClass) return null;
           try {
-            if (gameAudio.gurgleTimer) {
-              try { globalThis.clearTimeout?.(gameAudio.gurgleTimer); } catch (_) {}
-              gameAudio.gurgleTimer = 0;
-            }
             try {
               context = new AudioContextClass({ latencyHint: "interactive" });
             } catch (_) {
@@ -6595,10 +6644,7 @@
             gameAudio.master = master;
             gameAudio.surface = null;
             gameAudio.underwater = null;
-            gameAudio.noiseBuffer = null;
             gameAudio.lastStrokeAt = -10;
-            gameAudio.nextGurgleAt = 0;
-            gameAudio.gurgleTimer = 0;
             gameAudio.primed = false;
             gameAudio.unlocked = false;
             gameAudio.readyCuePlayed = false;
@@ -6645,157 +6691,101 @@
         );
         master.gain.linearRampToValueAtTime(target, now + .08);
       }
-      function underwaterNoiseBuffer(context) {
-        if (gameAudio.noiseBuffer) return gameAudio.noiseBuffer;
-        const length = Math.max(1, Math.floor(context.sampleRate * 2));
-        const buffer = context.createBuffer(1, length, context.sampleRate);
-        const data = buffer.getChannelData(0);
-        let current = 0;
-        for (let i = 0; i < length; i++) {
-          const white = Math.random() * 2 - 1;
-          current = (current + white * .055) / 1.045;
-          data[i] = Math.max(-1, Math.min(1, current * 3.1));
+      function gameAudioSample(id) {
+        const spec = GAME_AUDIO_ASSETS[id];
+        if (!spec) return null;
+        if (gameAudio.media[id]) return gameAudio.media[id];
+        const AudioClass = globalThis.Audio;
+        if (!AudioClass) return null;
+        try {
+          const sample = new AudioClass(spec.src);
+          sample.preload = "auto";
+          sample.loop = Boolean(spec.loop);
+          sample.volume = Math.max(0, Math.min(1, Number(spec.volume) || 1));
+          sample.setAttribute?.("playsinline", "");
+          gameAudio.media[id] = sample;
+          return sample;
+        } catch (_) {
+          return null;
         }
-        gameAudio.noiseBuffer = buffer;
-        return buffer;
       }
-      function stopLoopingAudioLayer(layerName, fadeSeconds = .24) {
-        const layer = gameAudio[layerName];
-        const context = gameAudio.context;
-        if (!layer || !context) return false;
-        gameAudio[layerName] = null;
-        const now = context.currentTime;
-        const fade = Math.max(.03, Number(fadeSeconds) || .03);
-        layer.gain.gain.cancelScheduledValues(now);
-        layer.gain.gain.setValueAtTime(
-          Math.max(.0001, Number(layer.gain.gain.value) || 1),
-          now,
-        );
-        layer.gain.gain.exponentialRampToValueAtTime(.0001, now + fade);
-        for (const source of layer.sources) {
-          try { source.stop(now + fade + .04); } catch (_) {}
+      function preloadGameAudioSamples() {
+        for (const id of Object.keys(GAME_AUDIO_ASSETS)) {
+          const sample = gameAudioSample(id);
+          try { sample?.load?.(); } catch (_) {}
         }
-        setTimeout(() => {
-          for (const node of [...layer.sources, ...layer.nodes, layer.gain]) {
-            try { node.disconnect(); } catch (_) {}
-          }
-        }, Math.ceil((fade + .12) * 1000));
+      }
+      function playGameAudioSample(
+        id,
+        { restart = true, volume = null, loop = null } = {},
+      ) {
+        if (!s.soundEnabled) return false;
+        const spec = GAME_AUDIO_ASSETS[id];
+        const sample = gameAudioSample(id);
+        if (!spec || !sample) return false;
+        if (!restart && !sample.paused && !sample.ended) return false;
+        try {
+          if (restart || sample.ended) sample.currentTime = 0;
+          sample.loop = loop === null ? Boolean(spec.loop) : Boolean(loop);
+          sample.volume = Math.max(
+            0,
+            Math.min(1, volume === null ? spec.volume : Number(volume)),
+          );
+          const playing = sample.play();
+          playing?.catch?.(() => {});
+          return true;
+        } catch (_) {
+          return false;
+        }
+      }
+      function stopGameAudioSample(id, { reset = true } = {}) {
+        const sample = gameAudio.media[id];
+        if (!sample) return false;
+        try { sample.pause(); } catch (_) {}
+        if (reset) {
+          try { sample.currentTime = 0; } catch (_) {}
+        }
         return true;
       }
-      function startCastingWaterSound(zone = battle?.waterZone || "lake") {
+      function stopAllGameAudioSamples() {
+        let stopped = false;
+        for (const id of Object.keys(gameAudio.media))
+          stopped = stopGameAudioSample(id) || stopped;
+        gameAudio.surface = null;
+        gameAudio.underwater = null;
+        return stopped;
+      }
+      function castingWaterSampleId(
+        zone = battle?.waterZone || "lake",
+        locale = battle?.castLocale,
+      ) {
+        if (zone === "river") return "castRiver";
+        if (zone === "sea")
+          return locale === "harbor" ? "castHarbor" : "castBeach";
+        return "castLake";
+      }
+      function startCastingWaterSound(
+        zone = battle?.waterZone || "lake",
+        locale = battle?.castLocale,
+      ) {
         if (!s.soundEnabled || gameAudio.underwater) return false;
-        if (gameAudio.surface?.zone === zone) return false;
-        if (gameAudio.surface) stopLoopingAudioLayer("surface", .08);
-        const context = ensureAudioContext();
-        if (!context || !gameAudio.master) return false;
-        const profile = {
-          lake: {
-            filter: 880,
-            noise: .075,
-            hum: 126,
-            humGain: .018,
-            current: 204,
-            currentGain: .015,
-            presence: 310,
-            presenceGain: .01,
-            lfo: .17,
-            lfoGain: .026,
-          },
-          river: {
-            filter: 1120,
-            noise: .095,
-            hum: 142,
-            humGain: .016,
-            current: 230,
-            currentGain: .017,
-            presence: 350,
-            presenceGain: .012,
-            lfo: .21,
-            lfoGain: .03,
-          },
-          sea: {
-            filter: 720,
-            noise: .085,
-            hum: 96,
-            humGain: .022,
-            current: 174,
-            currentGain: .014,
-            presence: 270,
-            presenceGain: .009,
-            lfo: .12,
-            lfoGain: .024,
-          },
-        }[zone] || null;
-        if (!profile) return false;
-        const now = context.currentTime;
-        const layerGain = context.createGain();
-        layerGain.gain.setValueAtTime(.0001, now);
-        layerGain.gain.exponentialRampToValueAtTime(1, now + .7);
-        layerGain.connect(gameAudio.master);
-
-        const noise = context.createBufferSource();
-        const noiseFilter = context.createBiquadFilter();
-        const noiseGain = context.createGain();
-        noise.buffer = underwaterNoiseBuffer(context);
-        noise.loop = true;
-        noiseFilter.type = "lowpass";
-        noiseFilter.frequency.value = profile.filter;
-        noiseFilter.Q.value = .9;
-        noiseGain.gain.value = profile.noise;
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(layerGain);
-
-        const hum = context.createOscillator();
-        const humGain = context.createGain();
-        hum.type = "sine";
-        hum.frequency.value = profile.hum;
-        humGain.gain.value = profile.humGain;
-        hum.connect(humGain);
-        humGain.connect(layerGain);
-
-        const current = context.createOscillator();
-        const currentGain = context.createGain();
-        current.type = "triangle";
-        current.frequency.value = profile.current;
-        currentGain.gain.value = profile.currentGain;
-        current.connect(currentGain);
-        currentGain.connect(layerGain);
-
-        const presence = context.createOscillator();
-        const presenceGain = context.createGain();
-        presence.type = "sine";
-        presence.frequency.value = profile.presence;
-        presenceGain.gain.value = profile.presenceGain;
-        presence.connect(presenceGain);
-        presenceGain.connect(layerGain);
-
-        const lfo = context.createOscillator();
-        const lfoGain = context.createGain();
-        lfo.type = "sine";
-        lfo.frequency.value = profile.lfo;
-        lfoGain.gain.value = profile.lfoGain;
-        lfo.connect(lfoGain);
-        lfoGain.connect(noiseGain.gain);
-
-        for (const source of [noise, hum, current, presence, lfo]) source.start(now);
-        gameAudio.surface = {
-          zone,
-          gain: layerGain,
-          sources: [noise, hum, current, presence, lfo],
-          nodes: [
-            noiseFilter,
-            noiseGain,
-            humGain,
-            currentGain,
-            presenceGain,
-            lfoGain,
-          ],
-        };
-        return true;
+        const sampleId = castingWaterSampleId(zone, locale);
+        const activeSample = gameAudio.media[sampleId];
+        if (gameAudio.surface?.sampleId === sampleId &&
+          activeSample && !activeSample.paused)
+          return false;
+        stopCastingWaterSound();
+        ensureAudioContext();
+        const played = playGameAudioSample(sampleId, { restart: true });
+        if (played) gameAudio.surface = { sampleId, zone, locale };
+        return played;
       }
-      function stopCastingWaterSound(fadeSeconds = .3) {
-        return stopLoopingAudioLayer("surface", fadeSeconds);
+      function stopCastingWaterSound() {
+        let stopped = false;
+        for (const id of CASTING_AUDIO_IDS)
+          stopped = stopGameAudioSample(id) || stopped;
+        gameAudio.surface = null;
+        return stopped;
       }
       function fishWaterWeight(
         fishId = battle?.f?.id || "",
@@ -6825,90 +6815,22 @@
         waterWeight = fishWaterWeight(fishId),
       ) {
         if (gameAudio.underwater || !s.soundEnabled) return false;
-        stopCastingWaterSound(.18);
-        const context = ensureAudioContext();
-        if (!context || !gameAudio.master) return false;
-        const legend = fishId === "nushi";
-        const now = context.currentTime;
-        const layerGain = context.createGain();
-        layerGain.gain.setValueAtTime(.0001, now);
-        layerGain.gain.exponentialRampToValueAtTime(1, now + .55);
-        layerGain.connect(gameAudio.master);
-
-        const noise = context.createBufferSource();
-        const noiseFilter = context.createBiquadFilter();
-        const noiseGain = context.createGain();
-        noise.buffer = underwaterNoiseBuffer(context);
-        noise.loop = true;
-        noiseFilter.type = "lowpass";
-        noiseFilter.frequency.value = legend ? 360 : 460;
-        noiseFilter.Q.value = legend ? 1.1 : .8;
-        noiseGain.gain.value = legend ? .032 : .026;
-        noise.connect(noiseFilter);
-        noiseFilter.connect(noiseGain);
-        noiseGain.connect(layerGain);
-
-        const hum = context.createOscillator();
-        const humGain = context.createGain();
-        hum.type = "sine";
-        hum.frequency.value = legend ? 72 : 104;
-        humGain.gain.value = legend ? .018 : .012;
-        hum.connect(humGain);
-        humGain.connect(layerGain);
-
-        const current = context.createOscillator();
-        const currentGain = context.createGain();
-        current.type = "triangle";
-        current.frequency.value = legend ? 126 : 168;
-        currentGain.gain.value = legend ? .009 : .007;
-        current.connect(currentGain);
-        currentGain.connect(layerGain);
-
-        // Small phone speakers lose most sub-bass, so retain the deep bed but
-        // add a quiet mid-band harmonic that remains audible on mobile.
-        const presence = context.createOscillator();
-        const presenceGain = context.createGain();
-        presence.type = "sine";
-        presence.frequency.value = legend ? 210 : 270;
-        presenceGain.gain.value = legend ? .006 : .005;
-        presence.connect(presenceGain);
-        presenceGain.connect(layerGain);
-
-        const lfo = context.createOscillator();
-        const lfoGain = context.createGain();
-        lfo.type = "sine";
-        lfo.frequency.value = legend ? .09 : .12;
-        lfoGain.gain.value = legend ? .016 : .012;
-        lfo.connect(lfoGain);
-        lfoGain.connect(noiseGain.gain);
-
-        for (const source of [noise, hum, current, presence, lfo]) source.start(now);
-        gameAudio.lastBubbleAt = now - 1;
-        gameAudio.lastStrokeAt = now - 1;
-        gameAudio.nextGurgleAt = now;
-        gameAudio.underwater = {
-          gain: layerGain,
-          weight: Math.max(.36, Math.min(1.8, Number(waterWeight) || 1)),
-          sources: [noise, hum, current, presence, lfo],
-          nodes: [
-            noiseFilter,
-            noiseGain,
-            humGain,
-            currentGain,
-            presenceGain,
-            lfoGain,
-          ],
-        };
-        playUnderwaterGurgle(gameAudio.underwater.weight, true);
-        queueUnderwaterGurgle(760 + Math.random() * 480);
+        stopCastingWaterSound();
+        ensureAudioContext();
+        const weight = Math.max(.36, Math.min(1.8, Number(waterWeight) || 1));
+        const played = playGameAudioSample("underwater", { restart: true });
+        if (!played) return false;
+        gameAudio.lastBubbleAt = gameAudioNow() - 1;
+        gameAudio.lastStrokeAt = gameAudioNow() - 1;
+        gameAudio.underwater = { sampleId: "underwater", fishId, weight };
         return true;
       }
-      function stopUnderwaterSound(fadeSeconds = .24) {
-        if (gameAudio.gurgleTimer) {
-          try { globalThis.clearTimeout?.(gameAudio.gurgleTimer); } catch (_) {}
-          gameAudio.gurgleTimer = 0;
-        }
-        return stopLoopingAudioLayer("underwater", fadeSeconds);
+      function stopUnderwaterSound() {
+        const stopped = stopGameAudioSample("underwater");
+        for (const id of ["swimSmall", "swimMedium", "swimLarge"])
+          stopGameAudioSample(id);
+        gameAudio.underwater = null;
+        return stopped;
       }
       function scheduleAudioTone({
         frequency,
@@ -7002,118 +6924,44 @@
         };
         return true;
       }
-      function playUnderwaterGurgle(
-        weight = gameAudio.underwater?.weight || fishWaterWeight(),
-        force = false,
-      ) {
-        const context = gameAudio.context;
-        if (!gameAudio.underwater || !context || !s.soundEnabled) return false;
-        if (!force && context.currentTime < gameAudio.nextGurgleAt) return false;
-        const amount = Math.max(.36, Math.min(1.8, Number(weight) || 1));
-        gameAudio.nextGurgleAt = context.currentTime +
-          Math.max(.9, 1.25 + Math.random() * .7 - amount * .08);
-        const bubbleCount = amount >= 1.3 ? 3 : 2;
-        for (let i = 0; i < bubbleCount; i++) {
-          const start = .055 + i * (.16 + Math.random() * .055);
-          const frequency = Math.max(
-            125,
-            290 - amount * 58 + Math.random() * 34,
-          );
-          scheduleAudioTone({
-            frequency,
-            endFrequency: Math.max(48, 108 - amount * 23 + Math.random() * 13),
-            start,
-            duration: .34 + amount * .075 + i * .035,
-            volume: .038 + amount * .017,
-            type: "sine",
-            attack: .075,
-            release: .18,
-          });
-        }
-        scheduleNoiseBurst({
-          start: .03,
-          duration: .46 + amount * .09,
-          volume: .03 + amount * .014,
-          frequency: 430 - amount * 62,
-          endFrequency: 112 - amount * 22,
-          filterType: "lowpass",
-          attack: .09,
-          q: .6,
-        });
-        return true;
+      function gameAudioNow() {
+        const contextTime = Number(gameAudio.context?.currentTime);
+        if (Number.isFinite(contextTime)) return contextTime;
+        const now = globalThis.performance?.now?.();
+        return Number.isFinite(now) ? now / 1000 : Date.now() / 1000;
       }
-      function queueUnderwaterGurgle(
-        delay = 980 + Math.random() * 720,
-      ) {
-        const layer = gameAudio.underwater;
-        if (!layer || !s.soundEnabled || gameAudio.gurgleTimer) return false;
-        const timer = setTimeout(() => {
-          if (gameAudio.gurgleTimer !== timer) return;
-          gameAudio.gurgleTimer = 0;
-          if (gameAudio.underwater !== layer || !s.soundEnabled) return;
-          playUnderwaterGurgle(layer.weight, true);
-          queueUnderwaterGurgle(
-            Math.max(820, 980 + Math.random() * 720 - layer.weight * 80),
-          );
-        }, Math.max(120, Number(delay) || 980));
-        timer?.unref?.();
-        gameAudio.gurgleTimer = timer;
-        return true;
+      function fishSwimSampleId(weight = fishWaterWeight()) {
+        const amount = Math.max(.36, Math.min(1.8, Number(weight) || 1));
+        if (amount <= .8) return "swimSmall";
+        if (amount <= 1.25) return "swimMedium";
+        return "swimLarge";
       }
       function playFishWaterStroke(
         weight = gameAudio.underwater?.weight || fishWaterWeight(),
         speed = 1,
         danger = false,
       ) {
-        const context = gameAudio.context;
-        if (!gameAudio.underwater || !context || !s.soundEnabled) return false;
+        if (!gameAudio.underwater || !s.soundEnabled) return false;
         const baseWeight = Math.max(.36, Math.min(1.8, Number(weight) || 1));
+        const now = gameAudioNow();
         const minimumGap = Math.max(.28, .42 - baseWeight * .07);
-        if (context.currentTime - gameAudio.lastStrokeAt < minimumGap)
-          return false;
-        gameAudio.lastStrokeAt = context.currentTime;
-        gameAudio.lastBubbleAt = context.currentTime;
+        if (now - gameAudio.lastStrokeAt < minimumGap) return false;
         const effort = Math.max(
           .78,
           Math.min(1.45, .82 + Math.max(0, Number(speed) || 0) * .1 +
             (danger ? .16 : 0)),
         );
-        const amount = Math.max(.36, Math.min(1.9, baseWeight * effort));
-        const swish = scheduleNoiseBurst({
-          duration: .26 + amount * .16,
-          volume: .024 + amount * .027,
-          frequency: Math.max(290, 800 - amount * 210),
-          endFrequency: Math.max(95, 260 - amount * 72),
-          filterType: "lowpass",
-          attack: .075,
-          q: .5,
+        const sampleId = fishSwimSampleId(baseWeight);
+        const baseVolume = GAME_AUDIO_ASSETS[sampleId].volume;
+        const volume = Math.min(1, baseVolume * (.82 + (effort - .78) * .32));
+        const played = playGameAudioSample(sampleId, {
+          restart: false,
+          volume,
         });
-        const bubbleCount = amount >= 1.35 ? 2 : 1;
-        for (let i = 0; i < bubbleCount; i++) {
-          scheduleAudioTone({
-            frequency: Math.max(92, 240 - amount * 65 + i * 24),
-            endFrequency: Math.max(42, 92 - amount * 20 + i * 8),
-            start: .04 + i * .12,
-            duration: .3 + amount * .08 + i * .04,
-            volume: .018 + amount * .015,
-            type: "sine",
-            attack: .065,
-            release: .16,
-          });
-        }
-        if (amount >= 1.25) {
-          scheduleNoiseBurst({
-            start: .035,
-            duration: .36 + amount * .12,
-            volume: .018 + amount * .015,
-            frequency: Math.max(170, 340 - amount * 72),
-            endFrequency: 75,
-            filterType: "lowpass",
-            attack: .1,
-            q: .55,
-          });
-        }
-        return swish;
+        if (!played) return false;
+        gameAudio.lastStrokeAt = now;
+        gameAudio.lastBubbleAt = now;
+        return true;
       }
       function playUnderwaterBubble(strength = 1) {
         return playFishWaterStroke(
@@ -7324,13 +7172,18 @@
         s.soundEnabled = Boolean(enabled);
         if (s.soundEnabled) {
           unlockGameAudio({ announce: true });
-          if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
+          if (battle?.phase === "fight")
+            startUnderwaterSound(battle.f.id, battle.waterAudioWeight);
           else if (battle && ["prep", "cast", "cast-flight", "wait", "bite"]
             .includes(battle.phase))
-            startCastingWaterSound(battle.waterZone || "lake");
+            startCastingWaterSound(
+              battle.waterZone || "lake",
+              battle.castLocale,
+            );
         } else {
           stopCastingWaterSound(.06);
           stopUnderwaterSound(.06);
+          stopAllGameAudioSamples();
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
         }
@@ -7340,8 +7193,12 @@
       }
       function unlockGameAudio(options = null) {
         if (!s.soundEnabled) return null;
+        preloadGameAudioSamples();
         const context = ensureAudioContext(false);
-        if (!context) return null;
+        if (!context) {
+          gameAudio.unlocked = true;
+          return null;
+        }
         primeAudioContext(context);
         const announce = options?.announce === true;
         const finishUnlock = () => {
@@ -9182,20 +9039,26 @@
         clearWaterFx();
         $("#fishScene").classList.remove("active", "practice-fishing");
         wakeDog();
-        setDogIdle("dig");
-        $("#hint").textContent = `${dogName()}がエサを探して土を掘っている……`;
+        playGameAudioSample("dogBark", { restart: true });
+        $("#hint").textContent = `${dogName()}が水辺を見て「ワン！」と知らせた。`;
         rescueTimer = setTimeout(() => {
-          rescueTimer = 0;
-          const reward = dogRescueReward();
-          s.rescueAtMinutes = s.gameMinutes;
-          reward.grant();
-          rescueInProgress = false;
-          log(reward.message);
-          render();
-          showRescueToast(`🪱 ${reward.message}`);
-          armDogIdle();
-          scheduleIdleStatus(3000);
-        }, 1500);
+          setDogIdle("dig");
+          playGameAudioSample("dogDig", { restart: true });
+          $("#hint").textContent = `${dogName()}がエサを探して土を掘っている……`;
+          rescueTimer = setTimeout(() => {
+            rescueTimer = 0;
+            stopGameAudioSample("dogDig");
+            const reward = dogRescueReward();
+            s.rescueAtMinutes = s.gameMinutes;
+            reward.grant();
+            rescueInProgress = false;
+            log(reward.message);
+            render();
+            showRescueToast(`🪱 ${reward.message}`);
+            armDogIdle();
+            scheduleIdleStatus(3000);
+          }, DOG_DIG_DURATION_MS);
+        }, DOG_BARK_LEAD_MS);
         return true;
       }
       function pick(distance = 50, spotId = battle?.spot) {
@@ -9265,7 +9128,7 @@
         resetWaterFx();
         $("#fishScene").classList.add("active");
         prepareSurfaceCastScene();
-        startCastingWaterSound(zone);
+        startCastingWaterSound(zone, battle.castLocale);
         $("#castSurface").classList.add("surface-prep");
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "none";
@@ -9669,7 +9532,7 @@
         $("#fishScene").classList.add("active");
         $("#fishScene").classList.toggle("practice-fishing", practice);
         prepareSurfaceCastScene();
-        startCastingWaterSound(waterZone);
+        startCastingWaterSound(waterZone, castLocale);
         $("#battleFish").style.opacity = "0";
         $("#castMeter").style.display = "block";
         $("#distanceLabel").style.display = "none";
@@ -11513,6 +11376,7 @@
         save();
         stopCastingWaterSound(.05);
         stopUnderwaterSound(.05);
+        stopAllGameAudioSamples();
         setMasterAudioLevel(false);
         gameAudio.unlocked = false;
       });
@@ -11521,14 +11385,19 @@
           save();
           stopCastingWaterSound(.05);
           stopUnderwaterSound(.05);
+          stopAllGameAudioSamples();
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
         } else if (s.soundEnabled) {
           unlockGameAudio();
-          if (battle?.phase === "fight") startUnderwaterSound(battle.f.id);
+          if (battle?.phase === "fight")
+            startUnderwaterSound(battle.f.id, battle.waterAudioWeight);
           else if (battle && ["prep", "cast", "cast-flight", "wait", "bite"]
             .includes(battle.phase))
-            startCastingWaterSound(battle.waterZone || "lake");
+            startCastingWaterSound(
+              battle.waterZone || "lake",
+              battle.castLocale,
+            );
         }
       });
       setInterval(() => {
