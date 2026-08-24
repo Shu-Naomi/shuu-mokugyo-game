@@ -4570,7 +4570,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v92</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v92.1</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7026,7 +7026,23 @@
         gameAudio.underwater = { sampleId: "underwater", fishId, weight };
         return true;
       }
+      function setGillWashAudioFocus(active) {
+        const underwater = gameAudio.media.underwater;
+        if (underwater) {
+          try {
+            underwater.volume = active
+              ? .08
+              : GAME_AUDIO_ASSETS.underwater.volume;
+          } catch (_) {}
+        }
+        if (active) {
+          for (const id of ["swimSmall", "swimMedium", "swimLarge"])
+            stopGameAudioSample(id);
+        }
+        return Boolean(underwater);
+      }
       function stopUnderwaterSound() {
+        setGillWashAudioFocus(false);
         const stopped = stopGameAudioSample("underwater");
         for (const id of ["swimSmall", "swimMedium", "swimLarge"])
           stopGameAudioSample(id);
@@ -10025,7 +10041,9 @@
         $("#battleFish").classList.add("gill-wash");
         $("#phaseLabel").textContent = " 🌊 エラ洗い！";
         $("#battleMsg").textContent = "水面へ来る！Aを離すかBで糸を送れ！";
+        battle.tailKick = false;
         stopFightReelSound();
+        setGillWashAudioFocus(true);
         playGameAudioSample("fishGillWash", { restart: true });
         vibrate(battle.f.id === "nushi" ? [90, 35, 130] : [65, 30, 90]);
         return true;
@@ -10035,7 +10053,7 @@
         if (!event) return;
         $("#fishScene").classList.remove("gill-wash", "water-rush");
         $("#battleFish").classList.remove("gill-wash", "burst");
-        stopGameAudioSample("fishGillWash");
+        setGillWashAudioFocus(false);
         const rest = fightProfiles[battle.f.id].moods.find((mood) => mood.calm);
         battle.gillWash = null;
         battle.gillRecovery = 10;
