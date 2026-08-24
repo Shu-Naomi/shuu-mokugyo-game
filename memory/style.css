@@ -1,3 +1,0 @@
-:root{color-scheme:dark;--bg:#171223;--panel:rgba(48,37,65,.94);--text:#fff8ec;--muted:#d8c9bc;--accent:#ffbd73;--good:#9df3c4;--line:rgba(255,255,255,.13);font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif}
-*{box-sizing:border-box}body{margin:0;min-height:100svh;color:var(--text);background:linear-gradient(#21182f,#120e1b)}
-.app{width:min(100%,620px);margin:0 auto;padding:18px 14px 24px}.card{background:var(--panel);border:1px solid var(--line);border-radius:26px;padding:18px}.view{display:none}.view.active{display:block}
