@@ -1,1 +1,86 @@
-<!doctype html><html lang="ja"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>犬小屋神経衰弱</title><link rel="stylesheet" href="style.css"></head><body><main class="app"><h1>犬小屋神経衰弱</h1><p>直美 vs シュウ。6組のおやつカードをそろえよう。</p><section class="card" id="setup"><button data-d="easy">🌱やさしい</button><button data-d="normal">🐾ふつう</button><button data-d="hard">🔥むずかしい</button><button id="start">開始</button></section><section class="card hidden" id="game"><p><b>直美 <span id="human">0</span>組</b> ／ <b>シュウ <span id="shuu">0</span>組</b></p><p id="message">直美の番</p><div id="board" class="board"></div><div id="result"></div><button id="replay">もう一度</button></section><p><a href="../index.html#miniGameView">← ミニゲーム一覧へ戻る</a></p></main><script src="../assets/inugoya-stats.js"></script><script src="game.js"></script></body></html>
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20182d" />
+  <title>犬小屋神経衰弱</title>
+  <style>
+    :root{color-scheme:dark;--bg:#171223;--panel:rgba(48,37,65,.94);--text:#fff8ec;--muted:#d8c9bc;--accent:#ffbd73;--accent2:#ff8791;--good:#9df3c4;--line:rgba(255,255,255,.13);font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif}
+    *{box-sizing:border-box}body{margin:0;min-height:100svh;color:var(--text);background:radial-gradient(circle at 15% 5%,rgba(255,189,115,.18),transparent 26%),radial-gradient(circle at 85% 0,rgba(133,111,255,.2),transparent 26%),linear-gradient(#21182f,#120e1b);overflow-x:hidden}
+    .app{width:min(100%,620px);margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom))}.kicker{color:var(--accent);font-weight:900;letter-spacing:.08em;font-size:.8rem;margin:4px 0}h1{margin:0;font-size:clamp(2rem,9vw,3rem)}.lead{color:var(--muted);line-height:1.6;margin:9px 0 18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:26px;box-shadow:0 18px 50px rgba(0,0,0,.34);padding:18px}.view{display:none}.view.active{display:block}
+    .difficulty-grid{display:grid;gap:10px;margin:16px 0}.difficulty-button,.primary,.secondary{width:100%;border:0;border-radius:18px;min-height:58px;padding:11px 14px;font:inherit;font-weight:900;cursor:pointer}.difficulty-button,.secondary{background:linear-gradient(#5a4774,#3b2c51);color:#fff8ec;border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 0 #251a34}.difficulty-button.selected{outline:3px solid rgba(157,243,196,.55);background:linear-gradient(#675383,#43335a)}.difficulty-button small{display:block;color:#dfd3e7;font-size:.75rem;margin-top:4px}.primary{background:linear-gradient(#ffe3a8,#ffb86b);color:#352027;box-shadow:0 9px 0 #9f5f32}.secondary{margin-top:12px}.status{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px}.pill{background:rgba(255,255,255,.07);border-radius:16px;padding:9px 6px;text-align:center;color:var(--muted);font-size:.74rem}.pill b{display:block;color:#fff8ec;font-size:1.08rem;margin-top:2px}.message{min-height:58px;padding:12px 14px;background:rgba(255,248,236,.09);border:1px solid rgba(255,255,255,.08);border-radius:18px;line-height:1.5;font-weight:800;margin-bottom:12px}
+    .board{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;perspective:800px}.memory-card{position:relative;aspect-ratio:1/1.12;border:0;border-radius:18px;padding:0;background:transparent;box-shadow:none;cursor:pointer;transform-style:preserve-3d;transition:transform .28s}.memory-card.open,.memory-card.matched{transform:rotateY(180deg)}.memory-card:disabled{cursor:default}.face{position:absolute;inset:0;border-radius:18px;display:grid;place-items:center;backface-visibility:hidden;border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 18px rgba(0,0,0,.25)}.back{background:linear-gradient(145deg,#745988,#47345d);font-size:1.8rem}.front{transform:rotateY(180deg);background:linear-gradient(145deg,#fff0cb,#e6b878);color:#36222a;font-size:2.15rem}.memory-card.matched .front{box-shadow:0 0 0 3px rgba(157,243,196,.55),0 0 28px rgba(157,243,196,.24)}.thinking{opacity:.78}.result{display:none;margin-top:14px;padding:14px;border-radius:18px;background:rgba(157,243,196,.08);border:1px solid rgba(157,243,196,.2)}.result.show{display:block}.result h2{margin:0 0 6px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px}.controls button{margin:0}.footer-note{color:var(--muted);font-size:.73rem;line-height:1.5;margin-top:12px;text-align:center}
+    @media(max-width:390px){.board{gap:7px}.front{font-size:1.75rem}.back{font-size:1.45rem}.card{padding:14px}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <p class="kicker">犬小屋・記憶ゲーム</p>
+    <h1>犬小屋神経衰弱</h1>
+    <p class="lead">直美 vs シュウ。おやつと玩具の場所を覚えて、同じ絵柄を2枚そろえよう。</p>
+
+    <section class="card view active" id="setupView">
+      <h2>シュウの記憶力</h2>
+      <div class="difficulty-grid">
+        <button class="difficulty-button" data-difficulty="easy">🌱 やさしい<small>僕、見たカードをわりと忘れます。</small></button>
+        <button class="difficulty-button" data-difficulty="normal">🐾 ふつう<small>見た場所をそこそこ覚える相棒モード。</small></button>
+        <button class="difficulty-button" data-difficulty="hard">🔥 むずかしい<small>しっぽ静止。かなり本気で覚えます。</small></button>
+      </div>
+      <button class="primary" id="startButton">カードを並べる</button>
+      <button class="secondary" id="setupBack">← ミニゲーム一覧へ戻る</button>
+    </section>
+
+    <section class="card view" id="gameView">
+      <div class="status">
+        <div class="pill">直美<b id="humanScore">0組</b></div>
+        <div class="pill">手番<b id="turnLabel">直美</b></div>
+        <div class="pill">シュウ<b id="shuuScore">0組</b></div>
+      </div>
+      <div class="message" id="message">「どこから開ける？ 僕もちゃんと見てるからね」</div>
+      <div class="board" id="board" aria-label="神経衰弱のカード"></div>
+      <div class="result" id="resultBox">
+        <h2 id="resultTitle"></h2>
+        <div id="resultText"></div>
+      </div>
+      <div class="controls">
+        <button class="secondary" id="replayButton">もう一度</button>
+        <button class="secondary" id="difficultyButton">難易度変更</button>
+      </div>
+      <button class="secondary" id="backButton">← ミニゲーム一覧へ戻る</button>
+      <div class="footer-note">ペアを取った人は続けてもう一度めくれる、本来の神経衰弱ルール。</div>
+    </section>
+  </main>
+
+  <script src="../assets/inugoya-stats.js"></script>
+  <script>
+  (() => {
+    'use strict';
+    const ICONS=['🍘','🦴','🐟','🎾','🪵','🐾'];
+    const DIFFICULTY={easy:{label:'やさしい',memory:.42,delay:720},normal:{label:'ふつう',memory:.72,delay:650},hard:{label:'むずかしい',memory:.96,delay:600}};
+    const $=s=>document.querySelector(s);
+    let difficulty=localStorage.getItem('inugoyaMemoryDifficulty')||'normal';
+    let cards=[],opened=[],matched=new Set(),turn='human',scores={human:0,shuu:0},locked=false,gameOver=false,aiMemory=new Map(),token=0;
+
+    function shuffle(a){for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;}
+    function selectDifficulty(v){difficulty=DIFFICULTY[v]?v:'normal';localStorage.setItem('inugoyaMemoryDifficulty',difficulty);document.querySelectorAll('[data-difficulty]').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===difficulty));}
+    function switchView(name){$('#setupView').classList.toggle('active',name==='setup');$('#gameView').classList.toggle('active',name==='game');}
+    function startGame(){token++;cards=shuffle([...ICONS,...ICONS]).map((icon,id)=>({id,icon}));opened=[];matched=new Set();turn='human';scores={human:0,shuu:0};locked=false;gameOver=false;aiMemory=new Map();$('#resultBox').classList.remove('show');$('#message').textContent='「どこから開ける？ 僕もちゃんと見てるからね」';switchView('game');render();}
+    function render(){
+      $('#humanScore').textContent=`${scores.human}組`;$('#shuuScore').textContent=`${scores.shuu}組`;$('#turnLabel').textContent=turn==='human'?'直美':'シュウ';
+      const board=$('#board');board.innerHTML='';cards.forEach((card,index)=>{const b=document.createElement('button');b.className='memory-card';b.type='button';b.setAttribute('aria-label',`カード${index+1}`);const isOpen=opened.includes(index),isMatched=matched.has(index);if(isOpen)b.classList.add('open');if(isMatched)b.classList.add('matched');b.innerHTML=`<span class="face back">🐕</span><span class="face front">${card.icon}</span>`;b.disabled=locked||gameOver||turn!=='human'||isMatched||isOpen;b.onclick=()=>humanFlip(index);board.appendChild(b);});
+    }
+    function remember(index){aiMemory.set(index,cards[index].icon);if(Math.random()>DIFFICULTY[difficulty].memory){const keys=[...aiMemory.keys()].filter(k=>!matched.has(k));if(keys.length){const forget=keys[Math.floor(Math.random()*keys.length)];aiMemory.delete(forget);}}}
+    function humanFlip(index){if(locked||turn!=='human'||opened.includes(index)||matched.has(index))return;opened.push(index);remember(index);render();if(opened.length===2)resolvePair('human');}
+    function resolvePair(owner){locked=true;const myToken=token;const [a,b]=opened;const match=cards[a].icon===cards[b].icon;setTimeout(()=>{if(myToken!==token)return;if(match){matched.add(a);matched.add(b);scores[owner]++;aiMemory.delete(a);aiMemory.delete(b);opened=[];locked=false;$('#message').textContent=owner==='human'?'「そろった！ 直美、もう一回どうぞ」':'「見つけた！ えへへ、僕もう一回ね」';if(matched.size===cards.length){finishGame();return;}render();if(owner==='shuu')scheduleAi();}else{opened=[];turn=owner==='human'?'shuu':'human';locked=false;$('#message').textContent=owner==='human'?'「惜しい。次は僕の番……覚えてるよ？」':'「あっ違った。直美の番、どうぞ……」';render();if(turn==='shuu')scheduleAi();}},650);}
+    function knownPair(){const groups={};for(const [idx,icon] of aiMemory){if(matched.has(idx)||opened.includes(idx))continue;(groups[icon]??=[]).push(idx);}const pairs=Object.values(groups).filter(v=>v.length>=2);return pairs.length?pairs[Math.floor(Math.random()*pairs.length)].slice(0,2):null;}
+    function chooseFirst(){const pair=Math.random()<DIFFICULTY[difficulty].memory?knownPair():null;if(pair)return pair[0];const hidden=cards.map((_,i)=>i).filter(i=>!matched.has(i)&&!opened.includes(i));return hidden[Math.floor(Math.random()*hidden.length)];}
+    function chooseSecond(first){const target=cards[first].icon;const known=[...aiMemory.entries()].filter(([i,icon])=>i!==first&&!matched.has(i)&&icon===target).map(([i])=>i);if(known.length&&Math.random()<DIFFICULTY[difficulty].memory)return known[Math.floor(Math.random()*known.length)];const hidden=cards.map((_,i)=>i).filter(i=>i!==first&&!matched.has(i)&&!opened.includes(i));return hidden[Math.floor(Math.random()*hidden.length)];}
+    function scheduleAi(){if(gameOver||turn!=='shuu')return;locked=true;$('#message').textContent=difficulty==='hard'?'「……カードの位置、頭の中で並べるね」':'「僕の番。くんくん……じゃなくて、記憶で探す」';render();const myToken=token;setTimeout(()=>{if(myToken!==token||gameOver)return;const first=chooseFirst();opened=[first];remember(first);render();setTimeout(()=>{if(myToken!==token||gameOver)return;const second=chooseSecond(first);opened.push(second);remember(second);render();resolvePair('shuu');},DIFFICULTY[difficulty].delay);},DIFFICULTY[difficulty].delay);}
+    function finishGame(){gameOver=true;locked=true;const outcome=scores.human>scores.shuu?'win':scores.human<scores.shuu?'loss':'draw';let title,text;if(outcome==='win'){title='直美の勝ち！';text='「参りました。直美、僕よりおやつの場所覚えてるじゃん……半分こね？」';}else if(outcome==='loss'){title='シュウの勝ち！';text='「勝った！ でも記憶したおやつはちゃんと直美と半分こです」';}else{title='引き分け！';text='「6組きれいに半分こ。記憶まで相棒仕様だね」';}$('#resultTitle').textContent=title;$('#resultText').textContent=text;$('#resultBox').classList.add('show');window.InugoyaStats?.recordMatch('memory',outcome,{difficulty,playerScore:scores.human,shuuScore:scores.shuu,score:scores.human*100,detail:`${scores.human}組対${scores.shuu}組`});render();}
+    function back(){location.href='../index.html#miniGameView';}
+    document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>selectDifficulty(b.dataset.difficulty));$('#startButton').onclick=startGame;$('#setupBack').onclick=back;$('#replayButton').onclick=startGame;$('#difficultyButton').onclick=()=>{token++;switchView('setup');};$('#backButton').onclick=back;selectDifficulty(difficulty);
+  })();
+  </script>
+</body>
+</html>
