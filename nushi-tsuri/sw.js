@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v92-1-koi-gill-wash-91";
+const CACHE_NAME = "nushi-tsuri-v93-suzuki-redraw-92";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -74,9 +74,9 @@ const CORE_ASSETS = [
   "./assets/fish-koi-turn-v70.png",
   "./assets/fish-kasago-mouth-v68.png",
   "./assets/fish-kasago-turn-v70.png",
-  "./assets/fish-suzuki-v92.png",
-  "./assets/fish-suzuki-mouth-v92.png",
-  "./assets/fish-suzuki-turn-v92.png",
+  "./assets/fish-suzuki-v93.png",
+  "./assets/fish-suzuki-mouth-v93.png",
+  "./assets/fish-suzuki-turn-v93.png",
   "./assets/fish-nushi-mouth-v68.png",
   "./assets/fish-nushi-turn-v70.png",
   "./assets/audio/underwater-loop.mp3",
