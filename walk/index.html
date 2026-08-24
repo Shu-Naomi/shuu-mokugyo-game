@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#20182d" />
+  <title>犬小屋さんぽ</title>
+  <style>
+    :root{color-scheme:dark;--bg:#171223;--panel:rgba(48,37,65,.94);--text:#fff8ec;--muted:#d7c8bc;--accent:#ffbd73;--good:#9df3c4;--line:rgba(255,255,255,.13);font-family:system-ui,-apple-system,"Hiragino Sans","Yu Gothic",sans-serif}
+    *{box-sizing:border-box}body{margin:0;min-height:100svh;color:var(--text);background:radial-gradient(circle at 15% 6%,rgba(255,189,115,.18),transparent 25%),radial-gradient(circle at 88% 0,rgba(93,181,140,.16),transparent 28%),linear-gradient(#21182f,#110d19)}.app{width:min(100%,620px);margin:0 auto;padding:max(18px,env(safe-area-inset-top)) 14px max(24px,env(safe-area-inset-bottom))}.kicker{color:var(--accent);font-weight:900;letter-spacing:.08em;font-size:.8rem;margin:4px 0}h1{margin:0;font-size:clamp(2rem,9vw,3rem)}.lead{color:var(--muted);line-height:1.6;margin:9px 0 18px}.card{background:var(--panel);border:1px solid var(--line);border-radius:26px;box-shadow:0 18px 50px rgba(0,0,0,.34);padding:18px}.view{display:none}.view.active{display:block}
+    .difficulty-grid{display:grid;gap:10px;margin:16px 0}.difficulty-button,.primary,.secondary,.lane-button{width:100%;border:0;border-radius:18px;min-height:58px;padding:11px 14px;font:inherit;font-weight:900;cursor:pointer}.difficulty-button,.secondary,.lane-button{background:linear-gradient(#5a4774,#3b2c51);color:#fff8ec;border:1px solid rgba(255,255,255,.1);box-shadow:0 8px 0 #251a34}.difficulty-button.selected{outline:3px solid rgba(157,243,196,.55);background:linear-gradient(#675383,#43335a)}.difficulty-button small{display:block;color:#dfd3e7;font-size:.75rem;margin-top:4px}.primary{background:linear-gradient(#ffe3a8,#ffb86b);color:#352027;box-shadow:0 9px 0 #9f5f32}.secondary{margin-top:12px}
+    .status{display:grid;grid-template-columns:repeat(4,1fr);gap:7px;margin-bottom:10px}.pill{background:rgba(255,255,255,.07);border-radius:14px;padding:8px 4px;text-align:center;color:var(--muted);font-size:.66rem}.pill b{display:block;color:#fff8ec;font-size:1rem;margin-top:2px}.message{min-height:54px;padding:11px 13px;background:rgba(255,248,236,.09);border:1px solid rgba(255,255,255,.08);border-radius:17px;line-height:1.45;font-weight:800;margin-bottom:10px}
+    .road{position:relative;height:min(57svh,470px);min-height:360px;overflow:hidden;border-radius:22px;background:linear-gradient(90deg,#517341 0 8%,#8b755c 8% 92%,#517341 92% 100%);border:2px solid rgba(255,255,255,.12);box-shadow:inset 0 0 50px rgba(0,0,0,.22)}.road::before,.road::after{content:"";position:absolute;top:0;bottom:0;width:2px;background:repeating-linear-gradient(to bottom,rgba(255,255,255,.32) 0 18px,transparent 18px 36px)}.road::before{left:33.333%}.road::after{left:66.666%}.skyline{position:absolute;left:0;right:0;top:0;height:64px;background:linear-gradient(rgba(119,184,229,.34),rgba(119,184,229,0));pointer-events:none}.shuu{position:absolute;bottom:18px;width:82px;height:82px;transform:translateX(-50%);transition:left .16s ease;z-index:5;display:grid;place-items:end center}.shuu img{width:78px;height:78px;object-fit:contain;filter:drop-shadow(0 9px 12px rgba(0,0,0,.32))}.item{position:absolute;width:54px;height:54px;transform:translate(-50%,-50%);display:grid;place-items:center;font-size:2rem;z-index:3;filter:drop-shadow(0 5px 7px rgba(0,0,0,.28));will-change:top}.item.good{animation:bob .8s ease-in-out infinite alternate}.item.bad{animation:wobble .7s ease-in-out infinite alternate}.flash{position:absolute;inset:0;pointer-events:none;opacity:0;z-index:8}.flash.good{background:rgba(157,243,196,.24);animation:flash .26s}.flash.bad{background:rgba(255,100,110,.25);animation:flash .28s}@keyframes bob{to{transform:translate(-50%,-58%)}}@keyframes wobble{to{transform:translate(-46%,-50%) rotate(5deg)}}@keyframes flash{50%{opacity:1}}
+    .lane-controls{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:10px}.lane-button{min-height:54px;margin:0;padding:8px 6px}.lane-button.active{outline:3px solid rgba(157,243,196,.48);background:linear-gradient(#6b5688,#49375f)}.result{display:none;margin-top:13px;padding:14px;border-radius:18px;background:rgba(157,243,196,.08);border:1px solid rgba(157,243,196,.2)}.result.show{display:block}.result h2{margin:0 0 6px}.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}.controls button{margin:0}.tip{font-size:.72rem;color:var(--muted);text-align:center;margin-top:10px;line-height:1.5}
+    @media(max-width:380px){.card{padding:14px}.status{gap:5px}.pill{font-size:.6rem}.road{min-height:330px}.shuu{width:72px;height:72px}.shuu img{width:68px;height:68px}.item{font-size:1.7rem}}
+  </style>
+</head>
+<body>
+  <main class="app">
+    <p class="kicker">犬小屋・おでかけゲーム</p>
+    <h1>犬小屋さんぽ</h1>
+    <p class="lead">シュウを3つの道へ案内して、おやつ・花・匂いスポットを集めよう。水たまりとゴミ袋は避けてね。</p>
+
+    <section class="card view active" id="setupView">
+      <h2>お散歩コース</h2>
+      <div class="difficulty-grid">
+        <button class="difficulty-button" data-difficulty="easy">🌱 のんびり<small>ゆっくり。危ないもの少なめ。</small></button>
+        <button class="difficulty-button" data-difficulty="normal">🐾 いつもの散歩<small>発見も寄り道もほどよく。</small></button>
+        <button class="difficulty-button" data-difficulty="hard">🔥 冒険コース<small>速いけど高得点。しっぽも忙しい。</small></button>
+      </div>
+      <button class="primary" id="startButton">リードを持って出発</button>
+      <button class="secondary" id="setupBack">← ミニゲーム一覧へ戻る</button>
+    </section>
+
+    <section class="card view" id="gameView">
+      <div class="status">
+        <div class="pill">残り<b id="timeLabel">35秒</b></div>
+        <div class="pill">スコア<b id="scoreLabel">0</b></div>
+        <div class="pill">元気<b id="lifeLabel">♥♥♥</b></div>
+        <div class="pill">おやつ<b id="snackLabel">0</b></div>
+      </div>
+      <div class="message" id="message">「直美、今日はどっち行く？ しっぽ準備よし！」</div>
+      <div class="road" id="road" aria-label="3レーンのお散歩道">
+        <div class="skyline"></div>
+        <div class="shuu" id="shuu"><img src="../assets/shuu-happy.svg" alt="お散歩中のシュウ" /></div>
+        <div class="flash" id="flash"></div>
+      </div>
+      <div class="lane-controls">
+        <button class="lane-button" data-lane="0">← 左</button>
+        <button class="lane-button" data-lane="1">まんなか</button>
+        <button class="lane-button" data-lane="2">右 →</button>
+      </div>
+      <div class="result" id="resultBox"><h2 id="resultTitle"></h2><div id="resultText"></div></div>
+      <div class="controls"><button class="secondary" id="replayButton">もう一度</button><button class="secondary" id="difficultyButton">コース変更</button></div>
+      <button class="secondary" id="backButton">← ミニゲーム一覧へ戻る</button>
+      <div class="tip">左右スワイプでもレーン移動できます。おやつ🍘 +25 / 花🌼 +12 / 匂い🐾 +15 / 水たまり💧とゴミ袋🗑️は元気−1。</div>
+    </section>
+  </main>
+
+  <script src="../assets/inugoya-stats.js"></script>
+  <script>
+  (()=>{
+    'use strict';
+    const $=s=>document.querySelector(s);
+    const CFG={easy:{label:'のんびり',duration:35,speed:95,spawn:850,bad:.18,mult:1},normal:{label:'いつもの散歩',duration:35,speed:125,spawn:700,bad:.25,mult:1.15},hard:{label:'冒険コース',duration:35,speed:160,spawn:590,bad:.31,mult:1.35}};
+    const GOOD=[{icon:'🍘',score:25,type:'snack',msg:'「おやつ発見！ 直美、これは散歩手当だよね？」'},{icon:'🌼',score:12,type:'flower',msg:'「花の匂い、いいね。ちょっとだけ寄り道」'},{icon:'🐾',score:15,type:'sniff',msg:'「ここ、誰か通った！ くんくん調査中！」'},{icon:'⭐',score:18,type:'star',msg:'「今日の散歩、なんか良いことありそう」'}];
+    const BAD=[{icon:'💧',score:-10,type:'puddle',msg:'「わっ、水たまり！ 足ふきタオル案件……」'},{icon:'🗑️',score:-15,type:'trash',msg:'「これは触らない。直美、こっち行こ」'}];
+    let difficulty=localStorage.getItem('inugoyaWalkDifficulty')||'normal',lane=1,score=0,life=3,snacks=0,discoveries=0,active=false,startAt=0,lastFrame=0,lastSpawn=0,raf=0,token=0,items=[],touchStartX=null;
+    function selectDifficulty(v){difficulty=CFG[v]?v:'normal';localStorage.setItem('inugoyaWalkDifficulty',difficulty);document.querySelectorAll('[data-difficulty]').forEach(b=>b.classList.toggle('selected',b.dataset.difficulty===difficulty));}
+    function switchView(v){$('#setupView').classList.toggle('active',v==='setup');$('#gameView').classList.toggle('active',v==='game');}
+    function laneX(l){return [16.7,50,83.3][l];}
+    function setLane(next){lane=Math.max(0,Math.min(2,next));$('#shuu').style.left=`${laneX(lane)}%`;document.querySelectorAll('[data-lane]').forEach(b=>b.classList.toggle('active',Number(b.dataset.lane)===lane));}
+    function clearItems(){for(const item of items)item.el.remove();items=[];}
+    function startGame(){token++;cancelAnimationFrame(raf);clearItems();score=0;life=3;snacks=0;discoveries=0;lane=1;active=true;startAt=performance.now();lastFrame=startAt;lastSpawn=startAt;$('#resultBox').classList.remove('show');$('#message').textContent='「直美、今日はどっち行く？ しっぽ準備よし！」';switchView('game');setLane(1);updateHud();raf=requestAnimationFrame(frame);}
+    function spawn(now){const cfg=CFG[difficulty];const isBad=Math.random()<cfg.bad;const data=(isBad?BAD:GOOD)[Math.floor(Math.random()*(isBad?BAD:GOOD).length)];const el=document.createElement('div');el.className=`item ${isBad?'bad':'good'}`;el.textContent=data.icon;const item={el,data,lane:Math.floor(Math.random()*3),y:-35,speed:cfg.speed*(.86+Math.random()*.28)};el.style.left=`${laneX(item.lane)}%`;el.style.top='-35px';$('#road').appendChild(el);items.push(item);lastSpawn=now;}
+    function frame(now){if(!active)return;const cfg=CFG[difficulty],dt=Math.min(.04,(now-lastFrame)/1000);lastFrame=now;const elapsed=(now-startAt)/1000,remain=Math.max(0,cfg.duration-elapsed);if(now-lastSpawn>cfg.spawn*(.85+Math.random()*.25))spawn(now);const road=$('#road');const hitY=road.clientHeight-72;for(let i=items.length-1;i>=0;i--){const item=items[i];item.y+=item.speed*dt;item.el.style.top=`${item.y}px`;if(item.lane===lane&&Math.abs(item.y-hitY)<36){collect(i,item);continue;}if(item.y>road.clientHeight+45){item.el.remove();items.splice(i,1);}}
+      updateHud(remain);if(remain<=0||life<=0){finishGame(remain<=0?'time':'tired');return;}raf=requestAnimationFrame(frame);}
+    function collect(index,item){item.el.remove();items.splice(index,1);const cfg=CFG[difficulty];if(BAD.includes(item.data)){life--;score=Math.max(0,score+item.data.score);flash('bad');}else{const gain=Math.round(item.data.score*cfg.mult);score+=gain;discoveries++;if(item.data.type==='snack')snacks++;flash('good');}$('#message').textContent=item.data.msg;updateHud();}
+    function flash(kind){const f=$('#flash');f.className=`flash ${kind}`;void f.offsetWidth;f.className=`flash ${kind}`;setTimeout(()=>{if(f)f.className='flash';},300);}
+    function updateHud(remain){const cfg=CFG[difficulty];const r=Number.isFinite(remain)?remain:Math.max(0,cfg.duration-(performance.now()-startAt)/1000);$('#timeLabel').textContent=`${Math.ceil(r)}秒`;$('#scoreLabel').textContent=score;$('#lifeLabel').textContent='♥'.repeat(life)+'♡'.repeat(3-life);$('#snackLabel').textContent=snacks;}
+    function finishGame(reason){if(!active)return;active=false;cancelAnimationFrame(raf);clearItems();const bonus=reason==='time'?life*20:0;score+=bonus;const title=reason==='time'?'お散歩完走！':'ちょっと休憩！';const text=reason==='time'?`「ただいま直美！ おやつ${snacks}個、発見${discoveries}回。元気ボーナス${bonus}点！」`:'「今日はここまで。足ふいて、お水飲んで、抱っこ帰宅しよ？」';$('#resultTitle').textContent=title;$('#resultText').textContent=`${text} 最終スコア ${score}点。`;$('#resultBox').classList.add('show');window.InugoyaStats?.recordScore('walk',score,{difficulty,detail:`おやつ${snacks} / 発見${discoveries} / 元気${life}`});updateHud(0);}
+    function back(){active=false;cancelAnimationFrame(raf);location.href='../index.html#miniGameView';}
+    document.querySelectorAll('[data-difficulty]').forEach(b=>b.onclick=()=>selectDifficulty(b.dataset.difficulty));document.querySelectorAll('[data-lane]').forEach(b=>b.onclick=()=>setLane(Number(b.dataset.lane)));$('#startButton').onclick=startGame;$('#setupBack').onclick=back;$('#replayButton').onclick=startGame;$('#difficultyButton').onclick=()=>{active=false;cancelAnimationFrame(raf);clearItems();switchView('setup');};$('#backButton').onclick=back;
+    const road=$('#road');road.addEventListener('touchstart',e=>{touchStartX=e.changedTouches[0].clientX;},{passive:true});road.addEventListener('touchend',e=>{if(touchStartX===null)return;const dx=e.changedTouches[0].clientX-touchStartX;if(Math.abs(dx)>35)setLane(lane+(dx>0?1:-1));touchStartX=null;},{passive:true});window.addEventListener('keydown',e=>{if(e.key==='ArrowLeft')setLane(lane-1);if(e.key==='ArrowRight')setLane(lane+1);});selectDifficulty(difficulty);setLane(1);
+  })();
+  </script>
+</body>
+</html>
