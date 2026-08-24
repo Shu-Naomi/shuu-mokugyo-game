@@ -4560,7 +4560,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v90</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v91</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6596,6 +6596,40 @@
             volume: .76,
             loop: true,
           },
+          castThrow: {
+            src: "assets/audio/cast-throw.mp3",
+            volume: .82,
+          },
+          lureSplash: {
+            src: "assets/audio/lure-splash.mp3",
+            volume: 1,
+          },
+          reelHookSet: {
+            src: "assets/audio/reel-hook-set.mp3",
+            volume: .92,
+          },
+          reelFishPull: {
+            src: "assets/audio/reel-fish-pull.mp3",
+            volume: .76,
+            loop: true,
+          },
+          reelPlayerWind: {
+            src: "assets/audio/reel-player-wind.mp3",
+            volume: .88,
+            loop: true,
+          },
+          fishGillWash: {
+            src: "assets/audio/fish-gill-wash.mp3",
+            volume: 1,
+          },
+          fishCatch: {
+            src: "assets/audio/fish-catch.mp3",
+            volume: .9,
+          },
+          dogPetBark: {
+            src: "assets/audio/dog-pet-bark.mp3",
+            volume: .78,
+          },
           dogBark: {
             src: "assets/audio/dog-bark-before-dig.mp3",
             volume: .78,
@@ -6611,12 +6645,17 @@
           "castBeach",
           "castHarbor",
         ]),
+        FIGHT_REEL_AUDIO_IDS = Object.freeze([
+          "reelFishPull",
+          "reelPlayerWind",
+        ]),
         gameAudio = {
           context: null,
           master: null,
           media: Object.create(null),
           surface: null,
           underwater: null,
+          fightReel: null,
           lastBubbleAt: -10,
           lastStrokeAt: -10,
           primed: false,
@@ -6644,6 +6683,7 @@
             gameAudio.master = master;
             gameAudio.surface = null;
             gameAudio.underwater = null;
+            gameAudio.fightReel = null;
             gameAudio.lastStrokeAt = -10;
             gameAudio.primed = false;
             gameAudio.unlocked = false;
@@ -6753,6 +6793,7 @@
           stopped = stopGameAudioSample(id) || stopped;
         gameAudio.surface = null;
         gameAudio.underwater = null;
+        gameAudio.fightReel = null;
         return stopped;
       }
       function castingWaterSampleId(
@@ -6829,6 +6870,8 @@
         const stopped = stopGameAudioSample("underwater");
         for (const id of ["swimSmall", "swimMedium", "swimLarge"])
           stopGameAudioSample(id);
+        stopFightReelSound();
+        stopGameAudioSample("fishGillWash");
         gameAudio.underwater = null;
         return stopped;
       }
@@ -6967,6 +7010,41 @@
         return playFishWaterStroke(
           Math.max(.36, Math.min(1.8, Number(strength) || 1)),
         );
+      }
+      function startFightReelSound(sampleId) {
+        if (!s.soundEnabled || !gameAudio.underwater ||
+          !FIGHT_REEL_AUDIO_IDS.includes(sampleId))
+          return false;
+        const active = gameAudio.media[sampleId];
+        if (gameAudio.fightReel === sampleId && active && !active.paused)
+          return false;
+        stopFightReelSound();
+        const played = playGameAudioSample(sampleId, { restart: true });
+        if (played) gameAudio.fightReel = sampleId;
+        return played;
+      }
+      function stopFightReelSound() {
+        let stopped = false;
+        for (const id of FIGHT_REEL_AUDIO_IDS)
+          stopped = stopGameAudioSample(id) || stopped;
+        gameAudio.fightReel = null;
+        return stopped;
+      }
+      function syncFightReelSound() {
+        if (!battle || battle.phase !== "fight" || battle.gillWash ||
+          !s.soundEnabled)
+          return stopFightReelSound();
+        if (battle.reeling)
+          return startFightReelSound("reelPlayerWind");
+        if (!battle.reeling && battle.retrievalDelta < -0.001)
+          return startFightReelSound("reelFishPull");
+        return stopFightReelSound();
+      }
+      function setBattleReeling(active) {
+        if (!battle || battle.phase !== "fight") return false;
+        battle.reeling = Boolean(active);
+        syncFightReelSound();
+        return true;
       }
       function playSurfaceSplashSound(weight = fishWaterWeight()) {
         if (!s.soundEnabled) return false;
@@ -8828,6 +8906,7 @@
             dog.classList.toggle("face-player-right", targetLeft < playerLeft);
             drawDog();
             renderPlayer();
+            playGameAudioSample("dogPetBark", { restart: true });
           }, 620);
           return;
         }
@@ -9624,6 +9703,7 @@
         setSurfaceCastMotionFrame(0, true);
         void $("#castMotionRig").offsetWidth;
         surface.classList.add("cast-throwing");
+        playGameAudioSample("castThrow", { restart: true });
         const point = castSurfacePoint(distance);
         const targetX = point.x * 10;
         const targetY = point.y * 5;
@@ -9662,6 +9742,7 @@
         const surface = $("#castSurface");
         surface.classList.remove("cast-throwing", "nibbling", "bite");
         surface.classList.add("cast-landed");
+        playGameAudioSample("lureSplash", { restart: true });
         surfaceCastMotionStartedAt = 0;
         setSurfaceCastMotionFrame(0, true);
         const point = castSurfacePoint(battle.castDistance);
@@ -9773,6 +9854,8 @@
         $("#battleFish").classList.add("gill-wash");
         $("#phaseLabel").textContent = " 🌊 エラ洗い！";
         $("#battleMsg").textContent = "水面へ来る！Aを離すかBで糸を送れ！";
+        stopFightReelSound();
+        playGameAudioSample("fishGillWash", { restart: true });
         vibrate(battle.f.id === "nushi" ? [90, 35, 130] : [65, 30, 90]);
         return true;
       }
@@ -9781,6 +9864,7 @@
         if (!event) return;
         $("#fishScene").classList.remove("gill-wash", "water-rush");
         $("#battleFish").classList.remove("gill-wash", "burst");
+        stopGameAudioSample("fishGillWash");
         const rest = fightProfiles[battle.f.id].moods.find((mood) => mood.calm);
         battle.gillWash = null;
         battle.gillRecovery = 10;
@@ -10858,6 +10942,7 @@
             return;
           }
           updateRetrieval(mood);
+          syncFightReelSound();
           moveBattleFish(mood);
           updateWaterFx();
           renderBattleFish();
@@ -10908,10 +10993,11 @@
           return lose("まだ前アタリだった。早合わせで逃げられた……。");
         }
         if (battle.phase === "bite") startFight();
-        if (battle.phase === "fight") battle.reeling = true;
+        if (battle.phase === "fight") setBattleReeling(true);
       }
       function startFight() {
         stopCastingWaterSound(.24);
+        playGameAudioSample("reelHookSet", { restart: true });
         beginUnderwaterFromSurface();
         battle.phase = "fight";
         const f = battle.f;
@@ -11026,7 +11112,7 @@
           return endBattle();
         }
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
-        battle.reeling = false;
+        setBattleReeling(false);
       }
       function drawBattle() {
         if (!battle || battle.phase !== "fight") return;
@@ -11084,6 +11170,7 @@
         if (!battle || battle.phase !== "fight") return;
         battle.phase = "landing";
         battle.reeling = false;
+        stopFightReelSound();
         stopUnderwaterSound(.42);
         clearTimeout(landingTimer);
         const scene = $("#fishScene");
@@ -11128,7 +11215,7 @@
           `M 150 48 Q 162 42 ${battle.surfaceX * 10} ${battle.surfaceY * 5}`,
         );
         showSurfaceSplash();
-        playSurfaceSplashSound(battle.waterAudioWeight || fishWaterWeight());
+        playGameAudioSample("fishCatch", { restart: true });
         vibrate([80, 35, 80, 35, 150]);
         landingTimer = setTimeout(() => {
           if (battle?.phase === "landing") caught();
@@ -11309,8 +11396,8 @@
         e.currentTarget.setPointerCapture?.(e.pointerId);
         pull();
       };
-      $("#pull").onpointerup = () => { if (battle) battle.reeling = false; };
-      $("#pull").onpointercancel = () => { if (battle) battle.reeling = false; };
+      $("#pull").onpointerup = () => setBattleReeling(false);
+      $("#pull").onpointercancel = () => setBattleReeling(false);
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
@@ -11363,7 +11450,7 @@
         if (e.key === "x" || e.key === "Escape") battle ? wait() : close();
       });
       addEventListener("keyup", (e) => {
-        if (battle && (e.key === "z" || e.key === "Enter")) battle.reeling = false;
+        if (e.key === "z" || e.key === "Enter") setBattleReeling(false);
       });
       addEventListener("resize", () => {
         if ($("#game").classList.contains("active")) {
