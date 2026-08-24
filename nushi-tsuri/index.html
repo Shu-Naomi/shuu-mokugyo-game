@@ -4570,7 +4570,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v93</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v94</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5857,6 +5857,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        kasago: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 800,
+            maxHundredths: 1199,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 1200,
+            maxHundredths: 1599,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 1600,
+            maxHundredths: 1999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 2000,
+            maxHundredths: 2499,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 2500,
+            maxHundredths: 2999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 3000,
+            maxHundredths: 3999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         suzuki: [
           {
             id: "tiny",
@@ -5908,6 +5964,62 @@
             label: "巨大",
             minHundredths: 8000,
             maxHundredths: 9999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
+        nushi: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 6000,
+            maxHundredths: 8999,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 9000,
+            maxHundredths: 11999,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 12000,
+            maxHundredths: 14999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 15000,
+            maxHundredths: 17999,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 18000,
+            maxHundredths: 21999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 22000,
+            maxHundredths: 29999,
             weight: 3,
             pullMultiplier: 1.75,
             priceMultiplier: 3.2,
@@ -11480,14 +11592,20 @@
           : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`;
         const specimenDetail = specimen
           ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
-            (newSizeRecord ? " ・ 最大記録！" : "")
+            (newSizeRecord ? " ・ 最大記録！" : "") +
+            hazardDetail +
+            (f.id === "nushi" ? ` ・ ${dogName()}もしっぽぶんぶん！` : "")
           : "";
         endBattle();
         showCatchCard(
           f,
           first,
           specimenDetail || (hazardDetail ? catchDetail + hazardDetail : ""),
-          specimen ? `🎣 ${specimen.tierLabel} GET!` : "",
+          specimen
+            ? f.id === "nushi"
+              ? `🌟 ${specimen.tierLabel} LEGEND!`
+              : `🎣 ${specimen.tierLabel} GET!`
+            : "",
           specimen,
         );
       }
