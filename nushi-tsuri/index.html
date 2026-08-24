@@ -3513,6 +3513,10 @@
         width: clamp(125px, 21vw, 235px);
         aspect-ratio: 28 / 15;
       }
+      .battle-fish.fish-suzuki {
+        width: clamp(140px, 22vw, 255px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-kasago {
         width: clamp(125px, 19vw, 215px);
         aspect-ratio: 8 / 5;
@@ -4231,6 +4235,12 @@
         transform: translate(-89.7%, -58%) scale(var(--specimen-scale, 1));
         transform-origin: 89.7% 58%;
       }
+      .catch-fish.fish-suzuki {
+        width: clamp(130px, min(25vw, 44vh), 235px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-95%, -56%) scale(var(--specimen-scale, 1));
+        transform-origin: 95% 56%;
+      }
       .catch-fish.fish-kasago {
         width: clamp(115px, min(22vw, 40vh), 210px);
         aspect-ratio: 8 / 5;
@@ -4560,7 +4570,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v91</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v92</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5059,6 +5069,15 @@
             shadowRow: 3,
           },
           {
+            id: "suzuki",
+            name: "スズキ",
+            price: 520,
+            resistance: 118,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
+          {
             id: "nushi",
             name: "星湖のヌシ",
             price: 2000,
@@ -5114,32 +5133,32 @@
             zone: "river",
             depth: "deep",
             name: "民家川・淵",
-            role: "川の淵・大きな魚が潜む",
-            weights: { moroko: 0.22, funa: 0.48, koi: 0.3 },
+            role: "川の淵・河口から差す大物も潜む",
+            weights: { moroko: 0.2, funa: 0.43, koi: 0.29, suzuki: 0.08 },
           },
           {
             id: "sea-shallow",
             zone: "sea",
             depth: "shallow",
             name: "潮見浜・波打ち際",
-            role: "海の浅場・マアジと岩陰のカサゴ",
-            weights: { aji: 0.72, kasago: 0.28 },
+            role: "海の浅場・マアジと若いスズキ",
+            weights: { aji: 0.63, kasago: 0.27, suzuki: 0.1 },
           },
           {
             id: "sea-mid",
             zone: "sea",
             depth: "mid",
             name: "潮見浜・沿岸",
-            role: "海の中層・回遊魚と根魚",
-            weights: { aji: 0.68, kasago: 0.32 },
+            role: "海の中層・回遊魚と銀色の大物",
+            weights: { aji: 0.54, kasago: 0.28, suzuki: 0.18 },
           },
           {
             id: "sea-deep",
             zone: "sea",
             depth: "deep",
             name: "潮見浜・沖",
-            role: "海の深場・大きなカサゴが潜む",
-            weights: { aji: 0.6, kasago: 0.4 },
+            role: "海の深場・大型スズキが回遊する",
+            weights: { aji: 0.42, kasago: 0.32, suzuki: 0.26 },
           },
         ],
         baitData = {
@@ -5243,6 +5262,7 @@
           koi: "assets/fish-koi-v31.png",
           aji: "assets/fish-aji-v68.png",
           kasago: "assets/fish-kasago-v57.png",
+          suzuki: "assets/fish-suzuki-v92.png",
           nushi: "assets/fish-nushi-v31.png",
         },
         fishMouthAssets = {
@@ -5251,6 +5271,7 @@
           funa: "assets/fish-funa-mouth-v68.png",
           koi: "assets/fish-koi-mouth-v68.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
+          suzuki: "assets/fish-suzuki-mouth-v92.png",
           nushi: "assets/fish-nushi-mouth-v68.png",
         },
         fishTurnAssets = {
@@ -5259,6 +5280,7 @@
           funa: "assets/fish-funa-turn-v70.png",
           koi: "assets/fish-koi-turn-v70.png",
           kasago: "assets/fish-kasago-turn-v70.png",
+          suzuki: "assets/fish-suzuki-turn-v92.png",
           nushi: "assets/fish-nushi-turn-v70.png",
         },
         fishCatchAssets = {
@@ -5288,6 +5310,10 @@
           kasago: {
             x: 0.455, y: 0.11, tackleScale: 0.82, inset: 4, drop: 1.7,
             breath: 0.38,
+          },
+          suzuki: {
+            x: 0.447, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8,
+            breath: 0.36,
           },
           nushi: {
             x: 0.43, y: 0.09, tackleScale: 0.82, inset: 5, drop: 2.4,
@@ -5831,6 +5857,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        suzuki: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 2000,
+            maxHundredths: 2999,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 3000,
+            maxHundredths: 3999,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 4000,
+            maxHundredths: 4999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 5000,
+            maxHundredths: 5999,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 6000,
+            maxHundredths: 7999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 8000,
+            maxHundredths: 9999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
       };
       const SURFACE_CAST_MOTION_MS = 760,
         SURFACE_CAST_FRAME_STOPS = [0, .16, .34, .5, .68, .86],
@@ -5931,6 +6013,83 @@
             ? "潮に乗って休んでいる。Aで距離を詰めよう！"
             : "走りに合わせて糸を送り、群れから離す。",
         })),
+      };
+      fishMotionProfiles.suzuki = {
+        ...fishMotionProfiles.koi,
+        beat: 0.52,
+        speedBeat: 0.11,
+        burst: 1.62,
+        thrust: 0.21,
+        stretch: 0.017,
+        squeeze: 0.013,
+        recoil: 2.2,
+        sway: 1.55,
+        roll: 1.28,
+        movingDrag: 0.984,
+        restingDrag: 0.925,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 5.2,
+        turnRoll: 7.8,
+      };
+      fightProfiles.suzuki = {
+        intro: "銀色の魚体をひるがえし、潮を切って鋭く走る。",
+        moods: [
+          {
+            id: "rush",
+            name: "高速走り",
+            icon: "⚡",
+            weight: 0.42,
+            min: 580,
+            max: 880,
+            motion: "rush",
+            speedX: 6.1,
+            speedY: 2.6,
+            tension: 9.6,
+            release: 7.1,
+            reel: 0.34,
+            scale: 1.1,
+            frameEvery: 1,
+            danger: true,
+            hold: "スズキが潮を切って猛進！今すぐAを離せ！",
+            loose: "走りに合わせて糸を送り、勢いをいなす！",
+          },
+          {
+            id: "sweep",
+            name: "横走り",
+            icon: "↔",
+            weight: 0.35,
+            min: 720,
+            max: 1080,
+            motion: "steady",
+            speedX: 2.4,
+            speedY: 1.4,
+            tension: 6.2,
+            release: 5.7,
+            reel: 0.64,
+            scale: 1.04,
+            frameEvery: 1,
+            hold: "スズキが大きく横へ走る。無理に巻くな！",
+            loose: "銀色の魚体を見ながら、次の隙を待つ。",
+          },
+          {
+            id: "rest",
+            name: "息継ぎ",
+            icon: "◎",
+            weight: 0.23,
+            min: 480,
+            max: 760,
+            motion: "rest",
+            tension: 2.2,
+            release: 5,
+            reel: 1.78,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "スズキが止まった！今が一気に巻く好機！",
+            loose: "潮の中で息を整えている。Aで距離を詰めよう！",
+          },
+        ],
       };
       fishMotionProfiles.kasago = {
         ...fishMotionProfiles.funa,
@@ -6839,6 +6998,7 @@
           funa: .95,
           koi: 1.15,
           kasago: 1.05,
+          suzuki: 1.3,
           nushi: 1.75,
         }[fishId] || .9;
         if (!hasSpecimen) return Math.max(.36, Math.min(1.8, speciesWeight));
@@ -9142,15 +9302,26 @@
       }
       function pick(distance = 50, spotId = battle?.spot) {
         const spot = fishingSpotById(spotId);
+        const period = gameClockAt(s.gameMinutes).period;
         const weighted = Object.entries(spot.weights).map(([id, base]) => {
           let weight = base;
+          if (id === "suzuki") {
+            weight *= {
+              morning: 1.35,
+              day: 0.72,
+              evening: 1.55,
+              night: 1.15,
+            }[period] || 1;
+          }
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "koi") weight *= 1.45;
+            if (id === "suzuki") weight *= 1.5;
             if (id === "nushi") weight *= 2.4;
           } else if (distance < 34) {
             if (id === "moroko") weight *= 1.45;
             if (id === "koi") weight *= 0.65;
+            if (id === "suzuki") weight *= 0.4;
             if (id === "nushi") weight *= 0.15;
           }
           return { fish: fish.find((candidate) => candidate.id === id), weight };
@@ -9818,7 +9989,7 @@
       }
       function maybeStartGillWash(mood) {
         if (!battle || battle.gillWash || !mood.danger) return false;
-        const chance = { koi: 0.2, nushi: 0.34 }[battle.f.id] || 0;
+        const chance = { koi: 0.2, suzuki: 0.26, nushi: 0.34 }[battle.f.id] || 0;
         const progress = battle.retrieval || 0;
         if (
           !chance ||
@@ -10316,6 +10487,7 @@
           aji: 52,
           funa: 58,
           koi: 88,
+          suzuki: 96,
           nushi: 122,
         }[battle.f.id];
         if (battle.tailKick) {
@@ -10584,6 +10756,7 @@
           funa: 130,
           koi: 140,
           kasago: 135,
+          suzuki: 118,
           nushi: 165,
         }[f.id] || 130;
         catchAnimationTimer = setInterval(() => {
