@@ -2566,6 +2566,11 @@
         --underwater-position: center;
         --underwater-size: cover;
       }
+      .fish-scene.water-sea.sand-flatfish {
+        --underwater-image: url("assets/underwater-sea-sand-flatfish-v97.jpg");
+        --underwater-position: center;
+        --underwater-size: cover;
+      }
       .fish-scene.active {
         display: block;
       }
@@ -3525,6 +3530,18 @@
         width: clamp(145px, 23vw, 270px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-hirame {
+        width: clamp(145px, 24vw, 280px);
+        aspect-ratio: 2 / 1;
+      }
+      .battle-fish.fish-hirame.sand-grounded {
+        filter:
+          hue-rotate(var(--fish-hue, 0deg))
+          brightness(var(--fish-light, 1))
+          saturate(var(--fish-color, 1))
+          contrast(var(--fish-contrast, 1))
+          drop-shadow(3px 4px 1px #30220d99);
+      }
       .battle-fish.fish-kasago {
         width: clamp(125px, 19vw, 215px);
         aspect-ratio: 8 / 5;
@@ -4261,6 +4278,12 @@
         transform: translate(-81.3%, -57%) scale(var(--specimen-scale, 1));
         transform-origin: 81.3% 57%;
       }
+      .catch-fish.fish-hirame {
+        width: clamp(135px, min(27vw, 45vh), 250px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-94.4%, -57%) scale(var(--specimen-scale, 1));
+        transform-origin: 94.4% 57%;
+      }
       .catch-fish.fish-kasago {
         width: clamp(115px, min(22vw, 40vh), 210px);
         aspect-ratio: 8 / 5;
@@ -4590,7 +4613,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v96</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v97</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5116,6 +5139,15 @@
             shadowRow: 3,
           },
           {
+            id: "hirame",
+            name: "ヒラメ",
+            price: 680,
+            resistance: 126,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
+          {
             id: "nushi",
             name: "星湖のヌシ",
             price: 2000,
@@ -5179,24 +5211,24 @@
             zone: "sea",
             depth: "shallow",
             name: "潮見浜・波打ち際",
-            role: "海の浅場・マアジと若いスズキ",
-            weights: { aji: 0.63, kasago: 0.27, suzuki: 0.1 },
+            role: "海の浅場・マアジと砂底のヒラメ",
+            weights: { aji: 0.48, kasago: 0.22, suzuki: 0.1, hirame: 0.2 },
           },
           {
             id: "sea-mid",
             zone: "sea",
             depth: "mid",
             name: "潮見浜・沿岸",
-            role: "海の中層・回遊魚と銀色の大物",
-            weights: { aji: 0.54, kasago: 0.28, suzuki: 0.18 },
+            role: "海の中層・回遊魚と砂底の大物",
+            weights: { aji: 0.42, kasago: 0.23, suzuki: 0.15, hirame: 0.2 },
           },
           {
             id: "sea-deep",
             zone: "sea",
             depth: "deep",
             name: "潮見浜・沖",
-            role: "海の深場・大型スズキが回遊する",
-            weights: { aji: 0.42, kasago: 0.32, suzuki: 0.26 },
+            role: "海の深場・大型スズキとヒラメを狙う",
+            weights: { aji: 0.36, kasago: 0.28, suzuki: 0.24, hirame: 0.12 },
           },
         ],
         baitData = {
@@ -5303,6 +5335,7 @@
           namazu: "assets/fish-namazu-v96.png",
           kasago: "assets/fish-kasago-v57.png",
           suzuki: "assets/fish-suzuki-v93.png",
+          hirame: "assets/fish-hirame-v97.png",
           nushi: "assets/fish-nushi-v31.png",
         },
         fishMouthAssets = {
@@ -5314,6 +5347,7 @@
           koi: "assets/fish-koi-mouth-v68.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
+          hirame: "assets/fish-hirame-mouth-v97.png",
           nushi: "assets/fish-nushi-mouth-v68.png",
         },
         fishTurnAssets = {
@@ -5325,6 +5359,7 @@
           koi: "assets/fish-koi-turn-v70.png",
           kasago: "assets/fish-kasago-turn-v70.png",
           suzuki: "assets/fish-suzuki-turn-v93.png",
+          hirame: "assets/fish-hirame-turn-v97.png",
           nushi: "assets/fish-nushi-turn-v70.png",
         },
         fishCatchAssets = {
@@ -5366,6 +5401,10 @@
           suzuki: {
             x: 0.447, y: 0.08, tackleScale: 0.86, inset: 4, drop: 1.8,
             breath: 0.36,
+          },
+          hirame: {
+            x: 0.444, y: 0.075, tackleScale: 0.9, inset: 4.5, drop: 2,
+            breath: 0.3,
           },
           nushi: {
             x: 0.43, y: 0.09, tackleScale: 0.82, inset: 5, drop: 2.4,
@@ -6021,6 +6060,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        hirame: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 2000,
+            maxHundredths: 2999,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 3000,
+            maxHundredths: 3999,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 4000,
+            maxHundredths: 5499,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 5500,
+            maxHundredths: 6999,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 7000,
+            maxHundredths: 8999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 9000,
+            maxHundredths: 11999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         kasago: [
           {
             id: "tiny",
@@ -6547,6 +6642,101 @@
             ? "岩陰で息を整えている。Aで寄せよう！"
             : "竿を送り、根へ潜る力をいなす。",
         })),
+      };
+      fishMotionProfiles.hirame = {
+        ...fishMotionProfiles.koi,
+        beat: 0.38,
+        speedBeat: 0.072,
+        burst: 1.48,
+        thrust: 0.14,
+        stretch: 0.012,
+        squeeze: 0.009,
+        recoil: 1.45,
+        sway: 0.72,
+        roll: 0.52,
+        movingDrag: 0.991,
+        restingDrag: 0.948,
+        turnTicks: 2,
+        turnFrames: 7,
+        turnArc: 2.8,
+        turnRoll: 4.5,
+      };
+      fightProfiles.hirame = {
+        intro: "砂底へ身を伏せ、幅広い体で海底に張り付いている。",
+        moods: [
+          {
+            id: "cling",
+            name: "底張り",
+            icon: "▂",
+            weight: 0.32,
+            min: 820,
+            max: 1220,
+            motion: "cling",
+            speedX: 0.75,
+            speedY: 0.2,
+            tension: 6.5,
+            release: 5.7,
+            reel: 0.56,
+            scale: 0.99,
+            frameEvery: 3,
+            hold: "ヒラメが砂底へ張り付く！Aでじわじわ引き剥がそう！",
+            loose: "幅広い体で底を押さえている。糸を送り、浮く隙を待つ。",
+          },
+          {
+            id: "sand-rush",
+            name: "砂煙走り",
+            icon: "⚡",
+            weight: 0.34,
+            min: 620,
+            max: 940,
+            motion: "rush",
+            speedX: 5.2,
+            speedY: 1.55,
+            tension: 9.8,
+            release: 7.1,
+            reel: 0.36,
+            scale: 1.08,
+            frameEvery: 1,
+            danger: true,
+            hold: "ヒラメが砂を巻いて突進！今すぐAを離せ！",
+            loose: "砂煙の走りに合わせて糸を送り、勢いをいなす！",
+          },
+          {
+            id: "broadside",
+            name: "横抵抗",
+            icon: "↔",
+            weight: 0.22,
+            min: 760,
+            max: 1120,
+            motion: "steady",
+            speedX: 1.65,
+            speedY: 0.75,
+            tension: 6.2,
+            release: 5.4,
+            reel: 0.66,
+            scale: 1.03,
+            frameEvery: 2,
+            hold: "ヒラメが幅広い体を横へ向けて抵抗する。無理は禁物！",
+            loose: "平たい体の抵抗をいなし、向きが変わるのを待つ。",
+          },
+          {
+            id: "rest",
+            name: "浮き間",
+            icon: "◎",
+            weight: 0.12,
+            min: 500,
+            max: 760,
+            motion: "rest",
+            tension: 2.1,
+            release: 5.1,
+            reel: 1.7,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "ヒラメが底から浮いた！今が一気に巻く好機！",
+            loose: "水中で力を抜いている。Aで左上へ寄せよう！",
+          },
+        ],
       };
       const FISH_VISUAL_MIN_SCALE = .65,
         FISH_VISUAL_MAX_SCALE = 1.6;
@@ -7432,6 +7622,7 @@
           namazu: 1.25,
           kasago: 1.05,
           suzuki: 1.3,
+          hirame: 1.35,
           nushi: 1.75,
         }[fishId] || .9;
         if (!hasSpecimen) return Math.max(.36, Math.min(1.8, speciesWeight));
@@ -9778,12 +9969,22 @@
               night: 1.65,
             }[period] || 1;
           }
+          if (id === "hirame") {
+            weight *= {
+              morning: 1.35,
+              day: 0.85,
+              evening: 1.45,
+              night: 0.65,
+            }[period] || 1;
+            if (battle?.castLocale !== "beach") weight = 0;
+          }
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
             if (id === "koi") weight *= 1.45;
             if (id === "namazu") weight *= 1.25;
             if (id === "suzuki") weight *= 1.5;
+            if (id === "hirame") weight *= 1.35;
             if (id === "nushi") weight *= 2.4;
           } else if (distance < 34) {
             if (id === "moroko") weight *= 1.45;
@@ -9791,6 +9992,7 @@
             if (id === "koi") weight *= 0.65;
             if (id === "namazu") weight *= 0.7;
             if (id === "suzuki") weight *= 0.4;
+            if (id === "hirame") weight *= 0.55;
             if (id === "nushi") weight *= 0.15;
           }
           return { fish: fish.find((candidate) => candidate.id === id), weight };
@@ -9803,7 +10005,11 @@
         }
         return weighted[0]?.fish || fish[0];
       }
-      function setFishingSceneTheme(zone = "lake", depth = "shallow") {
+      function setFishingSceneTheme(
+        zone = "lake",
+        depth = "shallow",
+        fishId = "",
+      ) {
         const scene = $("#fishScene");
         scene.classList.remove(
           "water-lake",
@@ -9812,8 +10018,10 @@
           "depth-shallow",
           "depth-mid",
           "depth-deep",
+          "sand-flatfish",
         );
         scene.classList.add(`water-${zone}`, `depth-${depth}`);
+        scene.classList.toggle("sand-flatfish", fishId === "hirame");
       }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
         if (rescueInProgress) return;
@@ -10246,6 +10454,7 @@
           nextGillWashTick: 0,
           gillRecovery: 0,
           recoveryMessage: "",
+          sandLifted: true,
         };
         resetWaterFx();
         $("#fishScene").classList.add("active");
@@ -10295,18 +10504,22 @@
         battle.depth = depth;
         battle.spot = `${battle.waterZone || "lake"}-${depth}`;
         const spot = fishingSpotById(battle.spot);
-        setFishingSceneTheme(spot.zone, spot.depth);
         const f = battle.practice
           ? fish.find((candidate) => candidate.id === "funa")
           : pick(distance, battle.spot);
+        setFishingSceneTheme(spot.zone, spot.depth, f.id);
         battle.f = f;
         battle.specimen = battle.practice ? null : rollFishSpecimen(f);
         battle.specimenVisualScale = battle.specimen
           ? fishVisualScale(battle.specimen)
           : 1;
         preloadFishAnimation(f.id);
-        battle.x = clampBattle(54 + distance * .4, 54, f.id === "nushi" ? 90 : 94);
-        battle.y = clampBattle(44 + distance * .18, 44, f.id === "nushi" ? 66 : 72);
+        battle.x = f.id === "hirame"
+          ? clampBattle(55 + distance * .05, 55, 60)
+          : clampBattle(54 + distance * .4, 54, f.id === "nushi" ? 90 : 94);
+        battle.y = f.id === "hirame"
+          ? 76
+          : clampBattle(44 + distance * .18, 44, f.id === "nushi" ? 66 : 72);
         battle.startX = battle.x;
         battle.startY = battle.y;
         battle.surfaceX = 12;
@@ -10317,6 +10530,7 @@
         battle.distanceFactor = battle.practice
           ? .72
           : clampBattle(battle.startMeters / 18, .75, 1.55);
+        battle.sandLifted = f.id !== "hirame";
         $("#linePath").setAttribute(
           "d",
           `M 150 48 Q 275 135 ${battle.x * 10} ${battle.y * 5}`,
@@ -10436,7 +10650,10 @@
         const outwardY = awayY / awayLength;
         const tangentX = -outwardY * (battle.motionY || 1);
         const tangentY = outwardX * (battle.motionY || 1);
-        if (mood.motion === "rest") {
+        if (mood.motion === "cling") {
+          battle.targetVx = tangentX * speedX * 0.34;
+          battle.targetVy = Math.abs(speedY) * 0.12;
+        } else if (mood.motion === "rest") {
           battle.targetVx = tangentX * 0.16;
           battle.targetVy = tangentY * 0.16;
         } else if (mood.motion === "dart") {
@@ -10623,6 +10840,9 @@
             break;
           }
         }
+        if (battle.f.id === "hirame" && !battle.sandLifted) {
+          selected = moods.find((mood) => mood.id === "cling") || selected;
+        }
         if (boosted) battle.calmBoost--;
         battle.mood = selected;
         battle.calm = Boolean(selected.calm);
@@ -10644,6 +10864,9 @@
           vibrate([35, 30, 55]);
       }
       function fishSwimBounds() {
+        if (battle.f.id === "hirame" && !battle.sandLifted) {
+          return { minX: 55, maxX: 60, minY: 74, maxY: 78 };
+        }
         const base = battle.f.id === "nushi"
           ? { minX: 44, maxX: 90, minY: 36, maxY: 72 }
           : battle.f.id === "koi"
@@ -10657,6 +10880,31 @@
           maxY: base.maxY + (74 - base.maxY) * progress,
         };
       }
+      function releaseHirameFromSand() {
+        if (!battle || battle.f.id !== "hirame" || battle.sandLifted) return false;
+        battle.sandLifted = true;
+        battle.vy = Math.min(Number(battle.vy) || 0, -2.6);
+        battle.targetVy = Math.min(Number(battle.targetVy) || 0, -1.5);
+        $("#battleFish").classList.remove("sand-grounded");
+        $("#phaseLabel").textContent = " ↖ 砂底から浮上";
+        battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
+        battle.recoveryMessage =
+          "砂底から引き剥がした！このまま左上の水面へ寄せよう！";
+        $("#battleMsg").textContent = battle.recoveryMessage;
+        const fishX = battle.x * 10;
+        const fishY = battle.y * 5;
+        for (let i = 0; i < 24; i++) {
+          waterFxState.silt.push({
+            x: fishX + (Math.random() - .5) * 150,
+            y: fishY + 8 + Math.random() * 28,
+            vx: (Math.random() - .5) * 3.8,
+            vy: -0.5 - Math.random() * 1.25,
+            life: 18 + Math.floor(Math.random() * 16),
+          });
+        }
+        vibrate([55, 30, 85]);
+        return true;
+      }
       function updateRetrieval(mood) {
         const control = battle.practice
           ? Math.max(1.7, rodData[s.selectedRod].control)
@@ -10664,10 +10912,13 @@
         const power = battle.practice ? Math.max(20, s.power) : s.power;
         const before = battle.retrieval || 0;
         if (battle.reeling) {
+          const sandGrip = battle.f.id === "hirame" && !battle.sandLifted
+            ? .48
+            : 1;
           const pull =
             ((power / 11) * mood.reel) /
             (battle.f.resistance * fishPullMultiplier()) /
-            (battle.distanceFactor || 1);
+            (battle.distanceFactor || 1) * sandGrip;
           battle.retrieval = before + pull;
         } else if (!mood.calm) {
           const slip =
@@ -10678,6 +10929,11 @@
         }
         battle.retrieval = clampBattle(battle.retrieval, 0, 1);
         battle.retrievalDelta = battle.retrieval - before;
+        if (
+          battle.f.id === "hirame" &&
+          !battle.sandLifted &&
+          battle.retrieval >= .12
+        ) releaseHirameFromSand();
       }
       function animateFishMouth(mood, speed, intensity = 1) {
         const profile = fishMouthProfiles[battle.f.id];
@@ -10850,6 +11106,7 @@
           battle.targetVy = -Math.abs(battle.targetVy);
         }
         const acceleration = {
+          cling: 0.08,
           rest: 0.1,
           feint: 0.11,
           steady: 0.18,
@@ -10961,6 +11218,7 @@
           koi: 88,
           namazu: 90,
           suzuki: 96,
+          hirame: 104,
           nushi: 122,
         }[battle.f.id];
         if (battle.tailKick) {
@@ -10994,7 +11252,11 @@
         const waterWeight = battle.waterAudioWeight || fishWaterWeight();
         if (battle.tailKick)
           playFishWaterStroke(waterWeight, speed, Boolean(mood?.danger));
-        if (mood?.motion === "deep" && battle.y > 64 && waterFxState.tick % 2 === 0) {
+        if (
+          ["deep", "cling"].includes(mood?.motion) &&
+          battle.y > 64 &&
+          waterFxState.tick % 2 === 0
+        ) {
           for (let i = 0; i < 3; i++) {
             waterFxState.silt.push({
               x: fishX - battle.facing * (20 + Math.random() * 45),
@@ -11126,6 +11388,7 @@
           "practice-fishing",
           "surface-casting",
           "surface-diving",
+          "sand-flatfish",
         );
         const castSurface = $("#castSurface");
         castSurface.className = "cast-surface";
@@ -11156,6 +11419,7 @@
         delete fishElement.dataset.spriteMode;
         delete fishElement.dataset.spriteFrame;
         delete fishElement.dataset.specimenScale;
+        delete fishElement.dataset.sandState;
         fishElement.style.removeProperty("left");
         fishElement.style.removeProperty("top");
         fishElement.style.removeProperty("transition");
@@ -11230,6 +11494,7 @@
           funa: 130,
           koi: 140,
           namazu: 150,
+          hirame: 145,
           kasago: 135,
           suzuki: 118,
           nushi: 165,
@@ -11297,6 +11562,9 @@
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
         element.style.top = battle.y + "%";
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted;
+        element.classList.toggle("sand-grounded", sandGrounded);
+        element.dataset.sandState = sandGrounded ? "grounded" : "lifted";
         const mouthState = battle.mouthState ||
           (battle.mouthOpen >= 0.67
             ? "open"
@@ -11695,6 +11963,10 @@
         scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
+        fishElement.classList.toggle(
+          "sand-grounded",
+          f.id === "hirame" && !battle.sandLifted,
+        );
         fishElement.style.backgroundImage = `url("${fishAssets[f.id]}")`;
         fishElement.style.backgroundSize = "800% 100%";
         fishElement.style.backgroundPositionY = "0";
@@ -11726,7 +11998,9 @@
           : $("#phaseLabel").textContent;
         $("#battleMsg").textContent = battle.practice
           ? "サム「掛かった！Aを押して巻く。赤くなったら離して糸を送るんだ」"
-          : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
+          : f.id === "hirame" && !battle.sandLifted
+            ? "ヒラメが砂底にぺったり張り付いている！まずAで引き剥がし、左上の水面へ寄せよう。"
+            : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(battle.practice
           ? "サムの試し釣り池で、練習用のフナが掛かった！"
@@ -11827,6 +12101,7 @@
         scene.classList.add("landing");
         const fishElement = $("#battleFish");
         fishElement.classList.remove("burst", "turning", "hooked", "gill-wash");
+        fishElement.classList.remove("sand-grounded");
         fishElement.style.removeProperty("--turn-duration");
         delete fishElement.dataset.turnFrom;
         battle.turning = null;
