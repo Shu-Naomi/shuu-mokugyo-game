@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v96-namazu-95";
+const CACHE_NAME = "nushi-tsuri-v97-hirame-96";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -48,6 +48,7 @@ const CORE_ASSETS = [
   "./assets/underwater-sea-shallow-v65.jpg",
   "./assets/underwater-sea-mid-v65.jpg",
   "./assets/underwater-sea-deep-v65.jpg",
+  "./assets/underwater-sea-sand-flatfish-v97.jpg",
   "./assets/sam-shop-exterior-v53.png",
   "./assets/interior-sam-shop-v55.png",
   "./assets/interior-yaoya-v55.png",
@@ -74,6 +75,9 @@ const CORE_ASSETS = [
   "./assets/fish-namazu-v96.png",
   "./assets/fish-namazu-mouth-v96.png",
   "./assets/fish-namazu-turn-v96.png",
+  "./assets/fish-hirame-v97.png",
+  "./assets/fish-hirame-mouth-v97.png",
+  "./assets/fish-hirame-turn-v97.png",
   "./assets/fish-funa-mouth-v68.png",
   "./assets/fish-funa-turn-v70.png",
   "./assets/fish-koi-mouth-v68.png",
