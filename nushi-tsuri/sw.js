@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v97-hirame-96";
+const CACHE_NAME = "nushi-tsuri-v97-1-hirame-ground-angle-97";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -76,6 +76,7 @@ const CORE_ASSETS = [
   "./assets/fish-namazu-mouth-v96.png",
   "./assets/fish-namazu-turn-v96.png",
   "./assets/fish-hirame-v97.png",
+  "./assets/fish-hirame-ground-v97-1.png",
   "./assets/fish-hirame-mouth-v97.png",
   "./assets/fish-hirame-turn-v97.png",
   "./assets/fish-funa-mouth-v68.png",
