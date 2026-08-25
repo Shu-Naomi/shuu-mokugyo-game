@@ -3534,6 +3534,10 @@
         width: clamp(105px, 15.5vw, 170px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-yamame {
+        width: clamp(115px, 17vw, 195px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-namazu {
         width: clamp(145px, 23vw, 270px);
         aspect-ratio: 2 / 1;
@@ -4293,6 +4297,12 @@
         transform: translate(-94.4%, -58%) scale(var(--specimen-scale, 1));
         transform-origin: 94.4% 58%;
       }
+      .catch-fish.fish-yamame {
+        width: clamp(105px, min(20vw, 38vh), 185px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-93%, -57%) scale(var(--specimen-scale, 1));
+        transform-origin: 93% 57%;
+      }
       .catch-fish.fish-namazu {
         width: clamp(135px, min(26vw, 44vh), 245px);
         aspect-ratio: 2 / 1;
@@ -4634,7 +4644,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v99</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v100</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5132,6 +5142,15 @@
             shadowRow: 3,
           },
           {
+            id: "yamame",
+            name: "ヤマメ",
+            price: 360,
+            resistance: 96,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
+          {
             id: "namazu",
             name: "ナマズ",
             price: 420,
@@ -5226,24 +5245,24 @@
             zone: "river",
             depth: "shallow",
             name: "民家川・瀬",
-            role: "流れの浅い瀬・ホンモロコとアユ",
-            weights: { moroko: 0.46, ayu: 0.28, funa: 0.26 },
+            role: "流れの浅い瀬・ホンモロコとアユ、朝夕のヤマメ",
+            weights: { moroko: 0.36, ayu: 0.24, yamame: 0.18, funa: 0.22 },
           },
           {
             id: "river-mid",
             zone: "river",
             depth: "mid",
             name: "民家川・流心",
-            role: "川の流心・アユとフナ、流れ脇のブラックバス",
-            weights: { moroko: 0.16, ayu: 0.28, funa: 0.26, koi: 0.09, namazu: 0.09, bass: 0.12 },
+            role: "川の流心・アユとヤマメ、流れ脇のブラックバス",
+            weights: { moroko: 0.13, ayu: 0.23, yamame: 0.18, funa: 0.21, koi: 0.08, namazu: 0.07, bass: 0.1 },
           },
           {
             id: "river-deep",
             zone: "river",
             depth: "deep",
             name: "民家川・淵",
-            role: "川の淵・ナマズとブラックバス、河口から差す大物",
-            weights: { moroko: 0.09, ayu: 0.12, funa: 0.24, koi: 0.17, namazu: 0.16, bass: 0.14, suzuki: 0.08 },
+            role: "川の淵・ナマズとブラックバス、ときどき大型ヤマメ",
+            weights: { moroko: 0.08, ayu: 0.11, yamame: 0.05, funa: 0.22, koi: 0.16, namazu: 0.16, bass: 0.14, suzuki: 0.08 },
           },
           {
             id: "sea-shallow",
@@ -5371,6 +5390,7 @@
           koi: "assets/fish-koi-v31.png",
           aji: "assets/fish-aji-v68.png",
           ayu: "assets/fish-ayu-v95.png",
+          yamame: "assets/fish-yamame-v100.png",
           namazu: "assets/fish-namazu-v96.png",
           bass: "assets/fish-bass-v98.png",
           kurodai: "assets/fish-kurodai-v99.png",
@@ -5386,6 +5406,7 @@
           moroko: "assets/fish-moroko-mouth-v68.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
+          yamame: "assets/fish-yamame-mouth-v100.png",
           namazu: "assets/fish-namazu-mouth-v96.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
@@ -5400,6 +5421,7 @@
           moroko: "assets/fish-moroko-turn-v70.png",
           aji: "assets/fish-aji-turn-v70.png",
           ayu: "assets/fish-ayu-turn-v95.png",
+          yamame: "assets/fish-yamame-turn-v100.png",
           namazu: "assets/fish-namazu-turn-v96.png",
           bass: "assets/fish-bass-turn-v98.png",
           kurodai: "assets/fish-kurodai-turn-v99.png",
@@ -5429,6 +5451,10 @@
           ayu: {
             x: 0.444, y: 0.075, tackleScale: 0.76, inset: 3, drop: 1.2,
             breath: 0.58,
+          },
+          yamame: {
+            x: 0.422, y: 0.055, tackleScale: 0.8, inset: 3, drop: 1.3,
+            breath: 0.52,
           },
           namazu: {
             x: 0.315, y: 0.075, tackleScale: 0.88, inset: 4, drop: 2,
@@ -6060,6 +6086,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        yamame: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 800,
+            maxHundredths: 1199,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 1200,
+            maxHundredths: 1799,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 1800,
+            maxHundredths: 2499,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 2500,
+            maxHundredths: 3099,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 3100,
+            maxHundredths: 3699,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 3700,
+            maxHundredths: 4499,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         namazu: [
           {
             id: "tiny",
@@ -6627,6 +6709,102 @@
             calm: true,
             hold: "アユが淀みで止まった！今が巻き時！",
             loose: "流れの陰で休んでいる。Aで距離を詰めよう！",
+          },
+        ],
+      };
+      fishMotionProfiles.yamame = {
+        ...fishMotionProfiles.ayu,
+        beat: 0.86,
+        speedBeat: 0.13,
+        burst: 1.65,
+        thrust: 0.24,
+        stretch: 0.019,
+        squeeze: 0.015,
+        recoil: 2.65,
+        sway: 2.3,
+        roll: 1.8,
+        movingDrag: 0.978,
+        restingDrag: 0.9,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 4.8,
+        turnRoll: 7.4,
+      };
+      fightProfiles.yamame = {
+        intro: "斑紋の魚体をひるがえし、瀬を縫うように駆ける。",
+        moods: [
+          {
+            id: "upstream-dash",
+            name: "上流疾走",
+            icon: "⚡",
+            weight: 0.4,
+            min: 450,
+            max: 720,
+            motion: "dart",
+            speedX: 6.3,
+            speedY: 3.4,
+            tension: 7.8,
+            release: 6.3,
+            reel: 0.52,
+            scale: 1.07,
+            frameEvery: 1,
+            danger: true,
+            hold: "ヤマメが上流へ鋭く走る！いったんAを離せ！",
+            loose: "瀬を切る速さに糸を合わせ、走りをいなす！",
+          },
+          {
+            id: "cross-current",
+            name: "瀬返し",
+            icon: "↔",
+            weight: 0.28,
+            min: 640,
+            max: 960,
+            motion: "steady",
+            speedX: 2.2,
+            speedY: 1.7,
+            tension: 5.7,
+            release: 5.3,
+            reel: 0.78,
+            scale: 1.03,
+            frameEvery: 2,
+            hold: "ヤマメが流れを横切って抵抗する。焦らず巻こう！",
+            loose: "竿を送り、斑紋の向きが変わる瞬間を待つ。",
+          },
+          {
+            id: "surface-leap",
+            name: "水面跳躍",
+            icon: "🌊",
+            weight: 0.16,
+            min: 520,
+            max: 800,
+            motion: "rush",
+            speedX: 4.8,
+            speedY: 2.3,
+            tension: 8.4,
+            release: 6.6,
+            reel: 0.42,
+            scale: 1.08,
+            frameEvery: 1,
+            danger: true,
+            hold: "ヤマメが水面へ向けて加速した！Aを離して備えろ！",
+            loose: "跳ねる直前の走りだ。糸を送り、衝撃を逃がす！",
+          },
+          {
+            id: "rest",
+            name: "岩陰",
+            icon: "◎",
+            weight: 0.16,
+            min: 430,
+            max: 680,
+            motion: "rest",
+            tension: 1.9,
+            release: 5.5,
+            reel: 1.9,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "ヤマメが岩陰で止まった！今が巻き時！",
+            loose: "流れの陰で休んでいる。Aで一気に距離を詰めよう！",
           },
         ],
       };
@@ -7978,6 +8156,7 @@
           moroko: .65,
           aji: .75,
           ayu: .82,
+          yamame: .92,
           funa: .95,
           koi: 1.15,
           namazu: 1.25,
@@ -10324,6 +10503,19 @@
               night: 0.45,
             }[period] || 1;
           }
+          if (id === "yamame") {
+            weight *= {
+              morning: 1.55,
+              day: 1,
+              evening: 1.4,
+              night: 0.35,
+            }[period] || 1;
+            weight *= {
+              worm: 1.05,
+              river: 1.6,
+              paste: 0.35,
+            }[battle?.bait || s.selectedBait] || 1;
+          }
           if (id === "namazu") {
             weight *= {
               morning: 0.75,
@@ -10371,6 +10563,7 @@
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
+            if (id === "yamame") weight *= 0.7;
             if (id === "koi") weight *= 1.45;
             if (id === "namazu") weight *= 1.25;
             if (id === "bass") weight *= 1.2;
@@ -10381,6 +10574,7 @@
           } else if (distance < 34) {
             if (id === "moroko") weight *= 1.45;
             if (id === "ayu") weight *= 0.75;
+            if (id === "yamame") weight *= 1.15;
             if (id === "koi") weight *= 0.65;
             if (id === "namazu") weight *= 0.7;
             if (id === "bass") weight *= 0.82;
@@ -11069,7 +11263,7 @@
       }
       function maybeStartGillWash(mood) {
         if (!battle || battle.gillWash || !mood.danger) return false;
-        const chance = { koi: 0.2, bass: 0.3, suzuki: 0.26, nushi: 0.34 }[battle.f.id] || 0;
+        const chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, nushi: 0.34 }[battle.f.id] || 0;
         const progress = battle.retrieval || 0;
         if (
           !chance ||
@@ -11608,6 +11802,7 @@
           moroko: 52,
           aji: 52,
           ayu: 60,
+          yamame: 68,
           funa: 58,
           koi: 88,
           namazu: 90,
@@ -11887,6 +12082,7 @@
           moroko: 105,
           aji: 100,
           ayu: 108,
+          yamame: 104,
           funa: 130,
           koi: 140,
           namazu: 150,

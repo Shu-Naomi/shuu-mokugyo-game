@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v99-kurodai-99";
+const CACHE_NAME = "nushi-tsuri-v100-yamame-100";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -72,6 +72,9 @@ const CORE_ASSETS = [
   "./assets/fish-ayu-v95.png",
   "./assets/fish-ayu-mouth-v95.png",
   "./assets/fish-ayu-turn-v95.png",
+  "./assets/fish-yamame-v100.png",
+  "./assets/fish-yamame-mouth-v100.png",
+  "./assets/fish-yamame-turn-v100.png",
   "./assets/fish-namazu-v96.png",
   "./assets/fish-namazu-mouth-v96.png",
   "./assets/fish-namazu-turn-v96.png",
