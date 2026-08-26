@@ -3542,6 +3542,10 @@
         width: clamp(145px, 23vw, 270px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-unagi {
+        width: clamp(150px, 24vw, 285px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-hirame {
         width: clamp(145px, 24vw, 280px);
         aspect-ratio: 2 / 1;
@@ -4309,6 +4313,12 @@
         transform: translate(-81.3%, -57%) scale(var(--specimen-scale, 1));
         transform-origin: 81.3% 57%;
       }
+      .catch-fish.fish-unagi {
+        width: clamp(140px, min(27vw, 44vh), 265px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-93%, -56%) scale(var(--specimen-scale, 1));
+        transform-origin: 93% 56%;
+      }
       .catch-fish.fish-hirame {
         width: clamp(135px, min(27vw, 45vh), 250px);
         aspect-ratio: 2 / 1;
@@ -4644,7 +4654,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v100</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v101</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5160,6 +5170,15 @@
             shadowRow: 3,
           },
           {
+            id: "unagi",
+            name: "ウナギ",
+            price: 800,
+            resistance: 120,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
+          {
             id: "bass",
             name: "ブラックバス",
             price: 480,
@@ -5253,16 +5272,16 @@
             zone: "river",
             depth: "mid",
             name: "民家川・流心",
-            role: "川の流心・アユとヤマメ、流れ脇のブラックバス",
-            weights: { moroko: 0.13, ayu: 0.23, yamame: 0.18, funa: 0.21, koi: 0.08, namazu: 0.07, bass: 0.1 },
+            role: "川の流心・アユとヤマメ、流れ脇のブラックバスと夜のウナギ",
+            weights: { moroko: 0.12, ayu: 0.21, yamame: 0.17, funa: 0.19, koi: 0.08, namazu: 0.07, bass: 0.08, unagi: 0.08 },
           },
           {
             id: "river-deep",
             zone: "river",
             depth: "deep",
             name: "民家川・淵",
-            role: "川の淵・ナマズとブラックバス、ときどき大型ヤマメ",
-            weights: { moroko: 0.08, ayu: 0.11, yamame: 0.05, funa: 0.22, koi: 0.16, namazu: 0.16, bass: 0.14, suzuki: 0.08 },
+            role: "川の淵・ナマズとブラックバス、夜に河口から入るウナギ",
+            weights: { moroko: 0.06, ayu: 0.08, yamame: 0.04, funa: 0.17, koi: 0.14, namazu: 0.14, bass: 0.11, suzuki: 0.06, unagi: 0.2 },
           },
           {
             id: "sea-shallow",
@@ -5392,6 +5411,7 @@
           ayu: "assets/fish-ayu-v95.png",
           yamame: "assets/fish-yamame-v100.png",
           namazu: "assets/fish-namazu-v96.png",
+          unagi: "assets/fish-unagi-v101.png",
           bass: "assets/fish-bass-v98.png",
           kurodai: "assets/fish-kurodai-v99.png",
           kasago: "assets/fish-kasago-v57.png",
@@ -5408,6 +5428,7 @@
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
           namazu: "assets/fish-namazu-mouth-v96.png",
+          unagi: "assets/fish-unagi-mouth-v101.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
           funa: "assets/fish-funa-mouth-v68.png",
@@ -5423,6 +5444,7 @@
           ayu: "assets/fish-ayu-turn-v95.png",
           yamame: "assets/fish-yamame-turn-v100.png",
           namazu: "assets/fish-namazu-turn-v96.png",
+          unagi: "assets/fish-unagi-turn-v101.png",
           bass: "assets/fish-bass-turn-v98.png",
           kurodai: "assets/fish-kurodai-turn-v99.png",
           funa: "assets/fish-funa-turn-v70.png",
@@ -5459,6 +5481,10 @@
           namazu: {
             x: 0.315, y: 0.075, tackleScale: 0.88, inset: 4, drop: 2,
             breath: 0.34,
+          },
+          unagi: {
+            x: 0.43, y: 0.055, tackleScale: 0.88, inset: 4, drop: 1.6,
+            breath: 0.38,
           },
           bass: {
             x: 0.43, y: 0.075, tackleScale: 0.86, inset: 4, drop: 1.8,
@@ -6198,6 +6224,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        unagi: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 2000,
+            maxHundredths: 2999,
+            weight: 8,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 3000,
+            maxHundredths: 4499,
+            weight: 20,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 4500,
+            maxHundredths: 5999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 6000,
+            maxHundredths: 7499,
+            weight: 23,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.35,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 7500,
+            maxHundredths: 8999,
+            weight: 12,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.85,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 9000,
+            maxHundredths: 11999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         bass: [
           {
             id: "tiny",
@@ -6883,6 +6965,102 @@
             calm: true,
             hold: "ナマズが泥底へ伏せた！今が巻く好機！",
             loose: "ヒゲだけが揺れている。Aで距離を詰めよう！",
+          },
+        ],
+      };
+      fishMotionProfiles.unagi = {
+        ...fishMotionProfiles.namazu,
+        beat: 0.68,
+        speedBeat: 0.105,
+        burst: 1.48,
+        thrust: 0.16,
+        stretch: 0.028,
+        squeeze: 0.018,
+        recoil: 2.2,
+        sway: 2.8,
+        roll: 1.6,
+        movingDrag: 0.987,
+        restingDrag: 0.94,
+        turnTicks: 2,
+        turnFrames: 7,
+        turnArc: 4.3,
+        turnRoll: 6.6,
+      };
+      fightProfiles.unagi = {
+        intro: "細長い魚体をくねらせ、川底を縫うように逃げ始めた。",
+        moods: [
+          {
+            id: "bottom-crawl",
+            name: "底這い",
+            icon: "≋",
+            weight: 0.3,
+            min: 720,
+            max: 1080,
+            motion: "cling",
+            speedX: 1.7,
+            speedY: 0.85,
+            tension: 5.8,
+            release: 5.4,
+            reel: 0.72,
+            scale: 1.02,
+            frameEvery: 2,
+            hold: "ウナギが川底へ体を押しつけて粘る。焦らず巻こう！",
+            loose: "底を這う動きに糸を合わせ、浮く瞬間を待つ。",
+          },
+          {
+            id: "serpentine",
+            name: "蛇行",
+            icon: "〰",
+            weight: 0.3,
+            min: 540,
+            max: 820,
+            motion: "dart",
+            speedX: 4.9,
+            speedY: 2.8,
+            tension: 7.6,
+            release: 6.1,
+            reel: 0.5,
+            scale: 1.07,
+            frameEvery: 1,
+            danger: true,
+            hold: "ウナギが大きく蛇行した！Aを離して切り返しをいなせ！",
+            loose: "くねる尾に合わせて糸を送り、走りを受け流す！",
+          },
+          {
+            id: "deep-pull",
+            name: "深場突っ込み",
+            icon: "▼",
+            weight: 0.25,
+            min: 780,
+            max: 1160,
+            motion: "deep",
+            speedX: 1.5,
+            speedY: 2.9,
+            tension: 8.4,
+            release: 6.5,
+            reel: 0.4,
+            scale: 1.08,
+            frameEvery: 1,
+            danger: true,
+            hold: "ウナギが深場へ突っ込む！今すぐAを離せ！",
+            loose: "竿を送り、底へ引き込む力が緩むのを待つ！",
+          },
+          {
+            id: "rest",
+            name: "石陰",
+            icon: "◎",
+            weight: 0.15,
+            min: 460,
+            max: 720,
+            motion: "rest",
+            tension: 2,
+            release: 5.1,
+            reel: 1.8,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "ウナギが石陰で動きを止めた！今が巻き時！",
+            loose: "魚体が静まっている。Aで一気に距離を詰めよう！",
           },
         ],
       };
@@ -8160,6 +8338,7 @@
           funa: .95,
           koi: 1.15,
           namazu: 1.25,
+          unagi: 1.2,
           bass: 1.28,
           kurodai: 1.32,
           kasago: 1.05,
@@ -10524,6 +10703,19 @@
               night: 1.65,
             }[period] || 1;
           }
+          if (id === "unagi") {
+            weight *= {
+              morning: 0.28,
+              day: 0.15,
+              evening: 1.35,
+              night: 2.2,
+            }[period] || 1;
+            weight *= {
+              worm: 1.65,
+              river: 0.85,
+              paste: 0.25,
+            }[battle?.bait || s.selectedBait] || 1;
+          }
           if (id === "bass") {
             weight *= {
               morning: 1.25,
@@ -10566,6 +10758,7 @@
             if (id === "yamame") weight *= 0.7;
             if (id === "koi") weight *= 1.45;
             if (id === "namazu") weight *= 1.25;
+            if (id === "unagi") weight *= 1.45;
             if (id === "bass") weight *= 1.2;
             if (id === "kurodai") weight *= 1.35;
             if (id === "suzuki") weight *= 1.5;
@@ -10577,6 +10770,7 @@
             if (id === "yamame") weight *= 1.15;
             if (id === "koi") weight *= 0.65;
             if (id === "namazu") weight *= 0.7;
+            if (id === "unagi") weight *= 0.45;
             if (id === "bass") weight *= 0.82;
             if (id === "kurodai") weight *= 0.65;
             if (id === "suzuki") weight *= 0.4;
@@ -11806,6 +12000,7 @@
           funa: 58,
           koi: 88,
           namazu: 90,
+          unagi: 112,
           bass: 90,
           kurodai: 88,
           suzuki: 96,
@@ -12086,6 +12281,7 @@
           funa: 130,
           koi: 140,
           namazu: 150,
+          unagi: 145,
           bass: 110,
           kurodai: 128,
           hirame: 145,
