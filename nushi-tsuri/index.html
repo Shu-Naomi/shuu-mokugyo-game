@@ -3174,17 +3174,10 @@
       .fish-scene.water-river .underwater-backdrop {
         animation-duration: 5.2s;
       }
-      .fish-scene.fighting .underwater-backdrop {
-        animation-name: underwater-battle-sway;
-        animation-duration: 1.8s;
-        animation-timing-function: steps(8, end);
-      }
-      .fish-scene.water-rush .underwater-backdrop,
-      .fish-scene.gill-wash .underwater-backdrop {
-        animation-name: underwater-struggle-shake;
-        animation-duration: 0.3s;
-        animation-timing-function: steps(4, end);
-      }
+      /* Keep the camera/background on its slow current during a fight.  Pull
+         strength belongs to the fish, line, wake and surface effects; tying a
+         fast camera shake to every danger mood made strong fish strobe the
+         whole underwater scene whenever the player reeled. */
       .practice-badge {
         display: none;
         position: absolute;
@@ -4454,17 +4447,6 @@
         68% { transform: scale(1.037) translate3d(2px, -1px, 0); }
         100% { transform: scale(1.04) translate3d(-1px, 2px, 0); }
       }
-      @keyframes underwater-battle-sway {
-        0%, 100% { transform: scale(1.04) translate3d(-2px, 0, 0); }
-        25% { transform: scale(1.042) translate3d(1px, -1px, 0); }
-        50% { transform: scale(1.04) translate3d(2px, 1px, 0); }
-        75% { transform: scale(1.042) translate3d(-1px, 2px, 0); }
-      }
-      @keyframes underwater-struggle-shake {
-        0%, 100% { transform: scale(1.045) translate3d(-4px, 1px, 0); }
-        33% { transform: scale(1.047) translate3d(4px, -2px, 0); }
-        66% { transform: scale(1.045) translate3d(-1px, 3px, 0); }
-      }
       @media (prefers-reduced-motion: reduce) {
         .underwater-backdrop {
           animation: none !important;
@@ -4673,7 +4655,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v104</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v105</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5432,7 +5414,7 @@
         },
         fishAssets = {
           moroko: "assets/fish-moroko-v104.png",
-          funa: "assets/fish-funa-v31.png",
+          funa: "assets/fish-funa-v105.png",
           koi: "assets/fish-koi-v31.png",
           aji: "assets/fish-aji-v68.png",
           ayu: "assets/fish-ayu-v95.png",
@@ -5458,7 +5440,7 @@
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
-          funa: "assets/fish-funa-mouth-v68.png",
+          funa: "assets/fish-funa-mouth-v105.png",
           koi: "assets/fish-koi-mouth-v68.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
@@ -5563,12 +5545,7 @@
             { xScale: -0.92, yOffset: 0 },
           ],
         },
-        // The last cell of the current funa mouth sheet contains a pale block
-        // behind its tail. Quarantine just that damaged cell until the art is
-        // redrawn; the clean half-open drawing still supplies a full fish.
-        fishMouthFrameOverrides = {
-          funa: { open: 1 },
-        },
+        fishMouthFrameOverrides = {},
         fishMotionProfiles = {
           moroko: {
             beat: 0.92,
@@ -7542,11 +7519,12 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v104 begins the one-species-at-a-time hand-drawn conversion.  A
+      /* v105 continues the one-species-at-a-time hand-drawn conversion.  A
          12-cell cycle keeps the same beat duration as the legacy eight-cell
          sheets while showing a much clearer travelling bend. */
-      const fishSwimFrameCounts = { moroko: 12 },
-        handDrawnLifeFishIds = new Set(["moroko"]),
+      const fishSwimFrameCounts = { moroko: 12, funa: 12 },
+        handDrawnLifeFishIds = new Set(["moroko", "funa"]),
+        handDrawnMouthFishIds = new Set(["moroko", "funa"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const FISH_VISUAL_MIN_SCALE = .65,
@@ -12356,10 +12334,10 @@
       }
       function renderCatchFishLife(f, step) {
         const hangingFish = $("#catchFish");
-        if (f.id === "moroko") {
-          const cells = fishSwimFrameCounts.moroko;
+        if (handDrawnLifeFishIds.has(f.id)) {
+          const cells = fishSwimFrameCounts[f.id];
           const frame = step % cells;
-          hangingFish.style.backgroundImage = `url("${fishAssets.moroko}")`;
+          hangingFish.style.backgroundImage = `url("${fishAssets[f.id]}")`;
           hangingFish.style.backgroundSize = `${cells * 100}% 100%`;
           hangingFish.style.backgroundPositionX =
             `${frame * (100 / (cells - 1))}%`;
@@ -12383,9 +12361,9 @@
           ["swim", 7],
         ];
         const [mode, requestedFrame] = cycle[step % cycle.length];
-        const frame = mode === "mouth" && f.id === "funa" &&
-            requestedFrame === 2
-          ? fishMouthFrameOverrides.funa.open
+        const mouthState = requestedFrame === 2 ? "open" : "part";
+        const frame = mode === "mouth"
+          ? fishMouthFrameOverrides[f.id]?.[mouthState] ?? requestedFrame
           : requestedFrame;
         const cells = mode === "mouth" ? 3 : 8;
         const asset = mode === "mouth"
@@ -12591,8 +12569,8 @@
         } else if (mouthState !== "closed") {
           spriteAsset = fishMouthAssets[battle.f.id];
           const requestedFrame = mouthState === "open" ? 2 : 1;
-          if (battle.f.id === "moroko") {
-            const swimCells = fishSwimFrameCounts.moroko;
+          if (handDrawnMouthFishIds.has(battle.f.id)) {
+            const swimCells = fishSwimFrameCounts[battle.f.id];
             spriteCells = swimCells * 2;
             spriteFrame = (requestedFrame === 2 ? swimCells : 0) +
               ((battle.frame || 0) % swimCells);

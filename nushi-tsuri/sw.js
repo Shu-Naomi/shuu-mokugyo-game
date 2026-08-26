@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v104-moroko-swim-104";
+const CACHE_NAME = "nushi-tsuri-v105-funa-swim-shake-105";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -59,7 +59,7 @@ const CORE_ASSETS = [
   "./assets/sam-practice-pond-v53.png",
   "./assets/sam-front.png",
   "./assets/fish-moroko-v104.png",
-  "./assets/fish-funa-v31.png",
+  "./assets/fish-funa-v105.png",
   "./assets/fish-koi-v31.png",
   "./assets/fish-nushi-v31.png",
   "./assets/fish-aji-v68.png",
@@ -91,7 +91,7 @@ const CORE_ASSETS = [
   "./assets/fish-hirame-ground-v97-1.png",
   "./assets/fish-hirame-mouth-v97.png",
   "./assets/fish-hirame-turn-v97.png",
-  "./assets/fish-funa-mouth-v68.png",
+  "./assets/fish-funa-mouth-v105.png",
   "./assets/fish-funa-turn-v70.png",
   "./assets/fish-koi-mouth-v68.png",
   "./assets/fish-koi-turn-v70.png",
