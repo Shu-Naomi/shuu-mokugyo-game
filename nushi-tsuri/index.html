@@ -3491,10 +3491,9 @@
           drop-shadow(5px 6px 2px #02192dbb);
         will-change: left, top, transform;
       }
-      /* v103: each visible side-on fish is rebuilt from seven overlapping
-         vertical bands.  A travelling wave moves the tail bands strongly and
-         fades to zero at the head, so the painted mouth (and its hook anchor)
-         stays exact while the body itself bends instead of sliding rigidly. */
+      /* Most v103 fish still use the temporary segmented body wave.  Species
+         rebuilt with hand-drawn life frames render their complete atlas cell
+         instead, preserving every authored pixel and eliminating slice seams. */
       .battle-fish.life-segmented {
         background-image: none !important;
       }
@@ -4674,7 +4673,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v103</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v104</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5432,7 +5431,7 @@
           canoe: { name: "カヌー", icon: "🛶", price: 3500 },
         },
         fishAssets = {
-          moroko: "assets/fish-moroko-v31.png",
+          moroko: "assets/fish-moroko-v104.png",
           funa: "assets/fish-funa-v31.png",
           koi: "assets/fish-koi-v31.png",
           aji: "assets/fish-aji-v68.png",
@@ -5451,7 +5450,7 @@
           hirame: "assets/fish-hirame-ground-v97-1.png",
         },
         fishMouthAssets = {
-          moroko: "assets/fish-moroko-mouth-v68.png",
+          moroko: "assets/fish-moroko-mouth-v104.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
@@ -7482,10 +7481,8 @@
           },
         ],
       };
-      /* v103: procedural life motion is deliberately separate from fight
-         difficulty.  `wave` and `bend` describe the painted body's flex,
-         while idle/speedGain keep every species breathing and swimming even
-         when its source atlas contains only a subtle tail change. */
+      /* v103: procedural life motion remains as the fallback for species that
+         have not yet received a dedicated atlas. */
       const fishLifeProfiles = {
         moroko: {
           wave: .105, bend: 5.6, lag: 1.4, idle: .32,
@@ -7545,7 +7542,12 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      const FISH_LIFE_SLICE_COUNT = 7,
+      /* v104 begins the one-species-at-a-time hand-drawn conversion.  A
+         12-cell cycle keeps the same beat duration as the legacy eight-cell
+         sheets while showing a much clearer travelling bend. */
+      const fishSwimFrameCounts = { moroko: 12 },
+        handDrawnLifeFishIds = new Set(["moroko"]),
+        FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const FISH_VISUAL_MIN_SCALE = .65,
         FISH_VISUAL_MAX_SCALE = 1.6;
@@ -11913,6 +11915,7 @@
       function animateFishBody(mood, speed, intensity = 1) {
         const profile = fishMotionProfiles[battle.f.id];
         const lifeProfile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
+        const frameCount = fishSwimFrameCounts[battle.f.id] || 8;
         const calmFactor = mood?.calm ? 0.5 : 1;
         const dangerFactor = mood?.danger ? profile.burst : 1;
         const fatigueFactor = 1 - (battle.retrieval || 0) * 0.2;
@@ -11923,8 +11926,10 @@
           fatigueFactor *
           intensity;
         const previousStroke = battle.tailStroke || 0;
-        battle.swimPhase = ((battle.swimPhase || 0) + phaseAdvance) % 8;
-        const radians = (battle.swimPhase / 8) * Math.PI * 2;
+        battle.swimPhase = (
+          (battle.swimPhase || 0) + phaseAdvance * (frameCount / 8)
+        ) % frameCount;
+        const radians = (battle.swimPhase / frameCount) * Math.PI * 2;
         const wave = Math.sin(radians);
         const stroke = Math.abs(wave);
         const lifeTarget = clampBattle(
@@ -11942,7 +11947,7 @@
             lifeProfile.response;
         const effort = (mood?.calm ? 0.58 : 1) *
           (mood?.danger ? 1.18 : 1) * intensity;
-        battle.frame = Math.floor(battle.swimPhase) % 8;
+        battle.frame = Math.floor(battle.swimPhase) % frameCount;
         battle.tailStroke = stroke;
         battle.tailKick = stroke >= 0.82 && previousStroke < 0.82;
         battle.bodyStretch = 1 + stroke * profile.stretch * effort;
@@ -12058,9 +12063,12 @@
         battle.pitch += (targetPitch - battle.pitch) * 0.32;
         battle.renderAngle =
           (battle.facing < 0 ? -battle.pitch : battle.pitch) + bodyMotion.roll;
+        const swimFrameCount = fishSwimFrameCounts[battle.f.id] || 8;
         battle.renderScale =
           (mood.scale || 1) *
-          (1 + Math.cos((battle.swimPhase / 8) * Math.PI * 4) * 0.006);
+          (1 + Math.cos(
+            (battle.swimPhase / swimFrameCount) * Math.PI * 4,
+          ) * 0.006);
         battle.speed = speed;
       }
       function resetWaterFx() {
@@ -12312,6 +12320,7 @@
         delete fishElement.dataset.mouthState;
         delete fishElement.dataset.spriteMode;
         delete fishElement.dataset.spriteFrame;
+        delete fishElement.dataset.hookPoseFrame;
         delete fishElement.dataset.specimenScale;
         delete fishElement.dataset.sandState;
         fishElement.style.removeProperty("left");
@@ -12320,6 +12329,7 @@
         fishElement.style.removeProperty("background-image");
         fishElement.style.removeProperty("background-size");
         fishElement.style.removeProperty("background-position-x");
+        fishElement.style.removeProperty("animation-timing-function");
         fishElement.style.removeProperty("background-position-y");
         fishElement.style.opacity = "0";
         fishElement.style.transform = "translate(-50%,-50%)";
@@ -12346,6 +12356,17 @@
       }
       function renderCatchFishLife(f, step) {
         const hangingFish = $("#catchFish");
+        if (f.id === "moroko") {
+          const cells = fishSwimFrameCounts.moroko;
+          const frame = step % cells;
+          hangingFish.style.backgroundImage = `url("${fishAssets.moroko}")`;
+          hangingFish.style.backgroundSize = `${cells * 100}% 100%`;
+          hangingFish.style.backgroundPositionX =
+            `${frame * (100 / (cells - 1))}%`;
+          hangingFish.dataset.catchPose = "swim";
+          hangingFish.dataset.catchFrame = String(frame);
+          return;
+        }
         // Animate complete fish drawings only. Closed swimming poses move the
         // real fins and tail, then the v68 mouth sheet advances through its
         // closed, half-open and open drawings without a detached overlay.
@@ -12467,6 +12488,7 @@
         const slices = element.querySelectorAll(".fish-life-slice");
         const segmented =
           !showingTurn &&
+          !handDrawnLifeFishIds.has(battle.f.id) &&
           Boolean(spriteAsset) &&
           slices.length === FISH_LIFE_SLICE_COUNT;
         element.classList.toggle("life-segmented", segmented);
@@ -12482,7 +12504,8 @@
 
         element.style.backgroundImage = "none";
         const profile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
-        const phase = ((battle.swimPhase || 0) / 8) * Math.PI * 2;
+        const frameCount = fishSwimFrameCounts[battle.f.id] || 8;
+        const phase = ((battle.swimPhase || 0) / frameCount) * Math.PI * 2;
         const activity = clampBattle(
           Number(battle.lifeActivity) || profile.idle,
           .12,
@@ -12529,8 +12552,6 @@
           slice.style.backgroundSize = `${spriteCells * 100}% 100%`;
           slice.style.backgroundPositionX = framePosition;
           slice.style.backgroundPositionY = "0%";
-          // The final head band remains geometrically fixed.  It covers the
-          // painted mouth and therefore keeps battleMouthAndHook exact.
           slice.style.transform = isHead
             ? "none"
             : `translateY(${translateY}px) rotate(${rotation.toFixed(2)}deg) ` +
@@ -12554,9 +12575,10 @@
               ? "part"
               : "closed");
         let spriteAsset = fishAssets[battle.f.id];
-        let spriteCells = 8;
-        let spriteFrame = battle.frame || 0;
+        let spriteCells = fishSwimFrameCounts[battle.f.id] || 8;
+        let spriteFrame = (battle.frame || 0) % spriteCells;
         let spriteMode = "swim";
+        let hookPoseFrame = null;
         const showingTurn = Boolean(battle.turning && !sandGrounded);
         if (sandGrounded) {
           spriteAsset = fishGroundAssets.hirame;
@@ -12568,10 +12590,19 @@
           spriteMode = "turn";
         } else if (mouthState !== "closed") {
           spriteAsset = fishMouthAssets[battle.f.id];
-          spriteCells = 3;
           const requestedFrame = mouthState === "open" ? 2 : 1;
-          spriteFrame = fishMouthFrameOverrides[battle.f.id]?.[mouthState] ??
-            requestedFrame;
+          if (battle.f.id === "moroko") {
+            const swimCells = fishSwimFrameCounts.moroko;
+            spriteCells = swimCells * 2;
+            spriteFrame = (requestedFrame === 2 ? swimCells : 0) +
+              ((battle.frame || 0) % swimCells);
+            hookPoseFrame = requestedFrame;
+          } else {
+            spriteCells = 3;
+            spriteFrame = fishMouthFrameOverrides[battle.f.id]?.[mouthState] ??
+              requestedFrame;
+            hookPoseFrame = spriteFrame;
+          }
           spriteMode = "mouth";
         }
         renderFishLifeSlices(
@@ -12584,6 +12615,11 @@
         );
         element.dataset.spriteMode = spriteMode;
         element.dataset.spriteFrame = String(spriteFrame);
+        if (hookPoseFrame === null) {
+          delete element.dataset.hookPoseFrame;
+        } else {
+          element.dataset.hookPoseFrame = String(hookPoseFrame);
+        }
         if (showingTurn) {
           element.dataset.turnFrom = battle.turning.from > 0 ? "right" : "left";
         } else {
@@ -12658,7 +12694,10 @@
         const facing = battle.facing || 1;
         const spriteMode = fishElement.dataset.spriteMode || "swim";
         const spriteFrame = Number(fishElement.dataset.spriteFrame || 0);
-        const pose = fishHookPoseFrames[spriteMode]?.[spriteFrame];
+        const hookPoseFrame = Number(
+          fishElement.dataset.hookPoseFrame ?? spriteFrame,
+        );
+        const pose = fishHookPoseFrames[spriteMode]?.[hookPoseFrame];
         const mouthProjection = spriteMode === "turn" && pose
           ? pose.xScale
           : facing * (pose?.xScale || 1);
@@ -12962,7 +13001,8 @@
           f.id === "hirame" && !battle.sandLifted,
         );
         fishElement.style.backgroundImage = `url("${fishAssets[f.id]}")`;
-        fishElement.style.backgroundSize = "800% 100%";
+        fishElement.style.backgroundSize =
+          `${(fishSwimFrameCounts[f.id] || 8) * 100}% 100%`;
         fishElement.style.backgroundPositionY = "0";
         fishElement.style.transition = "none";
         fishElement.style.opacity = "0";
@@ -13094,7 +13134,13 @@
         scene.classList.remove("water-rush", "fighting", "gill-wash");
         scene.classList.add("landing");
         const fishElement = $("#battleFish");
-        fishElement.classList.remove("burst", "turning", "hooked", "gill-wash");
+        fishElement.classList.remove(
+          "burst",
+          "turning",
+          "hooked",
+          "gill-wash",
+          "life-segmented",
+        );
         fishElement.classList.remove("sand-grounded");
         fishElement.style.removeProperty("--turn-duration");
         delete fishElement.dataset.turnFrom;
@@ -13106,11 +13152,16 @@
         battle.turnArcY = 0;
         battle.turnRoll = 0;
         fishElement.style.backgroundImage = `url("${fishAssets[battle.f.id]}")`;
-        fishElement.style.backgroundSize = "800% 100%";
-        // Always begin on a real cell boundary. Starting the seven-step sweep
-        // from an arbitrary swim frame slices two drawings together at water.
+        const landingCells = fishSwimFrameCounts[battle.f.id] || 8;
+        fishElement.style.backgroundSize = `${landingCells * 100}% 100%`;
+        fishElement.style.animationTimingFunction =
+          `steps(${landingCells - 1}, end)`;
+        // Always begin on a real cell boundary so the sweep never slices two
+        // drawings together at the waterline.
         fishElement.style.backgroundPositionX = "0%";
         fishElement.dataset.spriteMode = "swim";
+        fishElement.dataset.spriteFrame = "0";
+        delete fishElement.dataset.hookPoseFrame;
         fishElement.classList.add("landing");
         fishElement.style.left = `${battle.surfaceX}%`;
         fishElement.style.top = "7%";
