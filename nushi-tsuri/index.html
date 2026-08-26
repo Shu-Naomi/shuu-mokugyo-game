@@ -3491,6 +3491,26 @@
           drop-shadow(5px 6px 2px #02192dbb);
         will-change: left, top, transform;
       }
+      /* v103: each visible side-on fish is rebuilt from seven overlapping
+         vertical bands.  A travelling wave moves the tail bands strongly and
+         fades to zero at the head, so the painted mouth (and its hook anchor)
+         stays exact while the body itself bends instead of sliding rigidly. */
+      .battle-fish.life-segmented {
+        background-image: none !important;
+      }
+      .fish-life-slice {
+        position: absolute;
+        inset: 0;
+        display: none;
+        pointer-events: none;
+        background-repeat: no-repeat;
+        image-rendering: pixelated;
+        transform-origin: var(--life-origin, 50%) 50%;
+        will-change: transform, background-position;
+      }
+      .battle-fish.life-segmented > .fish-life-slice {
+        display: block;
+      }
       .battle-fish.turning {
         transition:
           left 0.12s linear,
@@ -4654,7 +4674,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v102</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v103</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4822,7 +4842,15 @@
               <circle class="hook-eye" cx="8" cy="3" r="0.55" />
             </svg>
           </div>
-          <div class="battle-fish" id="battleFish"></div>
+          <div class="battle-fish" id="battleFish">
+            <span class="fish-life-slice" data-life-slice="0" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="1" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="2" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="3" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="4" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="5" aria-hidden="true"></span>
+            <span class="fish-life-slice" data-life-slice="6" aria-hidden="true"></span>
+          </div>
           <div
             class="fish-tackle fish-tackle-front"
             id="fishTackleFront"
@@ -7454,6 +7482,71 @@
           },
         ],
       };
+      /* v103: procedural life motion is deliberately separate from fight
+         difficulty.  `wave` and `bend` describe the painted body's flex,
+         while idle/speedGain keep every species breathing and swimming even
+         when its source atlas contains only a subtle tail change. */
+      const fishLifeProfiles = {
+        moroko: {
+          wave: .105, bend: 5.6, lag: 1.4, idle: .32,
+          speedGain: .17, response: .36, falloff: .85, pulse: .008,
+        },
+        funa: {
+          wave: .065, bend: 3.2, lag: 1.05, idle: .27,
+          speedGain: .13, response: .24, falloff: 1.15, pulse: .006,
+        },
+        koi: {
+          wave: .075, bend: 3.8, lag: 1.12, idle: .25,
+          speedGain: .14, response: .23, falloff: 1.08, pulse: .006,
+        },
+        aji: {
+          wave: .1, bend: 5.2, lag: 1.32, idle: .31,
+          speedGain: .18, response: .38, falloff: .9, pulse: .007,
+        },
+        ayu: {
+          wave: .108, bend: 5.8, lag: 1.4, idle: .32,
+          speedGain: .19, response: .4, falloff: .88, pulse: .008,
+        },
+        yamame: {
+          wave: .118, bend: 6.4, lag: 1.5, idle: .34,
+          speedGain: .2, response: .42, falloff: .82, pulse: .008,
+        },
+        namazu: {
+          wave: .073, bend: 3.5, lag: 1.18, idle: .24,
+          speedGain: .13, response: .21, falloff: 1.05, pulse: .006,
+        },
+        unagi: {
+          wave: .12, bend: 7.2, lag: 1.8, idle: .4,
+          speedGain: .21, response: .45, falloff: .7, pulse: .009,
+        },
+        bass: {
+          wave: .093, bend: 5, lag: 1.25, idle: .29,
+          speedGain: .18, response: .34, falloff: .9, pulse: .007,
+        },
+        kurodai: {
+          wave: .078, bend: 4.1, lag: 1.1, idle: .27,
+          speedGain: .15, response: .29, falloff: 1, pulse: .006,
+        },
+        kasago: {
+          wave: .062, bend: 3.4, lag: .95, idle: .26,
+          speedGain: .14, response: .25, falloff: 1.12, pulse: .006,
+        },
+        suzuki: {
+          wave: .098, bend: 5.3, lag: 1.3, idle: .3,
+          speedGain: .18, response: .36, falloff: .88, pulse: .007,
+        },
+        hirame: {
+          wave: .058, bend: 3.2, lag: .9, idle: .22,
+          speedGain: .12, response: .24, falloff: 1.15, pulse: .005,
+          grounded: .45,
+        },
+        nushi: {
+          wave: .05, bend: 2.8, lag: 1, idle: .18,
+          speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
+        },
+      };
+      const FISH_LIFE_SLICE_COUNT = 7,
+        FISH_LIFE_SLICE_OVERLAP = 1.35;
       const FISH_VISUAL_MIN_SCALE = .65,
         FISH_VISUAL_MAX_SCALE = 1.6;
       function boundedRandom(random = Math.random) {
@@ -11204,6 +11297,7 @@
           tailKick: false,
           bodyStretch: 1,
           bodySquash: 1,
+          lifeActivity: 0,
           mouthPhase: 0,
           mouthOpen: 0,
           mouthState: "closed",
@@ -11818,6 +11912,7 @@
       }
       function animateFishBody(mood, speed, intensity = 1) {
         const profile = fishMotionProfiles[battle.f.id];
+        const lifeProfile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
         const calmFactor = mood?.calm ? 0.5 : 1;
         const dangerFactor = mood?.danger ? profile.burst : 1;
         const fatigueFactor = 1 - (battle.retrieval || 0) * 0.2;
@@ -11832,6 +11927,19 @@
         const radians = (battle.swimPhase / 8) * Math.PI * 2;
         const wave = Math.sin(radians);
         const stroke = Math.abs(wave);
+        const lifeTarget = clampBattle(
+          (lifeProfile.idle + Math.min(1.05, speed * lifeProfile.speedGain)) *
+            (mood?.calm ? .86 : 1) *
+            (mood?.danger ? 1.2 : 1) *
+            (battle.reeling ? 1.08 : 1) *
+            intensity,
+          .12,
+          1.32,
+        );
+        battle.lifeActivity =
+          (Number(battle.lifeActivity) || 0) +
+          (lifeTarget - (Number(battle.lifeActivity) || 0)) *
+            lifeProfile.response;
         const effort = (mood?.calm ? 0.58 : 1) *
           (mood?.danger ? 1.18 : 1) * intensity;
         battle.frame = Math.floor(battle.swimPhase) % 8;
@@ -12348,6 +12456,90 @@
           specialCatch === "nushi" ? 7000 : specialCatch === "giant" ? 6200 : 5200,
         );
       }
+      function renderFishLifeSlices(
+        element,
+        spriteAsset,
+        spriteCells,
+        spriteFrame,
+        spriteMode,
+        showingTurn,
+      ) {
+        const slices = element.querySelectorAll(".fish-life-slice");
+        const segmented =
+          !showingTurn &&
+          Boolean(spriteAsset) &&
+          slices.length === FISH_LIFE_SLICE_COUNT;
+        element.classList.toggle("life-segmented", segmented);
+        const framePosition =
+          `${spriteFrame * (100 / Math.max(1, spriteCells - 1))}%`;
+        if (!segmented) {
+          element.style.backgroundImage = `url("${spriteAsset}")`;
+          element.style.backgroundSize = `${spriteCells * 100}% 100%`;
+          element.style.backgroundPositionX = framePosition;
+          element.style.backgroundPositionY = "0%";
+          return false;
+        }
+
+        element.style.backgroundImage = "none";
+        const profile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
+        const phase = ((battle.swimPhase || 0) / 8) * Math.PI * 2;
+        const activity = clampBattle(
+          Number(battle.lifeActivity) || profile.idle,
+          .12,
+          1.32,
+        );
+        const modeFactor = spriteMode === "ground"
+          ? profile.grounded || .45
+          : spriteMode === "mouth" ? .86 : 1;
+        const amplitude =
+          Math.max(1, element.offsetHeight) * profile.wave * activity * modeFactor;
+        const segmentWidth = 100 / FISH_LIFE_SLICE_COUNT;
+        slices.forEach((slice, index) => {
+          const start = Math.max(
+            0,
+            index * segmentWidth - (index ? FISH_LIFE_SLICE_OVERLAP : 0),
+          );
+          const end = Math.min(
+            100,
+            (index + 1) * segmentWidth +
+              (index < FISH_LIFE_SLICE_COUNT - 1
+                ? FISH_LIFE_SLICE_OVERLAP
+                : 0),
+          );
+          const centre = (index + .5) / FISH_LIFE_SLICE_COUNT;
+          const isHead = index === FISH_LIFE_SLICE_COUNT - 1;
+          const tailWeight = isHead
+            ? 0
+            : Math.pow(Math.max(0, 1 - centre), profile.falloff);
+          const travellingPhase = phase - centre * profile.lag;
+          const translateY = Math.round(
+            Math.sin(travellingPhase) * amplitude * tailWeight,
+          );
+          const rotation =
+            Math.cos(travellingPhase + .28) *
+            profile.bend * activity * modeFactor * tailWeight;
+          const pulse = 1 +
+            Math.sin(phase * 2 - centre * .7) *
+              profile.pulse * activity * tailWeight;
+          slice.style.clipPath =
+            `inset(0 ${(100 - end).toFixed(2)}% 0 ${start.toFixed(2)}%)`;
+          slice.style.setProperty("--life-origin", `${(centre * 100).toFixed(2)}%`);
+          slice.style.zIndex = String(index + 1);
+          slice.style.backgroundImage = `url("${spriteAsset}")`;
+          slice.style.backgroundSize = `${spriteCells * 100}% 100%`;
+          slice.style.backgroundPositionX = framePosition;
+          slice.style.backgroundPositionY = "0%";
+          // The final head band remains geometrically fixed.  It covers the
+          // painted mouth and therefore keeps battleMouthAndHook exact.
+          slice.style.transform = isHead
+            ? "none"
+            : `translateY(${translateY}px) rotate(${rotation.toFixed(2)}deg) ` +
+              `scaleY(${pulse.toFixed(4)})`;
+          slice.dataset.lifeOffset = String(translateY);
+          slice.dataset.lifeRotation = rotation.toFixed(2);
+        });
+        return true;
+      }
       function renderBattleFish() {
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
@@ -12382,11 +12574,14 @@
             requestedFrame;
           spriteMode = "mouth";
         }
-        element.style.backgroundImage = `url("${spriteAsset}")`;
-        element.style.backgroundSize = `${spriteCells * 100}% 100%`;
-        element.style.backgroundPositionX =
-          `${spriteFrame * (100 / (spriteCells - 1))}%`;
-        element.style.backgroundPositionY = "0%";
+        renderFishLifeSlices(
+          element,
+          spriteAsset,
+          spriteCells,
+          spriteFrame,
+          spriteMode,
+          showingTurn,
+        );
         element.dataset.spriteMode = spriteMode;
         element.dataset.spriteFrame = String(spriteFrame);
         if (showingTurn) {
@@ -12742,6 +12937,7 @@
         battle.tailKick = false;
         battle.bodyStretch = 1;
         battle.bodySquash = 1;
+        battle.lifeActivity = 0;
         battle.mouthPhase = 0;
         battle.mouthOpen = 0;
         battle.mouthState = "closed";
