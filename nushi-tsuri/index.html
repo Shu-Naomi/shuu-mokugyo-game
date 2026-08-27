@@ -3493,9 +3493,13 @@
       .battle-fish.life-canvas {
         background-image: none !important;
       }
+      .battle-fish.life-canvas > .fish-life-slice {
+        display: none !important;
+      }
       .fish-life-canvas {
         position: absolute;
         inset: 0;
+        z-index: 1;
         display: none;
         width: 100%;
         height: 100%;
@@ -4670,7 +4674,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v110</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v111</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7482,8 +7486,8 @@
           speedGain: .17, response: .36, falloff: .85, pulse: .008,
         },
         funa: {
-          wave: .086, bend: 0, lag: 1.9, idle: .3,
-          speedGain: .15, response: .3, falloff: 1.02, pulse: 0,
+          wave: .086, bend: 0, lag: 1.65, idle: .3,
+          speedGain: .15, response: .3, falloff: .92, pulse: 0,
         },
         koi: {
           wave: .075, bend: 3.8, lag: 1.12, idle: .25,
@@ -7535,12 +7539,12 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v110 renders the Funa's lateral travelling wave into one canvas.  The
-         rear body foreshortens as it yaws in depth; it never bends vertically
-         like a dolphin.  Keeping the face unwarped also removes slice seams. */
+      /* v111 inverse-maps every destination column exactly once.  The Funa's
+         head is copied unchanged, while the rear half foreshortens and turns
+         edge-on as a lateral body wave reaches the tail. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12 },
         handDrawnLifeFishIds = new Set(["moroko", "funa"]),
-        handDrawnMouthFishIds = new Set(["moroko", "funa"]),
+        handDrawnMouthFishIds = new Set(["moroko"]),
         canvasBodyWaveFishIds = new Set(["funa"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
@@ -12520,6 +12524,10 @@
         const context = canvas.getContext("2d");
         context.imageSmoothingEnabled = false;
         context.clearRect(0, 0, frameWidth, frameHeight);
+        element.style.backgroundImage = "none";
+        element.style.backgroundSize = "auto";
+        element.style.backgroundPosition = "0 0";
+        element.classList.remove("life-segmented");
         const profile = fishLifeProfiles[battle.f.id];
         const frameCount = fishSwimFrameCounts[battle.f.id] || 8;
         const phase = ((battle.swimPhase || 0) / frameCount) * Math.PI * 2;
@@ -12529,42 +12537,95 @@
           1.32,
         );
         const modeFactor = spriteMode === "mouth" ? .86 : 1;
-        const bendStart = frameWidth * .15;
-        const bendEnd = frameWidth * .68;
+        const effort = clampBattle(activity * modeFactor, .45, 1);
+        const headStart = Math.floor(frameWidth * .72);
+        const centreY = frameHeight * .53;
         const sourceX = Math.max(
           0,
           Math.min(spriteCells - 1, spriteFrame) * frameWidth,
         );
-        for (let x = 0; x < frameWidth; x++) {
-          const rawWeight = clampBattle(
-            (bendEnd - x) / (bendEnd - bendStart),
-            0,
-            1,
+        const forwardX = new Float32Array(headStart + 1);
+        for (let sourceColumn = 0; sourceColumn <= headStart; sourceColumn++) {
+          const weight = Math.pow(
+            clampBattle((headStart - sourceColumn) / headStart, 0, 1),
+            profile.falloff,
           );
-          const weight = Math.pow(rawWeight, profile.falloff);
           const travellingPhase = phase - (1 - weight) * profile.lag;
-          const lateralDepth = Math.abs(Math.sin(travellingPhase));
-          const depthScale = 1 -
-            profile.wave * 1.45 * activity * modeFactor * lateralDepth * weight;
-          const destinationX = x < bendEnd
-            ? Math.round(bendEnd - (bendEnd - x) * depthScale)
-            : x;
-          const destinationWidth = x < bendEnd - 1 ? 2 : 1;
+          const yaw = Math.abs(Math.sin(travellingPhase));
+          const depthScale = 1 - .24 * effort * yaw * weight;
+          forwardX[sourceColumn] =
+            headStart - (headStart - sourceColumn) * depthScale;
+        }
+        const firstDestination = Math.max(0, Math.ceil(forwardX[0]));
+        let sourceCursor = 0;
+        for (
+          let destinationX = firstDestination;
+          destinationX < headStart;
+          destinationX++
+        ) {
+          while (
+            sourceCursor + 1 < forwardX.length &&
+            forwardX[sourceCursor + 1] < destinationX
+          ) sourceCursor++;
+          const left = forwardX[sourceCursor];
+          const right = forwardX[Math.min(sourceCursor + 1, headStart)];
+          const fraction = right > left
+            ? (destinationX - left) / (right - left)
+            : 0;
+          const sampleX = Math.min(
+            headStart - 1,
+            Math.round(sourceCursor + fraction),
+          );
+          const weight = Math.pow(
+            clampBattle((headStart - sampleX) / headStart, 0, 1),
+            profile.falloff,
+          );
+          const travellingPhase = phase - (1 - weight) * profile.lag;
+          const yaw = Math.abs(Math.sin(travellingPhase));
+          const heightScale =
+            1 - .55 * effort * yaw * Math.pow(weight, 1.2);
+          const destinationHeight = Math.max(
+            1,
+            Math.round(frameHeight * heightScale),
+          );
+          const destinationY = Math.round(centreY * (1 - heightScale));
           context.drawImage(
             image,
-            sourceX + x,
+            sourceX + sampleX,
             0,
             1,
             frameHeight,
             destinationX,
-            0,
-            destinationWidth,
-            frameHeight,
+            destinationY,
+            1,
+            destinationHeight,
           );
+        }
+        context.drawImage(
+          image,
+          sourceX + headStart,
+          0,
+          frameWidth - headStart,
+          frameHeight,
+          headStart,
+          0,
+          frameWidth - headStart,
+          frameHeight,
+        );
+        const lateralSide = Math.sin(phase);
+        if (Math.abs(lateralSide) > .02) {
+          context.save();
+          context.globalCompositeOperation = "source-atop";
+          context.fillStyle = lateralSide > 0
+            ? `rgba(255, 226, 174, ${(.035 * effort).toFixed(3)})`
+            : `rgba(32, 15, 9, ${(.065 * effort).toFixed(3)})`;
+          context.fillRect(0, 0, headStart, frameHeight);
+          context.restore();
         }
         canvas.dataset.spriteMode = spriteMode;
         canvas.dataset.spriteFrame = String(spriteFrame);
-        canvas.dataset.bodyWavePlane = "lateral-depth";
+        canvas.dataset.bodyWavePlane = "lateral-yaw-inverse";
+        canvas.dataset.fixedHeadStart = String(headStart);
         element.classList.add("life-canvas");
         return true;
       }
@@ -12681,7 +12742,10 @@
           spriteCells = 5;
           spriteFrame = battle.turnSpriteFrame || 0;
           spriteMode = "turn";
-        } else if (mouthState !== "closed") {
+        } else if (
+          mouthState !== "closed" &&
+          !canvasBodyWaveFishIds.has(battle.f.id)
+        ) {
           spriteAsset = fishMouthAssets[battle.f.id];
           const requestedFrame = mouthState === "open" ? 2 : 1;
           if (handDrawnMouthFishIds.has(battle.f.id)) {
