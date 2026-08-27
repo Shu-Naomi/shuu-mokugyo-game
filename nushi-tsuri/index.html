@@ -4656,7 +4656,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v113</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v114</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5416,7 +5416,7 @@
         fishAssets = {
           moroko: "assets/fish-moroko-v104.png",
           funa: "assets/fish-funa-v112.png",
-          koi: "assets/fish-koi-v31.png",
+          koi: "assets/fish-koi-v114.png",
           aji: "assets/fish-aji-v68.png",
           ayu: "assets/fish-ayu-v95.png",
           yamame: "assets/fish-yamame-v100.png",
@@ -5583,15 +5583,15 @@
             turnRoll: 5,
           },
           koi: {
-            beat: 0.48,
-            speedBeat: 0.1,
-            burst: 1.46,
-            thrust: 0.17,
-            stretch: 0.014,
-            squeeze: 0.011,
-            recoil: 1.8,
-            sway: 1.35,
-            roll: 1.15,
+            beat: 0.72,
+            speedBeat: 0.13,
+            burst: 1.55,
+            thrust: 0.22,
+            stretch: 0,
+            squeeze: 0,
+            recoil: 2.2,
+            sway: 0,
+            roll: 0.25,
             movingDrag: 0.988,
             restingDrag: 0.93,
             turnTicks: 1,
@@ -7471,8 +7471,8 @@
           speedGain: .15, response: .3, falloff: .92, pulse: 0,
         },
         koi: {
-          wave: .075, bend: 3.8, lag: 1.12, idle: .25,
-          speedGain: .14, response: .23, falloff: 1.08, pulse: .006,
+          wave: .075, bend: 0, lag: 1.45, idle: .27,
+          speedGain: .15, response: .26, falloff: .78, pulse: 0,
         },
         aji: {
           wave: .1, bend: 5.2, lag: 1.32, idle: .31,
@@ -7520,13 +7520,13 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v113 uses one pre-rendered Funa atlas cell at a time.  Its strong
-         power stroke and weaker return are baked into complete fish frames,
-         so no canvas, background, or slice can double the silhouette. */
-      const fishSwimFrameCounts = { moroko: 12, funa: 12 },
-        handDrawnLifeFishIds = new Set(["moroko", "funa"]),
+      /* v114 uses complete pre-rendered atlas cells for Funa and Koi.  Their
+         species-specific power strokes are baked into whole-fish frames, so
+         no canvas, background, or slice can double either silhouette. */
+      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12 },
+        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi"]),
         handDrawnMouthFishIds = new Set(["moroko"]),
-        fixedFaceFishIds = new Set(["funa"]),
+        fixedFaceFishIds = new Set(["funa", "koi"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const FISH_VISUAL_MIN_SCALE = .65,
@@ -11897,7 +11897,9 @@
         const lifeProfile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
         const frameCount = fishSwimFrameCounts[battle.f.id] || 8;
         const calmFactor = mood?.calm
-          ? battle.f.id === "funa" ? .82 : .5
+          ? battle.f.id === "funa"
+            ? .82
+            : battle.f.id === "koi" ? .72 : .5
           : 1;
         const dangerFactor = mood?.danger ? profile.burst : 1;
         const fatigueFactor = 1 - (battle.retrieval || 0) * 0.2;
@@ -11905,7 +11907,9 @@
           ((battle.swimPhase || 0) / frameCount) * Math.PI * 2;
         const beatTiming = battle.f.id === "funa"
           ? 1.5 - .68 * Math.abs(Math.sin(currentRadians))
-          : 1;
+          : battle.f.id === "koi"
+            ? 1.25 - .38 * Math.abs(Math.sin(currentRadians))
+            : 1;
         const phaseAdvance =
           (profile.beat + Math.min(6, speed) * profile.speedBeat) *
           calmFactor *
@@ -12401,7 +12405,7 @@
           ayu: 108,
           yamame: 104,
           funa: 105,
-          koi: 140,
+          koi: 120,
           namazu: 150,
           unagi: 145,
           bass: 110,
