@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v119-funa-face-fixed-119";
+const CACHE_NAME = "nushi-tsuri-v120-single-atlas-120";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -66,7 +66,7 @@ const CORE_ASSETS = [
   "./assets/fish-aji-v68.png",
   "./assets/fish-kasago-v57.png",
   "./assets/fish-kasago-catch-v58.png",
-  "./assets/fish-moroko-mouth-v104.png",
+  "./assets/fish-moroko-mouth-v120.png",
   "./assets/fish-moroko-turn-v70.png",
   "./assets/fish-aji-mouth-v68.png",
   "./assets/fish-aji-turn-v70.png",
@@ -77,7 +77,7 @@ const CORE_ASSETS = [
   "./assets/fish-yamame-mouth-v100.png",
   "./assets/fish-yamame-turn-v100.png",
   "./assets/fish-namazu-v96.png",
-  "./assets/fish-namazu-mouth-v116.png",
+  "./assets/fish-namazu-mouth-v120.png",
   "./assets/fish-namazu-turn-v96.png",
   "./assets/fish-unagi-v102.png",
   "./assets/fish-unagi-mouth-v102.png",
@@ -92,9 +92,9 @@ const CORE_ASSETS = [
   "./assets/fish-hirame-ground-v97-1.png",
   "./assets/fish-hirame-mouth-v97.png",
   "./assets/fish-hirame-turn-v97.png",
-  "./assets/fish-funa-mouth-v119.png",
+  "./assets/fish-funa-mouth-v120.png",
   "./assets/fish-funa-turn-v70.png",
-  "./assets/fish-koi-mouth-v116.png",
+  "./assets/fish-koi-mouth-v120.png",
   "./assets/fish-koi-turn-v70.png",
   "./assets/fish-kasago-mouth-v68.png",
   "./assets/fish-kasago-turn-v70.png",

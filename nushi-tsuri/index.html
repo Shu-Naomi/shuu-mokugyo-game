@@ -3500,6 +3500,29 @@
         transform-origin: var(--life-origin, 50%) 50%;
         will-change: transform, background-position;
       }
+      /* Hand-drawn fish are painted one complete source cell at a time.
+         Keeping the atlas off the CSS background path prevents an adjacent
+         cell (or a stale segmented slice) from ever becoming a second fish. */
+      .fish-frame-canvas {
+        position: absolute;
+        inset: 0;
+        display: none;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        image-rendering: pixelated;
+      }
+      .battle-fish.life-canvas {
+        background-image: none !important;
+      }
+      .battle-fish.life-canvas > .fish-life-slice,
+      .catch-fish.canvas-atlas > .fish-life-slice {
+        display: none !important;
+      }
+      .battle-fish.life-canvas > .fish-frame-canvas,
+      .catch-fish.canvas-atlas > .fish-frame-canvas {
+        display: block;
+      }
       .battle-fish.life-segmented > .fish-life-slice {
         display: block;
       }
@@ -4656,7 +4679,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v119</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v120</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -4832,6 +4855,7 @@
             <span class="fish-life-slice" data-life-slice="4" aria-hidden="true"></span>
             <span class="fish-life-slice" data-life-slice="5" aria-hidden="true"></span>
             <span class="fish-life-slice" data-life-slice="6" aria-hidden="true"></span>
+            <canvas class="fish-frame-canvas" aria-hidden="true"></canvas>
           </div>
           <div
             class="fish-tackle fish-tackle-front"
@@ -4888,7 +4912,9 @@
             <div class="catch-rig">
               <i class="catch-line"></i>
               <div class="catch-fish-turn">
-                <div class="catch-fish" id="catchFish"></div>
+                <div class="catch-fish" id="catchFish">
+                  <canvas class="fish-frame-canvas" aria-hidden="true"></canvas>
+                </div>
               </div>
               <i class="catch-hook"></i>
             </div>
@@ -5433,16 +5459,16 @@
           hirame: "assets/fish-hirame-ground-v97-1.png",
         },
         fishMouthAssets = {
-          moroko: "assets/fish-moroko-mouth-v104.png",
+          moroko: "assets/fish-moroko-mouth-v120.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
-          namazu: "assets/fish-namazu-mouth-v116.png",
+          namazu: "assets/fish-namazu-mouth-v120.png",
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
-          funa: "assets/fish-funa-mouth-v119.png",
-          koi: "assets/fish-koi-mouth-v116.png",
+          funa: "assets/fish-funa-mouth-v120.png",
+          koi: "assets/fish-koi-mouth-v120.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
@@ -7520,16 +7546,73 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v119 uses complete pre-rendered atlas cells for Funa, Koi and
-         Namazu. Their species-specific power strokes are baked into whole-
-         fish frames, and their synchronized mouth atlases change only the
-         lips/jaw region. No canvas, background, or slice can double a body. */
+      /* v120 uses one exact source cell per hand-drawn frame. Their
+         species-specific power strokes are baked into whole-fish frames, and
+         the mouth atlases change only the lips/jaw region. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         fixedFaceFishIds = new Set(["funa", "koi", "namazu"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
+      const fishAtlasImageCache = new Map();
+      function fishAtlasImage(src) {
+        let image = fishAtlasImageCache.get(src);
+        if (!image) {
+          image = new Image();
+          image.decoding = "async";
+          image.src = src;
+          fishAtlasImageCache.set(src, image);
+        }
+        return image;
+      }
+      function fishAtlasCanvas(element) {
+        let canvas = element.querySelector(".fish-frame-canvas");
+        if (!canvas) {
+          canvas = document.createElement("canvas");
+          canvas.className = "fish-frame-canvas";
+          canvas.setAttribute("aria-hidden", "true");
+          element.append(canvas);
+        }
+        return canvas;
+      }
+      function drawFishAtlasFrame(element, spriteAsset, spriteCells, spriteFrame) {
+        const canvas = fishAtlasCanvas(element);
+        const key = `${spriteAsset}|${spriteCells}|${spriteFrame}`;
+        canvas.dataset.atlasKey = key;
+        const image = fishAtlasImage(spriteAsset);
+        const paint = () => {
+          if (canvas.dataset.atlasKey !== key || !image.naturalWidth) return;
+          const cellWidth = Math.max(1, Math.round(image.naturalWidth / spriteCells));
+          const cellHeight = Math.max(1, image.naturalHeight);
+          canvas.width = cellWidth;
+          canvas.height = cellHeight;
+          const context = canvas.getContext("2d");
+          context.imageSmoothingEnabled = false;
+          context.clearRect(0, 0, cellWidth, cellHeight);
+          context.drawImage(
+            image,
+            Math.min(
+              image.naturalWidth - cellWidth,
+              Math.max(0, Math.round(spriteFrame) * cellWidth),
+            ),
+            0,
+            cellWidth,
+            cellHeight,
+            0,
+            0,
+            cellWidth,
+            cellHeight,
+          );
+          canvas.style.display = "block";
+        };
+        if (image.complete && image.naturalWidth) {
+          paint();
+        } else {
+          canvas.style.display = "none";
+          image.addEventListener("load", paint, { once: true });
+        }
+      }
       const FISH_VISUAL_MIN_SCALE = .65,
         FISH_VISUAL_MAX_SCALE = 1.6;
       function boundedRandom(random = Math.random) {
@@ -12312,6 +12395,11 @@
           tackle.style.removeProperty("transform");
         }
         fishElement.className = "battle-fish";
+        const fishCanvas = fishElement.querySelector(".fish-frame-canvas");
+        if (fishCanvas) {
+          fishCanvas.style.display = "none";
+          delete fishCanvas.dataset.atlasKey;
+        }
         fishElement.style.removeProperty("--fish-light");
         fishElement.style.removeProperty("--fish-color");
         fishElement.style.removeProperty("--fish-contrast");
@@ -12347,6 +12435,12 @@
         catchAnimationTimer = 0;
         catchAnimationStep = 0;
         const card = $("#catchCard");
+        const catchCanvas = $("#catchFish")?.querySelector(".fish-frame-canvas");
+        if (catchCanvas) {
+          catchCanvas.style.display = "none";
+          delete catchCanvas.dataset.atlasKey;
+        }
+        $("#catchFish")?.classList.remove("canvas-atlas");
         card.classList.remove(
           "show",
           "legend",
@@ -12360,6 +12454,9 @@
         const hangingFish = $("#catchFish");
         const usesHandDrawnMouth = handDrawnMouthFishIds.has(f.id);
         if (handDrawnLifeFishIds.has(f.id) && !usesHandDrawnMouth) {
+          hangingFish.classList.remove("canvas-atlas");
+          const canvas = hangingFish.querySelector(".fish-frame-canvas");
+          if (canvas) canvas.style.display = "none";
           const cells = fishSwimFrameCounts[f.id];
           const frame = step % cells;
           hangingFish.style.backgroundImage = `url("${fishAssets[f.id]}")`;
@@ -12403,10 +12500,19 @@
         const asset = mode === "mouth"
           ? fishMouthAssets[f.id]
           : fishCatchAssets[f.id] || fishAssets[f.id];
-        hangingFish.style.backgroundImage = `url("${asset}")`;
-        hangingFish.style.backgroundSize = `${cells * 100}% 100%`;
-        hangingFish.style.backgroundPositionX =
-          `${frame * (100 / (cells - 1))}%`;
+        if (usesHandDrawnMouth) {
+          hangingFish.classList.add("canvas-atlas");
+          hangingFish.style.backgroundImage = "none";
+          drawFishAtlasFrame(hangingFish, asset, cells, frame);
+        } else {
+          hangingFish.classList.remove("canvas-atlas");
+          const canvas = hangingFish.querySelector(".fish-frame-canvas");
+          if (canvas) canvas.style.display = "none";
+          hangingFish.style.backgroundImage = `url("${asset}")`;
+          hangingFish.style.backgroundSize = `${cells * 100}% 100%`;
+          hangingFish.style.backgroundPositionX =
+            `${frame * (100 / (cells - 1))}%`;
+        }
         hangingFish.dataset.catchPose = mode;
         hangingFish.dataset.catchFrame = String(frame);
       }
@@ -12499,14 +12605,33 @@
         showingTurn,
       ) {
         const slices = element.querySelectorAll(".fish-life-slice");
+        const handDrawn = handDrawnLifeFishIds.has(battle.f.id);
         const segmented =
           !showingTurn &&
-          !handDrawnLifeFishIds.has(battle.f.id) &&
+          !handDrawn &&
           Boolean(spriteAsset) &&
           slices.length === FISH_LIFE_SLICE_COUNT;
+        const canvasMode = !showingTurn && handDrawn && Boolean(spriteAsset);
         element.classList.toggle("life-segmented", segmented);
+        element.classList.toggle("life-canvas", canvasMode);
         const framePosition =
           `${spriteFrame * (100 / Math.max(1, spriteCells - 1))}%`;
+        const canvas = element.querySelector(".fish-frame-canvas");
+        if (canvasMode) {
+          element.style.backgroundImage = "none";
+          canvas?.style.setProperty("display", "block");
+          slices.forEach((slice) => {
+            slice.style.backgroundImage = "none";
+            slice.style.transform = "none";
+            slice.style.clipPath = "none";
+          });
+          drawFishAtlasFrame(element, spriteAsset, spriteCells, spriteFrame);
+          return false;
+        }
+        if (canvas) {
+          canvas.style.display = "none";
+          delete canvas.dataset.atlasKey;
+        }
         if (!segmented) {
           element.style.backgroundImage = `url("${spriteAsset}")`;
           element.style.backgroundSize = `${spriteCells * 100}% 100%`;
@@ -12623,7 +12748,6 @@
           }
           spriteMode = "mouth";
         }
-        element.classList.remove("life-canvas");
         renderFishLifeSlices(
           element,
           spriteAsset,
@@ -13488,7 +13612,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=120").catch(() => {});
       renderRecord();
     </script>
   </body>
