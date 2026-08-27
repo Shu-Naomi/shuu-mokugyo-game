@@ -4656,7 +4656,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v116</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v117</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7520,7 +7520,7 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v116 uses complete pre-rendered atlas cells for Funa, Koi and
+      /* v117 uses complete pre-rendered atlas cells for Funa, Koi and
          Namazu. Their species-specific power strokes are baked into whole-
          fish frames, and their synchronized mouth atlases change only the
          lips/jaw region. No canvas, background, or slice can double a body. */
@@ -12358,7 +12358,8 @@
       }
       function renderCatchFishLife(f, step) {
         const hangingFish = $("#catchFish");
-        if (handDrawnLifeFishIds.has(f.id)) {
+        const usesHandDrawnMouth = handDrawnMouthFishIds.has(f.id);
+        if (handDrawnLifeFishIds.has(f.id) && !usesHandDrawnMouth) {
           const cells = fishSwimFrameCounts[f.id];
           const frame = step % cells;
           hangingFish.style.backgroundImage = `url("${fishAssets[f.id]}")`;
@@ -12369,9 +12370,11 @@
           hangingFish.dataset.catchFrame = String(frame);
           return;
         }
-        // Animate complete fish drawings only. Closed swimming poses move the
-        // real fins and tail, then the v68 mouth sheet advances through its
-        // closed, half-open and open drawings without a detached overlay.
+        // Animate complete fish drawings only. The hand-drawn atlases contain
+        // 12 closed swimming frames followed by 12 matching open-mouth
+        // frames; selecting the same life frame keeps the fins/tail aligned
+        // while the jaw changes. Legacy three-cell mouth sheets keep their
+        // original path below.
         const cycle = [
           ["swim", 0],
           ["swim", 2],
@@ -12386,10 +12389,17 @@
         ];
         const [mode, requestedFrame] = cycle[step % cycle.length];
         const mouthState = requestedFrame === 2 ? "open" : "part";
-        const frame = mode === "mouth"
-          ? fishMouthFrameOverrides[f.id]?.[mouthState] ?? requestedFrame
-          : requestedFrame;
-        const cells = mode === "mouth" ? 3 : 8;
+        const swimCells = fishSwimFrameCounts[f.id] || 8;
+        const frame = usesHandDrawnMouth
+          ? (mode === "mouth"
+            ? (requestedFrame === 2 ? swimCells : 0) + (step % swimCells)
+            : requestedFrame % swimCells)
+          : mode === "mouth"
+            ? fishMouthFrameOverrides[f.id]?.[mouthState] ?? requestedFrame
+            : requestedFrame;
+        const cells = usesHandDrawnMouth
+          ? mode === "mouth" ? swimCells * 2 : swimCells
+          : mode === "mouth" ? 3 : 8;
         const asset = mode === "mouth"
           ? fishMouthAssets[f.id]
           : fishCatchAssets[f.id] || fishAssets[f.id];
