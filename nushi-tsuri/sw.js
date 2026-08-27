@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v124-funa-redraw-124";
+const CACHE_NAME = "nushi-tsuri-v125-moroko-redraw-125";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -58,7 +58,7 @@ const CORE_ASSETS = [
   "./assets/interior-fish-market-v55.png",
   "./assets/sam-practice-pond-v53.png",
   "./assets/sam-front.png",
-  "./assets/fish-moroko-v104.png",
+  "./assets/fish-moroko-v125.png",
   "./assets/fish-funa-v124.png",
   "./assets/fish-koi-v114.png",
   "./assets/fish-namazu-v115.png",
@@ -66,7 +66,8 @@ const CORE_ASSETS = [
   "./assets/fish-aji-v68.png",
   "./assets/fish-kasago-v57.png",
   "./assets/fish-kasago-catch-v58.png",
-  "./assets/fish-moroko-mouth-open-v123.png",
+  "./assets/fish-moroko-mouth-part-v125.png",
+  "./assets/fish-moroko-mouth-open-v125.png",
   "./assets/fish-moroko-turn-v70.png",
   "./assets/fish-aji-mouth-v68.png",
   "./assets/fish-aji-turn-v70.png",

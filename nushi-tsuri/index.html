@@ -4680,7 +4680,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v124</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v125</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5441,7 +5441,7 @@
           canoe: { name: "カヌー", icon: "🛶", price: 3500 },
         },
         fishAssets = {
-          moroko: "assets/fish-moroko-v104.png",
+          moroko: "assets/fish-moroko-v125.png",
           funa: "assets/fish-funa-v124.png",
           koi: "assets/fish-koi-v114.png",
           aji: "assets/fish-aji-v68.png",
@@ -5460,7 +5460,7 @@
           hirame: "assets/fish-hirame-ground-v97-1.png",
         },
         fishMouthAssets = {
-          moroko: "assets/fish-moroko-mouth-open-v123.png",
+          moroko: "assets/fish-moroko-mouth-open-v125.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
@@ -5476,6 +5476,7 @@
           nushi: "assets/fish-nushi-mouth-v68.png",
         },
         fishMouthPartAssets = {
+          moroko: "assets/fish-moroko-mouth-part-v125.png",
           funa: "assets/fish-funa-mouth-part-v124.png",
         },
         fishTurnAssets = {
@@ -7550,9 +7551,10 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v124 uses one exact source cell per hand-drawn frame. The rebuilt
-         Funa has matching closed, half-open and open 12-cell atlases made
-         from one clean fish drawing, so neither the face nor body doubles. */
+      /* v125 uses one exact source cell per hand-drawn frame. The rebuilt
+         Moroko and Funa have matching closed, half-open and open 12-cell
+         atlases made from one clean fish drawing, so neither face nor body
+         doubles when the mouth state changes. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
@@ -13643,7 +13645,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=124").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=125").catch(() => {});
       renderRecord();
     </script>
   </body>
