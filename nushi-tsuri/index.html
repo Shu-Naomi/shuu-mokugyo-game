@@ -4679,7 +4679,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v120</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v121</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5459,16 +5459,16 @@
           hirame: "assets/fish-hirame-ground-v97-1.png",
         },
         fishMouthAssets = {
-          moroko: "assets/fish-moroko-mouth-v120.png",
+          moroko: "assets/fish-moroko-mouth-v121.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
-          namazu: "assets/fish-namazu-mouth-v120.png",
+          namazu: "assets/fish-namazu-mouth-v121.png",
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
-          funa: "assets/fish-funa-mouth-v120.png",
-          koi: "assets/fish-koi-mouth-v120.png",
+          funa: "assets/fish-funa-mouth-v121.png",
+          koi: "assets/fish-koi-mouth-v121.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
@@ -7546,7 +7546,7 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v120 uses one exact source cell per hand-drawn frame. Their
+      /* v121 uses one exact source cell per hand-drawn frame. Their
          species-specific power strokes are baked into whole-fish frames, and
          the mouth atlases change only the lips/jaw region. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
@@ -13612,7 +13612,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=120").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=121").catch(() => {});
       renderRecord();
     </script>
   </body>
