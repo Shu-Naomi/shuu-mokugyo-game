@@ -4656,7 +4656,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v115</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v116</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5437,12 +5437,12 @@
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
-          namazu: "assets/fish-namazu-mouth-v96.png",
+          namazu: "assets/fish-namazu-mouth-v116.png",
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
-          funa: "assets/fish-funa-mouth-v107.png",
-          koi: "assets/fish-koi-mouth-v68.png",
+          funa: "assets/fish-funa-mouth-v116.png",
+          koi: "assets/fish-koi-mouth-v116.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
@@ -7520,12 +7520,13 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v115 uses complete pre-rendered atlas cells for Funa, Koi and
+      /* v116 uses complete pre-rendered atlas cells for Funa, Koi and
          Namazu. Their species-specific power strokes are baked into whole-
-         fish frames, so no canvas, background, or slice can double a body. */
+         fish frames, and their synchronized mouth atlases change only the
+         lips/jaw region. No canvas, background, or slice can double a body. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
-        handDrawnMouthFishIds = new Set(["moroko"]),
+        handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         fixedFaceFishIds = new Set(["funa", "koi", "namazu"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
@@ -12592,7 +12593,8 @@
           spriteMode = "turn";
         } else if (
           mouthState !== "closed" &&
-          !fixedFaceFishIds.has(battle.f.id)
+          (!fixedFaceFishIds.has(battle.f.id) ||
+            handDrawnMouthFishIds.has(battle.f.id))
         ) {
           spriteAsset = fishMouthAssets[battle.f.id];
           const requestedFrame = mouthState === "open" ? 2 : 1;
