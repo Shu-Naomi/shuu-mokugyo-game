@@ -3518,6 +3518,7 @@
       .battle-fish.life-canvas > .fish-life-slice,
       .catch-fish.canvas-atlas > .fish-life-slice {
         display: none !important;
+        visibility: hidden !important;
       }
       .battle-fish.life-canvas > .fish-frame-canvas,
       .catch-fish.canvas-atlas > .fish-frame-canvas {
@@ -4679,7 +4680,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v121</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v123</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5459,16 +5460,16 @@
           hirame: "assets/fish-hirame-ground-v97-1.png",
         },
         fishMouthAssets = {
-          moroko: "assets/fish-moroko-mouth-v121.png",
+          moroko: "assets/fish-moroko-mouth-open-v123.png",
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
-          namazu: "assets/fish-namazu-mouth-v121.png",
+          namazu: "assets/fish-namazu-mouth-open-v123.png",
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
-          funa: "assets/fish-funa-mouth-v121.png",
-          koi: "assets/fish-koi-mouth-v121.png",
+          funa: "assets/fish-funa-mouth-open-v123.png",
+          koi: "assets/fish-koi-mouth-open-v123.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
@@ -7546,9 +7547,10 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v121 uses one exact source cell per hand-drawn frame. Their
-         species-specific power strokes are baked into whole-fish frames, and
-         the mouth atlases change only the lips/jaw region. */
+      /* v123 uses one exact source cell per hand-drawn frame. Their
+         species-specific power strokes are baked into whole-fish frames.
+         Closed frames come from the body atlas; compact open-mouth atlases
+         keep the mobile texture width within a single source sheet. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
@@ -7587,6 +7589,7 @@
           const cellHeight = Math.max(1, image.naturalHeight);
           canvas.width = cellWidth;
           canvas.height = cellHeight;
+          canvas.style.background = "transparent";
           const context = canvas.getContext("2d");
           context.imageSmoothingEnabled = false;
           context.clearRect(0, 0, cellWidth, cellHeight);
@@ -12467,10 +12470,10 @@
           hangingFish.dataset.catchFrame = String(frame);
           return;
         }
-        // Animate complete fish drawings only. The hand-drawn atlases contain
-        // 12 closed swimming frames followed by 12 matching open-mouth
-        // frames; selecting the same life frame keeps the fins/tail aligned
-        // while the jaw changes. Legacy three-cell mouth sheets keep their
+        // Animate complete fish drawings only. Hand-drawn fish use the body
+        // atlas for closed frames and a compact 12-cell open-mouth atlas for
+        // non-closed frames; selecting the same life frame keeps fins and
+        // tail aligned while the jaw changes. Legacy mouth sheets keep their
         // original path below.
         const cycle = [
           ["swim", 0],
@@ -12488,14 +12491,12 @@
         const mouthState = requestedFrame === 2 ? "open" : "part";
         const swimCells = fishSwimFrameCounts[f.id] || 8;
         const frame = usesHandDrawnMouth
-          ? (mode === "mouth"
-            ? (requestedFrame === 2 ? swimCells : 0) + (step % swimCells)
-            : requestedFrame % swimCells)
+          ? mode === "mouth" ? step % swimCells : requestedFrame % swimCells
           : mode === "mouth"
             ? fishMouthFrameOverrides[f.id]?.[mouthState] ?? requestedFrame
             : requestedFrame;
         const cells = usesHandDrawnMouth
-          ? mode === "mouth" ? swimCells * 2 : swimCells
+          ? swimCells
           : mode === "mouth" ? 3 : 8;
         const asset = mode === "mouth"
           ? fishMouthAssets[f.id]
@@ -12618,9 +12619,14 @@
           `${spriteFrame * (100 / Math.max(1, spriteCells - 1))}%`;
         const canvas = element.querySelector(".fish-frame-canvas");
         if (canvasMode) {
-          element.style.backgroundImage = "none";
+          element.style.setProperty("background-image", "none", "important");
+          element.style.removeProperty("background-size");
+          element.style.removeProperty("background-position-x");
+          element.style.removeProperty("background-position-y");
           canvas?.style.setProperty("display", "block");
           slices.forEach((slice) => {
+            slice.style.display = "none";
+            slice.style.visibility = "hidden";
             slice.style.backgroundImage = "none";
             slice.style.transform = "none";
             slice.style.clipPath = "none";
@@ -12632,7 +12638,12 @@
           canvas.style.display = "none";
           delete canvas.dataset.atlasKey;
         }
+        slices.forEach((slice) => {
+          slice.style.removeProperty("display");
+          slice.style.removeProperty("visibility");
+        });
         if (!segmented) {
+          element.style.removeProperty("background-image");
           element.style.backgroundImage = `url("${spriteAsset}")`;
           element.style.backgroundSize = `${spriteCells * 100}% 100%`;
           element.style.backgroundPositionX = framePosition;
@@ -12640,6 +12651,7 @@
           return false;
         }
 
+        element.style.removeProperty("background-image");
         element.style.backgroundImage = "none";
         const profile = fishLifeProfiles[battle.f.id] || fishLifeProfiles.koi;
         const frameCount = fishSwimFrameCounts[battle.f.id] || 8;
@@ -12736,9 +12748,8 @@
           if (handDrawnMouthFishIds.has(battle.f.id)) {
             const swimCells = fishSwimFrameCounts[battle.f.id];
             const lifeFrame = (battle.frame || 0) % swimCells;
-            spriteCells = swimCells * 2;
-            spriteFrame = (requestedFrame === 2 ? swimCells : 0) +
-              lifeFrame;
+            spriteCells = swimCells;
+            spriteFrame = lifeFrame;
             hookPoseFrame = requestedFrame;
           } else {
             spriteCells = 3;
@@ -13141,6 +13152,11 @@
         scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
+        const fightCanvas = fishElement.querySelector(".fish-frame-canvas");
+        if (fightCanvas) {
+          fightCanvas.style.display = "none";
+          delete fightCanvas.dataset.atlasKey;
+        }
         fishElement.classList.toggle(
           "sand-grounded",
           f.id === "hirame" && !battle.sandLifted,
@@ -13285,10 +13301,16 @@
           "hooked",
           "gill-wash",
           "life-segmented",
+          "life-canvas",
         );
         fishElement.classList.remove("sand-grounded");
         fishElement.style.removeProperty("--turn-duration");
         delete fishElement.dataset.turnFrom;
+        const landingCanvas = fishElement.querySelector(".fish-frame-canvas");
+        if (landingCanvas) {
+          landingCanvas.style.display = "none";
+          delete landingCanvas.dataset.atlasKey;
+        }
         battle.turning = null;
         battle.turnDepth = 0;
         battle.turnSpriteFrame = 0;
@@ -13612,7 +13634,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=121").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=123").catch(() => {});
       renderRecord();
     </script>
   </body>
