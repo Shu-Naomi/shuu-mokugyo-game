@@ -4656,7 +4656,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v114</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v115</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5420,7 +5420,7 @@
           aji: "assets/fish-aji-v68.png",
           ayu: "assets/fish-ayu-v95.png",
           yamame: "assets/fish-yamame-v100.png",
-          namazu: "assets/fish-namazu-v96.png",
+          namazu: "assets/fish-namazu-v115.png",
           unagi: "assets/fish-unagi-v102.png",
           bass: "assets/fish-bass-v98.png",
           kurodai: "assets/fish-kurodai-v99.png",
@@ -6897,17 +6897,17 @@
       };
       fishMotionProfiles.namazu = {
         ...fishMotionProfiles.koi,
-        beat: 0.4,
-        speedBeat: 0.075,
-        burst: 1.42,
-        thrust: 0.15,
-        stretch: 0.013,
-        squeeze: 0.01,
-        recoil: 1.55,
-        sway: 1,
-        roll: 0.78,
-        movingDrag: 0.991,
-        restingDrag: 0.944,
+        beat: 0.64,
+        speedBeat: 0.11,
+        burst: 1.48,
+        thrust: 0.19,
+        stretch: 0,
+        squeeze: 0,
+        recoil: 1.9,
+        sway: 0,
+        roll: 0.22,
+        movingDrag: 0.989,
+        restingDrag: 0.934,
         turnTicks: 2,
         turnFrames: 7,
         turnArc: 3.6,
@@ -7487,8 +7487,8 @@
           speedGain: .2, response: .42, falloff: .82, pulse: .008,
         },
         namazu: {
-          wave: .073, bend: 3.5, lag: 1.18, idle: .24,
-          speedGain: .13, response: .21, falloff: 1.05, pulse: .006,
+          wave: .073, bend: 0, lag: 1.75, idle: .27,
+          speedGain: .15, response: .26, falloff: .72, pulse: 0,
         },
         unagi: {
           wave: .12, bend: 7.2, lag: 1.8, idle: .4,
@@ -7520,13 +7520,13 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v114 uses complete pre-rendered atlas cells for Funa and Koi.  Their
-         species-specific power strokes are baked into whole-fish frames, so
-         no canvas, background, or slice can double either silhouette. */
-      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12 },
-        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi"]),
+      /* v115 uses complete pre-rendered atlas cells for Funa, Koi and
+         Namazu. Their species-specific power strokes are baked into whole-
+         fish frames, so no canvas, background, or slice can double a body. */
+      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
+        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
         handDrawnMouthFishIds = new Set(["moroko"]),
-        fixedFaceFishIds = new Set(["funa", "koi"]),
+        fixedFaceFishIds = new Set(["funa", "koi", "namazu"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const FISH_VISUAL_MIN_SCALE = .65,
@@ -11899,7 +11899,9 @@
         const calmFactor = mood?.calm
           ? battle.f.id === "funa"
             ? .82
-            : battle.f.id === "koi" ? .72 : .5
+            : battle.f.id === "koi"
+              ? .72
+              : battle.f.id === "namazu" ? .78 : .5
           : 1;
         const dangerFactor = mood?.danger ? profile.burst : 1;
         const fatigueFactor = 1 - (battle.retrieval || 0) * 0.2;
@@ -11909,7 +11911,9 @@
           ? 1.5 - .68 * Math.abs(Math.sin(currentRadians))
           : battle.f.id === "koi"
             ? 1.25 - .38 * Math.abs(Math.sin(currentRadians))
-            : 1;
+            : battle.f.id === "namazu"
+              ? 1.16 - .18 * Math.abs(Math.sin(currentRadians))
+              : 1;
         const phaseAdvance =
           (profile.beat + Math.min(6, speed) * profile.speedBeat) *
           calmFactor *
@@ -12406,6 +12410,7 @@
           yamame: 104,
           funa: 105,
           koi: 120,
+          namazu: 132,
           namazu: 150,
           unagi: 145,
           bass: 110,
