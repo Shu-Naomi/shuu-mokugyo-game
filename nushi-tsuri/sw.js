@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v123-single-atlas-123";
+const CACHE_NAME = "nushi-tsuri-v124-funa-redraw-124";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -59,7 +59,7 @@ const CORE_ASSETS = [
   "./assets/sam-practice-pond-v53.png",
   "./assets/sam-front.png",
   "./assets/fish-moroko-v104.png",
-  "./assets/fish-funa-v112.png",
+  "./assets/fish-funa-v124.png",
   "./assets/fish-koi-v114.png",
   "./assets/fish-namazu-v115.png",
   "./assets/fish-nushi-v31.png",
@@ -92,7 +92,8 @@ const CORE_ASSETS = [
   "./assets/fish-hirame-ground-v97-1.png",
   "./assets/fish-hirame-mouth-v97.png",
   "./assets/fish-hirame-turn-v97.png",
-  "./assets/fish-funa-mouth-open-v123.png",
+  "./assets/fish-funa-mouth-part-v124.png",
+  "./assets/fish-funa-mouth-open-v124.png",
   "./assets/fish-funa-turn-v70.png",
   "./assets/fish-koi-mouth-open-v123.png",
   "./assets/fish-koi-turn-v70.png",
