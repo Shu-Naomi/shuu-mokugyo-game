@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v125-moroko-redraw-125";
+const CACHE_NAME = "nushi-tsuri-v126-funa-hook-anchor-126";
 const CORE_ASSETS = [
   "./",
   "./index.html",
