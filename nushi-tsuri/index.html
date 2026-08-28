@@ -4680,7 +4680,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v126</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v127</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5469,7 +5469,7 @@
           bass: "assets/fish-bass-mouth-v98.png",
           kurodai: "assets/fish-kurodai-mouth-v99.png",
           funa: "assets/fish-funa-mouth-open-v124.png",
-          koi: "assets/fish-koi-mouth-open-v123.png",
+          koi: "assets/fish-koi-mouth-open-v127.png",
           kasago: "assets/fish-kasago-mouth-v68.png",
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
@@ -5478,6 +5478,7 @@
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
           funa: "assets/fish-funa-mouth-part-v124.png",
+          koi: "assets/fish-koi-mouth-part-v127.png",
         },
         fishTurnAssets = {
           moroko: "assets/fish-moroko-turn-v70.png",
@@ -7566,8 +7567,8 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v125 uses one exact source cell per hand-drawn frame. The rebuilt
-         Moroko and Funa have matching closed, half-open and open 12-cell
+      /* v127 uses one exact source cell per hand-drawn frame. The rebuilt
+         Moroko, Funa and Koi have matching closed, half-open and open 12-cell
          atlases made from one clean fish drawing, so neither face nor body
          doubles when the mouth state changes. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
@@ -13662,7 +13663,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=126").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=127").catch(() => {});
       renderRecord();
     </script>
   </body>
