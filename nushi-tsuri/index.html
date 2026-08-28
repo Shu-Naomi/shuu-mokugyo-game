@@ -4680,7 +4680,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v125</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v126</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5536,7 +5536,10 @@
             breath: 0.34,
           },
           funa: {
-            x: 0.456, y: 0.075, tackleScale: 0.78, inset: 3, drop: 1.4,
+            // The rebuilt v124 atlas keeps transparent room to the right of
+            // the painted head. Anchor to the actual lower lip, not the cell
+            // edge, so the hook remains seated through all three mouth poses.
+            x: 0.382, y: 0.126, tackleScale: 0.78, inset: 3, drop: 1.4,
             breath: 0.48,
           },
           koi: {
@@ -5576,6 +5579,18 @@
             { xScale: -0.72, yOffset: 0.045 },
             { xScale: -0.92, yOffset: 0 },
           ],
+        },
+        // The Funa's hand-painted lower lip folds slightly inward while the
+        // mouth opens. These pose measurements keep the hook on that lip
+        // instead of following the generic outward mouth projection.
+        fishHookPoseOverrides = {
+          funa: {
+            mouth: [
+              { xScale: 1, yOffset: 0 },
+              { xScale: 0.982, yOffset: 0.021 },
+              { xScale: 0.991, yOffset: 0.026 },
+            ],
+          },
         },
         fishMouthFrameOverrides = {},
         fishMotionProfiles = {
@@ -12864,7 +12879,9 @@
         const hookPoseFrame = Number(
           fishElement.dataset.hookPoseFrame ?? spriteFrame,
         );
-        const pose = fishHookPoseFrames[spriteMode]?.[hookPoseFrame];
+        const pose =
+          fishHookPoseOverrides[battle.f.id]?.[spriteMode]?.[hookPoseFrame] ||
+          fishHookPoseFrames[spriteMode]?.[hookPoseFrame];
         const mouthProjection = spriteMode === "turn" && pose
           ? pose.xScale
           : facing * (pose?.xScale || 1);
@@ -13645,7 +13662,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=125").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=126").catch(() => {});
       renderRecord();
     </script>
   </body>
