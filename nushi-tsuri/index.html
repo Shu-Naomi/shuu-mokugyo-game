@@ -5276,7 +5276,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v133</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v134</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5662,11 +5662,20 @@
                     <b id="samRodHeading">釣り竿</b><small>一本物</small>
                   </div>
                   <div class="grid shop-goods">
+                    <button data-buy-rod="youngBamboo">
+                      <span><b>🎣 若竹の竿</b><small>力18・制御1.08</small></span>
+                      <strong><em data-sam-price>5000円</em><small data-sam-stock>未購入</small></strong>
+                    </button>
+                    <button data-buy-rod="clearStream">
+                      <span><b>🎣 清流の竿</b><small>力22・制御1.2</small></span>
+                      <strong><em data-sam-price>15000円</em><small data-sam-stock>未購入</small></strong>
+                    </button>
                     <button data-buy-rod="moroko">
                       <span><b>🎣 ホンモロコ竿</b><small>力30・制御1.35</small></span>
-                      <strong><em>1500円</em><small data-sam-stock>未購入</small></strong>
+                      <strong><em data-sam-price>50000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                   </div>
+                  <p class="sam-window-note">星見の竿は、星占い神社の「竿みくじ」限定。</p>
                 </section>
               </div>
               <div class="sam-shop-window" id="samGoodsWindow" data-sam-shop-panel="goods" role="tabpanel" hidden>
@@ -6201,10 +6210,12 @@
           youngBamboo: {
             name: "若竹の竿", power: 18, control: 1.08,
             castMin: 8, castMax: 80, castSpeed: 3, atlasColumn: 25,
+            price: 5000, samShop: true,
           },
           clearStream: {
             name: "清流の竿", power: 22, control: 1.2,
             castMin: 12, castMax: 90, castSpeed: 2.8, atlasColumn: 50,
+            price: 15000, samShop: true,
           },
           starGazer: {
             name: "星見の竿", power: 26, control: 1.48,
@@ -6213,6 +6224,7 @@
           moroko: {
             name: "ホンモロコ竿", power: 30, control: 1.35,
             castMin: 10, castMax: 100, castSpeed: 2.25, atlasColumn: 100,
+            price: 50000, samShop: true,
           },
         },
         fieldItemData = {
@@ -10441,14 +10453,16 @@
           const id = button.dataset.buyRod;
           const item = rodData[id];
           const stock = button.querySelector("[data-sam-stock]");
-          if (!item || !stock) return;
+          const price = button.querySelector("[data-sam-price]");
+          if (!item?.samShop || !stock) return;
           const owned = s.ownedRods.includes(id);
+          if (price) price.textContent = `${item.price}円`;
           stock.textContent = owned ? "✓ 購入済み" : "未購入";
           button.classList.toggle("owned", owned);
           button.disabled = owned;
           button.setAttribute(
             "aria-label",
-            `${item.name}、${owned ? "購入済み" : "未購入"}`,
+            `${item.name}、${item.price}円、${owned ? "購入済み" : "未購入"}`,
           );
         });
         document.querySelectorAll("[data-buy-hand]").forEach((button) => {
@@ -10521,8 +10535,9 @@
       }
       function buySamRod(id) {
         const item = rodData[id];
-        const price = id === "moroko" ? 1500 : item?.price;
-        if (!item || !price) return false;
+        if (!item?.samShop || !Number.isFinite(item.price) || item.price <= 0)
+          return false;
+        const price = item.price;
         if (s.ownedRods.includes(id)) {
           setSamShopDialogue(`「${item.name}はもう購入済みじゃ。装備は道具袋で替えられるぞ」`);
           return false;
@@ -14888,7 +14903,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=133-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=134-1").catch(() => {});
       renderRecord();
     </script>
   </body>

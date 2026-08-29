@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v133-fish-encyclopedia-133-1";
+const CACHE_NAME = "nushi-tsuri-v134-sam-rod-shop-134-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
