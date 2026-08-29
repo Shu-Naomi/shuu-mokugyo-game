@@ -2363,6 +2363,16 @@
           linear-gradient(90deg, transparent 0 5px, #7556a0 6px 8px, transparent 9px),
           linear-gradient(#f5e3a0, #c8a45c);
       }
+      .star-fortune-lineup {
+        margin: 0;
+        padding: 6px 8px;
+        border: 1px dashed #a98bd0;
+        background: #211b38b8;
+        color: #e9ddff;
+        font-size: clamp(.5rem, .8vw, .6rem);
+        line-height: 1.45;
+      }
+      .star-fortune-lineup b { color: #ffe28a; }
       .vehicle-shop-shell {
         display: grid;
         grid-template-rows: auto auto auto 1fr auto;
@@ -2573,6 +2583,180 @@
         border-radius: 8px;
         background: #ffffff0c;
       }
+      .dog-care-modal {
+        inset: 3%;
+        padding: 0;
+        overflow: hidden;
+        border-color: #efc968;
+        background: #12243af7;
+      }
+      .dog-care-shell {
+        display: grid;
+        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+        height: 100%;
+        min-height: 0;
+        background:
+          radial-gradient(circle at 16% 18%, #62b9d329, transparent 27%),
+          linear-gradient(145deg, #23405d, #0c1b2d 66%);
+      }
+      .dog-care-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 12px;
+        border-bottom: 2px solid #a77b3780;
+        background: linear-gradient(90deg, #49301f, #1b3a50);
+      }
+      .dog-care-heading > div { flex: 1; }
+      .dog-care-heading small {
+        display: block;
+        color: #dfb96a;
+        font: 900 .58rem monospace;
+        letter-spacing: .11em;
+      }
+      .dog-care-heading h2 { margin: 1px 0 0; }
+      .dog-care-heading .close { float: none; }
+      .dog-care-tabs {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 6px;
+        padding: 7px 10px;
+        background: #071725d9;
+      }
+      .dog-care-tabs button {
+        min-height: 34px;
+        padding: 5px 8px;
+        border-color: #6e91a5;
+        background: #1d3950;
+        color: #e9f7fa;
+        font-weight: 900;
+      }
+      .dog-care-tabs button.active {
+        border-color: #ffe17d;
+        background: linear-gradient(#dca84a, #8d5d24);
+        color: #fff5c9;
+      }
+      .dog-care-hero {
+        display: grid;
+        grid-template-columns: 80px minmax(0, 1fr);
+        align-items: center;
+        gap: 10px;
+        margin: 0 10px;
+        padding: 8px 10px;
+        border: 1px solid #e0bd6866;
+        border-radius: 8px;
+        background: #071725a8;
+      }
+      .dog-care-portrait {
+        display: grid;
+        place-items: center;
+        width: 68px;
+        height: 68px;
+        border: 2px solid #e6c975;
+        border-radius: 50%;
+        background: radial-gradient(circle, #d9f2e5, #79a69f);
+        font-size: 2.3rem;
+        filter: drop-shadow(2px 3px 0 #0007);
+      }
+      .dog-care-profile { min-width: 0; }
+      .dog-care-profile > small { color: #94cee2; }
+      .dog-care-profile h3 {
+        margin: 0;
+        color: #fff0a6;
+        font-size: 1.25rem;
+      }
+      .dog-affinity-line {
+        display: flex;
+        justify-content: space-between;
+        gap: 8px;
+        color: #ffdda0;
+        font-size: .7rem;
+      }
+      .dog-affinity-meter {
+        height: 10px;
+        margin-top: 3px;
+        overflow: hidden;
+        border: 1px solid #f0ce73;
+        border-radius: 999px;
+        background: #07131d;
+      }
+      .dog-affinity-meter i {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #e27f64, #ffd45f);
+        transition: width .2s steps(8, end);
+      }
+      .dog-care-profile p {
+        min-height: 1.3em;
+        margin: 5px 0 0;
+        color: #dceff2;
+        font-size: .67rem;
+      }
+      .dog-care-body {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 9px;
+        min-height: 0;
+        overflow: auto;
+        padding: 8px 10px;
+      }
+      .dog-care-body section { min-width: 0; }
+      .dog-care-body h3 {
+        margin: 0 0 5px;
+        color: #ffe5a0;
+        font-size: .78rem;
+      }
+      .dog-care-grid { display: grid; gap: 5px; }
+      .dog-care-card {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 7px;
+        min-height: 45px;
+        padding: 5px 7px;
+        border: 1px solid #7397aa;
+        border-radius: 5px;
+        background: linear-gradient(90deg, #203d55, #142b40);
+        color: #eefaff;
+        text-align: left;
+      }
+      .dog-care-card > i {
+        font-style: normal;
+        font-size: 1.25rem;
+        text-align: center;
+      }
+      .dog-care-card span { min-width: 0; }
+      .dog-care-card b,
+      .dog-care-card small { display: block; }
+      .dog-care-card b {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        font-size: .68rem;
+      }
+      .dog-care-card small { color: #add1db; font-size: .55rem; }
+      .dog-care-card strong { color: #ffe083; font-size: .64rem; white-space: nowrap; }
+      .dog-care-card:disabled { opacity: .48; filter: grayscale(.55); }
+      .dog-care-card.played { border-color: #6b7b80; background: #24313b; }
+      .dog-care-footer {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
+        padding: 7px 10px 9px;
+        border-top: 1px solid #e3bd6366;
+        background: #071725e6;
+      }
+      .dog-care-footer button {
+        display: grid;
+        min-height: 38px;
+        padding: 4px 8px;
+        border-color: #e4c369;
+        background: linear-gradient(#dba44c, #8b5925);
+        color: #fff5c9;
+        font-weight: 900;
+      }
+      .dog-care-footer button small { color: #ffe7b0; font-size: .55rem; }
       .fishdex-modal {
         inset: 2.5%;
         padding: 0;
@@ -2926,6 +3110,43 @@
         padding: 0 7px 7px;
       }
       .fishdex-log .item { padding: 5px 7px; }
+      .fishdex-collection {
+        margin: 0 12px 8px;
+        border: 1px solid #8f7441;
+        border-radius: 7px;
+        background: #231d14c9;
+        color: #f7e6b6;
+        font-size: .67rem;
+      }
+      .fishdex-collection summary {
+        cursor: pointer;
+        padding: 6px 9px;
+        color: #ffda79;
+        font-weight: 900;
+      }
+      .fishdex-collection-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 5px;
+        padding: 0 7px 7px;
+      }
+      .fishdex-collectible {
+        display: grid;
+        grid-template-columns: 25px minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 5px;
+        padding: 5px 6px;
+        border: 1px solid #96764388;
+        border-radius: 5px;
+        background: #0b1a26c7;
+      }
+      .fishdex-collectible i { font-style: normal; font-size: 1.05rem; }
+      .fishdex-collectible b,
+      .fishdex-collectible small { display: block; }
+      .fishdex-collectible b { color: #fff0b0; font-size: .59rem; }
+      .fishdex-collectible small { color: #adbec1; font-size: .51rem; }
+      .fishdex-collectible strong { color: #ffe27c; font-size: .58rem; }
+      .fishdex-collectible.unknown { opacity: .55; filter: grayscale(.8); }
       .fish-scene {
         --depth-y: 0%;
         --underwater-image: url("assets/fishing-biomes-v49.png");
@@ -4477,6 +4698,14 @@
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 7px;
       }
+      .inventory-section-heading {
+        grid-column: 1 / -1;
+        margin: 4px 0 -1px;
+        padding: 4px 7px;
+        border-bottom: 1px solid #d4ad6766;
+        color: #ffe098;
+        font-size: .68rem;
+      }
       .inventory-card,
       .equipment-row,
       .tackle-summary {
@@ -5187,6 +5416,30 @@
         .modal {
           inset: 3%;
         }
+        .dog-care-modal { inset: 1.5%; }
+        .dog-care-heading { padding: 4px 8px; }
+        .dog-care-heading h2 { font-size: .98rem; }
+        .dog-care-tabs { gap: 4px; padding: 4px 7px; }
+        .dog-care-tabs button { min-height: 28px; padding: 3px 6px; font-size: .65rem; }
+        .dog-care-hero {
+          grid-template-columns: 58px minmax(0, 1fr);
+          gap: 7px;
+          margin: 0 7px;
+          padding: 5px 7px;
+        }
+        .dog-care-portrait { width: 50px; height: 50px; font-size: 1.7rem; }
+        .dog-care-profile h3 { font-size: .95rem; }
+        .dog-care-profile p { margin-top: 3px; font-size: .56rem; }
+        .dog-affinity-line { font-size: .58rem; }
+        .dog-affinity-meter { height: 7px; }
+        .dog-care-body { gap: 6px; padding: 5px 7px; }
+        .dog-care-body h3 { margin-bottom: 3px; font-size: .66rem; }
+        .dog-care-grid { gap: 3px; }
+        .dog-care-card { min-height: 36px; padding: 3px 5px; }
+        .dog-care-card b { font-size: .59rem; }
+        .dog-care-card small { font-size: .48rem; }
+        .dog-care-footer { padding: 4px 7px 5px; }
+        .dog-care-footer button { min-height: 31px; font-size: .62rem; }
         .fishdex-modal {
           inset: 1.5%;
         }
@@ -5245,6 +5498,13 @@
         .fishdex-crown { padding: 3px; font-size: .54rem; }
         .fishdex-crown b { display: inline; font-size: .72rem; }
         .fishdex-log { margin: 0 8px 6px; font-size: .57rem; }
+        .fishdex-collection { margin: 0 8px 5px; font-size: .56rem; }
+        .fishdex-collection summary { padding: 4px 6px; }
+        .fishdex-collection-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 3px; padding: 0 5px 5px; }
+        .fishdex-collectible { grid-template-columns: 19px minmax(0, 1fr) auto; padding: 3px 4px; }
+        .fishdex-collectible i { font-size: .78rem; }
+        .fishdex-collectible b { font-size: .49rem; }
+        .fishdex-collectible small { display: none; }
         .battle-ui {
           top: auto;
           bottom: 3%;
@@ -5276,7 +5536,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v134</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v135</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5393,9 +5653,9 @@
               <span class="field-menu-icon" aria-hidden="true">🎒</span>
               <span class="field-menu-label">持ち物</span>
             </button>
-            <button class="coming-soon" type="button" disabled aria-label="犬と遊ぶ、準備中">
+            <button type="button" data-field-menu-target="dog">
               <span class="field-menu-icon" aria-hidden="true">🐕</span>
-              <span class="field-menu-label">犬と遊ぶ<small>準備中</small></span>
+              <span class="field-menu-label">犬と遊ぶ<small>好感度・お世話</small></span>
             </button>
           </nav>
         </aside>
@@ -5556,6 +5816,7 @@
               <div class="fishdex-progress" aria-live="polite">
                 <span>発見魚種<b id="fishdexDiscovered">0 / 14</b></span>
                 <span>金の王冠<b id="fishdexCrownTotal">0 / 28</b></span>
+                <span>収集品<b id="fishdexCollectibleTotal">0 / 6</b></span>
               </div>
               <button class="fishdex-close" data-close>閉じる</button>
             </header>
@@ -5569,6 +5830,10 @@
               <aside class="fishdex-index" id="book" aria-label="魚種一覧"></aside>
               <section class="fishdex-detail-column" aria-live="polite">
                 <div class="fishdex-detail" id="fishdexDetail"></div>
+                <details class="fishdex-collection" open>
+                  <summary>星降る湖の収集棚</summary>
+                  <div class="fishdex-collection-grid" id="fishdexCollection"></div>
+                </details>
                 <details class="fishdex-log">
                   <summary>最近の出来事</summary>
                   <div id="log"></div>
@@ -5675,7 +5940,7 @@
                       <strong><em data-sam-price>50000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                   </div>
-                  <p class="sam-window-note">星見の竿は、星占い神社の「竿みくじ」限定。</p>
+                  <p class="sam-window-note">星見の竿は、星占い神社の「星みくじ」限定。</p>
                 </section>
               </div>
               <div class="sam-shop-window" id="samGoodsWindow" data-sam-shop-panel="goods" role="tabpanel" hidden>
@@ -5690,7 +5955,13 @@
                     </button>
                   </div>
                 </section>
-                <p class="sam-window-note">手袋など、釣り人の身支度に使う品はこちら。購入後は道具袋の「装備」で着け替えられる。</p>
+                <section class="shop-category" aria-labelledby="samDogHeading">
+                  <div class="shop-category-heading">
+                    <b id="samDogHeading">犬用品</b><small>通常のおやつ・おもちゃ</small>
+                  </div>
+                  <div class="grid shop-goods" id="samDogGoods"></div>
+                </section>
+                <p class="sam-window-note">特別なおやつとおもちゃは星みくじ限定。おもちゃは買えばずっと使えて、ワンコ一匹につきゲーム内一日一回遊べる。</p>
               </div>
               <button class="shop-practice" id="practiceOffer">
                 <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
@@ -5801,6 +6072,33 @@
           <p>エサ</p><div class="tackle-options" id="baitOptions"></div>
           <p>釣具</p><div class="tackle-options" id="rodOptions"></div>
           <button id="beginCast">この仕掛けで釣る</button>
+        </div>
+        <div class="modal dog-care-modal" id="dogCare" aria-label="ワンコずのお世話">
+          <div class="dog-care-shell">
+            <header class="dog-care-heading">
+              <div><small>WANCO FRIENDSHIP</small><h2>ワンコずと遊ぶ</h2></div>
+              <button class="close" data-close>閉じる</button>
+            </header>
+            <nav class="dog-care-tabs" id="dogCareDogs" aria-label="お世話するワンコ"></nav>
+            <section class="dog-care-hero">
+              <div class="dog-care-portrait" id="dogCarePortrait" aria-hidden="true">🐕</div>
+              <div class="dog-care-profile">
+                <small id="dogCareRole">案内・調査役</small>
+                <h3 id="dogCareName">シュウ</h3>
+                <div class="dog-affinity-line"><b id="dogCareTier">顔なじみ</b><span id="dogCarePoints">0 / 100</span></div>
+                <div class="dog-affinity-meter"><i id="dogCareAffinityFill"></i></div>
+                <p id="dogCareMessage" aria-live="polite">今日は何をして遊ぼう？</p>
+              </div>
+            </section>
+            <div class="dog-care-body">
+              <section><h3>🍪 おやつ</h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
+              <section><h3>🎾 おもちゃ</h3><div class="dog-care-grid" id="dogCareToys"></div></section>
+            </div>
+            <footer class="dog-care-footer">
+              <button id="dogCarePet">ナデナデする<small>好感度は変わらないよ</small></button>
+              <button id="dogCareTakeFishing">この子と釣りへ行く<small>同行ワンコにする</small></button>
+            </footer>
+          </div>
         </div>
       </main>
     </section>
@@ -6206,6 +6504,7 @@
           bamboo: {
             name: "竹の竿", power: 16, control: 1,
             castMin: 8, castMax: 72, castSpeed: 3.2, atlasColumn: 0,
+            universal: true,
           },
           youngBamboo: {
             name: "若竹の竿", power: 18, control: 1.08,
@@ -6281,6 +6580,110 @@
             shop: "yaoya",
             use: "offering",
             fortune: "lucky",
+          },
+        },
+        dogProfileData = {
+          shuu: {
+            name: "シュウ",
+            icon: "🐕",
+            role: "案内・調査役",
+            greeting: "気になるものを一緒に調べよう。",
+          },
+          riku: {
+            name: "リク",
+            icon: "🐕‍🦺",
+            role: "釣り・実働担当",
+            greeting: "今日も元気に釣りへ行こう！",
+          },
+          grey: {
+            name: "Grey",
+            icon: "🐶",
+            role: "万能・システム補助",
+            greeting: "困った時は何でも任せて。",
+          },
+        },
+        dogCareData = {
+          samBiscuit: {
+            name: "サム印ビスケット", icon: "🍪", type: "treat",
+            price: 300, affection: 3, samShop: true,
+            desc: "毎日あげられる素朴なおやつ。",
+          },
+          lakeFishJerky: {
+            name: "湖魚ジャーキー", icon: "🐟", type: "treat",
+            price: 700, affection: 6, samShop: true,
+            desc: "湖の魚を香ばしく乾かしたごほうび。",
+          },
+          rubberBall: {
+            name: "ゴムボール", icon: "🎾", type: "toy",
+            price: 1200, affection: 4, samShop: true,
+            action: "ボール投げ", desc: "丈夫で何度でも遊べる定番のおもちゃ。",
+          },
+          tugRope: {
+            name: "ひっぱりロープ", icon: "🪢", type: "toy",
+            price: 2200, affection: 6, samShop: true,
+            action: "ひっぱりっこ", desc: "一緒に力比べができる丈夫なロープ。",
+          },
+          stardustCookie: {
+            name: "星くずクッキー", icon: "🌟", type: "treat",
+            affection: 10, gacha: true,
+            desc: "星みくじだけで手に入る特別なクッキー。",
+          },
+          moonlightJerky: {
+            name: "月光ジャーキー", icon: "🌙", type: "treat",
+            affection: 14, gacha: true,
+            desc: "月明かりのように香る、とっておきのごほうび。",
+          },
+          starFrisbee: {
+            name: "星空フリスビー", icon: "🥏", type: "toy",
+            affection: 12, gacha: true,
+            action: "フリスビー", desc: "星みくじ限定。夜空みたいに光る円盤。",
+          },
+          squeakyNushi: {
+            name: "鳴くヌシ人形", icon: "🐉", type: "toy",
+            affection: 9, gacha: true,
+            action: "ヌシ人形遊び", desc: "かじるとキュッと鳴るヌシのぬいぐるみ。",
+          },
+        },
+        lureData = {
+          silverSpoon: {
+            name: "銀のスプーンルアー", icon: "🥄",
+            desc: "将来のルアー釣りで使える、きらめく金属ルアー。",
+          },
+          starMinnow: {
+            name: "星色ミノー", icon: "🐟",
+            desc: "将来のルアー釣りで使える、星模様の小魚型ルアー。",
+          },
+        },
+        rodPartData = {
+          expeditionJoint: {
+            name: "遠征対応ジョイント", icon: "🔩",
+            desc: "将来の新マップで、愛用竿一本を適用化するための追加パーツ。",
+          },
+        },
+        fishdexCollectibleData = {
+          moonScale: {
+            name: "月光の鱗標本", icon: "🌙", rarity: 3,
+            lore: "月明かりを受けると淡く光る、古い魚の鱗標本。",
+          },
+          ancientFloat: {
+            name: "古い星形ウキ", icon: "⭐", rarity: 2,
+            lore: "星降る湖で昔使われていた、小さな星形のウキ。",
+          },
+          rainbowStone: {
+            name: "虹色の川石", icon: "🌈", rarity: 2,
+            lore: "民家川の流れに磨かれ、七色に反射する丸石。",
+          },
+          glassHook: {
+            name: "硝子の釣り針", icon: "🪝", rarity: 4,
+            lore: "実用品とは思えないほど繊細な、透明の古い釣り針。",
+          },
+          tideCoin: {
+            name: "潮騒の古銭", icon: "🪙", rarity: 3,
+            lore: "星見港の砂から見つかった、波紋模様の古い硬貨。",
+          },
+          nushiSketch: {
+            name: "ヌシの古写し", icon: "📜", rarity: 5,
+            lore: "湖のヌシらしき巨大な影を描いた、作者不明の古い写し。",
           },
         },
         handEquipmentData = {
@@ -8718,6 +9121,13 @@
             equipment: null,
             ownedHands: null,
             ownedVehicles: null,
+            dogAffinity: null,
+            dogTreats: null,
+            ownedDogToys: null,
+            dogToyPlayDays: null,
+            lures: null,
+            rodParts: null,
+            fishdexCollectibles: null,
             rod: "竹の竿",
             power: 16,
             caught: {},
@@ -8779,6 +9189,8 @@
         inventoryTab = "items",
         samShopTab = "tackle",
         samBaitPurchaseCount = 1,
+        dogCareSelectedId = null,
+        dogCareStatusMessage = "",
         fishdexSelectedId = null,
         fishdexFilter = "all",
         waterFxState = {
@@ -9028,6 +9440,72 @@
           s.fishCatchRecords = {};
         s.mapVersion = 90;
       }
+      if ((s.mapVersion || 0) < 91) {
+        // v91 gives each companion an independent friendship record and adds
+        // dog care goods, mixed star fortunes, future lures/rod parts and the
+        // collectible shelf. Every v90 catch, crown and purchase is preserved.
+        if (!s.dogAffinity || typeof s.dogAffinity !== "object") s.dogAffinity = {};
+        if (!s.dogTreats || typeof s.dogTreats !== "object") s.dogTreats = {};
+        if (!Array.isArray(s.ownedDogToys)) s.ownedDogToys = [];
+        if (!s.dogToyPlayDays || typeof s.dogToyPlayDays !== "object")
+          s.dogToyPlayDays = {};
+        if (!s.lures || typeof s.lures !== "object") s.lures = {};
+        if (!s.rodParts || typeof s.rodParts !== "object") s.rodParts = {};
+        if (!s.fishdexCollectibles || typeof s.fishdexCollectibles !== "object")
+          s.fishdexCollectibles = {};
+        s.mapVersion = 91;
+      }
+      const dogIds = Object.keys(dogProfileData),
+        treatIds = Object.keys(dogCareData)
+          .filter((id) => dogCareData[id].type === "treat"),
+        toyIds = Object.keys(dogCareData)
+          .filter((id) => dogCareData[id].type === "toy");
+      if (!Array.isArray(s.ownedRods)) s.ownedRods = ["bamboo"];
+      s.ownedRods = [...new Set(s.ownedRods)].filter((id) => rodData[id]);
+      if (!s.ownedRods.includes("bamboo")) s.ownedRods.unshift("bamboo");
+      if (!rodData[s.selectedRod] || !s.ownedRods.includes(s.selectedRod))
+        s.selectedRod = "bamboo";
+      if (!dogProfileData[s.dog]) s.dog = "riku";
+      if (!s.dogAffinity || typeof s.dogAffinity !== "object" ||
+          Array.isArray(s.dogAffinity)) s.dogAffinity = {};
+      for (const id of dogIds)
+        s.dogAffinity[id] = Math.max(
+          0,
+          Math.min(100, Math.floor(Number(s.dogAffinity[id]) || 0)),
+        );
+      if (!s.dogTreats || typeof s.dogTreats !== "object" ||
+          Array.isArray(s.dogTreats)) s.dogTreats = {};
+      for (const id of treatIds)
+        s.dogTreats[id] = Math.max(0, Math.floor(Number(s.dogTreats[id]) || 0));
+      if (!Array.isArray(s.ownedDogToys)) s.ownedDogToys = [];
+      s.ownedDogToys = [...new Set(s.ownedDogToys)].filter((id) => toyIds.includes(id));
+      if (!s.dogToyPlayDays || typeof s.dogToyPlayDays !== "object" ||
+          Array.isArray(s.dogToyPlayDays)) s.dogToyPlayDays = {};
+      for (const dogId of dogIds) {
+        const plays = s.dogToyPlayDays[dogId];
+        s.dogToyPlayDays[dogId] = plays && typeof plays === "object" &&
+            !Array.isArray(plays)
+          ? Object.fromEntries(Object.entries(plays)
+              .filter(([id, day]) => toyIds.includes(id) && Number.isFinite(Number(day)))
+              .map(([id, day]) => [id, Math.floor(Number(day))]))
+          : {};
+      }
+      if (!s.lures || typeof s.lures !== "object" || Array.isArray(s.lures))
+        s.lures = {};
+      for (const id of Object.keys(lureData))
+        s.lures[id] = Math.max(0, Math.floor(Number(s.lures[id]) || 0));
+      if (!s.rodParts || typeof s.rodParts !== "object" || Array.isArray(s.rodParts))
+        s.rodParts = {};
+      for (const id of Object.keys(rodPartData))
+        s.rodParts[id] = Math.max(0, Math.floor(Number(s.rodParts[id]) || 0));
+      if (!s.fishdexCollectibles ||
+          typeof s.fishdexCollectibles !== "object" ||
+          Array.isArray(s.fishdexCollectibles)) s.fishdexCollectibles = {};
+      for (const id of Object.keys(fishdexCollectibleData))
+        s.fishdexCollectibles[id] = Math.max(
+          0,
+          Math.floor(Number(s.fishdexCollectibles[id]) || 0),
+        );
       s.soundEnabled = s.soundEnabled !== false;
       if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
           Array.isArray(s.sizeRecords)) s.sizeRecords = {};
@@ -10137,7 +10615,7 @@
           goods: ["tomato", "apple", "offeringDaikon", "starGrapes"],
           actionLabel: "品物を選ぶ",
           actionCost: "八百屋",
-          note: "緑札は道具袋から食べる回復用。紫札は星占い神社の竿みくじ専用。",
+          note: "緑札は道具袋から食べる回復用。紫札は星占い神社の星みくじ専用。",
         },
         diner: {
           brand: "MINATO DINER",
@@ -10158,7 +10636,7 @@
           dialogue: "静かな拝殿に鈴の余韻が残る。湖面の星が、次の一投を見守っているようだ。",
           actionLabel: "星へ願いを届ける",
           actionCost: "お参り",
-          note: "大根か星ぶどうを供えると竿みくじを引ける。竿が重なった時は、次の釣りが穏やかになる星守りへ変わる。",
+          note: "大根か星ぶどうを供えると星みくじを引ける。大当たりは星見の竿。他にも釣具、犬用品、お金、遠征パーツ、図鑑収集品が授かる。",
         },
         "fish-market": {
           brand: "HARBOR FISHMONGER",
@@ -10368,24 +10846,26 @@
         } else if (activeLocationId === "main-shrine") {
           const offerings = Object.entries(fieldItemData)
             .filter(([, item]) => item.use === "offering");
-          markup = `<div class="location-goods-heading"><b>竿みくじ</b><span>奉納品の所持数</span></div>` +
+          markup = `<div class="location-goods-heading"><b>星みくじ</b><span>奉納品の所持数</span></div>` +
             offerings.map(([id, item]) => {
               const count = s.items[id] || 0;
               const purpose = item.fortune === "lucky"
-                ? "上向き運・大吉率アップ"
-                : "通常運・竿を一振り占う";
-              return `<button class="location-good fortune" data-draw-rod="${id}">` +
+                ? "上向き運・大当たり7%"
+                : "通常運・大当たり2%";
+              return `<button class="location-good fortune" data-draw-fortune="${id}">` +
                 `${item.icon}<span><b>${item.name}を供える</b><small>${purpose}</small></span>` +
                 `<strong>×${count}</strong></button>`;
-            }).join("");
+            }).join("") +
+            `<p class="star-fortune-lineup"><b>大当たり：星見の竿</b><br>` +
+            `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品</p>`;
         }
         holder.innerHTML = markup;
         holder.hidden = !markup;
         document.querySelectorAll("[data-buy-location-item]").forEach((button) =>
           button.onclick = () => buyLocationItem(button.dataset.buyLocationItem),
         );
-        document.querySelectorAll("[data-draw-rod]").forEach((button) =>
-          button.onclick = () => drawRodFortune(button.dataset.drawRod),
+        document.querySelectorAll("[data-draw-fortune]").forEach((button) =>
+          button.onclick = () => drawStarFortune(button.dataset.drawFortune),
         );
       }
       function buyLocationItem(id) {
@@ -10399,7 +10879,7 @@
         s.money -= item.price;
         s.items[id] = (s.items[id] || 0) + 1;
         const useMessage = item.use === "offering"
-          ? "星占い神社で竿みくじを引く時に供えてね"
+          ? "星占い神社で星みくじを引く時に供えてね"
           : "体力が減ったら道具袋から食べてね";
         setLocationDialogue(`「${item.name}を一つ。${useMessage}」`);
         log(`${item.source}で${item.name}を買った。道具袋に入れた。`);
@@ -10479,7 +10959,27 @@
             `${item.name}、${owned ? "購入済み" : "未購入"}`,
           );
         });
+        renderSamDogGoods();
         setSamShopTab(samShopTab);
+      }
+      function renderSamDogGoods() {
+        const holder = $("#samDogGoods");
+        if (!holder) return;
+        holder.innerHTML = Object.entries(dogCareData)
+          .filter(([, item]) => item.samShop)
+          .map(([id, item]) => {
+            const toy = item.type === "toy";
+            const owned = toy && s.ownedDogToys.includes(id);
+            const stock = toy
+              ? owned ? "✓ 購入済み" : "何度でも遊べる"
+              : `所持 ×${s.dogTreats[id] || 0}`;
+            return `<button data-buy-dog-good="${id}" class="${owned ? "owned" : ""}" ${owned ? "disabled" : ""}>` +
+              `<span><b>${item.icon} ${item.name}</b><small>${item.desc}</small></span>` +
+              `<strong><em>${item.price}円</em><small data-sam-stock>${stock}</small></strong></button>`;
+          }).join("");
+        document.querySelectorAll("[data-buy-dog-good]").forEach((button) =>
+          button.onclick = () => buySamDogGood(button.dataset.buyDogGood),
+        );
       }
       function setSamShopTab(tab = "tackle") {
         samShopTab = ["tackle", "goods"].includes(tab) ? tab : "tackle";
@@ -10576,28 +11076,185 @@
         markPurchaseButton(document.querySelector(`[data-buy-hand="${id}"]`));
         return true;
       }
-      function rollRodFortune(tier = "standard") {
+      function buySamDogGood(id) {
+        const item = dogCareData[id];
+        if (!item?.samShop || !Number.isFinite(item.price)) return false;
+        const toy = item.type === "toy";
+        if (toy && s.ownedDogToys.includes(id)) {
+          setSamShopDialogue(`「${item.name}はもう持っておる。毎日ワンコずと遊んでやるんじゃぞ」`);
+          renderSamShop();
+          return false;
+        }
+        if (s.money < item.price) {
+          setSamShopDialogue(`「${item.name}は${item.price}円じゃ。今は少し足りんようじゃな」`);
+          log(`${item.name}は${item.price}円。今はお金が足りない。`);
+          return false;
+        }
+        s.money -= item.price;
+        if (toy) s.ownedDogToys.push(id);
+        else s.dogTreats[id] = (s.dogTreats[id] || 0) + 1;
+        log(`${item.name}を買った。犬と遊ぶメニューで使える。`);
+        render();
+        renderSamShop();
+        setSamShopDialogue(toy
+          ? `「${item.name}は丈夫じゃから、ワンコずみんなと毎日遊べるぞ」`
+          : `「${item.name}を一つじゃ。好きな子へあげておいで」`);
+        markPurchaseButton(document.querySelector(`[data-buy-dog-good="${id}"]`));
+        save();
+        return true;
+      }
+      function starFortunePool(tier = "standard") {
         const pools = {
-          // Standard offerings have a 5% combined top-rod chance. Lucky
-          // offerings improve that to 15% without making rare rods routine.
           standard: [
-            ["youngBamboo", 0.65],
-            ["clearStream", 0.95],
-            ["starGazer", 0.99],
-            ["moroko", 1],
+            ["starGazer", 2],
+            ["expeditionJoint", 5],
+            ["starFrisbee", 4],
+            ["squeakyNushi", 4],
+            ["stardustCookie", 6],
+            ["moonlightJerky", 5],
+            ["collectibleRandom", 12],
+            ["silverSpoon", 9],
+            ["starMinnow", 7],
+            ["baitWorm9", 12],
+            ["baitRiver6", 8],
+            ["baitPaste6", 8],
+            ["money500", 10],
+            ["money2000", 6],
+            ["money10000", 2],
           ],
           lucky: [
-            ["youngBamboo", 0.4],
-            ["clearStream", 0.85],
-            ["starGazer", 0.97],
-            ["moroko", 1],
+            ["starGazer", 7],
+            ["expeditionJoint", 10],
+            ["starFrisbee", 8],
+            ["squeakyNushi", 7],
+            ["stardustCookie", 8],
+            ["moonlightJerky", 7],
+            ["collectibleRandom", 16],
+            ["silverSpoon", 7],
+            ["starMinnow", 7],
+            ["baitWorm9", 5],
+            ["baitRiver6", 4],
+            ["baitPaste6", 3],
+            ["money500", 3],
+            ["money2000", 5],
+            ["money10000", 3],
           ],
         };
-        const roll = Math.random();
-        return (pools[tier] || pools.standard)
-          .find(([, ceiling]) => roll < ceiling)?.[0] || "youngBamboo";
+        return pools[tier] || pools.standard;
       }
-      function drawRodFortune(offeringId) {
+      function rollStarFortune(tier = "standard", random = Math.random) {
+        const pool = starFortunePool(tier);
+        const total = pool.reduce((sum, [, weight]) => sum + weight, 0);
+        let roll = Math.max(0, Math.min(.999999, Number(random()) || 0)) * total;
+        for (const [id, weight] of pool) {
+          if (roll < weight) return id;
+          roll -= weight;
+        }
+        return pool[pool.length - 1][0];
+      }
+      function grantStarFortunePrize(prizeId, random = Math.random) {
+        if (prizeId === "starGazer") {
+          if (!s.ownedRods.includes("starGazer")) {
+            s.ownedRods.push("starGazer");
+            s.selectedRod = "starGazer";
+            return {
+              fortune: "星大吉・大当たり",
+              message: "湖面の星が一直線に輝いた。星見の竿を授かった！",
+              logMessage: "星みくじの大当たりで星見の竿を授かり、そのまま装備した。",
+              jackpot: true,
+            };
+          }
+          s.calmBonus = Math.max(s.calmBonus, 2);
+          s.rodParts.expeditionJoint = (s.rodParts.expeditionJoint || 0) + 1;
+          return {
+            fortune: "星大吉・再会",
+            message: "星見の竿の札が星守りと遠征対応ジョイントへ変わった！",
+            logMessage: "星見の竿が重なり、星守りの加護と遠征対応ジョイントを得た。",
+            jackpot: true,
+          };
+        }
+        if (rodPartData[prizeId]) {
+          s.rodParts[prizeId] = (s.rodParts[prizeId] || 0) + 1;
+          return {
+            fortune: "星吉・遠征支度",
+            message: `${rodPartData[prizeId].name}を一個授かった！`,
+            logMessage: `星みくじで${rodPartData[prizeId].name}を一個授かった。`,
+          };
+        }
+        if (dogCareData[prizeId]?.type === "toy") {
+          const item = dogCareData[prizeId];
+          if (!s.ownedDogToys.includes(prizeId)) {
+            s.ownedDogToys.push(prizeId);
+            return {
+              fortune: "わんこ大吉",
+              message: `${item.name}を授かった！ ワンコずみんなと遊べる。`,
+              logMessage: `星みくじで限定おもちゃの${item.name}を授かった。`,
+            };
+          }
+          s.dogTreats.stardustCookie = (s.dogTreats.stardustCookie || 0) + 2;
+          return {
+            fortune: "わんこ吉・おまけ",
+            message: `${item.name}は持っていたので、星くずクッキー二個に変わった！`,
+            logMessage: `星みくじの${item.name}が重なり、星くずクッキー二個へ変わった。`,
+          };
+        }
+        if (dogCareData[prizeId]?.type === "treat") {
+          const item = dogCareData[prizeId];
+          s.dogTreats[prizeId] = (s.dogTreats[prizeId] || 0) + 1;
+          return {
+            fortune: "わんこ吉",
+            message: `${item.name}を一個授かった！`,
+            logMessage: `星みくじで限定おやつの${item.name}を一個授かった。`,
+          };
+        }
+        if (lureData[prizeId]) {
+          const item = lureData[prizeId];
+          s.lures[prizeId] = (s.lures[prizeId] || 0) + 1;
+          return {
+            fortune: "釣運吉",
+            message: `${item.name}を一個授かった！`,
+            logMessage: `星みくじで${item.name}を一個授かった。`,
+          };
+        }
+        const baitPrizes = {
+          baitWorm9: ["worm", 9],
+          baitRiver6: ["river", 6],
+          baitPaste6: ["paste", 6],
+        };
+        if (baitPrizes[prizeId]) {
+          const [baitId, amount] = baitPrizes[prizeId];
+          s.baits[baitId] = (s.baits[baitId] || 0) + amount;
+          return {
+            fortune: "釣運小吉",
+            message: `${baitData[baitId].name}を${amount}個授かった！`,
+            logMessage: `星みくじで${baitData[baitId].name}を${amount}個授かった。`,
+          };
+        }
+        const moneyPrizes = { money500: 500, money2000: 2000, money10000: 10000 };
+        if (moneyPrizes[prizeId]) {
+          const amount = moneyPrizes[prizeId];
+          s.money += amount;
+          return {
+            fortune: amount >= 10000 ? "金運大吉" : amount >= 2000 ? "金運吉" : "金運小吉",
+            message: `星のお祝い金${amount}円を授かった！`,
+            logMessage: `星みくじで${amount}円を授かった。`,
+          };
+        }
+        if (prizeId === "collectibleRandom") {
+          const ids = Object.keys(fishdexCollectibleData);
+          const value = Math.max(0, Math.min(.999999, Number(random()) || 0));
+          const id = ids[Math.floor(value * ids.length)];
+          const item = fishdexCollectibleData[id];
+          s.fishdexCollectibles[id] = (s.fishdexCollectibles[id] || 0) + 1;
+          return {
+            fortune: "蒐集吉",
+            message: `図鑑収集品「${item.name}」を授かった！`,
+            logMessage: `星みくじで図鑑収集品の${item.name}を授かった。`,
+          };
+        }
+        return null;
+      }
+      function drawStarFortune(offeringId) {
         const offering = fieldItemData[offeringId];
         if (
           activeLocationId !== "main-shrine" ||
@@ -10606,31 +11263,18 @@
         ) return false;
         if ((s.items[offeringId] || 0) < 1) {
           setLocationDialogue(`「${offering.name}は八百屋にある。供える品を一つ持っておいで」`);
-          log(`${offering.name}を持っていないため、竿みくじは引けない。`);
+          log(`${offering.name}を持っていないため、星みくじは引けない。`);
           return false;
         }
         s.items[offeringId]--;
-        const rodId = rollRodFortune(offering.fortune);
-        const rod = rodData[rodId];
-        const fortunes = {
-          youngBamboo: "小吉",
-          clearStream: "吉",
-          starGazer: "大吉",
-          moroko: "星大吉",
-        };
-        if (!s.ownedRods.includes(rodId)) {
-          s.ownedRods.push(rodId);
-          s.selectedRod = rodId;
-          setLocationDialogue(`鈴が鳴り、${fortunes[rodId]}の札が落ちた。「${rod.name}」を授かった！`);
-          log(`竿みくじは${fortunes[rodId]}。${rod.name}を授かり、そのまま装備した。`);
-          vibrate([35, 45, 90]);
-        } else {
-          s.calmBonus = Math.max(s.calmBonus, 2);
-          setLocationDialogue(`札には持っている「${rod.name}」が描かれていた。札は星守りへ変わり、次の釣りを静めてくれる。`);
-          log(`竿みくじで${rod.name}が重なり、次の釣りへ星守りの加護を受けた。`);
-          vibrate([20, 40, 45]);
-        }
+        const prizeId = rollStarFortune(offering.fortune);
+        const result = grantStarFortunePrize(prizeId);
+        if (!result) return false;
+        setLocationDialogue(`鈴が鳴り、${result.fortune}の札が落ちた。${result.message}`);
+        log(result.logMessage);
+        vibrate(result.jackpot ? [35, 45, 90, 50, 120] : [20, 40, 45]);
         renderLocationGoods();
+        renderInventory();
         render();
         save();
         return true;
@@ -11449,6 +12093,7 @@
         if (target === "record") open("record");
         else if (target === "tackle") openInventory("tackle");
         else if (target === "items") openInventory("items");
+        else if (target === "dog") openDogCare();
       }
       function move(d) {
         if (battle || rescueInProgress || document.querySelector(".modal.open")) return;
@@ -12146,7 +12791,7 @@
           return false;
         }
         if (item.use === "offering") {
-          log(`${item.name}は星占い神社の竿みくじへ供える品だ。`);
+          log(`${item.name}は星占い神社の星みくじへ供える品だ。`);
           return false;
         }
         if (s.hp >= s.maxHp) {
@@ -12161,6 +12806,162 @@
         renderInventory();
         render();
         save();
+        return true;
+      }
+      function dogAffinityTier(value) {
+        const amount = Math.max(0, Math.min(100, Number(value) || 0));
+        return [
+          [100, "ずっと一緒"],
+          [75, "家族"],
+          [50, "相棒"],
+          [25, "だいすき"],
+          [10, "なかよし"],
+          [0, "顔なじみ"],
+        ].find(([minimum]) => amount >= minimum)?.[1] || "顔なじみ";
+      }
+      function addDogAffinity(dogId, amount) {
+        if (!dogProfileData[dogId]) return 0;
+        const before = Math.max(0, Math.min(100, Number(s.dogAffinity[dogId]) || 0));
+        const after = Math.max(0, Math.min(100, before + Math.max(0, Number(amount) || 0)));
+        s.dogAffinity[dogId] = after;
+        return after - before;
+      }
+      function dogToyPlayedToday(dogId, toyId) {
+        return s.dogToyPlayDays?.[dogId]?.[toyId] === gameClockAt(s.gameMinutes).day;
+      }
+      function selectDogCare(dogId) {
+        if (!dogProfileData[dogId]) return false;
+        dogCareSelectedId = dogId;
+        dogCareStatusMessage = dogProfileData[dogId].greeting;
+        renderDogCare();
+        return true;
+      }
+      function renderDogCare() {
+        const dogId = dogProfileData[dogCareSelectedId]
+          ? dogCareSelectedId
+          : s.dog;
+        const profile = dogProfileData[dogId];
+        dogCareSelectedId = dogId;
+        const affinity = s.dogAffinity[dogId] || 0;
+        $("#dogCareDogs").innerHTML = dogIds.map((id) => {
+          const dog = dogProfileData[id];
+          const points = s.dogAffinity[id] || 0;
+          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}">${dog.icon} ${dog.name}　${points}</button>`;
+        }).join("");
+        $("#dogCarePortrait").textContent = profile.icon;
+        $("#dogCareRole").textContent = profile.role;
+        $("#dogCareName").textContent = profile.name;
+        $("#dogCareTier").textContent = dogAffinityTier(affinity);
+        $("#dogCarePoints").textContent = `${affinity} / 100`;
+        $("#dogCareAffinityFill").style.width = `${affinity}%`;
+        $("#dogCareMessage").textContent = dogCareStatusMessage || profile.greeting;
+        $("#dogCareTreats").innerHTML = Object.entries(dogCareData)
+          .filter(([, item]) => item.type === "treat")
+          .map(([id, item]) => {
+            const count = s.dogTreats[id] || 0;
+            const source = item.samShop ? "サムの店" : "星みくじ限定";
+            return `<button class="dog-care-card" data-give-dog-treat="${id}" ${count < 1 || affinity >= 100 ? "disabled" : ""}>` +
+              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>×${count}</strong></button>`;
+          }).join("");
+        $("#dogCareToys").innerHTML = Object.entries(dogCareData)
+          .filter(([, item]) => item.type === "toy")
+          .map(([id, item]) => {
+            const owned = s.ownedDogToys.includes(id);
+            const played = owned && dogToyPlayedToday(dogId, id);
+            const source = item.samShop ? "サムの店" : "星みくじ限定";
+            const status = !owned ? "未所持" : played ? "今日は遊んだ" : item.action;
+            return `<button class="dog-care-card ${played ? "played" : ""}" data-play-dog-toy="${id}" ${!owned || played ? "disabled" : ""}>` +
+              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>${status}</strong></button>`;
+          }).join("");
+        document.querySelectorAll("[data-dog-care-id]").forEach((button) =>
+          button.onclick = () => selectDogCare(button.dataset.dogCareId),
+        );
+        document.querySelectorAll("[data-give-dog-treat]").forEach((button) =>
+          button.onclick = () => giveDogTreat(button.dataset.giveDogTreat),
+        );
+        document.querySelectorAll("[data-play-dog-toy]").forEach((button) =>
+          button.onclick = () => playDogToy(button.dataset.playDogToy),
+        );
+      }
+      function openDogCare() {
+        dogCareSelectedId = dogProfileData[s.dog] ? s.dog : "riku";
+        dogCareStatusMessage = dogProfileData[dogCareSelectedId].greeting;
+        renderDogCare();
+        open("dogCare");
+      }
+      function giveDogTreat(id) {
+        const item = dogCareData[id];
+        const dogId = dogCareSelectedId;
+        if (!item || item.type !== "treat" || !dogProfileData[dogId]) return false;
+        if ((s.dogTreats[id] || 0) < 1) {
+          dogCareStatusMessage = `${item.name}は今持っていないよ。`;
+          renderDogCare();
+          return false;
+        }
+        if ((s.dogAffinity[dogId] || 0) >= 100) {
+          dogCareStatusMessage = `${dogProfileData[dogId].name}との絆はもう満タン。おやつは取っておこう。`;
+          renderDogCare();
+          return false;
+        }
+        s.dogTreats[id]--;
+        const gained = addDogAffinity(dogId, item.affection);
+        dogCareStatusMessage = `${dogProfileData[dogId].name}に${item.name}をあげた！ 好感度＋${gained}`;
+        log(`${dogProfileData[dogId].name}に${item.name}をあげ、好感度が${gained}上がった。`);
+        vibrate([20, 25, 35]);
+        playGameAudioSample("dogPetBark", { restart: true });
+        renderDogCare();
+        renderInventory();
+        save();
+        return true;
+      }
+      function playDogToy(id) {
+        const item = dogCareData[id];
+        const dogId = dogCareSelectedId;
+        if (!item || item.type !== "toy" || !dogProfileData[dogId]) return false;
+        if (!s.ownedDogToys.includes(id)) {
+          dogCareStatusMessage = `${item.name}はまだ持っていないよ。`;
+          renderDogCare();
+          return false;
+        }
+        if (dogToyPlayedToday(dogId, id)) {
+          dogCareStatusMessage = `${dogProfileData[dogId].name}とは今日もう${item.action}をしたよ。`;
+          renderDogCare();
+          return false;
+        }
+        const day = gameClockAt(s.gameMinutes).day;
+        s.dogToyPlayDays[dogId][id] = day;
+        const gained = addDogAffinity(dogId, item.affection);
+        dogCareStatusMessage = gained
+          ? `${dogProfileData[dogId].name}と${item.action}！ 好感度＋${gained}`
+          : `${dogProfileData[dogId].name}とたっぷり${item.action}を楽しんだ！`;
+        log(`${dogProfileData[dogId].name}と${item.action}をして遊んだ${gained ? `。好感度＋${gained}` : "。"}`);
+        vibrate([20, 35, 20, 45]);
+        playGameAudioSample("dogPetBark", { restart: true });
+        renderDogCare();
+        save();
+        return true;
+      }
+      function petDogCare() {
+        const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
+        dogCareStatusMessage = `${dogProfileData[dogId].name}をやさしくナデナデ。しっぽが嬉しそうに揺れている♡`;
+        log(`${dogProfileData[dogId].name}をナデナデした。好感度はおやつや遊びで上がる。`);
+        vibrate([18, 30, 18]);
+        playGameAudioSample("dogPetBark", { restart: true });
+        renderDogCare();
+        return true;
+      }
+      function takeDogFishing() {
+        const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
+        s.dog = dogId;
+        ensureDogImage(dogId);
+        document.querySelectorAll("[data-dog]").forEach((button) =>
+          button.classList.toggle("active", button.dataset.dog === dogId),
+        );
+        log(`${dogProfileData[dogId].name}と一緒に釣りへ行くことにした。`);
+        render();
+        save();
+        close();
+        armDogIdle();
         return true;
       }
       function equipHand(id) {
@@ -12288,7 +13089,7 @@
             const offering = item.use === "offering";
             const disabled = count < 1 || s.hp >= s.maxHp ? " disabled" : "";
             const detail = offering
-              ? `竿みくじ用／${item.source}`
+              ? `星みくじ用／${item.source}`
               : `体力＋${item.heal}／${item.source}`;
             const action = offering
               ? `<span class="inventory-purpose">祠用</span>`
@@ -12299,7 +13100,47 @@
               `${action}</div></div>`;
           })
           .join("");
-        $("#inventoryItems").innerHTML = baitMarkup + itemMarkup;
+        const dogTreatMarkup = Object.entries(dogCareData)
+          .filter(([, item]) => item.type === "treat")
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>犬のおやつ／好感度＋${item.affection}</small></span>` +
+            `<strong>×${s.dogTreats[id] || 0}</strong></div>`)
+          .join("");
+        const ownedDogToyMarkup = Object.entries(dogCareData)
+          .filter(([id, item]) => item.type === "toy" && s.ownedDogToys.includes(id))
+          .map(([, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>犬のおもちゃ／毎日再使用可</small></span>` +
+            `<strong>所持</strong></div>`)
+          .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
+        const lureMarkup = Object.entries(lureData)
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
+            `<strong>×${s.lures[id] || 0}</strong></div>`)
+          .join("");
+        const rodPartMarkup = Object.entries(rodPartData)
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
+            `<strong>×${s.rodParts[id] || 0}</strong></div>`)
+          .join("");
+        const collectibleMarkup = Object.entries(fishdexCollectibleData)
+          .filter(([id]) => (s.fishdexCollectibles[id] || 0) > 0)
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>魚図鑑の収集棚に記録済み</small></span>` +
+            `<strong>×${s.fishdexCollectibles[id]}</strong></div>`)
+          .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
+        $("#inventoryItems").innerHTML =
+          `<h4 class="inventory-section-heading">釣りエサ</h4>${baitMarkup}` +
+          `<h4 class="inventory-section-heading">食料・奉納品</h4>${itemMarkup}` +
+          `<h4 class="inventory-section-heading">ワンコずのおやつ</h4>${dogTreatMarkup}` +
+          `<h4 class="inventory-section-heading">ワンコずのおもちゃ</h4>${ownedDogToyMarkup}` +
+          `<h4 class="inventory-section-heading">ルアー（将来用）</h4>${lureMarkup}` +
+          `<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}` +
+          `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}`;
         document.querySelectorAll("[data-use-item]").forEach((button) =>
           button.onclick = () => useFieldItem(button.dataset.useItem),
         );
@@ -14686,6 +15527,22 @@
         </div>
         <div class="fishdex-unknown-message">まだ出会っていない魚だよ。<br>釣り上げると、魚の姿・生態・釣れる条件・使ったタックルが図鑑に記録される。</div>`;
       }
+      function renderFishdexCollection() {
+        const entries = Object.entries(fishdexCollectibleData);
+        const discovered = entries.filter(([id]) =>
+          (s.fishdexCollectibles[id] || 0) > 0,
+        ).length;
+        $("#fishdexCollectibleTotal").textContent = `${discovered} / ${entries.length}`;
+        $("#fishdexCollection").innerHTML = entries.map(([id, item]) => {
+          const count = s.fishdexCollectibles[id] || 0;
+          const known = count > 0;
+          const stars = "★".repeat(item.rarity) + "☆".repeat(5 - item.rarity);
+          return `<div class="fishdex-collectible ${known ? "known" : "unknown"}">` +
+            `<i>${known ? item.icon : "❔"}</i><span><b>${known ? item.name : "？？？？"}</b>` +
+            `<small>${known ? `${stars}　${item.lore}` : "星みくじから見つかる収集品"}</small></span>` +
+            `<strong>${known ? `×${count}` : "未発見"}</strong></div>`;
+        }).join("");
+      }
       function renderRecord() {
         const filteredFish = fish.filter((f) => fishdexFilter === "all" ||
           fishEncyclopediaData[f.id]?.habitats.includes(fishdexFilter));
@@ -14697,6 +15554,7 @@
         $("#fishdexDiscovered").textContent =
           `${fish.filter(fishdexIsKnown).length} / ${fish.length}`;
         $("#fishdexCrownTotal").textContent = `${fishdexCrownCount()} / ${fish.length * 2}`;
+        renderFishdexCollection();
         document.querySelectorAll("[data-fishdex-filter]").forEach((button) => {
           button.classList.toggle("active", button.dataset.fishdexFilter === fishdexFilter);
           button.onclick = () => {
@@ -14803,6 +15661,8 @@
       $("#beginCast").onclick = beginFishing;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
       $("#locationAction").onclick = useLocationService;
+      $("#dogCarePet").onclick = petDogCare;
+      $("#dogCareTakeFishing").onclick = takeDogFishing;
       document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
         button.onclick = () => setInventoryTab(button.dataset.inventoryTab),
       );
@@ -14903,7 +15763,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=134-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=135-1").catch(() => {});
       renderRecord();
     </script>
   </body>
