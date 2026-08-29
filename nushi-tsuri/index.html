@@ -2573,6 +2573,357 @@
         border-radius: 8px;
         background: #ffffff0c;
       }
+      .fishdex-modal {
+        inset: 2.5%;
+        padding: 0;
+        overflow: hidden;
+        border-color: #ffe083;
+        background:
+          linear-gradient(145deg, #203753f8, #0b192cfb 64%),
+          #102238;
+        box-shadow: inset 0 0 0 2px #745624, 0 12px 34px #000b;
+      }
+      .fishdex-shell {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr);
+        height: 100%;
+        min-height: 0;
+      }
+      .fishdex-heading {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto auto;
+        align-items: center;
+        gap: 12px;
+        min-height: 52px;
+        padding: 8px 12px;
+        border-bottom: 1px solid #e3be5a80;
+        background: linear-gradient(180deg, #315477, #172e4b);
+      }
+      .fishdex-title small {
+        display: block;
+        color: #99cfe8;
+        font-size: .64rem;
+        letter-spacing: .14em;
+      }
+      .fishdex-title h2 {
+        margin: 0;
+        line-height: 1.12;
+      }
+      .fishdex-progress {
+        display: flex;
+        gap: 6px;
+      }
+      .fishdex-progress span {
+        display: grid;
+        min-width: 92px;
+        padding: 4px 8px;
+        border: 1px solid #8fb9d066;
+        border-radius: 8px;
+        background: #07152691;
+        color: #d9effc;
+        text-align: center;
+        font-size: .7rem;
+      }
+      .fishdex-progress b {
+        color: #ffe285;
+        font-size: .85rem;
+      }
+      .fishdex-close {
+        min-width: 68px;
+        padding: 6px 10px;
+      }
+      .fishdex-filters {
+        display: flex;
+        gap: 6px;
+        padding: 6px 10px;
+        border-bottom: 1px solid #ffffff22;
+        background: #08192bd9;
+      }
+      .fishdex-filters button {
+        min-width: 72px;
+        padding: 5px 10px;
+        border-color: #6c91aa;
+        background: #1b3650;
+        color: #d8edf8;
+      }
+      .fishdex-filters button.active {
+        border-color: #ffe083;
+        background: #9b6c1d;
+        color: #fff8d1;
+        box-shadow: inset 0 0 0 1px #ffe08380;
+      }
+      .fishdex-body {
+        display: grid;
+        grid-template-columns: minmax(190px, 31%) minmax(0, 1fr);
+        min-height: 0;
+      }
+      .fishdex-index {
+        min-height: 0;
+        overflow-y: auto;
+        padding: 7px;
+        border-right: 2px solid #d4ad5370;
+        background: #071525ad;
+        scrollbar-color: #a77c36 #071525;
+      }
+      .fishdex-entry {
+        display: grid;
+        grid-template-columns: 34px minmax(0, 1fr) auto;
+        align-items: center;
+        width: 100%;
+        margin-bottom: 5px;
+        padding: 7px 8px;
+        border: 1px solid #506f87;
+        border-radius: 7px;
+        background: linear-gradient(90deg, #203a52, #142a40);
+        color: #eefaff;
+        text-align: left;
+      }
+      .fishdex-entry:hover,
+      .fishdex-entry.selected {
+        border-color: #ffdb71;
+        background: linear-gradient(90deg, #8b611e, #4b391b);
+      }
+      .fishdex-entry.unknown { color: #9caebe; }
+      .fishdex-entry-no {
+        color: #8ec5df;
+        font: 700 .66rem ui-monospace, monospace;
+      }
+      .fishdex-entry-name {
+        overflow: hidden;
+        font-weight: 700;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .fishdex-entry-meta {
+        display: flex;
+        align-items: center;
+        gap: 3px;
+        margin-left: 5px;
+        color: #b9d5e3;
+        font-size: .62rem;
+        white-space: nowrap;
+      }
+      .fishdex-mini-crown {
+        color: #765f31;
+        filter: saturate(.25);
+      }
+      .fishdex-mini-crown.earned {
+        color: #ffd455;
+        filter: drop-shadow(0 0 3px #ffc526) saturate(1.3);
+      }
+      .fishdex-detail-column {
+        min-width: 0;
+        min-height: 0;
+        overflow-y: auto;
+        background:
+          radial-gradient(circle at 27% 24%, #2f89aa35, transparent 34%),
+          linear-gradient(155deg, #183553d9, #0b1c30e8);
+      }
+      .fishdex-detail {
+        min-height: 100%;
+        padding: 10px 12px 8px;
+      }
+      .fishdex-hero {
+        display: grid;
+        grid-template-columns: minmax(180px, 37%) minmax(0, 1fr);
+        gap: 12px;
+        align-items: stretch;
+      }
+      .fishdex-art-card {
+        display: grid;
+        place-items: center;
+        min-height: 150px;
+        border: 2px solid #79b7cf70;
+        border-radius: 12px;
+        background:
+          linear-gradient(#ffffff09 1px, transparent 1px),
+          linear-gradient(90deg, #ffffff09 1px, transparent 1px),
+          radial-gradient(circle, #3b7f9e90, #0c263d 70%);
+        background-size: 16px 16px, 16px 16px, auto;
+        box-shadow: inset 0 0 25px #6dd6ff20;
+      }
+      .fishdex-art {
+        display: grid;
+        place-items: center;
+        width: 92%;
+        height: 130px;
+      }
+      .fishdex-art .fish-frame-canvas {
+        display: block;
+        width: auto;
+        max-width: 100%;
+        height: auto;
+        max-height: 128px;
+        image-rendering: pixelated;
+        filter: drop-shadow(4px 5px 2px #00111a99);
+      }
+      .fishdex-art.unknown .fish-frame-canvas {
+        opacity: .62;
+        filter: brightness(0) drop-shadow(0 0 7px #85dbff99);
+      }
+      .fishdex-identity {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        min-width: 0;
+      }
+      .fishdex-number {
+        color: #8fc8df;
+        font: 700 .72rem ui-monospace, monospace;
+        letter-spacing: .1em;
+      }
+      .fishdex-name {
+        margin: 2px 0 0;
+        color: #fff1aa;
+        font-size: clamp(1.25rem, 3.1vw, 2rem);
+        line-height: 1.05;
+      }
+      .fishdex-scientific {
+        margin: 3px 0 7px;
+        color: #acd0e1;
+        font: italic .69rem Georgia, serif;
+      }
+      .fishdex-rarity {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        color: #bcd7e5;
+        font-size: .72rem;
+      }
+      .fishdex-stars {
+        color: #ffd45f;
+        letter-spacing: .08em;
+        text-shadow: 0 0 5px #ffbf28;
+      }
+      .fishdex-counts {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 6px;
+        margin-top: 8px;
+      }
+      .fishdex-counts span {
+        padding: 4px 7px;
+        border: 1px solid #6d9ab366;
+        border-radius: 6px;
+        background: #07182888;
+        color: #dceefa;
+        font-size: .68rem;
+      }
+      .fishdex-sections {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 8px;
+        margin-top: 9px;
+      }
+      .fishdex-panel {
+        padding: 8px 9px;
+        border: 1px solid #6d96ac55;
+        border-radius: 8px;
+        background: #07172796;
+      }
+      .fishdex-panel.wide { grid-column: 1 / -1; }
+      .fishdex-panel h3 {
+        margin: 0 0 4px;
+        color: #88d5ef;
+        font-size: .74rem;
+      }
+      .fishdex-panel p {
+        margin: 0;
+        color: #e2edf3;
+        font-size: .69rem;
+        line-height: 1.55;
+      }
+      .fishdex-facts {
+        display: grid;
+        grid-template-columns: 64px minmax(0, 1fr);
+        gap: 4px 7px;
+        font-size: .68rem;
+        line-height: 1.42;
+      }
+      .fishdex-facts dt { color: #87bdd3; }
+      .fishdex-facts dd { margin: 0; color: #edf7fa; }
+      .fishdex-chip-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        margin-top: 5px;
+      }
+      .fishdex-chip {
+        padding: 3px 6px;
+        border: 1px solid #8fb9c955;
+        border-radius: 999px;
+        background: #183751;
+        color: #e9f7fc;
+        font-size: .64rem;
+      }
+      .fishdex-tackle-note {
+        display: block;
+        margin-top: 5px;
+        color: #9bbccc;
+        font-size: .6rem;
+      }
+      .fishdex-crowns {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 6px;
+      }
+      .fishdex-crown {
+        padding: 6px;
+        border: 1px solid #596b78;
+        border-radius: 7px;
+        background: #17212a;
+        color: #84929c;
+        text-align: center;
+        font-size: .65rem;
+      }
+      .fishdex-crown b {
+        display: block;
+        font-size: 1rem;
+      }
+      .fishdex-crown.earned {
+        border-color: #ffdc66;
+        background: linear-gradient(145deg, #9a681b, #51340d);
+        color: #fff2ad;
+        box-shadow: inset 0 0 10px #fff3a82e, 0 0 6px #ffc62c42;
+      }
+      .fishdex-shuu-note {
+        border-color: #ddb85c99;
+        background: linear-gradient(135deg, #3a2b16cc, #171e2bcc);
+      }
+      .fishdex-shuu-note h3 { color: #ffd977; }
+      .fishdex-unknown-message {
+        display: grid;
+        place-items: center;
+        min-height: 120px;
+        margin-top: 10px;
+        padding: 16px;
+        border: 1px dashed #7aa2b7;
+        border-radius: 10px;
+        color: #b8d1dc;
+        text-align: center;
+        line-height: 1.65;
+      }
+      .fishdex-log {
+        margin: 0 12px 10px;
+        border: 1px solid #597b90;
+        border-radius: 7px;
+        background: #061522b8;
+        color: #cde4ef;
+        font-size: .67rem;
+      }
+      .fishdex-log summary {
+        cursor: pointer;
+        padding: 6px 9px;
+        color: #95cfe5;
+      }
+      .fishdex-log #log {
+        display: grid;
+        gap: 4px;
+        max-height: 110px;
+        overflow-y: auto;
+        padding: 0 7px 7px;
+      }
+      .fishdex-log .item { padding: 5px 7px; }
       .fish-scene {
         --depth-y: 0%;
         --underwater-image: url("assets/fishing-biomes-v49.png");
@@ -4834,6 +5185,64 @@
         .modal {
           inset: 3%;
         }
+        .fishdex-modal {
+          inset: 1.5%;
+        }
+        .fishdex-heading {
+          min-height: 38px;
+          padding: 4px 7px;
+        }
+        .fishdex-title small { display: none; }
+        .fishdex-title h2 { font-size: 1.05rem; }
+        .fishdex-progress span {
+          min-width: 73px;
+          padding: 2px 5px;
+          font-size: .58rem;
+        }
+        .fishdex-progress b { font-size: .7rem; }
+        .fishdex-close {
+          min-width: 56px;
+          padding: 3px 7px;
+        }
+        .fishdex-filters { padding: 3px 6px; }
+        .fishdex-filters button {
+          min-width: 58px;
+          padding: 3px 7px;
+          font-size: .64rem;
+        }
+        .fishdex-body { grid-template-columns: minmax(158px, 29%) minmax(0, 1fr); }
+        .fishdex-index { padding: 4px; }
+        .fishdex-entry {
+          grid-template-columns: 29px minmax(0, 1fr) auto;
+          margin-bottom: 3px;
+          padding: 4px 6px;
+          font-size: .66rem;
+        }
+        .fishdex-entry-meta { font-size: .54rem; }
+        .fishdex-detail { padding: 6px 8px 5px; }
+        .fishdex-hero {
+          grid-template-columns: minmax(135px, 34%) minmax(0, 1fr);
+          gap: 8px;
+        }
+        .fishdex-art-card { min-height: 102px; }
+        .fishdex-art { height: 88px; }
+        .fishdex-art .fish-frame-canvas { max-height: 86px; }
+        .fishdex-name { font-size: 1.14rem; }
+        .fishdex-scientific { margin-bottom: 3px; font-size: .57rem; }
+        .fishdex-rarity, .fishdex-counts span { font-size: .58rem; }
+        .fishdex-counts { margin-top: 4px; }
+        .fishdex-counts span { padding: 2px 5px; }
+        .fishdex-sections { gap: 5px; margin-top: 5px; }
+        .fishdex-panel { padding: 5px 7px; }
+        .fishdex-panel h3 { font-size: .64rem; }
+        .fishdex-panel p,
+        .fishdex-facts { font-size: .57rem; line-height: 1.38; }
+        .fishdex-facts { grid-template-columns: 53px minmax(0, 1fr); }
+        .fishdex-chip { padding: 2px 5px; font-size: .54rem; }
+        .fishdex-tackle-note { font-size: .52rem; }
+        .fishdex-crown { padding: 3px; font-size: .54rem; }
+        .fishdex-crown b { display: inline; font-size: .72rem; }
+        .fishdex-log { margin: 0 8px 6px; font-size: .57rem; }
         .battle-ui {
           top: auto;
           bottom: 3%;
@@ -4865,7 +5274,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v132</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v133</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5135,12 +5544,36 @@
             <button class="catch-close" id="catchClose">A　つづける</button>
           </div>
         </div>
-        <div class="modal" id="record">
-          <button class="close" data-close>閉じる</button>
-          <h2>釣り人手帳</h2>
-          <div class="grid" id="book"></div>
-          <h3>最近の出来事</h3>
-          <div id="log"></div>
+        <div class="modal fishdex-modal" id="record" aria-label="魚図鑑">
+          <div class="fishdex-shell">
+            <header class="fishdex-heading">
+              <div class="fishdex-title">
+                <small>HOSHIFURU LAKE FISH ARCHIVE</small>
+                <h2>魚図鑑</h2>
+              </div>
+              <div class="fishdex-progress" aria-live="polite">
+                <span>発見魚種<b id="fishdexDiscovered">0 / 14</b></span>
+                <span>金の王冠<b id="fishdexCrownTotal">0 / 28</b></span>
+              </div>
+              <button class="fishdex-close" data-close>閉じる</button>
+            </header>
+            <nav class="fishdex-filters" id="fishdexFilters" aria-label="生息地で絞り込む">
+              <button class="active" data-fishdex-filter="all">すべて</button>
+              <button data-fishdex-filter="lake">湖</button>
+              <button data-fishdex-filter="river">川</button>
+              <button data-fishdex-filter="sea">海</button>
+            </nav>
+            <div class="fishdex-body">
+              <aside class="fishdex-index" id="book" aria-label="魚種一覧"></aside>
+              <section class="fishdex-detail-column" aria-live="polite">
+                <div class="fishdex-detail" id="fishdexDetail"></div>
+                <details class="fishdex-log">
+                  <summary>最近の出来事</summary>
+                  <div id="log"></div>
+                </details>
+              </section>
+            </div>
+          </div>
         </div>
         <div class="modal shop-modal" id="store">
           <div class="shop-layout">
@@ -5495,6 +5928,190 @@
             shadowRow: 4,
           },
         ],
+        fishEncyclopediaData = {
+          moroko: {
+            number: 1,
+            scientific: "Gnathopogon caerulescens",
+            habitats: ["lake", "river"],
+            rarity: 1,
+            rarityLabel: "よく見かける",
+            ecology: "琵琶湖水系だけに自然分布するコイ科の魚。ふだんは沖合の中層で動物プランクトンなどを食べ、春になると岸辺や流入河川へ集まって産卵する。",
+            locations: "星降る湖（岸際〜深場）／民家川（瀬〜淵）",
+            time: "いつでも",
+            rods: ["bamboo", "youngBamboo", "moroko"],
+            baits: ["river", "worm"],
+            tip: "岸際〜近距離をこまめに探ると会いやすいよ。専用のホンモロコ竿なら小さな引きも楽しみやすい。",
+          },
+          funa: {
+            number: 2,
+            scientific: "Carassius spp.",
+            habitats: ["lake", "river"],
+            rarity: 1,
+            rarityLabel: "よく見かける",
+            ecology: "湖沼、ため池、流れの緩い川などにすむフナ類。水底近くで藻類、動物プランクトン、水生昆虫などを幅広く食べる雑食性の魚。",
+            locations: "星降る湖（岸際〜深場）／民家川（瀬〜淵）",
+            time: "いつでも",
+            rods: ["bamboo", "youngBamboo", "clearStream"],
+            baits: ["paste", "worm"],
+            tip: "湖でも川でも狙える入門魚。深くなるほど大物と出会いやすいけれど、まずは岸際で感覚をつかもう。",
+          },
+          koi: {
+            number: 3,
+            scientific: "Cyprinus carpio",
+            habitats: ["lake", "river"],
+            rarity: 2,
+            rarityLabel: "少し珍しい",
+            ecology: "湖や流れの緩い川の泥底を好む大型のコイ科魚類。口で底泥を吸い込み、貝類、水生昆虫、植物質などを選り分けて食べる。",
+            locations: "星降る湖（中層・深場）／民家川（流心・淵）",
+            time: "いつでも",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["paste", "worm"],
+            tip: "中距離より先の底を意識。突進中は巻かず、動きが止まった瞬間に距離を詰めるのがコツだよ。",
+          },
+          aji: {
+            number: 4,
+            scientific: "Trachurus japonicus",
+            habitats: ["sea"],
+            rarity: 1,
+            rarityLabel: "よく見かける",
+            ecology: "沿岸から沖合の中層を群れで回遊する海水魚。動物プランクトン、小型の甲殻類や魚を食べ、体側の硬いぜいごが特徴。",
+            locations: "潮見浜・星見港（浅場〜沖）",
+            time: "いつでも",
+            rods: ["youngBamboo", "clearStream"],
+            baits: ["river", "worm"],
+            tip: "海ならどの深さにも群れが来るよ。軽めの竿で中層を広く探るとテンポよく釣れる。",
+          },
+          ayu: {
+            number: 5,
+            scientific: "Plecoglossus altivelis",
+            habitats: ["river"],
+            rarity: 2,
+            rarityLabel: "少し珍しい",
+            ecology: "海や湖で幼魚期を過ごし、春に川を上る回遊魚。成長すると石についた藻類を削り取って食べ、一般には一年で一生を終える。",
+            locations: "民家川（瀬〜淵）",
+            time: "いつでも（朝〜昼が狙い目）",
+            rods: ["youngBamboo", "clearStream"],
+            baits: ["river"],
+            tip: "朝〜昼の瀬や流心が本命。川虫で流れの筋を狙うとアユらしい鋭い引きに会いやすいよ。",
+          },
+          yamame: {
+            number: 6,
+            scientific: "Oncorhynchus masou masou",
+            habitats: ["river"],
+            rarity: 3,
+            rarityLabel: "珍しい",
+            ecology: "サクラマスのうち海へ下らず川で一生を送る型。冷たく澄んだ河川の上流域を好み、水生昆虫や水面へ落ちた陸生昆虫などを食べる。",
+            locations: "民家川（瀬〜淵）",
+            time: "いつでも（朝・夕が狙い目）",
+            rods: ["clearStream", "starGazer"],
+            baits: ["river", "worm"],
+            tip: "朝夕が狙い目。瀬から流心を静かに探り、急な走りにはすぐ糸を送ろう。",
+          },
+          namazu: {
+            number: 7,
+            scientific: "Silurus asotus",
+            habitats: ["lake", "river"],
+            rarity: 3,
+            rarityLabel: "珍しい",
+            ecology: "湖沼や河川の中・下流域にすむ夜行性の肉食魚。長いひげで周囲を探り、魚、カエル、甲殻類などを大きな口で吸い込む。",
+            locations: "星降る湖（中層・深場）／民家川（流心・淵）",
+            time: "いつでも（夕〜夜が狙い目）",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["worm"],
+            tip: "日が落ちてから深い場所へ。底へ潜る時は無理に巻かず、泥へ伏せた隙を逃さないで。",
+          },
+          unagi: {
+            number: 8,
+            scientific: "Anguilla japonica",
+            habitats: ["river"],
+            rarity: 4,
+            rarityLabel: "とても珍しい",
+            ecology: "海で生まれ、河川や河口で成長して再び外洋の産卵場へ向かう降河回遊魚。夜に活発になり、魚や甲殻類、水生昆虫などを食べる。",
+            locations: "民家川（流心・淵）",
+            time: "いつでも（夕〜夜が狙い目）",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["worm"],
+            tip: "夜の淵が一番の勝負どころ。ミミズを深場へ届け、蛇行し始めたら糸を送っていなそう。",
+          },
+          bass: {
+            number: 9,
+            scientific: "Micropterus salmoides",
+            habitats: ["lake", "river"],
+            rarity: 3,
+            rarityLabel: "珍しい",
+            ecology: "北米原産で、日本では特定外来生物に指定される肉食魚。湖沼や流れの緩い川で、魚、エビ、水生昆虫などを待ち伏せして食べる。",
+            locations: "星降る湖（岸際〜深場）／民家川（流心・淵）",
+            time: "いつでも（朝〜夕が狙い目）",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["worm", "river"],
+            tip: "朝〜夕の障害物まわりを中距離から。急襲や首振りが始まったら巻く手を止めよう。",
+          },
+          kurodai: {
+            number: 10,
+            scientific: "Acanthopagrus schlegelii",
+            habitats: ["sea"],
+            rarity: 4,
+            rarityLabel: "とても珍しい",
+            ecology: "内湾、岩礁、河口など塩分が変化する浅い海にも適応する魚。貝類、ゴカイ、甲殻類などを食べ、成長に伴い雌へ性転換する個体がいる。",
+            locations: "星見港（浅場〜沖）",
+            time: "いつでも（朝・夕が狙い目）",
+            rods: ["starGazer", "moroko"],
+            baits: ["paste", "worm"],
+            tip: "潮見浜ではなく星見港が条件。朝夕に練りエサを入れ、堤防へ突っ込む間は耐えよう。",
+          },
+          kasago: {
+            number: 11,
+            scientific: "Sebastiscus marmoratus",
+            habitats: ["sea"],
+            rarity: 2,
+            rarityLabel: "少し珍しい",
+            ecology: "沿岸の岩礁や消波ブロックの隙間に潜む底生魚。夜を中心に小魚や甲殻類を捕らえ、背びれなどの鋭い棘には弱い毒がある。",
+            locations: "潮見浜・星見港（浅場〜沖）",
+            time: "いつでも",
+            rods: ["youngBamboo", "clearStream"],
+            baits: ["worm", "river"],
+            tip: "海底の岩陰を意識。釣り手袋を装備しておけば、釣り上げたあとの棘ダメージを防げるよ。",
+          },
+          suzuki: {
+            number: 12,
+            scientific: "Lateolabrax japonicus",
+            habitats: ["sea", "river"],
+            rarity: 3,
+            rarityLabel: "珍しい",
+            ecology: "沿岸や河口を主な生活場所とし、川の淡水域まで入ることもある大型魚。小魚や甲殻類を追い、水面で体を跳ねさせるエラ洗いを見せる。",
+            locations: "潮見浜・星見港（浅場〜沖）／民家川（淵）",
+            time: "いつでも（朝・夕が狙い目）",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["river", "worm"],
+            tip: "海の中〜遠距離か川の淵へ。水面へ向かったらAを離して、エラ洗いを安全にいなそう。",
+          },
+          hirame: {
+            number: 13,
+            scientific: "Paralichthys olivaceus",
+            habitats: ["sea"],
+            rarity: 4,
+            rarityLabel: "とても珍しい",
+            ecology: "沿岸から水深200mほどまでの砂泥底に伏せ、小魚などを待ち伏せする肉食魚。成長の途中で右目が移動し、成魚では両目が体の左側に並ぶ。",
+            locations: "潮見浜（浅場〜沖）",
+            time: "いつでも（朝・夕が狙い目）",
+            rods: ["clearStream", "starGazer", "moroko"],
+            baits: ["worm", "river"],
+            tip: "星見港ではなく潮見浜が条件。朝夕に砂底を探り、底へ張りつく力が緩んだら巻こう。",
+          },
+          nushi: {
+            number: 14,
+            scientific: "— 星降る湖の伝承種 —",
+            habitats: ["lake"],
+            rarity: 5,
+            rarityLabel: "伝説",
+            ecology: "実在する魚種ではなく、星降る湖に伝わる幻の大魚。湖の生き物を見守るように深みを巡り、星の明るい夜には巨大な影が浮かぶという。",
+            locations: "星降る湖（ヌシの深み）",
+            time: "いつでも",
+            rods: ["starGazer", "moroko"],
+            baits: ["paste", "river", "worm"],
+            tip: "湖の最深部へ遠投しよう。どんな動きにも即応できる強い竿と、落ち着いて糸を送る勇気が必要だよ。",
+          },
+        },
         fishingSpots = [
           {
             id: "lake-shallow",
@@ -7951,6 +8568,42 @@
           ? `最大 ${(hundredths / 100).toFixed(2)}cm（${tier.label}）`
           : "";
       }
+      function updateFishdexCatchRecord(state, f, specimen, currentBattle) {
+        if (!f || !currentBattle || currentBattle.practice)
+          return { newCrown: "" };
+        if (!state.fishCatchRecords || typeof state.fishCatchRecords !== "object")
+          state.fishCatchRecords = {};
+        if (!state.fishCrowns || typeof state.fishCrowns !== "object")
+          state.fishCrowns = {};
+        const rodId = rodData[state.selectedRod] ? state.selectedRod : "bamboo";
+        const baitId = baitData[currentBattle.bait]
+          ? currentBattle.bait
+          : state.selectedBait;
+        const entry = state.fishCatchRecords[f.id] || { tackles: {}, last: null };
+        if (!entry.tackles || typeof entry.tackles !== "object") entry.tackles = {};
+        const combo = `${rodId}|${baitId}`;
+        entry.tackles[combo] = (Math.max(0, Number(entry.tackles[combo]) || 0) + 1);
+        entry.last = {
+          rodId,
+          baitId,
+          spotId: currentBattle.spot || "",
+          castLocale: currentBattle.castLocale || currentBattle.waterZone || "",
+          period: gameClockAt(state.gameMinutes).period,
+        };
+        state.fishCatchRecords[f.id] = entry;
+        const crowns = state.fishCrowns[f.id] || { tiny: false, giant: false };
+        let newCrown = "";
+        if (specimen?.tierId === "tiny" && !crowns.tiny) {
+          crowns.tiny = true;
+          newCrown = "tiny";
+        }
+        if (specimen?.tierId === "giant" && !crowns.giant) {
+          crowns.giant = true;
+          newCrown = "giant";
+        }
+        state.fishCrowns[f.id] = crowns;
+        return { newCrown };
+      }
       const GAME_MINUTES_PER_DAY = 24 * 60,
         GAME_START_MINUTES = 6 * 60,
         CAST_TIME_MINUTES = 10,
@@ -8055,6 +8708,8 @@
             power: 16,
             caught: {},
             sizeRecords: {},
+            fishCrowns: {},
+            fishCatchRecords: {},
             log: [],
             gameMinutes: null,
             x: 112,
@@ -8110,6 +8765,8 @@
         inventoryTab = "items",
         samShopTab = "tackle",
         samBaitPurchaseCount = 1,
+        fishdexSelectedId = null,
+        fishdexFilter = "all",
         waterFxState = {
           tick: 0,
           particles: [],
@@ -8348,6 +9005,15 @@
         if (typeof s.soundEnabled !== "boolean") s.soundEnabled = true;
         s.mapVersion = 89;
       }
+      if ((s.mapVersion || 0) < 90) {
+        // v90 turns the former catch list into a persistent fish encyclopedia.
+        // Existing catch counts and maximum sizes remain untouched. A legacy
+        // maximum that is still extreme can safely restore that matching crown.
+        if (!s.fishCrowns || typeof s.fishCrowns !== "object") s.fishCrowns = {};
+        if (!s.fishCatchRecords || typeof s.fishCatchRecords !== "object")
+          s.fishCatchRecords = {};
+        s.mapVersion = 90;
+      }
       s.soundEnabled = s.soundEnabled !== false;
       if (!s.sizeRecords || typeof s.sizeRecords !== "object" ||
           Array.isArray(s.sizeRecords)) s.sizeRecords = {};
@@ -8358,6 +9024,59 @@
           : null;
         if (!tier) delete s.sizeRecords[fishId];
         else s.sizeRecords[fishId] = { hundredths, tierId: tier.id };
+      }
+      if (!s.fishCrowns || typeof s.fishCrowns !== "object" ||
+          Array.isArray(s.fishCrowns)) s.fishCrowns = {};
+      if (!s.fishCatchRecords || typeof s.fishCatchRecords !== "object" ||
+          Array.isArray(s.fishCatchRecords)) s.fishCatchRecords = {};
+      const validFishdexIds = new Set(fish.map((f) => f.id));
+      for (const fishId of Object.keys(s.fishCrowns)) {
+        if (!validFishdexIds.has(fishId)) {
+          delete s.fishCrowns[fishId];
+          continue;
+        }
+        const crowns = s.fishCrowns[fishId];
+        s.fishCrowns[fishId] = {
+          tiny: crowns?.tiny === true,
+          giant: crowns?.giant === true,
+        };
+      }
+      for (const [fishId, record] of Object.entries(s.fishCatchRecords)) {
+        if (!validFishdexIds.has(fishId) || !record || typeof record !== "object") {
+          delete s.fishCatchRecords[fishId];
+          continue;
+        }
+        const tackles = {};
+        for (const [combo, count] of Object.entries(record.tackles || {})) {
+          const [rodId, baitId] = combo.split("|");
+          const amount = Math.max(0, Math.floor(Number(count) || 0));
+          if (rodData[rodId] && baitData[baitId] && amount)
+            tackles[`${rodId}|${baitId}`] = amount;
+        }
+        const last = record.last &&
+            rodData[record.last.rodId] && baitData[record.last.baitId]
+          ? {
+              rodId: record.last.rodId,
+              baitId: record.last.baitId,
+              spotId: fishingSpots.some((spot) => spot.id === record.last.spotId)
+                ? record.last.spotId
+                : "",
+              castLocale: ["lake", "river", "beach", "harbor", "sea"]
+                  .includes(record.last.castLocale)
+                ? record.last.castLocale
+                : "",
+              period: ["morning", "day", "evening", "night"]
+                  .includes(record.last.period)
+                ? record.last.period
+                : "",
+            }
+          : null;
+        s.fishCatchRecords[fishId] = { tackles, last };
+      }
+      for (const [fishId, record] of Object.entries(s.sizeRecords)) {
+        if (!s.fishCrowns[fishId]) s.fishCrowns[fishId] = { tiny: false, giant: false };
+        if (record.tierId === "tiny") s.fishCrowns[fishId].tiny = true;
+        if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
       s.rescueAtMinutes = Number.isFinite(s.rescueAtMinutes)
@@ -13765,18 +14484,25 @@
         const first = !s.caught[f.id];
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
         const salePrice = specimen?.price ?? f.price;
+        const fishdexResult = updateFishdexCatchRecord(s, f, specimen, battle);
+        const crownDetail = fishdexResult.newCrown === "tiny"
+          ? "👑 極小金冠！"
+          : fishdexResult.newCrown === "giant"
+            ? "👑 巨大金冠！"
+            : "";
         const newSizeRecord = updateFishSizeRecord(s, specimen);
         s.money += salePrice;
         log(specimen
-          ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}`
+          ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}${crownDetail}`
           : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。`);
         const hazardDetail = resolveCatchHazard(f);
         const catchDetail = first
           ? `初釣果！ ＋${salePrice}円`
           : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`;
         const specimenDetail = specimen
-          ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
+            ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
             (newSizeRecord ? " ・ 最大記録！" : "") +
+            (crownDetail ? ` ・ ${crownDetail}` : "") +
             hazardDetail +
             (f.id === "nushi" ? ` ・ ${dogName()}もしっぽぶんぶん！` : "")
           : "";
@@ -13826,13 +14552,167 @@
         if (fieldMenuIsOpen()) hideFieldMenu();
         else close();
       }
-      function renderRecord() {
-        $("#book").innerHTML = fish
-          .map((f) => {
-            const sizeRecord = fishSizeRecordText(f);
-            return `<div class="item"><b>${f.icon} ${f.name}</b><br>${s.caught[f.id] || 0}匹${sizeRecord ? `<br><small>${sizeRecord}</small>` : ""}</div>`;
+      function fishdexIsKnown(f) {
+        return Math.max(0, Number(s.caught?.[f.id]) || 0) > 0;
+      }
+      function fishdexNumber(f) {
+        return String(fishEncyclopediaData[f.id]?.number || 0).padStart(3, "0");
+      }
+      function fishdexCrownCount() {
+        return fish.reduce((total, f) => {
+          const crowns = s.fishCrowns?.[f.id];
+          return total + (crowns?.tiny ? 1 : 0) + (crowns?.giant ? 1 : 0);
+        }, 0);
+      }
+      function fishdexCatchLocation(last) {
+        const spot = fishingSpotById(last?.spotId, false);
+        if (!spot) return "記録なし";
+        if (last.castLocale === "harbor") return spot.name.replace("潮見浜", "星見港");
+        return spot.name;
+      }
+      function fishdexTackleHistory(f) {
+        const record = s.fishCatchRecords?.[f.id];
+        const combinations = Object.entries(record?.tackles || {})
+          .map(([combo, count]) => {
+            const [rodId, baitId] = combo.split("|");
+            return {
+              rod: rodData[rodId],
+              bait: baitData[baitId],
+              count: Math.max(0, Math.floor(Number(count) || 0)),
+            };
           })
+          .filter((entry) => entry.rod && entry.bait && entry.count)
+          .sort((a, b) => b.count - a.count)
+          .slice(0, 4);
+        const chips = combinations.length
+          ? `<div class="fishdex-chip-row">${combinations
+              .map((entry) => `<span class="fishdex-chip">${entry.rod.name}＋${entry.bait.name} ×${entry.count}</span>`)
+              .join("")}</div>`
+          : `<p>この図鑑での仕掛け記録はまだないよ。</p>`;
+        const last = record?.last;
+        if (!last || !rodData[last.rodId] || !baitData[last.baitId]) return chips;
+        const period = {
+          morning: "朝",
+          day: "昼",
+          evening: "夕",
+          night: "夜",
+        }[last.period] || "時刻不明";
+        return `${chips}<small class="fishdex-tackle-note">最後の釣果：${rodData[last.rodId].name}＋${baitData[last.baitId].name}／${fishdexCatchLocation(last)}／${period}</small>`;
+      }
+      function fishdexCrownsMarkup(f) {
+        const crowns = s.fishCrowns?.[f.id] || {};
+        return `<div class="fishdex-crowns">
+          <div class="fishdex-crown ${crowns.tiny ? "earned" : ""}"><b>👑</b> 極小金冠<br>${crowns.tiny ? "獲得済み" : "未獲得"}</div>
+          <div class="fishdex-crown ${crowns.giant ? "earned" : ""}"><b>👑</b> 巨大金冠<br>${crowns.giant ? "獲得済み" : "未獲得"}</div>
+        </div>`;
+      }
+      function fishdexKnownDetail(f) {
+        const data = fishEncyclopediaData[f.id];
+        const count = Math.max(0, Math.floor(Number(s.caught?.[f.id]) || 0));
+        const sizeRecord = fishSizeRecordText(f) || "最大記録なし";
+        const stars = "★".repeat(data.rarity) + "☆".repeat(5 - data.rarity);
+        const rods = data.rods
+          .filter((id) => rodData[id])
+          .map((id) => `<span class="fishdex-chip">🎣 ${rodData[id].name}</span>`)
           .join("");
+        const baits = data.baits
+          .filter((id) => baitData[id])
+          .map((id) => `<span class="fishdex-chip">🪱 ${baitData[id].name}</span>`)
+          .join("");
+        return `<div class="fishdex-hero">
+          <div class="fishdex-art-card"><div class="fishdex-art" id="fishdexArt"></div></div>
+          <div class="fishdex-identity">
+            <span class="fishdex-number">No. ${fishdexNumber(f)}</span>
+            <h3 class="fishdex-name">${f.name}</h3>
+            <p class="fishdex-scientific">${data.scientific}</p>
+            <div class="fishdex-rarity"><span class="fishdex-stars" aria-label="レア度${data.rarity}">${stars}</span>${data.rarityLabel}</div>
+            <div class="fishdex-counts"><span>釣果 ${count}匹</span><span>${sizeRecord}</span></div>
+          </div>
+        </div>
+        <div class="fishdex-sections">
+          <section class="fishdex-panel wide">
+            <h3>現実の生態</h3>
+            <p>${data.ecology}</p>
+          </section>
+          <section class="fishdex-panel">
+            <h3>この世界で釣れる条件</h3>
+            <dl class="fishdex-facts"><dt>場所</dt><dd>${data.locations}</dd><dt>時間</dt><dd>${data.time}</dd></dl>
+          </section>
+          <section class="fishdex-panel">
+            <h3>金の王冠</h3>
+            ${fishdexCrownsMarkup(f)}
+          </section>
+          <section class="fishdex-panel">
+            <h3>基本タックル（おすすめ）</h3>
+            <div class="fishdex-chip-row">${rods}${baits}</div>
+            <small class="fishdex-tackle-note">どの竿・餌でも釣れるけれど、ここでは狙いやすい組み合わせを表示。</small>
+          </section>
+          <section class="fishdex-panel">
+            <h3>自分が使ったタックル</h3>
+            ${fishdexTackleHistory(f)}
+          </section>
+          <section class="fishdex-panel wide fishdex-shuu-note">
+            <h3>🐕 シュウの釣りメモ</h3>
+            <p>${data.tip}</p>
+          </section>
+        </div>`;
+      }
+      function fishdexUnknownDetail(f) {
+        return `<div class="fishdex-hero">
+          <div class="fishdex-art-card"><div class="fishdex-art unknown" id="fishdexArt"></div></div>
+          <div class="fishdex-identity">
+            <span class="fishdex-number">No. ${fishdexNumber(f)}</span>
+            <h3 class="fishdex-name">？？？？</h3>
+            <p class="fishdex-scientific">UNKNOWN SPECIES</p>
+            <div class="fishdex-rarity">未発見</div>
+          </div>
+        </div>
+        <div class="fishdex-unknown-message">まだ出会っていない魚だよ。<br>釣り上げると、魚の姿・生態・釣れる条件・使ったタックルが図鑑に記録される。</div>`;
+      }
+      function renderRecord() {
+        const filteredFish = fish.filter((f) => fishdexFilter === "all" ||
+          fishEncyclopediaData[f.id]?.habitats.includes(fishdexFilter));
+        if (!filteredFish.some((f) => f.id === fishdexSelectedId)) {
+          fishdexSelectedId = filteredFish.find(fishdexIsKnown)?.id ||
+            filteredFish[0]?.id || fish[0].id;
+        }
+        const selected = fish.find((f) => f.id === fishdexSelectedId) || fish[0];
+        $("#fishdexDiscovered").textContent =
+          `${fish.filter(fishdexIsKnown).length} / ${fish.length}`;
+        $("#fishdexCrownTotal").textContent = `${fishdexCrownCount()} / ${fish.length * 2}`;
+        document.querySelectorAll("[data-fishdex-filter]").forEach((button) => {
+          button.classList.toggle("active", button.dataset.fishdexFilter === fishdexFilter);
+          button.onclick = () => {
+            fishdexFilter = button.dataset.fishdexFilter;
+            renderRecord();
+          };
+        });
+        $("#book").innerHTML = filteredFish.map((f) => {
+          const known = fishdexIsKnown(f);
+          const crowns = s.fishCrowns?.[f.id] || {};
+          return `<button class="fishdex-entry ${known ? "known" : "unknown"} ${f.id === selected.id ? "selected" : ""}" data-fishdex-id="${f.id}" aria-pressed="${f.id === selected.id}">
+            <span class="fishdex-entry-no">${fishdexNumber(f)}</span>
+            <span class="fishdex-entry-name">${known ? f.name : "？？？？"}</span>
+            <span class="fishdex-entry-meta">${known ? `${s.caught[f.id]}匹` : "未発見"}<i class="fishdex-mini-crown ${crowns.tiny ? "earned" : ""}">♛</i><i class="fishdex-mini-crown ${crowns.giant ? "earned" : ""}">♛</i></span>
+          </button>`;
+        }).join("");
+        document.querySelectorAll("[data-fishdex-id]").forEach((button) => {
+          button.onclick = () => {
+            fishdexSelectedId = button.dataset.fishdexId;
+            renderRecord();
+          };
+        });
+        $("#fishdexDetail").innerHTML = fishdexIsKnown(selected)
+          ? fishdexKnownDetail(selected)
+          : fishdexUnknownDetail(selected);
+        const artwork = $("#fishdexArt");
+        if (artwork)
+          drawFishAtlasFrame(
+            artwork,
+            fishAssets[selected.id],
+            fishSwimFrameCounts[selected.id] || 8,
+            0,
+          );
         $("#log").innerHTML =
           s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
           "まだ記録はない。";
@@ -14006,7 +14886,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=132").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=133").catch(() => {});
       renderRecord();
     </script>
   </body>
