@@ -2750,6 +2750,8 @@
       }
       .fishdex-art .fish-frame-canvas {
         display: block;
+        position: static;
+        inset: auto;
         width: auto;
         max-width: 100%;
         height: auto;
@@ -14886,7 +14888,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=133").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=133-1").catch(() => {});
       renderRecord();
     </script>
   </body>
