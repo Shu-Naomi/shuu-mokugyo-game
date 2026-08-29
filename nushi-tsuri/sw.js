@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v128-koi-lower-lip-align-128";
+const CACHE_NAME = "nushi-tsuri-v129-koi-open-mouth-align-129";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -96,8 +96,8 @@ const CORE_ASSETS = [
   "./assets/fish-funa-mouth-part-v124.png",
   "./assets/fish-funa-mouth-open-v124.png",
   "./assets/fish-funa-turn-v70.png",
-  "./assets/fish-koi-mouth-part-v128.png",
-  "./assets/fish-koi-mouth-open-v128.png",
+  "./assets/fish-koi-mouth-part-v129.png",
+  "./assets/fish-koi-mouth-open-v129.png",
   "./assets/fish-koi-turn-v70.png",
   "./assets/fish-kasago-mouth-v68.png",
   "./assets/fish-kasago-turn-v70.png",
