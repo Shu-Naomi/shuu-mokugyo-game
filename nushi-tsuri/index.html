@@ -3906,6 +3906,101 @@
         grid-template-columns: 4.6em minmax(0, 1fr);
         gap: 6px;
       }
+      .field-menu {
+        position: absolute;
+        z-index: 16;
+        top: 46px;
+        right: max(9px, env(safe-area-inset-right));
+        width: clamp(156px, 21vw, 210px);
+        padding: 7px;
+        border: 3px double #f0cd79;
+        border-radius: 8px;
+        background:
+          linear-gradient(135deg, #1a3b58f4, #0c2034f6 72%),
+          #10283a;
+        box-shadow:
+          0 0 0 2px #142033,
+          5px 7px 0 #07131d8f,
+          inset 0 0 18px #67c9e91f;
+        color: #fff4ca;
+        opacity: 0;
+        transform: translateX(calc(100% + 22px));
+        pointer-events: none;
+        transition:
+          opacity .16s steps(2, end),
+          transform .2s steps(4, end);
+      }
+      .field-menu.show {
+        opacity: 1;
+        transform: translateX(0);
+        pointer-events: auto;
+      }
+      .field-menu > header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        min-height: 26px;
+        margin-bottom: 6px;
+        padding: 0 2px 5px 7px;
+        border-bottom: 2px solid #e5bd6870;
+        color: #ffe28b;
+        font-size: clamp(.69rem, 1.35vw, .84rem);
+        letter-spacing: .08em;
+      }
+      .field-menu-close {
+        min-width: 25px;
+        width: 25px;
+        height: 23px;
+        padding: 0;
+        border: 1px solid #d4bd84;
+        border-radius: 5px;
+        background: #273b50;
+        box-shadow: 0 2px 0 #07131d;
+        color: #fff4ca;
+        line-height: 1;
+      }
+      .field-menu nav {
+        display: grid;
+        gap: 6px;
+      }
+      .field-menu nav button {
+        display: grid;
+        grid-template-columns: 30px minmax(0, 1fr);
+        align-items: center;
+        min-height: 41px;
+        padding: 5px 8px;
+        border: 2px solid #d5b86f;
+        border-radius: 6px;
+        background: linear-gradient(90deg, #f8e5a9, #d69642);
+        box-shadow: 0 3px 0 #4a2c20;
+        color: #342313;
+        font-size: clamp(.72rem, 1.55vw, .92rem);
+        text-align: left;
+      }
+      .field-menu nav button:focus-visible {
+        outline: 3px solid #67d8ff;
+        outline-offset: 1px;
+      }
+      .field-menu-icon {
+        font-size: 1.18em;
+        text-align: center;
+      }
+      .field-menu-label {
+        display: grid;
+        gap: 1px;
+      }
+      .field-menu-label small {
+        color: #624524;
+        font-size: .64em;
+        font-weight: 800;
+      }
+      .field-menu nav button.coming-soon:disabled {
+        border-color: #7f8a8d;
+        background: linear-gradient(90deg, #b8c1bd, #7f9295);
+        box-shadow: 0 3px 0 #27363c;
+        color: #233039;
+        opacity: .82;
+      }
       .idle-status div span { color: #acd4dc; }
       .idle-status div b {
         overflow: hidden;
@@ -4710,6 +4805,23 @@
           width: min(200px, 33vw);
           padding: 5px 7px;
         }
+        .field-menu {
+          top: 39px;
+          right: 6px;
+          width: min(174px, 25vw);
+          padding: 5px;
+        }
+        .field-menu > header {
+          min-height: 22px;
+          margin-bottom: 4px;
+          padding-bottom: 3px;
+        }
+        .field-menu nav { gap: 4px; }
+        .field-menu nav button {
+          grid-template-columns: 27px minmax(0, 1fr);
+          min-height: 34px;
+          padding: 3px 6px;
+        }
         .inventory-modal { inset: 2%; }
         .inventory-heading { padding: 6px 9px 4px; }
         .inventory-tabs { padding: 5px 8px; }
@@ -4753,13 +4865,12 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v131</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v132</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
         ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
-        ><button id="itemMenuButton">道具</button
-        ><button id="menu">記録</button>
+        ><button id="menu" type="button" aria-controls="fieldMenu" aria-expanded="false">メニュー</button>
       </header>
       <main class="world" id="world">
         <div class="map v54-map" id="map">
@@ -4853,6 +4964,30 @@
         </div>
         <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
         <div class="rescue-toast" id="rescueToast" role="status" aria-live="assertive"></div>
+        <aside class="field-menu" id="fieldMenu" aria-label="フィールドメニュー" aria-hidden="true">
+          <header>
+            <b>メニュー</b>
+            <button class="field-menu-close" id="fieldMenuClose" type="button" aria-label="メニューを閉じる">×</button>
+          </header>
+          <nav aria-label="冒険メニュー">
+            <button type="button" data-field-menu-target="record">
+              <span class="field-menu-icon" aria-hidden="true">📖</span>
+              <span class="field-menu-label">図鑑</span>
+            </button>
+            <button type="button" data-field-menu-target="tackle">
+              <span class="field-menu-icon" aria-hidden="true">🎣</span>
+              <span class="field-menu-label">タックル<small>装備を変更</small></span>
+            </button>
+            <button type="button" data-field-menu-target="items">
+              <span class="field-menu-icon" aria-hidden="true">🎒</span>
+              <span class="field-menu-label">持ち物</span>
+            </button>
+            <button class="coming-soon" type="button" disabled aria-label="犬と遊ぶ、準備中">
+              <span class="field-menu-icon" aria-hidden="true">🐕</span>
+              <span class="field-menu-label">犬と遊ぶ<small>準備中</small></span>
+            </button>
+          </nav>
+        </aside>
         <aside class="idle-status" id="idleStatus" aria-live="polite">
           <header><b id="statusAvatar">主人公</b><span id="statusCondition">準備よし</span></header>
           <div id="statusHpRow"><span>体力</span><b id="statusHp">100 / 100</b></div>
@@ -7950,6 +8085,7 @@
         walkTimer = 0,
         saveTimer = 0,
         idleStatusTimer = 0,
+        fieldMenuTimer = 0,
         playerWalkInterval = 0,
         moveHoldInterval = 0,
         dogWalkTimer = 0,
@@ -10534,9 +10670,54 @@
           $("#idleStatus").classList.add("show");
         }, delay);
       }
+      function fieldMenuIsOpen() {
+        return Boolean($("#fieldMenu")?.classList.contains("show"));
+      }
+      function hideFieldMenu() {
+        clearTimeout(fieldMenuTimer);
+        fieldMenuTimer = 0;
+        $("#fieldMenu")?.classList.remove("show");
+        $("#fieldMenu")?.setAttribute("aria-hidden", "true");
+        $("#menu")?.setAttribute("aria-expanded", "false");
+      }
+      function canShowFieldMenu() {
+        return $("#game").classList.contains("active") &&
+          !playerWalking &&
+          !rescueInProgress &&
+          !battle &&
+          !document.querySelector(".modal.open") &&
+          !$("#catchCard").classList.contains("show");
+      }
+      function showFieldMenu() {
+        clearTimeout(fieldMenuTimer);
+        fieldMenuTimer = 0;
+        if (!canShowFieldMenu()) return false;
+        $("#fieldMenu").classList.add("show");
+        $("#fieldMenu").setAttribute("aria-hidden", "false");
+        $("#menu").setAttribute("aria-expanded", "true");
+        return true;
+      }
+      function scheduleFieldMenu(delay = 430) {
+        hideFieldMenu();
+        fieldMenuTimer = setTimeout(() => {
+          fieldMenuTimer = 0;
+          showFieldMenu();
+        }, delay);
+      }
+      function toggleFieldMenu() {
+        if (fieldMenuIsOpen()) hideFieldMenu();
+        else showFieldMenu();
+      }
+      function openFieldMenuTarget(target) {
+        hideFieldMenu();
+        if (target === "record") open("record");
+        else if (target === "tackle") openInventory("tackle");
+        else if (target === "items") openInventory("items");
+      }
       function move(d) {
         if (battle || rescueInProgress || document.querySelector(".modal.open")) return;
         hideIdleStatus();
+        hideFieldMenu();
         wakeDog();
         dogWalking = true;
         const startingWalk = !playerWalking;
@@ -10585,6 +10766,7 @@
           $("#player").classList.remove("walking");
           drawPlayer();
           scheduleIdleStatus();
+          scheduleFieldMenu();
         }, 365);
         // The player reaches the next step before the trailing dog finishes
         // its longer CSS catch-up. Keep the paws moving for the whole chase.
@@ -10952,6 +11134,7 @@
         }
         rescueInProgress = true;
         hideIdleStatus();
+        hideFieldMenu();
         close();
         stopCastingWaterSound(.1);
         stopUnderwaterSound(.1);
@@ -10978,6 +11161,7 @@
             showRescueToast(`🪱 ${reward.message}`);
             armDogIdle();
             scheduleIdleStatus(3000);
+            scheduleFieldMenu(3000);
           }, DOG_DIG_DURATION_MS);
         }, DOG_BARK_LEAD_MS);
         return true;
@@ -11397,14 +11581,14 @@
           panel.classList.toggle("active", panel.dataset.inventoryPanel === inventoryTab),
         );
       }
-      function openInventory() {
+      function openInventory(tab = inventoryTab) {
         if (
           battle ||
           document.querySelector(".modal.open") ||
           $("#catchCard").classList.contains("show")
         ) return;
         renderInventory();
-        setInventoryTab(inventoryTab);
+        setInventoryTab(tab);
         open("inventory");
       }
       function renderTackle() {
@@ -12611,6 +12795,7 @@
         );
         delete card.dataset.specialCatch;
         scheduleIdleStatus(450);
+        scheduleFieldMenu(450);
       }
       function renderCatchFishLife(f, step) {
         const hangingFish = $("#catchFish");
@@ -13621,18 +13806,25 @@
         render();
         armDogIdle();
         scheduleIdleStatus(900);
+        scheduleFieldMenu(900);
       }
       function open(id) {
         hideIdleStatus();
+        hideFieldMenu();
         $("#" + id).classList.add("open");
         renderRecord();
       }
       function close() {
-        document
-          .querySelectorAll(".modal.open")
-          .forEach((x) => x.classList.remove("open"));
+        const openModals = [...document.querySelectorAll(".modal.open")];
+        if (!openModals.length) return;
+        openModals.forEach((x) => x.classList.remove("open"));
         activeLocationId = null;
         scheduleIdleStatus(450);
+        scheduleFieldMenu(450);
+      }
+      function backAction() {
+        if (fieldMenuIsOpen()) hideFieldMenu();
+        else close();
       }
       function renderRecord() {
         $("#book").innerHTML = fish
@@ -13651,6 +13843,7 @@
         render();
         armDogIdle();
         scheduleIdleStatus(750);
+        scheduleFieldMenu(750);
         log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
       };
       document.querySelectorAll("[data-dog]").forEach((b) => {
@@ -13696,9 +13889,12 @@
       $("#catchClose").onclick = hideCatchCard;
       $("#soundToggle").onclick = () => setSoundEnabled(!s.soundEnabled);
       $("#action").onclick = action;
-      $("#back").onclick = close;
-      $("#itemMenuButton").onclick = openInventory;
-      $("#menu").onclick = () => open("record");
+      $("#back").onclick = backAction;
+      $("#menu").onclick = toggleFieldMenu;
+      $("#fieldMenuClose").onclick = hideFieldMenu;
+      document.querySelectorAll("[data-field-menu-target]").forEach((button) =>
+        button.onclick = () => openFieldMenuTarget(button.dataset.fieldMenuTarget),
+      );
       $("#pull").onpointerdown = (e) => {
         e.preventDefault();
         e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -13763,7 +13959,8 @@
         }[e.key];
         if (m) move(m);
         if (e.key === "z" || e.key === "Enter") battle ? pull() : action();
-        if (e.key === "x" || e.key === "Escape") battle ? wait() : close();
+        if (e.key === "x" || e.key === "Escape") battle ? wait() : backAction();
+        if (e.key.toLowerCase() === "m" && !battle) toggleFieldMenu();
       });
       addEventListener("keyup", (e) => {
         if (e.key === "z" || e.key === "Enter") setBattleReeling(false);
@@ -13809,7 +14006,7 @@
       }, 170);
       setInterval(advancePetSceneFrame, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=131").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=132").catch(() => {});
       renderRecord();
     </script>
   </body>
