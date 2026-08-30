@@ -5675,7 +5675,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v140</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v141</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -9450,6 +9450,24 @@
          miss the first async Canvas paint; the old Canvas-only path removed
          the background at the same time and left only the hook visible. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12, bora: 12, mebaru: 12 },
+        fishFrameFallbackSizes = {
+          moroko: [256, 110],
+          funa: [288, 190],
+          koi: [280, 150],
+          aji: [256, 110],
+          ayu: [320, 160],
+          yamame: [320, 160],
+          namazu: [320, 160],
+          unagi: [320, 160],
+          bass: [320, 160],
+          kurodai: [320, 160],
+          kasago: [288, 180],
+          suzuki: [320, 160],
+          hirame: [320, 160],
+          nushi: [288, 210],
+          bora: [320, 160],
+          mebaru: [320, 160],
+        },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         fixedFaceFishIds = new Set(["funa", "koi", "namazu", "bora", "mebaru"]),
@@ -9479,10 +9497,31 @@
         }
         return canvas;
       }
-      function drawFishAtlasFrame(element, spriteAsset, spriteCells, spriteFrame) {
+      function drawFishAtlasFrame(
+        element,
+        spriteAsset,
+        spriteCells,
+        spriteFrame,
+        fishId = "",
+      ) {
         const canvas = fishAtlasCanvas(element);
         const key = `${spriteAsset}|${spriteCells}|${spriteFrame}`;
         canvas.dataset.atlasKey = key;
+        const fallbackSize = fishFrameFallbackSizes[fishId] || [320, 160];
+        const fallbackFrame =
+          `${spriteFrame * (100 / Math.max(1, spriteCells - 1))}%`;
+        // Put the same atlas on the Canvas as a CSS background first. Android
+        // can miss the first asynchronous paint of a very wide PNG; keeping
+        // this fallback visible means the fishdex and battle never go blank.
+        canvas.width = fallbackSize[0];
+        canvas.height = fallbackSize[1];
+        canvas.style.display = "block";
+        canvas.style.backgroundColor = "transparent";
+        canvas.style.backgroundImage = `url("${spriteAsset}")`;
+        canvas.style.backgroundRepeat = "no-repeat";
+        canvas.style.backgroundSize = `${spriteCells * 100}% 100%`;
+        canvas.style.backgroundPositionX = fallbackFrame;
+        canvas.style.backgroundPositionY = "0%";
         const image = fishAtlasImage(spriteAsset);
         const paint = () => {
           if (canvas.dataset.atlasKey !== key || !image.naturalWidth) return;
@@ -9490,7 +9529,8 @@
           const cellHeight = Math.max(1, image.naturalHeight);
           canvas.width = cellWidth;
           canvas.height = cellHeight;
-          canvas.style.background = "transparent";
+          canvas.style.backgroundColor = "transparent";
+          canvas.style.backgroundImage = "none";
           const context = canvas.getContext("2d");
           context.imageSmoothingEnabled = false;
           context.clearRect(0, 0, cellWidth, cellHeight);
@@ -9513,8 +9553,8 @@
         if (image.complete && image.naturalWidth) {
           paint();
         } else {
-          canvas.style.display = "none";
           image.addEventListener("load", paint, { once: true });
+          if (image.decode) image.decode().then(paint).catch(() => {});
         }
       }
       const FISH_VISUAL_MIN_SCALE = .65,
@@ -15705,7 +15745,13 @@
             slice.style.transform = "none";
             slice.style.clipPath = "none";
           });
-          drawFishAtlasFrame(element, spriteAsset, spriteCells, spriteFrame);
+          drawFishAtlasFrame(
+            element,
+            spriteAsset,
+            spriteCells,
+            spriteFrame,
+            battle.f.id,
+          );
           return false;
         }
         if (canvas) {
@@ -16746,6 +16792,7 @@
             fishAssets[selected.id],
             fishSwimFrameCounts[selected.id] || 8,
             0,
+            selected.id,
           );
         $("#log").innerHTML =
           s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
@@ -16934,7 +16981,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=140-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=141-1").catch(() => {});
       renderRecord();
     </script>
   </body>
