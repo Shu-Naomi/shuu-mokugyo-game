@@ -4260,6 +4260,10 @@
         width: clamp(140px, 22vw, 255px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-bora {
+        width: clamp(140px, 22.5vw, 260px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-bass {
         width: clamp(130px, 21vw, 235px);
         aspect-ratio: 2 / 1;
@@ -5124,6 +5128,12 @@
         transform: translate(-95%, -56%) scale(var(--specimen-scale, 1));
         transform-origin: 95% 56%;
       }
+      .catch-fish.fish-bora {
+        width: clamp(130px, min(25vw, 44vh), 240px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-95.8%, -55%) scale(var(--specimen-scale, 1));
+        transform-origin: 95.8% 55%;
+      }
       .catch-fish.fish-bass {
         width: clamp(120px, min(23vw, 42vh), 220px);
         aspect-ratio: 2 / 1;
@@ -5601,7 +5611,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v136</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v137</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6306,6 +6316,15 @@
             icon: "🐋",
             shadowRow: 4,
           },
+          {
+            id: "bora",
+            name: "ボラ",
+            price: 340,
+            resistance: 108,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
         ],
         fishEncyclopediaData = {
           moroko: {
@@ -6490,6 +6509,19 @@
             baits: ["paste", "river", "worm"],
             tip: "湖の最深部へ遠投しよう。どんな動きにも即応できる強い竿と、落ち着いて糸を送る勇気が必要だよ。",
           },
+          bora: {
+            number: 15,
+            scientific: "Mugil cephalus",
+            habitats: ["sea", "river"],
+            rarity: 2,
+            rarityLabel: "少し珍しい",
+            ecology: "内湾の浅所や河口などの汽水域にすむ、細長い円筒形の魚。幼魚は川の淡水域まで入り、成長すると60cmほどになる。目を覆う厚い透明な膜と、離れて並ぶ2枚の背びれが特徴。",
+            locations: "潮見浜・星見港（浅場〜沖）／民家川（淵）",
+            time: "いつでも（朝〜昼が狙い目）",
+            rods: ["youngBamboo", "clearStream"],
+            baits: ["paste", "river"],
+            tip: "朝〜昼の浅場を練りエサで探ろう。銀の魚体が水面へ向いたら、Aを離して大きな跳躍をいなすのがコツだよ。",
+          },
         },
         fishingSpots = [
           {
@@ -6537,32 +6569,32 @@
             zone: "river",
             depth: "deep",
             name: "民家川・淵",
-            role: "川の淵・ナマズとブラックバス、夜に河口から入るウナギ",
-            weights: { moroko: 0.06, ayu: 0.08, yamame: 0.04, funa: 0.17, koi: 0.14, namazu: 0.14, bass: 0.11, suzuki: 0.06, unagi: 0.2 },
+            role: "川の淵・ナマズとブラックバス、河口から入るボラと夜のウナギ",
+            weights: { moroko: 0.06, ayu: 0.08, yamame: 0.04, funa: 0.17, koi: 0.14, namazu: 0.14, bass: 0.11, suzuki: 0.06, unagi: 0.2, bora: 0.06 },
           },
           {
             id: "sea-shallow",
             zone: "sea",
             depth: "shallow",
             name: "潮見浜・波打ち際",
-            role: "海の浅場・マアジと砂底のヒラメ、港のクロダイ",
-            weights: { aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1 },
+            role: "海の浅場・マアジとボラ、砂底のヒラメと港のクロダイ",
+            weights: { aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1, bora: 0.22 },
           },
           {
             id: "sea-mid",
             zone: "sea",
             depth: "mid",
             name: "潮見浜・沿岸",
-            role: "海の中層・回遊魚と砂底の大物、港のクロダイ",
-            weights: { aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15 },
+            role: "海の中層・マアジとボラ、砂底の大物と港のクロダイ",
+            weights: { aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15, bora: 0.16 },
           },
           {
             id: "sea-deep",
             zone: "sea",
             depth: "deep",
             name: "潮見浜・沖",
-            role: "海の深場・大型スズキとヒラメ、港の大型クロダイ",
-            weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16 },
+            role: "海の深場・大型スズキとヒラメ、沖へ出るボラと港の大型クロダイ",
+            weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16, bora: 0.07 },
           },
         ],
         baitData = {
@@ -6787,6 +6819,7 @@
           suzuki: "assets/fish-suzuki-v93.png",
           hirame: "assets/fish-hirame-v97.png",
           nushi: "assets/fish-nushi-v31.png",
+          bora: "assets/fish-bora-v137.png",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -6806,11 +6839,13 @@
           suzuki: "assets/fish-suzuki-mouth-v93.png",
           hirame: "assets/fish-hirame-mouth-v97.png",
           nushi: "assets/fish-nushi-mouth-v68.png",
+          bora: "assets/fish-bora-mouth-open-v137.png",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
           funa: "assets/fish-funa-mouth-part-v124.png",
           koi: "assets/fish-koi-mouth-part-v130.png",
+          bora: "assets/fish-bora-mouth-part-v137.png",
         },
         fishTurnAssets = {
           moroko: "assets/fish-moroko-turn-v70.png",
@@ -6827,6 +6862,7 @@
           suzuki: "assets/fish-suzuki-turn-v93.png",
           hirame: "assets/fish-hirame-turn-v97.png",
           nushi: "assets/fish-nushi-turn-v70.png",
+          bora: "assets/fish-bora-turn-v137.png",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -6895,6 +6931,10 @@
             x: 0.43, y: 0.09, tackleScale: 0.82, inset: 5, drop: 2.4,
             breath: 0.3,
           },
+          bora: {
+            x: 0.458, y: 0.064, tackleScale: 0.82, inset: 3.5, drop: 1.5,
+            breath: 0.55,
+          },
         },
         // The pose sheets move the lower lip as the fish breathes and turns.
         // These frame-specific factors keep the hook at that painted lip
@@ -6931,6 +6971,16 @@
               { xScale: 1, yOffset: 0 },
               { xScale: 1.012, yOffset: 0.018 },
               { xScale: 1.02, yOffset: 0.022 },
+            ],
+          },
+          bora: {
+            // All three v137 sheets share one fixed head.  Only the small
+            // thick lips and lower jaw change, so the hook follows that modest
+            // opening instead of using the generic wide-mouth projection.
+            mouth: [
+              { xScale: 1, yOffset: 0 },
+              { xScale: 1.004, yOffset: 0.012 },
+              { xScale: 1.008, yOffset: 0.022 },
             ],
           },
         },
@@ -7953,6 +8003,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        bora: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 1500,
+            maxHundredths: 2499,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 2500,
+            maxHundredths: 3499,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 3500,
+            maxHundredths: 4499,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 4500,
+            maxHundredths: 5499,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 5500,
+            maxHundredths: 6499,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 6500,
+            maxHundredths: 7999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         nushi: [
           {
             id: "tiny",
@@ -8726,6 +8832,101 @@
           },
         ],
       };
+      fishMotionProfiles.bora = {
+        ...fishMotionProfiles.koi,
+        beat: 0.68,
+        speedBeat: 0.13,
+        burst: 1.7,
+        thrust: 0.24,
+        stretch: 0,
+        squeeze: 0,
+        recoil: 1.7,
+        sway: 0,
+        roll: 0.42,
+        movingDrag: 0.985,
+        restingDrag: 0.926,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 5.4,
+        turnRoll: 8.2,
+      };
+      fightProfiles.bora = {
+        intro: "銀の胴を横にしならせ、浅場の水面へ向けて一気に走る。",
+        moods: [
+          {
+            id: "surface-run",
+            name: "水面疾走",
+            icon: "↗",
+            weight: 0.42,
+            min: 580,
+            max: 900,
+            motion: "rush",
+            speedX: 5.7,
+            speedY: 2.8,
+            tension: 9.2,
+            release: 6.8,
+            reel: 0.38,
+            scale: 1.09,
+            frameEvery: 1,
+            danger: true,
+            hold: "ボラが銀の胴をしならせて水面へ走る！Aを離せ！",
+            loose: "跳ねる進路に糸を送り、勢いをいなす！",
+          },
+          {
+            id: "long-sweep",
+            name: "横走り",
+            icon: "↔",
+            weight: 0.28,
+            min: 760,
+            max: 1120,
+            motion: "steady",
+            speedX: 2.35,
+            speedY: 1.35,
+            tension: 6.3,
+            release: 5.6,
+            reel: 0.65,
+            scale: 1.04,
+            frameEvery: 1,
+            hold: "ボラが長い魚体で横へ粘る。無理に巻くな！",
+            loose: "尾のリズムに合わせて糸を送り、向きが変わるのを待つ。",
+          },
+          {
+            id: "channel-dive",
+            name: "流心潜り",
+            icon: "▼",
+            weight: 0.17,
+            min: 720,
+            max: 1040,
+            motion: "deep",
+            speedX: 1.2,
+            speedY: 2.45,
+            tension: 6.7,
+            release: 5.7,
+            reel: 0.58,
+            scale: 1.04,
+            frameEvery: 2,
+            hold: "ボラが流心へ潜る。竿を送り、重さが抜けるのを待とう！",
+            loose: "下向きの力をいなし、浮き直す瞬間を待つ。",
+          },
+          {
+            id: "rest",
+            name: "滑走休み",
+            icon: "◎",
+            weight: 0.13,
+            min: 470,
+            max: 740,
+            motion: "rest",
+            tension: 2,
+            release: 5,
+            reel: 1.8,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "ボラの尾が止まった！今が一気に巻く好機！",
+            loose: "水面下を滑って休んでいる。Aで距離を詰めよう！",
+          },
+        ],
+      };
       fishMotionProfiles.kasago = {
         ...fishMotionProfiles.funa,
         beat: 0.46,
@@ -8898,6 +9099,10 @@
           wave: .098, bend: 5.3, lag: 1.3, idle: .3,
           speedGain: .18, response: .36, falloff: .88, pulse: .007,
         },
+        bora: {
+          wave: .086, bend: 0, lag: 1.34, idle: .29,
+          speedGain: .17, response: .34, falloff: .86, pulse: 0,
+        },
         hirame: {
           wave: .058, bend: 3.2, lag: .9, idle: .22,
           speedGain: .12, response: .24, falloff: 1.15, pulse: .005,
@@ -8908,14 +9113,13 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v130 uses one exact source cell per hand-drawn frame. The rebuilt
-         Moroko, Funa and Koi have matching closed, half-open and open 12-cell
-         atlases made from one clean fish drawing, so neither face nor body
-         doubles when the mouth state changes. */
-      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12 },
-        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
-        handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu"]),
-        fixedFaceFishIds = new Set(["funa", "koi", "namazu"]),
+      /* v137 adds Bora's laterally bent 12-cell body and matching closed,
+         half-open and open atlases. Each state shares one fixed head, so mouth
+         breathing cannot double the face or move its eye. */
+      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12, bora: 12 },
+        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora"]),
+        handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora"]),
+        fixedFaceFishIds = new Set(["funa", "koi", "namazu", "bora"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const fishAtlasImageCache = new Map();
@@ -9546,6 +9750,12 @@
           s.dogCatchBest = {};
         s.mapVersion = 92;
       }
+      if ((s.mapVersion || 0) < 93) {
+        // v93 adds Bora as a new catchable fish with its own size bands,
+        // encyclopedia page and animations. No existing save field changes;
+        // every catch, crown, item, dog record and position remains intact.
+        s.mapVersion = 93;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -10080,6 +10290,7 @@
           kasago: 1.05,
           suzuki: 1.3,
           hirame: 1.35,
+          bora: 1.18,
           nushi: 1.75,
         }[fishId] || .9;
         if (!hasSpecimen) return Math.max(.36, Math.min(1.8, speciesWeight));
@@ -12745,6 +12956,19 @@
             }[period] || 1;
             if (battle?.castLocale !== "beach") weight = 0;
           }
+          if (id === "bora") {
+            weight *= {
+              morning: 1.3,
+              day: 1.45,
+              evening: 0.82,
+              night: 0.42,
+            }[period] || 1;
+            weight *= {
+              worm: 0.65,
+              river: 0.82,
+              paste: 1.55,
+            }[battle?.bait || s.selectedBait] || 1;
+          }
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
@@ -12756,6 +12980,7 @@
             if (id === "kurodai") weight *= 1.35;
             if (id === "suzuki") weight *= 1.5;
             if (id === "hirame") weight *= 1.35;
+            if (id === "bora") weight *= 0.68;
             if (id === "nushi") weight *= 2.4;
           } else if (distance < 34) {
             if (id === "moroko") weight *= 1.45;
@@ -12768,6 +12993,7 @@
             if (id === "kurodai") weight *= 0.65;
             if (id === "suzuki") weight *= 0.4;
             if (id === "hirame") weight *= 0.55;
+            if (id === "bora") weight *= 1.38;
             if (id === "nushi") weight *= 0.15;
           }
           return { fish: fish.find((candidate) => candidate.id === id), weight };
@@ -14055,7 +14281,7 @@
       }
       function maybeStartGillWash(mood) {
         if (!battle || battle.gillWash || !mood.danger) return false;
-        const chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, nushi: 0.34 }[battle.f.id] || 0;
+        const chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, bora: 0.38, nushi: 0.34 }[battle.f.id] || 0;
         const progress = battle.retrieval || 0;
         if (
           !chance ||
@@ -14644,6 +14870,7 @@
           kurodai: 88,
           suzuki: 96,
           hirame: 104,
+          bora: 94,
           nushi: 122,
         }[battle.f.id];
         if (battle.tailKick) {
@@ -14972,6 +15199,7 @@
           hirame: 145,
           kasago: 135,
           suzuki: 118,
+          bora: 112,
           nushi: 165,
         }[f.id] || 130;
         catchAnimationTimer = setInterval(() => {
@@ -16292,7 +16520,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=136-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=137-1").catch(() => {});
       renderRecord();
     </script>
   </body>

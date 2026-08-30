@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v136-dog-motion-catch-game-136-1";
+const CACHE_NAME = "nushi-tsuri-v137-bora-life-motion-137-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -104,6 +104,10 @@ const CORE_ASSETS = [
   "./assets/fish-suzuki-v93.png",
   "./assets/fish-suzuki-mouth-v93.png",
   "./assets/fish-suzuki-turn-v93.png",
+  "./assets/fish-bora-v137.png",
+  "./assets/fish-bora-mouth-part-v137.png",
+  "./assets/fish-bora-mouth-open-v137.png",
+  "./assets/fish-bora-turn-v137.png",
   "./assets/fish-nushi-mouth-v68.png",
   "./assets/fish-nushi-turn-v70.png",
   "./assets/audio/underwater-loop.mp3",
