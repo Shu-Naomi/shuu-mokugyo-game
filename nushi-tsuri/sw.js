@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v135-dog-affinity-star-fortune-135-1";
+const CACHE_NAME = "nushi-tsuri-v136-dog-motion-catch-game-136-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",

@@ -2638,7 +2638,7 @@
       }
       .dog-care-hero {
         display: grid;
-        grid-template-columns: 80px minmax(0, 1fr);
+        grid-template-columns: minmax(164px, 190px) minmax(0, 1fr);
         align-items: center;
         gap: 10px;
         margin: 0 10px;
@@ -2647,16 +2647,65 @@
         border-radius: 8px;
         background: #071725a8;
       }
-      .dog-care-portrait {
-        display: grid;
-        place-items: center;
-        width: 68px;
-        height: 68px;
+      .dog-care-stage {
+        position: relative;
+        width: 100%;
+        aspect-ratio: 20 / 9;
+        min-height: 78px;
+        overflow: hidden;
         border: 2px solid #e6c975;
-        border-radius: 50%;
-        background: radial-gradient(circle, #d9f2e5, #79a69f);
-        font-size: 2.3rem;
-        filter: drop-shadow(2px 3px 0 #0007);
+        border-radius: 7px;
+        background: #0a2135;
+        box-shadow: inset 0 0 0 2px #09131f, 2px 3px 0 #0006;
+        touch-action: manipulation;
+      }
+      .dog-care-stage canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        image-rendering: pixelated;
+      }
+      .dog-care-stage-label {
+        position: absolute;
+        top: 4px;
+        left: 5px;
+        max-width: calc(100% - 10px);
+        padding: 2px 5px;
+        border: 1px solid #ffffff36;
+        border-radius: 3px;
+        background: #06111dcc;
+        color: #fff0aa;
+        font: 900 .53rem monospace;
+        text-shadow: 1px 1px #000;
+        pointer-events: none;
+      }
+      .dog-care-catch-button {
+        position: absolute;
+        right: 5px;
+        bottom: 5px;
+        min-width: 86px;
+        min-height: 34px;
+        padding: 3px 7px;
+        border-color: #e5d8a5;
+        background: linear-gradient(#5b7284, #304656);
+        color: #eefaff;
+        font-size: .7rem;
+        font-weight: 1000;
+        text-shadow: 1px 1px #172636;
+      }
+      .dog-care-catch-button small {
+        display: block;
+        color: #d2e7ef;
+        font-size: .45rem;
+      }
+      .dog-care-catch-button.ready {
+        border-color: #fff09a;
+        background: linear-gradient(#f6c851, #a96825);
+        color: #fff8d0;
+        animation: dog-catch-ready .32s steps(2, end) infinite;
+      }
+      @keyframes dog-catch-ready {
+        50% { transform: translateY(-2px); filter: brightness(1.2); }
       }
       .dog-care-profile { min-width: 0; }
       .dog-care-profile > small { color: #94cee2; }
@@ -2692,6 +2741,11 @@
         margin: 5px 0 0;
         color: #dceff2;
         font-size: .67rem;
+      }
+      .dog-care-best {
+        margin-top: 4px;
+        color: #9dd9e7;
+        font: 800 .55rem monospace;
       }
       .dog-care-body {
         display: grid;
@@ -5422,14 +5476,25 @@
         .dog-care-tabs { gap: 4px; padding: 4px 7px; }
         .dog-care-tabs button { min-height: 28px; padding: 3px 6px; font-size: .65rem; }
         .dog-care-hero {
-          grid-template-columns: 58px minmax(0, 1fr);
+          grid-template-columns: minmax(116px, 142px) minmax(0, 1fr);
           gap: 7px;
           margin: 0 7px;
           padding: 5px 7px;
         }
-        .dog-care-portrait { width: 50px; height: 50px; font-size: 1.7rem; }
+        .dog-care-stage { min-height: 58px; }
+        .dog-care-stage-label { top: 2px; left: 3px; padding: 1px 3px; font-size: .42rem; }
+        .dog-care-catch-button {
+          right: 3px;
+          bottom: 3px;
+          min-width: 68px;
+          min-height: 27px;
+          padding: 2px 4px;
+          font-size: .56rem;
+        }
+        .dog-care-catch-button small { font-size: .38rem; }
         .dog-care-profile h3 { font-size: .95rem; }
         .dog-care-profile p { margin-top: 3px; font-size: .56rem; }
+        .dog-care-best { margin-top: 2px; font-size: .45rem; }
         .dog-affinity-line { font-size: .58rem; }
         .dog-affinity-meter { height: 7px; }
         .dog-care-body { gap: 6px; padding: 5px 7px; }
@@ -5536,7 +5601,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v135</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v136</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6081,13 +6146,18 @@
             </header>
             <nav class="dog-care-tabs" id="dogCareDogs" aria-label="お世話するワンコ"></nav>
             <section class="dog-care-hero">
-              <div class="dog-care-portrait" id="dogCarePortrait" aria-hidden="true">🐕</div>
+              <div class="dog-care-stage" id="dogCareStage">
+                <canvas id="dogCareSceneCanvas" width="320" height="144" aria-label="ワンコのおやつ・おもちゃドット絵モーション"></canvas>
+                <div class="dog-care-stage-label" id="dogCareSceneLabel">のんびり待機中</div>
+                <button class="dog-care-catch-button" id="dogCareCatchButton" hidden>キャッチ！<small>金の枠でタップ</small></button>
+              </div>
               <div class="dog-care-profile">
                 <small id="dogCareRole">案内・調査役</small>
                 <h3 id="dogCareName">シュウ</h3>
                 <div class="dog-affinity-line"><b id="dogCareTier">顔なじみ</b><span id="dogCarePoints">0 / 100</span></div>
                 <div class="dog-affinity-meter"><i id="dogCareAffinityFill"></i></div>
                 <p id="dogCareMessage" aria-live="polite">今日は何をして遊ぼう？</p>
+                <div class="dog-care-best" id="dogCareCatchBest">わんこキャッチ BEST 0 / 3</div>
               </div>
             </section>
             <div class="dog-care-body">
@@ -6616,12 +6686,14 @@
           rubberBall: {
             name: "ゴムボール", icon: "🎾", type: "toy",
             price: 1200, affection: 4, samShop: true,
-            action: "ボール投げ", desc: "丈夫で何度でも遊べる定番のおもちゃ。",
+            action: "ボール投げ", motion: "catch",
+            desc: "丈夫で何度でも遊べる定番のおもちゃ。わんこキャッチ対応。",
           },
           tugRope: {
             name: "ひっぱりロープ", icon: "🪢", type: "toy",
             price: 2200, affection: 6, samShop: true,
-            action: "ひっぱりっこ", desc: "一緒に力比べができる丈夫なロープ。",
+            action: "ひっぱりっこ", motion: "tug",
+            desc: "一緒に力比べができる丈夫なロープ。",
           },
           stardustCookie: {
             name: "星くずクッキー", icon: "🌟", type: "treat",
@@ -6636,12 +6708,14 @@
           starFrisbee: {
             name: "星空フリスビー", icon: "🥏", type: "toy",
             affection: 12, gacha: true,
-            action: "フリスビー", desc: "星みくじ限定。夜空みたいに光る円盤。",
+            action: "フリスビー", motion: "catch",
+            desc: "星みくじ限定。夜空みたいに光る円盤。わんこキャッチ対応。",
           },
           squeakyNushi: {
             name: "鳴くヌシ人形", icon: "🐉", type: "toy",
             affection: 9, gacha: true,
-            action: "ヌシ人形遊び", desc: "かじるとキュッと鳴るヌシのぬいぐるみ。",
+            action: "ヌシ人形遊び", motion: "pounce",
+            desc: "かじるとキュッと鳴るヌシのぬいぐるみ。",
           },
         },
         lureData = {
@@ -9125,6 +9199,7 @@
             dogTreats: null,
             ownedDogToys: null,
             dogToyPlayDays: null,
+            dogCatchBest: null,
             lures: null,
             rodParts: null,
             fishdexCollectibles: null,
@@ -9191,6 +9266,15 @@
         samBaitPurchaseCount = 1,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
+        dogCareScene = {
+          mode: "idle",
+          dogId: "riku",
+          itemId: null,
+          startedAt: 0,
+          duration: 0,
+          frame: 0,
+        },
+        dogCatchGame = null,
         fishdexSelectedId = null,
         fishdexFilter = "all",
         waterFxState = {
@@ -9455,6 +9539,13 @@
           s.fishdexCollectibles = {};
         s.mapVersion = 91;
       }
+      if ((s.mapVersion || 0) < 92) {
+        // v92 adds only a per-dog best score for the optional catch game.
+        // Affinity, daily toy use and every v91 inventory value stay intact.
+        if (!s.dogCatchBest || typeof s.dogCatchBest !== "object")
+          s.dogCatchBest = {};
+        s.mapVersion = 92;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -9490,6 +9581,13 @@
               .map(([id, day]) => [id, Math.floor(Number(day))]))
           : {};
       }
+      if (!s.dogCatchBest || typeof s.dogCatchBest !== "object" ||
+          Array.isArray(s.dogCatchBest)) s.dogCatchBest = {};
+      for (const dogId of dogIds)
+        s.dogCatchBest[dogId] = Math.max(
+          0,
+          Math.min(3, Math.floor(Number(s.dogCatchBest[dogId]) || 0)),
+        );
       if (!s.lures || typeof s.lures !== "object" || Array.isArray(s.lures))
         s.lures = {};
       for (const id of Object.keys(lureData))
@@ -9595,12 +9693,21 @@
       }
       function loadDogImage(src) {
         const image = new Image();
-        image.onload = () => drawDog();
+        image.onload = () => {
+          drawDog();
+          drawDogCareScene();
+        };
         image.src = src;
         // Some mobile browsers can finish a cached image before the normal
         // load callback is observed. Decode gives that path a second redraw.
-        if (image.decode) image.decode().then(drawDog).catch(() => {});
-        setTimeout(drawDog, 300);
+        if (image.decode) image.decode().then(() => {
+          drawDog();
+          drawDogCareScene();
+        }).catch(() => {});
+        setTimeout(() => {
+          drawDog();
+          drawDogCareScene();
+        }, 300);
         return image;
       }
       function loadPlayerImage(src) {
@@ -12829,9 +12936,403 @@
       function dogToyPlayedToday(dogId, toyId) {
         return s.dogToyPlayDays?.[dogId]?.[toyId] === gameClockAt(s.gameMinutes).day;
       }
+      function dogCareIsBusy() {
+        return dogCareScene.mode !== "idle" || Boolean(dogCatchGame);
+      }
+      function drawDogCareBackdrop(ctx, frame = 0) {
+        ctx.fillStyle = "#0a2135";
+        ctx.fillRect(0, 0, 320, 144);
+        ctx.fillStyle = "#12364a";
+        ctx.fillRect(0, 18, 320, 4);
+        ctx.fillRect(0, 42, 320, 3);
+        ctx.fillStyle = "#69b2bb";
+        [[24, 31], [59, 13], [113, 35], [167, 11], [264, 29], [302, 9]]
+          .forEach(([x, y], index) => {
+            const twinkle = (frame + index * 2) % 8 < 4 ? 2 : 1;
+            ctx.fillRect(x, y, twinkle, twinkle);
+          });
+        ctx.fillStyle = "#2f5947";
+        ctx.fillRect(0, 111, 320, 33);
+        ctx.fillStyle = "#3d6b52";
+        ctx.fillRect(0, 111, 320, 4);
+        ctx.fillStyle = "#244636";
+        for (let x = 0; x < 320; x += 24) ctx.fillRect(x, 131, 13, 3);
+      }
+      function drawDogCareFallback(ctx, dogId, x, y, size = 150) {
+        const unit = Math.max(2, Math.round(size / 32));
+        const coat = {
+          shuu: ["#cf8c4b", "#f3d39a"],
+          riku: ["#202a30", "#f0efe6"],
+          grey: ["#27292d", "#a76538"],
+        }[dogId] || ["#8e6a4d", "#e5c398"];
+        const px = Math.round(x + size * .2);
+        const py = Math.round(y + size * .48);
+        ctx.fillStyle = coat[0];
+        ctx.fillRect(px, py, unit * 13, unit * 7);
+        ctx.fillRect(px + unit * 10, py - unit * 4, unit * 6, unit * 7);
+        ctx.fillRect(px + unit * 11, py - unit * 6, unit * 2, unit * 3);
+        ctx.fillRect(px + unit * 15, py - unit, unit * 3, unit * 2);
+        ctx.fillRect(px - unit * 3, py - unit * 2, unit * 4, unit * 2);
+        ctx.fillRect(px + unit * 2, py + unit * 6, unit * 2, unit * 4);
+        ctx.fillRect(px + unit * 10, py + unit * 6, unit * 2, unit * 4);
+        ctx.fillStyle = coat[1];
+        ctx.fillRect(px + unit * 10, py, unit * 5, unit * 3);
+        ctx.fillStyle = "#0b1116";
+        ctx.fillRect(px + unit * 14, py - unit * 3, unit, unit);
+        ctx.fillRect(px + unit * 17, py, unit, unit);
+      }
+      function drawDogCareSprite(ctx, dogId, x, y, pose = "stand", size = 160) {
+        const image = dogImages?.[dogId];
+        if (!image?.complete || !image.naturalWidth) {
+          drawDogCareFallback(ctx, dogId, x, y, size);
+          return;
+        }
+        const cell = dogId === "riku" ? 362 : 320;
+        const row = pose === "walk-a" ? 0 : pose === "walk-b" ? 2 : 1;
+        const sourceHeight = dogId === "riku" && row === 1 ? cell - 12 : cell;
+        const lift = dogId === "riku"
+          ? ({ 0: -5, 1: 3, 2: 8 }[row] || 0)
+          : 0;
+        ctx.drawImage(
+          image,
+          cell * 2,
+          cell * row,
+          cell,
+          sourceHeight,
+          Math.round(x),
+          Math.round(y + lift),
+          size,
+          Math.round(size * sourceHeight / cell),
+        );
+      }
+      function drawDogCareProp(ctx, itemId, x, y, scale = 1) {
+        const u = Math.max(1, Math.round(2 * scale));
+        const px = Math.round(x);
+        const py = Math.round(y);
+        if (itemId === "samBiscuit" || itemId === "stardustCookie") {
+          ctx.fillStyle = itemId === "stardustCookie" ? "#f6d55b" : "#b9743b";
+          ctx.fillRect(px - 5 * u, py - 4 * u, 10 * u, 8 * u);
+          ctx.fillStyle = itemId === "stardustCookie" ? "#fff3a8" : "#6f402a";
+          [[-3, -2], [2, -2], [-1, 1], [3, 2]].forEach(([dx, dy]) =>
+            ctx.fillRect(px + dx * u, py + dy * u, u, u));
+          if (itemId === "stardustCookie") {
+            ctx.fillRect(px - u, py - 3 * u, 2 * u, 6 * u);
+            ctx.fillRect(px - 3 * u, py - u, 6 * u, 2 * u);
+          }
+          return;
+        }
+        if (itemId === "lakeFishJerky" || itemId === "moonlightJerky") {
+          ctx.fillStyle = itemId === "moonlightJerky" ? "#86b9db" : "#bd6038";
+          ctx.fillRect(px - 7 * u, py - 2 * u, 14 * u, 4 * u);
+          ctx.fillStyle = itemId === "moonlightJerky" ? "#d8edff" : "#e59a59";
+          ctx.fillRect(px - 5 * u, py - u, 9 * u, u);
+          ctx.fillStyle = "#412e2a";
+          ctx.fillRect(px - 8 * u, py - u, u, 2 * u);
+          ctx.fillRect(px + 7 * u, py - u, u, 2 * u);
+          return;
+        }
+        if (itemId === "rubberBall") {
+          ctx.fillStyle = "#d9d84f";
+          ctx.fillRect(px - 4 * u, py - 4 * u, 8 * u, 8 * u);
+          ctx.fillStyle = "#6ba05b";
+          ctx.fillRect(px - 4 * u, py - u, 8 * u, 2 * u);
+          ctx.fillStyle = "#f7efa5";
+          ctx.fillRect(px - 2 * u, py - 4 * u, 2 * u, u);
+          return;
+        }
+        if (itemId === "starFrisbee") {
+          ctx.fillStyle = "#66519f";
+          ctx.fillRect(px - 8 * u, py - 2 * u, 16 * u, 4 * u);
+          ctx.fillStyle = "#d7b7ff";
+          ctx.fillRect(px - 5 * u, py - u, 10 * u, 2 * u);
+          ctx.fillStyle = "#ffe678";
+          ctx.fillRect(px - u, py - 2 * u, 2 * u, 4 * u);
+          return;
+        }
+        if (itemId === "tugRope") {
+          ctx.fillStyle = "#dbc068";
+          ctx.fillRect(px - 12 * u, py - u, 24 * u, 2 * u);
+          ctx.fillStyle = "#a7643c";
+          for (let dx = -10; dx <= 10; dx += 4)
+            ctx.fillRect(px + dx * u, py - 2 * u, 2 * u, 4 * u);
+          ctx.fillStyle = "#6b3b2c";
+          ctx.fillRect(px - 14 * u, py - 3 * u, 3 * u, 6 * u);
+          ctx.fillRect(px + 11 * u, py - 3 * u, 3 * u, 6 * u);
+          return;
+        }
+        if (itemId === "squeakyNushi") {
+          ctx.fillStyle = "#b95d36";
+          ctx.fillRect(px - 8 * u, py - 3 * u, 14 * u, 7 * u);
+          ctx.fillRect(px + 5 * u, py - 5 * u, 4 * u, 7 * u);
+          ctx.fillRect(px - 11 * u, py - 5 * u, 4 * u, 4 * u);
+          ctx.fillRect(px - 11 * u, py + u, 4 * u, 4 * u);
+          ctx.fillStyle = "#f1b75b";
+          ctx.fillRect(px + 6 * u, py - 3 * u, 2 * u, 2 * u);
+          ctx.fillStyle = "#28202a";
+          ctx.fillRect(px + 7 * u, py - 4 * u, u, u);
+        }
+      }
+      function drawDogCareHearts(ctx, frame, offsetX = 0) {
+        const rise = (frame % 8) * 2;
+        ctx.fillStyle = "#ff8fa8";
+        [[205 + offsetX, 83 - rise], [241 + offsetX, 57 - rise / 2]]
+          .forEach(([x, y], index) => {
+            const u = index ? 2 : 3;
+            ctx.fillRect(x, y, u * 2, u);
+            ctx.fillRect(x + u * 3, y, u * 2, u);
+            ctx.fillRect(x - u, y + u, u * 6, u * 2);
+            ctx.fillRect(x, y + u * 3, u * 4, u);
+            ctx.fillRect(x + u, y + u * 4, u * 2, u);
+          });
+      }
+      function dogCatchPosition(game, now = Date.now()) {
+        const progress = game?.phase === "throw"
+          ? Math.max(0, Math.min(1, (now - game.throwStartedAt) / game.throwDuration))
+          : 1;
+        return {
+          progress,
+          x: Math.round(292 - 185 * progress),
+          y: Math.round(73 - Math.sin(progress * Math.PI) * 44),
+          ready: progress >= .4 && progress <= .69,
+        };
+      }
+      function updateDogCareCatchButton(visible = false, ready = false) {
+        const button = $("#dogCareCatchButton");
+        if (!button) return;
+        button.hidden = !visible;
+        button.classList.toggle("ready", visible && ready);
+        const note = button.querySelector("small");
+        if (note) note.textContent = ready ? "いまだ！" : "金の枠でタップ";
+      }
+      function drawDogCareScene(now = Date.now()) {
+        const canvas = $("#dogCareSceneCanvas");
+        if (!canvas) return false;
+        const ctx = canvas.getContext("2d");
+        const scene = dogCareScene || { mode: "idle", frame: 0 };
+        const dogId = dogProfileData[scene.dogId]
+          ? scene.dogId
+          : dogCareSelectedId || s.dog;
+        const frame = scene.frame || 0;
+        const label = $("#dogCareSceneLabel");
+        ctx.imageSmoothingEnabled = false;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        drawDogCareBackdrop(ctx, frame);
+        updateDogCareCatchButton(false, false);
+        if (scene.mode === "treat") {
+          const progress = Math.max(0, Math.min(1, (now - scene.startedAt) / scene.duration));
+          const approach = Math.max(0, Math.min(1, (progress - .15) / .42));
+          const chomp = progress > .46 && progress < .78 ? frame % 2 : 0;
+          const dogX = 22 + Math.round(62 * approach);
+          const dogY = -5 + chomp * 3;
+          drawDogCareSprite(ctx, dogId, dogX, dogY, "stand", 164);
+          const fall = Math.max(0, Math.min(1, progress / .23));
+          const propScale = progress > .7 ? Math.max(.25, 1 - (progress - .7) * 2.5) : 1;
+          drawDogCareProp(ctx, scene.itemId, 244, 24 + 67 * fall, propScale);
+          if (progress > .72) drawDogCareHearts(ctx, frame);
+          if (label) label.textContent = progress < .24 ? "おやつだ！" : "もぐもぐ…おいしいね♡";
+          return true;
+        }
+        if (scene.mode === "toy") {
+          const progress = Math.max(0, Math.min(1, (now - scene.startedAt) / scene.duration));
+          const pulse = frame % 4 < 2 ? 0 : 5;
+          if (dogCareData[scene.itemId]?.motion === "tug") {
+            drawDogCareSprite(ctx, dogId, 49 - pulse, -4, frame % 4 < 2 ? "walk-a" : "walk-b", 164);
+            drawDogCareProp(ctx, scene.itemId, 238 + pulse, 91, 1);
+            ctx.fillStyle = "#f3d878";
+            ctx.fillRect(192, 89, Math.max(2, 34 + pulse), 3);
+            if (label) label.textContent = "ぐいぐい！ ひっぱりっこ！";
+          } else {
+            const leap = progress < .7 ? Math.round(Math.sin(progress / .7 * Math.PI) * 18) : 0;
+            drawDogCareSprite(ctx, dogId, 35 + Math.round(progress * 48), -2 - leap, progress < .7 ? "walk-a" : "stand", 164);
+            drawDogCareProp(ctx, scene.itemId, 244, 91 - pulse, 1);
+            if (label) label.textContent = progress < .7 ? "ヌシ人形へ、えいっ！" : "キュッ♪ つかまえた！";
+          }
+          if (progress > .72) drawDogCareHearts(ctx, frame);
+          return true;
+        }
+        if (scene.mode === "catch" && dogCatchGame) {
+          const game = dogCatchGame;
+          ctx.fillStyle = "#f6d45a33";
+          ctx.fillRect(164, 22, 56, 91);
+          ctx.fillStyle = "#f6d45a";
+          ctx.fillRect(164, 22, 56, 3);
+          ctx.fillRect(164, 110, 56, 3);
+          ctx.fillRect(164, 22, 3, 91);
+          ctx.fillRect(217, 22, 3, 91);
+          if (game.phase === "throw") {
+            const flight = dogCatchPosition(game, now);
+            const dogX = 20 + Math.round(52 * Math.min(1, flight.progress / .7));
+            drawDogCareSprite(ctx, dogId, dogX, -3, frame % 4 < 2 ? "walk-a" : "walk-b", 158);
+            drawDogCareProp(ctx, game.toyId, flight.x, flight.y, game.toyId === "starFrisbee" ? .85 : 1);
+            updateDogCareCatchButton(true, flight.ready);
+            const hint = game.hintUntil > now ? "もう少し引きつけて！" : `第${game.throwIndex + 1}投　${game.score} / 3`;
+            if (label) label.textContent = hint;
+          } else {
+            drawDogCareSprite(ctx, dogId, game.lastSuccess ? 65 : 36, -3, "stand", 160);
+            if (game.lastSuccess) {
+              drawDogCareProp(ctx, game.toyId, 205, 86, .85);
+              drawDogCareHearts(ctx, frame, -12);
+            }
+            if (label) label.textContent = game.lastSuccess ? "ナイスキャッチ！" : "おしい！ 次はいけるよ";
+          }
+          return true;
+        }
+        if (scene.mode === "celebrate") {
+          drawDogCareSprite(ctx, dogId, 63, -8 - (frame % 4 < 2 ? 5 : 0), "stand", 166);
+          drawDogCareHearts(ctx, frame, -10);
+          if (label) label.textContent = "いっしょに遊べてうれしいね♡";
+          return true;
+        }
+        const idleBob = [0, 0, -2, -2, 0, 0, 1, 1][frame % 8];
+        drawDogCareSprite(ctx, dogId, 66, -4 + idleBob, "stand", 164);
+        if (label) label.textContent = "のんびり待機中";
+        return true;
+      }
+      function setDogCareScene(mode, dogId, itemId = null, duration = 2300) {
+        dogCatchGame = mode === "catch" ? dogCatchGame : null;
+        dogCareScene = {
+          mode,
+          dogId,
+          itemId,
+          startedAt: Date.now(),
+          duration,
+          frame: 0,
+        };
+        ensureDogImage(dogId);
+        renderDogCare();
+        drawDogCareScene();
+      }
+      function resetDogCareScene(dogId = dogCareSelectedId || s.dog, rerender = true) {
+        dogCatchGame = null;
+        dogCareScene = {
+          mode: "idle",
+          dogId,
+          itemId: null,
+          startedAt: 0,
+          duration: 0,
+          frame: 0,
+        };
+        if (rerender && $("#dogCare")?.classList.contains("open")) renderDogCare();
+        drawDogCareScene();
+      }
+      function cancelDogCareActivity(showCatchMessage = false, rerender = true) {
+        const game = dogCatchGame;
+        const dogId = game?.dogId || dogCareSelectedId || s.dog;
+        if (showCatchMessage && game) {
+          dogCareStatusMessage = `${dogProfileData[dogId].name}とひと休み。通常の遊び分はもう記録してあるよ。`;
+        }
+        resetDogCareScene(dogId, rerender);
+      }
+      function beginDogCatchGame(dogId, toyId, baseGained) {
+        const item = dogCareData[toyId];
+        dogCatchGame = {
+          dogId,
+          toyId,
+          baseGained,
+          score: 0,
+          throwIndex: 0,
+          phase: "throw",
+          throwStartedAt: Date.now(),
+          throwDuration: toyId === "starFrisbee" ? 1550 : 1800,
+          resultStartedAt: 0,
+          lastSuccess: false,
+          hintUntil: 0,
+        };
+        dogCareStatusMessage = `わんこキャッチ開始！ 金の枠へ来たら「キャッチ！」をタップ。3投だよ。`;
+        setDogCareScene("catch", dogId, toyId, 0);
+        log(`${dogProfileData[dogId].name}と${item.action}を始めた。通常好感度＋${baseGained}。`);
+        save();
+        return true;
+      }
+      function finishDogCatchThrow(success) {
+        const game = dogCatchGame;
+        if (!game || game.phase !== "throw") return false;
+        game.phase = "result";
+        game.lastSuccess = Boolean(success);
+        game.resultStartedAt = Date.now();
+        if (success) {
+          game.score++;
+          vibrate([22, 28, 45]);
+          playGameAudioSample("dogPetBark", { restart: true });
+        } else {
+          vibrate(18);
+        }
+        drawDogCareScene();
+        return true;
+      }
+      function handleDogCareCatch() {
+        const game = dogCatchGame;
+        if (!game || game.phase !== "throw") return false;
+        const now = Date.now();
+        const flight = dogCatchPosition(game, now);
+        if (flight.ready) return finishDogCatchThrow(true);
+        game.hintUntil = now + 420;
+        vibrate(10);
+        drawDogCareScene(now);
+        return false;
+      }
+      function finishDogCatchGame() {
+        const game = dogCatchGame;
+        if (!game) return false;
+        const bonusTarget = game.score === 3 ? 4 : game.score === 2 ? 2 : 0;
+        const bonusGained = addDogAffinity(game.dogId, bonusTarget);
+        s.dogCatchBest[game.dogId] = Math.max(s.dogCatchBest[game.dogId] || 0, game.score);
+        const profile = dogProfileData[game.dogId];
+        const baseText = game.baseGained ? `通常好感度＋${game.baseGained}` : "通常分は絆満タン";
+        const bonusText = bonusGained ? `、キャッチボーナス＋${bonusGained}` : "";
+        dogCareStatusMessage = game.score >= 2
+          ? `${game.score}/3成功！ ${profile.name}は${baseText}${bonusText}。`
+          : `${game.score}/3成功。${profile.name}には${baseText}が入っているよ。次も遊ぼう！`;
+        log(`${profile.name}のわんこキャッチは${game.score}/3成功。${baseText}${bonusText}。`);
+        const dogId = game.dogId;
+        dogCatchGame = null;
+        dogCareScene = {
+          mode: "celebrate",
+          dogId,
+          itemId: null,
+          startedAt: Date.now(),
+          duration: 1800,
+          frame: 0,
+        };
+        renderDogCare();
+        save();
+        return true;
+      }
+      function advanceDogCareScene() {
+        if (!$("#dogCare")?.classList.contains("open")) return;
+        dogCareScene.frame = (dogCareScene.frame + 1) % 8;
+        const now = Date.now();
+        if (dogCatchGame && dogCareScene.mode === "catch") {
+          if (dogCatchGame.phase === "throw" &&
+              now - dogCatchGame.throwStartedAt >= dogCatchGame.throwDuration) {
+            finishDogCatchThrow(false);
+          } else if (dogCatchGame.phase === "result" &&
+              now - dogCatchGame.resultStartedAt >= 650) {
+            if (dogCatchGame.throwIndex >= 2) {
+              finishDogCatchGame();
+              return;
+            }
+            dogCatchGame.throwIndex++;
+            dogCatchGame.phase = "throw";
+            dogCatchGame.throwStartedAt = now;
+            dogCatchGame.hintUntil = 0;
+          }
+          drawDogCareScene(now);
+          return;
+        }
+        if (dogCareScene.mode !== "idle" && dogCareScene.duration > 0 &&
+            now - dogCareScene.startedAt >= dogCareScene.duration) {
+          resetDogCareScene(dogCareScene.dogId, true);
+          return;
+        }
+        drawDogCareScene(now);
+      }
       function selectDogCare(dogId) {
         if (!dogProfileData[dogId]) return false;
+        if (dogCareIsBusy()) return false;
         dogCareSelectedId = dogId;
+        dogCareScene.dogId = dogId;
+        ensureDogImage(dogId);
         dogCareStatusMessage = dogProfileData[dogId].greeting;
         renderDogCare();
         return true;
@@ -12843,24 +13344,26 @@
         const profile = dogProfileData[dogId];
         dogCareSelectedId = dogId;
         const affinity = s.dogAffinity[dogId] || 0;
+        const busy = dogCareIsBusy();
+        ensureDogImage(dogId);
         $("#dogCareDogs").innerHTML = dogIds.map((id) => {
           const dog = dogProfileData[id];
           const points = s.dogAffinity[id] || 0;
-          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}">${dog.icon} ${dog.name}　${points}</button>`;
+          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${dog.name}　${points}</button>`;
         }).join("");
-        $("#dogCarePortrait").textContent = profile.icon;
         $("#dogCareRole").textContent = profile.role;
         $("#dogCareName").textContent = profile.name;
         $("#dogCareTier").textContent = dogAffinityTier(affinity);
         $("#dogCarePoints").textContent = `${affinity} / 100`;
         $("#dogCareAffinityFill").style.width = `${affinity}%`;
         $("#dogCareMessage").textContent = dogCareStatusMessage || profile.greeting;
+        $("#dogCareCatchBest").textContent = `わんこキャッチ BEST ${s.dogCatchBest[dogId] || 0} / 3`;
         $("#dogCareTreats").innerHTML = Object.entries(dogCareData)
           .filter(([, item]) => item.type === "treat")
           .map(([id, item]) => {
             const count = s.dogTreats[id] || 0;
             const source = item.samShop ? "サムの店" : "星みくじ限定";
-            return `<button class="dog-care-card" data-give-dog-treat="${id}" ${count < 1 || affinity >= 100 ? "disabled" : ""}>` +
+            return `<button class="dog-care-card" data-give-dog-treat="${id}" ${busy || count < 1 || affinity >= 100 ? "disabled" : ""}>` +
               `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>×${count}</strong></button>`;
           }).join("");
         $("#dogCareToys").innerHTML = Object.entries(dogCareData)
@@ -12870,9 +13373,12 @@
             const played = owned && dogToyPlayedToday(dogId, id);
             const source = item.samShop ? "サムの店" : "星みくじ限定";
             const status = !owned ? "未所持" : played ? "今日は遊んだ" : item.action;
-            return `<button class="dog-care-card ${played ? "played" : ""}" data-play-dog-toy="${id}" ${!owned || played ? "disabled" : ""}>` +
-              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>${status}</strong></button>`;
+            const bonus = item.motion === "catch" ? "／2成功＋2・全成功＋4" : "";
+            return `<button class="dog-care-card ${played ? "played" : ""}" data-play-dog-toy="${id}" ${busy || !owned || played ? "disabled" : ""}>` +
+              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}${bonus}</small></span><strong>${status}</strong></button>`;
           }).join("");
+        $("#dogCarePet").disabled = busy;
+        $("#dogCareTakeFishing").disabled = busy;
         document.querySelectorAll("[data-dog-care-id]").forEach((button) =>
           button.onclick = () => selectDogCare(button.dataset.dogCareId),
         );
@@ -12882,17 +13388,21 @@
         document.querySelectorAll("[data-play-dog-toy]").forEach((button) =>
           button.onclick = () => playDogToy(button.dataset.playDogToy),
         );
+        drawDogCareScene();
       }
       function openDogCare() {
         dogCareSelectedId = dogProfileData[s.dog] ? s.dog : "riku";
         dogCareStatusMessage = dogProfileData[dogCareSelectedId].greeting;
+        resetDogCareScene(dogCareSelectedId, false);
         renderDogCare();
         open("dogCare");
+        requestAnimationFrame(() => drawDogCareScene());
       }
       function giveDogTreat(id) {
         const item = dogCareData[id];
         const dogId = dogCareSelectedId;
         if (!item || item.type !== "treat" || !dogProfileData[dogId]) return false;
+        if (dogCareIsBusy()) return false;
         if ((s.dogTreats[id] || 0) < 1) {
           dogCareStatusMessage = `${item.name}は今持っていないよ。`;
           renderDogCare();
@@ -12909,7 +13419,7 @@
         log(`${dogProfileData[dogId].name}に${item.name}をあげ、好感度が${gained}上がった。`);
         vibrate([20, 25, 35]);
         playGameAudioSample("dogPetBark", { restart: true });
-        renderDogCare();
+        setDogCareScene("treat", dogId, id, 2400);
         renderInventory();
         save();
         return true;
@@ -12918,6 +13428,7 @@
         const item = dogCareData[id];
         const dogId = dogCareSelectedId;
         if (!item || item.type !== "toy" || !dogProfileData[dogId]) return false;
+        if (dogCareIsBusy()) return false;
         if (!s.ownedDogToys.includes(id)) {
           dogCareStatusMessage = `${item.name}はまだ持っていないよ。`;
           renderDogCare();
@@ -12931,18 +13442,21 @@
         const day = gameClockAt(s.gameMinutes).day;
         s.dogToyPlayDays[dogId][id] = day;
         const gained = addDogAffinity(dogId, item.affection);
+        if (item.motion === "catch")
+          return beginDogCatchGame(dogId, id, gained);
         dogCareStatusMessage = gained
           ? `${dogProfileData[dogId].name}と${item.action}！ 好感度＋${gained}`
           : `${dogProfileData[dogId].name}とたっぷり${item.action}を楽しんだ！`;
         log(`${dogProfileData[dogId].name}と${item.action}をして遊んだ${gained ? `。好感度＋${gained}` : "。"}`);
         vibrate([20, 35, 20, 45]);
         playGameAudioSample("dogPetBark", { restart: true });
-        renderDogCare();
+        setDogCareScene("toy", dogId, id, 2400);
         save();
         return true;
       }
       function petDogCare() {
         const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
+        if (dogCareIsBusy()) return false;
         dogCareStatusMessage = `${dogProfileData[dogId].name}をやさしくナデナデ。しっぽが嬉しそうに揺れている♡`;
         log(`${dogProfileData[dogId].name}をナデナデした。好感度はおやつや遊びで上がる。`);
         vibrate([18, 30, 18]);
@@ -12952,6 +13466,7 @@
       }
       function takeDogFishing() {
         const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
+        if (dogCareIsBusy()) return false;
         s.dog = dogId;
         ensureDogImage(dogId);
         document.querySelectorAll("[data-dog]").forEach((button) =>
@@ -15401,7 +15916,9 @@
       function close() {
         const openModals = [...document.querySelectorAll(".modal.open")];
         if (!openModals.length) return;
+        const closingDogCare = $("#dogCare")?.classList.contains("open");
         openModals.forEach((x) => x.classList.remove("open"));
+        if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
         scheduleIdleStatus(450);
         scheduleFieldMenu(450);
@@ -15663,6 +16180,12 @@
       $("#locationAction").onclick = useLocationService;
       $("#dogCarePet").onclick = petDogCare;
       $("#dogCareTakeFishing").onclick = takeDogFishing;
+      $("#dogCareCatchButton").onclick = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        handleDogCareCatch();
+      };
+      $("#dogCareStage").onclick = () => handleDogCareCatch();
       document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
         button.onclick = () => setInventoryTab(button.dataset.inventoryTab),
       );
@@ -15702,6 +16225,11 @@
       });
       addEventListener("keydown", unlockGameAudio, { capture: true });
       addEventListener("keydown", (e) => {
+        if (dogCatchGame && ["z", "Enter", " "].includes(e.key)) {
+          handleDogCareCatch();
+          e.preventDefault();
+          return;
+        }
         if ($("#catchCard").classList.contains("show")) {
           if (["z", "x", "Enter", "Escape"].includes(e.key))
             hideCatchCard();
@@ -15762,8 +16290,9 @@
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
       setInterval(advancePetSceneFrame, 60);
+      setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=135-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=136-1").catch(() => {});
       renderRecord();
     </script>
   </body>
