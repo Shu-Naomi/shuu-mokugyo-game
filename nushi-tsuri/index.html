@@ -16547,7 +16547,12 @@
       function open(id) {
         hideIdleStatus();
         hideFieldMenu();
-        $("#" + id).classList.add("open");
+        const modal = $("#" + id);
+        // The map camera scrolls #world horizontally. Modals live inside that
+        // scroller, so counter the current camera offset and keep every menu
+        // centred on the viewport after the player has walked around.
+        modal.style.transform = `translateX(${$("#world").scrollLeft}px)`;
+        modal.classList.add("open");
         renderRecord();
       }
       function close() {
