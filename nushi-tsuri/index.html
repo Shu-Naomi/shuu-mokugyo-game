@@ -4264,6 +4264,10 @@
         width: clamp(140px, 22.5vw, 260px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-mebaru {
+        width: clamp(112px, 17.5vw, 198px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-bass {
         width: clamp(130px, 21vw, 235px);
         aspect-ratio: 2 / 1;
@@ -5134,6 +5138,12 @@
         transform: translate(-95.8%, -55%) scale(var(--specimen-scale, 1));
         transform-origin: 95.8% 55%;
       }
+      .catch-fish.fish-mebaru {
+        width: clamp(108px, min(20vw, 39vh), 198px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-87%, -56%) scale(var(--specimen-scale, 1));
+        transform-origin: 87% 56%;
+      }
       .catch-fish.fish-bass {
         width: clamp(120px, min(23vw, 42vh), 220px);
         aspect-ratio: 2 / 1;
@@ -5611,7 +5621,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v137</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v138</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5889,8 +5899,8 @@
                 <h2>魚図鑑</h2>
               </div>
               <div class="fishdex-progress" aria-live="polite">
-                <span>発見魚種<b id="fishdexDiscovered">0 / 14</b></span>
-                <span>金の王冠<b id="fishdexCrownTotal">0 / 28</b></span>
+                <span>発見魚種<b id="fishdexDiscovered">0 / 16</b></span>
+                <span>金の王冠<b id="fishdexCrownTotal">0 / 32</b></span>
                 <span>収集品<b id="fishdexCollectibleTotal">0 / 6</b></span>
               </div>
               <button class="fishdex-close" data-close>閉じる</button>
@@ -6325,6 +6335,15 @@
             icon: "🐟",
             shadowRow: 3,
           },
+          {
+            id: "mebaru",
+            name: "メバル",
+            price: 380,
+            resistance: 96,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
         ],
         fishEncyclopediaData = {
           moroko: {
@@ -6522,6 +6541,19 @@
             baits: ["paste", "river"],
             tip: "朝〜昼の浅場を練りエサで探ろう。銀の魚体が水面へ向いたら、Aを離して大きな跳躍をいなすのがコツだよ。",
           },
+          mebaru: {
+            number: 16,
+            scientific: "Sebastes inermis species complex",
+            habitats: ["sea"],
+            rarity: 2,
+            rarityLabel: "少し珍しい",
+            ecology: "沿岸の岩礁、藻場、港の構造物まわりに暮らすメバル類。かつて1種とされた魚は、現在ではアカメバル、クロメバル、シロメバルの3種からなる複合種群とされる。大きな目で薄暗い時間に甲殻類や小魚を探し、仔魚を海中へ産む。",
+            locations: "潮見浜・星見港（浅場〜沖、港が本命）",
+            time: "いつでも（夕〜夜が狙い目）",
+            rods: ["youngBamboo", "clearStream"],
+            baits: ["worm", "river"],
+            tip: "夕方から夜の星見港へ。ミミズか川虫を岩陰近くへ入れ、根へ潜る動きが出たらAを離して浮き直す瞬間を待とう。",
+          },
         },
         fishingSpots = [
           {
@@ -6577,24 +6609,24 @@
             zone: "sea",
             depth: "shallow",
             name: "潮見浜・波打ち際",
-            role: "海の浅場・マアジとボラ、砂底のヒラメと港のクロダイ",
-            weights: { aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1, bora: 0.22 },
+            role: "海の浅場・マアジとボラ、岩陰のメバル、砂底のヒラメと港のクロダイ",
+            weights: { aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1, bora: 0.22, mebaru: 0.18 },
           },
           {
             id: "sea-mid",
             zone: "sea",
             depth: "mid",
             name: "潮見浜・沿岸",
-            role: "海の中層・マアジとボラ、砂底の大物と港のクロダイ",
-            weights: { aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15, bora: 0.16 },
+            role: "海の中層・マアジとボラ、魚礁のメバル、砂底の大物と港のクロダイ",
+            weights: { aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15, bora: 0.16, mebaru: 0.23 },
           },
           {
             id: "sea-deep",
             zone: "sea",
             depth: "deep",
             name: "潮見浜・沖",
-            role: "海の深場・大型スズキとヒラメ、沖へ出るボラと港の大型クロダイ",
-            weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16, bora: 0.07 },
+            role: "海の深場・大型スズキとヒラメ、魚礁のメバル、沖へ出るボラと港の大型クロダイ",
+            weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16, bora: 0.07, mebaru: 0.16 },
           },
         ],
         baitData = {
@@ -6820,6 +6852,7 @@
           hirame: "assets/fish-hirame-v97.png",
           nushi: "assets/fish-nushi-v31.png",
           bora: "assets/fish-bora-v137.png",
+          mebaru: "assets/fish-mebaru-v138.png",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -6840,12 +6873,14 @@
           hirame: "assets/fish-hirame-mouth-v97.png",
           nushi: "assets/fish-nushi-mouth-v68.png",
           bora: "assets/fish-bora-mouth-open-v137.png",
+          mebaru: "assets/fish-mebaru-mouth-open-v138.png",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
           funa: "assets/fish-funa-mouth-part-v124.png",
           koi: "assets/fish-koi-mouth-part-v130.png",
           bora: "assets/fish-bora-mouth-part-v137.png",
+          mebaru: "assets/fish-mebaru-mouth-part-v138.png",
         },
         fishTurnAssets = {
           moroko: "assets/fish-moroko-turn-v70.png",
@@ -6863,6 +6898,7 @@
           hirame: "assets/fish-hirame-turn-v97.png",
           nushi: "assets/fish-nushi-turn-v70.png",
           bora: "assets/fish-bora-turn-v137.png",
+          mebaru: "assets/fish-mebaru-turn-v138.png",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -6935,6 +6971,10 @@
             x: 0.458, y: 0.064, tackleScale: 0.82, inset: 3.5, drop: 1.5,
             breath: 0.55,
           },
+          mebaru: {
+            x: 0.36, y: 0.095, tackleScale: 0.84, inset: 3.5, drop: 1.5,
+            breath: 0.48,
+          },
         },
         // The pose sheets move the lower lip as the fish breathes and turns.
         // These frame-specific factors keep the hook at that painted lip
@@ -6981,6 +7021,16 @@
               { xScale: 1, yOffset: 0 },
               { xScale: 1.004, yOffset: 0.012 },
               { xScale: 1.008, yOffset: 0.022 },
+            ],
+          },
+          mebaru: {
+            // The generated open pose is used only inside the lip polygon.
+            // The cheek, eye and rest of the fixed head always come from the
+            // closed master, so breathing cannot double or shift the face.
+            mouth: [
+              { xScale: 1, yOffset: 0 },
+              { xScale: 1.002, yOffset: 0.014 },
+              { xScale: 1.006, yOffset: 0.03 },
             ],
           },
         },
@@ -8059,6 +8109,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        mebaru: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 1000,
+            maxHundredths: 1499,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 1500,
+            maxHundredths: 1999,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 2000,
+            maxHundredths: 2499,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 2500,
+            maxHundredths: 2999,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 3000,
+            maxHundredths: 3499,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 3500,
+            maxHundredths: 3999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         nushi: [
           {
             id: "tiny",
@@ -8927,6 +9033,102 @@
           },
         ],
       };
+      fishMotionProfiles.mebaru = {
+        ...fishMotionProfiles.funa,
+        beat: 0.58,
+        speedBeat: 0.1,
+        burst: 1.48,
+        thrust: 0.18,
+        stretch: 0,
+        squeeze: 0,
+        recoil: 1.35,
+        sway: 0,
+        roll: 0.7,
+        movingDrag: 0.989,
+        restingDrag: 0.94,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 4.2,
+        turnRoll: 7.2,
+      };
+      fightProfiles.mebaru = {
+        intro: "大きな目を光らせ、岩陰へ戻ろうと短く鋭く走る。",
+        moods: [
+          {
+            id: "root-dive",
+            name: "根潜り",
+            icon: "▼",
+            weight: 0.36,
+            min: 560,
+            max: 850,
+            motion: "deep",
+            speedX: 1.35,
+            speedY: 2.9,
+            tension: 8.5,
+            release: 6.3,
+            reel: 0.34,
+            scale: 1.07,
+            frameEvery: 1,
+            danger: true,
+            hold: "メバルが根へ潜る！Aを離して岩から引き離せ！",
+            loose: "糸を送り、浮き直すまで根の上で待つ。",
+          },
+          {
+            id: "short-burst",
+            name: "短距離突進",
+            icon: "➜",
+            weight: 0.28,
+            min: 430,
+            max: 700,
+            motion: "rush",
+            speedX: 4.25,
+            speedY: 1.35,
+            tension: 7.4,
+            release: 5.8,
+            reel: 0.48,
+            scale: 1.04,
+            frameEvery: 1,
+            danger: true,
+            hold: "メバルが岩陰へ短く突っ込む！今は巻くな！",
+            loose: "短い走りに合わせて糸を送り、止まる瞬間を待つ。",
+          },
+          {
+            id: "head-shake",
+            name: "首振り",
+            icon: "↔",
+            weight: 0.21,
+            min: 620,
+            max: 930,
+            motion: "feint",
+            speedX: 2.05,
+            speedY: 1.25,
+            tension: 6.2,
+            release: 5.2,
+            reel: 0.68,
+            scale: 1.02,
+            frameEvery: 1,
+            hold: "メバルが大きな頭を振る。テンションを見て耐えよう！",
+            loose: "左右の首振りに追従し、向きがそろうのを待つ。",
+          },
+          {
+            id: "hover",
+            name: "胸びれ静止",
+            icon: "◎",
+            weight: 0.15,
+            min: 460,
+            max: 720,
+            motion: "rest",
+            tension: 1.9,
+            release: 4.8,
+            reel: 1.82,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "メバルが胸びれで止まった！今なら一気に巻ける！",
+            loose: "岩陰の上で静止している。Aで距離を詰めよう！",
+          },
+        ],
+      };
       fishMotionProfiles.kasago = {
         ...fishMotionProfiles.funa,
         beat: 0.46,
@@ -9103,6 +9305,10 @@
           wave: .086, bend: 0, lag: 1.34, idle: .29,
           speedGain: .17, response: .34, falloff: .86, pulse: 0,
         },
+        mebaru: {
+          wave: .072, bend: 0, lag: 1.15, idle: .24,
+          speedGain: .15, response: .31, falloff: .98, pulse: 0,
+        },
         hirame: {
           wave: .058, bend: 3.2, lag: .9, idle: .22,
           speedGain: .12, response: .24, falloff: 1.15, pulse: .005,
@@ -9113,13 +9319,13 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v137 adds Bora's laterally bent 12-cell body and matching closed,
-         half-open and open atlases. Each state shares one fixed head, so mouth
-         breathing cannot double the face or move its eye. */
-      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12, bora: 12 },
-        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora"]),
-        handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora"]),
-        fixedFaceFishIds = new Set(["funa", "koi", "namazu", "bora"]),
+      /* v138 adds Mebaru's compact 12-cell tail beat and matching closed,
+         half-open and open atlases. Like Bora, every state shares the closed
+         master outside the lip polygon, so its large eye never shifts. */
+      const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12, bora: 12, mebaru: 12 },
+        handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
+        handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
+        fixedFaceFishIds = new Set(["funa", "koi", "namazu", "bora", "mebaru"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const fishAtlasImageCache = new Map();
@@ -9756,6 +9962,12 @@
         // every catch, crown, item, dog record and position remains intact.
         s.mapVersion = 93;
       }
+      if ((s.mapVersion || 0) < 94) {
+        // v94 adds Mebaru as fish No.016. It introduces no new save fields;
+        // existing catches, crowns, tackle history and every inventory value
+        // stay untouched while the new species starts undiscovered.
+        s.mapVersion = 94;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -10291,6 +10503,7 @@
           suzuki: 1.3,
           hirame: 1.35,
           bora: 1.18,
+          mebaru: .98,
           nushi: 1.75,
         }[fishId] || .9;
         if (!hasSpecimen) return Math.max(.36, Math.min(1.8, speciesWeight));
@@ -12969,6 +13182,20 @@
               paste: 1.55,
             }[battle?.bait || s.selectedBait] || 1;
           }
+          if (id === "mebaru") {
+            weight *= {
+              morning: 0.72,
+              day: 0.38,
+              evening: 1.35,
+              night: 1.7,
+            }[period] || 1;
+            weight *= {
+              worm: 1.45,
+              river: 1.3,
+              paste: 0.55,
+            }[battle?.bait || s.selectedBait] || 1;
+            weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
+          }
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
@@ -12981,6 +13208,7 @@
             if (id === "suzuki") weight *= 1.5;
             if (id === "hirame") weight *= 1.35;
             if (id === "bora") weight *= 0.68;
+            if (id === "mebaru") weight *= 0.65;
             if (id === "nushi") weight *= 2.4;
           } else if (distance < 34) {
             if (id === "moroko") weight *= 1.45;
@@ -12994,6 +13222,7 @@
             if (id === "suzuki") weight *= 0.4;
             if (id === "hirame") weight *= 0.55;
             if (id === "bora") weight *= 1.38;
+            if (id === "mebaru") weight *= 1.4;
             if (id === "nushi") weight *= 0.15;
           }
           return { fish: fish.find((candidate) => candidate.id === id), weight };
@@ -14871,6 +15100,7 @@
           suzuki: 96,
           hirame: 104,
           bora: 94,
+          mebaru: 68,
           nushi: 122,
         }[battle.f.id];
         if (battle.tailKick) {
@@ -15200,6 +15430,7 @@
           kasago: 135,
           suzuki: 118,
           bora: 112,
+          mebaru: 100,
           nushi: 165,
         }[f.id] || 130;
         catchAnimationTimer = setInterval(() => {
@@ -16520,7 +16751,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=137-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=138-1").catch(() => {});
       renderRecord();
     </script>
   </body>

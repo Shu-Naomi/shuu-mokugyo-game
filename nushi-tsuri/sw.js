@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v137-bora-life-motion-137-1";
+const CACHE_NAME = "nushi-tsuri-v138-mebaru-life-motion-138-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -108,6 +108,10 @@ const CORE_ASSETS = [
   "./assets/fish-bora-mouth-part-v137.png",
   "./assets/fish-bora-mouth-open-v137.png",
   "./assets/fish-bora-turn-v137.png",
+  "./assets/fish-mebaru-v138.png",
+  "./assets/fish-mebaru-mouth-part-v138.png",
+  "./assets/fish-mebaru-mouth-open-v138.png",
+  "./assets/fish-mebaru-turn-v138.png",
   "./assets/fish-nushi-mouth-v68.png",
   "./assets/fish-nushi-turn-v70.png",
   "./assets/audio/underwater-loop.mp3",
