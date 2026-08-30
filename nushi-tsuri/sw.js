@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v139-mebaru-visible-css-atlas-139-1";
+const CACHE_NAME = "nushi-tsuri-v140-baits-dog-care-140-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",

@@ -2584,7 +2584,7 @@
         background: #ffffff0c;
       }
       .dog-care-modal {
-        inset: 3%;
+        inset: .75%;
         padding: 0;
         overflow: hidden;
         border-color: #efc968;
@@ -2592,7 +2592,7 @@
       }
       .dog-care-shell {
         display: grid;
-        grid-template-rows: auto auto auto minmax(0, 1fr) auto;
+        grid-template-rows: auto auto minmax(150px, 1.45fr) minmax(0, .9fr) auto;
         height: 100%;
         min-height: 0;
         background:
@@ -2638,7 +2638,7 @@
       }
       .dog-care-hero {
         display: grid;
-        grid-template-columns: minmax(164px, 190px) minmax(0, 1fr);
+        grid-template-columns: minmax(320px, 1.65fr) minmax(210px, .85fr);
         align-items: center;
         gap: 10px;
         margin: 0 10px;
@@ -2651,7 +2651,7 @@
         position: relative;
         width: 100%;
         aspect-ratio: 20 / 9;
-        min-height: 78px;
+        min-height: 150px;
         overflow: hidden;
         border: 2px solid #e6c975;
         border-radius: 7px;
@@ -2664,6 +2664,14 @@
         width: 100%;
         height: 100%;
         image-rendering: pixelated;
+      }
+      .dog-care-stage.catch-active {
+        cursor: pointer;
+        box-shadow: inset 0 0 0 3px #f6d45a55, 2px 3px 0 #0006;
+      }
+      .dog-care-stage.catch-ready {
+        border-color: #fff2a0;
+        box-shadow: inset 0 0 24px #ffd95c66, 0 0 18px #ffd95c88;
       }
       .dog-care-stage-label {
         position: absolute;
@@ -2683,20 +2691,20 @@
         position: absolute;
         right: 5px;
         bottom: 5px;
-        min-width: 86px;
-        min-height: 34px;
-        padding: 3px 7px;
+        min-width: 132px;
+        min-height: 48px;
+        padding: 5px 10px;
         border-color: #e5d8a5;
         background: linear-gradient(#5b7284, #304656);
         color: #eefaff;
-        font-size: .7rem;
+        font-size: .92rem;
         font-weight: 1000;
         text-shadow: 1px 1px #172636;
       }
       .dog-care-catch-button small {
         display: block;
         color: #d2e7ef;
-        font-size: .45rem;
+        font-size: .58rem;
       }
       .dog-care-catch-button.ready {
         border-color: #fff09a;
@@ -2712,7 +2720,7 @@
       .dog-care-profile h3 {
         margin: 0;
         color: #fff0a6;
-        font-size: 1.25rem;
+        font-size: 1.45rem;
       }
       .dog-affinity-line {
         display: flex;
@@ -2740,12 +2748,12 @@
         min-height: 1.3em;
         margin: 5px 0 0;
         color: #dceff2;
-        font-size: .67rem;
+        font-size: .76rem;
       }
       .dog-care-best {
         margin-top: 4px;
         color: #9dd9e7;
-        font: 800 .55rem monospace;
+        font: 800 .64rem monospace;
       }
       .dog-care-body {
         display: grid;
@@ -4063,7 +4071,11 @@
       }
       .fish-tackle.bait-worm .bait-worm-shape,
       .fish-tackle.bait-river .bait-river-shape,
-      .fish-tackle.bait-paste .bait-paste-shape {
+      .fish-tackle.bait-paste .bait-paste-shape,
+      .fish-tackle.bait-corn .bait-corn-shape,
+      .fish-tackle.bait-shrimp .bait-shrimp-shape,
+      .fish-tackle.bait-liveMinnow .bait-minnow-shape,
+      .fish-tackle.bait-nushiSecret .bait-nushi-shape {
         display: block;
       }
       .fish-tackle .bait-worm-shape {
@@ -4085,6 +4097,32 @@
         stroke: #68411f;
         stroke-width: 0.75;
         vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-corn-shape {
+        fill: #edc94f;
+        stroke: #8a6325;
+        stroke-width: 0.7;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-shrimp-shape {
+        fill: none;
+        stroke: #e58a6e;
+        stroke-width: 1.45;
+        stroke-linecap: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-minnow-shape {
+        fill: #8cb3bd;
+        stroke: #345c68;
+        stroke-width: 0.7;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-nushi-shape {
+        fill: #f4d45f;
+        stroke: #9366bc;
+        stroke-width: 0.75;
+        vector-effect: non-scaling-stroke;
+        filter: drop-shadow(0 0 1.5px #e3a6ff);
       }
       .fish-scene.fighting .fish-tackle-front .bait-shape {
         transform-box: fill-box;
@@ -4493,6 +4531,19 @@
         height: 54px;
       }
       .tackle-options { display:grid; grid-template-columns:repeat(2,1fr); gap:7px; }
+      .tackle-options .bait-option {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 6px;
+        min-height: 46px;
+        text-align: left;
+      }
+      .tackle-options .bait-option > i { font-style: normal; font-size: 1.15rem; }
+      .tackle-options .bait-option span,
+      .tackle-options .bait-option small { display: block; }
+      .tackle-options .bait-option small { color: #b9d8e5; font-size: .56rem; }
+      .tackle-options .bait-option strong { color: #ffe394; }
       .tackle-options .rod-option {
         display: grid;
         grid-template-columns: 44px minmax(0, 1fr);
@@ -5490,28 +5541,31 @@
         .modal {
           inset: 3%;
         }
-        .dog-care-modal { inset: 1.5%; }
+        .dog-care-modal { inset: .5%; }
+        .dog-care-shell {
+          grid-template-rows: auto auto minmax(104px, 1.2fr) minmax(0, .82fr) auto;
+        }
         .dog-care-heading { padding: 4px 8px; }
         .dog-care-heading h2 { font-size: .98rem; }
         .dog-care-tabs { gap: 4px; padding: 4px 7px; }
         .dog-care-tabs button { min-height: 28px; padding: 3px 6px; font-size: .65rem; }
         .dog-care-hero {
-          grid-template-columns: minmax(116px, 142px) minmax(0, 1fr);
+          grid-template-columns: minmax(220px, 43vw) minmax(0, 1fr);
           gap: 7px;
           margin: 0 7px;
           padding: 5px 7px;
         }
-        .dog-care-stage { min-height: 58px; }
+        .dog-care-stage { min-height: 104px; }
         .dog-care-stage-label { top: 2px; left: 3px; padding: 1px 3px; font-size: .42rem; }
         .dog-care-catch-button {
           right: 3px;
           bottom: 3px;
-          min-width: 68px;
-          min-height: 27px;
-          padding: 2px 4px;
-          font-size: .56rem;
+          min-width: 104px;
+          min-height: 38px;
+          padding: 3px 7px;
+          font-size: .72rem;
         }
-        .dog-care-catch-button small { font-size: .38rem; }
+        .dog-care-catch-button small { font-size: .46rem; }
         .dog-care-profile h3 { font-size: .95rem; }
         .dog-care-profile p { margin-top: 3px; font-size: .56rem; }
         .dog-care-best { margin-top: 2px; font-size: .45rem; }
@@ -5621,7 +5675,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v139</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v140</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5846,6 +5900,23 @@
                 cy="10.5"
                 r="1.9"
               />
+              <g class="bait-shape bait-corn-shape">
+                <ellipse cx="2.5" cy="10.1" rx="1.35" ry="1.7" />
+                <ellipse cx="4.6" cy="11.4" rx="1.35" ry="1.7" />
+              </g>
+              <path
+                class="bait-shape bait-shrimp-shape"
+                d="M 1.2 8.2 C 5.7 7.3 7 10.5 4.8 12.2 C 3.5 13.2 1.7 12.4 2.1 10.9 M 1.5 8.4 L .4 7.2 M 2.2 8.1 L 2.5 6.5"
+              />
+              <g class="bait-shape bait-minnow-shape">
+                <ellipse cx="3.7" cy="10.2" rx="3.1" ry="1.45" />
+                <path d="M 6.2 9.8 L 8.2 8.4 L 7.8 11.5 Z" />
+                <circle cx="1.9" cy="9.8" r=".35" fill="#142633" stroke="none" />
+              </g>
+              <path
+                class="bait-shape bait-nushi-shape"
+                d="M 3.2 6.9 L 4.2 9.2 L 6.8 9.4 L 4.8 11.1 L 5.5 13.5 L 3.2 12.1 L .9 13.5 L 1.6 11.1 L -.4 9.4 L 2.2 9.2 Z"
+              />
             </svg>
           </div>
           <div class="battle-ui" id="battleUi">
@@ -6004,6 +6075,18 @@
                     <button data-buy-bait="paste">
                       <span><b>🍡 練りエサ ×2</b><small>扱いやすい配合エサ</small></span>
                       <strong><em data-sam-total>240円</em><small data-sam-bundle>1セット → 2個</small><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                    <button data-buy-bait="corn">
+                      <span><b>🌽 トウモロコシ ×3</b><small>フナ・コイを狙いやすい</small></span>
+                      <strong><em data-sam-total>260円</em><small data-sam-bundle>1セット → 3個</small><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                    <button data-buy-bait="shrimp">
+                      <span><b>🦐 オキアミ ×3</b><small>海の回遊魚・根魚向け</small></span>
+                      <strong><em data-sam-total>360円</em><small data-sam-bundle>1セット → 3個</small><small data-sam-stock>所持 ×0</small></strong>
+                    </button>
+                    <button data-buy-bait="liveMinnow">
+                      <span><b>🐟 活き小魚 ×2</b><small>大型の肉食魚向け</small></span>
+                      <strong><em data-sam-total>480円</em><small data-sam-bundle>1セット → 2個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                   </div>
                 </section>
@@ -6169,7 +6252,7 @@
               <div class="dog-care-stage" id="dogCareStage">
                 <canvas id="dogCareSceneCanvas" width="320" height="144" aria-label="ワンコのおやつ・おもちゃドット絵モーション"></canvas>
                 <div class="dog-care-stage-label" id="dogCareSceneLabel">のんびり待機中</div>
-                <button class="dog-care-catch-button" id="dogCareCatchButton" hidden>キャッチ！<small>金の枠でタップ</small></button>
+                <button class="dog-care-catch-button" id="dogCareCatchButton" hidden>キャッチ！<small>光ったら画面をタップ</small></button>
               </div>
               <div class="dog-care-profile">
                 <small id="dogCareRole">案内・調査役</small>
@@ -6369,7 +6452,7 @@
             locations: "星降る湖（岸際〜深場）／民家川（瀬〜淵）",
             time: "いつでも",
             rods: ["bamboo", "youngBamboo", "clearStream"],
-            baits: ["paste", "worm"],
+            baits: ["corn", "paste", "worm"],
             tip: "湖でも川でも狙える入門魚。深くなるほど大物と出会いやすいけれど、まずは岸際で感覚をつかもう。",
           },
           koi: {
@@ -6382,7 +6465,7 @@
             locations: "星降る湖（中層・深場）／民家川（流心・淵）",
             time: "いつでも",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["paste", "worm"],
+            baits: ["corn", "paste", "worm"],
             tip: "中距離より先の底を意識。突進中は巻かず、動きが止まった瞬間に距離を詰めるのがコツだよ。",
           },
           aji: {
@@ -6395,7 +6478,7 @@
             locations: "潮見浜・星見港（浅場〜沖）",
             time: "いつでも",
             rods: ["youngBamboo", "clearStream"],
-            baits: ["river", "worm"],
+            baits: ["shrimp", "river", "worm"],
             tip: "海ならどの深さにも群れが来るよ。軽めの竿で中層を広く探るとテンポよく釣れる。",
           },
           ayu: {
@@ -6421,7 +6504,7 @@
             locations: "民家川（瀬〜淵）",
             time: "いつでも（朝・夕が狙い目）",
             rods: ["clearStream", "starGazer"],
-            baits: ["river", "worm"],
+            baits: ["river", "liveMinnow", "worm"],
             tip: "朝夕が狙い目。瀬から流心を静かに探り、急な走りにはすぐ糸を送ろう。",
           },
           namazu: {
@@ -6434,7 +6517,7 @@
             locations: "星降る湖（中層・深場）／民家川（流心・淵）",
             time: "いつでも（夕〜夜が狙い目）",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["worm"],
+            baits: ["liveMinnow", "worm"],
             tip: "日が落ちてから深い場所へ。底へ潜る時は無理に巻かず、泥へ伏せた隙を逃さないで。",
           },
           unagi: {
@@ -6447,7 +6530,7 @@
             locations: "民家川（流心・淵）",
             time: "いつでも（夕〜夜が狙い目）",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["worm"],
+            baits: ["worm", "liveMinnow", "shrimp"],
             tip: "夜の淵が一番の勝負どころ。ミミズを深場へ届け、蛇行し始めたら糸を送っていなそう。",
           },
           bass: {
@@ -6460,7 +6543,7 @@
             locations: "星降る湖（岸際〜深場）／民家川（流心・淵）",
             time: "いつでも（朝〜夕が狙い目）",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["worm", "river"],
+            baits: ["liveMinnow", "worm", "shrimp"],
             tip: "朝〜夕の障害物まわりを中距離から。急襲や首振りが始まったら巻く手を止めよう。",
           },
           kurodai: {
@@ -6473,7 +6556,7 @@
             locations: "星見港（浅場〜沖）",
             time: "いつでも（朝・夕が狙い目）",
             rods: ["starGazer", "moroko"],
-            baits: ["paste", "worm"],
+            baits: ["shrimp", "paste", "worm"],
             tip: "潮見浜ではなく星見港が条件。朝夕に練りエサを入れ、堤防へ突っ込む間は耐えよう。",
           },
           kasago: {
@@ -6486,7 +6569,7 @@
             locations: "潮見浜・星見港（浅場〜沖）",
             time: "いつでも",
             rods: ["youngBamboo", "clearStream"],
-            baits: ["worm", "river"],
+            baits: ["shrimp", "liveMinnow", "worm"],
             tip: "海底の岩陰を意識。釣り手袋を装備しておけば、釣り上げたあとの棘ダメージを防げるよ。",
           },
           suzuki: {
@@ -6499,7 +6582,7 @@
             locations: "潮見浜・星見港（浅場〜沖）／民家川（淵）",
             time: "いつでも（朝・夕が狙い目）",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["river", "worm"],
+            baits: ["liveMinnow", "shrimp", "river"],
             tip: "海の中〜遠距離か川の淵へ。水面へ向かったらAを離して、エラ洗いを安全にいなそう。",
           },
           hirame: {
@@ -6512,7 +6595,7 @@
             locations: "潮見浜（浅場〜沖）",
             time: "いつでも（朝・夕が狙い目）",
             rods: ["clearStream", "starGazer", "moroko"],
-            baits: ["worm", "river"],
+            baits: ["liveMinnow", "shrimp", "worm"],
             tip: "星見港ではなく潮見浜が条件。朝夕に砂底を探り、底へ張りつく力が緩んだら巻こう。",
           },
           nushi: {
@@ -6525,8 +6608,8 @@
             locations: "星降る湖（ヌシの深み）",
             time: "いつでも",
             rods: ["starGazer", "moroko"],
-            baits: ["paste", "river", "worm"],
-            tip: "湖の最深部へ遠投しよう。どんな動きにも即応できる強い竿と、落ち着いて糸を送る勇気が必要だよ。",
+            baits: ["nushiSecret", "paste", "liveMinnow", "worm"],
+            tip: "星みくじ限定の星湖の秘餌を選び、湖の最深部へ遠投しよう。秘餌は深みに届くまで消費されず、届けば必ずヌシが現れる。",
           },
           bora: {
             number: 15,
@@ -6538,7 +6621,7 @@
             locations: "潮見浜・星見港（浅場〜沖）／民家川（淵）",
             time: "いつでも（朝〜昼が狙い目）",
             rods: ["youngBamboo", "clearStream"],
-            baits: ["paste", "river"],
+            baits: ["paste", "shrimp", "corn"],
             tip: "朝〜昼の浅場を練りエサで探ろう。銀の魚体が水面へ向いたら、Aを離して大きな跳躍をいなすのがコツだよ。",
           },
           mebaru: {
@@ -6551,8 +6634,8 @@
             locations: "潮見浜・星見港（浅場〜沖、港が本命）",
             time: "いつでも（夕〜夜が狙い目）",
             rods: ["youngBamboo", "clearStream"],
-            baits: ["worm", "river"],
-            tip: "夕方から夜の星見港へ。ミミズか川虫を岩陰近くへ入れ、根へ潜る動きが出たらAを離して浮き直す瞬間を待とう。",
+            baits: ["shrimp", "river", "worm"],
+            tip: "夕方から夜の星見港へ。オキアミを岩陰近くへ入れ、根へ潜る動きが出たらAを離して浮き直す瞬間を待とう。",
           },
         },
         fishingSpots = [
@@ -6630,9 +6713,53 @@
           },
         ],
         baitData = {
-          worm: { name: "ミミズ", price: 120, amount: 3, bite: 1 },
-          river: { name: "川虫", price: 180, amount: 2, bite: 1.35 },
-          paste: { name: "練りエサ", price: 240, amount: 2, bite: 1.15 },
+          worm: {
+            name: "ミミズ", icon: "🪱", price: 120, amount: 3, bite: 1,
+            role: "万能・幅広い魚に使える",
+          },
+          river: {
+            name: "川虫", icon: "🦟", price: 180, amount: 2, bite: 1.35,
+            role: "川の小魚・渓流魚向け",
+          },
+          paste: {
+            name: "練りエサ", icon: "🍡", price: 240, amount: 2, bite: 1.15,
+            role: "雑食魚・ボラ向け",
+          },
+          corn: {
+            name: "トウモロコシ", icon: "🌽", price: 260, amount: 3, bite: 1.08,
+            role: "フナ・コイを狙い分ける",
+          },
+          shrimp: {
+            name: "オキアミ", icon: "🦐", price: 360, amount: 3, bite: 1.3,
+            role: "海の回遊魚・根魚向け",
+          },
+          liveMinnow: {
+            name: "活き小魚", icon: "🐟", price: 480, amount: 2, bite: 1.12,
+            role: "大型の肉食魚向け",
+          },
+          nushiSecret: {
+            name: "星湖の秘餌", icon: "🌠", price: 0, amount: 1, bite: 1.8,
+            role: "星みくじ限定・星降る湖の最深部専用",
+            exclusiveFish: "nushi",
+          },
+        },
+        fishBaitAffinities = {
+          moroko: { river: 1.9, worm: 1, paste: .45, corn: .28, shrimp: .2, liveMinnow: .04 },
+          funa: { corn: 1.85, paste: 1.6, worm: .8, river: .68, shrimp: .3, liveMinnow: .04 },
+          koi: { corn: 2.25, paste: 1.55, worm: .62, river: .32, shrimp: .22, liveMinnow: .04 },
+          aji: { shrimp: 2.1, river: .72, liveMinnow: .58, worm: .52, paste: .3, corn: .03 },
+          ayu: { river: 2.45, worm: .32, shrimp: .14, paste: .08, corn: .03, liveMinnow: .02 },
+          yamame: { river: 2, worm: .72, liveMinnow: .58, shrimp: .32, paste: .05, corn: .03 },
+          namazu: { liveMinnow: 2.2, worm: 1.15, shrimp: .52, river: .3, paste: .08, corn: .03 },
+          unagi: { worm: 1.9, liveMinnow: 1.35, shrimp: .85, river: .4, paste: .08, corn: .03 },
+          bass: { liveMinnow: 2.2, worm: .88, shrimp: .68, river: .52, paste: .08, corn: .03 },
+          kurodai: { shrimp: 1.95, paste: 1.3, corn: .48, worm: .52, river: .32, liveMinnow: .18 },
+          kasago: { shrimp: 2.25, liveMinnow: .78, worm: .76, river: .5, paste: .08, corn: .02 },
+          suzuki: { liveMinnow: 2.4, shrimp: 1.12, worm: .52, river: .48, paste: .04, corn: .02 },
+          hirame: { liveMinnow: 2.55, shrimp: 1.3, worm: .38, river: .28, paste: .03, corn: .01 },
+          nushi: { nushiSecret: 50, liveMinnow: .52, paste: .45, worm: .34, river: .3, shrimp: .2, corn: .16 },
+          bora: { paste: 1.9, shrimp: 1.2, corn: .82, river: .62, worm: .42, liveMinnow: .04 },
+          mebaru: { shrimp: 2.3, river: .92, worm: .72, liveMinnow: .52, paste: .12, corn: .02 },
         },
         rodData = {
           bamboo: {
@@ -9971,6 +10098,12 @@
         // stay untouched while the new species starts undiscovered.
         s.mapVersion = 94;
       }
+      if ((s.mapVersion || 0) < 95) {
+        // v95 expands the existing bait bag with three shop baits and one
+        // Star Fortune exclusive bait. Every existing count and selection is
+        // preserved; the four new bait ids simply start at zero.
+        s.mapVersion = 95;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -10181,7 +10314,11 @@
       ensureDogImage();
       const dogIdleImage = loadDogImage("assets/dog-idles.png?v=12"),
         petSceneImage = loadPetSceneImage("assets/pet-scenes-v19.svg");
-      if (!s.baits) s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
+      if (!s.baits || typeof s.baits !== "object" || Array.isArray(s.baits))
+        s.baits = { worm: s.bait ?? 5, river: 0, paste: 0 };
+      for (const id of Object.keys(baitData))
+        s.baits[id] = Math.max(0, Math.floor(Number(s.baits[id]) || 0));
+      if (!baitData[s.selectedBait]) s.selectedBait = "worm";
       if (!s.items || typeof s.items !== "object") s.items = {};
       for (const id of Object.keys(fieldItemData))
         s.items[id] = Math.max(0, Number(s.items[id]) || 0);
@@ -11170,7 +11307,7 @@
           dialogue: "静かな拝殿に鈴の余韻が残る。湖面の星が、次の一投を見守っているようだ。",
           actionLabel: "星へ願いを届ける",
           actionCost: "お参り",
-          note: "大根か星ぶどうを供えると星みくじを引ける。大当たりは星見の竿。他にも釣具、犬用品、お金、遠征パーツ、図鑑収集品が授かる。",
+          note: "大根か星ぶどうを供えると星みくじを引ける。大当たりは星見の竿。低確率でヌシ専用の星湖の秘餌も授かる。ほかに釣具、犬用品、お金、遠征パーツ、図鑑収集品がある。",
         },
         "fish-market": {
           brand: "HARBOR FISHMONGER",
@@ -11391,7 +11528,8 @@
                 `<strong>×${count}</strong></button>`;
             }).join("") +
             `<p class="star-fortune-lineup"><b>大当たり：星見の竿</b><br>` +
-            `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品</p>`;
+            `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
+            `<b>🌠 星湖の秘餌</b>：通常1%／星ぶどう3%（ヌシの深み専用）</p>`;
         }
         holder.innerHTML = markup;
         holder.hidden = !markup;
@@ -11642,6 +11780,7 @@
           standard: [
             ["starGazer", 2],
             ["expeditionJoint", 5],
+            ["baitNushi1", 1],
             ["starFrisbee", 4],
             ["squeakyNushi", 4],
             ["stardustCookie", 6],
@@ -11652,24 +11791,25 @@
             ["baitWorm9", 12],
             ["baitRiver6", 8],
             ["baitPaste6", 8],
-            ["money500", 10],
+            ["money500", 9],
             ["money2000", 6],
             ["money10000", 2],
           ],
           lucky: [
             ["starGazer", 7],
             ["expeditionJoint", 10],
+            ["baitNushi1", 3],
             ["starFrisbee", 8],
             ["squeakyNushi", 7],
             ["stardustCookie", 8],
             ["moonlightJerky", 7],
-            ["collectibleRandom", 16],
+            ["collectibleRandom", 14],
             ["silverSpoon", 7],
             ["starMinnow", 7],
             ["baitWorm9", 5],
             ["baitRiver6", 4],
             ["baitPaste6", 3],
-            ["money500", 3],
+            ["money500", 2],
             ["money2000", 5],
             ["money10000", 3],
           ],
@@ -11754,13 +11894,16 @@
           baitWorm9: ["worm", 9],
           baitRiver6: ["river", 6],
           baitPaste6: ["paste", 6],
+          baitNushi1: ["nushiSecret", 1],
         };
         if (baitPrizes[prizeId]) {
           const [baitId, amount] = baitPrizes[prizeId];
           s.baits[baitId] = (s.baits[baitId] || 0) + amount;
           return {
-            fortune: "釣運小吉",
-            message: `${baitData[baitId].name}を${amount}個授かった！`,
+            fortune: baitId === "nushiSecret" ? "星湖大吉・秘餌" : "釣運小吉",
+            message: baitId === "nushiSecret"
+              ? "湖の星が餌へ宿った。星湖の秘餌を一個授かった！"
+              : `${baitData[baitId].name}を${amount}個授かった！`,
             logMessage: `星みくじで${baitData[baitId].name}を${amount}個授かった。`,
           };
         }
@@ -13084,8 +13227,11 @@
       function pick(distance = 50, spotId = battle?.spot) {
         const spot = fishingSpotById(spotId);
         const period = gameClockAt(s.gameMinutes).period;
+        const baitId = battle?.bait || s.selectedBait;
+        if (baitId === "nushiSecret" && spot.id === "lake-deep")
+          return fish.find((candidate) => candidate.id === "nushi");
         const weighted = Object.entries(spot.weights).map(([id, base]) => {
-          let weight = base;
+          let weight = base * (fishBaitAffinities[id]?.[baitId] ?? .08);
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -13109,11 +13255,6 @@
               evening: 1.4,
               night: 0.35,
             }[period] || 1;
-            weight *= {
-              worm: 1.05,
-              river: 1.6,
-              paste: 0.35,
-            }[battle?.bait || s.selectedBait] || 1;
           }
           if (id === "namazu") {
             weight *= {
@@ -13130,11 +13271,6 @@
               evening: 1.35,
               night: 2.2,
             }[period] || 1;
-            weight *= {
-              worm: 1.65,
-              river: 0.85,
-              paste: 0.25,
-            }[battle?.bait || s.selectedBait] || 1;
           }
           if (id === "bass") {
             weight *= {
@@ -13143,11 +13279,6 @@
               evening: 1.35,
               night: 0.55,
             }[period] || 1;
-            weight *= {
-              worm: 1.28,
-              river: 1.08,
-              paste: 0.45,
-            }[battle?.bait || s.selectedBait] || 1;
           }
           if (id === "kurodai") {
             weight *= {
@@ -13156,11 +13287,6 @@
               evening: 1.55,
               night: 0.75,
             }[period] || 1;
-            weight *= {
-              worm: 0.85,
-              river: 0.75,
-              paste: 1.5,
-            }[battle?.bait || s.selectedBait] || 1;
             if (battle?.castLocale !== "harbor") weight = 0;
           }
           if (id === "hirame") {
@@ -13179,11 +13305,6 @@
               evening: 0.82,
               night: 0.42,
             }[period] || 1;
-            weight *= {
-              worm: 0.65,
-              river: 0.82,
-              paste: 1.55,
-            }[battle?.bait || s.selectedBait] || 1;
           }
           if (id === "mebaru") {
             weight *= {
@@ -13192,11 +13313,6 @@
               evening: 1.35,
               night: 1.7,
             }[period] || 1;
-            weight *= {
-              worm: 1.45,
-              river: 1.3,
-              paste: 0.55,
-            }[battle?.bait || s.selectedBait] || 1;
             weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
           }
           if (distance > 72) {
@@ -13530,6 +13646,24 @@
           ctx.fillRect(px + 7 * u, py - 4 * u, u, u);
         }
       }
+      function drawDogCareHand(ctx, x, y, itemId = null, treatScale = 1) {
+        const px = Math.round(x);
+        const py = Math.round(y);
+        ctx.fillStyle = "#d7e8ef";
+        ctx.fillRect(px + 22, py - 9, Math.max(0, 320 - px - 22), 22);
+        ctx.fillStyle = "#82a9b9";
+        ctx.fillRect(px + 19, py - 11, 9, 26);
+        ctx.fillStyle = "#e7ad83";
+        ctx.fillRect(px + 2, py - 8, 20, 20);
+        ctx.fillRect(px - 8, py - 5, 14, 7);
+        ctx.fillRect(px - 6, py + 4, 13, 6);
+        ctx.fillStyle = "#f3c19a";
+        ctx.fillRect(px - 10, py - 4, 14, 4);
+        ctx.fillRect(px - 8, py + 5, 14, 3);
+        ctx.fillRect(px + 5, py - 11, 7, 5);
+        if (itemId && treatScale > .08)
+          drawDogCareProp(ctx, itemId, px - 11, py + 1, treatScale);
+      }
       function drawDogCareHearts(ctx, frame, offsetX = 0) {
         const rise = (frame % 8) * 2;
         ctx.fillStyle = "#ff8fa8";
@@ -13549,9 +13683,9 @@
           : 1;
         return {
           progress,
-          x: Math.round(292 - 185 * progress),
+          x: Math.round(300 - 210 * progress),
           y: Math.round(73 - Math.sin(progress * Math.PI) * 44),
-          ready: progress >= .4 && progress <= .69,
+          ready: progress >= .34 && progress <= .78,
         };
       }
       function updateDogCareCatchButton(visible = false, ready = false) {
@@ -13559,8 +13693,13 @@
         if (!button) return;
         button.hidden = !visible;
         button.classList.toggle("ready", visible && ready);
+        const stage = $("#dogCareStage");
+        stage?.classList.toggle("catch-active", visible);
+        stage?.classList.toggle("catch-ready", visible && ready);
         const note = button.querySelector("small");
-        if (note) note.textContent = ready ? "いまだ！" : "金の枠でタップ";
+        if (note) note.textContent = ready
+          ? "いまだ！ どこでもタップ"
+          : "黄色い枠へ来るまで待つ";
       }
       function drawDogCareScene(now = Date.now()) {
         const canvas = $("#dogCareSceneCanvas");
@@ -13578,16 +13717,22 @@
         updateDogCareCatchButton(false, false);
         if (scene.mode === "treat") {
           const progress = Math.max(0, Math.min(1, (now - scene.startedAt) / scene.duration));
-          const approach = Math.max(0, Math.min(1, (progress - .15) / .42));
-          const chomp = progress > .46 && progress < .78 ? frame % 2 : 0;
-          const dogX = 22 + Math.round(62 * approach);
+          const handIn = Math.max(0, Math.min(1, progress / .22));
+          const handOut = Math.max(0, Math.min(1, (progress - .82) / .18));
+          const approach = Math.max(0, Math.min(1, (progress - .12) / .38));
+          const chomp = progress > .48 && progress < .76 ? frame % 2 : 0;
+          const dogX = 18 + Math.round(52 * approach);
           const dogY = -5 + chomp * 3;
           drawDogCareSprite(ctx, dogId, dogX, dogY, "stand", 164);
-          const fall = Math.max(0, Math.min(1, progress / .23));
-          const propScale = progress > .7 ? Math.max(.25, 1 - (progress - .7) * 2.5) : 1;
-          drawDogCareProp(ctx, scene.itemId, 244, 24 + 67 * fall, propScale);
-          if (progress > .72) drawDogCareHearts(ctx, frame);
-          if (label) label.textContent = progress < .24 ? "おやつだ！" : "もぐもぐ…おいしいね♡";
+          const handX = 354 - 108 * handIn + 92 * handOut;
+          const treatScale = progress < .52
+            ? 1
+            : Math.max(0, 1 - (progress - .52) / .25);
+          drawDogCareHand(ctx, handX, 87 + chomp, scene.itemId, treatScale);
+          if (progress > .68) drawDogCareHearts(ctx, frame);
+          if (label) label.textContent = progress < .23
+            ? "手からおやつをどうぞ"
+            : progress < .52 ? "くんくん……はむっ！" : "もぐもぐ…おいしいね♡";
           return true;
         }
         if (scene.mode === "toy") {
@@ -13611,19 +13756,25 @@
         if (scene.mode === "catch" && dogCatchGame) {
           const game = dogCatchGame;
           ctx.fillStyle = "#f6d45a33";
-          ctx.fillRect(164, 22, 56, 91);
+          ctx.fillRect(116, 18, 112, 98);
           ctx.fillStyle = "#f6d45a";
-          ctx.fillRect(164, 22, 56, 3);
-          ctx.fillRect(164, 110, 56, 3);
-          ctx.fillRect(164, 22, 3, 91);
-          ctx.fillRect(217, 22, 3, 91);
+          ctx.fillRect(116, 18, 112, 4);
+          ctx.fillRect(116, 112, 112, 4);
+          ctx.fillRect(116, 18, 4, 98);
+          ctx.fillRect(224, 18, 4, 98);
           if (game.phase === "throw") {
             const flight = dogCatchPosition(game, now);
             const dogX = 20 + Math.round(52 * Math.min(1, flight.progress / .7));
             drawDogCareSprite(ctx, dogId, dogX, -3, frame % 4 < 2 ? "walk-a" : "walk-b", 158);
             drawDogCareProp(ctx, game.toyId, flight.x, flight.y, game.toyId === "starFrisbee" ? .85 : 1);
+            ctx.fillStyle = "#07131d";
+            ctx.fillRect(18, 124, 284, 9);
+            ctx.fillStyle = flight.ready ? "#fff08a" : "#62b9d3";
+            ctx.fillRect(20, 126, Math.round(280 * flight.progress), 5);
             updateDogCareCatchButton(true, flight.ready);
-            const hint = game.hintUntil > now ? "もう少し引きつけて！" : `第${game.throwIndex + 1}投　${game.score} / 3`;
+            const hint = game.hintUntil > now
+              ? "大丈夫！ 黄色い枠まで待ってもう一度"
+              : `第${game.throwIndex + 1}投　${game.score} / 3　画面のどこでもタップ`;
             if (label) label.textContent = hint;
           } else {
             drawDogCareSprite(ctx, dogId, game.lastSuccess ? 65 : 36, -3, "stand", 160);
@@ -13691,12 +13842,12 @@
           throwIndex: 0,
           phase: "throw",
           throwStartedAt: Date.now(),
-          throwDuration: toyId === "starFrisbee" ? 1550 : 1800,
+          throwDuration: toyId === "starFrisbee" ? 2300 : 2600,
           resultStartedAt: 0,
           lastSuccess: false,
           hintUntil: 0,
         };
-        dogCareStatusMessage = `わんこキャッチ開始！ 金の枠へ来たら「キャッチ！」をタップ。3投だよ。`;
+        dogCareStatusMessage = `わんこキャッチ開始！ おもちゃが大きな黄色い枠へ入ったら、ステージのどこでもタップ。3投だよ。`;
         setDogCareScene("catch", dogId, toyId, 0);
         log(`${dogProfileData[dogId].name}と${item.action}を始めた。通常好感度＋${baseGained}。`);
         save();
@@ -14044,7 +14195,9 @@
         );
       }
       function renderInventory() {
-        const baitIcons = { worm: "🪱", river: "🦟", paste: "🍡" };
+        const baitIcons = Object.fromEntries(
+          Object.entries(baitData).map(([id, item]) => [id, item.icon || "🎒"]),
+        );
         const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
         $("#inventoryHpText").textContent = `${s.hp} / ${s.maxHp}`;
         $("#inventoryHpFill").style.width = `${hpPercent}%`;
@@ -14052,7 +14205,7 @@
         const baitMarkup = Object.entries(baitData)
           .map(([id, item]) =>
             `<div class="inventory-card"><i>${baitIcons[id] || "🎒"}</i>` +
-            `<span><b>${item.name}</b><br><small>釣りエサ</small></span>` +
+            `<span><b>${item.name}</b><br><small>${item.role}</small></span>` +
             `<strong>×${s.baits[id] || 0}</strong></div>`,
           )
           .join("");
@@ -14142,8 +14295,10 @@
         open("inventory");
       }
       function renderTackle() {
-        const baitMarkup = Object.entries(baitData).map(([id,b]) =>
-          `<button data-pick-bait="${id}" class="${s.selectedBait === id ? "selected" : ""}">${b.name} ×${s.baits[id] || 0}</button>`).join("");
+        const baitMarkup = Object.entries(baitData).map(([id, b]) =>
+          `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}">` +
+          `<i>${b.icon}</i><span><b>${b.name}</b><small>${b.role}</small></span>` +
+          `<strong>×${s.baits[id] || 0}</strong></button>`).join("");
         const rodMarkup = s.ownedRods.map(id =>
           `<button data-pick-rod="${id}" class="rod-option ${s.selectedRod === id ? "selected" : ""}">` +
           `${rodDisplayMarkup(id)}<span>${rodData[id].name}</span></button>`).join("");
@@ -14382,6 +14537,23 @@
           battle.castMin ?? 0,
           battle.castMax ?? 100,
         );
+        const targetDepth = battle.practice
+          ? "shallow"
+          : depthForCast(
+              battle.waterZone || "lake",
+              distance,
+              battle.minimumDepth || "shallow",
+            );
+        const baitId = battle.bait || s.selectedBait;
+        if (!battle.practice && baitId === "nushiSecret" &&
+            (battle.waterZone !== "lake" || targetDepth !== "deep")) {
+          $("#battleMsg").textContent = battle.waterZone !== "lake"
+            ? "星湖の秘餌は、星降る湖のヌシだけに使う特別なエサだ。"
+            : "星湖の秘餌はまだ投げない。メーターを遠くまで伸ばし、ヌシの深みを狙おう。";
+          $("#phaseLabel").textContent = " 秘餌は最深部専用";
+          vibrate([18, 35, 18]);
+          return false;
+        }
         if (!commitCastResources()) return false;
         const resolved = resolveSurfaceCast(distance);
         battle.phase = "cast-flight";
@@ -16457,7 +16629,7 @@
           .join("");
         const baits = data.baits
           .filter((id) => baitData[id])
-          .map((id) => `<span class="fishdex-chip">🪱 ${baitData[id].name}</span>`)
+          .map((id) => `<span class="fishdex-chip">${baitData[id].icon || "🪱"} ${baitData[id].name}</span>`)
           .join("");
         return `<div class="fishdex-hero">
           <div class="fishdex-art-card"><div class="fishdex-art" id="fishdexArt"></div></div>
@@ -16757,7 +16929,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=139-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=140-1").catch(() => {});
       renderRecord();
     </script>
   </body>
