@@ -5675,7 +5675,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v142</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v143</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6979,7 +6979,7 @@
           hirame: "assets/fish-hirame-v97.png",
           nushi: "assets/fish-nushi-v31.png",
           bora: "assets/fish-bora-v137.png",
-          mebaru: "assets/fish-mebaru-v139.png",
+          mebaru: "assets/fish-mebaru-v143.png",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -7000,14 +7000,14 @@
           hirame: "assets/fish-hirame-mouth-v97.png",
           nushi: "assets/fish-nushi-mouth-v68.png",
           bora: "assets/fish-bora-mouth-open-v137.png",
-          mebaru: "assets/fish-mebaru-mouth-open-v139.png",
+          mebaru: "assets/fish-mebaru-mouth-open-v143.png",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
           funa: "assets/fish-funa-mouth-part-v124.png",
           koi: "assets/fish-koi-mouth-part-v130.png",
           bora: "assets/fish-bora-mouth-part-v137.png",
-          mebaru: "assets/fish-mebaru-mouth-part-v139.png",
+          mebaru: "assets/fish-mebaru-mouth-part-v143.png",
         },
         fishTurnAssets = {
           moroko: "assets/fish-moroko-turn-v70.png",
@@ -7025,7 +7025,7 @@
           hirame: "assets/fish-hirame-turn-v97.png",
           nushi: "assets/fish-nushi-turn-v70.png",
           bora: "assets/fish-bora-turn-v137.png",
-          mebaru: "assets/fish-mebaru-turn-v139.png",
+          mebaru: "assets/fish-mebaru-turn-v143.png",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -9580,9 +9580,10 @@
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
         },
       };
-      /* v139 keeps Mebaru on the CSS sprite path. Some mobile browsers can
-         miss the first async Canvas paint; the old Canvas-only path removed
-         the background at the same time and left only the hook visible. */
+      /* v143 stores Mebaru in a compact 3-column grid. The previous 3840px
+         horizontal atlas could disappear as a whole on Android, leaving only
+         the hook. Canvas and its CSS fallback now crop the same sub-1024px
+         source in battle, the catch card and the fishdex. */
       const fishSwimFrameCounts = { moroko: 12, funa: 12, koi: 12, namazu: 12, bora: 12, mebaru: 12 },
         fishFrameFallbackSizes = {
           moroko: [256, 110],
@@ -9605,7 +9606,8 @@
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         fixedFaceFishIds = new Set(["funa", "koi", "namazu", "bora", "mebaru"]),
-        cssAtlasFishIds = new Set(["mebaru"]),
+        compactGridFishAtlasIds = new Set(["mebaru"]),
+        COMPACT_FISH_ATLAS_COLUMNS = 3,
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const fishAtlasImageCache = new Map();
@@ -9642,25 +9644,32 @@
         const key = `${spriteAsset}|${spriteCells}|${spriteFrame}`;
         canvas.dataset.atlasKey = key;
         const fallbackSize = fishFrameFallbackSizes[fishId] || [320, 160];
-        const fallbackFrame =
-          `${spriteFrame * (100 / Math.max(1, spriteCells - 1))}%`;
-        // Put the same atlas on the Canvas as a CSS background first. Android
-        // can miss the first asynchronous paint of a very wide PNG; keeping
-        // this fallback visible means the fishdex and battle never go blank.
+        const compactGrid = compactGridFishAtlasIds.has(fishId);
+        const columns = compactGrid ? COMPACT_FISH_ATLAS_COLUMNS : spriteCells;
+        const rows = compactGrid
+          ? Math.ceil(spriteCells / COMPACT_FISH_ATLAS_COLUMNS)
+          : 1;
+        const column = compactGrid ? spriteFrame % columns : spriteFrame;
+        const row = compactGrid ? Math.floor(spriteFrame / columns) : 0;
+        const fallbackX = `${column * (100 / Math.max(1, columns - 1))}%`;
+        const fallbackY = `${row * (100 / Math.max(1, rows - 1))}%`;
+        // Paint the exact same compact atlas cell behind the transparent
+        // bitmap. If an asynchronous Canvas draw is skipped on Android, the
+        // CSS fallback remains visible instead of exposing an empty hook.
         canvas.width = fallbackSize[0];
         canvas.height = fallbackSize[1];
         canvas.style.display = "block";
         canvas.style.backgroundColor = "transparent";
         canvas.style.backgroundImage = `url("${spriteAsset}")`;
         canvas.style.backgroundRepeat = "no-repeat";
-        canvas.style.backgroundSize = `${spriteCells * 100}% 100%`;
-        canvas.style.backgroundPositionX = fallbackFrame;
-        canvas.style.backgroundPositionY = "0%";
+        canvas.style.backgroundSize = `${columns * 100}% ${rows * 100}%`;
+        canvas.style.backgroundPositionX = fallbackX;
+        canvas.style.backgroundPositionY = fallbackY;
         const image = fishAtlasImage(spriteAsset);
         const paint = () => {
           if (canvas.dataset.atlasKey !== key || !image.naturalWidth) return;
-          const cellWidth = Math.max(1, Math.round(image.naturalWidth / spriteCells));
-          const cellHeight = Math.max(1, image.naturalHeight);
+          const cellWidth = Math.max(1, Math.round(image.naturalWidth / columns));
+          const cellHeight = Math.max(1, Math.round(image.naturalHeight / rows));
           canvas.width = cellWidth;
           canvas.height = cellHeight;
           canvas.style.backgroundColor = "transparent";
@@ -9669,11 +9678,8 @@
           context.clearRect(0, 0, cellWidth, cellHeight);
           context.drawImage(
             image,
-            Math.min(
-              image.naturalWidth - cellWidth,
-              Math.max(0, Math.round(spriteFrame) * cellWidth),
-            ),
-            0,
+            Math.min(image.naturalWidth - cellWidth, column * cellWidth),
+            Math.min(image.naturalHeight - cellHeight, row * cellHeight),
             cellWidth,
             cellHeight,
             0,
@@ -15873,7 +15879,7 @@
             ? fishMouthAssets[f.id]
             : fishMouthPartAssets[f.id] || fishMouthAssets[f.id]
           : fishCatchAssets[f.id] || fishAssets[f.id];
-        if (usesHandDrawnMouth && !cssAtlasFishIds.has(f.id)) {
+        if (usesHandDrawnMouth) {
           hangingFish.classList.add("canvas-atlas");
           hangingFish.style.backgroundImage = "none";
           drawFishAtlasFrame(hangingFish, asset, cells, frame);
@@ -15986,10 +15992,11 @@
           !handDrawn &&
           Boolean(spriteAsset) &&
           slices.length === FISH_LIFE_SLICE_COUNT;
-        // Mebaru deliberately retains a normal CSS background as a visible
-        // fallback. Never clear it for the Canvas-only rendering path.
-        const canvasMode = !showingTurn && handDrawn &&
-          !cssAtlasFishIds.has(battle.f.id) && Boolean(spriteAsset);
+        // Compact-grid fish also keep their turn cells on this shared Canvas
+        // path; treating that grid as a horizontal CSS strip would crop an
+        // empty area on Android.
+        const canvasMode = handDrawn && Boolean(spriteAsset) &&
+          (!showingTurn || compactGridFishAtlasIds.has(battle.f.id));
         element.classList.toggle("life-segmented", segmented);
         element.classList.toggle("life-canvas", canvasMode);
         const framePosition =
@@ -16713,14 +16720,26 @@
         battle.turnProgress = 0;
         battle.turnArcY = 0;
         battle.turnRoll = 0;
-        fishElement.style.backgroundImage = `url("${fishAssets[battle.f.id]}")`;
         const landingCells = fishSwimFrameCounts[battle.f.id] || 8;
-        fishElement.style.backgroundSize = `${landingCells * 100}% 100%`;
-        fishElement.style.animationTimingFunction =
-          `steps(${landingCells - 1}, end)`;
-        // Always begin on a real cell boundary so the sweep never slices two
-        // drawings together at the waterline.
-        fishElement.style.backgroundPositionX = "0%";
+        if (compactGridFishAtlasIds.has(battle.f.id)) {
+          fishElement.classList.add("life-canvas");
+          fishElement.style.backgroundImage = "none";
+          drawFishAtlasFrame(
+            fishElement,
+            fishAssets[battle.f.id],
+            landingCells,
+            0,
+            battle.f.id,
+          );
+        } else {
+          fishElement.style.backgroundImage = `url("${fishAssets[battle.f.id]}")`;
+          fishElement.style.backgroundSize = `${landingCells * 100}% 100%`;
+          fishElement.style.animationTimingFunction =
+            `steps(${landingCells - 1}, end)`;
+          // Always begin on a real cell boundary so the sweep never slices
+          // two drawings together at the waterline.
+          fishElement.style.backgroundPositionX = "0%";
+        }
         fishElement.dataset.spriteMode = "swim";
         fishElement.dataset.spriteFrame = "0";
         delete fishElement.dataset.hookPoseFrame;
@@ -17249,7 +17268,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=142-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=143-1").catch(() => {});
       renderRecord();
     </script>
   </body>

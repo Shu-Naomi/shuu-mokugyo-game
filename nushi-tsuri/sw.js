@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v142-fish-signatures-142-1";
+const CACHE_NAME = "nushi-tsuri-v143-mebaru-visible-143-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -108,10 +108,10 @@ const CORE_ASSETS = [
   "./assets/fish-bora-mouth-part-v137.png",
   "./assets/fish-bora-mouth-open-v137.png",
   "./assets/fish-bora-turn-v137.png",
-  "./assets/fish-mebaru-v139.png",
-  "./assets/fish-mebaru-mouth-part-v139.png",
-  "./assets/fish-mebaru-mouth-open-v139.png",
-  "./assets/fish-mebaru-turn-v139.png",
+  "./assets/fish-mebaru-v143.png",
+  "./assets/fish-mebaru-mouth-part-v143.png",
+  "./assets/fish-mebaru-mouth-open-v143.png",
+  "./assets/fish-mebaru-turn-v143.png",
   "./assets/fish-nushi-mouth-v68.png",
   "./assets/fish-nushi-turn-v70.png",
   "./assets/audio/underwater-loop.mp3",
