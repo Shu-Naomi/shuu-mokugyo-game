@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v145-mebaru-stable-background-145-1";
+const CACHE_NAME = "nushi-tsuri-v146-mebaru-persistent-canvas-146-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",

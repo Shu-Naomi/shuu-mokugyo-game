@@ -4260,8 +4260,8 @@
         image-rendering: pixelated;
       }
       /* Mebaru uses complete, standalone PNG frames. Fishdex can use ordinary
-         IMG elements; battle and catch use the fish element's own background
-         so Android always retains one fully loaded frame. */
+         IMG elements; battle and catch keep one persistent Canvas and only
+         replace its pixels after a complete frame has decoded. */
       .fish-direct-frame {
         position: absolute;
         inset: 0;
@@ -4282,10 +4282,29 @@
         visibility: hidden !important;
       }
       .battle-fish.standalone-frame > .fish-life-slice,
-      .battle-fish.standalone-frame > .fish-frame-canvas,
-      .catch-fish.standalone-frame > .fish-frame-canvas {
+      .catch-fish.standalone-frame > .fish-life-slice,
+      .fishdex-art.standalone-frame > .fish-frame-canvas,
+      .battle-fish.standalone-background-frame > .fish-frame-canvas,
+      .catch-fish.standalone-background-frame > .fish-frame-canvas {
         display: none !important;
         visibility: hidden !important;
+      }
+      .battle-fish.standalone-canvas-frame,
+      .catch-fish.standalone-canvas-frame {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
+      }
+      .battle-fish.standalone-canvas-frame > .fish-direct-frame,
+      .catch-fish.standalone-canvas-frame > .fish-direct-frame {
+        display: none !important;
+        visibility: hidden !important;
+      }
+      .battle-fish.standalone-canvas-frame > .fish-frame-canvas,
+      .catch-fish.standalone-canvas-frame > .fish-frame-canvas {
+        display: block !important;
+        visibility: visible !important;
+        opacity: 1 !important;
       }
       .battle-fish.life-canvas {
         background: transparent !important;
@@ -4340,6 +4359,8 @@
       }
       .battle-fish.fish-mebaru {
         width: clamp(112px, 17.5vw, 198px);
+        height: 56px;
+        height: clamp(56px, 8.75vw, 99px);
         aspect-ratio: 2 / 1;
       }
       .battle-fish.fish-bass {
@@ -5227,6 +5248,8 @@
       }
       .catch-fish.fish-mebaru {
         width: clamp(108px, min(20vw, 39vh), 198px);
+        height: 54px;
+        height: clamp(54px, min(10vw, 19.5vh), 99px);
         aspect-ratio: 2 / 1;
         transform: translate(-87%, -56%) scale(var(--specimen-scale, 1));
         transform-origin: 87% 56%;
@@ -5711,7 +5734,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v145</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v146</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -9695,7 +9718,6 @@
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const fishAtlasImageCache = new Map();
-      const standaloneBackgroundWaits = new WeakMap();
       function fishAtlasImage(src) {
         // Reuse the image that began loading as soon as the bite was chosen.
         // This avoids a second decode race when the underwater fight opens.
@@ -9738,72 +9760,65 @@
         element.classList.remove(
           "standalone-frame",
           "standalone-background-frame",
+          "standalone-canvas-frame",
         );
         delete element.dataset.standaloneFrameAsset;
         delete element.dataset.standaloneRequestedAsset;
+        delete element.dataset.standalonePaintWidth;
+        delete element.dataset.standalonePaintHeight;
         element.style.removeProperty("background-image");
         element.style.removeProperty("background-size");
         element.style.removeProperty("background-position");
         element.style.removeProperty("background-repeat");
       }
-      function applyStandaloneFishBackground(element, asset) {
-        element.style.setProperty(
-          "background-image",
-          `url("${asset}")`,
-          "important",
-        );
-        element.style.setProperty("background-size", "contain", "important");
-        element.style.setProperty("background-position", "center", "important");
-        element.style.setProperty("background-repeat", "no-repeat", "important");
-        element.dataset.standaloneFrameAsset = asset;
-      }
-      function renderStandaloneFishBackground(element, asset) {
-        element.classList.add(
-          "standalone-frame",
-          "standalone-background-frame",
-        );
+      function renderStandaloneFishCanvas(element, asset) {
+        element.classList.add("standalone-frame", "standalone-canvas-frame");
+        element.classList.remove("standalone-background-frame");
         element.dataset.standaloneRequestedAsset = asset;
-        // Commit the first frame immediately and leave that exact URL in place.
-        // Even on a cold Android cache it can finish loading without a later
-        // animation tick cancelling it.
-        if (!element.dataset.standaloneFrameAsset) {
-          applyStandaloneFishBackground(element, asset);
-          return;
-        }
-        if (element.dataset.standaloneFrameAsset === asset) return;
+        // The Canvas is a stable, already-composited layer. Android only has
+        // to replace its pixels; it never has to swap a rapidly changing IMG
+        // or background URL into the scene graph.
+        element.style.setProperty("background", "transparent", "important");
+        element.style.setProperty("background-image", "none", "important");
+        const canvas = fishAtlasCanvas(element);
+        canvas.style.setProperty("display", "block", "important");
+        canvas.style.setProperty("visibility", "visible", "important");
+        canvas.style.setProperty("opacity", "1", "important");
         const image = fishAtlasImage(asset);
-        if (image.complete && image.naturalWidth) {
-          applyStandaloneFishBackground(element, asset);
-          return;
-        }
-        // Never replace the visible frame with an undecoded one. Coalesce
-        // rapid animation requests; once a requested frame is ready it may
-        // replace the still-visible previous frame.
-        let waits = standaloneBackgroundWaits.get(element);
-        if (!waits) {
-          waits = new Set();
-          standaloneBackgroundWaits.set(element, waits);
-        }
-        if (waits.has(asset)) return;
-        waits.add(asset);
-        const reveal = () => {
-          waits.delete(asset);
+        const paint = () => {
           if (
             !image.naturalWidth ||
-            !element.classList.contains("standalone-background-frame") ||
+            !element.classList.contains("standalone-canvas-frame") ||
             element.dataset.standaloneRequestedAsset !== asset
           ) return;
-          applyStandaloneFishBackground(element, asset);
+          const frameWidth = Math.max(1, image.naturalWidth);
+          const frameHeight = Math.max(1, image.naturalHeight);
+          if (canvas.width !== frameWidth) canvas.width = frameWidth;
+          if (canvas.height !== frameHeight) canvas.height = frameHeight;
+          const context = canvas.getContext("2d");
+          context.imageSmoothingEnabled = false;
+          context.clearRect(0, 0, frameWidth, frameHeight);
+          context.drawImage(image, 0, 0, frameWidth, frameHeight);
+          canvas.dataset.atlasKey = `standalone|${asset}`;
+          element.dataset.standaloneFrameAsset = asset;
+          element.dataset.standalonePaintWidth = String(frameWidth);
+          element.dataset.standalonePaintHeight = String(frameHeight);
         };
-        image.addEventListener("load", reveal, { once: true });
-        if (image.decode) image.decode().then(reveal).catch(() => {});
+        if (image.complete && image.naturalWidth) {
+          paint();
+        } else {
+          // Keep the previous Canvas pixels visible while the next complete
+          // PNG decodes. A stale load can never overwrite the latest request.
+          image.addEventListener("load", paint, { once: true });
+          if (image.decode) image.decode().then(paint).catch(() => {});
+        }
       }
       function renderStandaloneFishFrame(element, asset) {
         if (
           element.classList.contains("battle-fish") ||
           element.classList.contains("catch-fish")
         ) {
-          renderStandaloneFishBackground(element, asset);
+          renderStandaloneFishCanvas(element, asset);
           return;
         }
         const images = fishStandaloneImages(element);
@@ -17524,7 +17539,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=145-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=146-1").catch(() => {});
       renderRecord();
     </script>
   </body>
