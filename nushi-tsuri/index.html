@@ -1561,8 +1561,63 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer) {
         display: none !important;
+      }
+      .forage-layer {
+        position: absolute;
+        inset: 0;
+        z-index: 3;
+        pointer-events: none;
+      }
+      .forage-sparkle {
+        position: absolute;
+        width: 22px;
+        height: 22px;
+        padding: 0;
+        border: 0;
+        transform: translate(-50%, -50%);
+        background: transparent;
+        color: #fff4a3;
+        filter: drop-shadow(0 1px 0 #6a471b) drop-shadow(0 0 3px #ffd45f);
+        image-rendering: pixelated;
+        pointer-events: none;
+      }
+      .forage-sparkle::before,
+      .forage-sparkle::after {
+        position: absolute;
+        line-height: 1;
+        text-shadow: 1px 1px #6a471b;
+        animation: forage-twinkle 1.15s steps(2, end) infinite;
+      }
+      .forage-sparkle::before {
+        content: "✦";
+        left: 2px;
+        top: 1px;
+        font-size: 16px;
+      }
+      .forage-sparkle::after {
+        content: "✧";
+        right: 0;
+        bottom: 1px;
+        color: #fff;
+        font-size: 10px;
+        animation-delay: .42s;
+      }
+      .forage-sparkle.dog-found {
+        color: #9ff4ff;
+        filter: drop-shadow(0 1px 0 #1d5060) drop-shadow(0 0 5px #60e2ff);
+      }
+      .forage-sparkle.dog-found::after {
+        content: "🐾";
+        right: -5px;
+        bottom: -4px;
+        font-size: 8px;
+        text-shadow: 1px 1px #173e4b;
+      }
+      @keyframes forage-twinkle {
+        0%, 100% { transform: scale(.78); opacity: .58; }
+        50% { transform: scale(1.18); opacity: 1; }
       }
       .player {
         position: absolute;
@@ -4078,10 +4133,13 @@
         display: none;
       }
       .fish-tackle.bait-worm .bait-worm-shape,
+      .fish-tackle.bait-grasshopper .bait-grasshopper-shape,
       .fish-tackle.bait-river .bait-river-shape,
       .fish-tackle.bait-paste .bait-paste-shape,
       .fish-tackle.bait-corn .bait-corn-shape,
       .fish-tackle.bait-shrimp .bait-shrimp-shape,
+      .fish-tackle.bait-shell .bait-shell-shape,
+      .fish-tackle.bait-crab .bait-crab-shape,
       .fish-tackle.bait-liveMinnow .bait-minnow-shape,
       .fish-tackle.bait-nushiSecret .bait-nushi-shape {
         display: block;
@@ -4098,6 +4156,14 @@
         fill: #a96a31;
         stroke: #58301f;
         stroke-width: 0.7;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-grasshopper-shape {
+        fill: #78a840;
+        stroke: #314f25;
+        stroke-width: 0.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
         vector-effect: non-scaling-stroke;
       }
       .fish-tackle .bait-paste-shape {
@@ -4118,6 +4184,27 @@
         stroke-width: 1.45;
         stroke-linecap: round;
         vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-shell-shape {
+        fill: #e6d3a5;
+        stroke: #826540;
+        stroke-width: 0.7;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-shell-shape .shell-lines {
+        fill: none;
+      }
+      .fish-tackle .bait-crab-shape {
+        fill: #c96546;
+        stroke: #713724;
+        stroke-width: 0.7;
+        stroke-linecap: round;
+        stroke-linejoin: round;
+        vector-effect: non-scaling-stroke;
+      }
+      .fish-tackle .bait-crab-shape .crab-legs {
+        fill: none;
       }
       .fish-tackle .bait-minnow-shape {
         fill: #8cb3bd;
@@ -5744,7 +5831,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v147</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v148</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5837,6 +5924,7 @@
           <i class="pixel-prop prop-log detail-log" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-a" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-b" aria-hidden="true"></i>
+          <div id="forageLayer" class="forage-layer" aria-hidden="true"></div>
           <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
@@ -5963,6 +6051,11 @@
                 <ellipse cx="3.4" cy="10.5" rx="2.1" ry="1.4" />
                 <path d="M 2 9.6 L 0.9 8.1 M 4.6 9.6 L 5.8 8.1 M 2 11.3 L 0.8 12.8 M 4.6 11.3 L 5.8 12.8" />
               </g>
+              <g class="bait-shape bait-grasshopper-shape">
+                <ellipse cx="3.4" cy="10.3" rx="2.1" ry="1.15" />
+                <circle cx="1.4" cy="9.8" r=".75" />
+                <path d="M 4.8 9.8 L 7.1 7.7 L 5.6 11 M 3.4 11.1 L 1.8 13 M 2.5 9.5 L 1.1 7.8" fill="none" />
+              </g>
               <circle
                 class="bait-shape bait-paste-shape"
                 cx="2.8"
@@ -5977,6 +6070,14 @@
                 class="bait-shape bait-shrimp-shape"
                 d="M 1.2 8.2 C 5.7 7.3 7 10.5 4.8 12.2 C 3.5 13.2 1.7 12.4 2.1 10.9 M 1.5 8.4 L .4 7.2 M 2.2 8.1 L 2.5 6.5"
               />
+              <g class="bait-shape bait-shell-shape">
+                <path d="M .7 12 C 1.2 8.9 3 7.6 5.8 8.7 C 6.7 9.1 7.2 10.5 7.4 12 Z" />
+                <path class="shell-lines" d="M 2.2 11.7 L 2.8 9.2 M 4 11.8 L 4.1 8.7 M 5.8 11.8 L 5.2 9.3" />
+              </g>
+              <g class="bait-shape bait-crab-shape">
+                <ellipse cx="3.5" cy="10.4" rx="2.2" ry="1.5" />
+                <path class="crab-legs" d="M 1.7 9.8 L .2 8.3 M 1.5 10.8 L .1 12.1 M 5.3 9.8 L 6.9 8.3 M 5.5 10.8 L 7 12.1 M 1.5 9.3 L .5 7.8 L 1.7 7.5 M 5.5 9.3 L 6.6 7.8 L 5.4 7.5" />
+              </g>
               <g class="bait-shape bait-minnow-shape">
                 <ellipse cx="3.7" cy="10.2" rx="3.1" ry="1.45" />
                 <path d="M 6.2 9.8 L 8.2 8.4 L 7.8 11.5 Z" />
@@ -6808,6 +6909,11 @@
             name: "ミミズ", icon: "🪱", price: 120, amount: 3, bite: 1,
             role: "万能・幅広い魚に使える",
           },
+          grasshopper: {
+            name: "バッタ", icon: "🦗", price: 0, amount: 1, bite: 1.28,
+            role: "採集限定・アユや渓流魚向け",
+            foraged: true,
+          },
           river: {
             name: "川虫", icon: "🦟", price: 180, amount: 2, bite: 1.35,
             role: "川の小魚・渓流魚向け",
@@ -6823,6 +6929,16 @@
           shrimp: {
             name: "オキアミ", icon: "🦐", price: 360, amount: 3, bite: 1.3,
             role: "海の回遊魚・根魚向け",
+          },
+          shell: {
+            name: "貝", icon: "🐚", price: 0, amount: 1, bite: 1.2,
+            role: "採集限定・クロダイや磯魚向け",
+            foraged: true,
+          },
+          crab: {
+            name: "カニ", icon: "🦀", price: 0, amount: 1, bite: 1.38,
+            role: "採集限定・クロダイや根魚向け",
+            foraged: true,
           },
           liveMinnow: {
             name: "活き小魚", icon: "🐟", price: 480, amount: 2, bite: 1.12,
@@ -6852,6 +6968,25 @@
           bora: { paste: 1.9, shrimp: 1.2, corn: .82, river: .62, worm: .42, liveMinnow: .04 },
           mebaru: { shrimp: 2.3, river: .92, worm: .72, liveMinnow: .52, paste: .12, corn: .02 },
           nijimasu: { river: 2.2, worm: .92, liveMinnow: .66, shrimp: .38, paste: .05, corn: .02 },
+        },
+        foragedBaitAffinities = {
+          moroko: { grasshopper: .9, shell: .12, crab: .08 },
+          funa: { grasshopper: .65, shell: .35, crab: .18 },
+          koi: { grasshopper: .35, shell: .5, crab: .24 },
+          aji: { grasshopper: .05, shell: .45, crab: .35 },
+          ayu: { grasshopper: 1.9, shell: .04, crab: .05 },
+          yamame: { grasshopper: 2.15, shell: .05, crab: .12 },
+          namazu: { grasshopper: .75, shell: .1, crab: 1.15 },
+          unagi: { grasshopper: .25, shell: .35, crab: 1.6 },
+          bass: { grasshopper: 1.45, shell: .12, crab: 1.1 },
+          kurodai: { grasshopper: .08, shell: 2.15, crab: 2.4 },
+          kasago: { grasshopper: .08, shell: 1.35, crab: 2 },
+          suzuki: { grasshopper: .25, shell: .65, crab: 1.15 },
+          hirame: { grasshopper: .05, shell: .42, crab: 1.2 },
+          nushi: { grasshopper: .12, shell: .2, crab: .4 },
+          bora: { grasshopper: .3, shell: .72, crab: .42 },
+          mebaru: { grasshopper: .15, shell: 1.4, crab: 1.9 },
+          nijimasu: { grasshopper: 2.05, shell: .08, crab: .35 },
         },
         rodData = {
           bamboo: {
@@ -6940,18 +7075,21 @@
             name: "シュウ",
             icon: "🐕",
             role: "案内・調査役",
+            forageSpecialty: "虫・ミミズ",
             greeting: "気になるものを一緒に調べよう。",
           },
           riku: {
             name: "リク",
             icon: "🐕‍🦺",
             role: "釣り・実働担当",
+            forageSpecialty: "木の実・植物",
             greeting: "今日も元気に釣りへ行こう！",
           },
           grey: {
             name: "Grey",
             icon: "🐶",
             role: "万能・システム補助",
+            forageSpecialty: "水辺・埋まった物",
             greeting: "困った時は何でも任せて。",
           },
         },
@@ -6965,6 +7103,16 @@
             name: "湖魚ジャーキー", icon: "🐟", type: "treat",
             price: 700, affection: 6, samShop: true,
             desc: "湖の魚を香ばしく乾かしたごほうび。",
+          },
+          treeNut: {
+            name: "木の実", icon: "🌰", type: "treat",
+            affection: 2, foraged: true,
+            desc: "森や草地で拾える、ワンコずの素朴なおやつ。",
+          },
+          mushroom: {
+            name: "キノコ", icon: "🍄", type: "treat",
+            affection: 3, foraged: true,
+            desc: "夜の森で見つけやすい、香りのよい犬用キノコ。",
           },
           rubberBall: {
             name: "ゴムボール", icon: "🎾", type: "toy",
@@ -7000,6 +7148,85 @@
             action: "ヌシ人形遊び", motion: "pounce",
             desc: "かじるとキュッと鳴るヌシのぬいぐるみ。",
           },
+        },
+        forageData = {
+          worm: {
+            name: "ミミズ", icon: "🪱", category: "虫",
+            destination: "bait", destinationId: "worm",
+          },
+          grasshopper: {
+            name: "バッタ", icon: "🦗", category: "虫",
+            destination: "bait", destinationId: "grasshopper",
+          },
+          treeNut: {
+            name: "木の実", icon: "🌰", category: "植物",
+            destination: "dogTreat", destinationId: "treeNut",
+          },
+          shell: {
+            name: "貝", icon: "🐚", category: "水辺素材",
+            destination: "bait", destinationId: "shell",
+          },
+          mushroom: {
+            name: "キノコ", icon: "🍄", category: "植物",
+            destination: "dogTreat", destinationId: "mushroom",
+          },
+          crab: {
+            name: "カニ", icon: "🦀", category: "水辺素材",
+            destination: "bait", destinationId: "crab",
+          },
+        },
+        foragePointData = [
+          { id: "grass-01", habitat: "grass", x: 19, y: 34 },
+          { id: "grass-02", habitat: "grass", x: 62, y: 42 },
+          { id: "grass-03", habitat: "grass", x: 25, y: 78 },
+          { id: "grass-04", habitat: "grass", x: 92, y: 77 },
+          { id: "grass-05", habitat: "grass", x: 164, y: 72 },
+          { id: "forest-01", habitat: "forest", x: 18, y: 18 },
+          { id: "forest-02", habitat: "forest", x: 68, y: 18 },
+          { id: "forest-03", habitat: "forest", x: 169, y: 20 },
+          { id: "forest-04", habitat: "forest", x: 218, y: 33 },
+          { id: "forest-05", habitat: "forest", x: 220, y: 63 },
+          { id: "riverside-01", habitat: "riverside", x: 108, y: 57 },
+          { id: "riverside-02", habitat: "riverside", x: 123, y: 60 },
+          { id: "riverside-03", habitat: "riverside", x: 104, y: 72 },
+          { id: "riverside-04", habitat: "riverside", x: 116, y: 94 },
+          { id: "riverside-05", habitat: "riverside", x: 96, y: 101 },
+          { id: "beach-01", habitat: "beach", x: 18, y: 104 },
+          { id: "beach-02", habitat: "beach", x: 44, y: 106 },
+          { id: "beach-03", habitat: "beach", x: 70, y: 111 },
+          { id: "beach-04", habitat: "beach", x: 95, y: 120 },
+          { id: "beach-05", habitat: "beach", x: 213, y: 94 },
+        ],
+        forageLootTables = {
+          grass: {
+            morning: { worm: 42, grasshopper: 23, treeNut: 25, mushroom: 10 },
+            day: { grasshopper: 55, treeNut: 30, worm: 10, mushroom: 5 },
+            evening: { treeNut: 45, grasshopper: 30, worm: 15, mushroom: 10 },
+            night: { mushroom: 45, worm: 30, grasshopper: 15, treeNut: 10 },
+          },
+          forest: {
+            morning: { treeNut: 40, worm: 30, mushroom: 20, grasshopper: 10 },
+            day: { treeNut: 45, grasshopper: 25, mushroom: 20, worm: 10 },
+            evening: { treeNut: 35, mushroom: 35, grasshopper: 20, worm: 10 },
+            night: { mushroom: 60, worm: 20, treeNut: 15, grasshopper: 5 },
+          },
+          riverside: {
+            morning: { worm: 45, grasshopper: 25, shell: 15, crab: 10, treeNut: 5 },
+            day: { worm: 30, grasshopper: 25, crab: 20, shell: 15, treeNut: 10 },
+            evening: { crab: 35, shell: 30, worm: 20, mushroom: 15 },
+            night: { crab: 35, worm: 30, mushroom: 20, shell: 15 },
+          },
+          beach: {
+            morning: { shell: 45, crab: 25, worm: 15, treeNut: 15 },
+            day: { shell: 40, crab: 30, grasshopper: 15, treeNut: 15 },
+            evening: { shell: 45, crab: 40, treeNut: 10, worm: 5 },
+            night: { crab: 45, shell: 30, mushroom: 15, worm: 10 },
+          },
+        },
+        dogForageSpecialties = {
+          shuu: ["worm", "grasshopper"],
+          riku: ["treeNut", "mushroom"],
+          grey: ["shell", "crab", "mushroom"],
         },
         lureData = {
           silverSpoon: {
@@ -10338,6 +10565,32 @@
         delete state.rescueAt;
         return state;
       }
+      function normalizeForageCycle(value) {
+        if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+        const pointIds = new Set(foragePointData.map((point) => point.id));
+        const active = {};
+        for (const [pointId, itemId] of Object.entries(value.active || {})) {
+          if (pointIds.has(pointId) && forageData[itemId]) active[pointId] = itemId;
+        }
+        const normalizePointIds = (items) => [...new Set(
+          (Array.isArray(items) ? items : []).filter((id) => pointIds.has(id)),
+        )];
+        const expiresAt = Math.floor(Number(value.expiresAt));
+        const dayIndex = Math.floor(Number(value.dayIndex));
+        const period = ["morning", "day", "evening", "night"]
+          .includes(value.period) ? value.period : "";
+        if (!Number.isFinite(expiresAt) || !Number.isFinite(dayIndex) || !period)
+          return null;
+        return {
+          version: 1,
+          dayIndex,
+          period,
+          expiresAt,
+          active,
+          harvested: normalizePointIds(value.harvested),
+          dogFound: normalizePointIds(value.dogFound),
+        };
+      }
       let s = Object.assign(
           {
             money: 300,
@@ -10366,6 +10619,7 @@
             sizeRecords: {},
             fishCrowns: {},
             fishCatchRecords: {},
+            forageCycle: null,
             log: [],
             gameMinutes: null,
             x: 112,
@@ -10406,7 +10660,10 @@
         reactionTransitionTimer = 0,
         rescueTimer = 0,
         rescueToastTimer = 0,
+        forageDiscoveryTimer = 0,
         rescueInProgress = false,
+        forageDiscoveryInProgress = false,
+        forageWalkSteps = 0,
         dogIdleMode = "",
         companionReaction = "",
         dogApproachOffset = 0,
@@ -10727,6 +10984,13 @@
         // undiscovered while every catch, crown and inventory value remains.
         s.mapVersion = 96;
       }
+      if ((s.mapVersion || 0) < 97) {
+        // v148 adds a self-contained gathering cycle. Existing saves keep
+        // every catch, item and position; the first set of sparkles is rolled
+        // from the current place and time when the field is next rendered.
+        s.forageCycle = null;
+        s.mapVersion = 97;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -10850,6 +11114,7 @@
         if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      s.forageCycle = normalizeForageCycle(s.forageCycle);
       s.rescueAtMinutes = Number.isFinite(s.rescueAtMinutes)
         ? Math.floor(s.rescueAtMinutes)
         : -1000000;
@@ -12090,6 +12355,199 @@
           Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
         ) || null;
       }
+      function foragePointPosition(pointOrId) {
+        const point = typeof pointOrId === "string"
+          ? foragePointData.find((candidate) => candidate.id === pointOrId)
+          : pointOrId;
+        if (!point) return null;
+        if (!point.walkablePosition) {
+          point.walkablePosition = nearestWalkableWorld(point.x, point.y, 10);
+        }
+        return point.walkablePosition;
+      }
+      function pickForageItem(
+        habitat,
+        period,
+        random = Math.random,
+        preferredItems = [],
+      ) {
+        const table = forageLootTables[habitat]?.[period] ||
+          forageLootTables.grass.day;
+        const preferred = new Set(preferredItems);
+        const entries = Object.entries(table)
+          .filter(([itemId, weight]) => forageData[itemId] && weight > 0)
+          .map(([itemId, weight]) => ({
+            itemId,
+            weight: weight * (preferred.has(itemId) ? 3 : 1),
+          }));
+        const total = entries.reduce((sum, entry) => sum + entry.weight, 0);
+        let roll = boundedRandom(random) * total;
+        for (const entry of entries) {
+          roll -= entry.weight;
+          if (roll <= 0) return entry.itemId;
+        }
+        return entries[0]?.itemId || "worm";
+      }
+      function rollForageCycle(random = Math.random) {
+        const clock = gameClockAt(s.gameMinutes);
+        const candidates = [...foragePointData];
+        for (let index = candidates.length - 1; index > 0; index -= 1) {
+          const swapIndex = Math.floor(boundedRandom(random) * (index + 1));
+          [candidates[index], candidates[swapIndex]] =
+            [candidates[swapIndex], candidates[index]];
+        }
+        const activeCount = Math.min(
+          candidates.length,
+          8 + Math.floor(boundedRandom(random) * 5),
+        );
+        const active = {};
+        for (const point of candidates.slice(0, activeCount))
+          active[point.id] = pickForageItem(point.habitat, clock.period, random);
+        return {
+          version: 1,
+          dayIndex: clock.dayIndex,
+          period: clock.period,
+          expiresAt: clock.totalMinutes +
+            120 + Math.floor(boundedRandom(random) * 13) * 10,
+          active,
+          harvested: [],
+          dogFound: [],
+        };
+      }
+      function ensureForageCycle(force = false, random = Math.random) {
+        const clock = gameClockAt(s.gameMinutes);
+        const cycle = normalizeForageCycle(s.forageCycle);
+        const expired = !cycle || cycle.dayIndex !== clock.dayIndex ||
+          cycle.period !== clock.period || clock.totalMinutes >= cycle.expiresAt;
+        if (force || expired) {
+          s.forageCycle = rollForageCycle(random);
+          scheduleSave();
+        } else {
+          s.forageCycle = cycle;
+        }
+        return s.forageCycle;
+      }
+      function renderForagePoints() {
+        const layer = $("#forageLayer");
+        if (!layer) return;
+        const cycle = ensureForageCycle();
+        const dogFound = new Set(cycle.dogFound);
+        layer.innerHTML = Object.keys(cycle.active).map((pointId) => {
+          const point = foragePointData.find((candidate) => candidate.id === pointId);
+          const position = foragePointPosition(point);
+          if (!point || !position) return "";
+          return `<span class="forage-sparkle${dogFound.has(pointId) ? " dog-found" : ""}" ` +
+            `data-forage-point="${pointId}" style="left:${worldToMapX(position.x).toFixed(3)}%;` +
+            `top:${worldToMapY(position.y).toFixed(3)}%"></span>`;
+        }).join("");
+      }
+      function nearbyForagePoint(x = s.x, y = s.y, radius = 7.5) {
+        const cycle = ensureForageCycle();
+        let nearest = null;
+        for (const [pointId, itemId] of Object.entries(cycle.active)) {
+          const point = foragePointData.find((candidate) => candidate.id === pointId);
+          const position = foragePointPosition(point);
+          if (!point || !position) continue;
+          const distance = Math.hypot(x - position.x, y - position.y);
+          if (distance < radius && (!nearest || distance < nearest.distance))
+            nearest = { point, position, itemId, distance };
+        }
+        return nearest;
+      }
+      function collectForagePoint(pointId) {
+        const cycle = ensureForageCycle();
+        const itemId = cycle.active[pointId];
+        const item = forageData[itemId];
+        if (!item) return false;
+        delete cycle.active[pointId];
+        if (!cycle.harvested.includes(pointId)) cycle.harvested.push(pointId);
+        cycle.dogFound = cycle.dogFound.filter((id) => id !== pointId);
+        if (item.destination === "bait")
+          s.baits[item.destinationId] = (s.baits[item.destinationId] || 0) + 1;
+        else
+          s.dogTreats[item.destinationId] =
+            (s.dogTreats[item.destinationId] || 0) + 1;
+        const destination = item.destination === "bait"
+          ? `釣りエサ「${baitData[item.destinationId].name}」に入れた。`
+          : "ワンコずのおやつ袋に入れた。";
+        log(`${item.name}を拾った！ ${destination}`);
+        vibrate([18, 28, 36]);
+        render();
+        showRescueToast(`${item.icon} ${item.name}を拾った！`, 2800);
+        save();
+        return true;
+      }
+      function hiddenForagePointsNearPlayer(radius = 34) {
+        const cycle = ensureForageCycle();
+        const unavailable = new Set([
+          ...Object.keys(cycle.active),
+          ...cycle.harvested,
+        ]);
+        return foragePointData.filter((point) => {
+          if (unavailable.has(point.id)) return false;
+          const position = foragePointPosition(point);
+          return position && Math.hypot(s.x - position.x, s.y - position.y) < radius;
+        });
+      }
+      function finishDogForageDiscovery(point, itemId, dogId) {
+        const cycle = ensureForageCycle();
+        if (!cycle.harvested.includes(point.id)) {
+          cycle.active[point.id] = itemId;
+          if (!cycle.dogFound.includes(point.id)) cycle.dogFound.push(point.id);
+        }
+        forageDiscoveryTimer = 0;
+        forageDiscoveryInProgress = false;
+        stopGameAudioSample("dogDig");
+        const name = dogProfileData[dogId]?.name || dogName();
+        log(`${name}がクンクンして隠し採集ポイントを見つけた！`);
+        render();
+        showRescueToast(`🐾 ${name}が隠し採集ポイントを見つけた！`, 3200);
+        armDogIdle();
+        scheduleIdleStatus(3400);
+        scheduleFieldMenu(3400);
+        save();
+      }
+      function startDogForageDiscovery(point, itemId) {
+        if (!point || !forageData[itemId] || forageDiscoveryInProgress)
+          return false;
+        const dogId = s.dog;
+        const name = dogProfileData[dogId]?.name || dogName();
+        forageDiscoveryInProgress = true;
+        forageWalkSteps = 0;
+        hideIdleStatus();
+        hideFieldMenu();
+        wakeDog();
+        $("#dog").classList.remove("walking");
+        playGameAudioSample("dogBark", { restart: true });
+        $("#hint").textContent = `${name}「ワン！」地面の匂いが気になるみたいだ。`;
+        clearTimeout(forageDiscoveryTimer);
+        forageDiscoveryTimer = setTimeout(() => {
+          setDogIdle("dig");
+          playGameAudioSample("dogDig", { restart: true });
+          $("#hint").textContent = `${name}がクンクンしながら隠れた採集場所を探している……`;
+          forageDiscoveryTimer = setTimeout(() =>
+            finishDogForageDiscovery(point, itemId, dogId), 1450);
+        }, DOG_BARK_LEAD_MS);
+        return true;
+      }
+      function maybeDogDiscoverForagePoint(random = Math.random) {
+        if (battle || rescueInProgress || forageDiscoveryInProgress) return false;
+        forageWalkSteps += 1;
+        if (forageWalkSteps < 8) return false;
+        const affinity = Math.max(0, Math.min(100, Number(s.dogAffinity[s.dog]) || 0));
+        const chance = .025 + affinity * .00055;
+        if (boundedRandom(random) > chance) return false;
+        const hidden = hiddenForagePointsNearPlayer();
+        if (!hidden.length) return false;
+        const point = hidden[Math.floor(boundedRandom(random) * hidden.length)];
+        const itemId = pickForageItem(
+          point.habitat,
+          gameClockAt(s.gameMinutes).period,
+          random,
+          dogForageSpecialties[s.dog] || [],
+        );
+        return startDogForageDiscovery(point, itemId);
+      }
       function openLocationInterior(landmarkOrId) {
         const id = typeof landmarkOrId === "string"
           ? landmarkOrId
@@ -13268,6 +13726,7 @@
             dogDisplayLeft(dogPosition) < mapX,
           );
         drawDog();
+        renderForagePoints();
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
@@ -13288,9 +13747,12 @@
           ? "「道具の調子を確かめたくなったら、隣の池でまた一匹いこう」"
           : "「買う前に一本やってみるかい？ 隣の池ならワシが教えよう」";
         const nearPracticePond = isNearPracticePond();
+        const foragePoint = nearbyForagePoint();
         const landmark = nearbyWorldLandmark();
         const spot = nearbyFishingSpot();
-        $("#hint").textContent = nearPracticePond
+        $("#hint").textContent = foragePoint
+          ? "✨ 小さなキラキラがある。Aで拾う。"
+          : nearPracticePond
           ? practiceComplete
             ? "サムの試し釣り池だ。Aで自由練習する。エサは減らない。"
             : "サムの試し釣り池だ。Aで初回講習を受ける。"
@@ -13340,6 +13802,7 @@
         return $("#game").classList.contains("active") &&
           !playerWalking &&
           !rescueInProgress &&
+          !forageDiscoveryInProgress &&
           !battle &&
           !document.querySelector(".modal.open") &&
           !$("#catchCard").classList.contains("show");
@@ -13367,6 +13830,7 @@
         return $("#game").classList.contains("active") &&
           !playerWalking &&
           !rescueInProgress &&
+          !forageDiscoveryInProgress &&
           !battle &&
           !document.querySelector(".modal.open") &&
           !$("#catchCard").classList.contains("show");
@@ -13399,7 +13863,8 @@
         else if (target === "dog") openDogCare();
       }
       function move(d) {
-        if (battle || rescueInProgress || document.querySelector(".modal.open")) return;
+        if (battle || rescueInProgress || forageDiscoveryInProgress ||
+            document.querySelector(".modal.open")) return;
         hideIdleStatus();
         hideFieldMenu();
         wakeDog();
@@ -13418,6 +13883,7 @@
         s.direction = d;
         const previousX = s.x;
         const previousY = s.y;
+        let moved = false;
         let n = 4;
         ({
           left: () => (s.x -= n),
@@ -13436,10 +13902,12 @@
           // It therefore rounds piers and buildings through the same gaps,
           // instead of tweening diagonally between two unrelated safe points.
           advanceDogTrail(previousX, previousY);
+          moved = true;
         }
         render();
         $("#player").classList.add("walking");
         $("#dog").classList.add("walking");
+        if (moved) maybeDogDiscoverForagePoint();
         clearTimeout(walkTimer);
         clearTimeout(dogWalkTimer);
         walkTimer = setTimeout(() => {
@@ -13460,7 +13928,7 @@
           // All of Riku's poses are aligned to the same real paw line below,
           // so changing back to standing no longer needs a vertical settle.
           drawDog();
-          armDogIdle();
+          if (!forageDiscoveryInProgress) armDogIdle();
         }, 660);
       }
       function drawDog() {
@@ -13741,7 +14209,9 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
-        if (rescueInProgress) return;
+        if (rescueInProgress || forageDiscoveryInProgress) return;
+        const foragePoint = nearbyForagePoint();
+        if (foragePoint) return collectForagePoint(foragePoint.point.id);
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
         const landmark = nearbyWorldLandmark();
@@ -13857,7 +14327,11 @@
         if (baitId === "nushiSecret" && spot.id === "lake-deep")
           return fish.find((candidate) => candidate.id === "nushi");
         const weighted = Object.entries(spot.weights).map(([id, base]) => {
-          let weight = base * (fishBaitAffinities[id]?.[baitId] ?? .08);
+          let weight = base * (
+            foragedBaitAffinities[id]?.[baitId] ??
+            fishBaitAffinities[id]?.[baitId] ??
+            .08
+          );
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -14596,7 +15070,8 @@
           const points = s.dogAffinity[id] || 0;
           return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${dog.name}　${points}</button>`;
         }).join("");
-        $("#dogCareRole").textContent = profile.role;
+        $("#dogCareRole").textContent =
+          `${profile.role}／採集：${profile.forageSpecialty}`;
         $("#dogCareName").textContent = profile.name;
         $("#dogCareTier").textContent = dogAffinityTier(affinity);
         $("#dogCarePoints").textContent = `${affinity} / 100`;
@@ -14607,7 +15082,9 @@
           .filter(([, item]) => item.type === "treat")
           .map(([id, item]) => {
             const count = s.dogTreats[id] || 0;
-            const source = item.samShop ? "サムの店" : "星みくじ限定";
+            const source = item.foraged
+              ? "フィールド採集"
+              : item.samShop ? "サムの店" : "星みくじ限定";
             return `<button class="dog-care-card" data-give-dog-treat="${id}" ${busy || count < 1 || affinity >= 100 ? "disabled" : ""}>` +
               `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>×${count}</strong></button>`;
           }).join("");
@@ -14864,10 +15341,12 @@
           .join("");
         const dogTreatMarkup = Object.entries(dogCareData)
           .filter(([, item]) => item.type === "treat")
-          .map(([id, item]) =>
-            `<div class="inventory-card"><i>${item.icon}</i>` +
-            `<span><b>${item.name}</b><br><small>犬のおやつ／好感度＋${item.affection}</small></span>` +
-            `<strong>×${s.dogTreats[id] || 0}</strong></div>`)
+          .map(([id, item]) => {
+            const source = item.foraged ? "採集" : "犬のおやつ";
+            return `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>${source}／好感度＋${item.affection}</small></span>` +
+            `<strong>×${s.dogTreats[id] || 0}</strong></div>`;
+          })
           .join("");
         const ownedDogToyMarkup = Object.entries(dogCareData)
           .filter(([id, item]) => item.type === "toy" && s.ownedDogToys.includes(id))
@@ -17787,7 +18266,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=147-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=148-1").catch(() => {});
       renderRecord();
     </script>
   </body>
