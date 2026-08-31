@@ -4379,6 +4379,10 @@
         width: clamp(115px, 17vw, 195px);
         aspect-ratio: 2 / 1;
       }
+      .battle-fish.fish-nijimasu {
+        width: clamp(125px, 18.5vw, 215px);
+        aspect-ratio: 2 / 1;
+      }
       .battle-fish.fish-namazu {
         width: clamp(145px, 23vw, 270px);
         aspect-ratio: 2 / 1;
@@ -5278,6 +5282,12 @@
         transform: translate(-93%, -57%) scale(var(--specimen-scale, 1));
         transform-origin: 93% 57%;
       }
+      .catch-fish.fish-nijimasu {
+        width: clamp(115px, min(21vw, 40vh), 205px);
+        aspect-ratio: 2 / 1;
+        transform: translate(-93%, -57%) scale(var(--specimen-scale, 1));
+        transform-origin: 93% 57%;
+      }
       .catch-fish.fish-namazu {
         width: clamp(135px, min(26vw, 44vh), 245px);
         aspect-ratio: 2 / 1;
@@ -5734,7 +5744,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v146</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v147</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6029,8 +6039,8 @@
                 <h2>魚図鑑</h2>
               </div>
               <div class="fishdex-progress" aria-live="polite">
-                <span>発見魚種<b id="fishdexDiscovered">0 / 16</b></span>
-                <span>金の王冠<b id="fishdexCrownTotal">0 / 32</b></span>
+                <span>発見魚種<b id="fishdexDiscovered">0 / 17</b></span>
+                <span>金の王冠<b id="fishdexCrownTotal">0 / 34</b></span>
                 <span>収集品<b id="fishdexCollectibleTotal">0 / 6</b></span>
               </div>
               <button class="fishdex-close" data-close>閉じる</button>
@@ -6486,6 +6496,15 @@
             icon: "🐟",
             shadowRow: 3,
           },
+          {
+            id: "nijimasu",
+            name: "ニジマス",
+            price: 540,
+            resistance: 118,
+            w: 0,
+            icon: "🐟",
+            shadowRow: 3,
+          },
         ],
         fishEncyclopediaData = {
           moroko: {
@@ -6696,6 +6715,19 @@
             baits: ["shrimp", "river", "worm"],
             tip: "夕方から夜の星見港へ。オキアミを岩陰近くへ入れ、根へ潜る動きが出たらAを離して浮き直す瞬間を待とう。",
           },
+          nijimasu: {
+            number: 17,
+            scientific: "Oncorhynchus mykiss",
+            habitats: ["river"],
+            rarity: 3,
+            rarityLabel: "珍しい",
+            ecology: "北米原産のサケ科魚類。冷たく澄んだ川や湖を好み、水生昆虫、甲殻類、小魚などを食べる。銀白色の体側を走る桃色の帯と細かな黒点が特徴で、針に掛かると強く走り、ときに水面から跳び出す。",
+            locations: "民家川（瀬〜淵、流心が本命）",
+            time: "いつでも（朝・夕が狙い目）",
+            rods: ["clearStream", "starGazer"],
+            baits: ["river", "worm", "liveMinnow"],
+            tip: "朝夕の流心へ川虫を流そう。上流への疾走は糸を送り、水面へ向かったらAを離して跳躍をいなすのがコツだよ。",
+          },
         },
         fishingSpots = [
           {
@@ -6727,24 +6759,24 @@
             zone: "river",
             depth: "shallow",
             name: "民家川・瀬",
-            role: "流れの浅い瀬・ホンモロコとアユ、朝夕のヤマメ",
-            weights: { moroko: 0.36, ayu: 0.24, yamame: 0.18, funa: 0.22 },
+            role: "流れの浅い瀬・ホンモロコとアユ、朝夕のヤマメとニジマス",
+            weights: { moroko: 0.34, ayu: 0.22, yamame: 0.17, nijimasu: 0.1, funa: 0.2 },
           },
           {
             id: "river-mid",
             zone: "river",
             depth: "mid",
             name: "民家川・流心",
-            role: "川の流心・アユとヤマメ、流れ脇のブラックバスと夜のウナギ",
-            weights: { moroko: 0.12, ayu: 0.21, yamame: 0.17, funa: 0.19, koi: 0.08, namazu: 0.07, bass: 0.08, unagi: 0.08 },
+            role: "川の流心・アユとヤマメ、流れへ出るニジマスと夜のウナギ",
+            weights: { moroko: 0.11, ayu: 0.19, yamame: 0.15, nijimasu: 0.12, funa: 0.17, koi: 0.07, namazu: 0.06, bass: 0.07, unagi: 0.07 },
           },
           {
             id: "river-deep",
             zone: "river",
             depth: "deep",
             name: "民家川・淵",
-            role: "川の淵・ナマズとブラックバス、河口から入るボラと夜のウナギ",
-            weights: { moroko: 0.06, ayu: 0.08, yamame: 0.04, funa: 0.17, koi: 0.14, namazu: 0.14, bass: 0.11, suzuki: 0.06, unagi: 0.2, bora: 0.06 },
+            role: "川の淵・ナマズとブラックバス、淵尻のニジマスと夜のウナギ",
+            weights: { moroko: 0.06, ayu: 0.07, yamame: 0.04, nijimasu: 0.06, funa: 0.15, koi: 0.13, namazu: 0.13, bass: 0.1, suzuki: 0.05, unagi: 0.18, bora: 0.05 },
           },
           {
             id: "sea-shallow",
@@ -6819,6 +6851,7 @@
           nushi: { nushiSecret: 50, liveMinnow: .52, paste: .45, worm: .34, river: .3, shrimp: .2, corn: .16 },
           bora: { paste: 1.9, shrimp: 1.2, corn: .82, river: .62, worm: .42, liveMinnow: .04 },
           mebaru: { shrimp: 2.3, river: .92, worm: .72, liveMinnow: .52, paste: .12, corn: .02 },
+          nijimasu: { river: 2.2, worm: .92, liveMinnow: .66, shrimp: .38, paste: .05, corn: .02 },
         },
         rodData = {
           bamboo: {
@@ -7029,6 +7062,7 @@
           aji: "assets/fish-aji-v68.png",
           ayu: "assets/fish-ayu-v95.png",
           yamame: "assets/fish-yamame-v100.png",
+          nijimasu: "assets/fish-nijimasu-v147.png",
           namazu: "assets/fish-namazu-v115.png",
           unagi: "assets/fish-unagi-v102.png",
           bass: "assets/fish-bass-v98.png",
@@ -7048,6 +7082,7 @@
           aji: "assets/fish-aji-mouth-v68.png",
           ayu: "assets/fish-ayu-mouth-v95.png",
           yamame: "assets/fish-yamame-mouth-v100.png",
+          nijimasu: "assets/fish-nijimasu-mouth-v147.png",
           namazu: "assets/fish-namazu-mouth-open-v123.png",
           unagi: "assets/fish-unagi-mouth-v102.png",
           bass: "assets/fish-bass-mouth-v98.png",
@@ -7073,6 +7108,7 @@
           aji: "assets/fish-aji-turn-v70.png",
           ayu: "assets/fish-ayu-turn-v95.png",
           yamame: "assets/fish-yamame-turn-v100.png",
+          nijimasu: "assets/fish-nijimasu-turn-v147.png",
           namazu: "assets/fish-namazu-turn-v96.png",
           unagi: "assets/fish-unagi-turn-v102.png",
           bass: "assets/fish-bass-turn-v98.png",
@@ -7160,6 +7196,10 @@
           yamame: {
             x: 0.422, y: 0.055, tackleScale: 0.8, inset: 3, drop: 1.3,
             breath: 0.52,
+          },
+          nijimasu: {
+            x: 0.438, y: 0.062, tackleScale: 0.82, inset: 3.2, drop: 1.4,
+            breath: 0.48,
           },
           namazu: {
             x: 0.315, y: 0.075, tackleScale: 0.88, inset: 4, drop: 2,
@@ -8466,6 +8506,62 @@
             priceMultiplier: 3.2,
           },
         ],
+        nijimasu: [
+          {
+            id: "tiny",
+            label: "極小",
+            minHundredths: 1500,
+            maxHundredths: 1999,
+            weight: 10,
+            pullMultiplier: 0.68,
+            priceMultiplier: 0.45,
+          },
+          {
+            id: "small",
+            label: "小さい",
+            minHundredths: 2000,
+            maxHundredths: 2999,
+            weight: 22,
+            pullMultiplier: 0.84,
+            priceMultiplier: 0.7,
+          },
+          {
+            id: "normal",
+            label: "普通",
+            minHundredths: 3000,
+            maxHundredths: 3999,
+            weight: 34,
+            pullMultiplier: 1,
+            priceMultiplier: 1,
+          },
+          {
+            id: "medium",
+            label: "中",
+            minHundredths: 4000,
+            maxHundredths: 4999,
+            weight: 20,
+            pullMultiplier: 1.18,
+            priceMultiplier: 1.3,
+          },
+          {
+            id: "large",
+            label: "大",
+            minHundredths: 5000,
+            maxHundredths: 5999,
+            weight: 11,
+            pullMultiplier: 1.42,
+            priceMultiplier: 1.75,
+          },
+          {
+            id: "giant",
+            label: "巨大",
+            minHundredths: 6000,
+            maxHundredths: 7999,
+            weight: 3,
+            pullMultiplier: 1.75,
+            priceMultiplier: 3.2,
+          },
+        ],
         nushi: [
           {
             id: "tiny",
@@ -8794,6 +8890,103 @@
             calm: true,
             hold: "ヤマメが岩陰で止まった！今が巻き時！",
             loose: "流れの陰で休んでいる。Aで一気に距離を詰めよう！",
+          },
+        ],
+      };
+      fishMotionProfiles.nijimasu = {
+        ...fishMotionProfiles.yamame,
+        beat: 0.78,
+        speedBeat: 0.12,
+        burst: 1.72,
+        thrust: 0.255,
+        stretch: 0.02,
+        squeeze: 0.016,
+        recoil: 2.9,
+        sway: 2.5,
+        roll: 2.1,
+        movingDrag: 0.982,
+        restingDrag: 0.9,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 5.2,
+        turnRoll: 8,
+      };
+      fightProfiles.nijimasu = {
+        intro: "桃色の帯をきらめかせ、大きなサケ科の魚体で流れへ突っ込む。",
+        moods: [
+          {
+            id: "upstream-surge",
+            name: "逆流疾走",
+            icon: "⚡",
+            weight: 0.34,
+            min: 500,
+            max: 780,
+            motion: "rush",
+            speedX: 6.5,
+            speedY: 2.9,
+            tension: 8.5,
+            release: 6.7,
+            reel: 0.42,
+            scale: 1.08,
+            frameEvery: 1,
+            danger: true,
+            signature: true,
+            hold: "ニジマスが流れに逆らって猛進！いったんAを離せ！",
+            loose: "強い尾振りに糸を送り、上流への走りをいなす！",
+          },
+          {
+            id: "surface-leap",
+            name: "水面跳躍",
+            icon: "🌊",
+            weight: 0.24,
+            min: 480,
+            max: 740,
+            motion: "rush",
+            speedX: 5.8,
+            speedY: 3.5,
+            tension: 9,
+            release: 7,
+            reel: 0.34,
+            scale: 1.1,
+            frameEvery: 1,
+            danger: true,
+            hold: "ニジマスが水面へ急上昇！Aを離して跳躍に備えろ！",
+            loose: "竿を送り、空中で暴れる衝撃を糸へ逃がす！",
+          },
+          {
+            id: "cross-current",
+            name: "流心横断",
+            icon: "↔",
+            weight: 0.25,
+            min: 650,
+            max: 980,
+            motion: "steady",
+            speedX: 2.8,
+            speedY: 1.9,
+            tension: 6,
+            release: 5.5,
+            reel: 0.72,
+            scale: 1.03,
+            frameEvery: 2,
+            hold: "ニジマスが流心を横切る。向きが変わるまで焦らず耐えよう！",
+            loose: "流れを受ける魚体へ糸を合わせ、横走りを追う。",
+          },
+          {
+            id: "rest",
+            name: "瀬脇で定位",
+            icon: "◎",
+            weight: 0.17,
+            min: 440,
+            max: 700,
+            motion: "rest",
+            tension: 2,
+            release: 5.5,
+            reel: 1.85,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "ニジマスが瀬脇で流れに頭を向けて止まった！今が巻き時！",
+            loose: "流れの陰で定位している。Aで一気に距離を詰めよう！",
           },
         ],
       };
@@ -9648,6 +9841,10 @@
           wave: .118, bend: 6.4, lag: 1.5, idle: .34,
           speedGain: .2, response: .42, falloff: .82, pulse: .008,
         },
+        nijimasu: {
+          wave: .115, bend: 6.2, lag: 1.45, idle: .31,
+          speedGain: .21, response: .43, falloff: .84, pulse: .008,
+        },
         namazu: {
           wave: .073, bend: 0, lag: 1.75, idle: .27,
           speedGain: .15, response: .26, falloff: .72, pulse: 0,
@@ -9700,6 +9897,7 @@
           aji: [256, 110],
           ayu: [320, 160],
           yamame: [320, 160],
+          nijimasu: [320, 160],
           namazu: [320, 160],
           unagi: [320, 160],
           bass: [320, 160],
@@ -10523,6 +10721,12 @@
         // preserved; the four new bait ids simply start at zero.
         s.mapVersion = 95;
       }
+      if ((s.mapVersion || 0) < 96) {
+        // v96 adds Rainbow Trout as fish No.017 with dedicated animation and
+        // behaviour. No save fields change; the new species starts
+        // undiscovered while every catch, crown and inventory value remains.
+        s.mapVersion = 96;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -11054,6 +11258,7 @@
           aji: .75,
           ayu: .82,
           yamame: .92,
+          nijimasu: 1.16,
           funa: .95,
           koi: 1.15,
           namazu: 1.25,
@@ -13677,6 +13882,14 @@
               night: 0.35,
             }[period] || 1;
           }
+          if (id === "nijimasu") {
+            weight *= {
+              morning: 1.5,
+              day: 0.9,
+              evening: 1.35,
+              night: 0.3,
+            }[period] || 1;
+          }
           if (id === "namazu") {
             weight *= {
               morning: 0.75,
@@ -13740,6 +13953,7 @@
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
             if (id === "yamame") weight *= 0.7;
+            if (id === "nijimasu") weight *= 0.92;
             if (id === "koi") weight *= 1.45;
             if (id === "namazu") weight *= 1.25;
             if (id === "unagi") weight *= 1.45;
@@ -13754,6 +13968,7 @@
             if (id === "moroko") weight *= 1.45;
             if (id === "ayu") weight *= 0.75;
             if (id === "yamame") weight *= 1.15;
+            if (id === "nijimasu") weight *= 0.72;
             if (id === "koi") weight *= 0.65;
             if (id === "namazu") weight *= 0.7;
             if (id === "unagi") weight *= 0.45;
@@ -15098,6 +15313,7 @@
             koi: "bottom-dive",
             namazu: "side-thrash",
             ayu: "riffle",
+            nijimasu: "upstream-surge",
             kasago: "root-dive",
             hirame: "cling",
             nushi: "feint",
@@ -15109,6 +15325,10 @@
         if (fishId === "koi" && cycle % 3 === 2) return byId("bottom-dive");
         if (fishId === "namazu" && cycle % 2 === 0) return byId("side-thrash");
         if (fishId === "ayu" && cycle % 2 === 0) return byId("riffle");
+        if (fishId === "nijimasu" && cycle % 3 === 1)
+          return byId("upstream-surge");
+        if (fishId === "nijimasu" && cycle % 3 === 2)
+          return byId("surface-leap");
         if (fishId === "kasago" && cycle % 3 === 2) return byId("root-dive");
         return null;
       }
@@ -15167,10 +15387,20 @@
       }
       function maybeStartGillWash(mood) {
         if (!battle || battle.gillWash || !mood.danger) return false;
-        let chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, bora: 0.38, nushi: 0.34 }[battle.f.id] || 0;
+        const isRainbowLeap = battle.f.id === "nijimasu";
+        let chance = {
+          koi: 0.2,
+          yamame: 0.22,
+          nijimasu: 0.46,
+          bass: 0.3,
+          suzuki: 0.26,
+          bora: 0.38,
+          nushi: 0.34,
+        }[battle.f.id] || 0;
         if (battle.f.id === "nushi") {
           chance = [0, 0.24, 0.42][(battle.nushiStage || 1) - 1];
         }
+        if (isRainbowLeap && mood.id === "surface-leap") chance = 1;
         const progress = battle.retrieval || 0;
         if (
           !chance ||
@@ -15194,7 +15424,8 @@
           wrongTicks: 0,
         };
         battle.nextGillWashTick =
-          battle.swimTick + (battle.f.id === "nushi" ? 78 : 96);
+          battle.swimTick +
+          (battle.f.id === "nushi" ? 78 : isRainbowLeap ? 84 : 96);
         battle.turning = null;
         battle.turnDepth = 0;
         battle.turnSpriteFrame = 0;
@@ -15204,8 +15435,12 @@
         battle.turnRoll = 0;
         $("#fishScene").classList.add("gill-wash");
         $("#battleFish").classList.add("gill-wash");
-        $("#phaseLabel").textContent = " 🌊 エラ洗い！";
-        $("#battleMsg").textContent = "水面へ来る！Aを離すかBで糸を送れ！";
+        $("#phaseLabel").textContent = isRainbowLeap
+          ? " 🌈 水面跳躍！"
+          : " 🌊 エラ洗い！";
+        $("#battleMsg").textContent = isRainbowLeap
+          ? "ニジマスが跳ぶ！Aを離すかBで糸を送れ！"
+          : "水面へ来る！Aを離すかBで糸を送れ！";
         battle.tailKick = false;
         stopFightReelSound();
         setGillWashAudioFocus(true);
@@ -15216,6 +15451,7 @@
       function finishGillWash() {
         const event = battle.gillWash;
         if (!event) return;
+        const isRainbowLeap = battle.f.id === "nijimasu";
         $("#fishScene").classList.remove("gill-wash", "water-rush");
         $("#battleFish").classList.remove("gill-wash", "burst");
         setGillWashAudioFocus(false);
@@ -15223,7 +15459,9 @@
         battle.gillWash = null;
         battle.gillRecovery = 10;
         if (event.handled) {
-          battle.recoveryMessage = "エラ洗いをいなした！魚が疲れた、今が巻き時！";
+          battle.recoveryMessage = isRainbowLeap
+            ? "水面跳躍をいなした！ニジマスが疲れた、今が巻き時！"
+            : "エラ洗いをいなした！魚が疲れた、今が巻き時！";
           battle.calmBoost = Math.max(battle.calmBoost || 0, 1);
           $("#phaseLabel").textContent = " ◎ 疲労";
         } else {
@@ -15232,7 +15470,9 @@
             0,
             1,
           );
-          battle.recoveryMessage = "エラ洗いに振り回され、距離を奪われた！";
+          battle.recoveryMessage = isRainbowLeap
+            ? "跳躍に振り回され、ニジマスに距離を奪われた！"
+            : "エラ洗いに振り回され、距離を奪われた！";
           $("#phaseLabel").textContent = " ↔ 立て直し";
         }
         battle.mood = rest;
@@ -15246,6 +15486,7 @@
       function updateGillWash(control) {
         const event = battle.gillWash;
         if (!event) return;
+        const isRainbowLeap = battle.f.id === "nijimasu";
         event.tick++;
         battle.swimTick++;
         const waterY = 10;
@@ -15300,7 +15541,9 @@
             1,
           );
           $("#battleMsg").textContent =
-            "エラ洗い中に巻いている！Aを離せ、糸が切れる！";
+            isRainbowLeap
+              ? "跳躍中に巻いている！Aを離せ、糸が切れる！"
+              : "エラ洗い中に巻いている！Aを離せ、糸が切れる！";
         } else {
           event.safeTicks++;
           event.handled = event.safeTicks >= 6;
@@ -15308,7 +15551,9 @@
             3,
             battle.ten - (battle.f.id === "nushi" ? 5.2 : 4.4) * control,
           );
-          $("#battleMsg").textContent = "糸を送ってエラ洗いをいなす！";
+          $("#battleMsg").textContent = isRainbowLeap
+            ? "糸を送ってニジマスの跳躍をいなす！"
+            : "糸を送ってエラ洗いをいなす！";
         }
         battle.ten = Math.min(110, battle.ten);
         if (event.tick >= 14) finishGillWash();
@@ -15379,6 +15624,7 @@
           namazu: { minX: 42, maxX: 96, minY: 42, maxY: 83 },
           kasago: { minX: 44, maxX: 95, minY: 50, maxY: 84 },
           ayu: { minX: 40, maxX: 96, minY: 24, maxY: 72 },
+          nijimasu: { minX: 40, maxX: 96, minY: 22, maxY: 74 },
         }[battle.f.id] || { minX: 42, maxX: 96, minY: 28, maxY: 84 };
         const progress = battle.retrieval || 0;
         return {
@@ -15818,6 +16064,7 @@
           aji: 52,
           ayu: 60,
           yamame: 68,
+          nijimasu: 74,
           funa: 58,
           koi: 88,
           namazu: 90,
@@ -16161,6 +16408,7 @@
           aji: 100,
           ayu: 108,
           yamame: 104,
+          nijimasu: 106,
           funa: 105,
           koi: 120,
           namazu: 132,
@@ -17539,7 +17787,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=146-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=147-1").catch(() => {});
       renderRecord();
     </script>
   </body>
