@@ -5675,7 +5675,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v141</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v142</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7181,36 +7181,36 @@
             turnRoll: 6.5,
           },
           funa: {
-            beat: 1.02,
+            beat: 0.94,
             speedBeat: 0.16,
-            burst: 1.46,
-            thrust: 0.17,
+            burst: 1.58,
+            thrust: 0.19,
             stretch: 0,
             squeeze: 0,
-            recoil: 1.3,
+            recoil: 1.55,
             sway: 0,
             roll: 0,
             movingDrag: 0.986,
             restingDrag: 0.92,
             turnTicks: 1,
-            turnFrames: 5,
+            turnFrames: 4,
             turnArc: 3,
             turnRoll: 5,
           },
           koi: {
-            beat: 0.72,
-            speedBeat: 0.13,
-            burst: 1.55,
-            thrust: 0.22,
+            beat: 0.58,
+            speedBeat: 0.105,
+            burst: 1.44,
+            thrust: 0.18,
             stretch: 0,
             squeeze: 0,
             recoil: 2.2,
             sway: 0,
             roll: 0.25,
-            movingDrag: 0.988,
-            restingDrag: 0.93,
-            turnTicks: 1,
-            turnFrames: 6,
+            movingDrag: 0.991,
+            restingDrag: 0.94,
+            turnTicks: 2,
+            turnFrames: 7,
             turnArc: 4.8,
             turnRoll: 7,
           },
@@ -7274,31 +7274,51 @@
             ],
           },
           funa: {
-            intro: "底へ向かう重い引きだ。",
+            intro: "素直に寄ってくるが、ときどき予告なく向きを変える。",
             moods: [
               {
                 id: "steady",
-                name: "底引き",
-                icon: "↓",
-                weight: 0.7,
-                min: 900,
-                max: 1450,
+                name: "素直な引き",
+                icon: "↙",
+                weight: 0.62,
+                min: 920,
+                max: 1420,
                 motion: "steady",
-                speedX: 1.25,
-                speedY: 0.7,
-                tension: 4.7,
+                speedX: 1.35,
+                speedY: 0.55,
+                tension: 4.3,
                 release: 4.8,
-                reel: 0.9,
+                reel: 0.95,
                 scale: 1,
                 frameEvery: 2,
-                hold: "フナが底へ重く引く。テンションを見て巻く！",
-                loose: "一定の引きだ。少しずつ糸を送っている。",
+                hold: "フナは素直な一定速。テンションを見て着実に巻こう！",
+                loose: "一定の引きだ。次の向き変えにだけ備えよう。",
+              },
+              {
+                id: "snap-reverse",
+                name: "急反転",
+                icon: "↶",
+                weight: 0.2,
+                min: 560,
+                max: 780,
+                motion: "reverse",
+                speedX: 4.3,
+                speedY: 1.05,
+                tension: 6.8,
+                release: 5.8,
+                reel: 0.58,
+                scale: 1.04,
+                frameEvery: 1,
+                danger: true,
+                signature: true,
+                hold: "フナがくるりと急反転！一瞬Aを緩めよう！",
+                loose: "反転に糸を合わせれば、すぐ素直な引きへ戻る。",
               },
               {
                 id: "rest",
                 name: "間",
                 icon: "◎",
-                weight: 0.3,
+                weight: 0.18,
                 min: 650,
                 max: 950,
                 motion: "rest",
@@ -7314,50 +7334,69 @@
             ],
           },
           koi: {
-            intro: "強い走りと休止を見極めよう。",
+            intro: "大きな体重を掛け、じわじわ湖底へ潜ろうとする。",
             moods: [
               {
-                id: "rush",
-                name: "突進",
-                icon: "⚡",
-                weight: 0.38,
-                min: 620,
-                max: 920,
-                motion: "rush",
-                speedX: 5,
-                speedY: 2.3,
-                tension: 9.2,
-                release: 6.8,
-                reel: 0.4,
-                scale: 1.08,
-                frameEvery: 1,
-                danger: true,
-                hold: "コイが一気に走った！Aを離せ！",
-                loose: "走りに合わせて糸を送る！",
+                id: "bottom-dive",
+                name: "重量潜行",
+                icon: "▼",
+                weight: 0.48,
+                min: 980,
+                max: 1480,
+                motion: "heavy",
+                speedX: 0.85,
+                speedY: 3.15,
+                tension: 7.2,
+                release: 6.1,
+                reel: 0.52,
+                scale: 1.07,
+                frameEvery: 2,
+                signature: true,
+                hold: "コイが体重を掛けて湖底へ潜る。強引に巻くな！",
+                loose: "重さに糸を預け、頭が上がるまで待とう。",
               },
               {
-                id: "steady",
-                name: "抵抗",
-                icon: "↔",
-                weight: 0.35,
-                min: 720,
-                max: 1100,
-                motion: "steady",
-                speedX: 1.8,
-                speedY: 1.1,
-                tension: 5.5,
-                release: 5.2,
-                reel: 0.75,
-                scale: 1.03,
+                id: "bottom-drag",
+                name: "底粘り",
+                icon: "▂",
+                weight: 0.25,
+                min: 860,
+                max: 1280,
+                motion: "heavy",
+                speedX: 1.25,
+                speedY: 1.75,
+                tension: 5.8,
+                release: 5.4,
+                reel: 0.7,
+                scale: 1.04,
                 frameEvery: 2,
-                hold: "コイが重く抵抗する。無理は禁物！",
-                loose: "抵抗をいなし、次の隙を待つ。",
+                hold: "コイが底で重く粘る。少しずつ頭を上げよう！",
+                loose: "湖底を引きずる力をいなし、浮く瞬間を待つ。",
+              },
+              {
+                id: "short-surge",
+                name: "ひと振り",
+                icon: "➜",
+                weight: 0.12,
+                min: 560,
+                max: 820,
+                motion: "rush",
+                speedX: 3.75,
+                speedY: 1.5,
+                tension: 8.3,
+                release: 6.4,
+                reel: 0.44,
+                scale: 1.06,
+                frameEvery: 1,
+                danger: true,
+                hold: "コイが重い尾でひと振り！Aを離して受け流せ！",
+                loose: "短い走りだ。止まればまた底から起こせる。",
               },
               {
                 id: "rest",
-                name: "休止",
+                name: "浮き間",
                 icon: "◎",
-                weight: 0.27,
+                weight: 0.15,
                 min: 520,
                 max: 820,
                 motion: "rest",
@@ -7367,8 +7406,8 @@
                 scale: 0.98,
                 frameEvery: 3,
                 calm: true,
-                hold: "コイが止まった！巻く好機！",
-                loose: "休んでいる。Aで距離を詰めよう！",
+                hold: "コイの頭が浮いた！今が巻く好機！",
+                loose: "重さが抜けた。Aで一気に距離を詰めよう！",
               },
             ],
           },
@@ -7390,6 +7429,7 @@
                 reel: 0.85,
                 scale: 1,
                 frameEvery: 3,
+                stageWeights: [1.55, 0.55, 0.2],
                 hold: "止まったように見える……フェイントか！",
                 loose: "静かすぎる。次の動きに備えよう。",
               },
@@ -7408,8 +7448,30 @@
                 reel: 0.55,
                 scale: 1.05,
                 frameEvery: 2,
+                stageWeights: [1.15, 1.25, 0.72],
                 hold: "ヌシが深く潜る！無理に巻くな！",
                 loose: "竿を送り、深場の力をいなす。",
+              },
+              {
+                id: "sweep",
+                name: "大蛇行",
+                icon: "↔",
+                weight: 0.3,
+                min: 980,
+                max: 1420,
+                motion: "thrash",
+                speedX: 3.9,
+                speedY: 1.45,
+                tension: 8.2,
+                release: 6.5,
+                reel: 0.43,
+                scale: 1.07,
+                frameEvery: 1,
+                danger: true,
+                signature: true,
+                stageWeights: [0, 1.25, 0.9],
+                hold: "ヌシが湖をえぐるように左右へ大蛇行！Aを離せ！",
+                loose: "大きな切り返しに糸を合わせ、次の相へ備える！",
               },
               {
                 id: "rush",
@@ -7427,6 +7489,7 @@
                 scale: 1.11,
                 frameEvery: 1,
                 danger: true,
+                stageWeights: [0.08, 0.85, 1.65],
                 hold: "ヌシの猛進！今すぐAを離せ！",
                 loose: "激走に合わせて糸を送る！",
               },
@@ -7444,6 +7507,7 @@
                 scale: 0.98,
                 frameEvery: 3,
                 calm: true,
+                stageWeights: [0.7, 0.4, 0.22],
                 hold: "一瞬の隙だ！今だけ巻ける！",
                 loose: "隙を逃さずAで巻こう！",
               },
@@ -8451,10 +8515,10 @@
       };
       fishMotionProfiles.ayu = {
         ...fishMotionProfiles.moroko,
-        beat: 0.78,
-        speedBeat: 0.115,
-        burst: 1.52,
-        thrust: 0.2,
+        beat: 0.92,
+        speedBeat: 0.14,
+        burst: 1.62,
+        thrust: 0.23,
         stretch: 0.016,
         squeeze: 0.013,
         recoil: 2.35,
@@ -8474,31 +8538,32 @@
             id: "riffle",
             name: "瀬走り",
             icon: "⚡",
-            weight: 0.5,
-            min: 480,
-            max: 750,
-            motion: "dart",
-            speedX: 5.8,
-            speedY: 2.8,
+            weight: 0.58,
+            min: 400,
+            max: 650,
+            motion: "flutter",
+            speedX: 5.25,
+            speedY: 3.35,
             tension: 7,
             release: 6.1,
             reel: 0.62,
             scale: 1.06,
             frameEvery: 1,
             danger: true,
+            signature: true,
             hold: "アユが瀬を切って走る！いったんAを離せ！",
             loose: "走りに合わせて糸を送り、清流の勢いをいなす！",
           },
           {
             id: "current",
-            name: "流れ乗り",
-            icon: "↔",
-            weight: 0.28,
-            min: 720,
-            max: 1050,
-            motion: "steady",
-            speedX: 1.65,
-            speedY: 0.95,
+            name: "小刻み流れ",
+            icon: "≋",
+            weight: 0.26,
+            min: 540,
+            max: 820,
+            motion: "flutter",
+            speedX: 2.7,
+            speedY: 1.75,
             tension: 4.8,
             release: 4.9,
             reel: 0.95,
@@ -8511,9 +8576,9 @@
             id: "rest",
             name: "淀み",
             icon: "◎",
-            weight: 0.22,
-            min: 460,
-            max: 700,
+            weight: 0.16,
+            min: 320,
+            max: 520,
             motion: "rest",
             tension: 1.7,
             release: 5.4,
@@ -8624,68 +8689,68 @@
       };
       fishMotionProfiles.namazu = {
         ...fishMotionProfiles.koi,
-        beat: 0.64,
-        speedBeat: 0.11,
-        burst: 1.48,
-        thrust: 0.19,
+        beat: 0.72,
+        speedBeat: 0.12,
+        burst: 1.55,
+        thrust: 0.21,
         stretch: 0,
         squeeze: 0,
-        recoil: 1.9,
+        recoil: 2.25,
         sway: 0,
         roll: 0.22,
         movingDrag: 0.989,
         restingDrag: 0.934,
-        turnTicks: 2,
-        turnFrames: 7,
-        turnArc: 3.6,
-        turnRoll: 5.8,
+        turnTicks: 1,
+        turnFrames: 5,
+        turnArc: 4.4,
+        turnRoll: 7.2,
       };
       fightProfiles.namazu = {
-        intro: "平たい頭を底へ向け、泥を巻き上げながら重く引く。",
+        intro: "平たい頭を振り、左右へ何度も切り返しながら粘る。",
         moods: [
           {
-            id: "burrow",
-            name: "底潜り",
-            icon: "▼",
-            weight: 0.43,
-            min: 900,
-            max: 1350,
-            motion: "deep",
-            speedX: 1.05,
-            speedY: 2.6,
-            tension: 7.4,
-            release: 6.1,
-            reel: 0.54,
-            scale: 1.05,
-            frameEvery: 2,
-            danger: true,
-            hold: "ナマズが泥を巻いて底へ潜る！Aを離していなせ！",
-            loose: "糸を送り、底へ向かう重さが緩むのを待つ。",
-          },
-          {
-            id: "surge",
-            name: "底走り",
-            icon: "⚡",
-            weight: 0.33,
-            min: 620,
-            max: 920,
-            motion: "rush",
-            speedX: 4.3,
-            speedY: 1.7,
-            tension: 9,
-            release: 6.6,
-            reel: 0.42,
-            scale: 1.08,
+            id: "side-thrash",
+            name: "左右暴れ",
+            icon: "↔",
+            weight: 0.55,
+            min: 1120,
+            max: 1580,
+            motion: "thrash",
+            speedX: 4.45,
+            speedY: 1.35,
+            tension: 7.8,
+            release: 6.2,
+            reel: 0.48,
+            scale: 1.07,
             frameEvery: 1,
             danger: true,
-            hold: "ナマズが川底を一気に走った！今すぐAを離せ！",
-            loose: "長い尾の一振りに合わせて糸を送る！",
+            signature: true,
+            hold: "ナマズが左右へ何度も暴れる！Aを離して切り返しを追え！",
+            loose: "首振りの向きに糸を合わせ、粘りが切れるのを待つ。",
+          },
+          {
+            id: "mud-hold",
+            name: "泥粘り",
+            icon: "▂",
+            weight: 0.28,
+            min: 980,
+            max: 1420,
+            motion: "cling",
+            speedX: 1.15,
+            speedY: 0.55,
+            tension: 6.2,
+            release: 5.4,
+            reel: 0.62,
+            scale: 1.04,
+            frameEvery: 2,
+            hold: "ナマズが泥底へ体を押しつけて粘る。焦らず巻こう！",
+            loose: "底へ伏せたまま耐えている。浮く瞬間を待とう。",
           },
           {
             id: "rest",
             name: "泥伏せ",
             icon: "◎",
-            weight: 0.24,
+            weight: 0.17,
             min: 520,
             max: 820,
             motion: "rest",
@@ -9272,15 +9337,82 @@
       };
       fightProfiles.kasago = {
         intro: "岩陰から飛び出し、棘のある体をくねらせて底へ潜る。",
-        moods: fightProfiles.koi.moods.map((mood) => ({
-          ...mood,
-          hold: mood.calm
-            ? "カサゴが岩陰で止まった！今なら巻ける！"
-            : "カサゴが底へ潜る！強引に巻かず棘にも注意！",
-          loose: mood.calm
-            ? "岩陰で息を整えている。Aで寄せよう！"
-            : "竿を送り、根へ潜る力をいなす。",
-        })),
+        moods: [
+          {
+            id: "root-dive",
+            name: "根潜り",
+            icon: "▼",
+            weight: 0.48,
+            min: 680,
+            max: 1030,
+            motion: "root",
+            speedX: 1.2,
+            speedY: 3.55,
+            tension: 8.4,
+            release: 6.4,
+            reel: 0.36,
+            scale: 1.07,
+            frameEvery: 1,
+            danger: true,
+            signature: true,
+            hold: "カサゴが真下の根へ潜る！Aを離して岩から引き離せ！",
+            loose: "糸を送り、根へ頭を入れる前に浮き直すのを待つ。",
+          },
+          {
+            id: "rock-crawl",
+            name: "岩伝い",
+            icon: "↘",
+            weight: 0.27,
+            min: 760,
+            max: 1120,
+            motion: "root",
+            speedX: 2.15,
+            speedY: 2.2,
+            tension: 6.5,
+            release: 5.5,
+            reel: 0.59,
+            scale: 1.03,
+            frameEvery: 2,
+            hold: "カサゴが岩伝いに下へ逃げる。根へ入る前に耐えよう！",
+            loose: "岩の段差に沿って糸を送り、頭が上がるのを待つ。",
+          },
+          {
+            id: "short-burst",
+            name: "岩陰突進",
+            icon: "➜",
+            weight: 0.12,
+            min: 440,
+            max: 680,
+            motion: "rush",
+            speedX: 3.9,
+            speedY: 1.45,
+            tension: 7.7,
+            release: 6,
+            reel: 0.45,
+            scale: 1.05,
+            frameEvery: 1,
+            danger: true,
+            hold: "カサゴが近い岩陰へ短く突っ込む！今は巻くな！",
+            loose: "短い突進だ。止まるまで糸を送り続けよう。",
+          },
+          {
+            id: "rock-rest",
+            name: "根休み",
+            icon: "◎",
+            weight: 0.13,
+            min: 480,
+            max: 740,
+            motion: "rest",
+            tension: 2,
+            release: 4.9,
+            reel: 1.75,
+            scale: 0.98,
+            frameEvery: 3,
+            calm: true,
+            hold: "カサゴが岩の上で止まった！今なら巻ける！",
+            loose: "岩陰で息を整えている。Aで根から離そう！",
+          },
+        ],
       };
       fishMotionProfiles.hirame = {
         ...fishMotionProfiles.koi,
@@ -9318,6 +9450,7 @@
             reel: 0.56,
             scale: 0.99,
             frameEvery: 3,
+            signature: true,
             hold: "ヒラメが砂底へ張り付く！Aでじわじわ引き剥がそう！",
             loose: "幅広い体で底を押さえている。糸を送り、浮く隙を待つ。",
           },
@@ -9337,6 +9470,7 @@
             scale: 1.08,
             frameEvery: 1,
             danger: true,
+            signature: true,
             hold: "ヒラメが砂を巻いて突進！今すぐAを離せ！",
             loose: "砂煙の走りに合わせて糸を送り、勢いをいなす！",
           },
@@ -14487,6 +14621,10 @@
           gillRecovery: 0,
           recoveryMessage: "",
           sandLifted: true,
+          hirameBreakoutQueued: false,
+          signatureCycle: 0,
+          nushiStage: 1,
+          nushiStageChanged: false,
         };
         resetWaterFx();
         $("#fishScene").classList.add("active");
@@ -14687,6 +14825,45 @@
       function clampBattle(value, min, max) {
         return Math.max(min, Math.min(max, value));
       }
+      function nushiFightStage(progress = battle?.retrieval || 0) {
+        if (progress < 0.32) return 1;
+        if (progress < 0.68) return 2;
+        return 3;
+      }
+      function signatureMoodForFight(moods, force, boosted) {
+        const fishId = battle.f.id;
+        const byId = (id) => moods.find((mood) => mood.id === id) || null;
+        if (fishId === "hirame") {
+          if (!battle.sandLifted) return byId("cling");
+          if (battle.hirameBreakoutQueued) {
+            battle.hirameBreakoutQueued = false;
+            return byId("sand-rush");
+          }
+        }
+        if (fishId === "nushi" && battle.nushiStageChanged) {
+          battle.nushiStageChanged = false;
+          return byId(battle.nushiStage === 2 ? "sweep" : "rush");
+        }
+        if (force) {
+          return byId({
+            funa: "steady",
+            koi: "bottom-dive",
+            namazu: "side-thrash",
+            ayu: "riffle",
+            kasago: "root-dive",
+            hirame: "cling",
+            nushi: "feint",
+          }[fishId]);
+        }
+        if (boosted) return null;
+        const cycle = battle.signatureCycle || 0;
+        if (fishId === "funa" && cycle % 3 === 2) return byId("snap-reverse");
+        if (fishId === "koi" && cycle % 3 === 2) return byId("bottom-dive");
+        if (fishId === "namazu" && cycle % 2 === 0) return byId("side-thrash");
+        if (fishId === "ayu" && cycle % 2 === 0) return byId("riffle");
+        if (fishId === "kasago" && cycle % 3 === 2) return byId("root-dive");
+        return null;
+      }
       function setFishCourse(mood) {
         const fatigue = battle.retrieval || 0;
         const fatigueScale = 1 - fatigue * (mood.danger ? 0.1 : 0.22);
@@ -14705,6 +14882,24 @@
         } else if (mood.motion === "rest") {
           battle.targetVx = tangentX * 0.16;
           battle.targetVy = tangentY * 0.16;
+        } else if (mood.motion === "reverse") {
+          battle.targetVx = (battle.motionX || -(battle.facing || 1)) * speedX;
+          battle.targetVy = (battle.motionY || 1) * speedY * 0.34;
+        } else if (mood.motion === "thrash") {
+          battle.targetVx = (battle.motionX || battle.facing || 1) * speedX;
+          battle.targetVy = (battle.motionY || 1) * speedY * 0.62;
+        } else if (mood.motion === "flutter") {
+          battle.targetVx = outwardX * speedX * 0.38 +
+            (battle.motionX || 1) * speedX * 0.52;
+          battle.targetVy = (battle.motionY || 1) * speedY * 0.88 +
+            outwardY * speedX * 0.16;
+        } else if (mood.motion === "heavy") {
+          battle.targetVx = tangentX * speedX * 0.24;
+          battle.targetVy = Math.abs(speedY) + Math.max(0, outwardY) * speedX * 0.35;
+        } else if (mood.motion === "root") {
+          battle.targetVx = (battle.motionX || 1) * speedX * 0.52 +
+            outwardX * speedX * 0.18;
+          battle.targetVy = Math.abs(speedY) * 1.08;
         } else if (mood.motion === "dart") {
           battle.targetVx = outwardX * speedX * 0.68 + tangentX * speedY * 0.72;
           battle.targetVy = outwardY * speedX * 0.68 + tangentY * speedY * 0.72;
@@ -14724,7 +14919,10 @@
       }
       function maybeStartGillWash(mood) {
         if (!battle || battle.gillWash || !mood.danger) return false;
-        const chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, bora: 0.38, nushi: 0.34 }[battle.f.id] || 0;
+        let chance = { koi: 0.2, yamame: 0.22, bass: 0.3, suzuki: 0.26, bora: 0.38, nushi: 0.34 }[battle.f.id] || 0;
+        if (battle.f.id === "nushi") {
+          chance = [0, 0.24, 0.42][(battle.nushiStage || 1) - 1];
+        }
         const progress = battle.retrieval || 0;
         if (
           !chance ||
@@ -14872,8 +15070,12 @@
         const moods = fightProfiles[battle.f.id].moods;
         const previous = battle.mood?.id;
         const boosted = battle.calmBoost > 0;
+        const nushiStage = battle.f.id === "nushi"
+          ? battle.nushiStage || nushiFightStage()
+          : 1;
         const weighted = moods.map((mood) => {
           let weight = mood.weight;
+          if (mood.stageWeights) weight *= mood.stageWeights[nushiStage - 1] ?? 1;
           if (boosted && mood.calm) weight *= 3.4;
           if (mood.calm) weight *= 1 + (battle.retrieval || 0) * 1.05;
           if (mood.danger) weight *= 1 - (battle.retrieval || 0) * 0.18;
@@ -14889,13 +15091,12 @@
             break;
           }
         }
-        if (battle.f.id === "hirame" && !battle.sandLifted) {
-          selected = moods.find((mood) => mood.id === "cling") || selected;
-        }
+        selected = signatureMoodForFight(moods, force, boosted) || selected;
         if (boosted) battle.calmBoost--;
         battle.mood = selected;
         battle.calm = Boolean(selected.calm);
         battle.moodTick = 0;
+        battle.signatureCycle = (battle.signatureCycle || 0) + 1;
         battle.nextMood =
           Date.now() + selected.min + Math.random() * (selected.max - selected.min);
         battle.motionX = selected.calm
@@ -14903,9 +15104,17 @@
           : Math.random() < 0.5
             ? -1
             : 1;
-        battle.motionY = selected.motion === "deep" ? 1 : Math.random() < 0.5 ? -1 : 1;
+        if (selected.motion === "reverse") {
+          battle.motionX = -(battle.facing || 1);
+        }
+        battle.motionY = ["deep", "heavy", "root"].includes(selected.motion)
+          ? 1
+          : Math.random() < 0.5 ? -1 : 1;
         setFishCourse(selected);
-        $("#phaseLabel").textContent = ` ${selected.icon} ${selected.name}`;
+        const stageLabel = battle.f.id === "nushi"
+          ? ` 第${["壱", "弐", "参"][nushiStage - 1]}相・`
+          : " ";
+        $("#phaseLabel").textContent = `${stageLabel}${selected.icon} ${selected.name}`;
         $("#battleFish").classList.toggle("burst", Boolean(selected.danger));
         $("#fishScene").classList.toggle("water-rush", Boolean(selected.danger));
         const startedGillWash = maybeStartGillWash(selected);
@@ -14916,11 +15125,13 @@
         if (battle.f.id === "hirame" && !battle.sandLifted) {
           return { minX: 55, maxX: 60, minY: 74, maxY: 78 };
         }
-        const base = battle.f.id === "nushi"
-          ? { minX: 44, maxX: 90, minY: 36, maxY: 72 }
-          : battle.f.id === "koi"
-            ? { minX: 43, maxX: 94, minY: 30, maxY: 80 }
-            : { minX: 42, maxX: 96, minY: 28, maxY: 84 };
+        const base = {
+          nushi: { minX: 44, maxX: 90, minY: 36, maxY: 72 },
+          koi: { minX: 43, maxX: 94, minY: 46, maxY: 82 },
+          namazu: { minX: 42, maxX: 96, minY: 42, maxY: 83 },
+          kasago: { minX: 44, maxX: 95, minY: 50, maxY: 84 },
+          ayu: { minX: 40, maxX: 96, minY: 24, maxY: 72 },
+        }[battle.f.id] || { minX: 42, maxX: 96, minY: 28, maxY: 84 };
         const progress = battle.retrieval || 0;
         return {
           minX: base.minX + (7 - base.minX) * progress,
@@ -14932,6 +15143,8 @@
       function releaseHirameFromSand() {
         if (!battle || battle.f.id !== "hirame" || battle.sandLifted) return false;
         battle.sandLifted = true;
+        battle.hirameBreakoutQueued = true;
+        battle.nextMood = 0;
         battle.vy = Math.min(Number(battle.vy) || 0, -2.6);
         battle.targetVy = Math.min(Number(battle.targetVy) || 0, -1.5);
         $("#battleFish").classList.remove("sand-grounded");
@@ -14952,6 +15165,25 @@
           });
         }
         vibrate([55, 30, 85]);
+        return true;
+      }
+      function updateNushiFightStage() {
+        if (!battle || battle.f.id !== "nushi") return false;
+        const nextStage = nushiFightStage();
+        const currentStage = battle.nushiStage || 1;
+        if (nextStage <= currentStage) return false;
+        battle.nushiStage = nextStage;
+        battle.nushiStageChanged = true;
+        battle.nextMood = 0;
+        battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
+        battle.recoveryMessage = nextStage === 2
+          ? "ヌシの目つきが変わった……第弐相、左右の大蛇行が始まる！"
+          : "ヌシが最後の力を解放した！第参相、猛進とエラ洗いに備えろ！";
+        $("#phaseLabel").textContent = nextStage === 2
+          ? " 第弐相へ"
+          : " 第参相へ";
+        $("#battleMsg").textContent = battle.recoveryMessage;
+        vibrate(nextStage === 2 ? [70, 35, 90] : [100, 35, 140, 40, 100]);
         return true;
       }
       function updateRetrieval(mood) {
@@ -14983,6 +15215,7 @@
           !battle.sandLifted &&
           battle.retrieval >= .12
         ) releaseHirameFromSand();
+        updateNushiFightStage();
       }
       function animateFishMouth(mood, speed, intensity = 1) {
         const profile = fishMouthProfiles[battle.f.id];
@@ -15158,7 +15391,34 @@
       function moveBattleFish(mood) {
         battle.moodTick++;
         battle.swimTick++;
-        if (mood.motion === "dart") {
+        if (mood.motion === "reverse") {
+          if (battle.moodTick === 1) {
+            battle.vx = battle.motionX * Math.max(2.6, mood.speedX * 0.72);
+            battle.vy += battle.motionY * (mood.speedY || 1) * 0.3;
+            setFishCourse(mood);
+          }
+        } else if (mood.motion === "thrash") {
+          const switchEvery = battle.f.id === "nushi" ? 8 : 7;
+          if (battle.moodTick % switchEvery === 0) {
+            battle.motionX *= -1;
+            battle.motionY = battle.moodTick % (switchEvery * 2) === 0 ? 1 : -1;
+            setFishCourse(mood);
+          }
+        } else if (mood.motion === "flutter") {
+          if (battle.moodTick % 2 === 0) battle.motionY *= -1;
+          if (battle.moodTick % 9 === 0) battle.motionX *= -1;
+          if (battle.moodTick % 2 === 0) setFishCourse(mood);
+        } else if (mood.motion === "heavy") {
+          if (battle.moodTick % 5 === 0) setFishCourse(mood);
+          battle.targetVy += 0.08;
+        } else if (mood.motion === "root") {
+          if (battle.moodTick % 4 === 0) setFishCourse(mood);
+          const rootBounds = fishSwimBounds();
+          if (battle.y > rootBounds.maxY - 7 && battle.moodTick % 6 === 0) {
+            battle.motionX *= -1;
+            setFishCourse(mood);
+          }
+        } else if (mood.motion === "dart") {
           if (battle.moodTick % 3 === 0 && Math.random() < 0.42) {
             if (Math.random() < 0.45) battle.motionX *= -1;
             battle.motionY = Math.random() < 0.5 ? -1 : 1;
@@ -15200,6 +15460,11 @@
           deep: 0.2,
           dart: 0.46,
           rush: 0.38,
+          reverse: 0.72,
+          thrash: 0.48,
+          flutter: 0.58,
+          heavy: 0.13,
+          root: 0.34,
         }[mood.motion] || 0.18;
         battle.vx += (battle.targetVx - battle.vx) * acceleration;
         battle.vy += (battle.targetVy - battle.vy) * acceleration;
@@ -16250,6 +16515,10 @@
         }
         battle.mood = null;
         battle.nextMood = 0;
+        battle.signatureCycle = 0;
+        battle.hirameBreakoutQueued = false;
+        battle.nushiStage = 1;
+        battle.nushiStageChanged = false;
         battle.retrieval = 0;
         battle.tensionBand = "safe";
         battle.frame = 0;
@@ -16980,7 +17249,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=141-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=142-1").catch(() => {});
       renderRecord();
     </script>
   </body>

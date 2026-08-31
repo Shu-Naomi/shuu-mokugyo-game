@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v141-fishdex-atlas-fallback-141-1";
+const CACHE_NAME = "nushi-tsuri-v142-fish-signatures-142-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
