@@ -4259,9 +4259,9 @@
         pointer-events: none;
         image-rendering: pixelated;
       }
-      /* v144 Mebaru uses complete, standalone PNG frames. Two ordinary IMG
-         elements are alternated so Android never has to clear a Canvas or
-         crop a sprite atlas between animation frames. */
+      /* Mebaru uses complete, standalone PNG frames. Fishdex can use ordinary
+         IMG elements; battle and catch use the fish element's own background
+         so Android always retains one fully loaded frame. */
       .fish-direct-frame {
         position: absolute;
         inset: 0;
@@ -4275,6 +4275,11 @@
       }
       .standalone-frame > .fish-direct-frame.active {
         opacity: 1;
+      }
+      .battle-fish.standalone-background-frame > .fish-direct-frame,
+      .catch-fish.standalone-background-frame > .fish-direct-frame {
+        display: none !important;
+        visibility: hidden !important;
       }
       .battle-fish.standalone-frame > .fish-life-slice,
       .battle-fish.standalone-frame > .fish-frame-canvas,
@@ -5706,7 +5711,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v144</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v145</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -9690,6 +9695,7 @@
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       const fishAtlasImageCache = new Map();
+      const standaloneBackgroundWaits = new WeakMap();
       function fishAtlasImage(src) {
         // Reuse the image that began loading as soon as the bite was chosen.
         // This avoids a second decode race when the underwater fight opens.
@@ -9729,10 +9735,77 @@
         return images;
       }
       function clearStandaloneFishFrame(element) {
-        element.classList.remove("standalone-frame");
+        element.classList.remove(
+          "standalone-frame",
+          "standalone-background-frame",
+        );
         delete element.dataset.standaloneFrameAsset;
+        delete element.dataset.standaloneRequestedAsset;
+        element.style.removeProperty("background-image");
+        element.style.removeProperty("background-size");
+        element.style.removeProperty("background-position");
+        element.style.removeProperty("background-repeat");
+      }
+      function applyStandaloneFishBackground(element, asset) {
+        element.style.setProperty(
+          "background-image",
+          `url("${asset}")`,
+          "important",
+        );
+        element.style.setProperty("background-size", "contain", "important");
+        element.style.setProperty("background-position", "center", "important");
+        element.style.setProperty("background-repeat", "no-repeat", "important");
+        element.dataset.standaloneFrameAsset = asset;
+      }
+      function renderStandaloneFishBackground(element, asset) {
+        element.classList.add(
+          "standalone-frame",
+          "standalone-background-frame",
+        );
+        element.dataset.standaloneRequestedAsset = asset;
+        // Commit the first frame immediately and leave that exact URL in place.
+        // Even on a cold Android cache it can finish loading without a later
+        // animation tick cancelling it.
+        if (!element.dataset.standaloneFrameAsset) {
+          applyStandaloneFishBackground(element, asset);
+          return;
+        }
+        if (element.dataset.standaloneFrameAsset === asset) return;
+        const image = fishAtlasImage(asset);
+        if (image.complete && image.naturalWidth) {
+          applyStandaloneFishBackground(element, asset);
+          return;
+        }
+        // Never replace the visible frame with an undecoded one. Coalesce
+        // rapid animation requests; once a requested frame is ready it may
+        // replace the still-visible previous frame.
+        let waits = standaloneBackgroundWaits.get(element);
+        if (!waits) {
+          waits = new Set();
+          standaloneBackgroundWaits.set(element, waits);
+        }
+        if (waits.has(asset)) return;
+        waits.add(asset);
+        const reveal = () => {
+          waits.delete(asset);
+          if (
+            !image.naturalWidth ||
+            !element.classList.contains("standalone-background-frame") ||
+            element.dataset.standaloneRequestedAsset !== asset
+          ) return;
+          applyStandaloneFishBackground(element, asset);
+        };
+        image.addEventListener("load", reveal, { once: true });
+        if (image.decode) image.decode().then(reveal).catch(() => {});
       }
       function renderStandaloneFishFrame(element, asset) {
+        if (
+          element.classList.contains("battle-fish") ||
+          element.classList.contains("catch-fish")
+        ) {
+          renderStandaloneFishBackground(element, asset);
+          return;
+        }
         const images = fishStandaloneImages(element);
         const active = images.find((image) => image.classList.contains("active"));
         element.classList.add("standalone-frame");
@@ -17451,7 +17524,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=144-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=145-1").catch(() => {});
       renderRecord();
     </script>
   </body>

@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v144-mebaru-atomic-frames-144-1";
+const CACHE_NAME = "nushi-tsuri-v145-mebaru-stable-background-145-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
