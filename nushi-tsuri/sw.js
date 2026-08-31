@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v146-mebaru-persistent-canvas-146-1";
+const CACHE_NAME = "nushi-tsuri-v147-nijimasu-147-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -77,6 +77,9 @@ const CORE_ASSETS = [
   "./assets/fish-yamame-v100.png",
   "./assets/fish-yamame-mouth-v100.png",
   "./assets/fish-yamame-turn-v100.png",
+  "./assets/fish-nijimasu-v147.png",
+  "./assets/fish-nijimasu-mouth-v147.png",
+  "./assets/fish-nijimasu-turn-v147.png",
   "./assets/fish-namazu-v96.png",
   "./assets/fish-namazu-mouth-open-v123.png",
   "./assets/fish-namazu-turn-v96.png",
