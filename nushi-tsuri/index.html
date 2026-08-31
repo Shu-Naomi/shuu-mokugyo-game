@@ -2418,6 +2418,47 @@
           linear-gradient(90deg, transparent 0 5px, #7556a0 6px 8px, transparent 9px),
           linear-gradient(#f5e3a0, #c8a45c);
       }
+      .cooking-kitchen {
+        display: grid;
+        gap: 6px;
+        margin-top: 5px;
+        padding-top: 8px;
+        border-top: 1px solid #d5aa6355;
+      }
+      .cooking-kitchen-status {
+        margin: 0;
+        padding: 6px 8px;
+        border: 1px dashed #7fbba5;
+        background: #102d2ab8;
+        color: #d8f6df;
+        font-size: clamp(.52rem, .82vw, .62rem);
+        line-height: 1.4;
+      }
+      .cooking-recipe {
+        grid-template-columns: 28px minmax(0, 1fr) minmax(74px, auto);
+      }
+      .cooking-recipe > i,
+      .cooking-ready > i {
+        width: 24px;
+        font-style: normal;
+        font-size: 1.15rem;
+        text-align: center;
+      }
+      .cooking-recipe:disabled,
+      .cooking-ready:disabled {
+        cursor: default;
+        filter: grayscale(.55);
+        opacity: .62;
+      }
+      .cooking-recipe strong small.missing {
+        color: #8a3027;
+      }
+      .cooking-ready {
+        border-color: #59836a;
+        background:
+          linear-gradient(90deg, transparent 0 5px, #59836a 6px 8px, transparent 9px),
+          linear-gradient(#d9e39c, #9fb967);
+      }
       .star-fortune-lineup {
         margin: 0;
         padding: 6px 8px;
@@ -4138,6 +4179,7 @@
       .fish-tackle.bait-paste .bait-paste-shape,
       .fish-tackle.bait-corn .bait-corn-shape,
       .fish-tackle.bait-shrimp .bait-shrimp-shape,
+      .fish-tackle.bait-smallShrimp .bait-shrimp-shape,
       .fish-tackle.bait-shell .bait-shell-shape,
       .fish-tackle.bait-crab .bait-crab-shape,
       .fish-tackle.bait-liveMinnow .bait-minnow-shape,
@@ -5831,7 +5873,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v148</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v149</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -5961,6 +6003,7 @@
           <div class="rod-status-row"><span>装備</span><i class="rod-display-art compact" id="statusRodArt" aria-hidden="true"></i><b id="statusRod">竹の竿</b></div>
           <div><span>仕掛け</span><b id="statusBait">ミミズ ×5</b></div>
           <div><span>同行</span><b id="statusDog">リク</b></div>
+          <div><span>料理</span><b id="statusMeal">なし</b></div>
         </aside>
         <div class="controls">
           <div class="dpad">
@@ -6930,6 +6973,11 @@
             name: "オキアミ", icon: "🦐", price: 360, amount: 3, bite: 1.3,
             role: "海の回遊魚・根魚向け",
           },
+          smallShrimp: {
+            name: "小エビ", icon: "🦐", price: 0, amount: 1, bite: 1.26,
+            role: "採集限定・エサにも料理にも使える",
+            foraged: true,
+          },
           shell: {
             name: "貝", icon: "🐚", price: 0, amount: 1, bite: 1.2,
             role: "採集限定・クロダイや磯魚向け",
@@ -6970,23 +7018,23 @@
           nijimasu: { river: 2.2, worm: .92, liveMinnow: .66, shrimp: .38, paste: .05, corn: .02 },
         },
         foragedBaitAffinities = {
-          moroko: { grasshopper: .9, shell: .12, crab: .08 },
-          funa: { grasshopper: .65, shell: .35, crab: .18 },
-          koi: { grasshopper: .35, shell: .5, crab: .24 },
-          aji: { grasshopper: .05, shell: .45, crab: .35 },
-          ayu: { grasshopper: 1.9, shell: .04, crab: .05 },
-          yamame: { grasshopper: 2.15, shell: .05, crab: .12 },
-          namazu: { grasshopper: .75, shell: .1, crab: 1.15 },
-          unagi: { grasshopper: .25, shell: .35, crab: 1.6 },
-          bass: { grasshopper: 1.45, shell: .12, crab: 1.1 },
-          kurodai: { grasshopper: .08, shell: 2.15, crab: 2.4 },
-          kasago: { grasshopper: .08, shell: 1.35, crab: 2 },
-          suzuki: { grasshopper: .25, shell: .65, crab: 1.15 },
-          hirame: { grasshopper: .05, shell: .42, crab: 1.2 },
-          nushi: { grasshopper: .12, shell: .2, crab: .4 },
-          bora: { grasshopper: .3, shell: .72, crab: .42 },
-          mebaru: { grasshopper: .15, shell: 1.4, crab: 1.9 },
-          nijimasu: { grasshopper: 2.05, shell: .08, crab: .35 },
+          moroko: { grasshopper: .9, smallShrimp: .5, shell: .12, crab: .08 },
+          funa: { grasshopper: .65, smallShrimp: .55, shell: .35, crab: .18 },
+          koi: { grasshopper: .35, smallShrimp: .38, shell: .5, crab: .24 },
+          aji: { grasshopper: .05, smallShrimp: 1.95, shell: .45, crab: .35 },
+          ayu: { grasshopper: 1.9, smallShrimp: .28, shell: .04, crab: .05 },
+          yamame: { grasshopper: 2.15, smallShrimp: .72, shell: .05, crab: .12 },
+          namazu: { grasshopper: .75, smallShrimp: .62, shell: .1, crab: 1.15 },
+          unagi: { grasshopper: .25, smallShrimp: .9, shell: .35, crab: 1.6 },
+          bass: { grasshopper: 1.45, smallShrimp: .84, shell: .12, crab: 1.1 },
+          kurodai: { grasshopper: .08, smallShrimp: 1.82, shell: 2.15, crab: 2.4 },
+          kasago: { grasshopper: .08, smallShrimp: 2.08, shell: 1.35, crab: 2 },
+          suzuki: { grasshopper: .25, smallShrimp: 1.18, shell: .65, crab: 1.15 },
+          hirame: { grasshopper: .05, smallShrimp: 1.35, shell: .42, crab: 1.2 },
+          nushi: { grasshopper: .12, smallShrimp: .24, shell: .2, crab: .4 },
+          bora: { grasshopper: .3, smallShrimp: 1.05, shell: .72, crab: .42 },
+          mebaru: { grasshopper: .15, smallShrimp: 2.2, shell: 1.4, crab: 1.9 },
+          nijimasu: { grasshopper: 2.05, smallShrimp: .65, shell: .08, crab: .35 },
         },
         rodData = {
           bamboo: {
@@ -7051,6 +7099,13 @@
             shop: "yaoya",
             use: "recovery",
           },
+          wildGreens: {
+            name: "山菜",
+            icon: "🌿",
+            price: 0,
+            source: "野山で採集",
+            use: "ingredient",
+          },
           offeringDaikon: {
             name: "奉納だいこん",
             icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#275432" d="M7 1h2v4H7zM4 2h3v2H5v2H3V4h1zm5 1h4v2h-2v2H9z"/><path fill="#b7ad8b" d="M5 5h7v3h-1v3h-1v2H8v2H6v-3H5v-2H4V7h1z"/><path fill="#f1e8c8" d="M6 5h5v3h-1v3H9v2H7v-2H6V9H5V7h1z"/><path fill="#d5c9a7" d="M7 7h1v4H7z"/></svg>`,
@@ -7114,6 +7169,11 @@
             affection: 3, foraged: true,
             desc: "夜の森で見つけやすい、香りのよい犬用キノコ。",
           },
+          nutFishJerky: {
+            name: "木の実香る魚ジャーキー", icon: "🍖", type: "treat",
+            affection: 5, crafted: true,
+            desc: "木の実と魚の切り身を合わせた、手作りのごほうび。",
+          },
           rubberBall: {
             name: "ゴムボール", icon: "🎾", type: "toy",
             price: 1200, affection: 4, samShop: true,
@@ -7152,27 +7212,35 @@
         forageData = {
           worm: {
             name: "ミミズ", icon: "🪱", category: "虫",
-            destination: "bait", destinationId: "worm",
+            destination: "bait", destinationId: "worm", rarity: 1,
           },
           grasshopper: {
             name: "バッタ", icon: "🦗", category: "虫",
-            destination: "bait", destinationId: "grasshopper",
+            destination: "bait", destinationId: "grasshopper", rarity: 1,
           },
           treeNut: {
             name: "木の実", icon: "🌰", category: "植物",
-            destination: "dogTreat", destinationId: "treeNut",
+            destination: "dogTreat", destinationId: "treeNut", rarity: 1,
           },
           shell: {
             name: "貝", icon: "🐚", category: "水辺素材",
-            destination: "bait", destinationId: "shell",
+            destination: "bait", destinationId: "shell", rarity: 1,
           },
           mushroom: {
             name: "キノコ", icon: "🍄", category: "植物",
-            destination: "dogTreat", destinationId: "mushroom",
+            destination: "dogTreat", destinationId: "mushroom", rarity: 2,
           },
           crab: {
             name: "カニ", icon: "🦀", category: "水辺素材",
-            destination: "bait", destinationId: "crab",
+            destination: "bait", destinationId: "crab", rarity: 2,
+          },
+          wildGreens: {
+            name: "山菜", icon: "🌿", category: "植物",
+            destination: "item", destinationId: "wildGreens", rarity: 1,
+          },
+          smallShrimp: {
+            name: "小エビ", icon: "🦐", category: "水辺素材",
+            destination: "bait", destinationId: "smallShrimp", rarity: 2,
           },
         },
         foragePointData = [
@@ -7199,34 +7267,95 @@
         ],
         forageLootTables = {
           grass: {
-            morning: { worm: 42, grasshopper: 23, treeNut: 25, mushroom: 10 },
-            day: { grasshopper: 55, treeNut: 30, worm: 10, mushroom: 5 },
-            evening: { treeNut: 45, grasshopper: 30, worm: 15, mushroom: 10 },
-            night: { mushroom: 45, worm: 30, grasshopper: 15, treeNut: 10 },
+            morning: { worm: 36, grasshopper: 19, treeNut: 20, wildGreens: 17, mushroom: 8 },
+            day: { grasshopper: 48, treeNut: 26, wildGreens: 14, worm: 8, mushroom: 4 },
+            evening: { treeNut: 38, grasshopper: 25, wildGreens: 16, worm: 12, mushroom: 9 },
+            night: { mushroom: 42, worm: 25, grasshopper: 12, treeNut: 9, wildGreens: 12 },
           },
           forest: {
-            morning: { treeNut: 40, worm: 30, mushroom: 20, grasshopper: 10 },
-            day: { treeNut: 45, grasshopper: 25, mushroom: 20, worm: 10 },
-            evening: { treeNut: 35, mushroom: 35, grasshopper: 20, worm: 10 },
-            night: { mushroom: 60, worm: 20, treeNut: 15, grasshopper: 5 },
+            morning: { treeNut: 34, worm: 24, wildGreens: 20, mushroom: 15, grasshopper: 7 },
+            day: { treeNut: 38, grasshopper: 20, wildGreens: 18, mushroom: 16, worm: 8 },
+            evening: { treeNut: 30, mushroom: 30, wildGreens: 16, grasshopper: 16, worm: 8 },
+            night: { mushroom: 54, worm: 17, treeNut: 12, wildGreens: 13, grasshopper: 4 },
           },
           riverside: {
-            morning: { worm: 45, grasshopper: 25, shell: 15, crab: 10, treeNut: 5 },
-            day: { worm: 30, grasshopper: 25, crab: 20, shell: 15, treeNut: 10 },
-            evening: { crab: 35, shell: 30, worm: 20, mushroom: 15 },
-            night: { crab: 35, worm: 30, mushroom: 20, shell: 15 },
+            morning: { worm: 35, grasshopper: 20, smallShrimp: 17, shell: 12, crab: 8, wildGreens: 8 },
+            day: { worm: 24, grasshopper: 20, smallShrimp: 18, crab: 16, shell: 12, wildGreens: 10 },
+            evening: { crab: 28, shell: 23, smallShrimp: 20, worm: 16, mushroom: 13 },
+            night: { crab: 29, worm: 24, mushroom: 17, smallShrimp: 18, shell: 12 },
           },
           beach: {
-            morning: { shell: 45, crab: 25, worm: 15, treeNut: 15 },
-            day: { shell: 40, crab: 30, grasshopper: 15, treeNut: 15 },
-            evening: { shell: 45, crab: 40, treeNut: 10, worm: 5 },
-            night: { crab: 45, shell: 30, mushroom: 15, worm: 10 },
+            morning: { shell: 37, smallShrimp: 23, crab: 21, worm: 10, treeNut: 9 },
+            day: { shell: 34, crab: 26, smallShrimp: 22, grasshopper: 10, treeNut: 8 },
+            evening: { shell: 37, crab: 33, smallShrimp: 22, treeNut: 5, worm: 3 },
+            night: { crab: 38, shell: 25, smallShrimp: 20, mushroom: 11, worm: 6 },
           },
         },
         dogForageSpecialties = {
           shuu: ["worm", "grasshopper"],
-          riku: ["treeNut", "mushroom"],
-          grey: ["shell", "crab", "mushroom"],
+          riku: ["treeNut", "mushroom", "wildGreens"],
+          grey: ["shell", "crab", "mushroom", "smallShrimp"],
+        },
+        cookingIngredientData = {
+          fishFillet: {
+            name: "魚の切り身（調理分）", icon: "🐟",
+            desc: "釣った魚を売る時に、一切れだけ調理用に残したもの。",
+          },
+        },
+        preparedMealData = {
+          shellSoup: {
+            name: "貝と魚の浜汁", icon: "🍲",
+            effect: "tensionResistance", bonus: .08,
+            effectLabel: "糸のテンション上昇 −8%",
+          },
+          mountainPlate: {
+            name: "キノコ山菜焼き", icon: "🥘",
+            effect: "rareForage", bonus: .2,
+            effectLabel: "珍しい採集物の抽選率 ＋20%",
+          },
+          shrimpRice: {
+            name: "小エビの炊き込み飯", icon: "🍚",
+            effect: "dogDiscovery", bonus: .35,
+            effectLabel: "犬の隠し採集発見率 ＋35%",
+          },
+        },
+        cookingRecipeData = {
+          nutFishJerky: {
+            name: "木の実香る魚ジャーキー", icon: "🍖",
+            ingredients: [
+              { storage: "dogTreats", id: "treeNut", name: "木の実", amount: 1 },
+              { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
+            ],
+            output: { kind: "dogTreat", id: "nutFishJerky", amount: 1 },
+            resultLabel: "犬のおやつ／好感度＋5",
+          },
+          shellSoup: {
+            name: "貝と魚の浜汁", icon: "🍲",
+            ingredients: [
+              { storage: "baits", id: "shell", name: "貝", amount: 1 },
+              { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
+            ],
+            output: { kind: "meal", id: "shellSoup", amount: 1 },
+            resultLabel: "食事／テンション上昇−8%",
+          },
+          mountainPlate: {
+            name: "キノコ山菜焼き", icon: "🥘",
+            ingredients: [
+              { storage: "dogTreats", id: "mushroom", name: "キノコ", amount: 1 },
+              { storage: "items", id: "wildGreens", name: "山菜", amount: 1 },
+            ],
+            output: { kind: "meal", id: "mountainPlate", amount: 1 },
+            resultLabel: "食事／珍しい採集率＋20%",
+          },
+          shrimpRice: {
+            name: "小エビの炊き込み飯", icon: "🍚",
+            ingredients: [
+              { storage: "baits", id: "smallShrimp", name: "小エビ", amount: 1 },
+              { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
+            ],
+            output: { kind: "meal", id: "shrimpRice", amount: 1 },
+            resultLabel: "食事／犬の発見率＋35%",
+          },
         },
         lureData = {
           silverSpoon: {
@@ -10620,6 +10749,9 @@
             fishCrowns: {},
             fishCatchRecords: {},
             forageCycle: null,
+            cookingIngredients: null,
+            preparedMeals: null,
+            activeMeal: null,
             log: [],
             gameMinutes: null,
             x: 112,
@@ -10991,6 +11123,15 @@
         s.forageCycle = null;
         s.mapVersion = 97;
       }
+      if ((s.mapVersion || 0) < 98) {
+        // v149 connects gathering and fishing to a lightweight kitchen.
+        // Existing inventories remain untouched; new cooking stores begin
+        // empty and every natural catch can now leave one fillet for recipes.
+        s.cookingIngredients = {};
+        s.preparedMeals = {};
+        s.activeMeal = null;
+        s.mapVersion = 98;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -11013,6 +11154,28 @@
           Array.isArray(s.dogTreats)) s.dogTreats = {};
       for (const id of treatIds)
         s.dogTreats[id] = Math.max(0, Math.floor(Number(s.dogTreats[id]) || 0));
+      if (!s.cookingIngredients ||
+          typeof s.cookingIngredients !== "object" ||
+          Array.isArray(s.cookingIngredients)) s.cookingIngredients = {};
+      for (const id of Object.keys(cookingIngredientData))
+        s.cookingIngredients[id] = Math.max(
+          0,
+          Math.floor(Number(s.cookingIngredients[id]) || 0),
+        );
+      if (!s.preparedMeals || typeof s.preparedMeals !== "object" ||
+          Array.isArray(s.preparedMeals)) s.preparedMeals = {};
+      for (const id of Object.keys(preparedMealData))
+        s.preparedMeals[id] = Math.max(
+          0,
+          Math.floor(Number(s.preparedMeals[id]) || 0),
+        );
+      const activeMealId = s.activeMeal?.id,
+        activeMealExpiresAt = Math.floor(Number(s.activeMeal?.expiresAt));
+      s.activeMeal = preparedMealData[activeMealId] &&
+          Number.isFinite(activeMealExpiresAt) &&
+          activeMealExpiresAt > normalizeGameMinutes(s.gameMinutes)
+        ? { id: activeMealId, expiresAt: activeMealExpiresAt }
+        : null;
       if (!Array.isArray(s.ownedDogToys)) s.ownedDogToys = [];
       s.ownedDogToys = [...new Set(s.ownedDogToys)].filter((id) => toyIds.includes(id));
       if (!s.dogToyPlayDays || typeof s.dogToyPlayDays !== "object" ||
@@ -11236,6 +11399,136 @@
       function scheduleSave() {
         clearTimeout(saveTimer);
         saveTimer = setTimeout(save, 700);
+      }
+      function activeMealEntry(state = s) {
+        const active = state.activeMeal;
+        const meal = preparedMealData[active?.id];
+        if (!meal || !Number.isFinite(Number(active?.expiresAt)) ||
+            Number(active.expiresAt) <= normalizeGameMinutes(state.gameMinutes)) {
+          if (state.activeMeal) {
+            state.activeMeal = null;
+            if (state === s) scheduleSave();
+          }
+          return null;
+        }
+        return { id: active.id, expiresAt: Number(active.expiresAt), ...meal };
+      }
+      function mealEffectBonus(effect, state = s) {
+        const meal = activeMealEntry(state);
+        return meal?.effect === effect ? meal.bonus : 0;
+      }
+      function mealTensionMultiplier(state = s) {
+        return 1 - mealEffectBonus("tensionResistance", state);
+      }
+      function nextMorningMealExpiry(state = s) {
+        const clock = gameClockAt(state.gameMinutes);
+        return (clock.dayIndex + 1) * GAME_MINUTES_PER_DAY + GAME_START_MINUTES;
+      }
+      function cookingIngredientCount(ingredient, state = s) {
+        const storage = state[ingredient.storage];
+        return Math.max(0, Math.floor(Number(storage?.[ingredient.id]) || 0));
+      }
+      function canCookRecipe(recipeId, state = s) {
+        const recipe = cookingRecipeData[recipeId];
+        return Boolean(recipe) && recipe.ingredients.every((ingredient) =>
+          cookingIngredientCount(ingredient, state) >= ingredient.amount,
+        );
+      }
+      function consumeCookingIngredient(ingredient, state = s) {
+        const storage = state[ingredient.storage];
+        if (!storage || cookingIngredientCount(ingredient, state) < ingredient.amount)
+          return false;
+        storage[ingredient.id] -= ingredient.amount;
+        return true;
+      }
+      function grantCookingFishFillet(fishId, state = s) {
+        if (!fishId || fishId === "nushi") return 0;
+        if (!state.cookingIngredients ||
+            typeof state.cookingIngredients !== "object")
+          state.cookingIngredients = {};
+        state.cookingIngredients.fishFillet =
+          (state.cookingIngredients.fishFillet || 0) + 1;
+        return 1;
+      }
+      function activeMealStatusLabel(state = s) {
+        const meal = activeMealEntry(state);
+        return meal
+          ? `${meal.icon} ${meal.name}（${gameClockLabel(meal.expiresAt)}まで）`
+          : "なし";
+      }
+      function cookRecipe(recipeId) {
+        const recipe = cookingRecipeData[recipeId];
+        if (!recipe || !locationInteriors[activeLocationId]?.kitchen || battle)
+          return false;
+        if (!canCookRecipe(recipeId)) {
+          setLocationDialogue(`「${recipe.name}は、まだ材料が足りないみたいだね」`);
+          renderLocationGoods();
+          return false;
+        }
+        for (const ingredient of recipe.ingredients)
+          consumeCookingIngredient(ingredient);
+        if (recipe.output.kind === "dogTreat") {
+          s.dogTreats[recipe.output.id] =
+            (s.dogTreats[recipe.output.id] || 0) + recipe.output.amount;
+        } else {
+          s.preparedMeals[recipe.output.id] =
+            (s.preparedMeals[recipe.output.id] || 0) + recipe.output.amount;
+        }
+        const output = recipe.output.kind === "dogTreat"
+          ? dogCareData[recipe.output.id]
+          : preparedMealData[recipe.output.id];
+        setLocationDialogue(`「${output.name}ができたよ。できたてを包んでおいたからね」`);
+        log(`${recipe.name}を作った！ ${recipe.resultLabel}。`);
+        vibrate([25, 35, 55]);
+        renderLocationGoods();
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function eatPreparedMeal(mealId) {
+        const meal = preparedMealData[mealId];
+        if (!meal || battle || (s.preparedMeals[mealId] || 0) < 1) return false;
+        s.preparedMeals[mealId] -= 1;
+        s.activeMeal = { id: mealId, expiresAt: nextMorningMealExpiry() };
+        log(`${meal.name}を食べた！ ${meal.effectLabel}（次の朝06:00まで）。`);
+        if (locationInteriors[activeLocationId]?.kitchen)
+          setLocationDialogue(`「${meal.name}、いい食べっぷりだね。効果は次の朝六時までだよ」`);
+        vibrate([20, 35, 20]);
+        renderLocationGoods();
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function cookingKitchenMarkup() {
+        const active = activeMealEntry();
+        const activeLabel = active
+          ? `${active.icon} ${active.name}：${active.effectLabel}<br>${gameClockLabel(active.expiresAt)}まで`
+          : "食事効果はまだない。料理を食べると、次の朝06:00まで軽い効果が続く。";
+        const recipes = Object.entries(cookingRecipeData).map(([id, recipe]) => {
+          const ready = canCookRecipe(id);
+          const ingredients = recipe.ingredients.map((ingredient) => {
+            const count = cookingIngredientCount(ingredient);
+            return `${ingredient.name} ${count}/${ingredient.amount}`;
+          }).join(" ＋ ");
+          const outputKind = recipe.output.kind === "dogTreat" ? "おやつ" : "料理";
+          return `<button class="location-good cooking-recipe" data-cook-recipe="${id}"${ready ? "" : " disabled"}>` +
+            `<i>${recipe.icon}</i><span><b>${recipe.name}</b>` +
+            `<small>${recipe.resultLabel}<br>${ingredients}</small></span>` +
+            `<strong><span>作る</span><small class="${ready ? "" : "missing"}">${outputKind}</small></strong></button>`;
+        }).join("");
+        const readyMeals = Object.entries(preparedMealData).map(([id, meal]) => {
+          const count = s.preparedMeals[id] || 0;
+          return `<button class="location-good cooking-ready" data-eat-prepared-meal="${id}"${count ? "" : " disabled"}>` +
+            `<i>${meal.icon}</i><span><b>${meal.name}</b><small>${meal.effectLabel}</small></span>` +
+            `<strong><span>食べる</span><small>所持 ×${count}</small></strong></button>`;
+        }).join("");
+        return `<section class="cooking-kitchen">` +
+          `<div class="location-goods-heading"><b>簡単調理</b><span>素材2つ／無料</span></div>` +
+          `<p class="cooking-kitchen-status">${activeLabel}</p>${recipes}` +
+          `<div class="location-goods-heading"><b>作り置き</b><span>効果は同時に1つ</span></div>` +
+          `${readyMeals}</section>`;
       }
       function vibrate(pattern) {
         try { navigator.vibrate?.(pattern); } catch (_) {}
@@ -12166,7 +12459,8 @@
           dialogue: "「今日はここへ泊まっていきな。湖の音を聞いて眠れば、朝六時にはすっきり起きられるよ」",
           actionLabel: "宿泊する",
           actionCost: "無料",
-          note: "翌日の06:00まで休み、体力を全回復する。次の釣りも少し穏やかになる。",
+          kitchen: true,
+          note: "台所では採集物と魚の切り身を2つ合わせて調理できる。宿泊すると翌日の06:00まで休み、体力を全回復する。",
         },
         yaoya: {
           brand: "YAOYA VEGETABLES",
@@ -12186,9 +12480,10 @@
           alt: "魚料理の厨房、カウンター席と木のテーブルがあるみなと食堂",
           dialogue: "「握り飯も弁当も、料理したものはうちへ任せな。釣り場へ持っていけるよう包んでやるよ」",
           goods: ["vegetableOnigiri", "fishBento"],
+          kitchen: true,
           actionLabel: "持ち帰り料理を選ぶ",
           actionCost: "食堂",
-          note: "買った料理は道具袋へ入る。体力が減った時に好きな場所で食べられる。",
+          note: "買った料理は道具袋へ入る。厨房では採集物と魚の切り身を2つ合わせて調理できる。",
         },
         "main-shrine": {
           brand: "STAR DIVINATION SHRINE",
@@ -12374,11 +12669,14 @@
         const table = forageLootTables[habitat]?.[period] ||
           forageLootTables.grass.day;
         const preferred = new Set(preferredItems);
+        const rareForageMultiplier = 1 + mealEffectBonus("rareForage");
         const entries = Object.entries(table)
           .filter(([itemId, weight]) => forageData[itemId] && weight > 0)
           .map(([itemId, weight]) => ({
             itemId,
-            weight: weight * (preferred.has(itemId) ? 3 : 1),
+            weight: weight *
+              (preferred.has(itemId) ? 3 : 1) *
+              (forageData[itemId].rarity >= 2 ? rareForageMultiplier : 1),
           }));
         const total = entries.reduce((sum, entry) => sum + entry.weight, 0);
         let roll = boundedRandom(random) * total;
@@ -12464,11 +12762,15 @@
         cycle.dogFound = cycle.dogFound.filter((id) => id !== pointId);
         if (item.destination === "bait")
           s.baits[item.destinationId] = (s.baits[item.destinationId] || 0) + 1;
+        else if (item.destination === "item")
+          s.items[item.destinationId] = (s.items[item.destinationId] || 0) + 1;
         else
           s.dogTreats[item.destinationId] =
             (s.dogTreats[item.destinationId] || 0) + 1;
         const destination = item.destination === "bait"
           ? `釣りエサ「${baitData[item.destinationId].name}」に入れた。`
+          : item.destination === "item"
+            ? "調理素材袋に入れた。"
           : "ワンコずのおやつ袋に入れた。";
         log(`${item.name}を拾った！ ${destination}`);
         vibrate([18, 28, 36]);
@@ -12535,7 +12837,8 @@
         forageWalkSteps += 1;
         if (forageWalkSteps < 8) return false;
         const affinity = Math.max(0, Math.min(100, Number(s.dogAffinity[s.dog]) || 0));
-        const chance = .025 + affinity * .00055;
+        const chance = (.025 + affinity * .00055) *
+          (1 + mealEffectBonus("dogDiscovery"));
         if (boundedRandom(random) > chance) return false;
         const hidden = hiddenForagePointsNearPlayer();
         if (!hidden.length) return false;
@@ -12615,6 +12918,7 @@
             `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
             `<b>🌠 星湖の秘餌</b>：通常1%／星ぶどう3%（ヌシの深み専用）</p>`;
         }
+        if (interior.kitchen) markup += cookingKitchenMarkup();
         holder.innerHTML = markup;
         holder.hidden = !markup;
         document.querySelectorAll("[data-buy-location-item]").forEach((button) =>
@@ -12622,6 +12926,12 @@
         );
         document.querySelectorAll("[data-draw-fortune]").forEach((button) =>
           button.onclick = () => drawStarFortune(button.dataset.drawFortune),
+        );
+        document.querySelectorAll("[data-cook-recipe]").forEach((button) =>
+          button.onclick = () => cookRecipe(button.dataset.cookRecipe),
+        );
+        document.querySelectorAll("[data-eat-prepared-meal]").forEach((button) =>
+          button.onclick = () => eatPreparedMeal(button.dataset.eatPreparedMeal),
         );
       }
       function buyLocationItem(id) {
@@ -13792,6 +14102,10 @@
         $("#statusBait").textContent =
           `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}`;
         $("#statusDog").textContent = dogName();
+        const activeMeal = activeMealEntry();
+        $("#statusMeal").textContent = activeMeal
+          ? `${activeMeal.icon} ${activeMeal.name}`
+          : "なし";
       }
       function hideIdleStatus() {
         clearTimeout(idleStatusTimer);
@@ -14585,6 +14899,10 @@
           log(`${item.name}は星占い神社の星みくじへ供える品だ。`);
           return false;
         }
+        if (item.use === "ingredient") {
+          log(`${item.name}は宿か食堂の台所で使う調理素材だ。`);
+          return false;
+        }
         if (s.hp >= s.maxHp) {
           log("体力は満タンだ。回復食は取っておこう。");
           return false;
@@ -15326,12 +15644,17 @@
           .map(([id, item]) => {
             const count = s.items[id] || 0;
             const offering = item.use === "offering";
+            const ingredient = item.use === "ingredient";
             const disabled = count < 1 || s.hp >= s.maxHp ? " disabled" : "";
             const detail = offering
               ? `星みくじ用／${item.source}`
+              : ingredient
+                ? `調理素材／${item.source}`
               : `体力＋${item.heal}／${item.source}`;
             const action = offering
               ? `<span class="inventory-purpose">祠用</span>`
+              : ingredient
+                ? `<span class="inventory-purpose">調理用</span>`
               : `<button class="inventory-use" data-use-item="${id}"${disabled}>食べる</button>`;
             return `<div class="inventory-card"><i>${item.icon}</i>` +
               `<span><b>${item.name}</b><br><small>${detail}</small></span>` +
@@ -15342,12 +15665,35 @@
         const dogTreatMarkup = Object.entries(dogCareData)
           .filter(([, item]) => item.type === "treat")
           .map(([id, item]) => {
-            const source = item.foraged ? "採集" : "犬のおやつ";
+            const source = item.crafted ? "手作り" : item.foraged ? "採集" : "犬のおやつ";
             return `<div class="inventory-card"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>${source}／好感度＋${item.affection}</small></span>` +
             `<strong>×${s.dogTreats[id] || 0}</strong></div>`;
           })
           .join("");
+        const cookingMaterialMarkup = Object.entries(cookingIngredientData)
+          .map(([id, item]) =>
+            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
+            `<strong>×${s.cookingIngredients[id] || 0}</strong></div>`)
+          .join("");
+        const activeMeal = activeMealEntry();
+        const activeMealMarkup = activeMeal
+          ? `<div class="inventory-card cooking-ready"><i>${activeMeal.icon}</i>` +
+            `<span><b>食事効果：${activeMeal.name}</b><br>` +
+            `<small>${activeMeal.effectLabel}／${gameClockLabel(activeMeal.expiresAt)}まで</small></span>` +
+            `<span class="inventory-purpose">発動中</span></div>`
+          : `<div class="inventory-card inventory-empty"><i>🍽️</i>` +
+            `<span><b>食事効果はなし</b><br><small>料理を食べると次の朝06:00まで効果が続く。</small></span></div>`;
+        const preparedMealMarkup = Object.entries(preparedMealData)
+          .map(([id, meal]) => {
+            const count = s.preparedMeals[id] || 0;
+            return `<div class="inventory-card"><i>${meal.icon}</i>` +
+              `<span><b>${meal.name}</b><br><small>${meal.effectLabel}</small></span>` +
+              `<div class="inventory-card-actions"><strong>×${count}</strong>` +
+              `<button class="inventory-use" data-eat-prepared-meal="${id}"${count ? "" : " disabled"}>食べる</button>` +
+              `</div></div>`;
+          }).join("");
         const ownedDogToyMarkup = Object.entries(dogCareData)
           .filter(([id, item]) => item.type === "toy" && s.ownedDogToys.includes(id))
           .map(([, item]) =>
@@ -15376,6 +15722,8 @@
           .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
         $("#inventoryItems").innerHTML =
           `<h4 class="inventory-section-heading">釣りエサ</h4>${baitMarkup}` +
+          `<h4 class="inventory-section-heading">料理・調理素材</h4>` +
+          `${activeMealMarkup}${preparedMealMarkup}${cookingMaterialMarkup}` +
           `<h4 class="inventory-section-heading">食料・奉納品</h4>${itemMarkup}` +
           `<h4 class="inventory-section-heading">ワンコずのおやつ</h4>${dogTreatMarkup}` +
           `<h4 class="inventory-section-heading">ワンコずのおもちゃ</h4>${ownedDogToyMarkup}` +
@@ -15384,6 +15732,9 @@
           `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}`;
         document.querySelectorAll("[data-use-item]").forEach((button) =>
           button.onclick = () => useFieldItem(button.dataset.useItem),
+        );
+        document.querySelectorAll("[data-eat-prepared-meal]").forEach((button) =>
+          button.onclick = () => eatPreparedMeal(button.dataset.eatPreparedMeal),
         );
         renderEquipment();
         renderTackle();
@@ -16013,7 +16364,8 @@
         if (battle.reeling) {
           event.wrongTicks++;
           battle.ten +=
-            (battle.f.id === "nushi" ? 9.4 : 7.8) / control;
+            (battle.f.id === "nushi" ? 9.4 : 7.8) /
+            control * mealTensionMultiplier();
           battle.retrieval = clampBattle(
             battle.retrieval - (battle.f.id === "nushi" ? 0.009 : 0.006),
             0,
@@ -17452,7 +17804,8 @@
           updateWaterFx();
           renderBattleFish();
           if (battle.reeling) {
-            battle.ten += (mood.tension * fishPullMultiplier()) / control;
+            battle.ten += (mood.tension * fishPullMultiplier()) /
+              control * mealTensionMultiplier();
           } else {
             battle.ten = Math.max(3, battle.ten - mood.release * control);
           }
@@ -17833,13 +18186,18 @@
             : "";
         const newSizeRecord = updateFishSizeRecord(s, specimen);
         s.money += salePrice;
+        const filletReward = grantCookingFishFillet(f.id);
+        const filletLog = filletReward
+          ? " 調理用の魚の切り身も一切れ残した。"
+          : "";
         log(specimen
-          ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}${crownDetail}`
-          : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。`);
+          ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}${crownDetail}${filletLog}`
+          : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。${filletLog}`);
         const hazardDetail = resolveCatchHazard(f);
-        const catchDetail = first
+        const catchDetail = (first
           ? `初釣果！ ＋${salePrice}円`
-          : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`;
+          : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`) +
+          (filletReward ? " ・ 調理用切り身×1" : "");
         const specimenDetail = specimen
             ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
             (newSizeRecord ? " ・ 最大記録！" : "") +
@@ -17851,7 +18209,7 @@
         showCatchCard(
           f,
           first,
-          specimenDetail || (hazardDetail ? catchDetail + hazardDetail : ""),
+          specimenDetail || catchDetail + hazardDetail,
           specimen
             ? f.id === "nushi"
               ? `🌟 ${specimen.tierLabel} LEGEND!`
@@ -18266,7 +18624,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=148-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=149-1").catch(() => {});
       renderRecord();
     </script>
   </body>
