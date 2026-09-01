@@ -1398,6 +1398,45 @@
         background-color: #6c924f;
         background-image: url("assets/terrain-world-v53.png");
       }
+      .quest-board-marker {
+        position: absolute;
+        z-index: 4;
+        left: 50.42%;
+        top: 51.1%;
+        width: 46px;
+        height: 29px;
+        transform: translate(-50%, -100%);
+        border: 3px solid #4b2d1e;
+        border-radius: 2px;
+        background:
+          linear-gradient(90deg, transparent 47%, #7b4828 48% 52%, transparent 53%),
+          repeating-linear-gradient(0deg, #d89a51 0 5px, #b9753b 5px 7px);
+        box-shadow: inset 0 0 0 2px #f0c773, 2px 3px #17312c66;
+        color: #402617;
+        font: 1000 10px/23px monospace;
+        text-align: center;
+        text-shadow: 1px 1px #f4cf82;
+        pointer-events: none;
+      }
+      .quest-board-marker::before { content: "依頼"; }
+      .quest-board-marker::after {
+        position: absolute;
+        left: 5px;
+        bottom: -15px;
+        width: 5px;
+        height: 15px;
+        background: #5a3824;
+        box-shadow: 28px 0 #5a3824;
+        content: "";
+      }
+      .quest-board-marker.ready {
+        border-color: #ffe47c;
+        filter: drop-shadow(0 0 6px #ffd866);
+        animation: quest-board-ready .8s steps(2, end) infinite;
+      }
+      .quest-board-marker.ready::before { content: "依頼!"; color: #8d241e; }
+      .quest-board-marker.complete { filter: saturate(.55); }
+      @keyframes quest-board-ready { 50% { transform: translate(-50%, -103%); } }
       .tree-grove,
       .reed-bed,
       .rock-patch,
@@ -3072,6 +3111,149 @@
         font-weight: 900;
       }
       .dog-care-footer button small { color: #ffe7b0; font-size: .55rem; }
+      .quest-board-modal {
+        inset: 1.5%;
+        padding: 0;
+        overflow: hidden;
+        border-color: #e8bd61;
+        background: #102237f8;
+      }
+      .quest-board-shell {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto;
+        height: 100%;
+        min-height: 0;
+        background:
+          linear-gradient(#132a40e8, #0b1b2de8),
+          repeating-linear-gradient(90deg, #5b3c25 0 3px, #3d291d 3px 28px);
+      }
+      .quest-board-heading {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 8px 11px;
+        border-bottom: 2px solid #9f7138;
+        background: linear-gradient(90deg, #54361f, #183a52);
+      }
+      .quest-board-heading > div { flex: 1; min-width: 0; }
+      .quest-board-heading small {
+        display: block;
+        color: #e3b866;
+        font: 900 .55rem monospace;
+        letter-spacing: .12em;
+      }
+      .quest-board-heading h2 { margin: 1px 0 0; font-size: 1.12rem; }
+      .quest-board-summary {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 9px;
+        padding: 6px 11px;
+        border-bottom: 1px solid #e0bd6855;
+        background: #081725d9;
+        color: #d8eef2;
+        font-size: .68rem;
+      }
+      .quest-board-summary b { color: #ffe28a; }
+      .quest-board-progress {
+        height: 8px;
+        overflow: hidden;
+        border: 1px solid #d9b75f;
+        border-radius: 99px;
+        background: #07121d;
+      }
+      .quest-board-progress i {
+        display: block;
+        width: 0;
+        height: 100%;
+        background: linear-gradient(90deg, #68bfa1, #f2ce63);
+        transition: width .2s steps(3, end);
+      }
+      .quest-board-list {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        align-items: stretch;
+        gap: 8px;
+        min-height: 0;
+        overflow: auto;
+        padding: 9px 10px;
+      }
+      .quest-card {
+        display: grid;
+        grid-template-rows: auto auto minmax(0, 1fr) auto auto;
+        gap: 5px;
+        min-width: 0;
+        padding: 8px;
+        border: 2px solid #8ca4aa;
+        border-radius: 6px;
+        background:
+          linear-gradient(155deg, #f6e7ba 0 13px, transparent 14px),
+          linear-gradient(#f3e4b7, #d1b477);
+        box-shadow: 3px 4px #050e1666;
+        color: #34291d;
+      }
+      .quest-card.ready { border-color: #fff09a; box-shadow: 0 0 14px #ffd45b55, 3px 4px #050e1666; }
+      .quest-card.completed { filter: saturate(.55); opacity: .76; }
+      .quest-card-client {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 5px;
+        color: #6d4728;
+        font-size: .57rem;
+        font-weight: 900;
+      }
+      .quest-card-client span:last-child {
+        padding: 1px 4px;
+        border-radius: 99px;
+        background: #315b66;
+        color: #eaf9f3;
+      }
+      .quest-card h3 {
+        margin: 0;
+        overflow: hidden;
+        color: #4d2d1e;
+        font-size: .82rem;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+      }
+      .quest-card-request {
+        margin: 0;
+        color: #4d4336;
+        font-size: .63rem;
+        line-height: 1.4;
+      }
+      .quest-card-status,
+      .quest-card-reward {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        gap: 5px;
+        align-items: center;
+        font-size: .58rem;
+      }
+      .quest-card-status b { color: #9b382a; }
+      .quest-card-reward b { color: #6c5121; }
+      .quest-card button {
+        min-height: 35px;
+        padding: 4px 6px;
+        border-radius: 5px;
+        font-size: .65rem;
+      }
+      .quest-card button:disabled { opacity: .53; filter: grayscale(.45); }
+      .quest-board-footer {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 10px;
+        min-height: 38px;
+        padding: 6px 11px;
+        border-top: 1px solid #e0bd6855;
+        background: #071725e8;
+        color: #c8dce0;
+        font-size: .62rem;
+      }
+      .quest-board-footer b { color: #ffe28a; }
+      .quest-board-rumor { color: #9ee5f2; }
       .fishdex-modal {
         inset: 2.5%;
         padding: 0;
@@ -5725,6 +5907,7 @@
         .fortune-reveal::before,
         .fortune-reveal-panel,
         .fortune-reveal-sparks i,
+        .quest-board-marker,
         .hud .sound-toggle.audio-ready {
           animation-duration: .001ms !important;
           animation-iteration-count: 1 !important;
@@ -5894,6 +6077,19 @@
         .inventory-tabs button { min-height: 29px; }
         .inventory-content { padding: 7px 9px; }
         .inventory-footer { padding: 4px 9px 6px; }
+        #questBoard.quest-board-modal { inset: .5%; }
+        .quest-board-heading { padding: 4px 8px; }
+        .quest-board-heading h2 { font-size: .9rem; }
+        .quest-board-summary { gap: 6px; padding: 3px 8px; font-size: .54rem; }
+        .quest-board-list { gap: 5px; padding: 5px 7px; }
+        .quest-card { gap: 3px; padding: 5px; }
+        .quest-card-client { font-size: .46rem; }
+        .quest-card h3 { font-size: .68rem; }
+        .quest-card-request { font-size: .5rem; line-height: 1.28; }
+        .quest-card-status,
+        .quest-card-reward { gap: 3px; font-size: .47rem; }
+        .quest-card button { min-height: 29px; padding: 2px 4px; font-size: .54rem; }
+        .quest-board-footer { min-height: 30px; padding: 3px 8px; font-size: .5rem; }
         .controls {
           bottom: 4px;
         }
@@ -6045,7 +6241,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v151</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v152</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6138,6 +6334,7 @@
           <i class="pixel-prop prop-log detail-log" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-a" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-b" aria-hidden="true"></i>
+          <div id="questBoardMarker" class="quest-board-marker" aria-hidden="true"></div>
           <div id="forageLayer" class="forage-layer" aria-hidden="true"></div>
           <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
@@ -6162,6 +6359,10 @@
             <button type="button" data-field-menu-target="items">
               <span class="field-menu-icon" aria-hidden="true">🎒</span>
               <span class="field-menu-label">持ち物</span>
+            </button>
+            <button type="button" data-field-menu-target="quests">
+              <span class="field-menu-icon" aria-hidden="true">📌</span>
+              <span class="field-menu-label">依頼掲示板<small id="questMenuStatus">今日の依頼 0/3</small></span>
             </button>
             <button type="button" data-field-menu-target="dog">
               <span class="field-menu-icon" aria-hidden="true">🐕</span>
@@ -6632,6 +6833,24 @@
             <div class="inventory-footer">
               道具ボタンを押した時だけ開く。食料の使用、装備、次の釣りの仕掛け変更ができる。
             </div>
+          </div>
+        </div>
+        <div class="modal quest-board-modal" id="questBoard" aria-label="星降る湖の依頼掲示板">
+          <div class="quest-board-shell">
+            <header class="quest-board-heading">
+              <div><small>STARFALL DAILY REQUESTS</small><h2>📌 星降る湖 依頼掲示板</h2></div>
+              <button class="close" data-close>閉じる</button>
+            </header>
+            <div class="quest-board-summary">
+              <b id="questBoardDay">1日目の依頼</b>
+              <div class="quest-board-progress" aria-label="本日の依頼達成率"><i id="questBoardProgress"></i></div>
+              <span id="questBoardCount">0 / 3件</span>
+            </div>
+            <div class="quest-board-list" id="questBoardList"></div>
+            <footer class="quest-board-footer">
+              <span id="questBoardBonus"><b>全件達成：</b>200円＋サム印ビスケット×1</span>
+              <span class="quest-board-rumor" id="questBoardRumor">釣り場の噂：なし</span>
+            </footer>
           </div>
         </div>
         <div class="modal" id="tackle">
@@ -7544,6 +7763,152 @@
             resultLabel: "食事／犬の発見率＋35%",
           },
         },
+        questRumorData = {
+          lake: {
+            name: "湖の大物便り", icon: "🌊", zone: "lake",
+            fishIds: ["koi", "namazu", "bass"], multiplier: 1.28,
+            effectLabel: "湖の大物が28%寄りやすい",
+          },
+          river: {
+            name: "冷たい流心の噂", icon: "💧", zone: "river",
+            fishIds: ["yamame", "nijimasu", "unagi"], multiplier: 1.3,
+            effectLabel: "川の珍しい魚が30%寄りやすい",
+          },
+          sea: {
+            name: "港の潮目情報", icon: "⚓", zone: "sea",
+            fishIds: ["suzuki", "kurodai", "hirame", "mebaru"], multiplier: 1.28,
+            effectLabel: "海の珍しい魚が28%寄りやすい",
+          },
+        },
+        dailyQuestTemplateData = {
+          dinerShellSoup: {
+            category: "料理", kind: "delivery", client: "みなと食堂のおかみ",
+            icon: "🍲", title: "浜汁を一杯",
+            request: "『今日は貝のだしが利いた魚料理が食べたいね』",
+            storage: "preparedMeals", itemId: "shellSoup", amount: 1,
+            itemName: "貝と魚の浜汁",
+            reward: { money: 420, baits: { shrimp: 2 } },
+          },
+          innMountainPlate: {
+            category: "料理", kind: "delivery", client: "湖畔の釣り宿",
+            icon: "🥘", title: "山の香りの夕膳",
+            request: "『キノコと山菜の一皿を、泊まり客へ出したいんだ』",
+            storage: "preparedMeals", itemId: "mountainPlate", amount: 1,
+            itemName: "キノコ山菜焼き",
+            reward: { money: 380, rumor: "river" },
+          },
+          greyShrimpRice: {
+            category: "料理", kind: "delivery", client: "Greyの飼い主",
+            icon: "🍚", title: "小エビごはんの包み",
+            request: "『散歩帰りに香る、小エビのごはんを一つ頼むよ』",
+            storage: "preparedMeals", itemId: "shrimpRice", amount: 1,
+            itemName: "小エビの炊き込み飯",
+            reward: { money: 450, dogTreats: { lakeFishJerky: 1 } },
+          },
+          samNutJerky: {
+            category: "料理", kind: "delivery", client: "サム",
+            icon: "🍖", title: "手作りおやつの試食",
+            request: "『木の実入りの犬のおやつを作ってみてくれんか』",
+            storage: "dogTreats", itemId: "nutFishJerky", amount: 1,
+            itemName: "木の実香る魚ジャーキー",
+            reward: { money: 520, toy: "rubberBall", toyFallback: "lakeFishJerky" },
+          },
+          yaoyaMushroom: {
+            category: "採集", kind: "delivery", client: "八百屋",
+            icon: "🍄", title: "香りのよいキノコ",
+            request: "『夜の森で採れるキノコを二つ見せておくれ』",
+            storage: "dogTreats", itemId: "mushroom", amount: 2,
+            itemName: "キノコ",
+            reward: { money: 280, items: { apple: 1 } },
+          },
+          rikuTreeNuts: {
+            category: "採集", kind: "delivery", client: "リクの飼い主",
+            icon: "🌰", title: "木の実のおすそ分け",
+            request: "『散歩道で拾った木の実を三つ分けてほしいな』",
+            storage: "dogTreats", itemId: "treeNut", amount: 3,
+            itemName: "木の実",
+            reward: { money: 260, dogTreats: { samBiscuit: 1 } },
+          },
+          marketShells: {
+            category: "採集", kind: "delivery", client: "港の魚屋",
+            icon: "🐚", title: "浜の貝を仕入れたい",
+            request: "『夕方の浜で拾える貝を二つ持ってきてくれ』",
+            storage: "baits", itemId: "shell", amount: 2,
+            itemName: "貝",
+            reward: { money: 330, baits: { shrimp: 2 } },
+          },
+          samCrabs: {
+            category: "採集", kind: "delivery", client: "サム",
+            icon: "🦀", title: "岩陰のカニ",
+            request: "『クロダイ用に元気なカニを二匹頼むぞ』",
+            storage: "baits", itemId: "crab", amount: 2,
+            itemName: "カニ",
+            reward: { money: 420, baits: { liveMinnow: 1 } },
+          },
+          innWildGreens: {
+            category: "採集", kind: "delivery", client: "湖畔の釣り宿",
+            icon: "🌿", title: "朝膳の山菜",
+            request: "『明日の朝膳に使う山菜を二束お願いね』",
+            storage: "items", itemId: "wildGreens", amount: 2,
+            itemName: "山菜",
+            reward: { money: 300, baits: { river: 2 } },
+          },
+          greySmallShrimp: {
+            category: "採集", kind: "delivery", client: "Greyの飼い主",
+            icon: "🦐", title: "水辺の小エビ調査",
+            request: "『Greyが気にしていた小エビを二匹調べたいんだ』",
+            storage: "baits", itemId: "smallShrimp", amount: 2,
+            itemName: "小エビ",
+            reward: { money: 360, dogTreats: { samBiscuit: 2 } },
+          },
+          marketAji: {
+            category: "釣り", kind: "catch", client: "港の魚屋",
+            icon: "🐟", title: "今日のマアジ",
+            request: "『潮見浜でマアジを二匹釣ってきてくれ』",
+            fishId: "aji", amount: 2,
+            reward: { money: 400, rumor: "sea" },
+          },
+          largeFuna: {
+            category: "釣り", kind: "catch", client: "湖畔の釣り宿",
+            icon: "🎣", title: "大きなフナの話",
+            request: "『大サイズ以上のフナを一匹、釣った話を聞かせておくれ』",
+            fishId: "funa", minTier: "large", amount: 1,
+            reward: { money: 650, rumor: "lake" },
+          },
+          dinerAyu: {
+            category: "釣り", kind: "catch", client: "みなと食堂のおかみ",
+            icon: "🐟", title: "川のアユ便り",
+            request: "『今日の川でアユを一匹釣って、様子を教えておくれ』",
+            fishId: "ayu", amount: 1,
+            reward: { money: 480, baits: { river: 1 }, rumor: "river" },
+          },
+          watermillYamame: {
+            category: "釣り", kind: "catch", client: "水車小屋の住人",
+            icon: "💧", title: "流れのヤマメ",
+            request: "『水車の下流にいるヤマメを一匹確かめてほしい』",
+            fishId: "yamame", amount: 1,
+            reward: { money: 560, rumor: "river" },
+          },
+          samNijimasu: {
+            category: "釣り", kind: "catch", client: "サム",
+            icon: "🌈", title: "跳ねるニジマス",
+            request: "『流心のニジマスを一匹。跳び方を見てきてくれ』",
+            fishId: "nijimasu", amount: 1,
+            reward: { money: 700, baits: { liveMinnow: 1 }, rumor: "river" },
+          },
+          marketKasago: {
+            category: "釣り", kind: "catch", client: "港の魚屋",
+            icon: "🐡", title: "岩陰のカサゴ",
+            request: "『岩陰にいるカサゴを一匹釣ってきてくれ』",
+            fishId: "kasago", amount: 1,
+            reward: { money: 520, rumor: "sea" },
+          },
+        },
+        dailyQuestPools = [
+          ["dinerShellSoup", "innMountainPlate", "greyShrimpRice", "samNutJerky"],
+          ["yaoyaMushroom", "rikuTreeNuts", "marketShells", "samCrabs", "innWildGreens", "greySmallShrimp"],
+          ["marketAji", "largeFuna", "dinerAyu", "watermillYamame", "samNijimasu", "marketKasago"],
+        ],
         lureData = {
           silverSpoon: {
             name: "銀のスプーンルアー", icon: "🥄",
@@ -10907,6 +11272,40 @@
           dogFound: normalizePointIds(value.dogFound),
         };
       }
+      function normalizeDailyQuestBoard(value) {
+        if (!value || typeof value !== "object" || Array.isArray(value)) return null;
+        const dayIndex = Math.floor(Number(value.dayIndex));
+        if (!Number.isFinite(dayIndex)) return null;
+        const seen = new Set();
+        const quests = (Array.isArray(value.quests) ? value.quests : [])
+          .filter((entry) => {
+            const id = typeof entry?.id === "string" ? entry.id : "";
+            if (!dailyQuestTemplateData[id] || seen.has(id)) return false;
+            seen.add(id);
+            return true;
+          })
+          .map((entry) => ({
+            id: entry.id,
+            progress: Math.max(0, Math.floor(Number(entry.progress) || 0)),
+            completed: Boolean(entry.completed),
+          }));
+        if (quests.length !== dailyQuestPools.length) return null;
+        return {
+          version: 1,
+          dayIndex,
+          quests,
+          bonusClaimed: Boolean(value.bonusClaimed) &&
+            quests.every((entry) => entry.completed),
+        };
+      }
+      function normalizeQuestRumor(value) {
+        if (!value || typeof value !== "object" || Array.isArray(value) ||
+            !questRumorData[value.id]) return null;
+        const expiresAt = Math.floor(Number(value.expiresAt));
+        return Number.isFinite(expiresAt) && expiresAt > 0
+          ? { id: value.id, expiresAt }
+          : null;
+      }
       let s = Object.assign(
           {
             money: 300,
@@ -10940,6 +11339,9 @@
             cookingIngredients: null,
             preparedMeals: null,
             activeMeal: null,
+            questBoard: null,
+            questCompletions: 0,
+            questRumor: null,
             log: [],
             gameMinutes: null,
             x: 112,
@@ -11335,6 +11737,14 @@
         // Position, catches, inventory, friendship and every v150 value stay.
         s.mapVersion = 100;
       }
+      if ((s.mapVersion || 0) < 101) {
+        // v152 adds a fresh three-request board for each game day. Existing
+        // catches, cooked food, materials, friendship and field position stay.
+        s.questBoard = null;
+        s.questCompletions = 0;
+        s.questRumor = null;
+        s.mapVersion = 101;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -11487,6 +11897,13 @@
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
       s.forageCycle = normalizeForageCycle(s.forageCycle);
+      s.questBoard = normalizeDailyQuestBoard(s.questBoard);
+      s.questCompletions = Math.max(
+        0,
+        Math.floor(Number(s.questCompletions) || 0),
+      );
+      s.questRumor = normalizeQuestRumor(s.questRumor);
+      if (s.questRumor?.expiresAt <= s.gameMinutes) s.questRumor = null;
       s.rescueAtMinutes = Number.isFinite(s.rescueAtMinutes)
         ? Math.floor(s.rescueAtMinutes)
         : -1000000;
@@ -11738,6 +12155,266 @@
           `<p class="cooking-kitchen-status">${activeLabel}</p>${recipes}` +
           `<div class="location-goods-heading"><b>作り置き</b><span>効果は同時に1つ</span></div>` +
           `${readyMeals}</section>`;
+      }
+      const QUEST_SIZE_TIER_ORDER = [
+        "tiny", "small", "normal", "medium", "large", "giant",
+      ];
+      function dailyQuestTemplateIds(dayIndex) {
+        const day = Math.max(0, Math.floor(Number(dayIndex) || 0));
+        return dailyQuestPools.map((pool, poolIndex) => {
+          const seed = (
+            Math.imul(day + 1, 1103515245) +
+            Math.imul(poolIndex + 1, 12345)
+          ) >>> 0;
+          return pool[seed % pool.length];
+        });
+      }
+      function ensureDailyQuestBoard(state = s) {
+        const dayIndex = gameClockAt(state.gameMinutes).dayIndex;
+        const current = normalizeDailyQuestBoard(state.questBoard);
+        if (current?.dayIndex === dayIndex) {
+          state.questBoard = current;
+          return current;
+        }
+        state.questBoard = {
+          version: 1,
+          dayIndex,
+          quests: dailyQuestTemplateIds(dayIndex).map((id) => ({
+            id,
+            progress: 0,
+            completed: false,
+          })),
+          bonusClaimed: false,
+        };
+        if (state === s) scheduleSave();
+        return state.questBoard;
+      }
+      function questStoredCount(template, state = s) {
+        if (!template || template.kind !== "delivery") return 0;
+        return Math.max(
+          0,
+          Math.floor(Number(state[template.storage]?.[template.itemId]) || 0),
+        );
+      }
+      function questProgressCount(entry, template, state = s) {
+        return template?.kind === "catch"
+          ? Math.max(0, Math.floor(Number(entry?.progress) || 0))
+          : questStoredCount(template, state);
+      }
+      function questIsReady(entry, template, state = s) {
+        return Boolean(entry && template && !entry.completed) &&
+          questProgressCount(entry, template, state) >= template.amount;
+      }
+      function questBoardCompletedCount(board = ensureDailyQuestBoard()) {
+        return board.quests.filter((entry) => entry.completed).length;
+      }
+      function questBoardReadyCount(board = ensureDailyQuestBoard(), state = s) {
+        return board.quests.filter((entry) =>
+          questIsReady(entry, dailyQuestTemplateData[entry.id], state),
+        ).length;
+      }
+      function questRequirementLabel(entry, template, state = s) {
+        const amount = questProgressCount(entry, template, state);
+        if (template.kind === "catch") {
+          const fishName = fish.find((candidate) =>
+            candidate.id === template.fishId)?.name || "魚";
+          const size = template.minTier
+            ? `${fishSizeTierById(template.fishId, template.minTier)?.label || "指定"}以上 `
+            : "";
+          return `${size}${fishName} ${Math.min(amount, template.amount)}/${template.amount}匹`;
+        }
+        return `${template.itemName} ${amount}/${template.amount}個`;
+      }
+      function questRewardPreview(reward, state = s) {
+        const parts = [];
+        if (reward.money) parts.push(`${reward.money}円`);
+        for (const [id, amount] of Object.entries(reward.baits || {}))
+          parts.push(`${baitData[id]?.name || id}×${amount}`);
+        for (const [id, amount] of Object.entries(reward.dogTreats || {}))
+          parts.push(`${dogCareData[id]?.name || id}×${amount}`);
+        for (const [id, amount] of Object.entries(reward.items || {}))
+          parts.push(`${fieldItemData[id]?.name || id}×${amount}`);
+        if (reward.toy) {
+          const toy = dogCareData[reward.toy];
+          const fallback = dogCareData[reward.toyFallback];
+          parts.push(state.ownedDogToys?.includes(reward.toy)
+            ? `${fallback?.name || "犬のおやつ"}×1`
+            : `${toy?.name || "犬のおもちゃ"}`);
+        }
+        if (reward.rumor)
+          parts.push(`${questRumorData[reward.rumor]?.name || "釣り場の噂"}`);
+        return parts.join("＋") || "お礼の品";
+      }
+      function activeQuestRumor(state = s) {
+        const saved = normalizeQuestRumor(state.questRumor);
+        if (!saved || saved.expiresAt <= normalizeGameMinutes(state.gameMinutes)) {
+          if (state.questRumor) {
+            state.questRumor = null;
+            if (state === s) scheduleSave();
+          }
+          return null;
+        }
+        state.questRumor = saved;
+        return { ...questRumorData[saved.id], id: saved.id, expiresAt: saved.expiresAt };
+      }
+      function questRumorFishMultiplier(fishId, zone, state = s) {
+        const rumor = activeQuestRumor(state);
+        return rumor?.zone === zone && rumor.fishIds.includes(fishId)
+          ? rumor.multiplier
+          : 1;
+      }
+      function grantQuestReward(reward, state = s) {
+        const received = [];
+        const money = Math.max(0, Math.floor(Number(reward.money) || 0));
+        if (money) {
+          state.money += money;
+          received.push(`${money}円`);
+        }
+        const grantCounts = (storageKey, entries, data) => {
+          if (!entries) return;
+          if (!state[storageKey] || typeof state[storageKey] !== "object")
+            state[storageKey] = {};
+          for (const [id, rawAmount] of Object.entries(entries)) {
+            const amount = Math.max(0, Math.floor(Number(rawAmount) || 0));
+            if (!amount || !data[id]) continue;
+            state[storageKey][id] = (state[storageKey][id] || 0) + amount;
+            received.push(`${data[id].name}×${amount}`);
+          }
+        };
+        grantCounts("baits", reward.baits, baitData);
+        grantCounts("dogTreats", reward.dogTreats, dogCareData);
+        grantCounts("items", reward.items, fieldItemData);
+        if (reward.toy && dogCareData[reward.toy]?.type === "toy") {
+          if (!state.ownedDogToys.includes(reward.toy)) {
+            state.ownedDogToys.push(reward.toy);
+            received.push(dogCareData[reward.toy].name);
+          } else if (dogCareData[reward.toyFallback]?.type === "treat") {
+            state.dogTreats[reward.toyFallback] =
+              (state.dogTreats[reward.toyFallback] || 0) + 1;
+            received.push(`${dogCareData[reward.toyFallback].name}×1`);
+          }
+        }
+        if (questRumorData[reward.rumor]) {
+          state.questRumor = {
+            id: reward.rumor,
+            expiresAt: normalizeGameMinutes(state.gameMinutes) +
+              GAME_MINUTES_PER_DAY,
+          };
+          received.push(questRumorData[reward.rumor].name);
+        }
+        return received;
+      }
+      function consumeQuestDelivery(template, state = s) {
+        if (!template || template.kind !== "delivery" ||
+            questStoredCount(template, state) < template.amount) return false;
+        state[template.storage][template.itemId] -= template.amount;
+        return true;
+      }
+      function questCatchMeetsSize(template, specimen) {
+        if (!template.minTier) return true;
+        const required = QUEST_SIZE_TIER_ORDER.indexOf(template.minTier);
+        const actual = QUEST_SIZE_TIER_ORDER.indexOf(specimen?.tierId);
+        return required >= 0 && actual >= required;
+      }
+      function recordDailyQuestCatch(f, specimen, state = s) {
+        const board = ensureDailyQuestBoard(state);
+        const advanced = [];
+        const ready = [];
+        for (const entry of board.quests) {
+          const template = dailyQuestTemplateData[entry.id];
+          if (entry.completed || template?.kind !== "catch" ||
+              template.fishId !== f?.id || !questCatchMeetsSize(template, specimen))
+            continue;
+          const before = Math.min(entry.progress, template.amount);
+          entry.progress = Math.min(template.amount, before + 1);
+          if (entry.progress > before) advanced.push(template.title);
+          if (before < template.amount && entry.progress >= template.amount)
+            ready.push(template.title);
+        }
+        if (advanced.length && state === s) scheduleSave();
+        return { advanced, ready };
+      }
+      function completeDailyQuest(questId) {
+        if (battle) return false;
+        const board = ensureDailyQuestBoard();
+        const entry = board.quests.find((candidate) => candidate.id === questId);
+        const template = dailyQuestTemplateData[entry?.id];
+        if (!questIsReady(entry, template)) return false;
+        if (template.kind === "delivery" && !consumeQuestDelivery(template))
+          return false;
+        entry.completed = true;
+        s.questCompletions += 1;
+        const received = grantQuestReward(template.reward);
+        let clearBonus = "";
+        if (!board.bonusClaimed && board.quests.every((candidate) => candidate.completed)) {
+          board.bonusClaimed = true;
+          s.money += 200;
+          s.dogTreats.samBiscuit = (s.dogTreats.samBiscuit || 0) + 1;
+          clearBonus = " 全件達成ボーナス：200円＋サム印ビスケット×1！";
+        }
+        const message = `「${template.title}」完了！ ${received.join("＋")}を受け取った。${clearBonus}`;
+        log(message);
+        showRescueToast(`📌 ${message}`, clearBonus ? 4200 : 3000);
+        vibrate(clearBonus ? [25, 35, 65, 40, 90] : [25, 35, 55]);
+        renderQuestBoard();
+        renderInventory();
+        render();
+        save();
+        return true;
+      }
+      function renderQuestBoard() {
+        const board = ensureDailyQuestBoard();
+        const clock = gameClockAt(s.gameMinutes);
+        const completed = questBoardCompletedCount(board);
+        $("#questBoardDay").textContent = `${clock.day}日目の依頼`;
+        $("#questBoardCount").textContent = `${completed} / ${board.quests.length}件`;
+        $("#questBoardProgress").style.width =
+          `${completed / Math.max(1, board.quests.length) * 100}%`;
+        $("#questBoardList").innerHTML = board.quests.map((entry) => {
+          const template = dailyQuestTemplateData[entry.id];
+          const ready = questIsReady(entry, template);
+          const stateClass = entry.completed ? " completed" : ready ? " ready" : "";
+          const actionLabel = entry.completed
+            ? "✓ 完了"
+            : template.kind === "catch" ? "報酬を受け取る" : "納品する";
+          return `<article class="quest-card${stateClass}">` +
+            `<div class="quest-card-client"><span>${template.icon} ${template.client}</span><span>${template.category}</span></div>` +
+            `<h3>${template.title}</h3><p class="quest-card-request">${template.request}</p>` +
+            `<div class="quest-card-status"><span>必要</span><b>${questRequirementLabel(entry, template)}</b></div>` +
+            `<div class="quest-card-reward"><span>お礼</span><b>${questRewardPreview(template.reward)}</b></div>` +
+            `<button data-complete-quest="${entry.id}"${ready ? "" : " disabled"}>${actionLabel}</button>` +
+            `</article>`;
+        }).join("");
+        $("#questBoardBonus").innerHTML = board.bonusClaimed
+          ? `<b>本日の全件達成済み！</b> また明日、新しい依頼が貼られる。`
+          : `<b>全件達成：</b>200円＋サム印ビスケット×1`;
+        const rumor = activeQuestRumor();
+        $("#questBoardRumor").textContent = rumor
+          ? `${rumor.icon} ${rumor.name}：${rumor.effectLabel}（${gameClockLabel(rumor.expiresAt)}まで）`
+          : "釣り場の噂：なし";
+        document.querySelectorAll("[data-complete-quest]").forEach((button) =>
+          button.onclick = () => completeDailyQuest(button.dataset.completeQuest),
+        );
+      }
+      function renderQuestBoardStatus() {
+        const board = ensureDailyQuestBoard();
+        const completed = questBoardCompletedCount(board);
+        const ready = questBoardReadyCount(board);
+        const status = $("#questMenuStatus");
+        if (status) status.textContent = ready
+          ? `報告できる依頼 ${ready}件`
+          : completed === board.quests.length
+            ? "本日の依頼 完了"
+            : `今日の依頼 ${completed}/${board.quests.length}`;
+        const marker = $("#questBoardMarker");
+        marker?.classList.toggle("ready", ready > 0);
+        marker?.classList.toggle("complete", completed === board.quests.length);
+      }
+      function openQuestBoard() {
+        if (battle) return false;
+        renderQuestBoard();
+        open("questBoard");
+        return true;
       }
       function vibrate(pattern) {
         try { navigator.vibrate?.(pattern); } catch (_) {}
@@ -12677,6 +13354,7 @@
           { id: "west-shrine", left: 27, right: 55, top: 41, bottom: 62 },
           { id: "wayside-shrine", left: 8, right: 17, top: 50, bottom: 61 },
           { id: "yaoya", left: 66, right: 91, top: 55, bottom: 75 },
+          { id: "quest-board", left: 118, right: 124, top: 65, bottom: 70 },
           { id: "diner", left: 130, right: 158, top: 55, bottom: 75 },
           { id: "main-shrine", left: 178, right: 211, top: 36, bottom: 64 },
           { id: "sam-shop", left: 182, right: 211, top: 70, bottom: 92 },
@@ -12700,6 +13378,12 @@
             hint: "八百屋だ。Aで中へ入る。",
             message: "八百屋の軒先には採れたての野菜と果物が並んでいる。祠へ供える品も選べるようだ。",
             interior: "yaoya",
+          },
+          {
+            id: "quest-board", x: 121, y: 73, radius: 7,
+            hint: "村の依頼掲示板だ。Aで今日の依頼を見る。",
+            message: "住民の今日のお願いが貼られている。",
+            questBoard: true,
           },
           {
             id: "diner", x: 144, y: 77, radius: 9,
@@ -14368,6 +15052,7 @@
           );
         drawDog();
         renderForagePoints();
+        renderQuestBoardStatus();
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
@@ -14505,6 +15190,7 @@
         if (target === "record") open("record");
         else if (target === "tackle") openInventory("tackle");
         else if (target === "items") openInventory("items");
+        else if (target === "quests") openQuestBoard();
         else if (target === "dog") openDogCare();
       }
       function move(d) {
@@ -14867,6 +15553,7 @@
         else if (near(67, 108, 8) && canReceiveDogRescue()) rescue();
         else if (near(109, 84, 7))
           log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
+        else if (landmark?.questBoard) openQuestBoard();
         else if (landmark?.id === "harbor-shop") openVehicleShop();
         else if (landmark?.interior) openLocationInterior(landmark);
         else if (landmark) log(landmark.message);
@@ -15068,6 +15755,7 @@
             }[period] || 1;
             weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
           }
+          weight *= questRumorFishMultiplier(id, spot.zone);
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
             if (id === "ayu") weight *= 0.7;
@@ -18539,6 +19227,7 @@
         const newSizeRecord = updateFishSizeRecord(s, specimen);
         s.money += salePrice;
         const filletReward = grantCookingFishFillet(f.id);
+        const questProgress = recordDailyQuestCatch(f, specimen);
         const filletLog = filletReward
           ? " 調理用の魚の切り身も一切れ残した。"
           : "";
@@ -18546,10 +19235,16 @@
           ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}${crownDetail}${filletLog}`
           : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。${filletLog}`);
         const hazardDetail = resolveCatchHazard(f);
+        const questDetail = questProgress.ready.length
+          ? " ・ 📌依頼達成！"
+          : "";
+        if (questProgress.ready.length)
+          log(`依頼「${questProgress.ready.join("／")}」の条件達成！ 掲示板で報酬を受け取ろう。`);
         const catchDetail = (first
           ? `初釣果！ ＋${salePrice}円`
           : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`) +
-          (filletReward ? " ・ 調理用切り身×1" : "");
+          (filletReward ? " ・ 調理用切り身×1" : "") +
+          questDetail;
         const specimenDetail = specimen
             ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
             (newSizeRecord ? " ・ 最大記録！" : "") +
@@ -18975,7 +19670,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=151-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=152-1").catch(() => {});
       renderRecord();
     </script>
   </body>
