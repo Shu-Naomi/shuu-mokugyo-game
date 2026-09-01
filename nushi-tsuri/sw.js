@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v149-cooking-149-1";
+const CACHE_NAME = "nushi-tsuri-v150-audio-affinity-150-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -172,6 +172,9 @@ const CORE_ASSETS = [
   "./assets/audio/dog-pet-bark.mp3",
   "./assets/audio/dog-bark-before-dig.mp3",
   "./assets/audio/dog-dig.mp3",
+  "./assets/audio/shrine-draw-bell-v150.mp3",
+  "./assets/audio/fortune-win-bell-v150.mp3",
+  "./assets/audio/fortune-jackpot-confirm-v150.mp3",
   "./assets/terrain-water-v45.svg",
   "./assets/terrain-grass-v45.svg",
   "./assets/terrain-sand-v45.svg",

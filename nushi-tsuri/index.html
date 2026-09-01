@@ -2043,6 +2043,7 @@
         height: 100%;
         min-height: 0;
       }
+      .location-layout { position: relative; }
       .shop-interior,
       .location-visual {
         position: relative;
@@ -2469,6 +2470,155 @@
         line-height: 1.45;
       }
       .star-fortune-lineup b { color: #ffe28a; }
+      .fortune-reveal {
+        position: absolute;
+        z-index: 24;
+        inset: 0;
+        display: none;
+        place-items: center;
+        padding: 18px;
+        overflow: hidden;
+        background:
+          radial-gradient(circle at 50% 48%, #fff0a250, transparent 30%),
+          #071524d9;
+        color: #fff7cf;
+        text-align: center;
+        pointer-events: none;
+      }
+      .fortune-reveal[hidden] { display: none; }
+      .fortune-reveal.show {
+        display: grid;
+        animation: fortune-curtain-in .28s steps(4, end) both;
+      }
+      .fortune-reveal::before {
+        position: absolute;
+        width: min(72vw, 520px);
+        aspect-ratio: 1;
+        border: 3px double #ffe896b8;
+        border-radius: 50%;
+        box-shadow: 0 0 28px #ffd9688c, inset 0 0 28px #ffd9684c;
+        content: "";
+        animation: fortune-ring 1.15s ease-out both;
+      }
+      .fortune-reveal.jackpot {
+        background:
+          radial-gradient(circle at 50% 46%, #fff6b478, transparent 24%),
+          radial-gradient(circle at 22% 24%, #a86cff50, transparent 27%),
+          radial-gradient(circle at 78% 72%, #5fd9ff4a, transparent 26%),
+          linear-gradient(135deg, #130a2bf2, #40225eee 52%, #100927f2);
+        box-shadow: inset 0 0 90px #ffd85d38;
+      }
+      .fortune-reveal.jackpot::before {
+        width: min(94vw, 680px);
+        border: 0;
+        border-radius: 0;
+        background: repeating-conic-gradient(
+          from 0deg,
+          #fff3a22b 0deg 9deg,
+          transparent 9deg 20deg
+        );
+        box-shadow: none;
+        animation: fortune-jackpot-rays 5s linear infinite;
+      }
+      .fortune-reveal-panel {
+        position: relative;
+        z-index: 2;
+        width: min(440px, 82%);
+        padding: clamp(14px, 3vw, 26px);
+        border: 3px double #ffe697;
+        border-radius: 8px;
+        background: #15273fe8;
+        box-shadow: 0 0 0 3px #553d28, 0 10px 30px #000a, inset 0 0 22px #fff0a11c;
+        animation: fortune-slip-in .48s cubic-bezier(.2, .8, .25, 1.2) both;
+      }
+      .fortune-reveal.jackpot .fortune-reveal-panel {
+        border-color: #fff3a5;
+        background: #25133aeb;
+        box-shadow:
+          0 0 0 4px #77509b,
+          0 0 30px #ffe36ba8,
+          0 12px 34px #000b,
+          inset 0 0 30px #c98dff2e;
+        animation:
+          fortune-slip-in .52s cubic-bezier(.2, .8, .25, 1.2) both,
+          fortune-jackpot-pulse .72s ease-in-out .52s infinite alternate;
+      }
+      .fortune-reveal-symbol {
+        display: block;
+        font-size: clamp(2.1rem, 8vw, 4.5rem);
+        line-height: 1;
+        filter: drop-shadow(0 0 10px #ffe06b);
+      }
+      .fortune-reveal-title {
+        display: block;
+        margin-top: 7px;
+        color: #ffe486;
+        font-size: clamp(1.2rem, 4vw, 2.2rem);
+        letter-spacing: .12em;
+        text-shadow: 2px 3px #55351f, 0 0 12px #ffd45c;
+      }
+      .fortune-reveal.jackpot .fortune-reveal-title {
+        color: #fff6a9;
+        font-size: clamp(1.55rem, 5vw, 2.8rem);
+        text-shadow: 3px 4px #5d2f79, 0 0 16px #fff074;
+      }
+      .fortune-reveal-fortune,
+      .fortune-reveal-message {
+        display: block;
+        margin-top: 6px;
+      }
+      .fortune-reveal-fortune { color: #bdeaff; font-weight: 900; }
+      .fortune-reveal-message {
+        color: #fff8dc;
+        font-size: clamp(.62rem, 1.5vw, .82rem);
+        line-height: 1.45;
+      }
+      .fortune-reveal-sparks {
+        position: absolute;
+        z-index: 1;
+        left: 50%;
+        top: 50%;
+      }
+      .fortune-reveal-sparks i {
+        position: absolute;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #fff6a8;
+        box-shadow: 0 0 7px #fff, 0 0 15px #ffd95e;
+        opacity: 0;
+        animation: fortune-spark-flight 1.15s ease-out var(--delay) infinite;
+      }
+      .fortune-reveal.jackpot .fortune-reveal-sparks i {
+        width: 11px;
+        height: 11px;
+        background: #fff;
+        box-shadow: 0 0 8px #fff, 0 0 18px #ffe45f, 0 0 26px #b87cff;
+      }
+      @keyframes fortune-curtain-in {
+        from { opacity: 0; }
+        to { opacity: 1; }
+      }
+      @keyframes fortune-ring {
+        from { opacity: 0; transform: scale(.12); }
+        55% { opacity: 1; }
+        to { opacity: .25; transform: scale(1.12); }
+      }
+      @keyframes fortune-slip-in {
+        from { opacity: 0; transform: translateY(-35px) scale(.72) rotate(-2deg); }
+        to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
+      }
+      @keyframes fortune-jackpot-rays {
+        to { transform: rotate(360deg); }
+      }
+      @keyframes fortune-jackpot-pulse {
+        to { transform: scale(1.035); filter: brightness(1.15); }
+      }
+      @keyframes fortune-spark-flight {
+        0% { opacity: 0; transform: translate(0, 0) scale(.2); }
+        18% { opacity: 1; }
+        100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1.25); }
+      }
       .vehicle-shop-shell {
         display: grid;
         grid-template-rows: auto auto auto 1fr auto;
@@ -2864,6 +3014,11 @@
         margin: 0 0 5px;
         color: #ffe5a0;
         font-size: .78rem;
+      }
+      .dog-care-body h3 small {
+        margin-left: 4px;
+        color: #9bcdd7;
+        font-size: .72em;
       }
       .dog-care-grid { display: grid; gap: 5px; }
       .dog-care-card {
@@ -5564,6 +5719,10 @@
         .catch-special-fx::before,
         .catch-special-fx::after,
         .catch-special-fx i,
+        .fortune-reveal,
+        .fortune-reveal::before,
+        .fortune-reveal-panel,
+        .fortune-reveal-sparks i,
         .hud .sound-toggle.audio-ready {
           animation-duration: .001ms !important;
           animation-iteration-count: 1 !important;
@@ -5873,7 +6032,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v149</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v150</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6342,7 +6501,7 @@
                   </div>
                   <div class="grid shop-goods" id="samDogGoods"></div>
                 </section>
-                <p class="sam-window-note">特別なおやつとおもちゃは星みくじ限定。おもちゃは買えばずっと使えて、ワンコ一匹につきゲーム内一日一回遊べる。</p>
+                <p class="sam-window-note">特別なおやつとおもちゃは星みくじ限定。好感度が上がるのは、ワンコ一匹につきゲーム内一日「おやつ一個＋遊び一回」まで。</p>
               </div>
               <button class="shop-practice" id="practiceOffer">
                 <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
@@ -6367,6 +6526,21 @@
                 <small id="locationActionCost">A</small>
               </button>
               <small class="location-note" id="locationNote"></small>
+            </div>
+            <div class="fortune-reveal" id="fortuneReveal" role="status" aria-live="assertive" hidden>
+              <div class="fortune-reveal-sparks" aria-hidden="true">
+                <i style="--x:-180px;--y:-92px;--delay:.02s"></i><i style="--x:-95px;--y:-155px;--delay:.18s"></i>
+                <i style="--x:12px;--y:-175px;--delay:.08s"></i><i style="--x:132px;--y:-130px;--delay:.24s"></i>
+                <i style="--x:190px;--y:-35px;--delay:.12s"></i><i style="--x:172px;--y:88px;--delay:.3s"></i>
+                <i style="--x:75px;--y:155px;--delay:.16s"></i><i style="--x:-35px;--y:175px;--delay:.34s"></i>
+                <i style="--x:-145px;--y:120px;--delay:.1s"></i><i style="--x:-198px;--y:18px;--delay:.26s"></i>
+              </div>
+              <div class="fortune-reveal-panel">
+                <i class="fortune-reveal-symbol" id="fortuneRevealSymbol" aria-hidden="true">✨</i>
+                <b class="fortune-reveal-title" id="fortuneRevealTitle">当たり！</b>
+                <span class="fortune-reveal-fortune" id="fortuneRevealFortune">星吉</span>
+                <span class="fortune-reveal-message" id="fortuneRevealMessage"></span>
+              </div>
             </div>
           </div>
         </div>
@@ -6477,8 +6651,8 @@
               </div>
             </section>
             <div class="dog-care-body">
-              <section><h3>🍪 おやつ</h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
-              <section><h3>🎾 おもちゃ</h3><div class="dog-care-grid" id="dogCareToys"></div></section>
+              <section><h3>🍪 おやつ<small>犬ごとに一日1個</small></h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
+              <section><h3>🎾 おもちゃ<small>好感度は一日1回</small></h3><div class="dog-care-grid" id="dogCareToys"></div></section>
             </div>
             <footer class="dog-care-footer">
               <button id="dogCarePet">ナデナデする<small>好感度は変わらないよ</small></button>
@@ -10736,6 +10910,7 @@
             ownedVehicles: null,
             dogAffinity: null,
             dogTreats: null,
+            dogTreatDays: null,
             ownedDogToys: null,
             dogToyPlayDays: null,
             dogCatchBest: null,
@@ -10812,6 +10987,9 @@
         samBaitPurchaseCount = 1,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
+        fortuneRevealTimer = 0,
+        fortuneResultAudioTimer = 0,
+        fortuneRevealInProgress = false,
         dogCareScene = {
           mode: "idle",
           dogId: "riku",
@@ -11132,6 +11310,13 @@
         s.activeMeal = null;
         s.mapVersion = 98;
       }
+      if ((s.mapVersion || 0) < 99) {
+        // v150 makes friendship gains a calm daily routine: each dog accepts
+        // one affinity-raising treat and one play session per game day.
+        // Existing affinity, treats, toys and all other progress stay intact.
+        s.dogTreatDays = {};
+        s.mapVersion = 99;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -11154,6 +11339,12 @@
           Array.isArray(s.dogTreats)) s.dogTreats = {};
       for (const id of treatIds)
         s.dogTreats[id] = Math.max(0, Math.floor(Number(s.dogTreats[id]) || 0));
+      if (!s.dogTreatDays || typeof s.dogTreatDays !== "object" ||
+          Array.isArray(s.dogTreatDays)) s.dogTreatDays = {};
+      for (const dogId of dogIds) {
+        const day = Number(s.dogTreatDays[dogId]);
+        s.dogTreatDays[dogId] = Number.isFinite(day) ? Math.floor(day) : -1;
+      }
       if (!s.cookingIngredients ||
           typeof s.cookingIngredients !== "object" ||
           Array.isArray(s.cookingIngredients)) s.cookingIngredients = {};
@@ -11616,6 +11807,18 @@
             src: "assets/audio/dog-dig.mp3",
             volume: .92,
           },
+          shrineDrawBell: {
+            src: "assets/audio/shrine-draw-bell-v150.mp3",
+            volume: 1,
+          },
+          fortuneWinBell: {
+            src: "assets/audio/fortune-win-bell-v150.mp3",
+            volume: 1,
+          },
+          fortuneJackpotConfirm: {
+            src: "assets/audio/fortune-jackpot-confirm-v150.mp3",
+            volume: 1,
+          },
         }),
         CASTING_AUDIO_IDS = Object.freeze([
           "castLake",
@@ -11750,7 +11953,14 @@
             Math.min(1, volume === null ? spec.volume : Number(volume)),
           );
           const playing = sample.play();
-          playing?.catch?.(() => {});
+          playing?.catch?.(() => {
+            // Mobile browsers can revoke media playback while the app is in
+            // the background. Never leave a stopped loop marked as active;
+            // the next gesture/watchdog pass can then restore it.
+            if (gameAudio.surface?.sampleId === id) gameAudio.surface = null;
+            if (gameAudio.underwater?.sampleId === id) gameAudio.underwater = null;
+            if (gameAudio.fightReel === id) gameAudio.fightReel = null;
+          });
           return true;
         } catch (_) {
           return false;
@@ -11773,6 +11983,10 @@
         gameAudio.underwater = null;
         gameAudio.fightReel = null;
         return stopped;
+      }
+      function gameAudioSampleIsPlaying(id) {
+        const sample = gameAudio.media[id];
+        return Boolean(sample && !sample.paused && !sample.ended);
       }
       function castingWaterSampleId(
         zone = battle?.waterZone || "lake",
@@ -11879,6 +12093,42 @@
         stopGameAudioSample("fishGillWash");
         gameAudio.underwater = null;
         return stopped;
+      }
+      function syncExpectedLoopAudio() {
+        if (!s.soundEnabled || document.hidden) return false;
+        if (battle?.phase === "fight") {
+          if (gameAudioSampleIsPlaying("underwater")) {
+            gameAudio.underwater ||= {
+              sampleId: "underwater",
+              fishId: battle.f?.id || "",
+              weight: battle.waterAudioWeight || fishWaterWeight(),
+            };
+            syncFightReelSound();
+            return true;
+          }
+          gameAudio.underwater = null;
+          stopGameAudioSample("underwater");
+          const restored = startUnderwaterSound(
+            battle.f?.id || "",
+            battle.waterAudioWeight,
+          );
+          if (restored) syncFightReelSound();
+          return restored;
+        }
+        if (battle && ["prep", "cast", "cast-flight", "wait", "bite"]
+          .includes(battle.phase)) {
+          if (gameAudio.underwater) stopUnderwaterSound();
+          const zone = battle.waterZone || "lake";
+          const locale = battle.castLocale;
+          const sampleId = castingWaterSampleId(zone, locale);
+          if (gameAudioSampleIsPlaying(sampleId)) {
+            gameAudio.surface = { sampleId, zone, locale };
+            return true;
+          }
+          gameAudio.surface = null;
+          return startCastingWaterSound(zone, locale);
+        }
+        return false;
       }
       function scheduleAudioTone({
         frequency,
@@ -12254,15 +12504,7 @@
       function setSoundEnabled(enabled) {
         s.soundEnabled = Boolean(enabled);
         if (s.soundEnabled) {
-          unlockGameAudio({ announce: true });
-          if (battle?.phase === "fight")
-            startUnderwaterSound(battle.f.id, battle.waterAudioWeight);
-          else if (battle && ["prep", "cast", "cast-flight", "wait", "bite"]
-            .includes(battle.phase))
-            startCastingWaterSound(
-              battle.waterZone || "lake",
-              battle.castLocale,
-            );
+          recoverGameAudio({ announce: true });
         } else {
           stopCastingWaterSound(.06);
           stopUnderwaterSound(.06);
@@ -12280,6 +12522,7 @@
         const context = ensureAudioContext(false);
         if (!context) {
           gameAudio.unlocked = true;
+          setTimeout(syncExpectedLoopAudio, 0);
           return null;
         }
         primeAudioContext(context);
@@ -12293,6 +12536,7 @@
             playAudioReadySound();
             flashSoundToggle();
           }
+          setTimeout(syncExpectedLoopAudio, 0);
           return true;
         };
         try {
@@ -12307,6 +12551,16 @@
         } catch (_) {}
         finishUnlock();
         return context;
+      }
+      function recoverGameAudio(options = null) {
+        if (!s.soundEnabled || document.hidden) return false;
+        unlockGameAudio(options);
+        // Run inside the current gesture first (important on mobile), then
+        // retry after an AudioContext has had time to resume.
+        syncExpectedLoopAudio();
+        setTimeout(syncExpectedLoopAudio, 0);
+        setTimeout(syncExpectedLoopAudio, 180);
+        return true;
       }
       function log(t) {
         s.log.unshift(t);
@@ -12857,6 +13111,7 @@
           : landmarkOrId?.interior;
         const interior = locationInteriors[id];
         if (!interior) return false;
+        hideStarFortuneReveal({ rerender: false });
         activeLocationId = id;
         const image = $("#locationImage");
         image.src = interior.asset;
@@ -12910,7 +13165,7 @@
               const purpose = item.fortune === "lucky"
                 ? "上向き運・大当たり7%"
                 : "通常運・大当たり2%";
-              return `<button class="location-good fortune" data-draw-fortune="${id}">` +
+              return `<button class="location-good fortune" data-draw-fortune="${id}"${fortuneRevealInProgress ? " disabled" : ""}>` +
                 `${item.icon}<span><b>${item.name}を供える</b><small>${purpose}</small></span>` +
                 `<strong>×${count}</strong></button>`;
             }).join("") +
@@ -13325,10 +13580,56 @@
         }
         return null;
       }
+      function hideStarFortuneReveal({ rerender = true } = {}) {
+        clearTimeout(fortuneRevealTimer);
+        clearTimeout(fortuneResultAudioTimer);
+        fortuneRevealTimer = 0;
+        fortuneResultAudioTimer = 0;
+        fortuneRevealInProgress = false;
+        const reveal = $("#fortuneReveal");
+        if (reveal) {
+          reveal.classList.remove("show", "jackpot");
+          reveal.hidden = true;
+        }
+        if (rerender && activeLocationId === "main-shrine")
+          renderLocationGoods();
+        return true;
+      }
+      function showStarFortuneReveal(result) {
+        const reveal = $("#fortuneReveal");
+        if (!reveal || !result) return false;
+        hideStarFortuneReveal({ rerender: false });
+        const jackpot = result.jackpot === true;
+        fortuneRevealInProgress = true;
+        $("#fortuneRevealSymbol").textContent = jackpot ? "🎣✨" : "🔔";
+        $("#fortuneRevealTitle").textContent = jackpot ? "大当たり！" : "当たり！";
+        $("#fortuneRevealFortune").textContent = result.fortune;
+        $("#fortuneRevealMessage").textContent = result.message;
+        reveal.hidden = false;
+        reveal.classList.remove("show", "jackpot");
+        void reveal.offsetWidth;
+        reveal.classList.toggle("jackpot", jackpot);
+        reveal.classList.add("show");
+        playGameAudioSample("shrineDrawBell", { restart: true });
+        fortuneResultAudioTimer = setTimeout(() => {
+          fortuneResultAudioTimer = 0;
+          if (!fortuneRevealInProgress) return;
+          playGameAudioSample(
+            jackpot ? "fortuneJackpotConfirm" : "fortuneWinBell",
+            { restart: true },
+          );
+        }, jackpot ? 950 : 800);
+        fortuneRevealTimer = setTimeout(
+          () => hideStarFortuneReveal(),
+          jackpot ? 5000 : 3200,
+        );
+        return true;
+      }
       function drawStarFortune(offeringId) {
         const offering = fieldItemData[offeringId];
         if (
           activeLocationId !== "main-shrine" ||
+          fortuneRevealInProgress ||
           !offering ||
           offering.use !== "offering"
         ) return false;
@@ -13344,6 +13645,7 @@
         setLocationDialogue(`鈴が鳴り、${result.fortune}の札が落ちた。${result.message}`);
         log(result.logMessage);
         vibrate(result.jackpot ? [35, 45, 90, 50, 120] : [20, 40, 45]);
+        showStarFortuneReveal(result);
         renderLocationGoods();
         renderInventory();
         render();
@@ -14938,6 +15240,14 @@
       function dogToyPlayedToday(dogId, toyId) {
         return s.dogToyPlayDays?.[dogId]?.[toyId] === gameClockAt(s.gameMinutes).day;
       }
+      function dogTreatGivenToday(dogId) {
+        return s.dogTreatDays?.[dogId] === gameClockAt(s.gameMinutes).day;
+      }
+      function dogPlayedToday(dogId) {
+        const day = gameClockAt(s.gameMinutes).day;
+        return Object.values(s.dogToyPlayDays?.[dogId] || {})
+          .some((playedDay) => playedDay === day);
+      }
       function dogCareIsBusy() {
         return dogCareScene.mode !== "idle" || Boolean(dogCatchGame);
       }
@@ -15400,21 +15710,28 @@
           .filter(([, item]) => item.type === "treat")
           .map(([id, item]) => {
             const count = s.dogTreats[id] || 0;
+            const treated = dogTreatGivenToday(dogId);
             const source = item.foraged
               ? "フィールド採集"
-              : item.samShop ? "サムの店" : "星みくじ限定";
-            return `<button class="dog-care-card" data-give-dog-treat="${id}" ${busy || count < 1 || affinity >= 100 ? "disabled" : ""}>` +
-              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>×${count}</strong></button>`;
+              : item.samShop ? "サムの店"
+              : item.crafted ? "手作り" : "星みくじ限定";
+            const status = treated ? "今日はおやつ済み" : `×${count}`;
+            return `<button class="dog-care-card ${treated ? "played" : ""}" data-give-dog-treat="${id}" ${busy || treated || count < 1 || affinity >= 100 ? "disabled" : ""}>` +
+              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>${status}</strong></button>`;
           }).join("");
+        const playedToday = dogPlayedToday(dogId);
         $("#dogCareToys").innerHTML = Object.entries(dogCareData)
           .filter(([, item]) => item.type === "toy")
           .map(([id, item]) => {
             const owned = s.ownedDogToys.includes(id);
             const played = owned && dogToyPlayedToday(dogId, id);
             const source = item.samShop ? "サムの店" : "星みくじ限定";
-            const status = !owned ? "未所持" : played ? "今日は遊んだ" : item.action;
+            const status = !owned
+              ? "未所持"
+              : played ? "今日は遊んだ"
+              : playedToday ? "今日は別のおもちゃ" : item.action;
             const bonus = item.motion === "catch" ? "／2成功＋2・全成功＋4" : "";
-            return `<button class="dog-care-card ${played ? "played" : ""}" data-play-dog-toy="${id}" ${busy || !owned || played ? "disabled" : ""}>` +
+            return `<button class="dog-care-card ${playedToday ? "played" : ""}" data-play-dog-toy="${id}" ${busy || !owned || playedToday ? "disabled" : ""}>` +
               `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}${bonus}</small></span><strong>${status}</strong></button>`;
           }).join("");
         $("#dogCarePet").disabled = busy;
@@ -15443,6 +15760,11 @@
         const dogId = dogCareSelectedId;
         if (!item || item.type !== "treat" || !dogProfileData[dogId]) return false;
         if (dogCareIsBusy()) return false;
+        if (dogTreatGivenToday(dogId)) {
+          dogCareStatusMessage = `${dogProfileData[dogId].name}には今日もうおやつをあげたよ。次のおやつは明日にしよう。`;
+          renderDogCare();
+          return false;
+        }
         if ((s.dogTreats[id] || 0) < 1) {
           dogCareStatusMessage = `${item.name}は今持っていないよ。`;
           renderDogCare();
@@ -15454,6 +15776,7 @@
           return false;
         }
         s.dogTreats[id]--;
+        s.dogTreatDays[dogId] = gameClockAt(s.gameMinutes).day;
         const gained = addDogAffinity(dogId, item.affection);
         dogCareStatusMessage = `${dogProfileData[dogId].name}に${item.name}をあげた！ 好感度＋${gained}`;
         log(`${dogProfileData[dogId].name}に${item.name}をあげ、好感度が${gained}上がった。`);
@@ -15474,8 +15797,8 @@
           renderDogCare();
           return false;
         }
-        if (dogToyPlayedToday(dogId, id)) {
-          dogCareStatusMessage = `${dogProfileData[dogId].name}とは今日もう${item.action}をしたよ。`;
+        if (dogPlayedToday(dogId)) {
+          dogCareStatusMessage = `${dogProfileData[dogId].name}とは今日もう遊んだよ。次は明日また遊ぼう。`;
           renderDogCare();
           return false;
         }
@@ -15698,7 +16021,7 @@
           .filter(([id, item]) => item.type === "toy" && s.ownedDogToys.includes(id))
           .map(([, item]) =>
             `<div class="inventory-card"><i>${item.icon}</i>` +
-            `<span><b>${item.name}</b><br><small>犬のおもちゃ／毎日再使用可</small></span>` +
+            `<span><b>${item.name}</b><br><small>犬のおもちゃ／犬ごとに毎日1回</small></span>` +
             `<strong>所持</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
         const lureMarkup = Object.entries(lureData)
@@ -18251,6 +18574,7 @@
         openModals.forEach((x) => x.classList.remove("open"));
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
+        hideStarFortuneReveal({ rerender: false });
         scheduleIdleStatus(450);
         scheduleFieldMenu(450);
       }
@@ -18547,15 +18871,15 @@
       document.querySelectorAll("[data-buy-vehicle]").forEach((button) =>
         button.onclick = () => buyVehicle(button.dataset.buyVehicle),
       );
-      addEventListener("pointerdown", unlockGameAudio, {
+      addEventListener("pointerdown", recoverGameAudio, {
         capture: true,
         passive: true,
       });
-      addEventListener("touchstart", unlockGameAudio, {
+      addEventListener("touchstart", recoverGameAudio, {
         capture: true,
         passive: true,
       });
-      addEventListener("keydown", unlockGameAudio, { capture: true });
+      addEventListener("keydown", recoverGameAudio, { capture: true });
       addEventListener("keydown", (e) => {
         if (dogCatchGame && ["z", "Enter", " "].includes(e.key)) {
           handleDogCareCatch();
@@ -18606,25 +18930,23 @@
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
         } else if (s.soundEnabled) {
-          unlockGameAudio();
-          if (battle?.phase === "fight")
-            startUnderwaterSound(battle.f.id, battle.waterAudioWeight);
-          else if (battle && ["prep", "cast", "cast-flight", "wait", "bite"]
-            .includes(battle.phase))
-            startCastingWaterSound(
-              battle.waterZone || "lake",
-              battle.castLocale,
-            );
+          recoverGameAudio();
         }
       });
+      addEventListener("focus", () => recoverGameAudio());
+      addEventListener("pageshow", () => recoverGameAudio());
       setInterval(() => {
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
+      setInterval(() => {
+        if (s.soundEnabled && !document.hidden && battle)
+          syncExpectedLoopAudio();
+      }, 2500);
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=149-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=150-1").catch(() => {});
       renderRecord();
     </script>
   </body>
