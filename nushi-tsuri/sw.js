@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v150-audio-affinity-150-1";
+const CACHE_NAME = "nushi-tsuri-v151-hitbox-dog-window-151-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",

@@ -2887,8 +2887,10 @@
         grid-template-columns: minmax(320px, 1.65fr) minmax(210px, .85fr);
         align-items: center;
         gap: 10px;
+        min-height: 0;
         margin: 0 10px;
         padding: 8px 10px;
+        overflow: hidden;
         border: 1px solid #e0bd6866;
         border-radius: 8px;
         background: #071725a8;
@@ -5900,7 +5902,7 @@
         }
         .dog-care-modal { inset: .5%; }
         .dog-care-shell {
-          grid-template-rows: auto auto minmax(104px, 1.2fr) minmax(0, .82fr) auto;
+          grid-template-rows: auto auto minmax(0, 1.2fr) minmax(0, .82fr) auto;
         }
         .dog-care-heading { padding: 4px 8px; }
         .dog-care-heading h2 { font-size: .98rem; }
@@ -5908,11 +5910,22 @@
         .dog-care-tabs button { min-height: 28px; padding: 3px 6px; font-size: .65rem; }
         .dog-care-hero {
           grid-template-columns: minmax(220px, 43vw) minmax(0, 1fr);
+          align-items: stretch;
           gap: 7px;
           margin: 0 7px;
           padding: 5px 7px;
         }
-        .dog-care-stage { min-height: 104px; }
+        .dog-care-stage {
+          height: 100%;
+          min-height: 0;
+          aspect-ratio: auto;
+        }
+        .dog-care-stage canvas { object-fit: contain; }
+        .dog-care-profile {
+          align-self: center;
+          max-height: 100%;
+          overflow: auto;
+        }
         .dog-care-stage-label { top: 2px; left: 3px; padding: 1px 3px; font-size: .42rem; }
         .dog-care-catch-button {
           right: 3px;
@@ -6032,7 +6045,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v150</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v151</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -11317,6 +11330,11 @@
         s.dogTreatDays = {};
         s.mapVersion = 99;
       }
+      if ((s.mapVersion || 0) < 100) {
+        // v151 tightens only interaction reach and the short-screen dog UI.
+        // Position, catches, inventory, friendship and every v150 value stay.
+        s.mapVersion = 100;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -12645,6 +12663,14 @@
           top: 86,
           bottom: 93,
         },
+        // Interaction belongs to the painted front steps only.  The former
+        // radius-nine circle also reached the lower quay and harbor water.
+        samShopInteractionBounds = {
+          left: 193,
+          right: 203,
+          top: 88,
+          bottom: 96,
+        },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
           { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
@@ -12789,6 +12815,9 @@
       function inWorldRect(x, y, bounds) {
         return x >= bounds.left && x <= bounds.right &&
           y >= bounds.top && y <= bounds.bottom;
+      }
+      function isAtSamShopEntrance(x = s.x, y = s.y) {
+        return inWorldRect(x, y, samShopInteractionBounds);
       }
       function isOnLakeDock(x, y) {
         return x >= 105.5 && x <= 114 && y >= 10.5 && y <= 19.5;
@@ -14016,31 +14045,31 @@
         if (globalThis.requestAnimationFrame)
           requestAnimationFrame(syncSurfaceCastRig);
       }
-      function fishingWaterNearPlayer() {
+      function fishingWaterNearPlayer(
+        playerX = s.x,
+        playerY = s.y,
+        direction = s.direction,
+      ) {
         // A bridge remains a crossing, never an invisible fishing hotspot.
-        if (isOnRiverBridge(s.x, s.y)) return null;
+        if (isOnRiverBridge(playerX, playerY)) return null;
         const facing = {
           left: [-1, 0],
           right: [1, 0],
           up: [0, -1],
           down: [0, 1],
-        }[s.direction] || [0, -1];
-        const vectors = [
-          facing,
-          [-facing[1], facing[0]],
-          [facing[1], -facing[0]],
-          [-facing[0], -facing[1]],
-        ];
-        for (const [dx, dy] of vectors) {
-          const sideX = -dy;
-          const sideY = dx;
-          for (const distance of [3, 5, 8, 11, 14]) {
-            for (const side of [0, -2, 2, -4, 4]) {
-              const x = s.x + dx * distance + sideX * side;
-              const y = s.y + dy * distance + sideY * side;
-              const zone = waterZoneAtWorld(x, y);
-              if (zone) return { zone, x, y };
-            }
+        }[direction] || [0, -1];
+        const [dx, dy] = facing;
+        const sideX = -dy;
+        const sideY = dx;
+        // Fish only toward the water directly in front of the player.  Eight
+        // world units cover one blocked four-unit step plus an uneven bank,
+        // without reaching water behind shops, fences or the player's back.
+        for (const distance of [2, 4, 6, 8]) {
+          for (const side of [0, -1.5, 1.5, -3, 3]) {
+            const x = playerX + dx * distance + sideX * side;
+            const y = playerY + dy * distance + sideY * side;
+            const zone = waterZoneAtWorld(x, y);
+            if (zone) return { zone, x, y };
           }
         }
         return null;
@@ -14368,7 +14397,7 @@
           ? practiceComplete
             ? "サムの試し釣り池だ。Aで自由練習する。エサは減らない。"
             : "サムの試し釣り池だ。Aで初回講習を受ける。"
-          : near(196, 94, 9)
+          : isAtSamShopEntrance()
             ? "SAM'S FISHING SHOPだ。Aで店内へ入る。"
             : near(67, 108, 8) && canReceiveDogRescue()
               ? "砂浜の柔らかい土だ。エサが無い時はワンコに相談できそう。"
@@ -14379,8 +14408,8 @@
                   : spot
                     ? `${{ lake: "湖辺", river: "川辺", sea: "海辺" }[spot.waterZone]}だ。Aで釣る。投げる距離で水中の深さも変わる。`
                     : s.y > 104
-                      ? "潮見浜と星見港だ。海の水辺ならどこでも釣れる。"
-                      : "湖・川・海の水辺なら、どこでもAで釣れる。";
+                      ? "潮見浜と星見港だ。水辺のすぐそばで、水へ向いてAで釣る。"
+                      : "湖・川・海の水辺のすぐそばで、水へ向いてAで釣れる。";
         scheduleSave();
       }
       function renderIdleStatus() {
@@ -14831,7 +14860,7 @@
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
         const landmark = nearbyWorldLandmark();
-        if (near(196, 94, 9)) {
+        if (isAtSamShopEntrance()) {
           renderSamShop();
           open("store");
         }
@@ -18946,7 +18975,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=150-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=151-1").catch(() => {});
       renderRecord();
     </script>
   </body>
