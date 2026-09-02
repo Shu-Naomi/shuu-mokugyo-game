@@ -143,6 +143,48 @@
         overflow: hidden;
         background: #6f9b50;
       }
+      .player-home-area {
+        position: absolute;
+        z-index: 7;
+        inset: 0;
+        display: none;
+        overflow: hidden;
+        background-color: #1f342c;
+        background-image: url("assets/player-home-v153.jpg");
+        background-repeat: no-repeat;
+        background-size: 100% 200%;
+        image-rendering: pixelated;
+        isolation: isolate;
+        pointer-events: none;
+      }
+      .player-home-area.active { display: block; }
+      .player-home-area.exterior { background-position: center top; }
+      .player-home-area.interior { background-position: center bottom; }
+      .player-home-area::after {
+        content: "";
+        position: absolute;
+        z-index: 0;
+        inset: 0;
+        pointer-events: none;
+        box-shadow: inset 0 0 28px #10251e55;
+      }
+      .player-home-area .home-player {
+        z-index: 2;
+        transition: left .3s linear, top .3s linear;
+      }
+      .area-fade {
+        position: absolute;
+        z-index: 30;
+        inset: 0;
+        background: #05090d;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .18s ease;
+      }
+      .area-fade.active {
+        opacity: 1;
+        pointer-events: auto;
+      }
       .map {
         position: absolute;
         inset: 0 auto 0 0;
@@ -2102,6 +2144,12 @@
         height: 100%;
         object-fit: contain;
         image-rendering: pixelated;
+      }
+      .location-visual img.player-home-interior-preview {
+        height: 200%;
+        align-self: start;
+        object-fit: fill;
+        transform: translateY(-50%);
       }
       .shopkeeper-sam-svg {
         transform-box: fill-box;
@@ -6241,7 +6289,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v152</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v153</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6340,6 +6388,10 @@
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
+        <section id="playerHomeArea" class="player-home-area" aria-hidden="true" aria-label="主人公宅">
+          <div id="homePlayer" class="player home-player"><canvas class="player-sprite" id="homePlayerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
+        </section>
+        <div id="areaFade" class="area-fade" aria-hidden="true"></div>
         <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
         <div class="rescue-toast" id="rescueToast" role="status" aria-live="assertive"></div>
         <aside class="field-menu" id="fieldMenu" aria-label="フィールドメニュー" aria-hidden="true">
@@ -11405,6 +11457,13 @@
         fortuneRevealTimer = 0,
         fortuneResultAudioTimer = 0,
         fortuneRevealInProgress = false,
+        playerHomeTransitionTimer = 0,
+        playerHomeState = {
+          area: null,
+          x: 0,
+          y: 0,
+          transitioning: false,
+        },
         dogCareScene = {
           mode: "idle",
           dogId: "riku",
@@ -11745,6 +11804,11 @@
         s.questRumor = null;
         s.mapVersion = 101;
       }
+      if ((s.mapVersion || 0) < 102) {
+        // v153 adds the protagonist's home as a separate runtime area. No
+        // inventory, quest, dog, fishing or field-position data is replaced.
+        s.mapVersion = 102;
+      }
       const dogIds = Object.keys(dogProfileData),
         treatIds = Object.keys(dogCareData)
           .filter((id) => dogCareData[id].type === "treat"),
@@ -11949,10 +12013,19 @@
       }
       function loadPlayerImage(src) {
         const image = new Image();
-        image.onload = () => drawPlayer();
+        image.onload = () => {
+          drawPlayer();
+          drawHomePlayer();
+        };
         image.src = src;
-        if (image.decode) image.decode().then(drawPlayer).catch(() => {});
-        setTimeout(drawPlayer, 300);
+        if (image.decode) image.decode().then(() => {
+          drawPlayer();
+          drawHomePlayer();
+        }).catch(() => {});
+        setTimeout(() => {
+          drawPlayer();
+          drawHomePlayer();
+        }, 300);
         return image;
       }
       function loadPetSceneImage(src) {
@@ -13414,7 +13487,84 @@
             message: "港の舟具屋。南の島へ渡る日のための舟が並んでいる。",
           },
         ];
+      const PLAYER_HOME_MAP_ENTRY = {
+          left: 2,
+          right: 6,
+          top: 73,
+          bottom: 85,
+        },
+        PLAYER_HOME_MAP_RETURN = { x: 10, y: 79, direction: "right" },
+        PLAYER_HOME_TRANSITION_MS = 180,
+        playerHomeAreaData = {
+          exterior: {
+            label: "主人公宅・庭先",
+            spawns: {
+              map: { x: 12, y: 80, direction: "right" },
+              interior: { x: 50, y: 74, direction: "down" },
+            },
+            walkable: [
+              { left: 2, right: 98, top: 67, bottom: 95 },
+              { left: 2, right: 27, top: 56, bottom: 95 },
+              { left: 43, right: 57, top: 58, bottom: 76 },
+            ],
+            blocked: [
+              { left: 29, right: 38, top: 61, bottom: 91 },
+              { left: 57, right: 67, top: 68, bottom: 87 },
+              { left: 72, right: 87, top: 76, bottom: 96 },
+            ],
+            events: [
+              { id: "map-exit", x: 6, y: 80, radius: 7 },
+              { id: "front-door", x: 50, y: 66, radius: 7 },
+            ],
+          },
+          interior: {
+            label: "主人公宅・室内",
+            spawns: {
+              exterior: { x: 44, y: 91, direction: "up" },
+            },
+            walkable: [
+              { left: 16, right: 85, top: 24, bottom: 93 },
+              { left: 39, right: 49, top: 88, bottom: 98 },
+            ],
+            blocked: [
+              { left: 16, right: 29, top: 24, bottom: 49 },
+              { left: 55, right: 75, top: 24, bottom: 39 },
+              { left: 31, right: 50, top: 36, bottom: 62 },
+              { left: 54, right: 67, top: 48, bottom: 72 },
+              { left: 73, right: 86, top: 50, bottom: 83 },
+              { left: 17, right: 40, top: 75, bottom: 94 },
+              { left: 55, right: 70, top: 75, bottom: 94 },
+            ],
+            events: [
+              { id: "interior-door", x: 44, y: 94, radius: 7 },
+              { id: "bed", x: 27, y: 47, radius: 6 },
+              { id: "kitchen", x: 62, y: 39, radius: 11 },
+              { id: "aquarium", x: 79, y: 66, radius: 10 },
+            ],
+            // Ver.1では描画しない。今後の三匹の室内移動が、家具と
+            // 重ならず中央の床から始まるように独立した座標で予約する。
+            dogRoamBounds: { left: 30, right: 53, top: 64, bottom: 74 },
+            dogSpawnPoints: [
+              { dogId: "shuu", x: 35, y: 67 },
+              { dogId: "riku", x: 45, y: 70 },
+              { dogId: "grey", x: 51, y: 73 },
+            ],
+          },
+        };
       const locationInteriors = {
+        "player-home": {
+          brand: "MY FISHING HOME",
+          title: "主人公宅の台所",
+          asset: "assets/player-home-v153.jpg",
+          alt: "ベッド、台所、収納、釣具、水槽と犬用品が整った主人公宅",
+          dialogue: "使い慣れた台所だ。持ち帰った魚と採集物で、いつもの料理を作れる。",
+          actionLabel: "台所を使う",
+          actionCost: "料理",
+          kitchen: true,
+          service: false,
+          closeLabel: "台所を離れる",
+          note: "既存の料理と食事効果を、そのまま主人公宅でも利用できる。",
+        },
         farmhouse: {
           brand: "LAKESIDE FISHING INN",
           title: "湖畔の釣り宿",
@@ -13829,12 +13979,19 @@
         const image = $("#locationImage");
         image.src = interior.asset;
         image.alt = interior.alt;
+        image.className = id === "player-home"
+          ? "player-home-interior-preview"
+          : "";
+        const closeButton = $("#locationInterior [data-close]");
+        if (closeButton)
+          closeButton.textContent = interior.closeLabel || "外へ出る";
         $("#locationBrand").textContent = interior.brand;
         $("#locationTitle").textContent = interior.title;
         $("#locationDialogue").textContent = interior.dialogue;
         $("#locationActionLabel").textContent = interior.actionLabel;
         $("#locationActionCost").textContent = interior.actionCost;
-        $("#locationAction").hidden = Boolean(interior.goods?.length);
+        $("#locationAction").hidden = interior.service === false ||
+          Boolean(interior.goods?.length);
         $("#locationNote").textContent = interior.note;
         renderLocationGoods();
         open("locationInterior");
@@ -13901,6 +14058,226 @@
         document.querySelectorAll("[data-eat-prepared-meal]").forEach((button) =>
           button.onclick = () => eatPreparedMeal(button.dataset.eatPreparedMeal),
         );
+      }
+      function playerHomeIsActive() {
+        return Boolean(playerHomeState.area && playerHomeAreaData[playerHomeState.area]);
+      }
+      function isAtPlayerHomeMapEntrance(x = s.x, y = s.y) {
+        return inWorldRect(x, y, PLAYER_HOME_MAP_ENTRY);
+      }
+      function isPlayerHomePositionWalkable(
+        area = playerHomeState.area,
+        x = playerHomeState.x,
+        y = playerHomeState.y,
+      ) {
+        const data = playerHomeAreaData[area];
+        if (!data || !Number.isFinite(x) || !Number.isFinite(y)) return false;
+        return data.walkable.some((bounds) => inWorldRect(x, y, bounds)) &&
+          !data.blocked.some((bounds) => inWorldRect(x, y, bounds));
+      }
+      function nearbyPlayerHomeEvent(
+        area = playerHomeState.area,
+        x = playerHomeState.x,
+        y = playerHomeState.y,
+      ) {
+        const events = playerHomeAreaData[area]?.events || [];
+        return events
+          .map((event) => ({
+            ...event,
+            distance: Math.hypot(x - event.x, y - event.y),
+          }))
+          .filter((event) => event.distance < event.radius)
+          .sort((a, b) => a.distance - b.distance)[0] || null;
+      }
+      function playerHomeHint(event = nearbyPlayerHomeEvent()) {
+        if (event?.id === "map-exit")
+          return "村へ戻る道だ。Aでメインマップへ戻る。";
+        if (event?.id === "front-door")
+          return "主人公宅の玄関だ。Aで中へ入る。";
+        if (event?.id === "interior-door")
+          return "玄関だ。Aで庭先へ出る。";
+        if (event?.id === "bed")
+          return "自分のベッドだ。Aで寝て、翌朝06:00まで休む。";
+        if (event?.id === "kitchen")
+          return "台所だ。Aで料理する。";
+        if (event?.id === "aquarium")
+          return "水槽だ。Aで様子を見る。";
+        return playerHomeState.area === "interior"
+          ? "主人公宅。ベッド、台所、水槽をAで調べられる。"
+          : "主人公宅の庭先。玄関か村へ戻る道をAで調べる。";
+      }
+      function renderPlayerHome() {
+        const areaElement = $("#playerHomeArea");
+        if (!areaElement) return false;
+        const active = playerHomeIsActive();
+        areaElement.className = `player-home-area${active ?
+          ` active ${playerHomeState.area}` : ""}`;
+        areaElement.setAttribute("aria-hidden", String(!active));
+        if (!active) return false;
+        const data = playerHomeAreaData[playerHomeState.area];
+        areaElement.setAttribute("aria-label", data.label);
+        const player = $("#homePlayer");
+        player.style.left = `${playerHomeState.x}%`;
+        player.style.top = `${playerHomeState.y}%`;
+        const direction = s.direction;
+        const facing = direction === "up"
+          ? "face-up"
+          : ["left", "right"].includes(direction) ? "face-side" : "";
+        player.className =
+          `player home-player ${s.avatar} ${facing} face-${direction}` +
+          `${playerWalking ? " walking" : ""}`;
+        drawHomePlayer();
+        $("#hint").textContent = playerHomeHint();
+        return true;
+      }
+      function transitionPlayerHome(targetArea, spawnId = "map") {
+        const targetIsMap = targetArea === "map";
+        if (
+          playerHomeState.transitioning ||
+          (!targetIsMap && !playerHomeAreaData[targetArea])
+        ) return false;
+        hideIdleStatus();
+        hideFieldMenu();
+        clearTimeout(playerHomeTransitionTimer);
+        clearTimeout(walkTimer);
+        clearInterval(playerWalkInterval);
+        playerWalkInterval = 0;
+        playerWalking = false;
+        playerAnimFrame = 0;
+        playerHomeState.transitioning = true;
+        const fade = $("#areaFade");
+        fade.classList.add("active");
+        fade.setAttribute("aria-hidden", "false");
+        if (!playerHomeIsActive() && !targetIsMap) {
+          s.x = PLAYER_HOME_MAP_RETURN.x;
+          s.y = PLAYER_HOME_MAP_RETURN.y;
+          s.direction = PLAYER_HOME_MAP_RETURN.direction;
+          dogWorldPosition = null;
+          save();
+        }
+        playerHomeTransitionTimer = setTimeout(() => {
+          if (targetIsMap) {
+            playerHomeState.area = null;
+            playerHomeState.x = 0;
+            playerHomeState.y = 0;
+            s.x = PLAYER_HOME_MAP_RETURN.x;
+            s.y = PLAYER_HOME_MAP_RETURN.y;
+            s.direction = PLAYER_HOME_MAP_RETURN.direction;
+            dogWorldPosition = null;
+          } else {
+            const data = playerHomeAreaData[targetArea];
+            const spawn = data.spawns[spawnId] || Object.values(data.spawns)[0];
+            playerHomeState.area = targetArea;
+            playerHomeState.x = spawn.x;
+            playerHomeState.y = spawn.y;
+            s.direction = spawn.direction;
+          }
+          render();
+          requestAnimationFrame(() => {
+            fade.classList.remove("active");
+            fade.setAttribute("aria-hidden", "true");
+          });
+          playerHomeTransitionTimer = setTimeout(() => {
+            playerHomeTransitionTimer = 0;
+            playerHomeState.transitioning = false;
+            renderPlayerHome();
+            if (targetIsMap) {
+              armDogIdle();
+              scheduleIdleStatus();
+              scheduleFieldMenu();
+            }
+          }, PLAYER_HOME_TRANSITION_MS);
+        }, PLAYER_HOME_TRANSITION_MS);
+        return true;
+      }
+      function enterPlayerHomeFromMap() {
+        if (playerHomeIsActive() || !isAtPlayerHomeMapEntrance()) return false;
+        return transitionPlayerHome("exterior", "map");
+      }
+      function sleepAtPlayerHome() {
+        sleepUntilNextMorning(s);
+        s.hp = s.maxHp;
+        const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。`;
+        log(message);
+        showRescueToast("🛏️ 翌朝06:00まで休んだ。体力全回復！", 2800);
+        vibrate(20);
+        render();
+        save();
+        return true;
+      }
+      function playerHomeAction() {
+        if (
+          !playerHomeIsActive() ||
+          playerHomeState.transitioning ||
+          document.querySelector(".modal.open")
+        ) return false;
+        const event = nearbyPlayerHomeEvent();
+        if (!event) {
+          log("主人公宅で、ゆっくり過ごした。");
+          return false;
+        }
+        if (event.id === "map-exit")
+          return transitionPlayerHome("map");
+        if (event.id === "front-door")
+          return transitionPlayerHome("interior", "exterior");
+        if (event.id === "interior-door")
+          return transitionPlayerHome("exterior", "interior");
+        if (event.id === "bed") return sleepAtPlayerHome();
+        if (event.id === "kitchen")
+          return openLocationInterior("player-home");
+        if (event.id === "aquarium") {
+          const message = "水槽はきれいに整っている。魚を迎える機能は、これから追加できそうだ。";
+          log(message);
+          showRescueToast("🐟 水槽の飼育ポイントを確認した。", 2600);
+          vibrate(16);
+          return true;
+        }
+        return false;
+      }
+      function movePlayerHome(direction) {
+        if (
+          !playerHomeIsActive() ||
+          playerHomeState.transitioning ||
+          document.querySelector(".modal.open")
+        ) return false;
+        hideIdleStatus();
+        hideFieldMenu();
+        s.direction = direction;
+        const previousX = playerHomeState.x;
+        const previousY = playerHomeState.y;
+        const step = 4;
+        ({
+          left: () => (playerHomeState.x -= step),
+          right: () => (playerHomeState.x += step),
+          up: () => (playerHomeState.y -= step),
+          down: () => (playerHomeState.y += step),
+        })[direction]();
+        const moved = isPlayerHomePositionWalkable();
+        if (!moved) {
+          playerHomeState.x = previousX;
+          playerHomeState.y = previousY;
+        }
+        const startingWalk = !playerWalking;
+        playerWalking = true;
+        if (startingWalk) {
+          playerAnimFrame = 0;
+          clearInterval(playerWalkInterval);
+          playerWalkInterval = setInterval(() => {
+            if (!playerWalking) return;
+            playerAnimFrame = (playerAnimFrame + 1) % 4;
+            drawHomePlayer();
+          }, 90);
+        }
+        renderPlayerHome();
+        clearTimeout(walkTimer);
+        walkTimer = setTimeout(() => {
+          playerWalking = false;
+          playerAnimFrame = 0;
+          clearInterval(playerWalkInterval);
+          playerWalkInterval = 0;
+          renderPlayerHome();
+        }, 305);
+        return moved;
       }
       function buyLocationItem(id) {
         const item = fieldItemData[id];
@@ -14878,9 +15255,16 @@
         const linkedIdle = ["idle-beg", "idle-sleep"].includes(dogIdleMode);
         const walking =
           playerWalking && !companionReaction && !linkedIdle;
-        const direction = ["left", "right"].includes(s.direction)
+        drawPlayerSprite(canvas, s.direction, walking);
+      }
+      function drawHomePlayer() {
+        if (!playerHomeIsActive()) return;
+        drawPlayerSprite($("#homePlayerSprite"), s.direction, playerWalking);
+      }
+      function drawPlayerSprite(canvas, facingDirection, walking) {
+        const direction = ["left", "right"].includes(facingDirection)
           ? "side"
-          : s.direction === "up" ? "up" : "down";
+          : facingDirection === "up" ? "up" : "down";
         const walkImage = playerWalkImages?.[s.avatar];
         // The front- and rear-facing standing cells both have a deliberately
         // broad boot stance. Flashing either one between strides reads as
@@ -15095,6 +15479,7 @@
                     : s.y > 104
                       ? "潮見浜と星見港だ。水辺のすぐそばで、水へ向いてAで釣る。"
                       : "湖・川・海の水辺のすぐそばで、水へ向いてAで釣れる。";
+        renderPlayerHome();
         scheduleSave();
       }
       function renderIdleStatus() {
@@ -15130,6 +15515,8 @@
       }
       function canShowIdleStatus() {
         return $("#game").classList.contains("active") &&
+          !playerHomeState.transitioning &&
+          !playerHomeIsActive() &&
           !playerWalking &&
           !rescueInProgress &&
           !forageDiscoveryInProgress &&
@@ -15158,6 +15545,7 @@
       }
       function canShowFieldMenu() {
         return $("#game").classList.contains("active") &&
+          !playerHomeState.transitioning &&
           !playerWalking &&
           !rescueInProgress &&
           !forageDiscoveryInProgress &&
@@ -15194,8 +15582,12 @@
         else if (target === "dog") openDogCare();
       }
       function move(d) {
+        if (playerHomeState.transitioning) return;
+        if (playerHomeIsActive()) return movePlayerHome(d);
         if (battle || rescueInProgress || forageDiscoveryInProgress ||
             document.querySelector(".modal.open")) return;
+        if (d === "left" && isAtPlayerHomeMapEntrance())
+          return enterPlayerHomeFromMap();
         hideIdleStatus();
         hideFieldMenu();
         wakeDog();
@@ -15236,6 +15628,7 @@
           moved = true;
         }
         render();
+        if (moved && enterPlayerHomeFromMap()) return;
         $("#player").classList.add("walking");
         $("#dog").classList.add("walking");
         if (moved) maybeDogDiscoverForagePoint();
@@ -15540,6 +15933,8 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
+        if (playerHomeState.transitioning) return;
+        if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
         const foragePoint = nearbyForagePoint();
         if (foragePoint) return collectForagePoint(foragePoint.point.id);
@@ -19299,8 +19694,14 @@
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
         hideStarFortuneReveal({ rerender: false });
-        scheduleIdleStatus(450);
-        scheduleFieldMenu(450);
+        if (playerHomeIsActive()) {
+          hideIdleStatus();
+          hideFieldMenu();
+          renderPlayerHome();
+        } else {
+          scheduleIdleStatus(450);
+          scheduleFieldMenu(450);
+        }
       }
       function backAction() {
         if (fieldMenuIsOpen()) hideFieldMenu();
@@ -19670,7 +20071,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=152-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=153-1").catch(() => {});
       renderRecord();
     </script>
   </body>
