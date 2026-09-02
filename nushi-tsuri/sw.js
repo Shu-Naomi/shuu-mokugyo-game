@@ -1,4 +1,4 @@
-const CACHE_NAME = "nushi-tsuri-v152-quest-board-152-1";
+const CACHE_NAME = "nushi-tsuri-v153-player-home-153-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -38,6 +38,7 @@ const CORE_ASSETS = [
   "./assets/cast-sea-harbor-evening-v76.jpg",
   "./assets/cast-sea-harbor-night-v76.jpg",
   "./assets/terrain-world-v54.png",
+  "./assets/player-home-v153.jpg",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
   "./assets/underwater-lake-mid-v64.jpg",
