@@ -72,6 +72,101 @@ function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPre
   return { dom, window: dom.window, errors, dispose };
 }
 const read = (window, expression) => JSON.parse(window.eval(`JSON.stringify(${expression})`));
+
+test("unchanged field sparkles keep their nodes; hidden records refresh when opened", () => {
+  const app = boot();
+  const { window } = app;
+  try {
+    const layer = window.document.querySelector("#forageLayer");
+    const sparkles = [...layer.children];
+    assert.ok(sparkles.length > 0);
+    const fieldChanges = new window.MutationObserver(() => {});
+    fieldChanges.observe(layer, { childList: true });
+    const bookChanges = new window.MutationObserver(() => {});
+    bookChanges.observe(window.document.querySelector("#book"), { childList: true });
+    window.eval('for (let i = 0; i < 20; i++) { render(); log("描画確認 " + i); } openInventory(); close();');
+    assert.equal(fieldChanges.takeRecords().length, 0, "no sparkle subtree rebuilds across 20 unchanged renders");
+    assert.deepEqual([...layer.children], sparkles, "CSS animation nodes survive movement renders");
+    assert.equal(bookChanges.takeRecords().length, 0, "20 log updates and another menu do not rebuild a hidden book");
+    window.eval('s.caught.koi = 1; open("record")');
+    assert.equal(bookChanges.takeRecords().length, 1);
+    assert.equal(window.document.querySelector("#fishdexDiscovered").textContent, "5 / 17");
+    assert.match(window.document.querySelector('[data-fishdex-id="koi"]').textContent, /コイ.*1匹/s);
+    assert.match(window.document.querySelector("#log").textContent, /描画確認 19/);
+    window.eval('log("開いている図鑑の新しい記録")');
+    assert.match(window.document.querySelector("#log").textContent, /開いている図鑑の新しい記録/);
+    window.eval("close()");
+    const pointId = sparkles[0].dataset.foragePoint;
+    assert.equal(window.eval(`collectForagePoint(${JSON.stringify(pointId)})`), true);
+    assert.equal(layer.querySelector(`[data-forage-point="${pointId}"]`), null, "harvest still removes the sparkle immediately");
+    assert.ok(fieldChanges.takeRecords().length > 0);
+    fieldChanges.disconnect(); bookChanges.disconnect();
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
+});
+
+test("blur, hidden pages, pagehide and lost pointer capture release held inputs", async () => {
+  const app = boot();
+  const { window } = app;
+  try {
+    for (const type of ["blur", "visibilitychange", "pagehide"]) {
+      window.eval("battle = null; s.soundEnabled = false");
+      const moveButton = window.document.querySelector('[data-move="right"]');
+      // JSDOM does not dispatch PointerEvent properties. Invoke the installed
+      // handler, then dispatch the real window/document lifecycle events.
+      moveButton.onpointerdown({ preventDefault() {}, currentTarget: moveButton, pointerId: 1 });
+      assert.ok(window.eval("moveHoldInterval"));
+      const position = read(window, "[s.x,s.y]");
+      // Isolate input handling from the battle simulation, which has its own
+      // tests. No movement or reel handler is mocked here.
+      window.eval('battle = { phase:"fight", reeling:true, retrievalDelta:0 }');
+      if (type === "visibilitychange") {
+        Object.defineProperty(window.document, "hidden", { configurable: true, value: true });
+        window.document.dispatchEvent(new window.Event(type));
+      } else window.dispatchEvent(new window.Event(type));
+      assert.equal(window.eval("moveHoldInterval"), 0, `${type} clears movement`);
+      assert.equal(window.eval("battle.reeling"), false, `${type} releases reel`);
+      window.eval("battle = null");
+      await new Promise((resolve) => window.setTimeout(resolve, 390));
+      assert.deepEqual(read(window, "[s.x,s.y]"), position, `${type} leaves no delayed movement`);
+      Object.defineProperty(window.document, "hidden", { configurable: true, value: false });
+    }
+    window.eval('battle = { phase:"fight", reeling:true, retrievalDelta:0 }');
+    window.document.querySelector("#pull").onlostpointercapture();
+    assert.equal(window.eval("battle.reeling"), false);
+    window.eval("battle = null");
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
+});
+
+test("storage failure preserves current progress and page cleanup; a later save recovers", async () => {
+  const app = boot();
+  const { window } = app;
+  const setItem = window.Storage.prototype.setItem;
+  try {
+    await enterHome(window);
+    choose(window, "nijimasu");
+    const previousSave = window.localStorage.getItem(saveKey);
+    window.Storage.prototype.setItem = () => { throw new window.DOMException("Storage full", "QuotaExceededError"); };
+    choose(window, "funa");
+    assert.equal(window.eval("s.homeAquariumFishId"), "funa", "the fish replacement completes in memory");
+    assert.equal(window.localStorage.getItem(saveKey), previousSave, "the last stored save stays intact");
+    assert.equal(window.document.querySelector("#saveStatus").hidden, false);
+    assert.equal(window.eval("save()"), false);
+    window.eval('log("保存失敗後も操作できる"); gameAudio.unlocked = true');
+    assert.ok(window.eval("aquariumAnimationTimer"));
+    window.dispatchEvent(new window.Event("pagehide"));
+    assert.equal(window.eval("aquariumAnimationTimer"), 0, "save failure cannot skip animation cleanup");
+    assert.equal(window.eval("gameAudio.unlocked"), false, "save failure cannot skip audio cleanup");
+    assert.equal(window.eval("s.log[0]"), "保存失敗後も操作できる");
+    window.Storage.prototype.setItem = setItem;
+    assert.equal(window.eval("save()"), true);
+    assert.equal(window.document.querySelector("#saveStatus").hidden, true);
+    assert.equal(JSON.parse(window.localStorage.getItem(saveKey)).homeAquariumFishId, "funa");
+    assert.deepEqual(app.errors, []);
+  } finally { window.Storage.prototype.setItem = setItem; app.dispose(); }
+});
+
 async function finishTransition(window) {
   for (let count = 0; count < 80; count += 1) {
     if (!window.eval("playerHomeState.transitioning")) return;

@@ -1,4 +1,5 @@
-const CACHE_NAME = "nushi-tsuri-v156-home-path-aquarium-156-1";
+const CACHE_PREFIX = "nushi-tsuri-";
+const CACHE_NAME = "nushi-tsuri-v157-runtime-stability-157-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -198,42 +199,59 @@ self.addEventListener("activate", (event) => {
       .then((keys) =>
         Promise.all(
           keys
-            .filter((key) => key !== CACHE_NAME)
+            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
             .map((key) => caches.delete(key)),
         ),
       )
       .then(() => self.clients.claim()),
   );
 });
+async function matchGameCache(request) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    return await cache.match(request);
+  } catch (_) {
+    return undefined;
+  }
+}
+function storeGameResponse(event, request, response) {
+  // Error pages and partial media responses must not replace a good copy.
+  if (response.status !== 200) return;
+  const copy = response.clone();
+  event.waitUntil(
+    caches.open(CACHE_NAME)
+      .then((cache) => cache.put(request, copy))
+      .catch(() => {}),
+  );
+}
 self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
+  if (request.method !== "GET" || url.origin !== self.location.origin) return;
   if (request.mode === "navigate" || url.pathname.endsWith("/index.html")) {
     event.respondWith(
       fetch(request, { cache: "no-store" })
-        .then((response) => {
-          const copy = response.clone();
-          caches.open(CACHE_NAME).then((cache) => cache.put("./index.html", copy));
+        .then(async (response) => {
+          if (response.status >= 500)
+            return await matchGameCache("./index.html") || response;
+          storeGameResponse(event, "./index.html", response);
           return response;
         })
-        .catch(() => caches.match("./index.html")),
+        .catch(async () => await matchGameCache("./index.html") || Response.error()),
     );
     return;
   }
   event.respondWith(
-    caches
-      .match(request)
+    matchGameCache(request)
       .then((cached) => {
         if (cached) return cached;
         return fetch(request)
           .then((response) => {
-            if (request.method === "GET" && response.ok) {
-              const copy = response.clone();
-              caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-            }
+            storeGameResponse(event, request, response);
             return response;
           })
-          .catch(() => caches.match("./index.html"));
+          // A missing PNG/MP3 must fail as that resource, never receive HTML.
+          .catch(() => Response.error());
       }),
   );
 });

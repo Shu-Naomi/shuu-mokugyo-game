@@ -112,6 +112,8 @@
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
       }
+      #saveStatus { color: #ffd17d; white-space: nowrap; }
+      #saveStatus[hidden] { display: none; }
       .hud .grow {
         flex: 1;
       }
@@ -6376,7 +6378,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v156</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v157</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -11547,6 +11549,7 @@
         rescueInProgress = false,
         forageDiscoveryInProgress = false,
         forageWalkSteps = 0,
+        renderedForageMarkup = null,
         dogIdleMode = "",
         companionReaction = "",
         dogApproachOffset = 0,
@@ -12209,7 +12212,16 @@
       function save() {
         clearTimeout(saveTimer);
         saveTimer = 0;
-        localStorage.setItem(key, JSON.stringify(s));
+        try {
+          localStorage.setItem(key, JSON.stringify(s));
+          $("#saveStatus").hidden = true;
+          return true;
+        } catch (_) {
+          // Storage failure must not abort a catch, a purchase or pagehide
+          // cleanup. Keep progress in memory and retry on the next save.
+          $("#saveStatus").hidden = false;
+          return false;
+        }
       }
       function scheduleSave() {
         clearTimeout(saveTimer);
@@ -13450,7 +13462,7 @@
         s.log.unshift(t);
         s.log = s.log.slice(0, 12);
         save();
-        renderRecord();
+        if ($("#record").classList.contains("open")) renderRecord();
       }
       function near(x, y, r = 13) {
         return Math.hypot(s.x - x, s.y - y) < r;
@@ -13973,7 +13985,7 @@
         if (!layer) return;
         const cycle = ensureForageCycle();
         const dogFound = new Set(cycle.dogFound);
-        layer.innerHTML = Object.keys(cycle.active).map((pointId) => {
+        const markup = Object.keys(cycle.active).map((pointId) => {
           const point = foragePointData.find((candidate) => candidate.id === pointId);
           const position = foragePointPosition(point);
           if (!point || !position) return "";
@@ -13981,6 +13993,12 @@
             `data-forage-point="${pointId}" style="left:${worldToMapX(position.x).toFixed(3)}%;` +
             `top:${worldToMapY(position.y).toFixed(3)}%"></span>`;
         }).join("");
+        // Walking does not change these nodes. Keep their animation phase
+        // and avoid rebuilding the same sparkles on every movement render.
+        if (markup !== renderedForageMarkup) {
+          layer.innerHTML = markup;
+          renderedForageMarkup = markup;
+        }
       }
       function nearbyForagePoint(x = s.x, y = s.y, radius = 7.5) {
         const cycle = ensureForageCycle();
@@ -19962,7 +19980,7 @@
         // centred on the viewport after the player has walked around.
         modal.style.transform = `translateX(${$("#world").scrollLeft}px)`;
         modal.classList.add("open");
-        renderRecord();
+        if (id === "record") renderRecord();
       }
       function close() {
         const openModals = [...document.querySelectorAll(".modal.open")];
@@ -20201,11 +20219,15 @@
           save();
         };
       });
+      function stopMoving() {
+        clearInterval(moveHoldInterval);
+        moveHoldInterval = 0;
+      }
+      function releaseHeldInputs() {
+        stopMoving();
+        setBattleReeling(false);
+      }
       document.querySelectorAll("[data-move]").forEach((b) => {
-        const stopMoving = () => {
-          clearInterval(moveHoldInterval);
-          moveHoldInterval = 0;
-        };
         b.onpointerdown = (e) => {
           e.preventDefault();
           e.currentTarget.setPointerCapture?.(e.pointerId);
@@ -20233,6 +20255,7 @@
       };
       $("#pull").onpointerup = () => setBattleReeling(false);
       $("#pull").onpointercancel = () => setBattleReeling(false);
+      $("#pull").onlostpointercapture = () => setBattleReeling(false);
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
@@ -20318,7 +20341,9 @@
         }
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
+      addEventListener("blur", releaseHeldInputs);
       addEventListener("pagehide", () => {
+        releaseHeldInputs();
         save();
         stopAquariumAnimation();
         stopCastingWaterSound(.05);
@@ -20330,6 +20355,7 @@
       document.addEventListener("visibilitychange", () => {
         renderHomeAquarium();
         if (document.hidden) {
+          releaseHeldInputs();
           save();
           stopCastingWaterSound(.05);
           stopUnderwaterSound(.05);
@@ -20356,7 +20382,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=156-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=157-1").catch(() => {});
       renderRecord();
     </script>
   </body>
