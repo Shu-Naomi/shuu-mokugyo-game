@@ -1,6 +1,6 @@
 {
   "name": "starfall-lake-regression-tests",
   "private": true,
-  "scripts": { "test": "node --test aquarium.test.cjs" },
+  "scripts": { "test": "node --test *.test.cjs" },
   "devDependencies": { "jsdom": "26.1.0" }
 }
