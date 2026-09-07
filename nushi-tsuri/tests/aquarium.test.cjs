@@ -15,7 +15,7 @@ const seed = () => ({
   questCompletions: 4, x: 10, y: 79, direction: "left",
 });
 
-function boot(saved = seed()) {
+function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPreview: [440, 180] }) {
   const errors = [];
   let dispose;
   const virtualConsole = new VirtualConsole();
@@ -28,6 +28,13 @@ function boot(saved = seed()) {
       // teardown before that function shadows window.close, or timers linger.
       dispose = window.close.bind(window);
       window.localStorage.setItem(saveKey, JSON.stringify(saved));
+      // JSDOM has no layout engine. Supply explicit phone-sized tank boxes
+      // so containment tests exercise real sizing math instead of 0x0 DOMs.
+      const bounds = window.Element.prototype.getBoundingClientRect;
+      window.Element.prototype.getBoundingClientRect = function () {
+        const size = tankSizes[this.id];
+        return size ? new window.DOMRect(0, 0, ...size) : bounds.call(this);
+      };
       window.matchMedia = () => ({ matches: false, addEventListener() {}, removeEventListener() {} });
       window.ResizeObserver = class { observe() {} disconnect() {} };
       window.Path2D = class {};
@@ -88,9 +95,9 @@ function walkTo(window, eventId) {
         }
         return true;
       }
-      for (const [direction, dx, dy] of [["left", -4, 0], ["right", 4, 0], ["up", 0, -4], ["down", 0, 4]]) {
-        const x = point.x + dx, y = point.y + dy;
-        if (isPlayerHomePositionWalkable(playerHomeState.area, x, y))
+      for (const direction of ["left", "right", "up", "down"]) {
+        const { x, y } = playerHomeMoveTarget(playerHomeState.area, point.x, point.y, direction);
+        if (x !== point.x || y !== point.y)
           queue.push({ x, y, path: [...point.path, direction] });
       }
     }
@@ -237,4 +244,124 @@ test("all existing fish use one reused sprite; hidden pages stop/resume animatio
     assert.ok(window.eval("aquariumAnimationTimer"));
     assert.deepEqual(app.errors, []);
   } finally { app.dispose(); }
+});
+
+test("painted aisles are reachable, furniture stays solid, and A works from the tank's exposed front", async () => {
+  const app = boot();
+  const { window } = app;
+  try {
+    // Coordinates come from visible floor/objects in player-home-v153.jpg,
+    // not from the collision rectangles under test.
+    const floor = {
+      interior: [[30, 41], [33, 55], [39, 68], [39, 85], [52, 75], [64, 75], [68, 75], [70, 70], [70, 86], [52, 33]],
+      exterior: [[12, 80], [28, 83], [38, 80], [58, 82], [64, 84], [76, 84], [86, 88], [49, 73]],
+    };
+    const solid = {
+      interior: [[14, 67], [86, 60], [44, 25], [20, 40], [40, 45], [46, 58], [60, 65], [62, 32], [79, 30], [79, 48], [79, 70], [79, 91], [60, 85], [30, 85], [17, 60]],
+      exterior: [[50, 60], [68, 70], [80, 68], [20, 60], [36, 71], [60, 75], [79, 79]],
+    };
+    for (const [area, points] of Object.entries(floor)) {
+      for (const [x, y] of points)
+        assert.equal(window.eval(`isPlayerHomePositionWalkable("${area}", ${x}, ${y})`), true, `floor ${area} ${x},${y}`);
+    }
+    for (const [area, points] of Object.entries(solid)) {
+      for (const [x, y] of points)
+        assert.equal(window.eval(`isPlayerHomePositionWalkable("${area}", ${x}, ${y})`), false, `solid ${area} ${x},${y}`);
+    }
+    await enterHome(window);
+    window.document.querySelector("#back").click();
+    // A direct, repeatable thumb-pad route from the entrance: four up,
+    // then six right along the floor beneath the tackle rack.
+    window.eval("Object.assign(playerHomeState, { x:44, y:91 })");
+    for (let i = 0; i < 4; i++) assert.equal(window.eval('movePlayerHome("up")'), true);
+    for (let i = 0; i < 6; i++) assert.equal(window.eval('movePlayerHome("right")'), true);
+    assert.deepEqual(read(window, "({x:playerHomeState.x,y:playerHomeState.y})"), { x:68, y:75 });
+    window.document.querySelector("#action").click();
+    assert.equal(window.document.querySelector("#aquariumModal").classList.contains("open"), true);
+    window.document.querySelector("#back").click();
+    // One more right tap uses the clear part of a stride, stops at the
+    // cabinet, and still permits A; it cannot jump through the cabinet.
+    assert.equal(window.eval('movePlayerHome("right")'), true);
+    assert.equal(window.eval("playerHomeState.x"), 70);
+    assert.equal(window.eval('movePlayerHome("right")'), false);
+    window.document.querySelector("#action").click();
+    assert.equal(window.document.querySelector("#aquariumModal").classList.contains("open"), true);
+    window.document.querySelector("#back").click();
+    for (const [x, y] of [[68, 61], [68, 75], [69, 72], [70, 75]])
+      assert.equal(window.eval(`nearbyPlayerHomeEvent("interior", ${x}, ${y})?.id`), "aquarium");
+    for (const [x, y] of [[64, 75], [79, 66], [79, 91], [70, 86]])
+      assert.notEqual(window.eval(`nearbyPlayerHomeEvent("interior", ${x}, ${y})?.id`), "aquarium");
+    for (const id of ["bed", "kitchen", "interior-door", "aquarium"])
+      assert.equal(walkTo(window, id), true, `reachable ${id}`);
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
+});
+
+test("every fish cruises slowly, turns while stopped, and stays inside both phone-sized tanks", async () => {
+  for (const sizes of [
+    { homeAquarium: [101, 45], aquariumPreview: [440, 180] },
+    { homeAquarium: [78, 28], aquariumPreview: [310, 100] },
+    { homeAquarium: [164, 76], aquariumPreview: [740, 300] },
+  ]) {
+    const app = boot(seed(), sizes);
+    const { window } = app;
+    try {
+      await enterHome(window);
+      window.eval("stopAquariumAnimation(); for (const f of fish) s.caught[f.id] = 1");
+      const motion = read(window, `fish.map(f => {
+        let previous = aquariumFishPose(f.id, 0), previousVelocity = 0;
+        let maxSpeed = 0, maxAcceleration = 0, wrongFacing = 0, turningInMotion = 0, escapes = 0;
+        let minY = 100, maxY = 0;
+        const headings = new Set();
+        for (let step = 1; step <= 1600; step++) {
+          const pose = aquariumFishPose(f.id, step * .05);
+          const dx = pose.x - previous.x;
+          const velocity = dx / .05;
+          maxSpeed = Math.max(maxSpeed, Math.abs(velocity));
+          maxAcceleration = Math.max(maxAcceleration, Math.abs(velocity - previousVelocity) / .05);
+          if (Math.abs(dx) > .0001 && Math.sign(dx) !== Math.sign(pose.facing)) wrongFacing++;
+          if (Math.abs(pose.facing) < .99 && Math.abs(dx) > .0001) turningInMotion++;
+          if (pose.x - pose.width / 2 < 3.99 || pose.x + pose.width / 2 > 96.01) escapes++;
+          if (Math.abs(pose.facing) > .99) headings.add(Math.sign(pose.facing));
+          minY = Math.min(minY, pose.y); maxY = Math.max(maxY, pose.y);
+          previous = pose; previousVelocity = velocity;
+        }
+        return { id:f.id, maxSpeed, maxAcceleration, wrongFacing, turningInMotion, escapes, headings:[...headings], sway:maxY-minY };
+      })`);
+      for (const row of motion) {
+        assert.ok(row.maxSpeed > 0 && row.maxSpeed < 8, `${row.id} slow speed`);
+        assert.ok(row.maxAcceleration < 3, `${row.id} gentle acceleration`);
+        assert.equal(row.wrongFacing, 0, `${row.id} facing travel direction`);
+        assert.equal(row.turningInMotion, 0, `${row.id} turns at rest`);
+        assert.equal(row.escapes, 0, `${row.id} horizontal bounds`);
+        assert.equal(row.headings.length, 2, `${row.id} both directions`);
+        assert.ok(row.sway <= 2.501, `${row.id} small vertical sway`);
+      }
+      assert.ok(window.eval('aquariumFishPose("moroko",0).width < aquariumFishPose("suzuki",0).width'));
+      for (const id of read(window, "fish.map(f => f.id)")) {
+        window.eval(`s.homeAquariumFishId = "${id}"; renderHomeAquarium(); stopAquariumAnimation()`);
+        for (const time of [0, 7, 14, 14.35, 14.7, 22, 29.05, 37.05]) {
+          window.eval(`aquariumElapsed=${time}; drawAquariumFish()`);
+          for (const selector of ["homeAquariumFish", "aquariumPreviewFish"]) {
+            const element = window.document.getElementById(selector);
+            const [w, h] = sizes[element.parentElement.id];
+            const fw = parseFloat(element.style.width), fh = parseFloat(element.style.height);
+            const x = parseFloat(element.style.left) / 100 * w, y = parseFloat(element.style.top) / 100 * h;
+            assert.ok(fw > 0 && fh > 0);
+            assert.ok(x - fw/2 >= 0 && x + fw/2 <= w, `${id} ${selector} horizontal containment`);
+            assert.ok(y - fh/2 >= 0 && y + fh/2 <= h, `${id} ${selector} vertical containment`);
+            const [sourceW, sourceH] = read(window, `fishFrameFallbackSizes["${id}"] || [320,160]`);
+            assert.ok(Math.abs(fw/fh - sourceW/sourceH) < .00001, `${id} undistorted aspect ratio`);
+          }
+        }
+      }
+      // Long stalls advance at most one short step, and resuming a stopped
+      // animation excludes all time spent outside/hidden.
+      window.eval("aquariumElapsed=7; stopAquariumAnimation(); advanceAquariumAnimation(1000); cancelAnimationFrame(aquariumAnimationTimer); advanceAquariumAnimation(11000); cancelAnimationFrame(aquariumAnimationTimer)");
+      assert.ok(Math.abs(window.eval("aquariumElapsed") - 7.05) < .00001);
+      window.eval("stopAquariumAnimation(); advanceAquariumAnimation(1000000); cancelAnimationFrame(aquariumAnimationTimer)");
+      assert.ok(Math.abs(window.eval("aquariumElapsed") - 7.05) < .00001);
+      assert.deepEqual(app.errors, []);
+    } finally { app.dispose(); }
+  }
 });
