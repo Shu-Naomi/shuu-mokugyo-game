@@ -172,6 +172,78 @@
         z-index: 2;
         transition: left .3s linear, top .3s linear;
       }
+      .aquarium-tank {
+        position: relative;
+        overflow: hidden;
+        border: 2px solid #8caca5;
+        background:
+          radial-gradient(ellipse at 16% 94%, #697b50 0 6%, transparent 7%),
+          radial-gradient(ellipse at 85% 96%, #68745a 0 9%, transparent 10%),
+          linear-gradient(#377785, #163e52 82%, #a49365 83%, #746342);
+        box-shadow: inset 0 2px #a9e1df77, inset 0 0 14px #04172588;
+        image-rendering: pixelated;
+      }
+      .aquarium-tank::before {
+        content: "";
+        position: absolute;
+        left: 8%;
+        bottom: 14%;
+        width: 3%;
+        height: 32%;
+        background: #45805b;
+        box-shadow: 6px 5px #3b6f50, -4px 8px #587b4c;
+        transform: rotate(-9deg);
+      }
+      #homeAquarium {
+        position: absolute;
+        z-index: 1;
+        left: 71.8%;
+        top: 66.6%;
+        width: 12%;
+        height: 14.3%;
+        pointer-events: none;
+      }
+      .aquarium-fish {
+        position: absolute;
+        width: 38%;
+        max-height: 48%;
+        left: 50%;
+        top: 46%;
+        transform: translate(-50%, -50%);
+        transition: left .12s linear, top .12s linear;
+      }
+      .aquarium-fish[hidden], #homeAquarium[hidden] { display: none; }
+      .aquarium-heading { display: flex; align-items: center; gap: 10px; }
+      .aquarium-heading h2 { flex: 1; margin: 0; font-size: 1.1rem; }
+      .aquarium-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr);
+        flex: 1;
+        min-height: 0;
+        gap: 14px;
+      }
+      .aquarium-preview { min-height: 100px; }
+      .aquarium-panel { min-width: 0; overflow: auto; font-size: .78rem; }
+      .aquarium-panel p { margin: 0 0 10px; line-height: 1.5; }
+      .aquarium-panel label { display: block; margin-bottom: 6px; }
+      .aquarium-panel select, .aquarium-panel button {
+        width: 100%;
+        min-height: 40px;
+        margin-bottom: 10px;
+        font: inherit;
+      }
+      .aquarium-panel select {
+        padding: 6px;
+        border: 1px solid #b9d0d3;
+        border-radius: 5px;
+        background: #13283d;
+        color: #fff5d5;
+      }
+      .aquarium-panel button:disabled { opacity: .5; }
+      .aquarium-panel small { color: #b6d6db; line-height: 1.5; }
+      @media (max-width: 540px) and (orientation: portrait) {
+        .aquarium-layout { grid-template-columns: 1fr; grid-template-rows: minmax(120px, 1fr) auto; }
+      }
       .area-fade {
         position: absolute;
         z-index: 30;
@@ -2897,6 +2969,11 @@
       }
       .modal.open {
         display: block;
+      }
+      #aquariumModal.open {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
       }
       .modal h2 {
         margin: 0 0 8px;
@@ -6289,7 +6366,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v154</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v155</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6389,8 +6466,29 @@
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
         <section id="playerHomeArea" class="player-home-area" aria-hidden="true" aria-label="主人公宅">
+          <div id="homeAquarium" class="aquarium-tank" role="img" aria-label="空の水槽" hidden>
+            <div id="homeAquariumFish" class="aquarium-fish" hidden></div>
+          </div>
           <div id="homePlayer" class="player home-player"><canvas class="player-sprite" id="homePlayerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
         </section>
+        <div id="aquariumModal" class="modal aquarium-modal" role="dialog" aria-modal="true" aria-labelledby="aquariumTitle">
+          <header class="aquarium-heading">
+            <h2 id="aquariumTitle">自宅の水槽</h2>
+            <button class="close" data-close>閉じる</button>
+          </header>
+          <div class="aquarium-layout">
+            <div id="aquariumPreview" class="aquarium-tank aquarium-preview" role="img" aria-label="空の水槽">
+              <div id="aquariumPreviewFish" class="aquarium-fish" hidden></div>
+            </div>
+            <div class="aquarium-panel">
+              <p id="aquariumStatus" role="status">まだ魚は入っていない。</p>
+              <label for="aquariumFishSelect">これまでに釣った魚から1匹</label>
+              <select id="aquariumFishSelect"></select>
+              <button id="aquariumPlaceFish" disabled>水槽に入れる</button>
+              <small>飼えるのは1匹。新しい魚を入れると入れ替わるよ。釣果数・図鑑・持ち物は減らない。</small>
+            </div>
+          </div>
+        </div>
         <div id="areaFade" class="area-fade" aria-hidden="true"></div>
         <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
         <div class="rescue-toast" id="rescueToast" role="status" aria-live="assertive"></div>
@@ -11384,6 +11482,7 @@
             rod: "竹の竿",
             power: 16,
             caught: {},
+            homeAquariumFishId: null,
             sizeRecords: {},
             fishCrowns: {},
             fishCatchRecords: {},
@@ -11458,6 +11557,9 @@
         fortuneResultAudioTimer = 0,
         fortuneRevealInProgress = false,
         playerHomeTransitionTimer = 0,
+        aquariumAnimationTimer = 0,
+        aquariumAnimationTick = 0,
+        aquariumRenderedFishId = null,
         playerHomeState = {
           area: null,
           x: 0,
@@ -11911,6 +12013,9 @@
       if (!s.fishCatchRecords || typeof s.fishCatchRecords !== "object" ||
           Array.isArray(s.fishCatchRecords)) s.fishCatchRecords = {};
       const validFishdexIds = new Set(fish.map((f) => f.id));
+      // Older saves have no aquarium. Invalid/unearned IDs become an empty
+      // tank without changing fishing records, inventory or map migration.
+      s.homeAquariumFishId = normalizeAquariumFishId(s.homeAquariumFishId);
       for (const fishId of Object.keys(s.fishCrowns)) {
         if (!validFishdexIds.has(fishId)) {
           delete s.fishCrowns[fishId];
@@ -14103,7 +14208,7 @@
         if (event?.id === "kitchen")
           return "台所だ。Aで料理する。";
         if (event?.id === "aquarium")
-          return "水槽だ。Aで様子を見る。";
+          return "水槽だ。Aで魚を見る・入れ替える。";
         return playerHomeState.area === "interior"
           ? "主人公宅。ベッド、台所、水槽をAで調べられる。"
           : "主人公宅の庭先。玄関か村へ戻る道をAで調べる。";
@@ -14115,6 +14220,7 @@
         areaElement.className = `player-home-area${active ?
           ` active ${playerHomeState.area}` : ""}`;
         areaElement.setAttribute("aria-hidden", String(!active));
+        renderHomeAquarium();
         if (!active) return false;
         const data = playerHomeAreaData[playerHomeState.area];
         areaElement.setAttribute("aria-label", data.label);
@@ -14227,14 +14333,116 @@
         if (event.id === "bed") return sleepAtPlayerHome();
         if (event.id === "kitchen")
           return openLocationInterior("player-home");
-        if (event.id === "aquarium") {
-          const message = "水槽はきれいに整っている。魚を迎える機能は、これから追加できそうだ。";
-          log(message);
-          showRescueToast("🐟 水槽の飼育ポイントを確認した。", 2600);
-          vibrate(16);
-          return true;
-        }
+        if (event.id === "aquarium") return openHomeAquarium();
         return false;
+      }
+      function normalizeAquariumFishId(value, state = s) {
+        return typeof value === "string" && fish.some((f) => f.id === value) &&
+          Number.isFinite(Number(state.caught?.[value])) &&
+          Number(state.caught?.[value]) >= 1 ? value : null;
+      }
+      function aquariumAvailableFish() {
+        return fish.filter((f) => normalizeAquariumFishId(f.id));
+      }
+      function updateAquariumPlaceButton() {
+        const id = $("#aquariumFishSelect").value;
+        const button = $("#aquariumPlaceFish");
+        button.disabled = !normalizeAquariumFishId(id) || id === s.homeAquariumFishId;
+        button.textContent = id && id === s.homeAquariumFishId
+          ? "この魚は水槽にいるよ"
+          : s.homeAquariumFishId ? "この魚と入れ替える" : "水槽に入れる";
+      }
+      function renderAquariumControls() {
+        const choices = aquariumAvailableFish();
+        const current = fish.find((f) => f.id === s.homeAquariumFishId);
+        $("#aquariumStatus").textContent = current
+          ? `水槽の魚：${current.name}（1匹）`
+          : choices.length ? "まだ魚は入っていない。" : "まずは魚を1匹釣ってみよう。";
+        const select = $("#aquariumFishSelect");
+        select.innerHTML = choices.length
+          ? choices.map((f) => `<option value="${f.id}">${f.name}</option>`).join("")
+          : '<option value="">釣った魚がいない</option>';
+        select.disabled = !choices.length;
+        select.value = current?.id || choices[0]?.id || "";
+        updateAquariumPlaceButton();
+      }
+      function openHomeAquarium() {
+        if (battle || playerHomeState.transitioning ||
+            playerHomeState.area !== "interior" ||
+            nearbyPlayerHomeEvent()?.id !== "aquarium" ||
+            document.querySelector(".modal.open")) return false;
+        renderAquariumControls();
+        open("aquariumModal");
+        renderHomeAquarium();
+        return true;
+      }
+      function placeAquariumFish(id) {
+        if (battle || playerHomeState.transitioning ||
+            playerHomeState.area !== "interior" ||
+            !$("#aquariumModal").classList.contains("open") ||
+            !normalizeAquariumFishId(id) || s.homeAquariumFishId === id) return false;
+        // History-based display only: never consume a catch or award money.
+        s.homeAquariumFishId = id;
+        save();
+        renderAquariumControls();
+        renderHomeAquarium();
+        return true;
+      }
+      function stopAquariumAnimation() {
+        clearInterval(aquariumAnimationTimer);
+        aquariumAnimationTimer = 0;
+      }
+      function renderHomeAquarium() {
+        const indoors = playerHomeState.area === "interior";
+        $("#homeAquarium").hidden = !indoors;
+        const id = normalizeAquariumFishId(s.homeAquariumFishId);
+        if (id !== aquariumRenderedFishId) {
+          aquariumRenderedFishId = id;
+          aquariumAnimationTick = 0;
+          for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"])
+            $(selector).replaceChildren();
+        }
+        const name = fish.find((f) => f.id === id)?.name;
+        for (const selector of ["#homeAquarium", "#aquariumPreview"])
+          $(selector).setAttribute("aria-label", name ? `${name}が1匹泳ぐ水槽` : "空の水槽");
+        for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"])
+          $(selector).hidden = !id;
+        if (!indoors || !id || document.hidden) {
+          stopAquariumAnimation();
+          return;
+        }
+        drawAquariumFish();
+        if (!aquariumAnimationTimer)
+          aquariumAnimationTimer = setInterval(() => {
+            aquariumAnimationTick += 1;
+            drawAquariumFish();
+          }, 120);
+      }
+      function drawAquariumFish() {
+        const id = aquariumRenderedFishId;
+        if (!id || playerHomeState.area !== "interior" || document.hidden) {
+          stopAquariumAnimation();
+          return;
+        }
+        // Bottom-dwellers stay low and move more slowly; no fighting or
+        // rarity effects. Both views reuse the existing whole-fish frames.
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
+        const phase = aquariumAnimationTick / (bottomDweller ? 38 : 26);
+        const x = 50 + Math.sin(phase) * 27;
+        const y = (bottomDweller ? 68 : 43) + Math.sin(phase * 2) * (bottomDweller ? 2 : 6);
+        const cells = fishSwimFrameCounts[id] || 8;
+        const frame = Math.floor(aquariumAnimationTick / (bottomDweller ? 2 : 1)) % cells;
+        const [width, height] = fishFrameFallbackSizes[id] || [320, 160];
+        const selectors = ["#homeAquariumFish"];
+        if ($("#aquariumModal").classList.contains("open")) selectors.push("#aquariumPreviewFish");
+        for (const selector of selectors) {
+          const element = $(selector);
+          element.style.aspectRatio = `${width} / ${height}`;
+          element.style.left = `${x}%`;
+          element.style.top = `${y}%`;
+          element.style.transform = `translate(-50%, -50%) scaleX(${Math.cos(phase) >= 0 ? 1 : -1})`;
+          drawFishAtlasFrame(element, fishAssets[id], cells, frame, id);
+        }
       }
       function movePlayerHome(direction) {
         if (
@@ -19961,6 +20169,8 @@
       $("#beginCast").onclick = beginFishing;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
       $("#locationAction").onclick = useLocationService;
+      $("#aquariumFishSelect").onchange = updateAquariumPlaceButton;
+      $("#aquariumPlaceFish").onclick = () => placeAquariumFish($("#aquariumFishSelect").value);
       $("#dogCarePet").onclick = petDogCare;
       $("#dogCareTakeFishing").onclick = takeDogFishing;
       $("#dogCareCatchButton").onclick = (event) => {
@@ -20042,6 +20252,7 @@
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
       addEventListener("pagehide", () => {
         save();
+        stopAquariumAnimation();
         stopCastingWaterSound(.05);
         stopUnderwaterSound(.05);
         stopAllGameAudioSamples();
@@ -20049,6 +20260,7 @@
         gameAudio.unlocked = false;
       });
       document.addEventListener("visibilitychange", () => {
+        renderHomeAquarium();
         if (document.hidden) {
           save();
           stopCastingWaterSound(.05);
@@ -20061,7 +20273,10 @@
         }
       });
       addEventListener("focus", () => recoverGameAudio());
-      addEventListener("pageshow", () => recoverGameAudio());
+      addEventListener("pageshow", () => {
+        recoverGameAudio();
+        renderHomeAquarium();
+      });
       setInterval(() => {
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
@@ -20073,7 +20288,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=154-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=155-1").catch(() => {});
       renderRecord();
     </script>
   </body>
