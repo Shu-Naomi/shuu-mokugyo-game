@@ -172,6 +172,19 @@
         z-index: 2;
         transition: left .3s linear, top .3s linear;
       }
+      /* Home coordinates follow the shoes on the painted floor. Scale with
+         the background so the same aisle fits on a narrow phone viewport. */
+      #homePlayer {
+        width: 3%;
+        height: auto;
+        aspect-ratio: 46 / 58;
+        transform: translate(-50%, -100%);
+      }
+      #homePlayer.boy.face-right, #homePlayer.girl.face-left {
+        transform: translate(-50%, -100%) scaleX(-1);
+      }
+      #homePlayer.boy.face-side { clip-path: inset(0 0 0 6.5%); }
+      #homePlayer.girl.face-side { clip-path: inset(0 6.5%); }
       .aquarium-tank {
         position: relative;
         overflow: hidden;
@@ -205,12 +218,9 @@
       }
       .aquarium-fish {
         position: absolute;
-        width: 38%;
-        max-height: 48%;
         left: 50%;
         top: 46%;
         transform: translate(-50%, -50%);
-        transition: left .12s linear, top .12s linear;
       }
       .aquarium-fish[hidden], #homeAquarium[hidden] { display: none; }
       .aquarium-heading { display: flex; align-items: center; gap: 10px; }
@@ -6366,7 +6376,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v155</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v156</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -11558,7 +11568,8 @@
         fortuneRevealInProgress = false,
         playerHomeTransitionTimer = 0,
         aquariumAnimationTimer = 0,
-        aquariumAnimationTick = 0,
+        aquariumElapsed = 0,
+        aquariumLastTime = null,
         aquariumRenderedFishId = null,
         playerHomeState = {
           area: null,
@@ -13605,23 +13616,24 @@
             label: "主人公宅・庭先",
             spawns: {
               map: { x: 12, y: 80, direction: "right" },
-              interior: { x: 50, y: 74, direction: "down" },
+              interior: { x: 50, y: 80, direction: "down" },
             },
             walkable: [
-              { left: 2, right: 98, top: 67, bottom: 95 },
-              { left: 2, right: 27, top: 56, bottom: 95 },
-              { left: 43, right: 57, top: 58, bottom: 76 },
+              { left: 2, right: 98, top: 80, bottom: 95 },
+              { left: 2, right: 29, top: 67, bottom: 95 },
+              { left: 29, right: 69, top: 76, bottom: 95 },
+              { left: 43, right: 54, top: 69, bottom: 95 },
             ],
             blocked: [
-              // 釣り竿と植え込みの見えている足元だけを塞ぐ。以前は
-              // 庭の下端近くまで伸び、入口から玄関への道を横断していた。
-              { left: 31, right: 42, top: 56, bottom: 76 },
-              { left: 57, right: 67, top: 68, bottom: 87 },
-              { left: 72, right: 87, top: 76, bottom: 96 },
+              // Match the rod stand, bench and buckets; the path in front
+              // remains open, while the house/fences stay outside walkable.
+              { left: 32, right: 42, top: 56, bottom: 75 },
+              { left: 55, right: 66, top: 68, bottom: 78 },
+              { left: 72, right: 87, top: 70, bottom: 81 },
             ],
             events: [
               { id: "map-exit", x: 6, y: 80, radius: 7 },
-              { id: "front-door", x: 50, y: 66, radius: 7 },
+              { id: "front-door", x: 49, y: 73, radius: 6 },
             ],
           },
           interior: {
@@ -13630,23 +13642,30 @@
               exterior: { x: 44, y: 91, direction: "up" },
             },
             walkable: [
-              { left: 16, right: 85, top: 24, bottom: 93 },
+              { left: 16, right: 84.5, top: 29, bottom: 94 },
               { left: 39, right: 49, top: 88, bottom: 98 },
             ],
             blocked: [
-              { left: 16, right: 29, top: 24, bottom: 49 },
-              { left: 55, right: 75, top: 24, bottom: 39 },
-              { left: 31, right: 50, top: 36, bottom: 62 },
-              { left: 54, right: 67, top: 48, bottom: 72 },
-              { left: 73, right: 86, top: 50, bottom: 83 },
-              { left: 17, right: 40, top: 75, bottom: 94 },
-              { left: 55, right: 70, top: 75, bottom: 94 },
+              // Painted furniture footprints, not the surrounding rugs/floor.
+              { left: 16, right: 27.5, top: 24, bottom: 45.5 }, // bed
+              { left: 56, right: 84.5, top: 24, bottom: 37.5 }, // kitchen/rods
+              { left: 35.5, right: 48, top: 35, bottom: 55 }, // table
+              { left: 43.5, right: 48, top: 53, bottom: 60 }, // stool
+              { left: 55, right: 67.5, top: 44, bottom: 73.5 }, // tackle rack
+              { left: 73.5, right: 84.5, top: 38, bottom: 55.5 }, // drawers
+              { left: 71, right: 84.5, top: 55.5, bottom: 94 }, // aquarium/stand
+              { left: 16, right: 35.5, top: 74, bottom: 94 }, // storage
+              { left: 16, right: 18.5, top: 45, bottom: 74 }, // wall tackle
+              { left: 54.5, right: 68.5, top: 76, bottom: 94 }, // dog supplies
             ],
             events: [
               { id: "interior-door", x: 44, y: 94, radius: 7 },
               { id: "bed", x: 27, y: 47, radius: 6 },
               { id: "kitchen", x: 62, y: 39, radius: 11 },
-              { id: "aquarium", x: 79, y: 66, radius: 10 },
+              // The tank stands against the lower/right wall. Approach its
+              // exposed left front from the aisle, not inside its cabinet.
+              { id: "aquarium", x: 69, y: 72,
+                interaction: { left: 68, right: 71, top: 61, bottom: 76 } },
             ],
             // Ver.1では描画しない。今後の三匹の室内移動が、家具と
             // 重ならず中央の床から始まるように独立した座標で予約する。
@@ -14187,13 +14206,16 @@
         x = playerHomeState.x,
         y = playerHomeState.y,
       ) {
+        if (!isPlayerHomePositionWalkable(area, x, y)) return null;
         const events = playerHomeAreaData[area]?.events || [];
         return events
           .map((event) => ({
             ...event,
             distance: Math.hypot(x - event.x, y - event.y),
           }))
-          .filter((event) => event.distance < event.radius)
+          .filter((event) => event.interaction
+            ? inWorldRect(x, y, event.interaction)
+            : event.distance < event.radius)
           .sort((a, b) => a.distance - b.distance)[0] || null;
       }
       function playerHomeHint(event = nearbyPlayerHomeEvent()) {
@@ -14389,8 +14411,9 @@
         return true;
       }
       function stopAquariumAnimation() {
-        clearInterval(aquariumAnimationTimer);
+        cancelAnimationFrame(aquariumAnimationTimer);
         aquariumAnimationTimer = 0;
+        aquariumLastTime = null;
       }
       function renderHomeAquarium() {
         const indoors = playerHomeState.area === "interior";
@@ -14398,9 +14421,12 @@
         const id = normalizeAquariumFishId(s.homeAquariumFishId);
         if (id !== aquariumRenderedFishId) {
           aquariumRenderedFishId = id;
-          aquariumAnimationTick = 0;
-          for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"])
+          aquariumElapsed = 0;
+          aquariumLastTime = null;
+          for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"]) {
             $(selector).replaceChildren();
+            delete $(selector).dataset.aquariumFrame;
+          }
         }
         const name = fish.find((f) => f.id === id)?.name;
         for (const selector of ["#homeAquarium", "#aquariumPreview"])
@@ -14413,10 +14439,43 @@
         }
         drawAquariumFish();
         if (!aquariumAnimationTimer)
-          aquariumAnimationTimer = setInterval(() => {
-            aquariumAnimationTick += 1;
-            drawAquariumFish();
-          }, 120);
+          aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
+      }
+      function advanceAquariumAnimation(now) {
+        aquariumAnimationTimer = 0;
+        if (!aquariumRenderedFishId || playerHomeState.area !== "interior" || document.hidden) {
+          stopAquariumAnimation();
+          return;
+        }
+        // Discard long stalls and hidden-tab time instead of catching up in
+        // one jump. Reopening the menu or walking never resets the swim.
+        if (aquariumLastTime !== null)
+          aquariumElapsed += Math.min(50, Math.max(0, now - aquariumLastTime)) / 1000;
+        aquariumLastTime = now;
+        drawAquariumFish();
+        aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
+      }
+      function aquariumFishPose(id, elapsed) {
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
+        const normal = fishSizeTierById(id, "normal");
+        const lengthCm = normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
+        const width = Math.max(18, Math.min(36, 18 * Math.sqrt(lengthCm / 10)));
+        const left = width / 2 + 4, right = 100 - left;
+        const travel = bottomDweller ? 18 : 14, turn = .7;
+        const leg = travel + turn;
+        const cycle = elapsed % (leg * 2);
+        const direction = cycle < leg ? 1 : -1;
+        const local = cycle % leg;
+        const progress = Math.min(1, local / travel);
+        const eased = progress * progress * (3 - 2 * progress);
+        const x = direction > 0
+          ? left + (right - left) * eased : right - (right - left) * eased;
+        // Turn in place at zero travel speed, then ease into the next pass.
+        const facing = local <= travel ? direction
+          : direction * Math.cos(Math.PI * (local - travel) / turn);
+        const y = (bottomDweller ? 64 : 46) +
+          Math.sin(elapsed * Math.PI / 9) * (bottomDweller ? .8 : 1.25);
+        return { x, y, facing, width, bottomDweller };
       }
       function drawAquariumFish() {
         const id = aquariumRenderedFishId;
@@ -14424,25 +14483,42 @@
           stopAquariumAnimation();
           return;
         }
-        // Bottom-dwellers stay low and move more slowly; no fighting or
-        // rarity effects. Both views reuse the existing whole-fish frames.
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
-        const phase = aquariumAnimationTick / (bottomDweller ? 38 : 26);
-        const x = 50 + Math.sin(phase) * 27;
-        const y = (bottomDweller ? 68 : 43) + Math.sin(phase * 2) * (bottomDweller ? 2 : 6);
+        const pose = aquariumFishPose(id, aquariumElapsed);
         const cells = fishSwimFrameCounts[id] || 8;
-        const frame = Math.floor(aquariumAnimationTick / (bottomDweller ? 2 : 1)) % cells;
+        const frame = Math.floor(aquariumElapsed / (pose.bottomDweller ? .24 : .18)) % cells;
         const [width, height] = fishFrameFallbackSizes[id] || [320, 160];
         const selectors = ["#homeAquariumFish"];
         if ($("#aquariumModal").classList.contains("open")) selectors.push("#aquariumPreviewFish");
-        for (const selector of selectors) {
+        // Read both tank sizes before writing styles; preserve the source
+        // aspect ratio even in a short landscape preview or the room tank.
+        const tanks = selectors.map((selector) => {
           const element = $(selector);
-          element.style.aspectRatio = `${width} / ${height}`;
-          element.style.left = `${x}%`;
-          element.style.top = `${y}%`;
-          element.style.transform = `translate(-50%, -50%) scaleX(${Math.cos(phase) >= 0 ? 1 : -1})`;
-          drawFishAtlasFrame(element, fishAssets[id], cells, frame, id);
+          return { element, tank: element.parentElement.getBoundingClientRect() };
+        });
+        for (const { element, tank } of tanks) {
+          const pixelWidth = Math.min(tank.width * pose.width / 100, tank.height * .34 * width / height);
+          element.style.width = `${pixelWidth}px`;
+          element.style.height = `${pixelWidth * height / width}px`;
+          element.style.left = `${pose.x}%`;
+          element.style.top = `${pose.y}%`;
+          element.style.transform = `translate(-50%, -50%) scaleX(${pose.facing})`;
+          const key = `${id}:${frame}`;
+          if (element.dataset.aquariumFrame !== key) {
+            drawFishAtlasFrame(element, fishAssets[id], cells, frame, id);
+            element.dataset.aquariumFrame = key;
+          }
         }
+      }
+      function playerHomeMoveTarget(area, x, y, direction) {
+        const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[direction] || [0, 0];
+        // Sweep the existing four-percent stride. Short aisles no longer
+        // reject the whole tap, and a stride cannot skip a thin obstacle.
+        for (let step = 0; step < 4; step += 1) {
+          if (!isPlayerHomePositionWalkable(area, x + dx, y + dy)) break;
+          x += dx;
+          y += dy;
+        }
+        return { x, y };
       }
       function movePlayerHome(direction) {
         if (
@@ -14455,18 +14531,10 @@
         s.direction = direction;
         const previousX = playerHomeState.x;
         const previousY = playerHomeState.y;
-        const step = 4;
-        ({
-          left: () => (playerHomeState.x -= step),
-          right: () => (playerHomeState.x += step),
-          up: () => (playerHomeState.y -= step),
-          down: () => (playerHomeState.y += step),
-        })[direction]();
-        const moved = isPlayerHomePositionWalkable();
-        if (!moved) {
-          playerHomeState.x = previousX;
-          playerHomeState.y = previousY;
-        }
+        const target = playerHomeMoveTarget(playerHomeState.area, previousX, previousY, direction);
+        const moved = target.x !== previousX || target.y !== previousY;
+        playerHomeState.x = target.x;
+        playerHomeState.y = target.y;
         const startingWalk = !playerWalking;
         playerWalking = true;
         if (startingWalk) {
@@ -20288,7 +20356,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=155-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=156-1").catch(() => {});
       renderRecord();
     </script>
   </body>
