@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v158-ui-fish-sync-158-1";
+const CACHE_NAME = "nushi-tsuri-v159-home-dogs-159-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
@@ -40,6 +40,10 @@ const CORE_ASSETS = [
   "./assets/cast-sea-harbor-night-v76.jpg",
   "./assets/terrain-world-v54.png",
   "./assets/player-home-v153.jpg",
+  "./assets/shuu-walk.png?v=12",
+  "./assets/riku-walk.png?v=12",
+  "./assets/grey-walk.png?v=12",
+  "./assets/dog-idles.png?v=12",
   "./assets/fishing-biomes-v49.png",
   "./assets/underwater-lake-shallow-v64.jpg",
   "./assets/underwater-lake-mid-v64.jpg",
