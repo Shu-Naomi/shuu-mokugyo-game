@@ -151,18 +151,29 @@
         inset: 0;
         display: none;
         overflow: hidden;
-        background-color: #1f342c;
-        background-image: url("assets/player-home-v153.jpg");
-        background-repeat: no-repeat;
-        background-size: 100% 200%;
-        image-rendering: pixelated;
+        background-color: #172820;
         isolation: isolate;
         pointer-events: none;
       }
       .player-home-area.active { display: block; }
-      .player-home-area.exterior { background-position: center top; }
-      .player-home-area.interior { background-position: center bottom; }
-      .player-home-area::after {
+      .player-home-scene {
+        position: absolute;
+        left: 50%;
+        top: 50%;
+        width: 100%;
+        height: 100%;
+        transform: translate(-50%, -50%);
+        background-repeat: no-repeat;
+        background-size: 100% 100%;
+        image-rendering: pixelated;
+      }
+      .player-home-area.exterior .player-home-scene {
+        background-image: url("assets/player-home-exterior-v160.webp");
+      }
+      .player-home-area.interior .player-home-scene {
+        background-image: url("assets/player-home-interior-v160.webp");
+      }
+      .player-home-scene::after {
         content: "";
         position: absolute;
         z-index: 0;
@@ -177,7 +188,7 @@
       /* Home coordinates follow the shoes on the painted floor. Scale with
          the background so the same aisle fits on a narrow phone viewport. */
       #homePlayer {
-        width: 3%;
+        width: 9%;
         height: auto;
         aspect-ratio: 46 / 58;
         transform: translate(-50%, -100%);
@@ -187,11 +198,14 @@
       }
       #homePlayer.boy.face-side { clip-path: inset(0 0 0 6.5%); }
       #homePlayer.girl.face-side { clip-path: inset(0 6.5%); }
+      /* The shared avatar sheets leave about 7% below the boot soles. Keep
+         that transparent margin from separating the feet and floor point. */
+      #homePlayer > .player-sprite { transform: translateY(7%); }
       #homeDogs { position: absolute; inset: 0; pointer-events: none; }
       #homeDogs[hidden] { display: none; }
       .home-dog {
         position: absolute;
-        width: 3.4%;
+        width: 5.6%;
         aspect-ratio: 1;
         transform: translate(-50%, -100%);
         image-rendering: pixelated;
@@ -237,12 +251,16 @@
       #homeAquarium {
         position: absolute;
         z-index: 1;
-        left: 71.8%;
-        top: 66.6%;
-        width: 12%;
-        height: 14.3%;
+        left: 73.5%;
+        top: 53.6%;
+        width: 13.4%;
+        height: 10.9%;
+        border: 0;
+        background: none;
+        box-shadow: none;
         pointer-events: none;
       }
+      #homeAquarium::before { display: none; }
       .aquarium-fish {
         position: absolute;
         left: 50%;
@@ -2253,12 +2271,6 @@
         height: 100%;
         object-fit: contain;
         image-rendering: pixelated;
-      }
-      .location-visual img.player-home-interior-preview {
-        height: 200%;
-        align-self: start;
-        object-fit: fill;
-        transform: translateY(-50%);
       }
       .shopkeeper-sam-svg {
         transform-box: fill-box;
@@ -6403,7 +6415,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v159</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v160</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6503,6 +6515,7 @@
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
         </div>
         <section id="playerHomeArea" class="player-home-area" aria-hidden="true" aria-label="主人公宅">
+          <div id="playerHomeScene" class="player-home-scene">
           <div id="homeAquarium" class="aquarium-tank" role="img" aria-label="空の水槽" hidden>
             <div id="homeAquariumFish" class="aquarium-fish" hidden></div>
           </div>
@@ -6512,6 +6525,7 @@
             <div class="home-dog" data-home-dog="grey" role="img" aria-label="Grey"><canvas width="320" height="320" aria-hidden="true"></canvas></div>
           </div>
           <div id="homePlayer" class="player home-player"><canvas class="player-sprite" id="homePlayerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
+          </div>
         </section>
         <div id="aquariumModal" class="modal aquarium-modal" role="dialog" aria-modal="true" aria-labelledby="aquariumTitle">
           <header class="aquarium-heading">
@@ -13664,67 +13678,67 @@
             label: "主人公宅・庭先",
             spawns: {
               map: { x: 12, y: 80, direction: "right" },
-              interior: { x: 50, y: 80, direction: "down" },
+              interior: { x: 52, y: 72, direction: "down" },
             },
             walkable: [
-              { left: 2, right: 98, top: 80, bottom: 95 },
-              { left: 2, right: 29, top: 67, bottom: 95 },
-              { left: 29, right: 69, top: 76, bottom: 95 },
-              { left: 43, right: 54, top: 69, bottom: 95 },
+              { left: 2, right: 98, top: 70, bottom: 83 },
+              { left: 29, right: 90, top: 65.5, bottom: 83 },
+              { left: 47, right: 57, top: 61, bottom: 84 },
+              { left: 44, right: 65, top: 81, bottom: 87 },
+              { left: 48, right: 62, top: 84, bottom: 98 },
             ],
             blocked: [
-              // Match the rod stand, bench and buckets; the path in front
-              // remains open, while the house/fences stay outside walkable.
-              { left: 32, right: 42, top: 56, bottom: 75 },
-              { left: 55, right: 66, top: 68, bottom: 78 },
-              { left: 72, right: 87, top: 70, bottom: 81 },
+              // Footprints measured from the v160 garden artwork. Keep the
+              // broad path clear and the building, gear and bench solid.
+              { left: 37, right: 72, top: 30, bottom: 60.5 },
+              { left: 38, right: 47, top: 55, bottom: 65 },
+              { left: 59, right: 68, top: 57, bottom: 65 },
+              { left: 77, right: 86, top: 53, bottom: 65 },
             ],
             events: [
               { id: "map-exit", x: 6, y: 80, radius: 7 },
-              { id: "front-door", x: 49, y: 73, radius: 6 },
+              { id: "front-door", x: 52, y: 67, radius: 6 },
             ],
           },
           interior: {
             label: "主人公宅・室内",
             spawns: {
-              exterior: { x: 44, y: 91, direction: "up" },
+              exterior: { x: 46, y: 91, direction: "up" },
             },
             walkable: [
-              { left: 16, right: 84.5, top: 29, bottom: 94 },
-              { left: 39, right: 49, top: 88, bottom: 98 },
+              { left: 14.5, right: 88.5, top: 30, bottom: 85.5 },
+              { left: 41, right: 52, top: 84, bottom: 98 },
             ],
             blocked: [
-              // Painted furniture footprints, not the surrounding rugs/floor.
-              { left: 16, right: 27.5, top: 24, bottom: 45.5 }, // bed
-              { left: 56, right: 84.5, top: 24, bottom: 37.5 }, // kitchen/rods
-              { left: 35.5, right: 48, top: 35, bottom: 55 }, // table
-              { left: 43.5, right: 48, top: 53, bottom: 60 }, // stool
-              { left: 55, right: 67.5, top: 44, bottom: 73.5 }, // tackle rack
-              { left: 73.5, right: 84.5, top: 38, bottom: 55.5 }, // drawers
-              { left: 71, right: 84.5, top: 55.5, bottom: 94 }, // aquarium/stand
-              { left: 16, right: 35.5, top: 74, bottom: 94 }, // storage
-              { left: 16, right: 18.5, top: 45, bottom: 74 }, // wall tackle
-              { left: 54.5, right: 68.5, top: 76, bottom: 94 }, // dog supplies
+              { left: 16.8, right: 28, top: 24, bottom: 54.5 }, // bed
+              { left: 12.7, right: 17.5, top: 25, bottom: 39 }, // bedside shelf
+              { left: 54.4, right: 72.8, top: 24, bottom: 38 }, // kitchen
+              { left: 36.5, right: 49, top: 35.2, bottom: 52.4 }, // table
+              { left: 40.5, right: 44.5, top: 50, bottom: 58.5 }, // stool
+              { left: 75, right: 87.5, top: 24, bottom: 40.4 }, // wall tackle/storage
+              { left: 85.5, right: 89, top: 38.5, bottom: 43.3 }, // basket
+              { left: 72.8, right: 87.8, top: 46.8, bottom: 74.5 }, // aquarium/stand
+              { left: 15.2, right: 26.8, top: 69, bottom: 85.5 }, // chest
+              { left: 11, right: 15.6, top: 63, bottom: 85.5 }, // plant/basket
+              { left: 60.8, right: 88.3, top: 76, bottom: 87 }, // dog supplies
             ],
             events: [
-              { id: "interior-door", x: 44, y: 94, radius: 7 },
-              { id: "bed", x: 27, y: 47, radius: 6 },
-              { id: "kitchen", x: 62, y: 39, radius: 11 },
-              // The tank stands against the lower/right wall. Approach its
-              // exposed left front from the aisle, not inside its cabinet.
-              { id: "aquarium", x: 69, y: 72,
-                interaction: { left: 68, right: 71, top: 61, bottom: 76 } },
+              { id: "interior-door", x: 46, y: 94, radius: 7 },
+              { id: "bed", x: 29, y: 53, radius: 6 },
+              { id: "kitchen", x: 63, y: 40, radius: 8 },
+              { id: "aquarium", x: 69, y: 65,
+                interaction: { left: 67, right: 72.7, top: 55, bottom: 75 } },
             ],
             // Keep everyday wandering on the open central floor. Only the
             // greeter uses the wider aisle, stopping short of the doorway.
-            dogRoamBounds: { left: 30, right: 53, top: 64, bottom: 74 },
-            dogMovementBounds: { left: 30, right: 53, top: 64, bottom: 85 },
-            dogGreetingPoint: { x: 49, y: 83 },
-            dogAisleX: 38.5,
+            dogRoamBounds: { left: 30, right: 67, top: 60, bottom: 73 },
+            dogMovementBounds: { left: 30, right: 67, top: 60, bottom: 84 },
+            dogGreetingPoint: { x: 50, y: 82 },
+            dogAisleX: 56,
             dogSpawnPoints: [
-              { dogId: "shuu", x: 35, y: 67 },
-              { dogId: "riku", x: 45, y: 70 },
-              { dogId: "grey", x: 51, y: 73 },
+              { dogId: "shuu", x: 35, y: 65 },
+              { dogId: "riku", x: 48, y: 68 },
+              { dogId: "grey", x: 61, y: 71 },
             ],
           },
         };
@@ -13732,7 +13746,7 @@
         "player-home": {
           brand: "MY FISHING HOME",
           title: "主人公宅の台所",
-          asset: "assets/player-home-v153.jpg",
+          asset: "assets/player-home-interior-v160.webp",
           alt: "ベッド、台所、収納、釣具、水槽と犬用品が整った主人公宅",
           dialogue: "使い慣れた台所だ。持ち帰った魚と採集物で、いつもの料理を作れる。",
           actionLabel: "台所を使う",
@@ -14279,7 +14293,7 @@
         // A small paw footprint uses the existing furniture collision data.
         // Keep the doorway and the aquarium aisle outside the dogs' area.
         return inWorldRect(x, y, playerHomeAreaData.interior.dogMovementBounds) &&
-          [-1.7, 1.7].every((dx) => [-.7, .7].every((dy) =>
+          [-2.8, 2.8].every((dx) => [-.9, .9].every((dy) =>
             isPlayerHomePositionWalkable("interior", x + dx, y + dy)));
       }
       function homeDogSegmentClear(from, to, forDog = true, exceptId = null) {
@@ -14295,7 +14309,7 @@
       }
       function homeDogsSeparated(x, y, exceptId = null) {
         return homeDogs.every((dog) => dog.dogId === exceptId ||
-          Math.hypot((x - dog.x) / 3.4, (y - dog.y) / 4.5) >= 1);
+          Math.hypot((x - dog.x) / 5.6, (y - dog.y) / 7.4) >= 1);
       }
       function initializeHomeDogs(random = Math.random) {
         homeDogs = [];
@@ -14323,7 +14337,7 @@
       function nearbyHomeDog(x = playerHomeState.x, y = playerHomeState.y) {
         if (playerHomeState.area !== "interior") return null;
         return homeDogs.map((dog) => ({ dog,
-          distance: Math.hypot((dog.x - x) / 4.2, (dog.y - y) / 6.5),
+          distance: Math.hypot((dog.x - x) / 6.5, (dog.y - y) / 9),
         })).filter(({ dog, distance }) => distance <= 1 &&
           homeDogSegmentClear({ x, y }, dog, false))
           .sort((a, b) => a.distance - b.distance)[0]?.dog || null;
@@ -14389,8 +14403,8 @@
           const distance = Math.hypot(dx, dy * .5);
           const amount = Math.min(1, 3.4 * dt / Math.max(.001, distance));
           const next = { x: dog.x + dx * amount, y: dog.y + dy * amount };
-          const touchesPlayer = Math.hypot((next.x - playerHomeState.x) / 2.8,
-            (next.y - playerHomeState.y) / 3.5) < 1;
+          const touchesPlayer = Math.hypot((next.x - playerHomeState.x) / 5,
+            (next.y - playerHomeState.y) / 6) < 1;
           if (!homeDogSegmentClear(dog, next) || touchesPlayer ||
               !homeDogsSeparated(next.x, next.y, dog.dogId)) {
             dog.route = [];
@@ -14510,6 +14524,12 @@
           ? "主人公宅。家具やワンコに近づいてAで調べる。"
           : "主人公宅の庭先。玄関か村へ戻る道をAで調べる。";
       }
+      function playerHomeSceneSize(width, height) {
+        // Both backgrounds use the same 2:1 map coordinates. Fit the whole
+        // scene so rotating a phone cannot stretch furniture or narrow aisles.
+        const sceneWidth = Math.min(Math.max(1, width), Math.max(1, height) * 2);
+        return { width: sceneWidth, height: sceneWidth / 2 };
+      }
       function renderPlayerHome() {
         const areaElement = $("#playerHomeArea");
         if (!areaElement) return false;
@@ -14517,6 +14537,12 @@
         areaElement.className = `player-home-area${active ?
           ` active ${playerHomeState.area}` : ""}`;
         areaElement.setAttribute("aria-hidden", String(!active));
+        if (active) {
+          const size = playerHomeSceneSize(areaElement.clientWidth || innerWidth,
+            areaElement.clientHeight || $("#world").clientHeight || innerHeight);
+          $("#playerHomeScene").style.width = `${size.width}px`;
+          $("#playerHomeScene").style.height = `${size.height}px`;
+        }
         renderHomeAquarium();
         renderHomeDogs();
         if (!active) return false;
@@ -14794,10 +14820,11 @@
       }
       function playerHomeMoveTarget(area, x, y, direction) {
         const [dx, dy] = { left: [-1, 0], right: [1, 0], up: [0, -1], down: [0, 1] }[direction] || [0, 0];
-        // Sweep the existing four-percent stride. Short aisles no longer
-        // reject the whole tap, and a stride cannot skip a thin obstacle.
+        // Sweep the stride with the larger character's shoe footprint. The
+        // sprite may overlap a wall vertically, but its feet stay on floor.
         for (let step = 0; step < 4; step += 1) {
-          if (!isPlayerHomePositionWalkable(area, x + dx, y + dy)) break;
+          if (![-2.3, 2.3].every((footX) => [-.7, .7].every((footY) =>
+            isPlayerHomePositionWalkable(area, x + dx + footX, y + dy + footY)))) break;
           x += dx;
           y += dy;
         }
@@ -20688,7 +20715,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=159-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=160-1").catch(() => {});
       renderRecord();
     </script>
   </body>

@@ -91,7 +91,7 @@ test("all three greet one at a time and roam, sit and sleep without crossing fur
   const app = boot(), { window } = app;
   try {
     const result = window.eval(`(() => {
-      playerHomeState.area='interior'; playerHomeState.x=44; playerHomeState.y=91;
+      Object.assign(playerHomeState, { area:'interior', ...playerHomeAreaData.interior.spawns.exterior });
       let seed=159; Math.random=()=>((seed=(Math.imul(seed,1664525)+1013904223)>>>0)/4294967296);
       const modes=new Set(), greeters=new Set();
       for(let visit=0;visit<12;visit++) {
@@ -105,7 +105,8 @@ test("all three greet one at a time and roam, sit and sleep without crossing fur
             modes.add(dog.dogId+':'+dog.mode);
             if(!homeDogPositionWalkable(dog.x,dog.y)) throw Error('Furniture crossing');
             if(!homeDogsSeparated(dog.x,dog.y,dog.dogId)) throw Error('Dogs overlap');
-            if(Math.hypot(dog.x-44,dog.y-94)<7) throw Error('Dog in doorway');
+            const door=playerHomeAreaData.interior.events.find(e=>e.id==='interior-door');
+            if(Math.hypot(dog.x-door.x,dog.y-door.y)<door.radius) throw Error('Dog in doorway');
             if(Math.hypot(dog.x-previous[index].x,(dog.y-previous[index].y)*.5)>.17001) throw Error('Position jump');
           }
           if(step===400 && greeter.greeting) throw Error('Greeting route remains blocked');
