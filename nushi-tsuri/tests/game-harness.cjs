@@ -2,7 +2,12 @@
 const fs = require("node:fs");
 const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
-const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
+// Load the same local scene modules/styles the browser loads, without HTTP.
+const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
+  .replace(/<script src="(pixel-(?:world|cast)\.js)\?[^\"]+"><\/script>/g,
+    (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
+  .replace(/<link rel="stylesheet" href="(pixel-scenes\.css)\?[^\"]+" \/>/,
+    (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({
   mapVersion: 102, money: 4321, hp: 37, maxHp: 100, gameMinutes: 500,

@@ -168,10 +168,10 @@
         image-rendering: pixelated;
       }
       .player-home-area.exterior .player-home-scene {
-        background-image: url("assets/player-home-exterior-v160.webp");
+        background-image: none;
       }
       .player-home-area.interior .player-home-scene {
-        background-image: url("assets/player-home-interior-v160.webp");
+        background-image: none;
       }
       .player-home-scene::after {
         content: "";
@@ -867,7 +867,7 @@
         height: 190%;
         transform-origin: left top;
         background-color: #6f9b50;
-        background-image: url("assets/terrain-grass-v45.svg");
+        background-image: none;
         background-position: 0 0;
         background-size: 96px 96px;
         background-repeat: repeat;
@@ -885,7 +885,7 @@
         height: 53%;
         background-color: #217695;
         background-image:
-          url("assets/terrain-water-v45.svg"),
+          none,
           linear-gradient(#2b83a0 0 17%, #247895 18% 62%, #1b698b 100%);
         background-position: 0 0, 0 0;
         background-size: 128px 64px, 100% 100%;
@@ -955,7 +955,7 @@
       }
       .shore::before {
         inset: 0 0 50%;
-        background-image: url("assets/terrain-sand-v45.svg");
+        background-image: none;
         background-position: 0 0;
         background-size: 96px 64px;
         background-repeat: repeat;
@@ -965,7 +965,7 @@
         inset: 47% 0 auto;
         height: 27%;
         background:
-          url("assets/terrain-grass-v45.svg") 0 0 / 96px 96px repeat,
+          none 0 0 / 96px 96px repeat,
           repeating-linear-gradient(
             90deg,
             #557d3d 0 2px,
@@ -1019,7 +1019,7 @@
         bottom: auto;
         height: 12%;
         background-color: #b49361;
-        background-image: url("assets/terrain-dirt-v45.svg");
+        background-image: none;
         background-position: 0 0;
         background-size: 96px 96px;
         background-repeat: repeat;
@@ -1040,7 +1040,7 @@
         height: 49%;
         border: 3px solid #6f5a3d;
         background-color: #b49361;
-        background-image: url("assets/terrain-dirt-v45.svg");
+        background-image: none;
         background-position: 31px 17px;
         background-size: 96px 96px;
         background-repeat: repeat;
@@ -1059,7 +1059,7 @@
         border: 3px solid #6e614a;
         border-radius: 45%;
         background-color: #ad9a73;
-        background-image: url("assets/terrain-stone-v45.svg");
+        background-image: none;
         background-position: 0 0;
         background-size: 96px 96px;
         background-repeat: repeat;
@@ -1078,7 +1078,7 @@
         border: 4px solid #6c5d43;
         border-radius: 47% 53% 45% 55%;
         background-color: #ad9a73;
-        background-image: url("assets/terrain-stone-v45.svg");
+        background-image: none;
         background-position: 19px 11px;
         background-size: 96px 96px;
         background-repeat: repeat;
@@ -1120,7 +1120,7 @@
         border: 3px solid #6e5c3b;
         border-radius: 7px;
         background-color: #a88a50;
-        background-image: url("assets/terrain-field-v45.svg");
+        background-image: none;
         background-position: 0 0;
         background-size: 96px 64px;
         background-repeat: repeat;
@@ -1310,7 +1310,7 @@
          part of the visible terrain. */
       .map {
         background-color: #70964d;
-        background-image: url("assets/terrain-world-v49.png");
+        background-image: none;
         background-position: 0 0;
         background-size: 100% 100%;
         background-repeat: no-repeat;
@@ -1565,7 +1565,7 @@
       /* v53 ground pass: coherent fine grass replaces broad angular colour fields. */
       .map {
         background-color: #6c924f;
-        background-image: url("assets/terrain-world-v53.png");
+        background-image: none;
       }
       .quest-board-marker {
         position: absolute;
@@ -1763,13 +1763,13 @@
         height: auto;
         aspect-ratio: 16 / 9;
         background-color: #183b31;
-        background-image: url("assets/terrain-world-v54.png");
+        background-image: none;
         background-position: 0 0;
         background-size: 100% 100%;
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#worldPixels) {
         display: none !important;
       }
       .forage-layer {
@@ -2197,7 +2197,7 @@
         height: auto;
         aspect-ratio: 320 / 210;
         border: 0;
-        background: url("assets/sam-shop-exterior-v53.png") center / contain no-repeat;
+        background: none center / contain no-repeat;
         box-shadow: none;
         image-rendering: pixelated;
         overflow: visible;
@@ -2214,7 +2214,7 @@
         top: 45.8%;
         width: 11%;
         height: 12%;
-        background: url("assets/sam-practice-pond-v53.png") center / 100% 100% no-repeat;
+        background: none center / 100% 100% no-repeat;
         filter: drop-shadow(2px 3px 0 #17362f55);
         image-rendering: pixelated;
         pointer-events: none;
@@ -3828,7 +3828,7 @@
       .fishdex-collectible.unknown { opacity: .55; filter: grayscale(.8); }
       .fish-scene {
         --depth-y: 0%;
-        --underwater-image: url("assets/fishing-biomes-v49.png");
+        --underwater-image: none;
         --underwater-position: 0% 0%;
         --underwater-size: 300% 300%;
         --surface-colour: #d7ffff80;
@@ -3848,52 +3848,52 @@
       .fish-scene.depth-mid { --depth-y: 50%; }
       .fish-scene.depth-deep { --depth-y: 100%; }
       .fish-scene.water-lake.depth-shallow {
-        --underwater-image: url("assets/underwater-lake-shallow-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-lake.depth-mid {
-        --underwater-image: url("assets/underwater-lake-mid-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-lake.depth-deep {
-        --underwater-image: url("assets/underwater-lake-deep-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-river.depth-shallow {
-        --underwater-image: url("assets/underwater-river-shallow-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-river.depth-mid {
-        --underwater-image: url("assets/underwater-river-mid-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-river.depth-deep {
-        --underwater-image: url("assets/underwater-river-deep-v64.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-sea.depth-shallow {
-        --underwater-image: url("assets/underwater-sea-shallow-v65.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-sea.depth-mid {
-        --underwater-image: url("assets/underwater-sea-mid-v65.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-sea.depth-deep {
-        --underwater-image: url("assets/underwater-sea-deep-v65.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
       .fish-scene.water-sea.sand-flatfish {
-        --underwater-image: url("assets/underwater-sea-sand-flatfish-v97.jpg");
+        --underwater-image: none;
         --underwater-position: center;
         --underwater-size: cover;
       }
@@ -3959,98 +3959,98 @@
       }
       .cast-surface.art-water {
         background-color: #173c55;
-        background-image: url("assets/cast-lake-day-soft-v77.jpg");
+        background-image: none;
         background-position: center;
         background-repeat: no-repeat;
         background-size: cover;
       }
       .cast-surface.art-lake.time-morning {
-        background-image: url("assets/cast-lake-morning-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-lake.time-day.cast-day-soft {
-        background-image: url("assets/cast-lake-day-soft-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-lake.time-day.cast-day-bright {
-        background-image: url("assets/cast-lake-day-bright-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-lake.time-evening {
-        background-image: url("assets/cast-lake-evening-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-lake.time-night {
-        background-image: url("assets/cast-lake-night-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river {
-        background-image: url("assets/cast-river-day-soft-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river.time-morning {
-        background-image: url("assets/cast-river-morning-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river.time-day.cast-day-soft {
-        background-image: url("assets/cast-river-day-soft-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river.time-day.cast-day-bright {
-        background-image: url("assets/cast-river-day-bright-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river.time-evening {
-        background-image: url("assets/cast-river-evening-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-river.time-night {
-        background-image: url("assets/cast-river-night-v77.jpg");
+        background-image: none;
       }
       .cast-surface.art-sam-pond {
-        background-image: url("assets/cast-sam-pond-day-soft-v78.jpg");
+        background-image: none;
         background-position: center bottom;
       }
       .cast-surface.art-sam-pond.time-morning {
-        background-image: url("assets/cast-sam-pond-morning-v78.jpg");
+        background-image: none;
       }
       .cast-surface.art-sam-pond.time-day.cast-day-soft {
-        background-image: url("assets/cast-sam-pond-day-soft-v78.jpg");
+        background-image: none;
       }
       .cast-surface.art-sam-pond.time-day.cast-day-bright {
-        background-image: url("assets/cast-sam-pond-day-bright-v78.jpg");
+        background-image: none;
       }
       .cast-surface.art-sam-pond.time-evening {
-        background-image: url("assets/cast-sam-pond-evening-v78.jpg");
+        background-image: none;
       }
       .cast-surface.art-sam-pond.time-night {
-        background-image: url("assets/cast-sam-pond-night-v78.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach {
-        background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach.time-morning {
-        background-image: url("assets/cast-sea-beach-morning-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach.time-day.cast-day-soft {
-        background-image: url("assets/cast-sea-beach-day-soft-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach.time-day.cast-day-bright {
-        background-image: url("assets/cast-sea-beach-day-bright-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach.time-evening {
-        background-image: url("assets/cast-sea-beach-evening-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-beach.time-night {
-        background-image: url("assets/cast-sea-beach-night-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor {
-        background-image: url("assets/cast-sea-harbor-day-soft-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor.time-morning {
-        background-image: url("assets/cast-sea-harbor-morning-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor.time-day.cast-day-soft {
-        background-image: url("assets/cast-sea-harbor-day-soft-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor.time-day.cast-day-bright {
-        background-image: url("assets/cast-sea-harbor-day-bright-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor.time-evening {
-        background-image: url("assets/cast-sea-harbor-evening-v76.jpg");
+        background-image: none;
       }
       .cast-surface.art-sea-harbor.time-night {
-        background-image: url("assets/cast-sea-harbor-night-v76.jpg");
+        background-image: none;
       }
       .art-water .cast-sky,
       .art-water .cast-far-shore,
@@ -6390,6 +6390,7 @@
         }
       }
     </style>
+    <link rel="stylesheet" href="pixel-scenes.css?v=161-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6415,7 +6416,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v160</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v161</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6424,6 +6425,7 @@
       </header>
       <main class="world" id="world">
         <div class="map v54-map" id="map">
+          <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
           <div class="lake">
             <i class="lake-island island-a"></i>
             <i class="lake-island island-b"></i>
@@ -6516,6 +6518,7 @@
         </div>
         <section id="playerHomeArea" class="player-home-area" aria-hidden="true" aria-label="主人公宅">
           <div id="playerHomeScene" class="player-home-scene">
+          <canvas id="homeBackdrop" class="pixel-scene" width="960" height="480" aria-hidden="true"></canvas>
           <div id="homeAquarium" class="aquarium-tank" role="img" aria-label="空の水槽" hidden>
             <div id="homeAquariumFish" class="aquarium-fish" hidden></div>
           </div>
@@ -6597,8 +6600,9 @@
           </div>
         </div>
         <div class="fish-scene" id="fishScene">
-          <div class="underwater-backdrop" aria-hidden="true"></div>
+          <div class="underwater-backdrop" aria-hidden="true"><canvas id="underwaterPixels" class="pixel-scene" width="640" height="320"></canvas></div>
           <div class="cast-surface" id="castSurface" aria-hidden="true">
+            <canvas id="castBackdrop" class="pixel-scene" width="640" height="320"></canvas>
             <div class="cast-sky"><div class="cast-stars"></div></div>
             <div class="cast-far-shore"></div>
             <div class="cast-water"></div>
@@ -6613,6 +6617,7 @@
             <div class="cast-splash"></div>
             <div class="cast-float" id="castFloat"></div>
             <div class="cast-motion-rig" id="castMotionRig" aria-hidden="true">
+              <canvas id="castActor" class="pixel-scene" width="640" height="320"></canvas>
               <div class="cast-rod rod-bamboo" id="castRod"><i class="cast-rod-tip" id="castRodTip"></i></div>
               <div class="cast-angler boy" id="castAngler"></div>
             </div>
@@ -6793,37 +6798,7 @@
         <div class="modal shop-modal" id="store">
           <div class="shop-layout">
             <div class="shop-interior" aria-label="木の棚に釣り竿、ルアー、釣り糸が並ぶサムの釣具店内">
-              <svg
-                class="shop-art"
-                viewBox="0 0 1536 1152"
-                preserveAspectRatio="xMidYMid meet"
-                role="img"
-                aria-label="レジの右でサムが店番をする、木造の釣具店内"
-              >
-                <defs>
-                  <clipPath id="samCounterFront">
-                    <path d="M408 334H924V468H408ZM454 270H570V371H454Z" />
-                  </clipPath>
-                </defs>
-                <image href="assets/interior-sam-shop-v55.png" width="1536" height="1152" />
-                <image
-                  class="shopkeeper-sam-svg"
-                  href="assets/sam-front.png"
-                  x="570"
-                  y="178"
-                  width="142"
-                  height="292"
-                  preserveAspectRatio="xMidYMax meet"
-                  aria-label="サミュエル・オールドマン"
-                />
-                <image
-                  href="assets/interior-sam-shop-v55.png"
-                  width="1536"
-                  height="1152"
-                  clip-path="url(#samCounterFront)"
-                  aria-hidden="true"
-                />
-              </svg>
+              <canvas id="shopPixels" width="640" height="360" role="img" aria-label="サムの釣具店内"></canvas>
             </div>
             <div class="shop-panel">
               <button class="close" data-close>外へ出る</button>
@@ -6933,7 +6908,7 @@
         <div class="modal shop-modal" id="locationInterior">
           <div class="location-layout">
             <div class="location-visual">
-              <img id="locationImage" alt="施設の内装" />
+              <canvas id="locationPixels" width="640" height="320" role="img" aria-label="施設の内装"></canvas>
             </div>
             <div class="location-panel">
               <button class="close" data-close>外へ出る</button>
@@ -7100,6 +7075,8 @@
         </div>
       </main>
     </section>
+    <script src="pixel-world.js?v=161-1"></script>
+    <script src="pixel-cast.js?v=161-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -9733,83 +9710,7 @@
           },
         ],
       };
-      const SURFACE_CAST_MOTION_MS = 760,
-        SURFACE_CAST_FRAME_STOPS = [0, .16, .34, .5, .68, .86],
-        SURFACE_CAST_SPRITES = {
-          boy: {
-            width: 220,
-            height: 339,
-            grips: [
-              [164, 218], [182, 190], [169, 70],
-              [203, 99], [192, 239], [164, 217],
-            ],
-          },
-          girl: {
-            width: 220,
-            height: 326,
-            grips: [
-              [161, 200], [164, 185], [158, 34],
-              [188, 79], [187, 213], [161, 200],
-            ],
-          },
-        },
-        SURFACE_CAST_ROD_SPRITES = {
-          horizontalScales: { boy: .80, girl: .72 },
-          columns: {
-            bamboo: 0,
-            youngBamboo: 25,
-            clearStream: 50,
-            starGazer: 75,
-            moroko: 100,
-          },
-          // Every held cell is registered at y=190px, immediately above the
-          // reel seat. The transparent interruption is covered by the painted
-          // palm, while the reel remains directly below that same hand point.
-          grips: {
-            bamboo: [
-              [51.5, 74.21875], [53, 74.21875], [45, 74.21875],
-              [52.5, 74.21875], [52, 74.21875], [55, 74.21875],
-            ],
-            youngBamboo: [
-              [51, 74.21875], [52.5, 74.21875], [46, 74.21875],
-              [52.5, 74.21875], [51.5, 74.21875], [54, 74.21875],
-            ],
-            clearStream: [
-              [51, 74.21875], [52.5, 74.21875], [46.5, 74.21875],
-              [52.5, 74.21875], [52, 74.21875], [54.5, 74.21875],
-            ],
-            starGazer: [
-              [51, 74.21875], [52.5, 74.21875], [47, 74.21875],
-              [52, 74.21875], [52, 74.21875], [54.5, 74.21875],
-            ],
-            moroko: [
-              [51, 74.21875], [52, 74.21875], [46.5, 74.21875],
-              [52, 74.21875], [52, 74.21875], [54, 74.21875],
-            ],
-          },
-          tips: {
-            bamboo: [
-              [76.5, 19.921875], [74.5, 23.828125], [15.5, 32.421875],
-              [24, 37.5], [72.5, 40.234375], [72.5, 32.421875],
-            ],
-            youngBamboo: [
-              [72, 19.921875], [70, 24.21875], [15.5, 32.421875],
-              [24, 37.5], [71, 40.234375], [70, 32.421875],
-            ],
-            clearStream: [
-              [76, 19.921875], [71.5, 23.828125], [15.5, 32.8125],
-              [24, 37.5], [72, 40.234375], [71, 32.421875],
-            ],
-            starGazer: [
-              [74, 19.921875], [71.5, 23.828125], [15.5, 32.421875],
-              [24, 37.109375], [71.5, 40.234375], [70.5, 32.421875],
-            ],
-            moroko: [
-              [73.5, 19.921875], [68, 24.21875], [15.5, 32.421875],
-              [23.5, 37.5], [71.5, 40.234375], [70.5, 32.421875],
-            ],
-          },
-        };
+      const SURFACE_CAST_MOTION_MS = ShuCast.DURATION;
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
       fishMotionProfiles.aji = {
@@ -11409,6 +11310,8 @@
           minuteOfDay,
           hour,
           minute,
+          season: ShuPixel.calendar(totalMinutes).season,
+          visualPeriod: ShuPixel.calendar(totalMinutes).period,
           period,
           periodLabel,
           dayVariant: dayIndex % 2
@@ -11420,7 +11323,8 @@
         const clock = gameClockAt(value);
         const hour = String(clock.hour).padStart(2, "0");
         const minute = String(clock.minute).padStart(2, "0");
-        return `${clock.day}日目 ${hour}:${minute} ${clock.periodLabel}`;
+        const landscape = ShuPixel.calendar(value);
+        return `${landscape.seasonLabel}${landscape.seasonDay}日・${clock.day}日目 ${hour}:${minute} ${landscape.periodLabel}`;
       }
       function advanceGameTime(state, minutes = CAST_TIME_MINUTES) {
         const amount = Math.max(0, Math.floor(Number(minutes) || 0));
@@ -13560,7 +13464,10 @@
         harborWalkwayPolygons = [
           [[143, 98], [226, 91], [226, 100], [174, 102], [174, 110], [143, 109]],
           [[123, 119], [123, 128], [158, 128], [158, 119]],
-          [[151, 108], [158, 108], [158, 113], [151, 113]],
+          // Join the lower boat-shop pier to the north quay. Its former
+          // endpoint at y=113 left six units of water before the y=119 pier.
+          [[151, 108], [158, 108], [158, 121], [151, 121]],
+          [[217, 98], [223, 98], [223, 107], [217, 107]],
           [[207, 105], [236, 104], [236, 114], [207, 114]],
           [[224, 109], [232, 109], [232, 121], [224, 121]],
         ],
@@ -13709,19 +13616,9 @@
               { left: 14.5, right: 88.5, top: 30, bottom: 85.5 },
               { left: 41, right: 52, top: 84, bottom: 98 },
             ],
-            blocked: [
-              { left: 16.8, right: 28, top: 24, bottom: 54.5 }, // bed
-              { left: 12.7, right: 17.5, top: 25, bottom: 39 }, // bedside shelf
-              { left: 54.4, right: 72.8, top: 24, bottom: 38 }, // kitchen
-              { left: 36.5, right: 49, top: 35.2, bottom: 52.4 }, // table
-              { left: 40.5, right: 44.5, top: 50, bottom: 58.5 }, // stool
-              { left: 75, right: 87.5, top: 24, bottom: 40.4 }, // wall tackle/storage
-              { left: 85.5, right: 89, top: 38.5, bottom: 43.3 }, // basket
-              { left: 72.8, right: 87.8, top: 46.8, bottom: 74.5 }, // aquarium/stand
-              { left: 15.2, right: 26.8, top: 69, bottom: 85.5 }, // chest
-              { left: 11, right: 15.6, top: 63, bottom: 85.5 }, // plant/basket
-              { left: 60.8, right: 88.3, top: 76, bottom: 87 }, // dog supplies
-            ],
+            blocked: ShuPixel.homeFurniture.map(f => ({
+              left: f.x, right: f.x + f.w, top: f.y, bottom: f.y + f.h,
+            })),
             events: [
               { id: "interior-door", x: 46, y: 94, radius: 7 },
               { id: "bed", x: 29, y: 53, radius: 6 },
@@ -13746,7 +13643,7 @@
         "player-home": {
           brand: "MY FISHING HOME",
           title: "主人公宅の台所",
-          asset: "assets/player-home-interior-v160.webp",
+
           alt: "ベッド、台所、収納、釣具、水槽と犬用品が整った主人公宅",
           dialogue: "使い慣れた台所だ。持ち帰った魚と採集物で、いつもの料理を作れる。",
           actionLabel: "台所を使う",
@@ -13759,7 +13656,7 @@
         farmhouse: {
           brand: "LAKESIDE FISHING INN",
           title: "湖畔の釣り宿",
-          asset: "assets/interior-fishing-inn-v55.png",
+
           alt: "畳の間、寝具、釣り竿と台所が整った湖畔の釣り宿",
           dialogue: "「今日はここへ泊まっていきな。湖の音を聞いて眠れば、朝六時にはすっきり起きられるよ」",
           actionLabel: "宿泊する",
@@ -13770,7 +13667,7 @@
         yaoya: {
           brand: "YAOYA VEGETABLES",
           title: "八百屋",
-          asset: "assets/interior-yaoya-v55.png",
+
           alt: "木箱に大根、白菜、ねぎ、なす、トマトなどが並ぶ八百屋",
           dialogue: "「朝採れの野菜と果物だよ。食べる品と、星占い神社へ供える品は札の色で分けてあるよ」",
           goods: ["tomato", "apple", "offeringDaikon", "starGrapes"],
@@ -13781,7 +13678,7 @@
         diner: {
           brand: "MINATO DINER",
           title: "みなと食堂",
-          asset: "assets/interior-minato-diner-v55.png",
+
           alt: "魚料理の厨房、カウンター席と木のテーブルがあるみなと食堂",
           dialogue: "「握り飯も弁当も、料理したものはうちへ任せな。釣り場へ持っていけるよう包んでやるよ」",
           goods: ["vegetableOnigiri", "fishBento"],
@@ -13793,7 +13690,7 @@
         "main-shrine": {
           brand: "STAR DIVINATION SHRINE",
           title: "星占い神社",
-          asset: "assets/interior-star-shrine-v55.png",
+
           alt: "星の幕、しめ縄、賽銭箱、おみくじがある星占い神社の拝殿",
           dialogue: "静かな拝殿に鈴の余韻が残る。湖面の星が、次の一投を見守っているようだ。",
           actionLabel: "星へ願いを届ける",
@@ -13803,7 +13700,7 @@
         "fish-market": {
           brand: "HARBOR FISHMONGER",
           title: "港の魚屋",
-          asset: "assets/interior-fish-market-v55.png",
+
           alt: "石床に氷詰めの鮮魚、水槽、まな板が並ぶ港の魚屋",
           dialogue: "「今朝の魚は潮目の外から来た群れだ。海で銀色が跳ねたら、少し深めへ投げてみな」",
           actionLabel: "本日の水揚げを聞く",
@@ -13812,6 +13709,83 @@
         },
       };
       let activeLocationId = null;
+      const pixelSceneCache = new WeakMap();
+      let pixelScenePaints = 0, pixelCastModel = null, pixelCastKey = "";
+      function paintPixelScene(canvas, key, draw) {
+        if (!canvas || pixelSceneCache.get(canvas) === key) return false;
+        draw(canvas);
+        pixelSceneCache.set(canvas, key);
+        pixelScenePaints++;
+        return true;
+      }
+      function pixelWorldGeometry() {
+        return { isLakeWater, isRiverWater, isSeaWater, isPracticePondWater, isOnRiverBridge,
+          isOnLakeDock, isOnHarborWalkway, seaWaterY, isBlockedStructure, structureBounds,
+          mainShrineApproachBounds, samShopApproachBounds, harborCornerPassageBounds };
+      }
+      function pixelFishingSize() {
+        const box = $("#fishScene").getBoundingClientRect();
+        const width = box.width || $("#world").clientWidth || innerWidth;
+        const height = box.height || $("#world").clientHeight || innerHeight;
+        return { width: 640, height: Math.round(640 * Math.max(.3, Math.min(2, height / Math.max(1, width)))) };
+      }
+      function resizePixelCanvas(canvas, size) {
+        if (canvas.width === size.width && canvas.height === size.height) return false;
+        canvas.width = size.width; canvas.height = size.height;
+        pixelSceneCache.delete(canvas); return true;
+      }
+      function surfaceSceneryKind() {
+        return battle?.practice ? "pond" : battle?.waterZone === "sea"
+          ? battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY) : battle?.waterZone || "lake";
+      }
+      function paintSurfaceScenery() {
+        if (!battle) return;
+        const canvas = $("#castBackdrop"), env = ShuPixel.calendar(s.gameMinutes), kind = surfaceSceneryKind();
+        resizePixelCanvas(canvas, pixelFishingSize());
+        paintPixelScene(canvas, `${kind}:${env.key}:${canvas.width}:${canvas.height}`,
+          c => ShuPixel.drawSurface(c, kind, env));
+      }
+      function paintUnderwaterScenery(zone, depth, flatfish = false) {
+        const canvas = $("#underwaterPixels"), env = ShuPixel.calendar(s.gameMinutes);
+        resizePixelCanvas(canvas, pixelFishingSize());
+        paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}:${canvas.height}`,
+          c => ShuPixel.drawUnderwater(c, zone, depth, env, flatfish));
+      }
+      function paintHomeScenery() {
+        const canvas = $("#homeBackdrop"), env = ShuPixel.calendar(s.gameMinutes);
+        paintPixelScene(canvas, `${playerHomeState.area}:${env.key}`,
+          c => playerHomeState.area === "interior" ? ShuPixel.drawInterior(c, "player-home", env)
+            : ShuPixel.drawHomeExterior(c, env));
+      }
+      function renderPixelScenery() {
+        const env = ShuPixel.calendar(s.gameMinutes);
+        if (!playerHomeIsActive() && !battle)
+          paintPixelScene($("#worldPixels"), env.key, c => ShuPixel.drawWorld(c, pixelWorldGeometry(), env));
+        if ($("#store").classList.contains("open"))
+          paintPixelScene($("#shopPixels"), env.key, c => ShuPixel.drawInterior(c, "sam-shop", env));
+        if (activeLocationId && $("#locationInterior").classList.contains("open"))
+          paintPixelScene($("#locationPixels"), `${activeLocationId}:${env.key}`,
+            c => ShuPixel.drawInterior(c, activeLocationId, env));
+        if (battle) {
+          paintSurfaceScenery();
+          paintUnderwaterScenery(battle.waterZone || "lake", battle.depth || "shallow", battle.f?.id === "hirame");
+        }
+      }
+      function renderPixelCast(now = Date.now()) {
+        const canvas = $("#castActor");
+        if (!canvas || document.hidden) return false;
+        const resized = resizePixelCanvas(canvas, pixelFishingSize());
+        const flying = battle?.phase === "cast-flight";
+        const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
+        const env = ShuPixel.calendar(s.gameMinutes), rod = activeSurfaceCastRodKey();
+        const key = `${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
+        if (!resized && pixelCastKey === key) return false;
+        const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
+        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,
+          target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
+        pixelCastKey = key;
+        return true;
+      }
       function sampleWorldLine(points, value) {
         for (let i = 1; i < points.length; i += 1) {
           const [value2, result2] = points[i];
@@ -13904,7 +13878,7 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
           return false;
-        if (isBlockedStructure(x, y)) return false;
+        if (isBlockedStructure(x, y) || ShuPixel.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
           !isSeaWater(x, y) &&
@@ -14173,12 +14147,7 @@
         if (!interior) return false;
         hideStarFortuneReveal({ rerender: false });
         activeLocationId = id;
-        const image = $("#locationImage");
-        image.src = interior.asset;
-        image.alt = interior.alt;
-        image.className = id === "player-home"
-          ? "player-home-interior-preview"
-          : "";
+        $("#locationPixels").setAttribute("aria-label", interior.alt);
         const closeButton = $("#locationInterior [data-close]");
         if (closeButton)
           closeButton.textContent = interior.closeLabel || "外へ出る";
@@ -14542,6 +14511,7 @@
             areaElement.clientHeight || $("#world").clientHeight || innerHeight);
           $("#playerHomeScene").style.width = `${size.width}px`;
           $("#playerHomeScene").style.height = `${size.height}px`;
+          paintHomeScenery();
         }
         renderHomeAquarium();
         renderHomeDogs();
@@ -15464,140 +15434,42 @@
         );
         surface.classList.add(`time-${theme.period}`);
         if (theme.period === "day") surface.classList.add(theme.dayVariant);
+        paintSurfaceScenery();
         return theme;
       }
-      function castLineOrigin() {
-        const surface = $("#castSurface");
-        if (!surface.classList.contains("art-water")) return { x: 145, y: 330 };
-        if (surface.classList.contains("art-layered-avatar")) {
-          const surfaceBox = surface.getBoundingClientRect?.();
-          const tipBox = $("#castRodTip").getBoundingClientRect?.();
-          if (surfaceBox?.width > 0 && surfaceBox.height > 0 && tipBox) {
-            return {
-              x: Math.round(
-                ((tipBox.left + tipBox.width / 2 - surfaceBox.left) /
-                  surfaceBox.width) * 1000,
-              ),
-              y: Math.round(
-                ((tipBox.top + tipBox.height / 2 - surfaceBox.top) /
-                  surfaceBox.height) * 500,
-              ),
-            };
-          }
-          return { x: 276, y: 236 };
-        }
-        return { x: 145, y: 330 };
-      }
-      function positionCastRodAtHand() {
-        const surface = $("#castSurface");
-        if (!surface.classList.contains("art-layered-avatar")) return;
-        const surfaceBox = surface.getBoundingClientRect?.();
-        const grip = castRodHandPoint();
-        if (!surfaceBox?.width || !surfaceBox.height || !grip) return;
-        surface.style.setProperty("--cast-rod-hand-x", `${grip.x}px`);
-        surface.style.setProperty("--cast-rod-hand-y", `${grip.y}px`);
-      }
       function activeSurfaceCastRodKey() {
-        const key = battle?.practice ? "bamboo" : s.selectedRod;
-        return Object.hasOwn(SURFACE_CAST_ROD_SPRITES.columns, key)
-          ? key
-          : "bamboo";
+        return battle?.practice ? "bamboo" : Object.hasOwn(rodData, s.selectedRod) ? s.selectedRod : "bamboo";
       }
-      function syncSurfaceCastRodSprite(frame = surfaceCastMotionFrame) {
-        const rod = $("#castRod");
-        if (!rod) return false;
-        const key = activeSurfaceCastRodKey();
-        const angler = $("#castAngler");
-        const avatar = angler?.classList?.contains("girl") ||
-            (!angler && s.avatar === "girl")
-          ? "girl"
-          : "boy";
-        const cssKey = key.replace(/[A-Z]/g, (letter) => `-${letter.toLowerCase()}`);
-        const next = Math.max(0, Math.min(5, Number(frame) || 0));
-        const tipFrames = SURFACE_CAST_ROD_SPRITES.tips[key] ||
-          SURFACE_CAST_ROD_SPRITES.tips;
-        const gripFrames = SURFACE_CAST_ROD_SPRITES.grips
-          ? SURFACE_CAST_ROD_SPRITES.grips[key] || SURFACE_CAST_ROD_SPRITES.grips
-          : Array.from({ length: 6 }, () => [50, 87.5]);
-        const [tipX, tipY] = tipFrames[next];
-        const [gripX, gripY] = gripFrames[next];
-        const horizontalScale =
-          SURFACE_CAST_ROD_SPRITES.horizontalScales?.[avatar] || 1;
-        const heldTipX = gripX + (tipX - gripX) * horizontalScale;
-        rod.className = `cast-rod held-${avatar} rod-${cssKey}`;
-        rod.style.setProperty(
-          "--cast-rod-column",
-          `${SURFACE_CAST_ROD_SPRITES.columns[key]}%`,
-        );
-        rod.style.setProperty("--cast-rod-frame", `${next * 20}%`);
-        rod.style.setProperty("--cast-rod-tip-x", `${heldTipX}%`);
-        rod.style.setProperty("--cast-rod-tip-y", `${tipY}%`);
-        rod.style.setProperty("--cast-rod-grip-x", `${gripX}%`);
-        rod.style.setProperty("--cast-rod-grip-y", `${gripY}%`);
-        rod.style.setProperty("--cast-rod-grip-shift-x", `${-gripX}%`);
-        rod.style.setProperty("--cast-rod-grip-shift-y", `${-gripY}%`);
-        return true;
-      }
-      function setSurfaceCastMotionFrame(frame, force = false) {
-        const next = Math.max(0, Math.min(5, Number(frame) || 0));
-        if (!force && surfaceCastMotionFrame === next) return false;
-        surfaceCastMotionFrame = next;
-        const angler = $("#castAngler");
-        if (angler) angler.style.backgroundPosition = `${next * 20}% 0`;
-        syncSurfaceCastRodSprite(next);
-        positionCastRodAtHand();
-        return true;
-      }
-      function advanceSurfaceCastMotionFrame(now = Date.now()) {
-        const surface = $("#castSurface");
-        if (!surface.classList.contains("cast-throwing")) return false;
-        const elapsed = Math.max(0, now - surfaceCastMotionStartedAt);
-        const progress = Math.min(1, elapsed / SURFACE_CAST_MOTION_MS);
-        let frame = 0;
-        for (let index = 1; index < SURFACE_CAST_FRAME_STOPS.length; index += 1)
-          if (progress >= SURFACE_CAST_FRAME_STOPS[index]) frame = index;
-        return setSurfaceCastMotionFrame(frame);
+      function castLineOrigin() {
+        const canvas = $("#castActor");
+        const model = pixelCastModel || ShuCast.model(canvas.width, canvas.height, 0);
+        return { x: model.tip.x / canvas.width * 1000, y: model.tip.y / canvas.height * 500 };
       }
       function castRodHandPoint() {
-        const surfaceBox = $("#castSurface").getBoundingClientRect?.();
-        const angler = $("#castAngler");
-        const anglerBox = angler.getBoundingClientRect?.();
-        if (!surfaceBox?.width || !surfaceBox.height || !anglerBox?.width)
-          return null;
-        // Every pose has a source-pixel palm landmark. The held-state atlas
-        // has its short transparent grip gap registered here, so the original
-        // painted fist hides the gap and the handle emerges above and below it.
-        const sprite = SURFACE_CAST_SPRITES[
-          angler.classList.contains("girl") ? "girl" : "boy"
-        ];
-        const frame = Math.max(0, Math.min(5, surfaceCastMotionFrame));
-        const [gripX, gripY] = sprite.grips[frame];
-        return {
-          x: anglerBox.left - surfaceBox.left + gripX / sprite.width * anglerBox.width,
-          y: anglerBox.top - surfaceBox.top + gripY / sprite.height * anglerBox.height,
-        };
+        const canvas = $("#castActor"), box = $("#castSurface").getBoundingClientRect();
+        const model = pixelCastModel || ShuCast.model(canvas.width, canvas.height, 0);
+        return { x: model.hand.x / canvas.width * box.width, y: model.hand.y / canvas.height * box.height };
       }
-      function syncSurfaceCastRig() {
-        if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
-          return;
-        const surface = $("#castSurface");
-        if (surface.classList.contains("cast-throwing"))
-          advanceSurfaceCastMotionFrame();
-        else
-          positionCastRodAtHand();
-        if (!["cast-flight", "wait", "bite"].includes(battle.phase)) return;
+      function positionCastRodAtHand() { return renderPixelCast(); }
+      function syncSurfaceCastRodSprite() { pixelCastKey = ""; return renderPixelCast(); }
+      function setSurfaceCastMotionFrame(frame, force = false) {
+        surfaceCastMotionFrame = frame;
+        if (force) pixelCastKey = "";
+        return renderPixelCast();
+      }
+      function advanceSurfaceCastMotionFrame(now = Date.now()) { return renderPixelCast(now); }
+      function syncSurfaceCastRig(now = Date.now()) {
+        if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase) || document.hidden) return;
+        paintSurfaceScenery();
+        renderPixelCast(now);
+        const canvas = $("#castActor"), origin = castLineOrigin();
         const point = castSurfacePoint(battle.castDistance ?? battle.cast ?? 0);
-        const origin = castLineOrigin();
-        const targetX = point.x * 10;
-        const targetY = point.y * 5;
-        const controlX = Math.round((origin.x + targetX) * .5);
-        const controlY = battle.phase === "cast-flight"
-          ? 38
-          : Math.round(Math.min(origin.y, targetY) - 18);
-        $("#castLinePath").setAttribute(
-          "d",
-          `M ${origin.x} ${origin.y} Q ${controlX} ${controlY} ${targetX} ${targetY}`,
-        );
+        const bobber = battle.phase === "cast-flight" ? pixelCastModel.bobber
+          : battle.phase === "cast" ? { x: pixelCastModel.tip.x + 2, y: pixelCastModel.tip.y + 9 }
+          : { x: point.x * canvas.width / 100, y: point.y * canvas.height / 100 };
+        const x = bobber.x / canvas.width * 1000, y = bobber.y / canvas.height * 500;
+        const cx = (origin.x + x) / 2, cy = (origin.y + y) / 2 + (battle.phase === "cast-flight" ? 5 : 9);
+        $("#castLinePath").setAttribute("d", `M ${origin.x} ${origin.y} Q ${cx} ${cy} ${x} ${y}`);
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
@@ -16069,6 +15941,7 @@
                       ? "潮見浜と星見港だ。水辺のすぐそばで、水へ向いてAで釣る。"
                       : "湖・川・海の水辺のすぐそばで、水へ向いてAで釣れる。";
         renderPlayerHome();
+        renderPixelScenery();
         scheduleSave();
       }
       function renderIdleStatus() {
@@ -16247,6 +16120,16 @@
       function drawDog() {
         const canvas = $("#dogSprite");
         if (!canvas) return;
+        // Main-map art now scales with the scene as the home already does.
+        // Reuse its paw registration so walking/sitting/sleeping share one
+        // ground point instead of inheriting each PNG's transparent margin.
+        if (!["idle-dig", "idle-beg"].includes(dogIdleMode)) {
+          const pose = dogWalking ? "walk" : dogIdleMode === "idle-sit" ? "sit"
+            : dogIdleMode === "idle-sleep" ? "sleep" : "stand";
+          drawHomeDogSprite(canvas, { dogId: s.dog, direction: dogMotionDirection || s.direction },
+            pose, dogAnimFrame % 4);
+          return;
+        }
         const ctx = canvas.getContext("2d");
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         ctx.imageSmoothingEnabled = false;
@@ -16800,6 +16683,7 @@
         );
         scene.classList.add(`water-${zone}`, `depth-${depth}`);
         scene.classList.toggle("sand-flatfish", fishId === "hirame");
+        paintUnderwaterScenery(zone, depth, fishId === "hirame");
       }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
         if (rescueInProgress) return;
@@ -18071,15 +17955,7 @@
         void $("#castMotionRig").offsetWidth;
         surface.classList.add("cast-throwing");
         playGameAudioSample("castThrow", { restart: true });
-        const point = castSurfacePoint(distance);
-        const targetX = point.x * 10;
-        const targetY = point.y * 5;
-        const origin = castLineOrigin();
-        const controlX = Math.round((origin.x + targetX) * .5 + 105);
-        $("#castLinePath").setAttribute(
-          "d",
-          `M ${origin.x} ${origin.y} Q ${controlX} 38 ${targetX} ${targetY}`,
-        );
+        syncSurfaceCastRig();
         $("#castMeter").style.display = "none";
         $("#phaseLabel").textContent = " 竿を振る";
         $("#battleMsg").textContent = battle.practice
@@ -20294,6 +20170,7 @@
         modal.classList.add("open");
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
+        renderPixelScenery();
       }
       function close() {
         const openModals = [...document.querySelectorAll(".modal.open")];
@@ -20715,7 +20592,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=160-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=161-1").catch(() => {});
       renderRecord();
     </script>
   </body>
