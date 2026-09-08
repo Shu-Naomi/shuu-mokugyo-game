@@ -271,19 +271,66 @@ test("all existing fish use one reused sprite; hidden pages stop/resume animatio
   } finally { app.dispose(); }
 });
 
+test("home keeps its artwork and character scale on phone rotation; larger shoes stay clear of furniture", () => {
+  const app = boot(), { window } = app;
+  try {
+    const area = window.document.querySelector("#playerHomeArea");
+    const scene = window.document.querySelector("#playerHomeScene");
+    const fieldWidth = window.getComputedStyle(window.document.querySelector("#player")).width;
+    window.eval("playerHomeState.area='interior'; playerHomeState.x=46; playerHomeState.y=91");
+    for (const [width, height] of [[1386, 594], [844, 300], [360, 640]]) {
+      Object.defineProperties(area, {
+        clientWidth: { configurable: true, value: width },
+        clientHeight: { configurable: true, value: height },
+      });
+      window.eval("renderPlayerHome(); stopHomeDogAnimation()");
+      const sceneWidth = parseFloat(scene.style.width), sceneHeight = parseFloat(scene.style.height);
+      assert.equal(sceneWidth / sceneHeight, 2, "the 1774×887 artwork is never stretched");
+      assert.ok(sceneWidth <= width && sceneHeight <= height);
+      assert.ok(sceneWidth === width || sceneHeight === height, "fills the available space on one axis");
+      // JSDOM 26 applies the later generic .player rule over this ID selector;
+      // it does not model the browser's specificity here. Read the home rule
+      // directly, then compare its rendered proportions to the actual artwork.
+      const homeRule = [...window.document.styleSheets].flatMap((sheet) => [...sheet.cssRules])
+        .find((rule) => rule.selectorText === "#homePlayer");
+      assert.match(homeRule.style.width, /%$/);
+      const playerFraction = parseFloat(homeRule.style.width) / 100;
+      // The real boy/girl standing PNGs contain 338/318 opaque pixels of a
+      // 430px source height. The v160 door opening is about 153/887 of the map.
+      for (const opaqueHeight of [338, 318]) {
+        const visibleHeight = sceneWidth * playerFraction * 58 / 46 * opaqueHeight / 430;
+        const doorHeight = sceneHeight * 153 / 887;
+        assert.ok(visibleHeight / doorHeight > .9 && visibleHeight / doorHeight < 1.15,
+          "each protagonist fits the door's human scale");
+      }
+      for (const id of ["homePlayer", "homeDogs", "homeAquarium"])
+        assert.ok(scene.contains(window.document.getElementById(id)), `${id} uses the same fitted coordinates`);
+    }
+    assert.equal(window.getComputedStyle(window.document.querySelector("#player")).width, fieldWidth);
+    for (const [x, y, direction] of [[31,52,"left"], [52,46,"left"], [70,65,"right"], [30,80,"left"], [52,31,"up"]]) {
+      assert.equal(window.eval(`isPlayerHomePositionWalkable('interior',${x},${y})`), true);
+      assert.deepEqual(read(window, `playerHomeMoveTarget('interior',${x},${y},'${direction}')`), { x, y },
+        "a clear center point cannot push a shoe into adjacent furniture or walls");
+    }
+    assert.deepEqual(read(window, "playerHomeMoveTarget('interior',53,66,'right')"), { x:57, y:66 },
+      "the old central tackle rack is now clear floor");
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
+});
+
 test("painted aisles are reachable, furniture stays solid, and A works from the tank's exposed front", async () => {
   const app = boot();
   const { window } = app;
   try {
-    // Coordinates come from visible floor/objects in player-home-v153.jpg,
+    // Coordinates come from the separate v160 interior/exterior artwork,
     // not from the collision rectangles under test.
     const floor = {
-      interior: [[30, 41], [33, 55], [39, 68], [39, 85], [52, 75], [64, 75], [68, 75], [70, 70], [70, 86], [52, 33]],
-      exterior: [[12, 80], [28, 83], [38, 80], [58, 82], [64, 84], [76, 84], [86, 88], [49, 73]],
+      interior: [[30, 41], [33, 55], [39, 68], [39, 83], [52, 75], [57, 65], [66, 67], [70, 70], [53, 82], [52, 33]],
+      exterior: [[12, 80], [28, 80], [38, 76], [58, 77], [64, 82], [76, 80], [86, 72], [52, 67], [55, 94]],
     };
     const solid = {
-      interior: [[14, 67], [86, 60], [44, 25], [20, 40], [40, 45], [46, 58], [60, 65], [62, 32], [79, 30], [79, 48], [79, 70], [79, 91], [60, 85], [30, 85], [17, 60]],
-      exterior: [[50, 60], [68, 70], [80, 68], [20, 60], [36, 71], [60, 75], [79, 79]],
+      interior: [[12, 60], [90, 60], [44, 25], [20, 40], [24, 52], [40, 45], [42, 56], [62, 32], [79, 30], [84, 39], [79, 48], [79, 70], [79, 83], [65, 82], [20, 80], [14.9, 75]],
+      exterior: [[50, 60], [68, 58], [80, 61], [20, 60], [42, 62], [62, 63], [79, 87]],
     };
     for (const [area, points] of Object.entries(floor)) {
       for (const [x, y] of points)
@@ -295,26 +342,27 @@ test("painted aisles are reachable, furniture stays solid, and A works from the 
     }
     await enterHome(window);
     window.document.querySelector("#back").click();
-    // A direct, repeatable thumb-pad route from the entrance: four up,
-    // then six right along the floor beneath the tackle rack.
-    window.eval("Object.assign(playerHomeState, { x:44, y:91 })");
-    for (let i = 0; i < 4; i++) assert.equal(window.eval('movePlayerHome("up")'), true);
+    // A direct thumb-pad route uses the newly opened central floor:
+    // six up, then six right from the entrance to the tank's left side.
+    window.eval("Object.assign(playerHomeState, { x:46, y:91 })");
+    for (let i = 0; i < 6; i++) assert.equal(window.eval('movePlayerHome("up")'), true);
     for (let i = 0; i < 6; i++) assert.equal(window.eval('movePlayerHome("right")'), true);
-    assert.deepEqual(read(window, "({x:playerHomeState.x,y:playerHomeState.y})"), { x:68, y:75 });
+    assert.deepEqual(read(window, "({x:playerHomeState.x,y:playerHomeState.y})"), { x:70, y:67 });
     window.document.querySelector("#action").click();
     assert.equal(window.document.querySelector("#aquariumModal").classList.contains("open"), true);
     window.document.querySelector("#back").click();
-    // One more right tap uses the clear part of a stride, stops at the
-    // cabinet, and still permits A; it cannot jump through the cabinet.
+    // Even a partial stride stops before the enlarged shoes clip into the
+    // cabinet. A still works at that boundary.
+    window.eval("Object.assign(playerHomeState, { x:69, y:67 })");
     assert.equal(window.eval('movePlayerHome("right")'), true);
     assert.equal(window.eval("playerHomeState.x"), 70);
     assert.equal(window.eval('movePlayerHome("right")'), false);
     window.document.querySelector("#action").click();
     assert.equal(window.document.querySelector("#aquariumModal").classList.contains("open"), true);
     window.document.querySelector("#back").click();
-    for (const [x, y] of [[68, 61], [68, 75], [69, 72], [70, 75]])
+    for (const [x, y] of [[67, 57], [68, 74], [69, 65], [70, 70]])
       assert.equal(window.eval(`nearbyPlayerHomeEvent("interior", ${x}, ${y})?.id`), "aquarium");
-    for (const [x, y] of [[64, 75], [79, 66], [79, 91], [70, 86]])
+    for (const [x, y] of [[64, 75], [79, 66], [79, 83], [70, 84]])
       assert.notEqual(window.eval(`nearbyPlayerHomeEvent("interior", ${x}, ${y})?.id`), "aquarium");
     for (const id of ["bed", "kitchen", "interior-door", "aquarium"])
       assert.equal(walkTo(window, id), true, `reachable ${id}`);
