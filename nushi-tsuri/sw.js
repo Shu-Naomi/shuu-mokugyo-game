@@ -1,11 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v161-pixel-world-161-1";
+const CACHE_NAME = "nushi-tsuri-v162-pixel-polish-162-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./pixel-world.js?v=161-1",
-  "./pixel-cast.js?v=161-1",
-  "./pixel-scenes.css?v=161-1",
+  "./pixel-world.js?v=162-1",
+  "./pixel-cast.js?v=162-1",
+  "./pixel-scenes.css?v=162-1",
   "./manifest.json",
   "./icon-192.png",
   "./icon-512.png",

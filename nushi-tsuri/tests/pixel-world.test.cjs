@@ -41,7 +41,10 @@ test('all original scenery renders in 20 distinct season/time variants without l
     const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
     assert.doesNotMatch(html,/assets\/(?:terrain-world|cast-(?:lake|river|sea|sam)|underwater-|interior-|player-home-|sam-shop-exterior|sam-practice-pond|fishing-biomes)/);
     const worker=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-    for(const file of ['pixel-world.js','pixel-cast.js','pixel-scenes.css'])assert.ok(worker.includes('./'+file+'?v=161-1'),`${file} works in the offline cache`);
+    for(const file of ['pixel-world.js','pixel-cast.js','pixel-scenes.css']){
+      const url=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match=>match[1]).find(url=>url.startsWith(file+'?'));
+      assert.ok(url&&worker.includes('./'+url),`${file}: offline cache uses the exact browser URL`);
+    }
   }finally{app.dispose();}
 });
 

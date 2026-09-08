@@ -347,7 +347,11 @@
       d.poly([[w*.72,h*.26],[w,h*.24],[w,h],[w*.89,h],[w*.78,h*.58]],p.grass1);
       for(let i=0;i<9;i++){tree(d,w*(.08+hash(i,4)*.24),h*(.4+hash(i,6)*.4),25+hash(i,5)*15,p,env,i);rocks(d,w*.79+i*5,h*.42+i*9,5,p);}
     }else if(harbor){
-      for(let i=0;i<5;i++)building(d,{id:i%2?"fish-market":"harbor-shop",left:20+i*25,right:41+i*25,top:16,bottom:28},p,env,w/240);
+      // Anchor the skyline to the waterline. Scaling y from the canvas width
+      // left these buildings floating in the sky on a portrait phone.
+      const baseY=h*.315,buildingHeight=Math.min(w*.052,h*.18);
+      for(let i=0;i<5;i++)building(d,{id:i%2?"fish-market":"harbor-shop",
+        left:(20+i*25)*w/240,right:(41+i*25)*w/240,top:baseY-buildingHeight,bottom:baseY},p,env,1);
       boards(d,w*.82,h*.39,w*.18,h*.54,p,true);boards(d,w*.9,h*.84,w*.1,h*.16,p);
       for(let i=0;i<4;i++)barrel(d,w*.88,h*(.49+i*.12),8,11,p);
       boat(d,w*.77,h*.44,12,p);boat(d,w*.93,h*.95,14,p);

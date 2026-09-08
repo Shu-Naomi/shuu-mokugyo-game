@@ -8,6 +8,20 @@
 #player.boy.face-right, #player.girl.face-left { transform: translate(-50%, -100%) scaleX(-1); }
 #player > .player-sprite { transform: translateY(7%); }
 #dog { width: 1.7%; height: auto; aspect-ratio: 1; transform: translate(-50%, -100%); }
+#dog.idle-sleep, #dog.idle-beg { animation: none; }
+#dog canvas { --dog-facing: 1; transform: scaleX(var(--dog-facing)); transform-origin: center bottom; }
+#dog.face-player-right canvas { --dog-facing: -1; }
+#dog.idle-sleep canvas { animation: field-dog-breathe 2.4s ease-in-out infinite; }
+#dog.idle-beg canvas { animation: field-dog-beg .8s ease-in-out infinite; }
+@keyframes field-dog-breathe {
+  50% { transform: scaleX(var(--dog-facing)) scaleY(.985); }
+}
+@keyframes field-dog-beg {
+  50% { transform: scaleX(var(--dog-facing)) scaleY(1.02); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dog.idle-sleep canvas, #dog.idle-beg canvas { animation: none; }
+}
 #player.companion-sit.face-left { transform: translate(-50%, -93%); }
 #player.companion-sit.face-right { transform: translate(-50%, -93%) scaleX(-1); }
 #petScene { width: 4.55%; height: auto; aspect-ratio: 5 / 4; transform: translate(-50%, -98%); }
