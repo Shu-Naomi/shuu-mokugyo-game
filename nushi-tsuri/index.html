@@ -187,6 +187,31 @@
       }
       #homePlayer.boy.face-side { clip-path: inset(0 0 0 6.5%); }
       #homePlayer.girl.face-side { clip-path: inset(0 6.5%); }
+      #homeDogs { position: absolute; inset: 0; pointer-events: none; }
+      #homeDogs[hidden] { display: none; }
+      .home-dog {
+        position: absolute;
+        width: 3.4%;
+        aspect-ratio: 1;
+        transform: translate(-50%, -100%);
+        image-rendering: pixelated;
+      }
+      .home-dog canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+        transform-origin: center bottom;
+      }
+      .home-dog[data-pose="sleep"] canvas {
+        animation: home-dog-breathe 2.8s ease-in-out infinite;
+      }
+      #homeDogs.paused canvas { animation-play-state: paused; }
+      @keyframes home-dog-breathe {
+        50% { transform: scaleY(.97); }
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .home-dog[data-pose="sleep"] canvas { animation: none; }
+      }
       .aquarium-tank {
         position: relative;
         overflow: hidden;
@@ -6378,7 +6403,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v158</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v159</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6480,6 +6505,11 @@
         <section id="playerHomeArea" class="player-home-area" aria-hidden="true" aria-label="主人公宅">
           <div id="homeAquarium" class="aquarium-tank" role="img" aria-label="空の水槽" hidden>
             <div id="homeAquariumFish" class="aquarium-fish" hidden></div>
+          </div>
+          <div id="homeDogs" hidden>
+            <div class="home-dog" data-home-dog="shuu" role="img" aria-label="シュウ"><canvas width="320" height="320" aria-hidden="true"></canvas></div>
+            <div class="home-dog" data-home-dog="riku" role="img" aria-label="リク"><canvas width="320" height="320" aria-hidden="true"></canvas></div>
+            <div class="home-dog" data-home-dog="grey" role="img" aria-label="Grey"><canvas width="320" height="320" aria-hidden="true"></canvas></div>
           </div>
           <div id="homePlayer" class="player home-player"><canvas class="player-sprite" id="homePlayerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
         </section>
@@ -11570,6 +11600,9 @@
         fortuneResultAudioTimer = 0,
         fortuneRevealInProgress = false,
         playerHomeTransitionTimer = 0,
+        homeDogAnimationTimer = 0,
+        homeDogLastTime = null,
+        homeDogs = [],
         aquariumAnimationTimer = 0,
         aquariumElapsed = 0,
         aquariumLastTime = null,
@@ -12116,6 +12149,7 @@
         image.onload = () => {
           drawDog();
           drawDogCareScene();
+          drawHomeDogs(true);
         };
         image.src = src;
         // Some mobile browsers can finish a cached image before the normal
@@ -12123,10 +12157,12 @@
         if (image.decode) image.decode().then(() => {
           drawDog();
           drawDogCareScene();
+          drawHomeDogs(true);
         }).catch(() => {});
         setTimeout(() => {
           drawDog();
           drawDogCareScene();
+          drawHomeDogs(true);
         }, 300);
         return image;
       }
@@ -13679,9 +13715,12 @@
               { id: "aquarium", x: 69, y: 72,
                 interaction: { left: 68, right: 71, top: 61, bottom: 76 } },
             ],
-            // Ver.1では描画しない。今後の三匹の室内移動が、家具と
-            // 重ならず中央の床から始まるように独立した座標で予約する。
+            // Keep everyday wandering on the open central floor. Only the
+            // greeter uses the wider aisle, stopping short of the doorway.
             dogRoamBounds: { left: 30, right: 53, top: 64, bottom: 74 },
+            dogMovementBounds: { left: 30, right: 53, top: 64, bottom: 85 },
+            dogGreetingPoint: { x: 49, y: 83 },
+            dogAisleX: 38.5,
             dogSpawnPoints: [
               { dogId: "shuu", x: 35, y: 67 },
               { dogId: "riku", x: 45, y: 70 },
@@ -14236,6 +14275,222 @@
             : event.distance < event.radius)
           .sort((a, b) => a.distance - b.distance)[0] || null;
       }
+      function homeDogPositionWalkable(x, y) {
+        // A small paw footprint uses the existing furniture collision data.
+        // Keep the doorway and the aquarium aisle outside the dogs' area.
+        return inWorldRect(x, y, playerHomeAreaData.interior.dogMovementBounds) &&
+          [-1.7, 1.7].every((dx) => [-.7, .7].every((dy) =>
+            isPlayerHomePositionWalkable("interior", x + dx, y + dy)));
+      }
+      function homeDogSegmentClear(from, to, forDog = true, exceptId = null) {
+        const steps = Math.max(1, Math.ceil(Math.hypot(to.x - from.x, to.y - from.y) * 2));
+        for (let i = 0; i <= steps; i++) {
+          const x = from.x + (to.x - from.x) * i / steps;
+          const y = from.y + (to.y - from.y) * i / steps;
+          if (forDog ? !homeDogPositionWalkable(x, y)
+            : !isPlayerHomePositionWalkable("interior", x, y)) return false;
+          if (forDog && exceptId && !homeDogsSeparated(x, y, exceptId)) return false;
+        }
+        return true;
+      }
+      function homeDogsSeparated(x, y, exceptId = null) {
+        return homeDogs.every((dog) => dog.dogId === exceptId ||
+          Math.hypot((x - dog.x) / 3.4, (y - dog.y) / 4.5) >= 1);
+      }
+      function initializeHomeDogs(random = Math.random) {
+        homeDogs = [];
+        for (const [index, point] of playerHomeAreaData.interior.dogSpawnPoints.entries()) {
+          let position = point;
+          for (let attempt = 0; attempt < 8; attempt++) {
+            const candidate = { x: point.x + (random() - .5) * 4, y: point.y + (random() - .5) * 2 };
+            if (homeDogPositionWalkable(candidate.x, candidate.y) &&
+                homeDogsSeparated(candidate.x, candidate.y)) {
+              position = candidate;
+              break;
+            }
+          }
+          homeDogs.push({ dogId: point.dogId, x: position.x, y: position.y,
+            direction: "down", mode: ["stand", "sit", "sleep"][index],
+            remaining: 3 + index * 3, route: [], walkTime: 0,
+            greeting: false, waitingForPlayer: false, spriteKey: null });
+          ensureDogImage(point.dogId);
+        }
+        // Exactly one welcome per visit; the other two keep their own plans.
+        const greeter = homeDogs[Math.floor(random() * homeDogs.length)];
+        greeter.greeting = true;
+        greeter.remaining = 0;
+      }
+      function nearbyHomeDog(x = playerHomeState.x, y = playerHomeState.y) {
+        if (playerHomeState.area !== "interior") return null;
+        return homeDogs.map((dog) => ({ dog,
+          distance: Math.hypot((dog.x - x) / 4.2, (dog.y - y) / 6.5),
+        })).filter(({ dog, distance }) => distance <= 1 &&
+          homeDogSegmentClear({ x, y }, dog, false))
+          .sort((a, b) => a.distance - b.distance)[0]?.dog || null;
+      }
+      function setHomeDogRoute(dog, target) {
+        if (!homeDogPositionWalkable(target.x, target.y) ||
+            !homeDogsSeparated(target.x, target.y, dog.dogId)) return false;
+        // Try the two corners, then the open aisle beside the storage chest.
+        // Validate every segment so a sleeping dog can be walked around.
+        const aisleX = playerHomeAreaData.interior.dogAisleX;
+        const routes = [
+          [{ x: target.x, y: dog.y }, target],
+          [{ x: dog.x, y: target.y }, target],
+          [{ x: aisleX, y: dog.y }, { x: aisleX, y: target.y }, target],
+        ];
+        for (const points of routes) {
+          if (!points.every((point, index) =>
+            homeDogSegmentClear(index ? points[index - 1] : dog, point, true, dog.dogId))) continue;
+          const route = points.filter((point, index) => {
+            const previous = index ? points[index - 1] : dog;
+            return Math.hypot(point.x - previous.x, point.y - previous.y) > .01;
+          }).map((point) => ({ ...point }));
+          if (!route.length) return false;
+          dog.route = route;
+          dog.mode = "walk";
+          dog.walkTime = 0;
+          return true;
+        }
+        return false;
+      }
+      function chooseHomeDogActivity(dog, random = Math.random) {
+        const bounds = playerHomeAreaData.interior.dogRoamBounds;
+        const outside = !inWorldRect(dog.x, dog.y, bounds);
+        if (dog.greeting || outside || random() < .5) {
+          const target = dog.greeting ? playerHomeAreaData.interior.dogGreetingPoint : {
+            x: bounds.left + random() * (bounds.right - bounds.left),
+            y: bounds.top + random() * (bounds.bottom - bounds.top),
+          };
+          if (setHomeDogRoute(dog, target)) return;
+          dog.mode = "stand";
+          dog.remaining = 1 + random();
+          return;
+        }
+        dog.mode = random() < .55 ? "sit" : "sleep";
+        dog.remaining = dog.mode === "sleep" ? 10 + random() * 8 : 4 + random() * 4;
+      }
+      function advanceHomeDogs(delta) {
+        // A suspended tab must not spend its missing time running across the
+        // room. Only active, visible frames advance this cosmetic state.
+        const dt = Math.min(.05, Math.max(0, Number(delta) || 0));
+        const nearby = nearbyPlayerHomeEvent() ? null : nearbyHomeDog();
+        for (const dog of homeDogs) {
+          dog.waitingForPlayer = nearby?.dogId === dog.dogId;
+          if (dog.waitingForPlayer) continue;
+          if (dog.mode !== "walk") {
+            dog.remaining -= dt;
+            if (dog.remaining <= 0) chooseHomeDogActivity(dog);
+            continue;
+          }
+          const target = dog.route[0];
+          if (!target) { dog.mode = "stand"; dog.remaining = 1; continue; }
+          const dx = target.x - dog.x, dy = target.y - dog.y;
+          const distance = Math.hypot(dx, dy * .5);
+          const amount = Math.min(1, 3.4 * dt / Math.max(.001, distance));
+          const next = { x: dog.x + dx * amount, y: dog.y + dy * amount };
+          const touchesPlayer = Math.hypot((next.x - playerHomeState.x) / 2.8,
+            (next.y - playerHomeState.y) / 3.5) < 1;
+          if (!homeDogSegmentClear(dog, next) || touchesPlayer ||
+              !homeDogsSeparated(next.x, next.y, dog.dogId)) {
+            dog.route = [];
+            dog.mode = "stand";
+            dog.remaining = 1;
+            continue;
+          }
+          dog.direction = Math.abs(dx) > .001 ? dx < 0 ? "left" : "right"
+            : dy < 0 ? "up" : "down";
+          dog.x = next.x;
+          dog.y = next.y;
+          dog.walkTime += dt;
+          if (amount === 1) {
+            dog.route.shift();
+            if (!dog.route.length) {
+              dog.mode = dog.greeting ? "sit" : "stand";
+              dog.remaining = dog.greeting ? 5 : 1.5;
+              dog.greeting = false;
+            }
+          }
+        }
+      }
+      function drawHomeDogSprite(canvas, dog, pose, frame) {
+        const idle = pose === "sit" || pose === "sleep";
+        const image = idle ? dogIdleImage : dogImages[dog.dogId];
+        if (!image?.complete || !image.naturalWidth) return false;
+        const size = !idle && dog.dogId === "riku" ? 362 : 320;
+        const col = idle ? pose === "sleep" ? 1 : 0
+          : { down: 0, left: 1, right: 2, up: 3 }[dog.direction];
+        const row = idle ? dogIds.indexOf(dog.dogId) : pose === "walk" ? [0, 1, 2, 1][frame] : 1;
+        // Existing sheets have different transparent margins. Anchor the
+        // real paws (and the curled sleeping body) to the canvas bottom.
+        const pawLines = {
+          shuu: [[293, 283, 283, 295], [289, 283, 283, 289], [293, 286, 286, 294]],
+          riku: [[357, 342, 342, 353], [288, 286, 286, 291], [230, 222, 222, 230]],
+          grey: [[300, 296, 296, 300], [299, 299, 299, 300], [299, 294, 294, 300]],
+        };
+        const paw = idle ? pose === "sleep" ? { shuu: 240, riku: 242, grey: 245 }[dog.dogId]
+          : dog.dogId === "riku" ? 232 : 300 : pawLines[dog.dogId][row][col];
+        const sourceHeight = idle && dog.dogId === "riku" && pose === "sit" ? 280
+          : !idle && dog.dogId === "riku" && row === 1 ? size - 12 : size;
+        const centerX = !idle && dog.dogId === "riku" ? [215, 199, 162, 150][col] : size / 2;
+        const scale = 320 / size;
+        const ctx = canvas.getContext("2d");
+        ctx.clearRect(0, 0, 320, 320);
+        ctx.imageSmoothingEnabled = false;
+        ctx.drawImage(image, col * size, row * size, size, sourceHeight,
+          Math.round(160 - centerX * scale), Math.round(320 - paw * scale),
+          320, sourceHeight * scale);
+        return true;
+      }
+      function drawHomeDogs(force = false) {
+        if (playerHomeState.area !== "interior") return;
+        for (const dog of homeDogs) {
+          const element = document.querySelector(`[data-home-dog="${dog.dogId}"]`);
+          const pose = dog.mode === "walk" && dog.waitingForPlayer ? "stand" : dog.mode;
+          const frame = pose === "walk" ? Math.floor(dog.walkTime / .18) % 4 : 0;
+          const key = `${pose}/${dog.direction}/${frame}`;
+          element.style.left = `${dog.x.toFixed(3)}%`;
+          element.style.top = `${dog.y.toFixed(3)}%`;
+          element.style.zIndex = dog.y > playerHomeState.y ? "3" : "1";
+          if (force || dog.spriteKey !== key) {
+            element.dataset.pose = pose;
+            element.setAttribute("aria-label", `${dogProfileData[dog.dogId].name}：${{
+              walk: "歩いている", stand: "立っている", sit: "おすわり", sleep: "眠っている",
+            }[pose]}`);
+            if (drawHomeDogSprite(element.querySelector("canvas"), dog, pose, frame)) dog.spriteKey = key;
+          }
+        }
+      }
+      function homeDogAnimationCanRun() {
+        return playerHomeState.area === "interior" && !playerHomeState.transitioning &&
+          !document.hidden && !battle && !document.querySelector(".modal.open") &&
+          $("#game").classList.contains("active");
+      }
+      function stopHomeDogAnimation() {
+        if (homeDogAnimationTimer) cancelAnimationFrame(homeDogAnimationTimer);
+        homeDogAnimationTimer = 0;
+        homeDogLastTime = null;
+        $("#homeDogs").classList.add("paused");
+      }
+      function animateHomeDogs(now) {
+        homeDogAnimationTimer = 0;
+        if (!homeDogAnimationCanRun()) { stopHomeDogAnimation(); return; }
+        if (homeDogLastTime !== null) advanceHomeDogs((now - homeDogLastTime) / 1000);
+        homeDogLastTime = now;
+        drawHomeDogs();
+        const hint = playerHomeHint();
+        if ($("#hint").textContent !== hint) $("#hint").textContent = hint;
+        homeDogAnimationTimer = requestAnimationFrame(animateHomeDogs);
+      }
+      function renderHomeDogs() {
+        const indoors = playerHomeState.area === "interior";
+        $("#homeDogs").hidden = !indoors;
+        if (indoors && !homeDogs.length) initializeHomeDogs();
+        drawHomeDogs();
+        if (!homeDogAnimationCanRun()) { stopHomeDogAnimation(); return; }
+        $("#homeDogs").classList.remove("paused");
+        if (!homeDogAnimationTimer) homeDogAnimationTimer = requestAnimationFrame(animateHomeDogs);
+      }
       function playerHomeHint(event = nearbyPlayerHomeEvent()) {
         if (event?.id === "map-exit")
           return "村へ戻る道だ。Aでメインマップへ戻る。";
@@ -14249,8 +14504,10 @@
           return "台所だ。Aで料理する。";
         if (event?.id === "aquarium")
           return "水槽だ。Aで魚を見る・入れ替える。";
+        const dog = nearbyHomeDog();
+        if (dog) return `${dogProfileData[dog.dogId].name}だ。Aで遊ぶ・おやつ。`;
         return playerHomeState.area === "interior"
-          ? "主人公宅。ベッド、台所、水槽をAで調べられる。"
+          ? "主人公宅。家具やワンコに近づいてAで調べる。"
           : "主人公宅の庭先。玄関か村へ戻る道をAで調べる。";
       }
       function renderPlayerHome() {
@@ -14261,6 +14518,7 @@
           ` active ${playerHomeState.area}` : ""}`;
         areaElement.setAttribute("aria-hidden", String(!active));
         renderHomeAquarium();
+        renderHomeDogs();
         if (!active) return false;
         const data = playerHomeAreaData[playerHomeState.area];
         areaElement.setAttribute("aria-label", data.label);
@@ -14293,6 +14551,7 @@
         playerWalking = false;
         playerAnimFrame = 0;
         playerHomeState.transitioning = true;
+        stopHomeDogAnimation();
         const fade = $("#areaFade");
         fade.classList.add("active");
         fade.setAttribute("aria-hidden", "false");
@@ -14319,6 +14578,7 @@
             playerHomeState.x = spawn.x;
             playerHomeState.y = spawn.y;
             s.direction = spawn.direction;
+            if (targetArea === "interior") initializeHomeDogs();
           }
           render();
           requestAnimationFrame(() => {
@@ -14361,6 +14621,11 @@
         ) return false;
         const event = nearbyPlayerHomeEvent();
         if (!event) {
+          const dog = nearbyHomeDog();
+          if (dog) {
+            openDogCare(dog.dogId);
+            return true;
+          }
           log("主人公宅で、ゆっくり過ごした。");
           return false;
         }
@@ -17165,8 +17430,8 @@
         );
         drawDogCareScene();
       }
-      function openDogCare() {
-        dogCareSelectedId = dogProfileData[s.dog] ? s.dog : "riku";
+      function openDogCare(dogId = s.dog) {
+        dogCareSelectedId = dogProfileData[dogId] ? dogId : s.dog;
         dogCareStatusMessage = dogProfileData[dogCareSelectedId].greeting;
         resetDogCareScene(dogCareSelectedId, false);
         renderDogCare();
@@ -20000,6 +20265,7 @@
         // centred on the viewport after the player has walked around.
         modal.style.transform = `translateX(${$("#world").scrollLeft}px)`;
         modal.classList.add("open");
+        stopHomeDogAnimation();
         if (id === "record") renderRecord();
       }
       function close() {
@@ -20383,6 +20649,7 @@
         releaseHeldInputs();
         save();
         stopAquariumAnimation();
+        stopHomeDogAnimation();
         stopCastingWaterSound(.05);
         stopUnderwaterSound(.05);
         stopAllGameAudioSamples();
@@ -20391,6 +20658,7 @@
       });
       document.addEventListener("visibilitychange", () => {
         renderHomeAquarium();
+        renderHomeDogs();
         if (document.hidden) {
           releaseHeldInputs();
           save();
@@ -20407,6 +20675,7 @@
       addEventListener("pageshow", () => {
         recoverGameAudio();
         renderHomeAquarium();
+        renderHomeDogs();
       });
       setInterval(() => {
         dogAnimFrame++;
@@ -20419,7 +20688,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=158-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=159-1").catch(() => {});
       renderRecord();
     </script>
   </body>
