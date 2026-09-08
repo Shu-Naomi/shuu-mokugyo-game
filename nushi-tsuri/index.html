@@ -6378,7 +6378,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v157</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v158</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -15740,6 +15740,7 @@
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = gameClockLabel(s.gameMinutes);
+        renderFishingPreparation();
         renderSoundToggle();
         renderIdleStatus();
         const practiceComplete = Boolean(s.practiceTutorialComplete);
@@ -16229,6 +16230,8 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
+        if (battle || document.querySelector(".modal.open") ||
+            $("#catchCard").classList.contains("show")) return;
         if (playerHomeState.transitioning) return;
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
@@ -16547,10 +16550,17 @@
         $("#ten").parentElement.style.display = "none";
         $("#fishName").textContent = profile.name;
         $("#phaseLabel").textContent = " 仕掛け確認";
-        $("#battleMsg").textContent =
-          `${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+        renderFishingPreparation();
         $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
+      }
+      function renderFishingPreparation() {
+        if (battle?.phase !== "prep" || battle.practice) return;
+        const profile = fishingSpotById(battle.spot);
+        $("#battleMsg").textContent =
+          `${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+        syncSurfaceCastRodSprite(0);
+        positionCastRodAtHand();
       }
       function openPracticePond({ fromShop = false } = {}) {
         hideIdleStatus();
@@ -18494,17 +18504,19 @@
           battle.targetVy += Math.sin(battle.swimTick * 0.42) * 0.08;
         }
         const bounds = fishSwimBounds();
-        if (battle.x < bounds.minX + 3 && battle.targetVx < 0) {
+        const turnMarginX = Math.max(3, Math.abs(battle.vx) * 2);
+        const turnMarginY = Math.max(3, Math.abs(battle.vy) * 2);
+        if (battle.x < bounds.minX + turnMarginX && battle.targetVx < 0) {
           battle.motionX = 1;
           battle.targetVx = Math.abs(battle.targetVx);
-        } else if (battle.x > bounds.maxX - 3 && battle.targetVx > 0) {
+        } else if (battle.x > bounds.maxX - turnMarginX && battle.targetVx > 0) {
           battle.motionX = -1;
           battle.targetVx = -Math.abs(battle.targetVx);
         }
-        if (battle.y < bounds.minY + 3 && battle.targetVy < 0) {
+        if (battle.y < bounds.minY + turnMarginY && battle.targetVy < 0) {
           battle.motionY = 1;
           battle.targetVy = Math.abs(battle.targetVy);
-        } else if (battle.y > bounds.maxY - 3 && battle.targetVy > 0) {
+        } else if (battle.y > bounds.maxY - turnMarginY && battle.targetVy > 0) {
           battle.motionY = -1;
           battle.targetVy = -Math.abs(battle.targetVy);
         }
@@ -18559,11 +18571,17 @@
         let nextY = battle.y + battle.vy;
         if (nextX < bounds.minX || nextX > bounds.maxX) {
           nextX = clampBattle(nextX, bounds.minX, bounds.maxX);
-          battle.vx *= -0.35;
+          // Brake at the limit, then let the species' acceleration and turn
+          // frames bring it inward. A sign flip here looked like a ricochet.
+          battle.motionX = nextX === bounds.minX ? 1 : -1;
+          battle.targetVx = Math.abs(battle.targetVx) * battle.motionX;
+          battle.vx = 0;
         }
         if (nextY < bounds.minY || nextY > bounds.maxY) {
           nextY = clampBattle(nextY, bounds.minY, bounds.maxY);
-          battle.vy *= -0.35;
+          battle.motionY = nextY === bounds.minY ? 1 : -1;
+          battle.targetVy = Math.abs(battle.targetVy) * battle.motionY;
+          battle.vy = 0;
         }
         battle.x = nextX;
         battle.y = nextY;
@@ -19189,6 +19207,26 @@
         });
         return true;
       }
+      function battleFishVisualPose() {
+        // The sprite and its hook must use the same effective transform,
+        // including authored fixed-head frames and the grounded flatfish.
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted;
+        const fixedHead = fixedFaceFishIds.has(battle.f.id);
+        const showingTurn = Boolean(battle.turning && !sandGrounded);
+        const specimenScale = Math.max(.1, Number(battle.specimenVisualScale) || 1);
+        return {
+          offsetX: Number(Number(battle.visualOffsetX || 0).toFixed(2)),
+          offsetY: Number(Number(sandGrounded ? 0 :
+            (fixedHead ? 0 : battle.visualOffsetY || 0) +
+              (battle.turnArcY || 0)).toFixed(2)),
+          displayFacing: showingTurn ? 1 : battle.facing || 1,
+          stretch: sandGrounded || fixedHead ? 1 : battle.bodyStretch || 1,
+          squash: sandGrounded || fixedHead ? 1 : battle.bodySquash || 1,
+          rotation: sandGrounded ? 0 : (battle.renderAngle || 0) + (battle.turnRoll || 0),
+          specimenScale,
+          displayScale: (battle.renderScale || 1) * specimenScale,
+        };
+      }
       function renderBattleFish() {
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
@@ -19261,24 +19299,8 @@
         } else {
           delete element.dataset.turnFrom;
         }
-        const fixedHead = fixedFaceFishIds.has(battle.f.id);
-        const offsetX = Number(battle.visualOffsetX || 0).toFixed(2);
-        const offsetY = Number(sandGrounded
-          ? 0
-          : (fixedHead ? 0 : battle.visualOffsetY || 0) +
-            (battle.turnArcY || 0)).toFixed(2);
-        const facing = battle.facing || 1;
-        const displayFacing = showingTurn ? 1 : facing;
-        const stretch = sandGrounded || fixedHead ? 1 : battle.bodyStretch || 1;
-        const squash = sandGrounded || fixedHead ? 1 : battle.bodySquash || 1;
-        const rotation = sandGrounded
-          ? 0
-          : (battle.renderAngle || 0) + (battle.turnRoll || 0);
-        const specimenScale = Math.max(
-          .1,
-          Number(battle.specimenVisualScale) || 1,
-        );
-        const displayScale = (battle.renderScale || 1) * specimenScale;
+        const { offsetX, offsetY, displayFacing, stretch, squash, rotation,
+          specimenScale, displayScale } = battleFishVisualPose();
         element.style.transform =
           `translate(calc(-50% + ${offsetX}px), calc(-50% + ${offsetY}px)) ` +
           `rotate(${rotation}deg) ` +
@@ -19345,11 +19367,9 @@
         const tackleFacing = Math.abs(mouthProjection) > 0.06
           ? Math.sign(mouthProjection)
           : battle.turning?.to || facing;
-        const scale = (battle.renderScale || 1) * Math.max(
-          .1,
-          Number(battle.specimenVisualScale) || 1,
-        );
-        const angle = (battle.renderAngle || 0) + (battle.turnRoll || 0);
+        const visual = battleFishVisualPose();
+        const scale = visual.displayScale;
+        const angle = visual.rotation;
         const radians = angle * Math.PI / 180;
         const cos = Math.cos(radians);
         const sin = Math.sin(radians);
@@ -19359,25 +19379,23 @@
         // deliberately stretched 1000 x 500 coordinate space.
         const localMouthX =
           profile.x * fishElement.offsetWidth * scale *
-          (battle.bodyStretch || 1) *
+          visual.stretch *
           mouthProjection;
         const localMouthY =
           (profile.y + mouthYOffset) * fishElement.offsetHeight * scale *
-          (battle.bodySquash || 1);
+          visual.squash;
         const rotatedMouthX = localMouthX * cos - localMouthY * sin;
         const rotatedMouthY = localMouthX * sin + localMouthY * cos;
         const lipX = clampBattle(
           battle.x * 10 +
-            (rotatedMouthX + Number(battle.visualOffsetX || 0)) *
+            (rotatedMouthX + visual.offsetX) *
               1000 / sceneWidth,
           20,
           990,
         );
         const lipY = clampBattle(
           battle.y * 5 +
-            (rotatedMouthY +
-              Number(battle.visualOffsetY || 0) +
-              Number(battle.turnArcY || 0)) *
+            (rotatedMouthY + visual.offsetY) *
               500 / sceneHeight,
           48,
           490,
@@ -19459,6 +19477,36 @@
         $("#pull").innerHTML = "A<br><small>合わせる</small>";
         $("#wait").innerHTML = "B<br><small>練習終了</small>";
       }
+      function syncBitePhase(now = Date.now()) {
+        if (!battle || !["wait", "bite"].includes(battle.phase)) return false;
+        const biteWindow = battle.practice ? 2800 : 1050;
+        // A timer callback can arrive after the entire window (phone stall or
+        // background throttling). Resolve that case even if "bite" was skipped.
+        if (now > battle.biteAt + biteWindow) {
+          if (battle.practice)
+            queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
+          else lose("合わせが遅れた……魚はエサだけ持っていった。");
+          return false;
+        }
+        if (battle.phase === "wait" && now >= battle.biteAt) {
+          battle.phase = "bite";
+          $("#castSurface").classList.remove("nibbling");
+          $("#castSurface").classList.add("bite");
+          vibrate([90, 55, 170]);
+          $("#phaseLabel").textContent = battle.practice ? " ③ 合わせる！" : " アタリ！";
+          $("#battleMsg").textContent = battle.practice
+            ? "サム「ウキが消えた！今だ、Aで合わせる！」"
+            : "消し込んだ！！今だ、Aで合わせる！";
+          $("#pull").innerHTML = "A<br><small>合わせる！</small>";
+        } else if (battle.phase === "wait" && !battle.nibbleShown && now >= battle.nibbleAt) {
+          battle.nibbleShown = true;
+          $("#castSurface").classList.add("nibbling");
+          $("#battleMsg").textContent = battle.practice
+            ? "サム「ウキが揺れたが、まだだ。沈み切るまで待て」"
+            : "ウキが小さく揺れた……まだ前アタリだ。";
+        }
+        return true;
+      }
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
@@ -19481,38 +19529,8 @@
             updateSurfaceCastAim(battle.cast);
             return;
           }
-          if (battle.phase === "wait") {
-            const now = Date.now();
-            const biteWindow = battle.practice ? 2800 : 1050;
-            if (!battle.nibbleShown && now >= battle.nibbleAt && now < battle.biteAt) {
-              battle.nibbleShown = true;
-              $("#castSurface").classList.add("nibbling");
-              $("#battleMsg").textContent = battle.practice
-                ? "サム「ウキが揺れたが、まだだ。沈み切るまで待て」"
-                : "ウキが小さく揺れた……まだ前アタリだ。";
-            }
-            if (now >= battle.biteAt && now <= battle.biteAt + biteWindow) {
-              battle.phase = "bite";
-              $("#castSurface").classList.remove("nibbling");
-              $("#castSurface").classList.add("bite");
-              vibrate([90, 55, 170]);
-              $("#phaseLabel").textContent = battle.practice
-                ? " ③ 合わせる！"
-                : " アタリ！";
-              $("#battleMsg").textContent = battle.practice
-                ? "サム「ウキが消えた！今だ、Aで合わせる！」"
-                : "消し込んだ！！今だ、Aで合わせる！";
-              $("#pull").innerHTML = "A<br><small>合わせる！</small>";
-            }
-            return;
-          }
-          if (battle.phase === "bite") {
-            const biteWindow = battle.practice ? 2800 : 1050;
-            if (Date.now() > battle.biteAt + biteWindow) {
-              if (battle.practice)
-                queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
-              else lose("合わせが遅れた……魚はエサだけ持っていった。");
-            }
+          if (["wait", "bite"].includes(battle.phase)) {
+            syncBitePhase();
             return;
           }
           if (battle.phase !== "fight") return;
@@ -19570,10 +19588,11 @@
         }, 120);
       }
       function pull() {
-        if (!battle) return;
+        if (!battle || document.querySelector(".modal.open")) return;
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") return launchSurfaceCast();
         if (battle.phase === "cast-flight") return;
+        if (["wait", "bite"].includes(battle.phase) && !syncBitePhase()) return;
         if (battle.phase === "wait") {
           if (battle.practice)
             return queuePracticeBite(
@@ -19691,6 +19710,7 @@
           : `${fishingSpotById(battle.spot).name}で${f.name}が掛かった！`);
       }
       function wait() {
+        if (document.querySelector(".modal.open")) return backAction();
         if (!battle) return;
         if (battle.phase === "prep") {
           if (battle.practice) {
@@ -20320,6 +20340,17 @@
           e.preventDefault();
           return;
         }
+        const nativeInput = e.target?.closest?.("input, select, textarea, [contenteditable='true']");
+        if (document.querySelector(".modal.open")) {
+          if (e.key === "Escape" || (e.key === "x" && !nativeInput)) {
+            backAction();
+            e.preventDefault();
+          }
+          // Enter/arrows belong to the focused menu control, not the world
+          // or the fishing scene underneath it.
+          return;
+        }
+        if (nativeInput) return;
         let m = {
           ArrowLeft: "left",
           ArrowRight: "right",
@@ -20336,8 +20367,14 @@
       });
       addEventListener("resize", () => {
         if ($("#game").classList.contains("active")) {
-          requestAnimationFrame(render);
-          requestAnimationFrame(syncSurfaceCastRig);
+          requestAnimationFrame(() => {
+            render();
+            syncSurfaceCastRig();
+            if (battle?.phase === "fight") {
+              renderBattleFish();
+              drawBattle();
+            }
+          });
         }
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
@@ -20382,7 +20419,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=157-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=158-1").catch(() => {});
       renderRecord();
     </script>
   </body>

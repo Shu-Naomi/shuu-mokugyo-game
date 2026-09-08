@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v157-runtime-stability-157-1";
+const CACHE_NAME = "nushi-tsuri-v158-ui-fish-sync-158-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
