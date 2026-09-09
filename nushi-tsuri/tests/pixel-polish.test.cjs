@@ -52,19 +52,17 @@ test('cast rendering advances between gameplay ticks, owns one bounded loop and 
   }finally{app.dispose();}
 });
 
-test('the harbor skyline stays on the far shore on wide and portrait canvases',()=>{
-  const env=Pixel.calendar(720),p=Pixel.palette(env);
-  const roofs=new Set([p.roof0,p.roof1,p.roof2,p.roof3].map(s=>parseInt(s.slice(1),16)));
-  for(const height of [192,320,960]){
-    const c=createCanvas(640,height);Pixel.drawSurface(c,'harbor',env);
-    const pixels=c.getContext('2d').getImageData(0,0,640,height).data;let top=height,bottom=0,count=0;
-    for(let y=0;y<height*.45;y++)for(let x=20;x<500;x++){
-      const i=(y*640+x)*4,rgb=(pixels[i]<<16)|(pixels[i+1]<<8)|pixels[i+2];
-      if(roofs.has(rgb)){top=Math.min(top,y);bottom=Math.max(bottom,y);count++;}
+test('detailed fishing masters and motion overlays preserve their aspect on phone rotation',()=>{
+  const app=boot(),w=app.window;
+  try {
+    for(const id of ['castBackdrop','underwaterPixels']) {
+      const canvas=w.document.querySelector('#'+id);
+      assert.equal(w.getComputedStyle(canvas).objectFit,'cover');
+      const overlay=w.document.createElement('canvas');overlay.className='scenery-motion';overlay.dataset.for=id;canvas.after(overlay);
+      assert.equal(w.getComputedStyle(overlay).objectFit,'cover');
     }
-    assert.ok(count>50,'harbor buildings are drawn');
-    assert.ok(top>height*.1&&bottom<height*.325+3,`skyline sits at the shore: ${height}, ${top}..${bottom}`);
-  }
+    assert.equal(w.getComputedStyle(w.document.querySelector('#homeAquarium')).top,'53.6%');
+  } finally {app.dispose();}
 });
 
 test('dog idle effects preserve the ground anchor and the pet scene stays proportional',()=>{

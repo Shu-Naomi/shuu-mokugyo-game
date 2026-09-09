@@ -6390,7 +6390,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=162-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=163-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6416,7 +6416,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v162</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v163</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7075,8 +7075,10 @@
         </div>
       </main>
     </section>
-    <script src="pixel-world.js?v=162-1"></script>
-    <script src="pixel-cast.js?v=162-1"></script>
+    <script src="pixel-world.js?v=163-1"></script>
+    <script src="pixel-cast.js?v=163-1"></script>
+    <script src="scene-layers.js?v=163-1"></script>
+    <script src="layered-scenery.js?v=163-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -13714,9 +13716,13 @@
       const pixelSceneCache = new WeakMap();
       let pixelScenePaints = 0, pixelCastModel = null, pixelCastKey = "";
       function paintPixelScene(canvas, key, draw) {
-        if (!canvas || pixelSceneCache.get(canvas) === key) return false;
-        draw(canvas);
+        if (!canvas) return false;
+        if (pixelSceneCache.get(canvas) === key) { ShuScenery.refresh(canvas); return false; }
+        const result = draw(canvas);
         pixelSceneCache.set(canvas, key);
+        if (result && typeof result.then === "function") result.then(ready => {
+          if (!ready && pixelSceneCache.get(canvas) === key) pixelSceneCache.delete(canvas);
+        });
         pixelScenePaints++;
         return true;
       }
@@ -13743,31 +13749,28 @@
       function paintSurfaceScenery() {
         if (!battle) return;
         const canvas = $("#castBackdrop"), env = ShuPixel.calendar(s.gameMinutes), kind = surfaceSceneryKind();
-        resizePixelCanvas(canvas, pixelFishingSize());
-        paintPixelScene(canvas, `${kind}:${env.key}:${canvas.width}:${canvas.height}`,
-          c => ShuPixel.drawSurface(c, kind, env));
+        paintPixelScene(canvas, `${kind}:${env.key}`,
+          c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
       function paintUnderwaterScenery(zone, depth, flatfish = false) {
         const canvas = $("#underwaterPixels"), env = ShuPixel.calendar(s.gameMinutes);
-        resizePixelCanvas(canvas, pixelFishingSize());
-        paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}:${canvas.height}`,
-          c => ShuPixel.drawUnderwater(c, zone, depth, env, flatfish));
+        paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}`,
+          c => ShuScenery.paint(c, `underwater-${zone}-${depth}-${flatfish}`, env));
       }
       function paintHomeScenery() {
         const canvas = $("#homeBackdrop"), env = ShuPixel.calendar(s.gameMinutes);
         paintPixelScene(canvas, `${playerHomeState.area}:${env.key}`,
-          c => playerHomeState.area === "interior" ? ShuPixel.drawInterior(c, "player-home", env)
-            : ShuPixel.drawHomeExterior(c, env));
+          c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
         const env = ShuPixel.calendar(s.gameMinutes);
         if (!playerHomeIsActive() && !battle)
-          paintPixelScene($("#worldPixels"), env.key, c => ShuPixel.drawWorld(c, pixelWorldGeometry(), env));
+          paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
         if ($("#store").classList.contains("open"))
-          paintPixelScene($("#shopPixels"), env.key, c => ShuPixel.drawInterior(c, "sam-shop", env));
+          paintPixelScene($("#shopPixels"), env.key, c => ShuScenery.paint(c, "room-sam-shop", env));
         if (activeLocationId && $("#locationInterior").classList.contains("open"))
           paintPixelScene($("#locationPixels"), `${activeLocationId}:${env.key}`,
-            c => ShuPixel.drawInterior(c, activeLocationId, env));
+            c => ShuScenery.paint(c, `room-${activeLocationId}`, env));
         if (battle) {
           paintSurfaceScenery();
           paintUnderwaterScenery(battle.waterZone || "lake", battle.depth || "shallow", battle.f?.id === "hirame");
@@ -13880,7 +13883,7 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
           return false;
-        if (isBlockedStructure(x, y) || ShuPixel.propSolid(x, y)) return false;
+        if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
           !isSeaWater(x, y) &&
@@ -20620,7 +20623,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=162-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=163-1").catch(() => {});
       renderRecord();
     </script>
   </body>

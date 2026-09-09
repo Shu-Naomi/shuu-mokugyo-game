@@ -1,9 +1,12 @@
-/* All scene art shares game coordinates. Low-resolution canvases scale with
-   nearest-neighbour pixels; live fish, players and dogs remain separate. */
+/* Detailed master pixels stay at native resolution. Art masks and motion
+   overlays share one rectangle; live fish, players and dogs remain separate. */
 .map.v54-map { background-image: none; }
 .map.v54-map > #worldPixels { display: block !important; }
 .pixel-scene { display: block; position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 #worldPixels { z-index: 0; }
+.scenery-motion, .scenery-foreground { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; image-rendering: pixelated; }
+.scenery-foreground { z-index: 6; }
+.map.v54-map > .scenery-motion, .map.v54-map > .scenery-foreground { display: block !important; }
 #player { width: 2.6%; height: auto; aspect-ratio: 46 / 58; transform: translate(-50%, -100%); }
 #player.boy.face-right, #player.girl.face-left { transform: translate(-50%, -100%) scaleX(-1); }
 #player > .player-sprite { transform: translateY(7%); }
@@ -29,12 +32,15 @@
 .player-home-area.exterior .player-home-scene,
 .player-home-area.interior .player-home-scene { background-image: none; }
 #homeBackdrop { z-index: 0; }
-#homeAquarium { left: 73.55%; top: 48.462%; width: 13.5%; height: 11.08%; }
+#homeAquarium { left: 73.5%; top: 53.6%; width: 13.4%; height: 10.9%; }
 .cast-surface, .cast-surface.art-water { background: none !important; }
 .cast-surface::before, .cast-surface::after,
 .cast-surface .cast-sky, .cast-surface .cast-water, .cast-surface .cast-far-shore,
 #castAngler, #castRod { display: none !important; }
 #castBackdrop { z-index: 0; }
+#castBackdrop, .scenery-motion[data-for="castBackdrop"],
+#underwaterPixels, .scenery-motion[data-for="underwaterPixels"],
+.scenery-foreground[data-for="castBackdrop"], .scenery-foreground[data-for="underwaterPixels"] { object-fit: cover; }
 #castActor { z-index: 7; }
 .cast-line-flight { z-index: 6; }
 .cast-surface .cast-line-flight path,
@@ -42,3 +48,4 @@
 .cast-surface.cast-throwing .cast-float { display: none; }
 .underwater-backdrop { inset: 0; background: none; animation: none; transform: none; will-change: auto; }
 .location-visual canvas, .shop-interior canvas { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.location-visual .scenery-motion, .shop-interior .scenery-motion { object-fit: contain; }
