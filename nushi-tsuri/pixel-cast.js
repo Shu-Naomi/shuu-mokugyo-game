@@ -1,12 +1,37 @@
-/* One clock and one coordinate system for body, both hands, rod and line.
- * Original pixel actor rig; no rescaled six-frame screenshots or rod atlases.
- */
+/* Detailed character textures articulated by the same continuous cast rig.
+ * Body, both hands, rod and float share one clock and coordinate system. */
 (function(root,factory){
   if(typeof module==="object"&&module.exports)module.exports=factory(require("./pixel-world.js"));
   else root.ShuCast=factory(root.ShuPixel);
 })(typeof globalThis==="object"?globalThis:this,function(Pixel){
   "use strict";
   const DURATION=1200,RELEASE=.58;
+  const sprites={}, artwork={
+    boy:{src:"assets/player-boy-cast-v73.png",width:146,height:339,center:73,floor:330,top:9,
+      core:[[0,0],[146,0],[146,123],[111,123],[108,165],[111,181],[112,200],[125,202],[125,241],[146,241],[146,339],[0,339],[0,242],[30,242],[32,205],[39,204],[40,166],[44,126],[0,126]],
+      arms:[
+        {shoulder:[38,143],elbow:[25,181],hand:[18,224],upper:[[27,127],[46,129],[44,171],[33,192],[15,185],[19,159]],lower:[[16,173],[34,179],[29,208],[27,226],[20,237],[10,234],[8,224]],palm:[[11,216],[29,215],[27,237],[8,238]]},
+        {shoulder:[110,143],elbow:[122,181],hand:[130,224],upper:[[105,127],[120,132],[131,157],[131,184],[117,190],[106,171]],lower:[[116,175],[132,173],[138,226],[135,238],[122,238],[119,225]],palm:[[119,215],[138,215],[138,239],[119,239]]}
+      ]},
+    girl:{src:"assets/player-girl-cast-v73.png",width:138,height:326,center:69,floor:318,top:10,
+      core:[[0,0],[138,0],[138,120],[103,120],[100,157],[107,192],[114,195],[116,233],[138,234],[138,326],[0,326],[0,234],[23,234],[27,194],[31,194],[33,157],[35,120],[0,120]],
+      arms:[
+        {shoulder:[30,134],elbow:[21,173],hand:[15,212],upper:[[27,122],[38,123],[33,157],[29,181],[12,177],[14,151]],lower:[[12,165],[28,170],[25,196],[23,213],[19,226],[10,226],[7,219]],palm:[[8,204],[25,204],[25,227],[7,227]]},
+        {shoulder:[105,134],elbow:[114,173],hand:[123,212],upper:[[99,121],[110,122],[120,145],[125,164],[123,180],[108,181],[101,156]],lower:[[108,167],[124,164],[129,192],[131,215],[126,227],[117,227],[114,213]],palm:[[115,204],[132,204],[132,228],[115,228]]}
+      ]}
+  };
+  let loading;
+  function preload(){
+    if(loading)return loading;
+    if(typeof Image==="undefined")return Promise.resolve(false);
+    loading=Promise.all(Object.entries(artwork).map(([avatar,art])=>new Promise(resolve=>{
+      const img=new Image();
+      img.onload=()=>{sprites[avatar]=img;resolve(true);};
+      img.onerror=()=>resolve(false);
+      img.src=art.src;
+    }))).then(results=>results.every(Boolean));
+    return loading;
+  }
   const keys=[
     {t:0,x:80,y:70,angle:-48,lean:0,bend:0},
     {t:.18,x:76,y:64,angle:-78,lean:-1,bend:1},
@@ -29,23 +54,91 @@
     return p;
   }
   function layout(width,height){
-    // Integer source pixels remain square on wide and tall phones.
-    const scale=Math.max(1,Math.floor(Math.min(height/240,width/175)));
+    // Preserve the same framing when the actor canvas uses twice the detail.
+    const resolution=width/640;
+    const scale=Math.max(1,Math.floor(Math.min(height/resolution/240,640/175)))*resolution;
     return {scale,x:Math.round(width*.415-64*scale),y:Math.round(height*.935-102*scale)};
   }
   function worldPoint(point,box){return {x:box.x+point.x*box.scale,y:box.y+point.y*box.scale};}
   function model(width,height,progress,target={x:width*.7,y:height*.5},flying=false){
     const p=pose(progress),box=layout(width,height),tip=worldPoint(p.tip,box),hand=worldPoint(p.hand,box);
-    let bobber={x:tip.x+2,y:tip.y+9};
+    const resolution=width/640;
+    let bobber={x:tip.x+2*resolution,y:tip.y+9*resolution};
     if(flying&&progress>=RELEASE){
-      const releaseTip=worldPoint(pose(RELEASE).tip,box),start={x:releaseTip.x+2,y:releaseTip.y+9};
+      const releaseTip=worldPoint(pose(RELEASE).tip,box),start={x:releaseTip.x+2*resolution,y:releaseTip.y+9*resolution};
       const u=Math.min(1,Math.max(0,(progress-RELEASE)/(1-RELEASE)));
       bobber={x:start.x+(target.x-start.x)*u,y:start.y+(target.y-start.y)*u-Math.sin(Math.PI*u)*height*.16};
     }
     return {pose:p,box,tip,hand,support:worldPoint(p.support,box),butt:worldPoint(p.butt,box),bobber,
       leftFoot:worldPoint(p.leftFoot,box),rightFoot:worldPoint(p.rightFoot,box),released:flying&&progress>=RELEASE};
   }
-  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar()}={}){
+  function polygon(ctx,points){
+    ctx.beginPath();points.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();
+  }
+  function texturedLimb(ctx,img,mask,from,to,start,end,width){
+    const a=Math.atan2(to[1]-from[1],to[0]-from[0]),b=Math.atan2(end.y-start.y,end.x-start.x);
+    ctx.save();ctx.translate(start.x,start.y);ctx.rotate(b);
+    ctx.scale(Math.hypot(end.x-start.x,end.y-start.y)/Math.hypot(to[0]-from[0],to[1]-from[1]),width);
+    ctx.rotate(-a);ctx.translate(-from[0],-from[1]);polygon(ctx,mask);ctx.clip();ctx.drawImage(img,0,0);ctx.restore();
+  }
+  function elbow(shoulder,hand,upper,lower,side=1){
+    const dx=hand.x-shoulder.x,dy=hand.y-shoulder.y,d=Math.hypot(dx,dy)||1;
+    // Allow a small shoulder reach while keeping the bend continuous.
+    const stretch=Math.max(1,d/(upper+lower-.1));upper*=stretch;lower*=stretch;
+    const along=Math.max(0,Math.min(upper,(upper*upper-lower*lower+d*d)/(2*d)));
+    const out=Math.sqrt(Math.max(0,upper*upper-along*along));
+    return {x:shoulder.x+dx/d*along+dy/d*out*side,y:shoulder.y+dy/d*along-dx/d*out*side};
+  }
+  function drawDetailed(canvas,options,img){
+    const {avatar,rod,progress,target,flying,env}=options,ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
+    const m=model(w,h,progress,target||{x:w*.7,y:h*.5},flying),p=m.pose,c=Pixel.palette(env),art=artwork[avatar];
+    const size=80/(art.floor-art.top),shear=p.lean/(art.floor-140);
+    const point=([x,y])=>({x:62+(x-art.center)*size+shear*(art.floor-y),y:102+(y-art.floor)*size});
+    const arms=art.arms.map((a,i)=>{
+      const shoulder=point(a.shoulder),hand=i?p.hand:p.support;
+      if(!i){shoulder.x+=1.5;shoulder.y+=1.5;}
+      return {...a,shoulderPoint:shoulder,elbowPoint:elbow(shoulder,hand,10,12,i?-1:1),handPoint:hand};
+    });
+    const limb=(arm,part)=>texturedLimb(ctx,img,arm[part],part==="upper"?arm.shoulder:arm.elbow,
+      part==="upper"?arm.elbow:arm.hand,part==="upper"?arm.shoulderPoint:arm.elbowPoint,
+      part==="upper"?arm.elbowPoint:arm.handPoint,size);
+    const line=(a,b,color,width)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();};
+    ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
+    ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
+    ctx.fillStyle="rgba(20,28,19,.28)";ctx.beginPath();ctx.ellipse(63,103,19,2.5,0,0,Math.PI*2);ctx.fill();
+    limb(arms[0],"upper");limb(arms[0],"lower");
+    // Clip the resting arms out of the original art, then shear the body
+    // around its ground anchor. Pockets, seams, hair and boots stay intact.
+    ctx.save();ctx.transform(size,0,-shear,size,62-art.center*size+shear*art.floor,102-art.floor*size);
+    polygon(ctx,art.core);ctx.clip();ctx.drawImage(img,0,0);ctx.restore();
+    limb(arms[1],"upper");
+    const rodColor={bamboo:c.wood3,youngBamboo:c.leaf2,clearStream:c.roof3,starGazer:c.gold,moroko:c.blue}[rod]||c.wood3;
+    line(p.butt,p.hand,c.ink,3.2);line(p.butt,p.hand,c.wood1,2);
+    let last=p.hand;
+    for(let i=1;i<=24;i++){
+      const t=i/24,q={x:p.hand.x+p.unit.x*64*t-p.unit.y*p.bend*t*t,y:p.hand.y+p.unit.y*64*t+p.unit.x*p.bend*t*t};
+      line(last,q,c.ink,1.7-t*.8);line(last,q,rodColor,.8-t*.3);
+      if(i%5===0)line({x:q.x-p.unit.y*.7,y:q.y+p.unit.x*.7},{x:q.x+p.unit.y*.7,y:q.y-p.unit.x*.7},c.cream,.5);
+      last=q;
+    }
+    const reel={x:p.hand.x-p.unit.x*5-p.unit.y*3,y:p.hand.y-p.unit.y*5+p.unit.x*3};
+    ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.8,3.4,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.8;ctx.stroke();
+    line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.8);
+    limb(arms[1],"lower");limb(arms[0],"palm");
+    ctx.restore();
+    if(flying){
+      const r=w/640;
+      ctx.fillStyle=c.ink;ctx.fillRect(m.bobber.x-r,m.bobber.y-2*r,3*r,6*r);
+      ctx.fillStyle=c.red;ctx.fillRect(m.bobber.x,m.bobber.y-r,r,2*r);ctx.fillStyle=c.cream;ctx.fillRect(m.bobber.x,m.bobber.y+r,r,2*r);
+    }
+    const tint={night:"rgba(18,33,63,.38)",evening:"rgba(113,50,29,.16)",dawn:"rgba(65,63,91,.18)"}[env.period];
+    if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
+    m.detailed=true;return m;
+  }
+  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite}={}){
+    avatar=avatar==="girl"?"girl":"boy";
+    const img=sprite||sprites[avatar];
+    if(img)return drawDetailed(canvas,{avatar,rod,progress,target,flying,env},img);
     const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     const m=model(w,h,progress,target||{x:w*.7,y:h*.5},flying),p=m.pose,c=Pixel.palette(env);
@@ -101,5 +194,5 @@
     }
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,keys,pose,layout,model,draw});
+  return Object.freeze({DURATION,RELEASE,keys,pose,layout,model,draw,preload,artwork});
 });
