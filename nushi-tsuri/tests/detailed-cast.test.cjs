@@ -5,7 +5,7 @@ const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const Cast=require('../pixel-cast.js');
 const {boot}=require('./game-harness.cjs');
 
-test('both detailed characters keep painted hands over the moving rod grips',async()=>{
+test('both detailed characters keep a closed rod grip and a relaxed free hand',async()=>{
   for(const avatar of ['boy','girl']){
     const sprite=await loadImage(path.join(__dirname,'..',Cast.artwork[avatar].src));
     for(const height of [384,640,1920]){
@@ -19,10 +19,32 @@ test('both detailed characters keep painted hands over the moving rod grips',asy
           let skin=0;
           for(let i=0;i<pixels.length;i+=4)
             if(pixels[i+3]>180&&pixels[i]>110&&pixels[i]>pixels[i+1]*1.05&&pixels[i+1]>pixels[i+2]*1.1)skin++;
-          assert.ok(skin>0,`${avatar}, ${height}, frame ${frame}: painted ${name} covers its grip`);
+          assert.ok(skin>0,`${avatar}, ${height}, frame ${frame}: painted ${name} matches its joint`);
         }
       }
     }
+  }
+});
+
+test('casting preserves anatomical arm lengths, a lowered elbow and continuous wrist motion',()=>{
+  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+  for(const avatar of ['boy','girl']){
+    let previous;
+    for(let frame=0;frame<=360;frame++){
+      const [free,arm]=Cast.armPose(avatar,frame/360);
+      assert.ok(Math.abs(distance(arm.shoulderPoint,arm.elbowPoint)-arm.upperLength)<1e-8,'upper arm cannot stretch');
+      assert.ok(Math.abs(distance(arm.elbowPoint,arm.handPoint)-arm.lowerLength)<1e-8,'forearm and palm cannot stretch');
+      assert.ok(Math.abs(distance(arm.wristPoint,arm.handPoint)-1.5)<1e-8,'the closed grip joins its wrist');
+      const forearmAngle=Math.atan2(arm.handPoint.y-arm.elbowPoint.y,arm.handPoint.x-arm.elbowPoint.x)*180/Math.PI;
+      const wristTurn=Math.abs(((forearmAngle-Cast.pose(frame/360).angle+540)%360)-180);
+      assert.ok(wristTurn<45,'the grip cannot force the wrist through a sharp bend');
+      assert.ok(arm.elbowPoint.y>arm.handPoint.y+1,'elbow bends below the grip instead of across the back');
+      assert.ok(free.handPoint.x<free.shoulderPoint.x&&free.handPoint.y>free.shoulderPoint.y+15,'the free hand rests beside the thigh');
+      if(previous)for(const joint of ['shoulderPoint','elbowPoint','wristPoint','handPoint'])
+        assert.ok(distance(arm[joint],previous[joint])<.3,'no elbow flip or hand teleport');
+      previous=arm;
+    }
+    assert.deepEqual(Cast.armPose(avatar,0),Cast.armPose(avatar,1),'landing returns to the same relaxed stance');
   }
 });
 
