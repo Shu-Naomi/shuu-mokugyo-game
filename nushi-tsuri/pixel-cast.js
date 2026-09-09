@@ -33,12 +33,12 @@
     return loading;
   }
   const keys=[
-    {t:0,x:80,y:58,angle:-35,lean:0,bend:0},
-    {t:.18,x:79,y:51,angle:-72,lean:-1,bend:1},
+    {t:0,x:85,y:63,angle:-35,lean:0,bend:0},
+    {t:.18,x:80,y:53,angle:-72,lean:-1,bend:1},
     {t:.41,x:81,y:43,angle:-105,lean:-3,bend:-3},
-    {t:.63,x:86,y:54,angle:-25,lean:3,bend:7},
-    {t:.81,x:84,y:59,angle:-14,lean:2,bend:1},
-    {t:1,x:80,y:58,angle:-35,lean:0,bend:0},
+    {t:.63,x:87,y:57.5,angle:-25,lean:3,bend:7},
+    {t:.81,x:86,y:63,angle:-14,lean:2,bend:1},
+    {t:1,x:85,y:63,angle:-35,lean:0,bend:0},
   ];
   function pose(progress=0){
     const t=Math.max(0,Math.min(1,Number(progress)||0));
@@ -98,11 +98,14 @@
     return art.arms.map((a,i)=>{
       const shoulderPoint=point(a.shoulder),handPoint=i?p.hand:point(a.hand);
       const upperLength=Math.hypot(a.elbow[0]-a.shoulder[0],a.elbow[1]-a.shoulder[1])*size;
-      const lowerLength=Math.hypot(a.hand[0]-a.elbow[0],a.hand[1]-a.elbow[1])*size;
+      // The casting forearm points slightly toward the water. Its fixed
+      // projected length is shorter than the relaxed, vertical source arm.
+      const sourceLowerLength=Math.hypot(a.hand[0]-a.elbow[0],a.hand[1]-a.elbow[1])*size;
+      const lowerLength=sourceLowerLength*(i?.86:1);
       const elbowPoint=i?elbow(shoulderPoint,handPoint,upperLength,lowerLength,-1):point(a.elbow);
       const dx=handPoint.x-elbowPoint.x,dy=handPoint.y-elbowPoint.y,d=Math.hypot(dx,dy);
       const wristPoint={x:handPoint.x-dx/d*1.5,y:handPoint.y-dy/d*1.5};
-      return {...a,shoulderPoint,elbowPoint,wristPoint,handPoint,upperLength,lowerLength};
+      return {...a,shoulderPoint,elbowPoint,wristPoint,handPoint,upperLength,lowerLength,sourceLowerLength};
     });
   }
   function drawGrip(ctx,grip,angle){
@@ -123,7 +126,7 @@
     const size=80/(art.floor-art.top),shear=p.lean/(art.floor-140);
     const arms=armPose(avatar,p);
     const limb=(arm,part)=>{
-      const upper=part==="upper",wrist=[arm.hand[0]+(arm.elbow[0]-arm.hand[0])*1.5/arm.lowerLength,arm.hand[1]+(arm.elbow[1]-arm.hand[1])*1.5/arm.lowerLength];
+      const upper=part==="upper",wrist=[arm.hand[0]+(arm.elbow[0]-arm.hand[0])*1.5/arm.sourceLowerLength,arm.hand[1]+(arm.elbow[1]-arm.hand[1])*1.5/arm.sourceLowerLength];
       const mask=upper?arm.upper:arm.lower.map(([x,y])=>[x,Math.min(y,wrist[1]+1)]);
       texturedLimb(ctx,img,mask,upper?arm.shoulder:arm.elbow,upper?arm.elbow:wrist,
         upper?arm.shoulderPoint:arm.elbowPoint,upper?arm.elbowPoint:arm.wristPoint,size);
@@ -132,7 +135,6 @@
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
     ctx.fillStyle="rgba(20,28,19,.28)";ctx.beginPath();ctx.ellipse(63,103,19,2.5,0,0,Math.PI*2);ctx.fill();
-    limb(arms[1],"upper");limb(arms[1],"lower");
     const rodColor={bamboo:c.wood3,youngBamboo:c.leaf2,clearStream:c.roof3,starGazer:c.gold,moroko:c.blue}[rod]||c.wood3;
     line(p.butt,p.hand,c.ink,3.2);line(p.butt,p.hand,c.wood1,2);
     let last=p.hand;
@@ -145,11 +147,13 @@
     const reel={x:p.hand.x-p.unit.x*5-p.unit.y*3,y:p.hand.y-p.unit.y*5+p.unit.x*3};
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.8,3.4,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.8;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.8);
-    drawGrip(ctx,p.hand,p.angle);
-    // The angler faces the water: the casting arm and tackle sit in front
-    // of the chest. Keep the original back and relaxed left arm intact.
+    // The handle stays in front of the angler, behind the visible back.
+    // The near arm sits over that back at the shoulder seam: never mask
+    // its elbow and forearm away just because it bends near the vest.
     ctx.save();ctx.transform(size,0,-shear,size,62-art.center*size+shear*art.floor,102-art.floor*size);
     polygon(ctx,art.core);ctx.clip();ctx.drawImage(img,0,0);ctx.restore();
+    limb(arms[1],"upper");limb(arms[1],"lower");
+    drawGrip(ctx,p.hand,p.angle);
     ctx.restore();
     if(flying){
       const r=w/640;
