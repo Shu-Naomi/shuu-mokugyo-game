@@ -28,7 +28,12 @@ test('the browser and offline cache load the same detailed scene modules',()=>{
     const url=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match=>match[1]).find(url=>url.startsWith(file+'?'));
     assert.ok(url&&worker.includes('./'+url),`${file}: offline cache uses the exact browser URL`);
   }
-  assert.ok(worker.includes('./scenery-worker.js?v=163-1'));
+  const scenery=fs.readFileSync(path.join(__dirname,'../layered-scenery.js'),'utf8');
+  const workerUrl=scenery.match(/new Worker\('([^']+)'\)/)?.[1];
+  assert.ok(workerUrl&&worker.includes('./'+workerUrl),'offline cache uses the actual scenery Worker URL');
+  const sceneryWorker=fs.readFileSync(path.join(__dirname,'../scenery-worker.js'),'utf8');
+  for(const match of sceneryWorker.matchAll(/'([^']+\.js\?[^']+)'/g))
+    assert.ok(worker.includes('./'+match[1]),'Worker imports are available in the same offline cache');
 });
 
 test('rendered water uses actual collision geometry and all landmarks remain reachable',()=>{

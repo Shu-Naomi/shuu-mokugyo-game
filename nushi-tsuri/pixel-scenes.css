@@ -49,3 +49,41 @@
 .underwater-backdrop { inset: 0; background: none; animation: none; transform: none; will-change: auto; }
 .location-visual canvas, .shop-interior canvas { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
 .location-visual .scenery-motion, .shop-interior .scenery-motion { object-fit: contain; }
+
+/* Sam uses the detailed room's 1536 × 1152 coordinates. The fixed counter
+   mask reveals the already graded scenery beneath his lower body, so it
+   stays aligned through letterboxing, loading and all seasons/time periods. */
+#shopPixels { position: absolute; inset: 0; z-index: 0; }
+.shop-actors { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 2; pointer-events: none; image-rendering: pixelated; }
+#store:not(.open) .shopkeeper-sam-svg { animation-play-state: paused; }
+@media (prefers-reduced-motion: reduce) {
+  .shopkeeper-sam-svg { animation: none; }
+}
+
+/* Japanese UI glyphs need enough physical room for their fine strokes.
+   Keep small copy at 12px even on short landscape phones; the existing
+   shop panel scrolls instead of compressing product details to 7–9px. */
+#store { inset: 3%; padding: 0; overflow: hidden; }
+#store .shop-layout { grid-template-columns: minmax(0, 1fr) minmax(280px, 36%); }
+#store .shop-panel .close { float: none; }
+.shop-panel, .location-panel {
+  font-family: system-ui, "Noto Sans JP", "Hiragino Kaku Gothic ProN", "Yu Gothic", sans-serif;
+  font-size: .8125rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.shop-dialogue, .location-dialogue { font-size: .8125rem; line-height: 1.6; }
+.shop-tabs button, .shop-category-heading, .bait-quantity-label,
+.bait-purchase-count, .bait-quantity-presets button,
+.shop-goods button strong { font-size: .8125rem; }
+.sam-window-note, .shop-category-heading small, .bait-quantity-label small,
+.shop-goods button > span > small, .shop-goods button strong small,
+.shop-brand, .location-brand, .location-panel small {
+  font-size: .75rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+.shop-goods button > span { line-height: 1.5; }
+#store .shop-goods button b { white-space: normal; overflow-wrap: anywhere; }
+.shop-category-heading { flex-wrap: wrap; }
+.shop-goods button small { font-weight: 600; }
