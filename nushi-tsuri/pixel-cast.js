@@ -8,16 +8,16 @@
   const DURATION=1200,RELEASE=.58;
   const sprites={}, artwork={
     boy:{src:"assets/player-boy-cast-v73.png",width:146,height:339,center:73,floor:330,top:9,
-      core:[[0,0],[146,0],[146,123],[111,123],[108,165],[111,181],[112,200],[125,202],[125,241],[146,241],[146,339],[0,339],[0,242],[30,242],[32,205],[39,204],[40,166],[44,126],[0,126]],
+      core:[[0,0],[146,0],[146,123],[111,123],[108,165],[111,181],[112,200],[125,202],[125,241],[146,241],[146,339],[0,339]],
       arms:[
-        {shoulder:[38,143],elbow:[25,181],hand:[18,224],upper:[[27,127],[46,129],[44,171],[33,192],[15,185],[19,159]],lower:[[16,173],[34,179],[29,208],[27,226],[20,237],[10,234],[8,224]],palm:[[11,216],[29,215],[27,237],[8,238]]},
-        {shoulder:[110,143],elbow:[122,181],hand:[130,224],upper:[[105,127],[120,132],[131,157],[131,184],[117,190],[106,171]],lower:[[116,175],[132,173],[138,226],[135,238],[122,238],[119,225]],palm:[[119,215],[138,215],[138,239],[119,239]]}
+        {shoulder:[38,143],elbow:[25,181],hand:[18,224]},
+        {shoulder:[110,143],elbow:[122,181],hand:[130,224],upper:[[105,127],[120,132],[131,157],[131,184],[117,190],[106,171]],lower:[[116,175],[132,173],[138,226],[135,238],[122,238],[119,225]]}
       ]},
     girl:{src:"assets/player-girl-cast-v73.png",width:138,height:326,center:69,floor:318,top:10,
-      core:[[0,0],[138,0],[138,120],[103,120],[100,157],[107,192],[114,195],[116,233],[138,234],[138,326],[0,326],[0,234],[23,234],[27,194],[31,194],[33,157],[35,120],[0,120]],
+      core:[[0,0],[138,0],[138,120],[103,120],[100,157],[107,192],[114,195],[116,233],[138,234],[138,326],[0,326]],
       arms:[
-        {shoulder:[30,134],elbow:[21,173],hand:[15,212],upper:[[27,122],[38,123],[33,157],[29,181],[12,177],[14,151]],lower:[[12,165],[28,170],[25,196],[23,213],[19,226],[10,226],[7,219]],palm:[[8,204],[25,204],[25,227],[7,227]]},
-        {shoulder:[105,134],elbow:[114,173],hand:[123,212],upper:[[99,121],[110,122],[120,145],[125,164],[123,180],[108,181],[101,156]],lower:[[108,167],[124,164],[129,192],[131,215],[126,227],[117,227],[114,213]],palm:[[115,204],[132,204],[132,228],[115,228]]}
+        {shoulder:[30,134],elbow:[21,173],hand:[15,212]},
+        {shoulder:[105,134],elbow:[114,173],hand:[123,212],upper:[[99,121],[110,122],[120,145],[125,164],[123,180],[108,181],[101,156]],lower:[[108,167],[124,164],[129,192],[131,215],[126,227],[117,227],[114,213]]}
       ]}
   };
   let loading;
@@ -33,12 +33,12 @@
     return loading;
   }
   const keys=[
-    {t:0,x:80,y:70,angle:-48,lean:0,bend:0},
-    {t:.18,x:76,y:64,angle:-78,lean:-1,bend:1},
-    {t:.41,x:65,y:51,angle:-139,lean:-3,bend:-3},
-    {t:.63,x:86,y:61,angle:-25,lean:3,bend:7},
-    {t:.81,x:86,y:68,angle:-14,lean:2,bend:1},
-    {t:1,x:80,y:70,angle:-48,lean:0,bend:0},
+    {t:0,x:80,y:58,angle:-35,lean:0,bend:0},
+    {t:.18,x:79,y:51,angle:-72,lean:-1,bend:1},
+    {t:.41,x:81,y:43,angle:-105,lean:-3,bend:-3},
+    {t:.63,x:86,y:54,angle:-25,lean:3,bend:7},
+    {t:.81,x:84,y:59,angle:-14,lean:2,bend:1},
+    {t:1,x:80,y:58,angle:-35,lean:0,bend:0},
   ];
   function pose(progress=0){
     const t=Math.max(0,Math.min(1,Number(progress)||0));
@@ -47,7 +47,10 @@
     const ease=u*u*(3-2*u),p={t};
     for(const k of ["x","y","angle","lean","bend"])p[k]=a[k]+(b[k]-a[k])*ease;
     const rad=p.angle*Math.PI/180,ux=Math.cos(rad),uy=Math.sin(rad);
-    p.hand={x:p.x,y:p.y};p.support={x:p.x-ux*10,y:p.y-uy*10};
+    p.hand={x:p.x,y:p.y};
+    // The free left arm keeps its original relaxed pose beside the body.
+    const art=artwork.boy,size=80/(art.floor-art.top),[hx,hy]=art.arms[0].hand;
+    p.support={x:62+(hx-art.center)*size+p.lean*(art.floor-hy)/(art.floor-140),y:102+(hy-art.floor)*size};
     p.tip={x:p.x+ux*64-uy*p.bend,y:p.y+uy*64+ux*p.bend};
     p.butt={x:p.x-ux*17,y:p.y-uy*17};p.unit={x:ux,y:uy};
     p.leftFoot={x:51,y:102};p.rightFoot={x:73,y:102};
@@ -83,35 +86,53 @@
   }
   function elbow(shoulder,hand,upper,lower,side=1){
     const dx=hand.x-shoulder.x,dy=hand.y-shoulder.y,d=Math.hypot(dx,dy)||1;
-    // Allow a small shoulder reach while keeping the bend continuous.
-    const stretch=Math.max(1,d/(upper+lower-.1));upper*=stretch;lower*=stretch;
-    const along=Math.max(0,Math.min(upper,(upper*upper-lower*lower+d*d)/(2*d)));
+    // Fixed bones: the cast path must fit the character's reach. Extending
+    // either bone to chase a distant handle distorts the original anatomy.
+    const along=Math.max(-upper,Math.min(upper,(upper*upper-lower*lower+d*d)/(2*d)));
     const out=Math.sqrt(Math.max(0,upper*upper-along*along));
     return {x:shoulder.x+dx/d*along+dy/d*out*side,y:shoulder.y+dy/d*along-dx/d*out*side};
+  }
+  function armPose(avatar,progress=0){
+    const p=typeof progress==="object"?progress:pose(progress),art=artwork[avatar],size=80/(art.floor-art.top),shear=p.lean/(art.floor-140);
+    const point=([x,y])=>({x:62+(x-art.center)*size+shear*(art.floor-y),y:102+(y-art.floor)*size});
+    return art.arms.map((a,i)=>{
+      const shoulderPoint=point(a.shoulder),handPoint=i?p.hand:point(a.hand);
+      const upperLength=Math.hypot(a.elbow[0]-a.shoulder[0],a.elbow[1]-a.shoulder[1])*size;
+      const lowerLength=Math.hypot(a.hand[0]-a.elbow[0],a.hand[1]-a.elbow[1])*size;
+      const elbowPoint=i?elbow(shoulderPoint,handPoint,upperLength,lowerLength,-1):point(a.elbow);
+      const dx=handPoint.x-elbowPoint.x,dy=handPoint.y-elbowPoint.y,d=Math.hypot(dx,dy);
+      const wristPoint={x:handPoint.x-dx/d*1.5,y:handPoint.y-dy/d*1.5};
+      return {...a,shoulderPoint,elbowPoint,wristPoint,handPoint,upperLength,lowerLength};
+    });
+  }
+  function drawGrip(ctx,grip,angle){
+    // Closed fingers follow the handle, independently of forearm rotation.
+    ctx.save();ctx.translate(grip.x,grip.y);ctx.rotate(angle*Math.PI/180);
+    polygon(ctx,[[-2,-1],[-1.4,-1.7],[1.4,-1.7],[2,-.9],[1.8,1.1],[.9,1.9],[-1.4,1.5],[-2,1]]);
+    ctx.fillStyle="#573c26";ctx.fill();
+    polygon(ctx,[[-1.6,-.8],[-1.1,-1.3],[1.2,-1.3],[1.6,-.7],[1.3,1.1],[.6,1.5],[-1.2,1.1]]);
+    ctx.fillStyle="#edb773";ctx.fill();
+    ctx.strokeStyle="#af743e";ctx.lineWidth=.3;
+    for(const x of [-.65,.2,1]){ctx.beginPath();ctx.moveTo(x,-1.1);ctx.lineTo(x+.15,.6);ctx.stroke();}
+    polygon(ctx,[[-1.8,.2],[-1.2,-.2],[.3,.7],[.1,1.2],[-.5,1.3],[-1.6,.8]]);
+    ctx.fillStyle="#f6c58a";ctx.fill();ctx.restore();
   }
   function drawDetailed(canvas,options,img){
     const {avatar,rod,progress,target,flying,env}=options,ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height;
     const m=model(w,h,progress,target||{x:w*.7,y:h*.5},flying),p=m.pose,c=Pixel.palette(env),art=artwork[avatar];
     const size=80/(art.floor-art.top),shear=p.lean/(art.floor-140);
-    const point=([x,y])=>({x:62+(x-art.center)*size+shear*(art.floor-y),y:102+(y-art.floor)*size});
-    const arms=art.arms.map((a,i)=>{
-      const shoulder=point(a.shoulder),hand=i?p.hand:p.support;
-      if(!i){shoulder.x+=1.5;shoulder.y+=1.5;}
-      return {...a,shoulderPoint:shoulder,elbowPoint:elbow(shoulder,hand,10,12,i?-1:1),handPoint:hand};
-    });
-    const limb=(arm,part)=>texturedLimb(ctx,img,arm[part],part==="upper"?arm.shoulder:arm.elbow,
-      part==="upper"?arm.elbow:arm.hand,part==="upper"?arm.shoulderPoint:arm.elbowPoint,
-      part==="upper"?arm.elbowPoint:arm.handPoint,size);
+    const arms=armPose(avatar,p);
+    const limb=(arm,part)=>{
+      const upper=part==="upper",wrist=[arm.hand[0]+(arm.elbow[0]-arm.hand[0])*1.5/arm.lowerLength,arm.hand[1]+(arm.elbow[1]-arm.hand[1])*1.5/arm.lowerLength];
+      const mask=upper?arm.upper:arm.lower.map(([x,y])=>[x,Math.min(y,wrist[1]+1)]);
+      texturedLimb(ctx,img,mask,upper?arm.shoulder:arm.elbow,upper?arm.elbow:wrist,
+        upper?arm.shoulderPoint:arm.elbowPoint,upper?arm.elbowPoint:arm.wristPoint,size);
+    };
     const line=(a,b,color,width)=>{ctx.beginPath();ctx.moveTo(a.x,a.y);ctx.lineTo(b.x,b.y);ctx.strokeStyle=color;ctx.lineWidth=width;ctx.stroke();};
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
     ctx.fillStyle="rgba(20,28,19,.28)";ctx.beginPath();ctx.ellipse(63,103,19,2.5,0,0,Math.PI*2);ctx.fill();
-    limb(arms[0],"upper");limb(arms[0],"lower");
-    // Clip the resting arms out of the original art, then shear the body
-    // around its ground anchor. Pockets, seams, hair and boots stay intact.
-    ctx.save();ctx.transform(size,0,-shear,size,62-art.center*size+shear*art.floor,102-art.floor*size);
-    polygon(ctx,art.core);ctx.clip();ctx.drawImage(img,0,0);ctx.restore();
-    limb(arms[1],"upper");
+    limb(arms[1],"upper");limb(arms[1],"lower");
     const rodColor={bamboo:c.wood3,youngBamboo:c.leaf2,clearStream:c.roof3,starGazer:c.gold,moroko:c.blue}[rod]||c.wood3;
     line(p.butt,p.hand,c.ink,3.2);line(p.butt,p.hand,c.wood1,2);
     let last=p.hand;
@@ -124,7 +145,11 @@
     const reel={x:p.hand.x-p.unit.x*5-p.unit.y*3,y:p.hand.y-p.unit.y*5+p.unit.x*3};
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.8,3.4,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.8;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.8);
-    limb(arms[1],"lower");limb(arms[0],"palm");
+    drawGrip(ctx,p.hand,p.angle);
+    // The angler faces the water: the casting arm and tackle sit in front
+    // of the chest. Keep the original back and relaxed left arm intact.
+    ctx.save();ctx.transform(size,0,-shear,size,62-art.center*size+shear*art.floor,102-art.floor*size);
+    polygon(ctx,art.core);ctx.clip();ctx.drawImage(img,0,0);ctx.restore();
     ctx.restore();
     if(flying){
       const r=w/640;
@@ -133,7 +158,7 @@
     }
     const tint={night:"rgba(18,33,63,.38)",evening:"rgba(113,50,29,.16)",dawn:"rgba(65,63,91,.18)"}[env.period];
     if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
-    m.detailed=true;return m;
+    m.detailed=true;m.arms=arms;m.support=worldPoint(arms[0].handPoint,m.box);return m;
   }
   function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite}={}){
     avatar=avatar==="girl"?"girl":"boy";
@@ -154,9 +179,9 @@
     d.rect(49,92,7,7,skin);d.rect(69,92,7,7,skin);
     d.rect(48,96,8,3,avatar==="girl"?c.roof1:c.snow);d.rect(69,96,8,3,avatar==="girl"?c.roof1:c.snow);
     d.rect(46,98,12,5,dark);d.rect(69,98,12,5,dark);d.rect(48,98,8,3,c.wood1);d.rect(70,98,9,3,c.wood1);
-    const shoulderL={x:52+lean,y:58},shoulderR={x:72+lean,y:58};
-    const elbowL={x:(shoulderL.x+p.support.x)*.5-4,y:(shoulderL.y+p.support.y)*.5+6};
-    const elbowR={x:(shoulderR.x+p.hand.x)*.5+5,y:(shoulderR.y+p.hand.y)*.5+4};
+    const arms=armPose(avatar,p),shoulderL=arms[0].shoulderPoint,shoulderR=arms[1].shoulderPoint;
+    const elbowL=arms[0].elbowPoint,elbowR=arms[1].elbowPoint;
+    p.support=arms[0].handPoint;m.support=worldPoint(p.support,m.box);
     // Far arm and torso, then the rod, near forearm and palms. Every limb
     // connects to its joint, and each palm covers its exact grip coordinate.
     d.line(shoulderL.x,shoulderL.y,elbowL.x,elbowL.y,dark,7);d.line(elbowL.x,elbowL.y,p.support.x,p.support.y,dark,6);
@@ -194,5 +219,5 @@
     }
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,keys,pose,layout,model,draw,preload,artwork});
+  return Object.freeze({DURATION,RELEASE,keys,pose,layout,model,draw,preload,artwork,armPose});
 });
