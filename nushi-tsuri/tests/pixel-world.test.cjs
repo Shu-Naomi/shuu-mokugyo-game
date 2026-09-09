@@ -20,29 +20,15 @@ test('the saved clock selects all four seasons and five visual periods, includin
   assert.equal(Pixel.calendar(-1).year,1);assert.equal(Pixel.calendar(NaN).period,'morning');
 });
 
-test('all original scenery renders in 20 distinct season/time variants without landscape bitmaps',()=>{
-  const app=boot();
-  try{
-    const g=geometry(app.window),world=createCanvas(960,540),c=createCanvas(320,180);
-    const scenes={world:()=>Pixel.drawWorld(world,g,current),garden:()=>Pixel.drawHomeExterior(c,current)};
-    for(const kind of ['lake','river','beach','harbor','pond'])scenes['surface-'+kind]=()=>Pixel.drawSurface(c,kind,current);
-    for(const id of ['player-home','farmhouse','yaoya','diner','main-shrine','fish-market','sam-shop'])scenes['room-'+id]=()=>Pixel.drawInterior(c,id,current);
-    for(const zone of ['lake','river','sea'])for(const depth of ['shallow','mid','deep'])scenes[zone+'-'+depth]=()=>Pixel.drawUnderwater(c,zone,depth,current);
-    scenes['flatfish']=()=>Pixel.drawUnderwater(c,'sea','deep',current,true);
-    let current;
-    for(const [name,draw] of Object.entries(scenes)){
-      const versions=new Set();
-      for(const season of Pixel.seasons)for(const period of Pixel.periods){
-        current=env(season,period);draw();versions.add(digest(name==='world'?world:c));
-      }
-      assert.equal(versions.size,20,`${name}: every requested season/time combination has its own actual pixels`);
-    }
-    const before=digest(c);Pixel.drawUnderwater(c,'sea','deep',current,true);assert.equal(digest(c),before,'decoration is deterministic');
-    const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-    assert.doesNotMatch(html,/assets\/(?:terrain-world|cast-(?:lake|river|sea|sam)|underwater-|interior-|player-home-|sam-shop-exterior|sam-practice-pond|fishing-biomes)/);
-    const worker=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-    for(const file of ['pixel-world.js','pixel-cast.js','pixel-scenes.css'])assert.ok(worker.includes('./'+file+'?v=161-1'),`${file} works in the offline cache`);
-  }finally{app.dispose();}
+test('the browser and offline cache load the same detailed scene modules',()=>{
+  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+  const worker=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
+  assert.doesNotMatch(html,/ShuPixel\.draw(?:World|Surface|Underwater|Interior|HomeExterior)\(/);
+  for(const file of ['pixel-world.js','pixel-cast.js','pixel-scenes.css','scene-layers.js','layered-scenery.js']){
+    const url=[...html.matchAll(/(?:src|href)="([^"]+)"/g)].map(match=>match[1]).find(url=>url.startsWith(file+'?'));
+    assert.ok(url&&worker.includes('./'+url),`${file}: offline cache uses the exact browser URL`);
+  }
+  assert.ok(worker.includes('./scenery-worker.js?v=163-1'));
 });
 
 test('rendered water uses actual collision geometry and all landmarks remain reachable',()=>{

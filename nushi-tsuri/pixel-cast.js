@@ -38,7 +38,8 @@
     const p=pose(progress),box=layout(width,height),tip=worldPoint(p.tip,box),hand=worldPoint(p.hand,box);
     let bobber={x:tip.x+2,y:tip.y+9};
     if(flying&&progress>=RELEASE){
-      const start=worldPoint(pose(RELEASE).tip,box),u=Math.min(1,Math.max(0,(progress-RELEASE)/(1-RELEASE)));
+      const releaseTip=worldPoint(pose(RELEASE).tip,box),start={x:releaseTip.x+2,y:releaseTip.y+9};
+      const u=Math.min(1,Math.max(0,(progress-RELEASE)/(1-RELEASE)));
       bobber={x:start.x+(target.x-start.x)*u,y:start.y+(target.y-start.y)*u-Math.sin(Math.PI*u)*height*.16};
     }
     return {pose:p,box,tip,hand,support:worldPoint(p.support,box),butt:worldPoint(p.butt,box),bobber,

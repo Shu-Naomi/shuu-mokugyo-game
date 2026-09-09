@@ -4,7 +4,7 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="(pixel-(?:world|cast)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:pixel-(?:world|cast)|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
   .replace(/<link rel="stylesheet" href="(pixel-scenes\.css)\?[^\"]+" \/>/,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
@@ -47,6 +47,7 @@ function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPre
         return this.context ||= new Proxy({
           canvas: this, measureText: (text) => ({ width: String(text).length * 8 }),
           createLinearGradient: () => gradient, createRadialGradient: () => gradient,
+          createImageData: (w, h) => ({ data: new Uint8ClampedArray(w * h * 4), width: w, height: h }),
           getImageData: (x, y, w, h) => ({ data: new Uint8ClampedArray(w * h * 4), width: w, height: h }),
         }, { get: (target, key) => key in target ? target[key] : () => {} });
       };

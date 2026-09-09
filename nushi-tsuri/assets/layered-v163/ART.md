@@ -1,0 +1,27 @@
+# Detailed scenery v163 — art provenance
+
+The quality references are the existing `terrain-world-v54.png` and v160 home exterior/interior masters. They are read unchanged as source atlases, at 1536×864 and 1774×887 respectively. Part masks copy the original pixels; they do not replace detailed art with code-drawn tiles. Existing surface, underwater and shop paintings are reused through `scene-layers.js`.
+
+`fishing-inn-master.png` is an exact copy of the original `assets/interior-fishing-inn-v55.png` blob from commit `7c3145f21d033322c92ee3868bec37341c4b4601`. This versioned copy preserves the original without overwriting a separate local edit to that old path.
+
+Only the clean plates below were generated. The method was the built-in ImageGen tool, using each original master as a reference; no CLI image generation was used. The generated files were copied unmodified to this directory. They sit **behind** the original pixel layers and are visible only when a part is moved/removed or its edge sways. They are not the finished empty scenery.
+
+| Saved asset | Reference | Generated output |
+| --- | --- | --- |
+| `world-underlay.png` | `assets/terrain-world-v54.png` | `exec-0d63da97-1edf-4c12-bcd9-13c3813aacec.png` |
+| `home-interior-underlay.png` | `assets/player-home-interior-v160.webp` | `exec-1bf1943b-4b22-4a28-a59b-13e5389b6e00.png` |
+| `home-exterior-underlay.png` | `assets/player-home-exterior-v160.webp` | `exec-b7def250-116e-4924-b039-4c149eef2fa8.png` |
+
+Generated outputs were returned under `/workspace/scratch/955d5a7464d5/generated_images/`. Project copies are in `nushi-tsuri/assets/layered-v163/`. Original masters remain available for future finer masks, texture repair and replacements.
+
+## World clean plate prompt
+
+Use case: precise-object-edit. Asset type: clean underlying terrain plate for the EXACT supplied detailed pixel-art game map, for later compositing the original buildings and trees as independent layers. Edit the attached image, retain its exact overhead three-quarter projection, 16:9 composition, map scale, highly detailed late-16-bit pixel texture, natural ground, road routes, central oval lake and its coastline, thin stream leading south through the bridge to the river mouth, lower-left beach and sea, right harbor and small practice pond. REMOVE all buildings including roofs, houses, shrines and shops; remove all trees and tall bushes, wooden fences, boats, signs and movable props, and fill their former positions with coherent detailed grass, soil or water as appropriate. Keep the stone footbridge across the stream and stone harbor quays, road routes and shore outlines at EXACTLY the same positions. Fill forested margins with detailed natural low meadow soil/grass, not plain flat colors. Do not introduce objects, alter water shapes, add paths or change the layout. This is an inpainted underlay, NOT a new redesign or tile map. Preserve rich moss, soil variation, little pebbles, natural shoreline detail, lighting and subtle shadows of the original terrain. No grid, no text, no people or animals, no UI. Return one complete full-frame landscape image.
+
+## Home interior clean plate prompt
+
+Use case: precise-object-edit. Asset type: empty clean room underlay for the attached exact high-quality pixel-art game home. Preserve the entire room outline, camera projection, framing, 2:1 aspect ratio, walls, back window, bottom doorway, wood plank scale and rich late-16-bit pixel-art shading exactly. Remove ALL freestanding furniture and floor props: bed, low table, stool, kitchen cabinet with sink and stove, rod rack, storage chests, shelving standing on floor, aquarium with cabinet, dog beds, bowls, loose potted plants, baskets and mats. Fill those regions with continuous warm wooden floor or wall consistent with their position. Preserve the fixed outer walls, structural beams, window and small wall-hung decorations. Preserve the daylight through the back window. Keep crisp wood grain, board joints, warm light and rich natural shadows, NO simplification into flat planks or abstract shapes, no blur or generic tiles. This is only an inpainted base beneath the original furniture layers, not a redesigned home. No people, no animals, no fish, no writing, no UI. Full-frame complete room, keep bottom exit unchanged.
+
+## Home exterior clean plate prompt
+
+Use case: precise-object-edit. Asset type: clean terrain underlay for the exact attached detailed pixel-art fisherman's cottage garden. Keep the camera projection, complete 2:1 framing, the left lakeshore shape, the continuous horizontal dirt path across the lower part, and the small southbound path exactly as in the reference. REMOVE the whole cottage including roof, walls, porch steps, fishing gear, buckets, bench, crates; REMOVE trees, tall shrubs, fences and the left arrow sign. Fill all removed positions with coherent lush textured low grass, soil and small natural pebbles. Preserve the rich detailed late-16-bit pixel quality, warm daytime lighting, subtle grass variation, natural irregular edges where grass meets the sandy path, detailed blue lake water and shoreline rocks. The ground below the former cottage should be gently grassy, not a new plaza. Do not move roads or reshape the lake. No replacement buildings, no new features, no people, animals, fish, text or UI. This is only the invisible underlay beneath the original exact cottage and vegetation layers, NOT a redesign, tiled map, flat fill or simplified illustration. Return a single complete full-frame landscape image.

@@ -1,13 +1,30 @@
-/* All scene art shares game coordinates. Low-resolution canvases scale with
-   nearest-neighbour pixels; live fish, players and dogs remain separate. */
+/* Detailed master pixels stay at native resolution. Art masks and motion
+   overlays share one rectangle; live fish, players and dogs remain separate. */
 .map.v54-map { background-image: none; }
 .map.v54-map > #worldPixels { display: block !important; }
 .pixel-scene { display: block; position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 #worldPixels { z-index: 0; }
+.scenery-motion, .scenery-foreground { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; image-rendering: pixelated; }
+.scenery-foreground { z-index: 6; }
+.map.v54-map > .scenery-motion, .map.v54-map > .scenery-foreground { display: block !important; }
 #player { width: 2.6%; height: auto; aspect-ratio: 46 / 58; transform: translate(-50%, -100%); }
 #player.boy.face-right, #player.girl.face-left { transform: translate(-50%, -100%) scaleX(-1); }
 #player > .player-sprite { transform: translateY(7%); }
 #dog { width: 1.7%; height: auto; aspect-ratio: 1; transform: translate(-50%, -100%); }
+#dog.idle-sleep, #dog.idle-beg { animation: none; }
+#dog canvas { --dog-facing: 1; transform: scaleX(var(--dog-facing)); transform-origin: center bottom; }
+#dog.face-player-right canvas { --dog-facing: -1; }
+#dog.idle-sleep canvas { animation: field-dog-breathe 2.4s ease-in-out infinite; }
+#dog.idle-beg canvas { animation: field-dog-beg .8s ease-in-out infinite; }
+@keyframes field-dog-breathe {
+  50% { transform: scaleX(var(--dog-facing)) scaleY(.985); }
+}
+@keyframes field-dog-beg {
+  50% { transform: scaleX(var(--dog-facing)) scaleY(1.02); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #dog.idle-sleep canvas, #dog.idle-beg canvas { animation: none; }
+}
 #player.companion-sit.face-left { transform: translate(-50%, -93%); }
 #player.companion-sit.face-right { transform: translate(-50%, -93%) scaleX(-1); }
 #petScene { width: 4.55%; height: auto; aspect-ratio: 5 / 4; transform: translate(-50%, -98%); }
@@ -15,12 +32,15 @@
 .player-home-area.exterior .player-home-scene,
 .player-home-area.interior .player-home-scene { background-image: none; }
 #homeBackdrop { z-index: 0; }
-#homeAquarium { left: 73.55%; top: 48.462%; width: 13.5%; height: 11.08%; }
+#homeAquarium { left: 73.5%; top: 53.6%; width: 13.4%; height: 10.9%; }
 .cast-surface, .cast-surface.art-water { background: none !important; }
 .cast-surface::before, .cast-surface::after,
 .cast-surface .cast-sky, .cast-surface .cast-water, .cast-surface .cast-far-shore,
 #castAngler, #castRod { display: none !important; }
 #castBackdrop { z-index: 0; }
+#castBackdrop, .scenery-motion[data-for="castBackdrop"],
+#underwaterPixels, .scenery-motion[data-for="underwaterPixels"],
+.scenery-foreground[data-for="castBackdrop"], .scenery-foreground[data-for="underwaterPixels"] { object-fit: cover; }
 #castActor { z-index: 7; }
 .cast-line-flight { z-index: 6; }
 .cast-surface .cast-line-flight path,
@@ -28,3 +48,4 @@
 .cast-surface.cast-throwing .cast-float { display: none; }
 .underwater-backdrop { inset: 0; background: none; animation: none; transform: none; will-change: auto; }
 .location-visual canvas, .shop-interior canvas { display: block; width: 100%; height: 100%; object-fit: contain; image-rendering: pixelated; }
+.location-visual .scenery-motion, .shop-interior .scenery-motion { object-fit: contain; }

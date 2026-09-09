@@ -6390,7 +6390,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=161-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=163-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6416,7 +6416,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v161</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v163</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7075,8 +7075,10 @@
         </div>
       </main>
     </section>
-    <script src="pixel-world.js?v=161-1"></script>
-    <script src="pixel-cast.js?v=161-1"></script>
+    <script src="pixel-world.js?v=163-1"></script>
+    <script src="pixel-cast.js?v=163-1"></script>
+    <script src="scene-layers.js?v=163-1"></script>
+    <script src="layered-scenery.js?v=163-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -11478,6 +11480,8 @@
         castLandingTimer = 0,
         surfaceCastMotionStartedAt = 0,
         surfaceCastMotionFrame = 0,
+        surfaceCastAnimationFrame = 0,
+        surfaceCastLastPaintAt = null,
         surfaceTransitionTimer = 0,
         fishAnimationPreloads = new Map(),
         walkTimer = 0,
@@ -13712,9 +13716,13 @@
       const pixelSceneCache = new WeakMap();
       let pixelScenePaints = 0, pixelCastModel = null, pixelCastKey = "";
       function paintPixelScene(canvas, key, draw) {
-        if (!canvas || pixelSceneCache.get(canvas) === key) return false;
-        draw(canvas);
+        if (!canvas) return false;
+        if (pixelSceneCache.get(canvas) === key) { ShuScenery.refresh(canvas); return false; }
+        const result = draw(canvas);
         pixelSceneCache.set(canvas, key);
+        if (result && typeof result.then === "function") result.then(ready => {
+          if (!ready && pixelSceneCache.get(canvas) === key) pixelSceneCache.delete(canvas);
+        });
         pixelScenePaints++;
         return true;
       }
@@ -13741,31 +13749,28 @@
       function paintSurfaceScenery() {
         if (!battle) return;
         const canvas = $("#castBackdrop"), env = ShuPixel.calendar(s.gameMinutes), kind = surfaceSceneryKind();
-        resizePixelCanvas(canvas, pixelFishingSize());
-        paintPixelScene(canvas, `${kind}:${env.key}:${canvas.width}:${canvas.height}`,
-          c => ShuPixel.drawSurface(c, kind, env));
+        paintPixelScene(canvas, `${kind}:${env.key}`,
+          c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
       function paintUnderwaterScenery(zone, depth, flatfish = false) {
         const canvas = $("#underwaterPixels"), env = ShuPixel.calendar(s.gameMinutes);
-        resizePixelCanvas(canvas, pixelFishingSize());
-        paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}:${canvas.height}`,
-          c => ShuPixel.drawUnderwater(c, zone, depth, env, flatfish));
+        paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}`,
+          c => ShuScenery.paint(c, `underwater-${zone}-${depth}-${flatfish}`, env));
       }
       function paintHomeScenery() {
         const canvas = $("#homeBackdrop"), env = ShuPixel.calendar(s.gameMinutes);
         paintPixelScene(canvas, `${playerHomeState.area}:${env.key}`,
-          c => playerHomeState.area === "interior" ? ShuPixel.drawInterior(c, "player-home", env)
-            : ShuPixel.drawHomeExterior(c, env));
+          c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
         const env = ShuPixel.calendar(s.gameMinutes);
         if (!playerHomeIsActive() && !battle)
-          paintPixelScene($("#worldPixels"), env.key, c => ShuPixel.drawWorld(c, pixelWorldGeometry(), env));
+          paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
         if ($("#store").classList.contains("open"))
-          paintPixelScene($("#shopPixels"), env.key, c => ShuPixel.drawInterior(c, "sam-shop", env));
+          paintPixelScene($("#shopPixels"), env.key, c => ShuScenery.paint(c, "room-sam-shop", env));
         if (activeLocationId && $("#locationInterior").classList.contains("open"))
           paintPixelScene($("#locationPixels"), `${activeLocationId}:${env.key}`,
-            c => ShuPixel.drawInterior(c, activeLocationId, env));
+            c => ShuScenery.paint(c, `room-${activeLocationId}`, env));
         if (battle) {
           paintSurfaceScenery();
           paintUnderwaterScenery(battle.waterZone || "lake", battle.depth || "shallow", battle.f?.id === "hirame");
@@ -13878,7 +13883,7 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
           return false;
-        if (isBlockedStructure(x, y) || ShuPixel.propSolid(x, y)) return false;
+        if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
           !isSeaWater(x, y) &&
@@ -15458,6 +15463,27 @@
         return renderPixelCast();
       }
       function advanceSurfaceCastMotionFrame(now = Date.now()) { return renderPixelCast(now); }
+      function stopSurfaceCastAnimation() {
+        if (surfaceCastAnimationFrame) cancelAnimationFrame(surfaceCastAnimationFrame);
+        surfaceCastAnimationFrame = 0;
+        surfaceCastLastPaintAt = null;
+      }
+      function animateSurfaceCast() {
+        surfaceCastAnimationFrame = 0;
+        if (document.hidden || battle?.phase !== "cast-flight") return;
+        // RAF supplies time since page load; the existing cast deadline uses
+        // epoch milliseconds. Read that same clock, and only animate pixels.
+        const now = Date.now(), finished = now - surfaceCastMotionStartedAt >= SURFACE_CAST_MOTION_MS;
+        if (surfaceCastLastPaintAt === null || now - surfaceCastLastPaintAt >= 1000 / 30 - .5 || finished) {
+          syncSurfaceCastRig(now);
+          surfaceCastLastPaintAt = now;
+        }
+        if (!finished) surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
+      }
+      function startSurfaceCastAnimation() {
+        if (!surfaceCastAnimationFrame && !document.hidden && battle?.phase === "cast-flight")
+          surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
+      }
       function syncSurfaceCastRig(now = Date.now()) {
         if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase) || document.hidden) return;
         paintSurfaceScenery();
@@ -15468,7 +15494,7 @@
           : battle.phase === "cast" ? { x: pixelCastModel.tip.x + 2, y: pixelCastModel.tip.y + 9 }
           : { x: point.x * canvas.width / 100, y: point.y * canvas.height / 100 };
         const x = bobber.x / canvas.width * 1000, y = bobber.y / canvas.height * 500;
-        const cx = (origin.x + x) / 2, cy = (origin.y + y) / 2 + (battle.phase === "cast-flight" ? 5 : 9);
+        const cx = (origin.x + x) / 2, cy = (origin.y + y) / 2 + 9;
         $("#castLinePath").setAttribute("d", `M ${origin.x} ${origin.y} Q ${cx} ${cy} ${x} ${y}`);
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
@@ -15563,8 +15589,7 @@
           battle.minimumDepth || "shallow",
         );
         updateSurfaceCastAim(battle.cast);
-        if (globalThis.requestAnimationFrame)
-          requestAnimationFrame(syncSurfaceCastRig);
+        syncSurfaceCastRig();
       }
       function fishingWaterNearPlayer(
         playerX = s.x,
@@ -16123,7 +16148,7 @@
         // Main-map art now scales with the scene as the home already does.
         // Reuse its paw registration so walking/sitting/sleeping share one
         // ground point instead of inheriting each PNG's transparent margin.
-        if (!["idle-dig", "idle-beg"].includes(dogIdleMode)) {
+        if (dogWalking || !["idle-dig", "idle-beg"].includes(dogIdleMode)) {
           const pose = dogWalking ? "walk" : dogIdleMode === "idle-sit" ? "sit"
             : dogIdleMode === "idle-sleep" ? "sleep" : "stand";
           drawHomeDogSprite(canvas, { dogId: s.dog, direction: dogMotionDirection || s.direction },
@@ -16184,6 +16209,13 @@
           : image === dogImages.riku && row === 1
             ? size - 12
             : size;
+        // The special idle cells also have a transparent bottom margin.
+        // Apply the same offset to the body and the two animated forepaws.
+        const groundOffset = dogIdleMode === "idle-dig"
+          ? { shuu: 31, riku: 26, grey: 28 }[s.dog]
+          : { shuu: 29, riku: 21, grey: 21 }[s.dog];
+        ctx.save();
+        ctx.translate(0, groundOffset || 0);
         ctx.drawImage(
           image,
           col * size,
@@ -16222,6 +16254,7 @@
             );
           });
         }
+        ctx.restore();
       }
       function wakeDog() {
         clearTimeout(idleTimer);
@@ -17947,15 +17980,15 @@
         updateSurfaceCastAim(distance);
         const surface = $("#castSurface");
         surface.classList.remove("cast-landed", "nibbling", "bite");
-        // Restart the six-cell sheet from its planted pose even after a
-        // cancelled cast or a browser restoring this scene from history.
+        // Restart the shared rig from its planted pose after a cancelled cast.
+        stopSurfaceCastAnimation();
         surface.classList.remove("cast-throwing");
         surfaceCastMotionStartedAt = Date.now();
         setSurfaceCastMotionFrame(0, true);
-        void $("#castMotionRig").offsetWidth;
         surface.classList.add("cast-throwing");
         playGameAudioSample("castThrow", { restart: true });
         syncSurfaceCastRig();
+        startSurfaceCastAnimation();
         $("#castMeter").style.display = "none";
         $("#phaseLabel").textContent = " 竿を振る";
         $("#battleMsg").textContent = battle.practice
@@ -17972,6 +18005,7 @@
       }
       function settleSurfaceCast() {
         if (!battle || battle.phase !== "cast-flight") return false;
+        stopSurfaceCastAnimation();
         clearTimeout(castLandingTimer);
         castLandingTimer = 0;
         const delay = battle.practice
@@ -17988,16 +18022,7 @@
         playGameAudioSample("lureSplash", { restart: true });
         surfaceCastMotionStartedAt = 0;
         setSurfaceCastMotionFrame(0, true);
-        const point = castSurfacePoint(battle.castDistance);
-        const origin = castLineOrigin();
-        const targetX = point.x * 10;
-        const targetY = point.y * 5;
-        const controlX = Math.round((origin.x + targetX) * .5);
-        const controlY = Math.round(Math.min(origin.y, targetY) - 18);
-        $("#castLinePath").setAttribute(
-          "d",
-          `M ${origin.x} ${origin.y} Q ${controlX} ${controlY} ${targetX} ${targetY}`,
-        );
+        syncSurfaceCastRig();
         $("#fishName").textContent = battle.practice
           ? "試し釣り池のウキ"
           : fishingSpotById(battle.spot).name;
@@ -18974,6 +18999,7 @@
         }
       }
       function resetBattleFeedback() {
+        stopSurfaceCastAnimation();
         const scene = $("#fishScene");
         const fishElement = $("#battleFish");
         clearTimeout(hookRevealTimer);
@@ -19680,7 +19706,8 @@
         timer = setInterval(() => {
           if (!battle) return;
           if (battle.phase !== "fight") updateWaterFx();
-          if (["cast", "cast-flight", "wait", "bite"].includes(battle.phase))
+          if (["cast", "wait", "bite"].includes(battle.phase) ||
+              (battle.phase === "cast-flight" && !surfaceCastAnimationFrame))
             syncSurfaceCastRig();
           if (battle.phase === "cast") {
             const min = battle.castMin ?? 0;
@@ -20551,6 +20578,7 @@
       addEventListener("blur", releaseHeldInputs);
       addEventListener("pagehide", () => {
         releaseHeldInputs();
+        stopSurfaceCastAnimation();
         save();
         stopAquariumAnimation();
         stopHomeDogAnimation();
@@ -20565,19 +20593,22 @@
         renderHomeDogs();
         if (document.hidden) {
           releaseHeldInputs();
+          stopSurfaceCastAnimation();
           save();
           stopCastingWaterSound(.05);
           stopUnderwaterSound(.05);
           stopAllGameAudioSamples();
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
-        } else if (s.soundEnabled) {
-          recoverGameAudio();
+        } else {
+          startSurfaceCastAnimation();
+          if (s.soundEnabled) recoverGameAudio();
         }
       });
       addEventListener("focus", () => recoverGameAudio());
       addEventListener("pageshow", () => {
         recoverGameAudio();
+        startSurfaceCastAnimation();
         renderHomeAquarium();
         renderHomeDogs();
       });
@@ -20592,7 +20623,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=161-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=163-1").catch(() => {});
       renderRecord();
     </script>
   </body>
