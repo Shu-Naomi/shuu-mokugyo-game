@@ -1,14 +1,14 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v163-detailed-layers-163-1";
+const CACHE_NAME = "nushi-tsuri-v164-sam-text-164-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./pixel-world.js?v=163-1",
-  "./pixel-cast.js?v=163-1",
-  "./pixel-scenes.css?v=163-1",
-  "./scene-layers.js?v=163-1",
-  "./layered-scenery.js?v=163-1",
-  "./scenery-worker.js?v=163-1",
+  "./pixel-world.js?v=164-1",
+  "./pixel-cast.js?v=164-1",
+  "./pixel-scenes.css?v=164-1",
+  "./scene-layers.js?v=164-1",
+  "./layered-scenery.js?v=164-1",
+  "./scenery-worker.js?v=164-1",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",

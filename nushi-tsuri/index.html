@@ -6390,7 +6390,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=163-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=164-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6416,7 +6416,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v163</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v164</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6798,7 +6798,18 @@
         <div class="modal shop-modal" id="store">
           <div class="shop-layout">
             <div class="shop-interior" aria-label="木の棚に釣り竿、ルアー、釣り糸が並ぶサムの釣具店内">
-              <canvas id="shopPixels" width="640" height="360" role="img" aria-label="サムの釣具店内"></canvas>
+              <canvas id="shopPixels" width="1536" height="1152" role="img" aria-label="サムの釣具店内"></canvas>
+              <svg id="shopActors" class="shop-actors" viewBox="0 0 1536 1152" preserveAspectRatio="xMidYMid meet" role="img" aria-label="レジの右で店番をするサミュエル・オールドマン">
+                <defs>
+                  <mask id="samBehindCounter" maskUnits="userSpaceOnUse" x="0" y="0" width="1536" height="1152">
+                    <rect width="1536" height="1152" fill="white" />
+                    <path d="M408 334H924V468H408ZM454 270H570V371H454Z" fill="black" />
+                  </mask>
+                </defs>
+                <g mask="url(#samBehindCounter)">
+                  <image class="shopkeeper-sam-svg" href="assets/sam-front.png" x="570" y="178" width="142" height="292" preserveAspectRatio="xMidYMax meet" />
+                </g>
+              </svg>
             </div>
             <div class="shop-panel">
               <button class="close" data-close>外へ出る</button>
@@ -7075,10 +7086,10 @@
         </div>
       </main>
     </section>
-    <script src="pixel-world.js?v=163-1"></script>
-    <script src="pixel-cast.js?v=163-1"></script>
-    <script src="scene-layers.js?v=163-1"></script>
-    <script src="layered-scenery.js?v=163-1"></script>
+    <script src="pixel-world.js?v=164-1"></script>
+    <script src="pixel-cast.js?v=164-1"></script>
+    <script src="scene-layers.js?v=164-1"></script>
+    <script src="layered-scenery.js?v=164-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -20190,10 +20201,10 @@
         hideIdleStatus();
         hideFieldMenu();
         const modal = $("#" + id);
-        // The map camera scrolls #world horizontally. Modals live inside that
-        // scroller, so counter the current camera offset and keep every menu
-        // centred on the viewport after the player has walked around.
-        modal.style.transform = `translateX(${$("#world").scrollLeft}px)`;
+        // Counter both axes of the world scroller, including vertical focus
+        // scrolling, so the title and close button stay below the HUD.
+        const world = $("#world");
+        modal.style.transform = `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
@@ -20623,7 +20634,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=163-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=164-1").catch(() => {});
       renderRecord();
     </script>
   </body>
