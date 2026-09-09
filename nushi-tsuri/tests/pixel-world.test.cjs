@@ -124,7 +124,7 @@ test('real cast launch uses one flight clock and one resource deduction; line fo
       assert.ok(Math.abs(origin.x-m.tip.x/c.width*1000)<1e-8);
       assert.ok(Math.abs(origin.y-m.tip.y/c.height*500)<1e-8);
       const line=w.document.querySelector('#castLinePath').getAttribute('d');
-      assert.ok(line.startsWith(`M ${origin.x} ${origin.y} Q `));
+      assert.ok(line.startsWith(`M ${origin.x} ${origin.y} L `));
     }
     assert.equal(w.eval('launchSurfaceCast()'),false,'A during flight cannot consume twice');
     w.eval('settleSurfaceCast()');assert.equal(w.eval('battle.phase'),'wait');

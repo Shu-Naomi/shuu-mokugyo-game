@@ -6390,7 +6390,7 @@
         }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=164-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6416,7 +6416,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v164</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v165</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6612,7 +6612,7 @@
             <span class="cast-depth-label" id="castDepthDeep">深場</span>
             <div class="cast-target" id="castTarget"><small id="castTargetDistance">40</small></div>
             <svg class="cast-line-flight" viewBox="0 0 1000 500" preserveAspectRatio="none">
-              <path id="castLinePath" d="M 145 330 Q 390 85 650 270" />
+              <path id="castLinePath" d="" />
             </svg>
             <div class="cast-splash"></div>
             <div class="cast-float" id="castFloat"></div>
@@ -7086,10 +7086,10 @@
         </div>
       </main>
     </section>
-    <script src="pixel-world.js?v=164-1"></script>
-    <script src="pixel-cast.js?v=164-1"></script>
-    <script src="scene-layers.js?v=164-1"></script>
-    <script src="layered-scenery.js?v=164-1"></script>
+    <script src="pixel-world.js?v=165-1"></script>
+    <script src="pixel-cast.js?v=165-1"></script>
+    <script src="scene-layers.js?v=165-1"></script>
+    <script src="layered-scenery.js?v=165-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -13790,7 +13790,8 @@
       function renderPixelCast(now = Date.now()) {
         const canvas = $("#castActor");
         if (!canvas || document.hidden) return false;
-        const resized = resizePixelCanvas(canvas, pixelFishingSize());
+        const size = pixelFishingSize();
+        const resized = resizePixelCanvas(canvas, { width: size.width * 2, height: size.height * 2 });
         const flying = battle?.phase === "cast-flight";
         const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
         const env = ShuPixel.calendar(s.gameMinutes), rod = activeSurfaceCastRodKey();
@@ -13802,6 +13803,10 @@
         pixelCastKey = key;
         return true;
       }
+      ShuCast.preload().then(() => {
+        pixelCastKey = "";
+        if (battle) renderPixelCast();
+      });
       function sampleWorldLine(points, value) {
         for (let i = 1; i < points.length; i += 1) {
           const [value2, result2] = points[i];
@@ -15501,12 +15506,10 @@
         renderPixelCast(now);
         const canvas = $("#castActor"), origin = castLineOrigin();
         const point = castSurfacePoint(battle.castDistance ?? battle.cast ?? 0);
-        const bobber = battle.phase === "cast-flight" ? pixelCastModel.bobber
-          : battle.phase === "cast" ? { x: pixelCastModel.tip.x + 2, y: pixelCastModel.tip.y + 9 }
+        const bobber = ["cast-flight", "cast"].includes(battle.phase) ? pixelCastModel.bobber
           : { x: point.x * canvas.width / 100, y: point.y * canvas.height / 100 };
         const x = bobber.x / canvas.width * 1000, y = bobber.y / canvas.height * 500;
-        const cx = (origin.x + x) / 2, cy = (origin.y + y) / 2 + 9;
-        $("#castLinePath").setAttribute("d", `M ${origin.x} ${origin.y} Q ${cx} ${cy} ${x} ${y}`);
+        $("#castLinePath").setAttribute("d", `M ${origin.x} ${origin.y} L ${x} ${y}`);
       }
       function positionCastDepthLabels(zone, profile, minimumDepth = "shallow") {
         const limits = castDepthLimits(zone);
@@ -19035,7 +19038,7 @@
         castSurface.className = "cast-surface";
         castSurface.style.removeProperty("--cast-target-x");
         castSurface.style.removeProperty("--cast-target-y");
-        $("#castLinePath").setAttribute("d", "M 145 330 Q 390 85 650 270");
+        $("#castLinePath").setAttribute("d", "");
         $("#castRangeFill").style.removeProperty("left");
         $("#castRangeFill").style.removeProperty("width");
         scene.style.removeProperty("background-position");
@@ -20634,7 +20637,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=164-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=165-1").catch(() => {});
       renderRecord();
     </script>
   </body>
