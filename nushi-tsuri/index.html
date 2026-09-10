@@ -6418,7 +6418,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v170</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v171</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -14320,15 +14320,15 @@
             offerings.map(([id, item]) => {
               const count = s.items[id] || 0;
               const purpose = item.fortune === "lucky"
-                ? "上向き運・大当たり7%"
-                : "通常運・大当たり2%";
+                ? `上向き運・大当たり${starFortuneChance("starGazer", item.fortune)}%`
+                : `通常運・大当たり${starFortuneChance("starGazer", item.fortune)}%`;
               return `<button class="location-good fortune" data-draw-fortune="${id}"${fortuneRevealInProgress ? " disabled" : ""}>` +
                 `${item.icon}<span><b>${item.name}を供える</b><small>${purpose}</small></span>` +
                 `<strong>×${count}</strong></button>`;
             }).join("") +
             `<p class="star-fortune-lineup"><b>大当たり：星見の竿</b><br>` +
             `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
-            `<b>🌠 星湖の秘餌</b>：通常1%／星ぶどう3%（ヌシの深み専用）</p>`;
+            `<b>🌠 星湖の秘餌</b>：通常${starFortuneChance("baitNushi1")}%／星ぶどう${starFortuneChance("baitNushi1", "lucky")}%（ヌシの深み専用）</p>`;
         }
         if (interior.kitchen) markup += cookingKitchenMarkup();
         holder.innerHTML = markup;
@@ -15196,11 +15196,13 @@
         return true;
       }
       function starFortunePool(tier = "standard") {
+        // Move rod odds to the consumable secret bait; both pools total 100.
+        // All other prizes keep their existing chances.
         const pools = {
           standard: [
-            ["starGazer", 2],
+            ["starGazer", .5],
             ["expeditionJoint", 5],
-            ["baitNushi1", 1],
+            ["baitNushi1", 2.5],
             ["starFrisbee", 4],
             ["squeakyNushi", 4],
             ["stardustCookie", 6],
@@ -15216,9 +15218,9 @@
             ["money10000", 2],
           ],
           lucky: [
-            ["starGazer", 7],
+            ["starGazer", 1],
             ["expeditionJoint", 10],
-            ["baitNushi1", 3],
+            ["baitNushi1", 9],
             ["starFrisbee", 8],
             ["squeakyNushi", 7],
             ["stardustCookie", 8],
@@ -15235,6 +15237,12 @@
           ],
         };
         return pools[tier] || pools.standard;
+      }
+      function starFortuneChance(prizeId, tier = "standard") {
+        const pool = starFortunePool(tier);
+        const total = pool.reduce((sum, [, weight]) => sum + weight, 0);
+        const weight = pool.find(([id]) => id === prizeId)?.[1] || 0;
+        return Number((weight / total * 100).toFixed(2));
       }
       function rollStarFortune(tier = "standard", random = Math.random) {
         const pool = starFortunePool(tier);
@@ -20743,7 +20751,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=170-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=171-1").catch(() => {});
       renderRecord();
     </script>
   </body>
