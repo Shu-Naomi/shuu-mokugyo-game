@@ -7,8 +7,8 @@ test("secret bait is more common than the rod across the full draw range and the
   try {
     w.openLocationInterior("main-shrine");
     for (const [tier, offering, rodCount, baitCount] of [
-      ["standard", "offeringDaikon", 50, 250],
-      ["lucky", "starGrapes", 100, 900],
+      ["standard", "offeringDaikon", 50, 100],
+      ["lucky", "starGrapes", 100, 300],
     ]) {
       const counts = {};
       // Evenly cover the RNG domain, including the half-percent rod slice.
@@ -31,7 +31,7 @@ test("secret bait is more common than the rod across the full draw range and the
       const button = w.document.querySelector(`[data-draw-fortune="${offering}"]`);
       assert.ok(button.textContent.includes(`大当たり${rodCount / 100}%`));
     }
-    assert.ok(w.document.querySelector(".star-fortune-lineup").textContent.includes("通常2.5%／星ぶどう9%"));
+    assert.ok(w.document.querySelector(".star-fortune-lineup").textContent.includes("通常1%／星ぶどう3%"));
     // The displayed odds must follow the draw data when it is retuned again.
     w.eval(`starFortunePool = () => [["starGazer", 2], ["baitNushi1", 8], ["money500", 40]]`);
     w.renderLocationGoods();
@@ -47,7 +47,7 @@ test("draws consume one offering, prevent repeated taps, award secret bait and d
   let saved;
   try {
     w.openLocationInterior("main-shrine");
-    for (const roll of [0, .15, 0, .15]) {
+    for (const roll of [0, .125, 0, .125]) {
       w.Math.random = () => roll;
       const before = read(w, "s.items.starGrapes");
       assert.equal(w.drawStarFortune("starGrapes"), true);

@@ -6418,7 +6418,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v171</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v172</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -15196,13 +15196,13 @@
         return true;
       }
       function starFortunePool(tier = "standard") {
-        // Move rod odds to the consumable secret bait; both pools total 100.
-        // All other prizes keep their existing chances.
+        // Keep rod odds at .5% / 1% and secret bait rare at 1% / 3%.
+        // Move excess secret-bait odds to ordinary bait; both pools total 100.
         const pools = {
           standard: [
             ["starGazer", .5],
             ["expeditionJoint", 5],
-            ["baitNushi1", 2.5],
+            ["baitNushi1", 1],
             ["starFrisbee", 4],
             ["squeakyNushi", 4],
             ["stardustCookie", 6],
@@ -15210,7 +15210,7 @@
             ["collectibleRandom", 12],
             ["silverSpoon", 9],
             ["starMinnow", 7],
-            ["baitWorm9", 12],
+            ["baitWorm9", 13.5],
             ["baitRiver6", 8],
             ["baitPaste6", 8],
             ["money500", 9],
@@ -15220,7 +15220,7 @@
           lucky: [
             ["starGazer", 1],
             ["expeditionJoint", 10],
-            ["baitNushi1", 9],
+            ["baitNushi1", 3],
             ["starFrisbee", 8],
             ["squeakyNushi", 7],
             ["stardustCookie", 8],
@@ -15228,9 +15228,9 @@
             ["collectibleRandom", 14],
             ["silverSpoon", 7],
             ["starMinnow", 7],
-            ["baitWorm9", 5],
-            ["baitRiver6", 4],
-            ["baitPaste6", 3],
+            ["baitWorm9", 7],
+            ["baitRiver6", 6],
+            ["baitPaste6", 5],
             ["money500", 2],
             ["money2000", 5],
             ["money10000", 3],
@@ -20751,7 +20751,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=171-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=172-1").catch(() => {});
       renderRecord();
     </script>
   </body>

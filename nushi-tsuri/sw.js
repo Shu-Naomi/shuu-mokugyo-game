@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v171-star-fortune-balance-171-1";
+const CACHE_NAME = "nushi-tsuri-v172-secret-bait-rarity-172-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
