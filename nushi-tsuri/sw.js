@@ -1,8 +1,24 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v169-daily-weather-169-1";
+const CACHE_NAME = "nushi-tsuri-v170-seasonal-music-170-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./music-tracks.js?v=170-1",
+  "./soundscape.js?v=170-1",
+  "./assets/audio/music-v170/boats.mp3",
+  "./assets/audio/music-v170/diner.mp3",
+  "./assets/audio/music-v170/fish-market.mp3",
+  "./assets/audio/music-v170/harbor-birds.mp3",
+  "./assets/audio/music-v170/home.mp3",
+  "./assets/audio/music-v170/inn.mp3",
+  "./assets/audio/music-v170/lake-birds.mp3",
+  "./assets/audio/music-v170/map-autumn.mp3",
+  "./assets/audio/music-v170/map-spring.mp3",
+  "./assets/audio/music-v170/map-summer.mp3",
+  "./assets/audio/music-v170/map-winter.mp3",
+  "./assets/audio/music-v170/sam.mp3",
+  "./assets/audio/music-v170/shrine.mp3",
+  "./assets/audio/music-v170/yaoya.mp3",
   "./weather.js?v=169-1",
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=168-1",
