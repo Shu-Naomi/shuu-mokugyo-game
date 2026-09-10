@@ -1,7 +1,7 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
-const {createCanvas}=require('@napi-rs/canvas');
+const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const Pixel=require('../pixel-world.js'),Cast=require('../pixel-cast.js');
 const {boot,read,saveKey}=require('./game-harness.cjs');
 const env=(season,period)=>({season,period,key:season+':'+period});
@@ -85,22 +85,24 @@ test('scenery is cached across movement, updates on time changes, and survives s
   }finally{app.dispose();}
 });
 
-test('both pixel anglers keep hands, rod and planted feet continuous on wide and tall screens',()=>{
+test('both painted anglers keep the grip and rod together with bounded weight shifts on every screen',async()=>{
+  const sprites={};for(const avatar of ['boy','girl'])sprites[avatar]=await loadImage(path.join(__dirname,'..',Cast.artwork[avatar].src));
   for(const [width,height] of [[640,274],[640,320],[640,960]]){
     const canvas=createCanvas(width,height);
     for(const avatar of ['boy','girl'])for(const rod of ['bamboo','youngBamboo','clearStream','starGazer','moroko']){
       let previous;
       for(let frame=0;frame<=120;frame++){
-        const progress=frame/120,m=Cast.draw(canvas,{avatar,rod,progress,flying:true,target:{x:width*.7,y:height*.5}});
+        const progress=frame/120,m=Cast.draw(canvas,{avatar,sprite:sprites[avatar],rod,progress,flying:true,target:{x:width*.7,y:height*.5}});
         for(const point of [m.tip,m.hand,m.support,m.butt,m.bobber,m.leftFoot,m.rightFoot])assert.ok(point.x>=0&&point.x<=width&&point.y>=0&&point.y<=height,'entire rig stays visible');
         if(previous){
-          assert.deepEqual(m.leftFoot,previous.leftFoot);assert.deepEqual(m.rightFoot,previous.rightFoot);
-          assert.ok(Math.hypot(m.hand.x-previous.hand.x,m.hand.y-previous.hand.y)<4*m.box.scale,'no pose teleport');
-          assert.ok(Math.hypot(m.tip.x-previous.tip.x,m.tip.y-previous.tip.y)<15*m.box.scale,'rod follows the same smooth motion');
+          assert.equal(m.leftFoot.y,previous.leftFoot.y);assert.equal(m.rightFoot.y,previous.rightFoot.y);
+          for(const foot of ['leftFoot','rightFoot'])assert.ok(Math.abs(m[foot].x-previous[foot].x)<4*m.box.scale,'the soles pivot locally without sliding across the bank');
+          assert.ok(Math.hypot(m.hand.x-previous.hand.x,m.hand.y-previous.hand.y)<24*m.box.scale,'painted reaching motion remains within the arm span');
+          assert.ok(Math.hypot(m.tip.x-previous.tip.x,m.tip.y-previous.tip.y)<66*m.box.scale,'rod motion stays within the forward casting arc');
         }
         previous=m;
       }
-      assert.deepEqual(previous.pose.hand,Cast.pose(0).hand,'settle returns to the same grip without a snap');
+      assert.deepEqual(previous.pose.hand,Cast.pose(0,avatar).hand,'settle returns to the same grip without a snap');
       assert.ok(Math.hypot(previous.bobber.x-width*.7,previous.bobber.y-height*.5)<1e-7,'landing exactly matches the selected point');
     }
   }

@@ -5,59 +5,42 @@ const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const Cast=require('../pixel-cast.js');
 const {boot}=require('./game-harness.cjs');
 
-test('both detailed characters show a continuous forearm, closed grip and relaxed free hand',async()=>{
+test('painted full-body frames retain their grip, opaque clothing and clean transparent surroundings',async()=>{
   for(const avatar of ['boy','girl']){
     const sprite=await loadImage(path.join(__dirname,'..',Cast.artwork[avatar].src));
     for(const height of [384,548,1920]){
-      const canvas=createCanvas(1280,height),ctx=canvas.getContext('2d');
-      for(let frame=0;frame<=30;frame++){
-        const m=Cast.draw(canvas,{avatar,sprite,progress:frame/30,env:{season:'spring',period:'day'}});
-        assert.equal(m.detailed,true);
-        for(const [name,grip] of [['hand',m.hand],['support',m.support]]){
-          const radius=Math.ceil(m.box.scale*2);
-          const pixels=ctx.getImageData(Math.round(grip.x)-radius,Math.round(grip.y)-radius,radius*2+1,radius*2+1).data;
-          let skin=0;
-          for(let i=0;i<pixels.length;i+=4)
-            if(pixels[i+3]>180&&pixels[i]>110&&pixels[i]>pixels[i+1]*1.05&&pixels[i+1]>pixels[i+2]*1.1)skin++;
-          assert.ok(skin>0,`${avatar}, ${height}, frame ${frame}: painted ${name} matches its joint`);
-        }
-        // Matching grip coordinates alone missed the v166 bug: the vest
-        // covered most of the actual forearm. Inspect its rendered pixels.
-        const arm=m.arms[1],radius=Math.max(1,Math.ceil(m.box.scale*.5));
-        for(const t of [0,.1,.25,.5,.75,.9,1]){
-          const x=m.box.x+(arm.elbowPoint.x+(arm.wristPoint.x-arm.elbowPoint.x)*t)*m.box.scale;
-          const y=m.box.y+(arm.elbowPoint.y+(arm.wristPoint.y-arm.elbowPoint.y)*t)*m.box.scale;
-          const pixels=ctx.getImageData(Math.round(x)-radius,Math.round(y)-radius,radius*2+1,radius*2+1).data;
-          let skin=0;
-          for(let i=0;i<pixels.length;i+=4)
-            if(pixels[i+3]>180&&pixels[i]>150&&pixels[i]>pixels[i+1]+40&&pixels[i+1]>pixels[i+2]+30)skin++;
-          assert.ok(skin>0,`${avatar}, ${height}, frame ${frame}: visible forearm at ${t}`);
-        }
+      const shapes=new Set(),canvas=createCanvas(1280,height),ctx=canvas.getContext('2d');
+      const atlas=Cast.prepareAtlas(sprite,canvas);
+      assert.equal(Cast.prepareAtlas(sprite,canvas),atlas,'decode the background once, not on every paint');
+      assert.equal(atlas.getContext('2d').getImageData(0,0,1,1).data[3],0,'the atlas background is actually transparent in the renderer');
+      for(let frame=0;frame<12;frame++){
+        const m=Cast.draw(canvas,{avatar,sprite,progress:(Cast.timeline[frame]+1)/Cast.DURATION,env:{season:'summer',period:'day'}});
+        assert.equal(m.detailed,true);assert.equal(m.frame,frame);
+        const radius=Math.ceil(m.box.scale*1.5),grip=m.hand;
+        const pixels=ctx.getImageData(Math.round(grip.x)-radius,Math.round(grip.y)-radius,radius*2+1,radius*2+1).data;
+        let skin=0;
+        for(let i=0;i<pixels.length;i+=4)
+          if(pixels[i+3]>200&&pixels[i]>160&&pixels[i]>pixels[i+1]+20&&pixels[i+1]>pixels[i+2]+20)skin++;
+        assert.ok(skin>0,avatar+', '+height+', frame '+frame+': the drawn fingers close on the rod grip');
+        const torso=ctx.getImageData(Math.round(m.box.x+49*m.box.scale),Math.round(m.box.y+45*m.box.scale),Math.ceil(28*m.box.scale),Math.ceil(37*m.box.scale)).data;
+        shapes.add(require('node:crypto').createHash('sha256').update(torso).digest('hex'));
+        const all=ctx.getImageData(0,0,canvas.width,canvas.height).data;
+        for(let i=0;i<all.length;i+=4)assert.ok(!(all[i+3]>150&&all[i]>all[i+1]+80&&all[i+2]>all[i+1]+70),'no chroma background leaks into the lake');
       }
+      assert.equal(shapes.size,12,'torso and shoulders have distinct whole-body drawings throughout the cast');
     }
   }
 });
 
-test('casting preserves anatomical arm lengths, a lowered elbow and continuous wrist motion',()=>{
-  const distance=(a,b)=>Math.hypot(a.x-b.x,a.y-b.y);
+test('the cast plays every painted pose once, holds anticipation, and returns to the exact ready drawing',()=>{
   for(const avatar of ['boy','girl']){
-    let previous;
-    for(let frame=0;frame<=360;frame++){
-      const [free,arm]=Cast.armPose(avatar,frame/360);
-      assert.ok(Math.abs(distance(arm.shoulderPoint,arm.elbowPoint)-arm.upperLength)<1e-8,'upper arm cannot stretch');
-      assert.ok(Math.abs(distance(arm.elbowPoint,arm.handPoint)-arm.lowerLength)<1e-8,'forearm and palm cannot stretch');
-      assert.ok(Math.abs(distance(arm.wristPoint,arm.handPoint)-1.5)<1e-8,'the closed grip joins its wrist');
-      const forearmAngle=Math.atan2(arm.handPoint.y-arm.elbowPoint.y,arm.handPoint.x-arm.elbowPoint.x)*180/Math.PI;
-      const wristTurn=Math.abs(((forearmAngle-Cast.pose(frame/360).angle+540)%360)-180);
-      assert.ok(wristTurn<45,'the grip cannot force the wrist through a sharp bend');
-      assert.ok(arm.elbowPoint.y>arm.handPoint.y,'elbow bends below the grip instead of across the back');
-      assert.ok(arm.lowerLength<=arm.sourceLowerLength,'perspective may shorten the forearm but never lengthen it');
-      assert.ok(free.handPoint.x<free.shoulderPoint.x&&free.handPoint.y>free.shoulderPoint.y+15,'the free hand rests beside the thigh');
-      if(previous)for(const joint of ['shoulderPoint','elbowPoint','wristPoint','handPoint'])
-        assert.ok(distance(arm[joint],previous[joint])<.3,'no elbow flip or hand teleport');
-      previous=arm;
-    }
-    assert.deepEqual(Cast.armPose(avatar,0),Cast.armPose(avatar,1),'landing returns to the same relaxed stance');
+    const frames=new Set();
+    for(let ms=0;ms<=Cast.DURATION;ms++)frames.add(Cast.pose(ms/Cast.DURATION,avatar).frame);
+    assert.deepEqual([...frames],[0,1,2,3,4,5,6,7,8,9,10,11]);
+    for(let i=0;i<12;i++)assert.equal(Cast.frameAt(Cast.timeline[i]/Cast.DURATION),i,'frame boundary '+i);
+    const first=Cast.pose(0,avatar),last=Cast.pose(1,avatar);
+    assert.deepEqual({...last,t:0},first,'ending uses the original ready cell with identical hand and foot positions');
+    assert.equal(Cast.frameAt(Cast.RELEASE-1e-7),Cast.frameAt(Cast.RELEASE+1e-7),'release happens within one painted pose, avoiding a launch jump');
   }
 });
 
