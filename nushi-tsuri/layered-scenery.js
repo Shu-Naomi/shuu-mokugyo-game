@@ -77,6 +77,14 @@
       if(season==='winter'){r*=.98;g*=.995;b*=1.018;}
       if(season==='summer'){r*=1.005;g*=1.012;}
     }
+    if(!definition.indoor&&!definition.underwater&&env.weather&&env.weather!=='sunny') {
+      const rain=env.weather==='rain',gray=r*.3+g*.59+b*.11;
+      const sky=kind==='sky',saturation=sky?(rain?.12:.35):rain?.64:.79;
+      const brightness=rain?.83:.91;
+      r=(r*saturation+gray*(1-saturation))*brightness;
+      g=(g*saturation+gray*(1-saturation))*brightness;
+      b=(b*saturation+gray*(1-saturation))*Math.min(1,brightness+.05);
+    }
     graded[0]=r;graded[1]=g;graded[2]=b;return graded;
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
@@ -95,7 +103,7 @@
       const b=bounds[i];
       if(b.right<=b.left||b.bottom<=b.top) return null;
       const canvas=canvasFactory(b.right-b.left,b.bottom-b.top),ctx=canvas.getContext('2d');
-      return {...descriptor,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[]};
+      return {...descriptor,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[],rainSamples:[]};
     });
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
       const n=y*width+x,part=parts[labels[n]],offset=n*4;
@@ -107,6 +115,12 @@
       if(part.effect&&x%29===0&&y%19===0&&x+9<width) {
         let inside=true;for(let offset=1;offset<=9;offset++)if(labels[n+offset]!==labels[n]){inside=false;break;}
         if(inside)part.samples.push({x,y,color:`rgb(${Math.min(255,color[0]+42)|0},${Math.min(255,color[1]+48)|0},${Math.min(255,color[2]+51)|0})`});
+      }
+      if(env.weather==='rain'&&!definition.indoor&&!definition.underwater&&part.kind==='water'&&x%41===0&&y%31===0&&x+13<width&&y>3&&y+3<height) {
+        let inside=true;
+        for(let dy=-3;dy<=3&&inside;dy++)for(let dx=0;dx<=13;dx++)
+          if(labels[n+dy*width+dx]!==labels[n]){inside=false;break;}
+        if(inside)part.rainSamples.push({x:x+6,y});
       }
     }
     for(const part of parts) if(part) {part.ctx.putImageData(part.image,0,0);delete part.image;delete part.ctx;}
@@ -177,10 +191,34 @@
     if(time&&!options.reducedMotion) for(const part of scene.parts) if(part.effect) {
       for(let i=0;i<part.samples.length;i++) {
         const sample=part.samples[i],phase=time/1400+i*2.399;
-        const alpha=Math.max(0,Math.sin(phase))*(part.effect==='shafts'?.045:.18);
+        const dry=scene.definition.indoor||scene.definition.underwater;
+        const sky=dry?1:scene.env.weather==='rain'?.3:scene.env.weather==='cloudy'?.6:1;
+        const alpha=Math.max(0,Math.sin(phase))*(part.effect==='shafts'?.045:.18)*sky;
         if(alpha<.025)continue;
         ctx.globalAlpha=alpha;ctx.fillStyle=sample.color;
         ctx.fillRect(sample.x+Math.round(Math.sin(phase*.43)*2)+2,sample.y,part.effect==='shafts'?2:5,1);
+      }
+    }
+    if(time&&!options.reducedMotion&&scene.env.weather==='rain'&&!scene.definition.indoor&&!scene.definition.underwater) {
+      ctx.globalAlpha=1;ctx.strokeStyle='rgba(199,222,231,.27)';ctx.lineWidth=1.1;
+      ctx.beginPath();
+      const count=Math.max(32,Math.min(115,Math.round(scene.width*scene.height/16000)));
+      for(let i=0;i<count;i++) {
+        const y=(i*139.37+time*.38)%(scene.height+20)-20;
+        const x=(i*277.79-y*.15+scene.width)%scene.width;
+        const length=8+i%7;
+        ctx.moveTo(x,y);ctx.lineTo(x-length*.15,y+length);
+      }
+      ctx.stroke();
+      ctx.strokeStyle='rgba(192,223,231,.42)';ctx.lineWidth=.9;
+      for(const part of scene.parts) {
+        const points=part.rainSamples||[],stride=Math.max(1,Math.ceil(points.length/70));
+        for(let i=0;i<points.length;i+=stride) {
+          const phase=(time/1050+i*.618)%1;
+          if(phase>.7)continue;
+          const point=points[i];ctx.globalAlpha=(1-phase/.7)*.7;
+          ctx.beginPath();ctx.ellipse(point.x,point.y,1.5+phase*6,.4+phase*2.4,0,0,Math.PI*2);ctx.stroke();
+        }
       }
     }
     ctx.restore();return canvas;
@@ -217,7 +255,7 @@
     }
     async function paint(canvas,id,env) {
       if(disposed)return false;
-      const definition=Data.get(id,env),key=`${id}:${env.season}:${env.period}:${definition.source}`;
+      const definition=Data.get(id,env),key=`${id}:${env.season}:${env.period}:${env.weather||'sunny'}:${definition.source}`;
       let session=sessions.get(canvas);
       if(session?.key===key) {wake();return session.promise;}
       if(!session) {
@@ -286,7 +324,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=165-1');
+            worker=new Worker('scenery-worker.js?v=169-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }

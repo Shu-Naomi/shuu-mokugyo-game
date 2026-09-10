@@ -108,6 +108,8 @@
         border-radius: 7px;
         background: #ffffff10;
       }
+      .hud-weather { white-space: nowrap; color: #f7e9b9; }
+      .sam-weather-hint { margin: .4em 0 .7em; padding: .55em .7em; border-left: 3px solid #c8a258; background: #142b3899; color: #f2e4bc; font-size: .86em; line-height: 1.55; }
       .hud-clock {
         white-space: nowrap;
         font-variant-numeric: tabular-nums;
@@ -6416,8 +6418,8 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v168</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
-        ><span>💰 <b id="money">300</b>円</span
+        <b>星降る湖</b><span>v169</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
         ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
@@ -6816,6 +6818,7 @@
               <small class="shop-brand">SAM'S FISHING SHOP</small>
               <h2>サミュエル・オールドマン</h2>
               <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
+              <p id="samWeatherHint" class="sam-weather-hint"></p>
               <div class="shop-tabs" role="tablist" aria-label="サムの店の売り場">
                 <button class="active" data-sam-shop-tab="tackle" role="tab" aria-controls="samTackleWindow" aria-selected="true">🎣 釣具</button>
                 <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false">🧤 装備・雑貨</button>
@@ -7086,10 +7089,11 @@
         </div>
       </main>
     </section>
+    <script src="weather.js?v=169-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
     <script src="scene-layers.js?v=165-1"></script>
-    <script src="layered-scenery.js?v=165-1"></script>
+    <script src="layered-scenery.js?v=169-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -12700,6 +12704,7 @@
           master: null,
           media: Object.create(null),
           surface: null,
+          rain: null,
           underwater: null,
           fightReel: null,
           lastBubbleAt: -10,
@@ -12725,6 +12730,7 @@
             const master = context.createGain();
             master.gain.value = GAME_AUDIO_MASTER_LEVEL;
             master.connect(context.destination);
+            stopRainSound();
             gameAudio.context = context;
             gameAudio.master = master;
             gameAudio.surface = null;
@@ -12841,7 +12847,7 @@
         return true;
       }
       function stopAllGameAudioSamples() {
-        let stopped = false;
+        let stopped = stopRainSound();
         for (const id of Object.keys(gameAudio.media))
           stopped = stopGameAudioSample(id) || stopped;
         gameAudio.surface = null;
@@ -12923,6 +12929,7 @@
         fishId = "",
         waterWeight = fishWaterWeight(fishId),
       ) {
+        stopRainSound();
         if (gameAudio.underwater || !s.soundEnabled) return false;
         stopCastingWaterSound();
         ensureAudioContext();
@@ -12959,7 +12966,24 @@
         gameAudio.underwater = null;
         return stopped;
       }
+      function stopRainSound() {
+        if (!gameAudio.rain) return false;
+        gameAudio.rain.stop();
+        gameAudio.rain = null;
+        return true;
+      }
+      function syncRainSound() {
+        const indoors = (playerHomeIsActive() && playerHomeState.area === "interior") ||
+          $("#store").classList.contains("open") || $("#locationInterior").classList.contains("open");
+        const shouldPlay = s.soundEnabled && !document.hidden && gameAudio.unlocked &&
+          gameAudio.context?.state === "running" && $("#game").classList.contains("active") &&
+          !indoors && battle?.phase !== "fight" && ShuWeather.forecast(s.gameMinutes).id === "rain";
+        if (!shouldPlay) { stopRainSound(); return false; }
+        if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.master);
+        return true;
+      }
       function syncExpectedLoopAudio() {
+        const rainPlaying = syncRainSound();
         if (!s.soundEnabled || document.hidden) return false;
         if (battle?.phase === "fight") {
           if (gameAudioSampleIsPlaying("underwater")) {
@@ -12993,7 +13017,7 @@
           gameAudio.surface = null;
           return startCastingWaterSound(zone, locale);
         }
-        return false;
+        return rainPlaying;
       }
       function scheduleAudioTone({
         frequency,
@@ -13737,6 +13761,21 @@
         pixelScenePaints++;
         return true;
       }
+      function gameSceneryEnvironment() {
+        const env = ShuPixel.calendar(s.gameMinutes);
+        const weather = ShuWeather.forecast(s.gameMinutes).id;
+        return { ...env, weather, key: `${env.key}:${weather}` };
+      }
+      function renderWeather() {
+        const weather = ShuWeather.forecast(s.gameMinutes);
+        const badge = $("#weather");
+        badge.textContent = `${weather.icon} ${weather.label}`;
+        badge.dataset.weather = weather.id;
+        badge.setAttribute("aria-label", `今日の天気：${weather.label}`);
+        badge.title = `今日の天気：${weather.label}。日付が変わると天気も変わる。`;
+        $("#samWeatherHint").textContent = `${weather.icon} 今日の釣り日和 ${weather.hint}`;
+        syncRainSound();
+      }
       function pixelWorldGeometry() {
         return { isLakeWater, isRiverWater, isSeaWater, isPracticePondWater, isOnRiverBridge,
           isOnLakeDock, isOnHarborWalkway, seaWaterY, isBlockedStructure, structureBounds,
@@ -13759,22 +13798,22 @@
       }
       function paintSurfaceScenery() {
         if (!battle) return;
-        const canvas = $("#castBackdrop"), env = ShuPixel.calendar(s.gameMinutes), kind = surfaceSceneryKind();
+        const canvas = $("#castBackdrop"), env = gameSceneryEnvironment(), kind = surfaceSceneryKind();
         paintPixelScene(canvas, `${kind}:${env.key}`,
           c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
       function paintUnderwaterScenery(zone, depth, flatfish = false) {
-        const canvas = $("#underwaterPixels"), env = ShuPixel.calendar(s.gameMinutes);
+        const canvas = $("#underwaterPixels"), env = gameSceneryEnvironment();
         paintPixelScene(canvas, `${zone}:${depth}:${flatfish}:${env.key}`,
           c => ShuScenery.paint(c, `underwater-${zone}-${depth}-${flatfish}`, env));
       }
       function paintHomeScenery() {
-        const canvas = $("#homeBackdrop"), env = ShuPixel.calendar(s.gameMinutes);
+        const canvas = $("#homeBackdrop"), env = gameSceneryEnvironment();
         paintPixelScene(canvas, `${playerHomeState.area}:${env.key}`,
           c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
-        const env = ShuPixel.calendar(s.gameMinutes);
+        const env = gameSceneryEnvironment();
         if (!playerHomeIsActive() && !battle)
           paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
         if ($("#store").classList.contains("open"))
@@ -13794,7 +13833,7 @@
         const resized = resizePixelCanvas(canvas, { width: size.width * 2, height: size.height * 2 });
         const flying = battle?.phase === "cast-flight";
         const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
-        const env = ShuPixel.calendar(s.gameMinutes), rod = activeSurfaceCastRodKey();
+        const env = gameSceneryEnvironment(), rod = activeSurfaceCastRodKey();
         const key = `${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
@@ -14521,6 +14560,7 @@
         return { width: sceneWidth, height: sceneWidth / 2 };
       }
       function renderPlayerHome() {
+        syncRainSound();
         const areaElement = $("#playerHomeArea");
         if (!areaElement) return false;
         const active = playerHomeIsActive();
@@ -14883,6 +14923,7 @@
         return true;
       }
       function renderSamShop() {
+        renderWeather();
         const purchaseCount = samBaitPurchaseCount;
         const purchaseCountOutput = $("#samBaitPurchaseCount");
         if (purchaseCountOutput)
@@ -15943,6 +15984,7 @@
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = gameClockLabel(s.gameMinutes);
+        renderWeather();
         renderFishingPreparation();
         renderSoundToggle();
         renderIdleStatus();
@@ -16671,6 +16713,7 @@
             }[period] || 1;
             weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
           }
+          weight *= ShuWeather.fishMultiplier(id, s.gameMinutes, Boolean(battle?.practice));
           weight *= questRumorFishMultiplier(id, spot.zone);
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
@@ -16781,7 +16824,7 @@
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          `${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+          `${ShuWeather.forecast(s.gameMinutes).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
@@ -20211,6 +20254,7 @@
         modal.classList.add("open");
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
+        syncRainSound();
         renderPixelScenery();
       }
       function close() {
@@ -20220,6 +20264,7 @@
         openModals.forEach((x) => x.classList.remove("open"));
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
+        syncRainSound();
         hideStarFortuneReveal({ rerender: false });
         if (playerHomeIsActive()) {
           hideIdleStatus();
@@ -20631,13 +20676,13 @@
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
       setInterval(() => {
-        if (s.soundEnabled && !document.hidden && battle)
+        if (s.soundEnabled && !document.hidden)
           syncExpectedLoopAudio();
       }, 2500);
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=168-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=169-1").catch(() => {});
       renderRecord();
     </script>
   </body>
