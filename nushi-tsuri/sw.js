@@ -1,10 +1,10 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v167-visible-arm-167-1";
+const CACHE_NAME = "nushi-tsuri-v168-painted-cast-168-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./pixel-world.js?v=165-1",
-  "./pixel-cast.js?v=167-1",
+  "./pixel-cast.js?v=168-1",
   "./pixel-scenes.css?v=165-1",
   "./scene-layers.js?v=165-1",
   "./layered-scenery.js?v=165-1",
@@ -55,6 +55,8 @@ const CORE_ASSETS = [
   "./icon-192.png",
   "./icon-512.png",
   "./assets/rod-display-atlas-v82-10.png",
+  "./assets/player-boy-cast-atlas-v168.webp",
+  "./assets/player-girl-cast-atlas-v168.webp",
   "./assets/player-boy-cast-v73.png",
   "./assets/player-girl-cast-v73.png",
   "./assets/shuu-walk.png?v=12",
