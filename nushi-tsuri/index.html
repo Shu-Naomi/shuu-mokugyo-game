@@ -6418,7 +6418,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v169</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v170</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7089,6 +7089,8 @@
         </div>
       </main>
     </section>
+    <script src="music-tracks.js?v=170-1"></script>
+    <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
@@ -12614,9 +12616,19 @@
             src: "assets/audio/fish-swim-large.mp3",
             volume: .68,
           },
+          lakeBirds: {
+            src: "assets/audio/music-v170/lake-birds.mp3",
+            volume: .72,
+            loop: true,
+          },
+          harborBirds: {
+            src: "assets/audio/music-v170/harbor-birds.mp3",
+            volume: .76,
+            loop: true,
+          },
           castLake: {
             src: "assets/audio/cast-lake-pond.mp3",
-            volume: .88,
+            volume: .58,
             loop: true,
           },
           castRiver: {
@@ -12631,7 +12643,7 @@
           },
           castHarbor: {
             src: "assets/audio/cast-sea-harbor.mp3",
-            volume: .76,
+            volume: .58,
             loop: true,
           },
           castThrow: {
@@ -12703,6 +12715,7 @@
           context: null,
           master: null,
           media: Object.create(null),
+          preloadedSamples: new Set(),
           surface: null,
           rain: null,
           underwater: null,
@@ -12714,6 +12727,7 @@
           readyCuePlayed: false,
           unlockPromise: null,
         };
+      const backgroundMusic = ShuSoundscape.createMusicPlayer();
       function ensureAudioContext(resume = true) {
         if (!s.soundEnabled) return null;
         let context = gameAudio.context;
@@ -12731,6 +12745,7 @@
             master.gain.value = GAME_AUDIO_MASTER_LEVEL;
             master.connect(context.destination);
             stopRainSound();
+            backgroundMusic.stop(.02);
             gameAudio.context = context;
             gameAudio.master = master;
             gameAudio.surface = null;
@@ -12803,8 +12818,9 @@
       }
       function preloadGameAudioSamples() {
         for (const id of Object.keys(GAME_AUDIO_ASSETS)) {
+          if (gameAudio.preloadedSamples.has(id)) continue;
           const sample = gameAudioSample(id);
-          try { sample?.load?.(); } catch (_) {}
+          try { if (sample) { sample.load?.(); gameAudio.preloadedSamples.add(id); } } catch (_) {}
         }
       }
       function playGameAudioSample(
@@ -12847,6 +12863,7 @@
         return true;
       }
       function stopAllGameAudioSamples() {
+        backgroundMusic.stop(.02);
         let stopped = stopRainSound();
         for (const id of Object.keys(gameAudio.media))
           stopped = stopGameAudioSample(id) || stopped;
@@ -12872,6 +12889,7 @@
         zone = battle?.waterZone || "lake",
         locale = battle?.castLocale,
       ) {
+        backgroundMusic.stop(.10);
         if (!s.soundEnabled || gameAudio.underwater) return false;
         const sampleId = castingWaterSampleId(zone, locale);
         const activeSample = gameAudio.media[sampleId];
@@ -12882,10 +12900,11 @@
         ensureAudioContext();
         const played = playGameAudioSample(sampleId, { restart: true });
         if (played) gameAudio.surface = { sampleId, zone, locale };
+        syncWildlifeSound();
         return played;
       }
       function stopCastingWaterSound() {
-        let stopped = false;
+        let stopped = stopWildlifeSound();
         for (const id of CASTING_AUDIO_IDS)
           stopped = stopGameAudioSample(id) || stopped;
         gameAudio.surface = null;
@@ -12982,8 +13001,49 @@
         if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.master);
         return true;
       }
+      function currentSoundScene() {
+        return ShuSoundscape.selectScene({
+          active: $("#game").classList.contains("active"),
+          season: ShuPixel.calendar(s.gameMinutes).season,
+          fishing: Boolean(battle), phase: battle?.phase,
+          zone: battle?.waterZone || "lake", locale: battle?.castLocale,
+          store: $("#store").classList.contains("open"),
+          location: $("#locationInterior").classList.contains("open") ? activeLocationId : null,
+          home: playerHomeIsActive(), boats: $("#vehicleShop").classList.contains("open"),
+          shrine: !battle && nearbyWorldLandmark()?.id === "west-shrine",
+        });
+      }
+      function stopWildlifeSound() {
+        let stopped = false;
+        for (const id of ["lakeBirds", "harborBirds"])
+          stopped = stopGameAudioSample(id) || stopped;
+        return stopped;
+      }
+      function syncWildlifeSound(scene = currentSoundScene()) {
+        const wanted = s.soundEnabled && !document.hidden && gameAudio.unlocked ? scene.birds : null;
+        for (const id of ["lakeBirds", "harborBirds"]) {
+          if (id !== wanted) { stopGameAudioSample(id); continue; }
+          const env = ShuPixel.calendar(s.gameMinutes);
+          const weather = ShuWeather.forecast(s.gameMinutes).id;
+          const volume = GAME_AUDIO_ASSETS[id].volume *
+            (env.period === "night" ? .18 : 1) * (weather === "rain" ? .6 : 1);
+          if (!gameAudioSampleIsPlaying(id)) playGameAudioSample(id, { restart: true, volume });
+          else gameAudio.media[id].volume = volume;
+        }
+        return Boolean(wanted);
+      }
+      function syncSceneSound() {
+        const scene = currentSoundScene();
+        const enabled = s.soundEnabled && !document.hidden && gameAudio.unlocked;
+        // The audio context is opened only by the existing audio-unlock path.
+        backgroundMusic.set(enabled ? scene.music : null, gameAudio.context, gameAudio.master)
+          .then(() => { if (typeof document !== "undefined") renderSoundToggle(); });
+        const birds = syncWildlifeSound(scene);
+        const rain = syncRainSound();
+        return rain || birds || Boolean(enabled && scene.music);
+      }
       function syncExpectedLoopAudio() {
-        const rainPlaying = syncRainSound();
+        const scenePlaying = syncSceneSound();
         if (!s.soundEnabled || document.hidden) return false;
         if (battle?.phase === "fight") {
           if (gameAudioSampleIsPlaying("underwater")) {
@@ -13017,7 +13077,7 @@
           gameAudio.surface = null;
           return startCastingWaterSound(zone, locale);
         }
-        return rainPlaying;
+        return scenePlaying;
       }
       function scheduleAudioTone({
         frequency,
@@ -13388,7 +13448,8 @@
         button.classList.toggle("muted", !enabled);
         button.setAttribute("aria-pressed", String(enabled));
         button.setAttribute("aria-label", enabled ? "音を切る" : "音を入れる");
-        button.title = enabled ? "音を切る" : "音を入れる";
+        const track = ShuSoundscape.tracks[backgroundMusic.stats().playing];
+        button.title = enabled ? track ? `音を切る · ${track.title}` : "音を切る" : "音を入れる";
       }
       function setSoundEnabled(enabled) {
         s.soundEnabled = Boolean(enabled);
@@ -13774,7 +13835,7 @@
         badge.setAttribute("aria-label", `今日の天気：${weather.label}`);
         badge.title = `今日の天気：${weather.label}。日付が変わると天気も変わる。`;
         $("#samWeatherHint").textContent = `${weather.icon} 今日の釣り日和 ${weather.hint}`;
-        syncRainSound();
+        syncSceneSound();
       }
       function pixelWorldGeometry() {
         return { isLakeWater, isRiverWater, isSeaWater, isPracticePondWater, isOnRiverBridge,
@@ -14560,7 +14621,7 @@
         return { width: sceneWidth, height: sceneWidth / 2 };
       }
       function renderPlayerHome() {
-        syncRainSound();
+        syncSceneSound();
         const areaElement = $("#playerHomeArea");
         if (!areaElement) return false;
         const active = playerHomeIsActive();
@@ -20254,7 +20315,7 @@
         modal.classList.add("open");
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
-        syncRainSound();
+        syncSceneSound();
         renderPixelScenery();
       }
       function close() {
@@ -20264,7 +20325,7 @@
         openModals.forEach((x) => x.classList.remove("open"));
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
-        syncRainSound();
+        syncSceneSound();
         hideStarFortuneReveal({ rerender: false });
         if (playerHomeIsActive()) {
           hideIdleStatus();
@@ -20682,7 +20743,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=169-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=170-1").catch(() => {});
       renderRecord();
     </script>
   </body>
