@@ -6418,7 +6418,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v172</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v173</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -13528,8 +13528,10 @@
         return y / WORLD_SCALE_Y;
       }
       const lakeWaterPolygon = [
-          [91, 15], [104, 13], [119, 13], [134, 14], [148, 17],
-          [156, 21], [159, 28], [157, 36], [152, 43], [142, 47],
+          // Follow the painted northeast bank. The former x=159 bulge
+          // covered the dry path at x=155, interrupting the lakeside walk.
+          [91, 15], [104, 13], [119, 13], [134, 14], [148, 19],
+          [153, 24], [154, 30], [153, 36], [150, 42], [142, 47],
           [130, 50], [123, 51], [118, 49], [111, 51], [100, 49],
           [90, 46], [83, 41], [79, 35], [79, 28], [82, 21],
         ],
@@ -13589,6 +13591,14 @@
           top: 55,
           bottom: 65,
         },
+        // The west shrine also has open central steps. Keep its walls,
+        // side signs and planted borders solid while letting feet approach.
+        westShrineApproachBounds = {
+          left: 32,
+          right: 40,
+          top: 55,
+          bottom: 62,
+        },
         // Sam's shop has the same painted-doorway shape as the shrine. Open
         // only the centre steps so the player can stand at the door without
         // walking through the display windows or the rest of the building.
@@ -13612,7 +13622,9 @@
           { id: "west-shrine", left: 27, right: 55, top: 41, bottom: 62 },
           { id: "wayside-shrine", left: 8, right: 17, top: 50, bottom: 61 },
           { id: "yaoya", left: 66, right: 91, top: 55, bottom: 75 },
-          { id: "quest-board", left: 118, right: 124, top: 65, bottom: 70 },
+          // The small painted sign stands beside the river path, not across
+          // it. Only its foot (master pixels 784..797, 461..474) is solid.
+          { id: "quest-board", left: 122.5, right: 124.5, top: 72, bottom: 74 },
           { id: "diner", left: 130, right: 158, top: 55, bottom: 75 },
           { id: "main-shrine", left: 178, right: 211, top: 36, bottom: 64 },
           { id: "sam-shop", left: 182, right: 211, top: 70, bottom: 92 },
@@ -13627,7 +13639,7 @@
             interior: "farmhouse",
           },
           {
-            id: "west-shrine", x: 40, y: 65, radius: 8,
+            id: "west-shrine", x: 36, y: 61, radius: 8,
             hint: "水守りの社だ。Aでお参りする。",
             message: "水守りの社に手を合わせた。湖から海まで、穏やかな水音が続いている。",
           },
@@ -13984,6 +13996,8 @@
           if (!inWorldRect(x, y, bounds)) return false;
           const isShrineApproach = bounds.id === "main-shrine" &&
             inWorldRect(x, y, mainShrineApproachBounds);
+          const isWestShrineApproach = bounds.id === "west-shrine" &&
+            inWorldRect(x, y, westShrineApproachBounds);
           const isSamShopApproach = bounds.id === "sam-shop" &&
             inWorldRect(x, y, samShopApproachBounds);
           const isHarborCornerBuilding =
@@ -13991,7 +14005,8 @@
           const isHarborCornerPassage = isHarborCornerBuilding &&
             inWorldRect(x, y, harborCornerPassageBounds);
           return !(
-            isShrineApproach || isSamShopApproach || isHarborCornerPassage
+            isShrineApproach || isWestShrineApproach ||
+            isSamShopApproach || isHarborCornerPassage
           );
         });
       }
@@ -20751,7 +20766,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=172-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=173-1").catch(() => {});
       renderRecord();
     </script>
   </body>
