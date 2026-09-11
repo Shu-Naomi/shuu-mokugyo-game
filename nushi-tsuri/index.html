@@ -6391,6 +6391,54 @@
           bottom: 3%;
         }
       }
+      .tournament-hud {
+        position: absolute; top: 54px; left: 50%; transform: translateX(-50%); z-index: 25;
+        padding: 8px 12px; border: 2px solid #e6c475; border-radius: 8px;
+        background: #142e3aee; color: #fff0bd; font-size: clamp(12px, 1.4vw, 17px);
+        box-shadow: 0 2px 6px #0005;
+      }
+      .tournament-hud:disabled { opacity: 1; cursor: default; }
+      .tournament-hud[hidden] { display: none; }
+      .tournament-modal { inset: 4% 10%; padding: clamp(12px, 2vw, 24px); }
+      .tournament-heading { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+      .tournament-heading small { color: #b8d7d3; }
+      .tournament-heading h2 { margin-top: 4px; }
+      .tournament-heading .close { flex-shrink: 0; }
+      #tournamentBody { line-height: 1.55; }
+      #tournamentBody p { margin: 9px 0; }
+      .tournament-note { color: #bdd1d7; font-size: .9em; }
+      .tournament-rules, .tournament-summary {
+        display: grid; grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px; margin: 12px 0;
+      }
+      .tournament-rules > div, .tournament-summary > div {
+        padding: 9px; border: 1px solid #73949177; border-radius: 6px; background: #ffffff09;
+      }
+      .tournament-rules small, .tournament-summary small { display: block; color: #bdd1d7; }
+      .tournament-rules b, .tournament-summary b { color: #fff1b6; font-size: 1.12em; }
+      .tournament-creel { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 7px; padding: 0; list-style: none; }
+      .tournament-creel li { padding: 9px 5px; text-align: center; border: 1px solid #6d9590; border-radius: 6px; background: #2b5a564d; }
+      .tournament-creel small { display: block; color: #c3d7d5; }
+      .tournament-new-fish { border-left: 4px solid #f0cd75; background: #e4bc5e16; padding: 10px 14px; }
+      .tournament-choices { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; margin: 12px 0; }
+      .tournament-choices button { padding: 10px; text-align: left; }
+      .tournament-choices small { display: block; font-weight: normal; }
+      .tournament-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 14px; }
+      .tournament-actions button { min-height: 42px; padding: 8px 18px; }
+      .tournament-secondary { background: #254252; color: #f7e9ba; border-color: #83a49e; }
+      .tournament-table-wrap { overflow-x: auto; }
+      .tournament-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-variant-numeric: tabular-nums; }
+      .tournament-table th, .tournament-table td { text-align: right; border-bottom: 1px solid #ffffff30; padding: 9px 6px; white-space: nowrap; }
+      .tournament-table th:nth-child(2), .tournament-table td:nth-child(2) { text-align: left; }
+      .tournament-table tr[data-player] { background: #b9cf9b20; color: #fff1b6; }
+      @media (max-height: 540px) {
+        .tournament-modal { inset: 3% 7%; padding: 10px 14px; font-size: 13px; }
+        .tournament-hud { top: 44px; padding: 5px 8px; white-space: nowrap; }
+        .tournament-heading h2 { font-size: 1.3em; }
+        .tournament-rules, .tournament-summary { margin: 8px 0; gap: 6px; }
+        .tournament-rules > div, .tournament-summary > div { padding: 6px 9px; }
+        .tournament-choices button { min-height: 44px; padding: 7px 10px; }
+      }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
   </head>
@@ -6418,7 +6466,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v173</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v174</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6426,6 +6474,7 @@
         ><button id="menu" type="button" aria-controls="fieldMenu" aria-expanded="false">メニュー</button>
       </header>
       <main class="world" id="world">
+        <button id="tournamentHud" class="tournament-hud" aria-label="大会ビクを開く" hidden></button>
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
           <div class="lake">
@@ -6819,6 +6868,9 @@
               <h2>サミュエル・オールドマン</h2>
               <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
               <p id="samWeatherHint" class="sam-weather-hint"></p>
+              <button class="shop-practice" id="tournamentOffer">
+                <span>🎣 サムの釣り大会</span><small id="tournamentOfferStatus">フナ大会 受付中</small>
+              </button>
               <div class="shop-tabs" role="tablist" aria-label="サムの店の売り場">
                 <button class="active" data-sam-shop-tab="tackle" role="tab" aria-controls="samTackleWindow" aria-selected="true">🎣 釣具</button>
                 <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false">🧤 装備・雑貨</button>
@@ -7048,6 +7100,10 @@
             </footer>
           </div>
         </div>
+        <section class="modal tournament-modal" id="tournamentModal" role="dialog" aria-modal="true" aria-labelledby="tournamentTitle">
+          <header class="tournament-heading"><div><small>サム主催 · 釣り大会</small><h2 id="tournamentTitle">星湖フナ大会</h2></div><button id="tournamentClose" class="close">閉じる</button></header>
+          <div id="tournamentBody"></div>
+        </section>
         <div class="modal" id="tackle">
           <button class="close" data-close>閉じる</button>
           <h2>仕掛けを選ぶ</h2>
@@ -7092,6 +7148,7 @@
     <script src="music-tracks.js?v=170-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
+    <script src="tournament.js?v=174-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
     <script src="scene-layers.js?v=165-1"></script>
@@ -11270,7 +11327,7 @@
           baitId,
           spotId: currentBattle.spot || "",
           castLocale: currentBattle.castLocale || currentBattle.waterZone || "",
-          period: gameClockAt(state.gameMinutes).period,
+          period: gameClockAt(sceneGameMinutes(state)).period,
         };
         state.fishCatchRecords[f.id] = entry;
         const crowns = state.fishCrowns[f.id] || { tiny: false, giant: false };
@@ -11344,6 +11401,10 @@
         const minute = String(clock.minute).padStart(2, "0");
         const landscape = ShuPixel.calendar(value);
         return `${landscape.seasonLabel}${landscape.seasonDay}日・${clock.day}日目 ${hour}:${minute} ${landscape.periodLabel}`;
+      }
+      let tournamentPresentationTimer = 0, tournamentView = "entry";
+      function sceneGameMinutes(state = s) {
+        return ShuTournament.sceneMinutes(state.tournament, state.gameMinutes);
       }
       function advanceGameTime(state, minutes = CAST_TIME_MINUTES) {
         const amount = Math.max(0, Math.floor(Number(minutes) || 0));
@@ -11474,6 +11535,7 @@
             questRumor: null,
             log: [],
             gameMinutes: null,
+            tournament: null,
             x: 112,
             y: 153,
             dog: "riku",
@@ -12051,6 +12113,7 @@
         if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      s.tournament = ShuTournament.normalize(s.tournament);
       s.forageCycle = normalizeForageCycle(s.forageCycle);
       s.questBoard = normalizeDailyQuestBoard(s.questBoard);
       s.questCompletions = Math.max(
@@ -12996,7 +13059,7 @@
           $("#store").classList.contains("open") || $("#locationInterior").classList.contains("open");
         const shouldPlay = s.soundEnabled && !document.hidden && gameAudio.unlocked &&
           gameAudio.context?.state === "running" && $("#game").classList.contains("active") &&
-          !indoors && battle?.phase !== "fight" && ShuWeather.forecast(s.gameMinutes).id === "rain";
+          !indoors && battle?.phase !== "fight" && ShuWeather.forecast(sceneGameMinutes()).id === "rain";
         if (!shouldPlay) { stopRainSound(); return false; }
         if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.master);
         return true;
@@ -13004,7 +13067,7 @@
       function currentSoundScene() {
         return ShuSoundscape.selectScene({
           active: $("#game").classList.contains("active"),
-          season: ShuPixel.calendar(s.gameMinutes).season,
+          season: ShuPixel.calendar(sceneGameMinutes()).season,
           fishing: Boolean(battle), phase: battle?.phase,
           zone: battle?.waterZone || "lake", locale: battle?.castLocale,
           store: $("#store").classList.contains("open"),
@@ -13023,8 +13086,8 @@
         const wanted = s.soundEnabled && !document.hidden && gameAudio.unlocked ? scene.birds : null;
         for (const id of ["lakeBirds", "harborBirds"]) {
           if (id !== wanted) { stopGameAudioSample(id); continue; }
-          const env = ShuPixel.calendar(s.gameMinutes);
-          const weather = ShuWeather.forecast(s.gameMinutes).id;
+          const env = ShuPixel.calendar(sceneGameMinutes());
+          const weather = ShuWeather.forecast(sceneGameMinutes()).id;
           const volume = GAME_AUDIO_ASSETS[id].volume *
             (env.period === "night" ? .18 : 1) * (weather === "rain" ? .6 : 1);
           if (!gameAudioSampleIsPlaying(id)) playGameAudioSample(id, { restart: true, volume });
@@ -13835,12 +13898,12 @@
         return true;
       }
       function gameSceneryEnvironment() {
-        const env = ShuPixel.calendar(s.gameMinutes);
-        const weather = ShuWeather.forecast(s.gameMinutes).id;
+        const env = ShuPixel.calendar(sceneGameMinutes());
+        const weather = ShuWeather.forecast(sceneGameMinutes()).id;
         return { ...env, weather, key: `${env.key}:${weather}` };
       }
       function renderWeather() {
-        const weather = ShuWeather.forecast(s.gameMinutes);
+        const weather = ShuWeather.forecast(sceneGameMinutes());
         const badge = $("#weather");
         badge.textContent = `${weather.icon} ${weather.label}`;
         badge.dataset.weather = weather.id;
@@ -14735,7 +14798,144 @@
         if (playerHomeIsActive() || !isAtPlayerHomeMapEntrance()) return false;
         return transitionPlayerHome("exterior", "map");
       }
+      function positionTournamentHud() {
+        const world = $("#world");
+        $("#tournamentHud").style.transform =
+          `translate(calc(-50% + ${world.scrollLeft}px), ${world.scrollTop}px)`;
+      }
+      function renderTournamentHud() {
+        const t = s.tournament, d = ShuTournament.definition(t);
+        const hud = $("#tournamentHud");
+        positionTournamentHud();
+        hud.hidden = !d || Boolean(document.querySelector(".modal.open"));
+        hud.disabled = Boolean(battle);
+        if (d) {
+          const remainingCasts = ShuTournament.maxCasts(t) - t.casts;
+          hud.textContent = t.phase === "result" ? "🎣 大会結果を見る" :
+            `🎣 残り${ShuTournament.remaining(t)}分・${remainingCasts}投 ｜ ビク ${t.creel.length}/${d.capacity}`;
+          hud.setAttribute("aria-label", `${hud.textContent}。大会ビクを開く`);
+        }
+        $("#tournamentOfferStatus").textContent = d ? "参加中 · ビクを見る" : "フナ大会 受付中";
+      }
+      function tournamentSummary(t) {
+        const score = ShuTournament.score(t.creel);
+        return `<div class="tournament-summary"><div><small>残り時間 / 投数</small><b>${ShuTournament.remaining(t)}分 / ${ShuTournament.maxCasts(t) - t.casts}投</b></div><div><small>ビク ${score.count}/${ShuTournament.definition(t).capacity}匹 · 合計</small><b>${ShuTournament.cm(score.total)} cm</b></div><div><small>ビクの最大魚</small><b>${ShuTournament.cm(score.largest)} cm</b></div></div>`;
+      }
+      function tournamentCreel(t) {
+        const capacity = ShuTournament.definition(t).capacity;
+        return `<ol class="tournament-creel" aria-label="大会ビクの魚">${Array.from({ length: capacity }, (_, i) =>
+          `<li><small>${i + 1}匹目</small><b>${t.creel[i] ? `${ShuTournament.cm(t.creel[i].hundredths)} cm` : "空き"}</b></li>`).join("")}</ol>`;
+      }
+      function renderTournament(view = tournamentView) {
+        tournamentView = view;
+        const t = s.tournament;
+        const d = ShuTournament.definition(t || "lakeFuna");
+        $("#tournamentTitle").textContent = t?.phase === "result" ? `${d.name} · 結果` : d.name;
+        const closeButton = $("#tournamentClose");
+        closeButton.hidden = Boolean(t?.pending);
+        closeButton.textContent = t?.phase === "result" ? "大会を終える" : "閉じる";
+        let markup;
+        if (!t) {
+          const reference = ShuTournament.score(d.references[0].fish);
+          markup = `<p>サム「湖でフナを集めて、ワシの参考記録に挑んでみんか？」</p>
+            <div class="tournament-rules"><div><small>対象魚 / 会場</small><b>${d.fishName}</b><small>${d.venue}</small></div><div><small>制限時間</small><b>${d.duration}分・最大${ShuTournament.maxCasts(d)}投</b><small>1投${d.castMinutes}分（ゲーム内）</small></div><div><small>競う記録</small><b>最大${d.capacity}匹の合計サイズ</b><small>同点なら最大魚を比較</small></div></div>
+            <p>大会中は${d.periodLabel}の釣り場に固定。釣り上げた${d.fishName}を専用ビクへ入れ、${d.capacity + 1}匹目からは入れ替えかリリースを選べるよ。${d.capacity}匹未満でも計量できる。</p>
+            <p class="tournament-note">空振り・投げた後の回収も1投。投げる前の準備や移動では時間を使わない。大会を終えると、参加前の時計から使った時間だけ進んだ日常に戻る。</p>
+            <p class="tournament-note">サムの参考記録：合計 ${ShuTournament.cm(reference.total)} cm / 最大 ${ShuTournament.cm(reference.largest)} cm。釣果・図鑑・売却代金はいつもどおり残る。</p>
+            <p class="tournament-note">今回は参加費・賞品なし。いつものエサを使うよ。フナには練り餌やトウモロコシがおすすめ。</p>
+            <div class="tournament-actions"><button data-tournament-action="start">フナ大会に参加する</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>`;
+        } else if (t.pending) {
+          const total = ShuTournament.score(t.creel).total;
+          markup = `${tournamentSummary(t)}<p class="tournament-new-fish">新しい${d.fishName} <b>${ShuTournament.cm(t.pending.hundredths)} cm</b>！ ビクがいっぱいだ。どの魚と入れ替える？</p>
+            <div class="tournament-choices">${t.creel.map((f, i) => `<button data-tournament-replace="${i}">${i + 1}匹目 · ${ShuTournament.cm(f.hundredths)} cmと入れ替え<small>合計 → ${ShuTournament.cm(total - f.hundredths + t.pending.hundredths)} cm</small></button>`).join("")}</div>
+            <div class="tournament-actions"><button class="tournament-secondary" data-tournament-action="release">新しい${d.fishName}を逃がす（入れ替えない）</button></div>
+            <p class="tournament-note">ビクから外した魚も、図鑑・通常の釣果と売却代金には記録が残る。選択待ちのまま保存しても、ここから再開できるよ。</p>`;
+        } else if (t.phase === "result") {
+          const rows = ShuTournament.standings(t);
+          const player = rows.find(row => row.id === "player");
+          const tied = rows.filter(row => row.rank === player.rank).length > 1;
+          const heading = t.reason === "withdrawn" ? "途中終了 · ここまでの記録" :
+            t.reason === "rescue" ? "療養のため大会終了 · ここまでの記録" : "計量完了";
+          markup = `<p><b>${heading} — ${tied ? "同率" : ""}${player.rank}位</b></p>
+            ${tournamentSummary(t)}${tournamentCreel(t)}
+            <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th>順位</th><th>選手</th><th>匹数</th><th>合計 cm</th><th>最大 cm</th></tr></thead><tbody>${rows.map(row => `<tr${row.id === "player" ? " data-player" : ""}><td>${row.rank}位</td><td>${row.name}</td><td>${row.count}</td><td>${ShuTournament.cm(row.total)}</td><td>${ShuTournament.cm(row.largest)}</td></tr>`).join("")}</tbody></table></div>
+            <p>サム「${player.count === 0 ? "魚が気まぐれな日もあるさ。エサや深さを変えて、また挑んでみよう" : player.rank === 1 ? "見事な釣果じゃ！ また一緒に腕を競おう" : "いい勝負だったな。次はもっと大きなフナを狙おう"}」</p>
+            <p class="tournament-note">合計サイズ → 最大魚の順で比較。両方同じなら同順位。サムは固定の参考記録だよ。</p>
+            <div class="tournament-actions"><button data-tournament-action="finish">大会を終えて日常へ戻る</button></div>`;
+        } else if (view === "withdraw") {
+          markup = `${tournamentSummary(t)}<p>ここまでの釣果で大会を終了する？ 残りの投数は使わず、ビクの記録を計量するよ。</p><div class="tournament-actions"><button data-tournament-action="withdraw">ここで大会を終了する</button><button class="tournament-secondary" data-tournament-action="creel">大会を続ける</button></div>`;
+        } else {
+          markup = `${tournamentSummary(t)}${tournamentCreel(t)}<p>${d.venue}で${d.fishName}を釣ろう。釣り場は${d.periodLabel}で固定。${d.capacity + 1}匹目からは入れ替えを選べるよ。</p><p class="tournament-note">釣った魚は通常の釣果と図鑑にも残る。投げた時だけエサと10分を消費するよ。</p><div class="tournament-actions"><button data-tournament-action="close">釣りを続ける</button><button class="tournament-secondary" data-tournament-action="confirm-withdraw">ここまでで計量する</button></div>`;
+        }
+        $("#tournamentBody").innerHTML = markup;
+        $("#tournamentModal").scrollTop = 0;
+      }
+      function openTournament() {
+        if (battle || $("#catchCard").classList.contains("show")) return;
+        close();
+        renderTournament(s.tournament ? "creel" : "entry");
+        open("tournamentModal");
+      }
+      function maybePresentTournament() {
+        if (!$("#game").classList.contains("active") || battle ||
+            $("#catchCard").classList.contains("show")) return;
+        if (s.tournament?.pending || s.tournament?.phase === "result") {
+          if (!$("#tournamentModal").classList.contains("open")) {
+            close();
+            open("tournamentModal");
+          }
+          renderTournament();
+        }
+      }
+      function queueTournamentPresentation() {
+        clearTimeout(tournamentPresentationTimer);
+        tournamentPresentationTimer = setTimeout(maybePresentTournament, 0);
+      }
+      function finishTournamentResults() {
+        if (s.tournament?.phase !== "result" || s.tournament.pending) return;
+        const record = ShuTournament.score(s.tournament.creel);
+        const name = ShuTournament.definition(s.tournament).name;
+        s.tournament = null;
+        $("#tournamentModal").classList.remove("open");
+        log(`${name}を終了。${record.count}匹・合計${ShuTournament.cm(record.total)}cm。日常の釣りへ戻った。`);
+        render();
+        save();
+        scheduleIdleStatus(450);
+        scheduleFieldMenu(450);
+      }
+      function handleTournamentAction(event) {
+        const button = event.target.closest("button");
+        if (!button || !$("#tournamentModal").classList.contains("open")) return;
+        const action = button.dataset.tournamentAction;
+        if (action === "start") {
+          if (s.tournament || battle) return;
+          s.tournament = ShuTournament.create("lakeFuna", s.gameMinutes);
+          log("サム主催・星湖フナ大会に参加！ 朝の湖で90分・最大9投。大会ビクへ最大5匹を集めよう。");
+          close();
+          render();
+          save();
+          showRescueToast("🎣 フナ大会開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。", 4200);
+        } else if (action === "close") close();
+        else if (action === "finish") finishTournamentResults();
+        else if (s.tournament?.pending && (action === "release" || button.hasAttribute("data-tournament-replace"))) {
+          const index = action === "release" ? null : Number(button.dataset.tournamentReplace);
+          if (ShuTournament.choose(s.tournament, index)) {
+            save();
+            renderTournament("creel");
+            renderTournamentHud();
+          }
+        } else if (s.tournament?.phase === "active") {
+          if (action === "confirm-withdraw") renderTournament("withdraw");
+          else if (action === "creel") renderTournament("creel");
+          else if (action === "withdraw" && tournamentView === "withdraw") {
+            ShuTournament.finishEarly(s.tournament);
+            save();
+            renderTournament();
+          }
+        }
+      }
       function sleepAtPlayerHome() {
+        if (s.tournament) { showRescueToast("休むときは、大会ビクから大会を終了しよう。"); return false; }
         sleepUntilNextMorning(s);
         s.hp = s.maxHp;
         const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。`;
@@ -15458,6 +15658,7 @@
       function useLocationService() {
         if (!activeLocationId || !locationInteriors[activeLocationId]) return;
         if (activeLocationId === "farmhouse") {
+          if (s.tournament) { setLocationDialogue("大会中は宿泊できない。大会ビクから終了してから休もう。"); return false; }
           sleepUntilNextMorning(s);
           s.hp = s.maxHp;
           s.calmBonus = Math.max(s.calmBonus, 1);
@@ -15562,11 +15763,11 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return "beach";
         return x >= 120 ? "harbor" : "beach";
       }
-      function castTimeTheme(time = s.gameMinutes) {
+      function castTimeTheme(time = sceneGameMinutes()) {
         const clock = gameClockAt(time);
         return { period: clock.period, dayVariant: clock.dayVariant };
       }
-      function applyCastTimeTheme(surface, time = s.gameMinutes) {
+      function applyCastTimeTheme(surface, time = sceneGameMinutes()) {
         const theme = castTimeTheme(time);
         surface.classList.remove(
           "time-morning",
@@ -15708,7 +15909,7 @@
         surface.className = illustratedZone
           ? `cast-surface art-water ${illustratedClass} art-layered-avatar`
           : "cast-surface";
-        applyCastTimeTheme(surface, s.gameMinutes);
+        applyCastTimeTheme(surface, sceneGameMinutes());
         const avatarClass = s.avatar === "girl" ? "girl" : "boy";
         $("#castAngler").className = `cast-angler ${avatarClass}`;
         surfaceCastMotionStartedAt = 0;
@@ -16067,7 +16268,8 @@
         s.power = rodData[s.selectedRod].power;
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
-        $("#time").textContent = gameClockLabel(s.gameMinutes);
+        $("#time").textContent = gameClockLabel(sceneGameMinutes()) + (s.tournament ? "（大会固定）" : "");
+        renderTournamentHud();
         renderWeather();
         renderFishingPreparation();
         renderSoundToggle();
@@ -16696,7 +16898,7 @@
       }
       function pick(distance = 50, spotId = battle?.spot) {
         const spot = fishingSpotById(spotId);
-        const period = gameClockAt(s.gameMinutes).period;
+        const period = gameClockAt(sceneGameMinutes()).period;
         const baitId = battle?.bait || s.selectedBait;
         if (baitId === "nushiSecret" && spot.id === "lake-deep")
           return fish.find((candidate) => candidate.id === "nushi");
@@ -16797,7 +16999,7 @@
             }[period] || 1;
             weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
           }
-          weight *= ShuWeather.fishMultiplier(id, s.gameMinutes, Boolean(battle?.practice));
+          weight *= ShuWeather.fishMultiplier(id, sceneGameMinutes(), Boolean(battle?.practice));
           weight *= questRumorFishMultiplier(id, spot.zone);
           if (distance > 72) {
             if (id === "moroko") weight *= 0.6;
@@ -16861,6 +17063,11 @@
       }
       function cast(spot = nearbyFishingSpot() || fishingSpots[0]) {
         if (rescueInProgress) return;
+        if (s.tournament && !ShuTournament.canCast(s.tournament, spot.waterZone || spot.zone || "lake")) {
+          maybePresentTournament();
+          showRescueToast(`大会の釣り場は${ShuTournament.definition(s.tournament).venue}。大会ビクで残り投数を確認できるよ。`);
+          return;
+        }
         if ((s.baits[s.selectedBait] || 0) < 1 && canReceiveDogRescue()) {
           rescue();
           return;
@@ -16903,16 +17110,18 @@
         renderFishingPreparation();
         $("#pull").innerHTML = "A<br><small>釣りを始める</small>";
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
+        renderTournamentHud();
       }
       function renderFishingPreparation() {
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          `${ShuWeather.forecast(s.gameMinutes).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
       function openPracticePond({ fromShop = false } = {}) {
+        if (s.tournament) { showRescueToast("大会中は練習をお休み。フナを釣りに湖へ行こう！"); return false; }
         hideIdleStatus();
         close();
         if (fromShop) {
@@ -18038,10 +18247,17 @@
           lose("投げる直前にエサがないことへ気づき、竿を戻した。");
           return false;
         }
+        if (s.tournament) {
+          if (!ShuTournament.commitCast(s.tournament, battle.waterZone || "lake")) {
+            lose("大会の投数・釣り場を確認してから、もう一度構えよう。");
+            return false;
+          }
+          battle.tournamentCast = true;
+        }
         s.baits[baitId]--;
         s.bait = s.baits[s.selectedBait] || 0;
         advanceGameTime(s);
-        applyCastTimeTheme($("#castSurface"), s.gameMinutes);
+        applyCastTimeTheme($("#castSurface"), sceneGameMinutes());
         battle.baitCommitted = true;
         render();
         save();
@@ -19232,6 +19448,7 @@
           "special-nushi",
         );
         delete card.dataset.specialCatch;
+        queueTournamentPresentation();
         scheduleIdleStatus(450);
         scheduleFieldMenu(450);
       }
@@ -20229,6 +20446,10 @@
           return ` ・ 棘で${damage}ダメージ（HP ${s.hp}/${s.maxHp}）`;
         }
         const recoveryHp = Math.ceil(s.maxHp / 2);
+        if (s.tournament) {
+          ShuTournament.finishCast(s.tournament);
+          ShuTournament.finishEarly(s.tournament, "rescue");
+        }
         s.hp = recoveryHp;
         sleepUntilNextMorning(s);
         s.x = 43;
@@ -20238,6 +20459,8 @@
         return ` ・ 棘で${damage}ダメージ／宿でHP ${recoveryHp}まで回復`;
       }
       function caught() {
+        if (!battle?.f || battle.catchRecorded) return;
+        battle.catchRecorded = true;
         const f = battle.f;
         const specimen = battle.specimen;
         if (battle.practice) {
@@ -20275,6 +20498,11 @@
         s.money += salePrice;
         const filletReward = grantCookingFishFillet(f.id);
         const questProgress = recordDailyQuestCatch(f, specimen);
+        const tournamentCatch = battle.tournamentCast
+          ? ShuTournament.finishCast(s.tournament, specimen) : "none";
+        const tournamentDetail = tournamentCatch === "choice"
+          ? " ・ 大会ビクが満杯：つづけるで入れ替え"
+          : tournamentCatch === "kept" ? ` ・ 大会ビク ${s.tournament.creel.length}/${ShuTournament.definition(s.tournament).capacity}匹` : "";
         const filletLog = filletReward
           ? " 調理用の魚の切り身も一切れ残した。"
           : "";
@@ -20291,7 +20519,7 @@
           ? `初釣果！ ＋${salePrice}円`
           : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`) +
           (filletReward ? " ・ 調理用切り身×1" : "") +
-          questDetail;
+          questDetail + tournamentDetail;
         const specimenDetail = specimen
             ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
             (newSizeRecord ? " ・ 最大記録！" : "") +
@@ -20313,6 +20541,10 @@
         );
       }
       function endBattle() {
+        if (battle?.tournamentCast && s.tournament) {
+          ShuTournament.finishCast(s.tournament);
+          save();
+        }
         clearInterval(timer);
         clearTimeout(landingTimer);
         landingTimer = 0;
@@ -20326,6 +20558,7 @@
         armDogIdle();
         scheduleIdleStatus(900);
         scheduleFieldMenu(900);
+        queueTournamentPresentation();
       }
       function open(id) {
         hideIdleStatus();
@@ -20336,16 +20569,23 @@
         const world = $("#world");
         modal.style.transform = `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
+        renderTournamentHud();
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
         syncSceneSound();
         renderPixelScenery();
       }
       function close() {
+        if ($("#tournamentModal").classList.contains("open") &&
+            (s.tournament?.pending || s.tournament?.phase === "result")) {
+          if (s.tournament.phase === "result") finishTournamentResults();
+          return;
+        }
         const openModals = [...document.querySelectorAll(".modal.open")];
         if (!openModals.length) return;
         const closingDogCare = $("#dogCare")?.classList.contains("open");
         openModals.forEach((x) => x.classList.remove("open"));
+        renderTournamentHud();
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
         syncSceneSound();
@@ -20554,6 +20794,12 @@
         scheduleIdleStatus(750);
         scheduleFieldMenu(750);
         log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
+        maybePresentTournament();
+        if (s.tournament?.recoveredCast) {
+          showRescueToast("投げた途中で再開した一投は回収済み。残り投数から続けよう。", 4200);
+          s.tournament.recoveredCast = false;
+          save();
+        }
       };
       document.querySelectorAll("[data-dog]").forEach((b) => {
         b.classList.toggle("active", b.dataset.dog === s.dog);
@@ -20618,6 +20864,11 @@
       $("#pull").onlostpointercapture = () => setBattleReeling(false);
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
+      $("#tournamentOffer").onclick = openTournament;
+      $("#tournamentHud").onclick = openTournament;
+      $("#world").addEventListener("scroll", positionTournamentHud, { passive: true });
+      $("#tournamentClose").onclick = close;
+      $("#tournamentBody").onclick = handleTournamentAction;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
       $("#locationAction").onclick = useLocationService;
       $("#aquariumFishSelect").onchange = updateAquariumPlaceButton;
@@ -20766,7 +21017,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=173-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=174-1").catch(() => {});
       renderRecord();
     </script>
   </body>
