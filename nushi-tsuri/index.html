@@ -6468,6 +6468,20 @@
       .tournament-table th, .tournament-table td { text-align: right; border-bottom: 1px solid #ffffff30; padding: 9px 6px; white-space: nowrap; }
       .tournament-table th:nth-child(2), .tournament-table td:nth-child(2) { text-align: left; }
       .tournament-table tr[data-player] { background: #b9cf9b20; color: #fff1b6; }
+      .tournament-entry-fee, .tournament-reward {
+        padding: 10px 12px; margin: 12px 0; border: 1px solid #d6b567;
+        border-radius: 7px; background: #ba94441a;
+      }
+      .tournament-entry-fee strong, .tournament-reward > b { color: #ffe09a; }
+      .tournament-entry-fee small { display: block; color: #bdd1d7; }
+      .tournament-entry-fee .insufficient { color: #ffb4a1; }
+      .tournament-prizes th, .tournament-prizes td { text-align: left; white-space: normal; }
+      .tournament-prizes th:first-child, .tournament-prizes td:first-child { width: 4.5em; white-space: nowrap; }
+      .tournament-trophy { display: flex; align-items: center; gap: 12px; margin: 12px 0; }
+      .tournament-trophy svg { width: 64px; height: 64px; flex: 0 0 64px; }
+      .tournament-trophy small { display: block; color: #bdd1d7; }
+      .tournament-trophy.locked svg { opacity: .35; filter: grayscale(1); }
+      .tournament-record { border-top: 1px solid #ffffff30; padding: 8px 0; }
       @media (max-height: 540px) {
         .tournament-modal { inset: 3% 7%; padding: 10px 14px; font-size: 13px; }
         .tournament-hud { top: 44px; padding: 5px 8px; white-space: nowrap; }
@@ -6503,7 +6517,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v177</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v178</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7195,7 +7209,7 @@
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="tournament-npcs.js?v=176-1"></script>
-    <script src="tournament.js?v=175-1"></script>
+    <script src="tournament.js?v=178-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
     <script src="scene-layers.js?v=165-1"></script>
@@ -11596,6 +11610,7 @@
             gameMinutes: null,
             tournament: null,
             tournamentGathering: null,
+            tournamentRecords: null,
             x: 112,
             y: 153,
             dog: "riku",
@@ -12175,6 +12190,7 @@
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
       s.tournament = ShuTournament.normalize(s.tournament);
       s.tournamentGathering = ShuTournament.normalizeGathering(s.tournamentGathering, s.gameMinutes);
+      s.tournamentRecords = ShuTournament.normalizeRecords(s.tournamentRecords);
       s.forageCycle = normalizeForageCycle(s.forageCycle);
       s.questBoard = normalizeDailyQuestBoard(s.questBoard);
       s.questCompletions = Math.max(
@@ -14990,24 +15006,71 @@
         return `<ol class="tournament-creel" aria-label="大会ビクの魚">${Array.from({ length: capacity }, (_, i) =>
           `<li><small>${i + 1}匹目</small><b>${t.creel[i] ? `${ShuTournament.cm(t.creel[i].hundredths)} cm` : "空き"}</b></li>`).join("")}</ol>`;
       }
+      function tournamentTrophyIcon() {
+        return `<svg class="pixel-item-icon" viewBox="0 0 32 32" shape-rendering="crispEdges" aria-hidden="true"><path fill="#3f2c1d" d="M7 3h18v3h5v8h-3v3h-5v3h-3v5h7v5H6v-5h7v-5h-3v-3H5v-3H2V6h5z"/><path fill="#d79b37" d="M4 8h5v2H6v3h4v2H6v-2H4zm19 0h5v5h-2v2h-4v-2h4v-3h-3z"/><path fill="#f4cc65" d="M9 5h14v9h-2v3h-3v9h6v2H8v-2h6v-9h-3v-3H9z"/><path fill="#ffe9a1" d="M10 6h3v8h-2V9h-1zm5 15h2v4h-2z"/><path fill="#bd7d2c" d="M21 6h2v8h-2v3h-3v-3h2V9h1zM9 27h14v1H9z"/><path fill="#725334" d="M13 9h6v2h2v2h-2v2h-6v-2h-2v-2h2z"/><path fill="#fff0b0" d="M14 10h4v1h2v1h-2v2h-4v-2h-2v-1h2z"/></svg>`;
+      }
+      function tournamentPrizeText(reward) {
+        return [
+          reward.money ? `${reward.money.toLocaleString("ja-JP")}円` : "",
+          ...Object.entries(reward.items).map(([id, count]) => `${fieldItemData[id].name}×${count}`),
+          ...Object.entries(reward.baits).map(([id, count]) => `${baitData[id].name}×${count}`),
+        ].filter(Boolean).join(" ／ ") || "賞品なし";
+      }
+      function tournamentPrizeTable(d) {
+        return `<table class="tournament-table tournament-prizes" aria-label="大会の賞品"><thead><tr><th>成績</th><th>賞品</th></tr></thead><tbody>${[
+          ["1位", "first"], ["2位", "second"], ["3位", "third"], ["参加賞", "participation"],
+        ].map(([label, tier]) => `<tr><td>${label}</td><td>${tier === "first" ? `${d.trophyName}（初優勝時） ／ ` : ""}${tournamentPrizeText(ShuTournament.prize(d, tier))}</td></tr>`).join("")}</tbody></table>
+          <p class="tournament-note">順位賞と優勝記録は${ShuTournament.maxCasts(d)}投を終え、対象魚が釣れた大会で獲得。同順位なら同じ賞品。圏外・対象魚なし・途中終了は、1投以上で参加賞になる。参加費は戻らないよ。</p>`;
+      }
+      function tournamentRewardMarkup(t) {
+        const reward = ShuTournament.resultReward(t);
+        if (!reward?.eligible) return `<p class="tournament-note">この大会は参加時の無料・賞品なしの条件で終了するよ。賞品付きの大会は次の受付から。</p>`;
+        const firstWin = reward.trophy && !s.tournamentRecords[t.id].wins;
+        const title = firstWin ? `${ShuTournament.definition(t).trophyName}を獲得！` :
+          reward.trophy ? "優勝記録を更新！" : reward.tier === "participation" ? "参加賞" :
+          reward.tier === "none" ? "今回は賞品なし" : `${reward.rank}位の賞品`;
+        return `<div class="tournament-reward" role="status"><b>${title}</b>
+          <p>${tournamentPrizeText(reward)}</p><small>${reward.tier === "none" ? "1投以上で参加賞を受け取れるよ。" : "大会を終えると受け取り、成績と一緒に保存するよ。"}</small></div>`;
+      }
+      function tournamentRecordsMarkup() {
+        return Object.values(ShuTournament.definitions).map(d => {
+          const record = s.tournamentRecords[d.id], last = record.last;
+          return `<section class="tournament-record"><h3>${d.name}</h3>
+            <div class="tournament-trophy${record.wins ? "" : " locked"}">${tournamentTrophyIcon()}<div><b>${d.trophyName}</b><small>${record.wins ? `獲得済み · 優勝${record.wins}回` : "まだ未獲得 · 最後まで競って1位を目指そう"}</small>${record.firstWinAt !== null ? `<small>初優勝：${gameClockLabel(record.firstWinAt)}</small>` : ""}</div></div>
+            <div class="tournament-summary"><div><small>出場 / 完走</small><b>${record.played}回 / ${record.completed}回</b></div><div><small>最高順位</small><b>${record.bestRank ? `${record.bestRank}位` : "—"}</b></div><div><small>最高合計</small><b>${record.completed ? `${ShuTournament.cm(record.bestTotal)} cm` : "—"}</b></div></div>
+            <p class="tournament-note">${last ? `前回：${gameClockLabel(last.at)} · ${last.reason === "complete" ? "完走" : last.reason === "rescue" ? "療養で終了" : "途中終了"} · ${last.rank}位 · ${last.count}匹 / ${ShuTournament.cm(last.total)} cm` : "賞品付きの大会を終えると、ここに成績が残るよ。"}</p>
+            <p class="tournament-note">トロフィーは初優勝で一つ獲得。再優勝は優勝回数に残り、賞金とエサは毎大会受け取れるよ。最高記録は完走した大会で更新する。</p></section>`;
+        }).join("");
+      }
+      function tournamentInventoryTrophies() {
+        const owned = Object.values(ShuTournament.definitions).filter(d => s.tournamentRecords[d.id].wins > 0);
+        return owned.map(d => `<div class="inventory-card"><i>${tournamentTrophyIcon()}</i><span><b>${d.trophyName}</b><br><small>${d.name} · 優勝${s.tournamentRecords[d.id].wins}回</small></span><strong>獲得済み</strong></div>`).join("") ||
+          `<div class="inventory-card inventory-empty"><i>🏆</i><span><b>大会トロフィーはまだない</b><br><small>サムの大会で優勝すると手に入る。</small></span></div>`;
+      }
       function renderTournament(view = tournamentView) {
         tournamentView = view;
         const t = s.tournament;
         const d = ShuTournament.definition(t || "lakeFuna");
-        $("#tournamentTitle").textContent = t?.phase === "result" ? `${d.name} · 結果` : d.name;
+        $("#tournamentTitle").textContent = !t && view === "records" ? "大会の記録・トロフィー" : t?.phase === "result" ? `${d.name} · 結果` : d.name;
         const closeButton = $("#tournamentClose");
         closeButton.hidden = Boolean(t?.pending);
         closeButton.textContent = t?.phase === "result" ? "大会を終える" : "閉じる";
         let markup;
-        if (!t) {
+        if (!t && view === "records") {
+          markup = `${tournamentRecordsMarkup()}<div class="tournament-actions"><button data-tournament-action="entry">大会の受付へ戻る</button><button class="tournament-secondary" data-tournament-action="close">閉じる</button></div>`;
+        } else if (!t) {
+          const fee = ShuTournament.entryFee(d), canAfford = Number.isFinite(s.money) && s.money >= fee;
           markup = `<p>サム「湖畔にみんなが集まっとるぞ。今日は${d.fishName}の大きさで腕を競おう！」</p>
+            <div class="tournament-entry-fee"><strong>参加費 ${fee.toLocaleString("ja-JP")}円</strong> · 所持金 ${s.money.toLocaleString("ja-JP")}円
+              <small${canAfford ? "" : ' class="insufficient"'}>${canAfford ? "参加ボタンを押すと参加費を支払って開始するよ。" : `あと${Math.max(0, fee - s.money).toLocaleString("ja-JP")}円で参加できるよ。通常の釣りや依頼で貯めてこよう。`}</small></div>
+            <div class="tournament-actions"><button data-tournament-action="start"${canAfford ? "" : " disabled"}>${fee.toLocaleString("ja-JP")}円でフナ大会に参加</button><button class="tournament-secondary" data-tournament-action="records">大会の記録・トロフィー</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>
             ${tournamentParticipants()}
             <div class="tournament-rules"><div><small>対象魚 / 会場</small><b>${d.fishName}</b><small>${d.venue}</small></div><div><small>制限時間</small><b>${d.duration}分・最大${ShuTournament.maxCasts(d)}投</b><small>1投${d.castMinutes}分（ゲーム内）</small></div><div><small>競う記録</small><b>最大${d.capacity}匹の合計サイズ</b><small>同点なら最大魚を比較</small></div></div>
             <p>大会中は${d.periodLabel}の釣り場に固定。釣り上げた${d.fishName}を専用ビクへ入れ、${d.capacity + 1}匹目からは入れ替えかリリースを選べるよ。${d.capacity}匹未満でも計量できる。</p>
             <p class="tournament-note">空振り・投げた後の回収も1投。投げる前の準備や移動では時間を使わない。大会を終えると、参加前の時計から使った時間だけ進んだ日常に戻る。</p>
             <p class="tournament-note">あなたと村人4人の計5人で勝負。湖畔では相手のほうを向いてAで話しかけられる。釣果・図鑑・売却代金はいつもどおり残るよ。</p>
-            <p class="tournament-note">今回は参加費・賞品なし。いつものエサを使うよ。フナには練り餌やトウモロコシがおすすめ。</p>
-            <div class="tournament-actions"><button data-tournament-action="start">フナ大会に参加する</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>`;
+            <p class="tournament-note">いつものエサを使うよ。フナには練り餌やトウモロコシがおすすめ。</p>
+            ${tournamentPrizeTable(d)}`;
         } else if (t.pending) {
           const total = ShuTournament.score(t.creel).total;
           markup = `${tournamentSummary(t)}<p class="tournament-new-fish">新しい${d.fishName} <b>${ShuTournament.cm(t.pending.hundredths)} cm</b>！ ビクがいっぱいだ。どの魚と入れ替える？</p>
@@ -15021,13 +15084,14 @@
           const heading = t.reason === "withdrawn" ? "途中終了 · ここまでの記録" :
             t.reason === "rescue" ? "療養のため大会終了 · ここまでの記録" : "計量完了";
           markup = `<p><b>${heading} — ${tied ? "同率" : ""}${player.rank}位</b></p>
+            ${tournamentRewardMarkup(t)}
             ${tournamentSummary(t)}${tournamentCreel(t)}
             <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th>順位</th><th>選手</th><th>匹数</th><th>合計 cm</th><th>最大 cm</th></tr></thead><tbody>${rows.map(row => `<tr${row.id === "player" ? " data-player" : ""}><td>${row.rank}位</td><td>${row.name}</td><td>${row.count}</td><td>${ShuTournament.cm(row.total)}</td><td>${ShuTournament.cm(row.largest)}</td></tr>`).join("")}</tbody></table></div>
             <p>サム「${player.count === 0 ? "魚が気まぐれな日もあるさ。エサや深さを変えて、また挑んでみよう" : player.rank === 1 ? "見事な釣果じゃ！ また一緒に腕を競おう" : "いい勝負だったな。次はもっと大きなフナを狙おう"}」</p>
             <p class="tournament-note">合計サイズ → 最大魚の順で比較。両方同じなら同順位。${t.version === 1 ? "この大会は参加時のサムの参考記録と比較するよ。" : "結果を閉じた後も、湖畔のみんなに挨拶できるよ。"}</p>
-            <div class="tournament-actions"><button data-tournament-action="finish">大会を終えて日常へ戻る</button></div>`;
+            <div class="tournament-actions"><button data-tournament-action="finish">${ShuTournament.resultReward(t)?.eligible ? "成績と賞品を保存して日常へ戻る" : "大会を終えて日常へ戻る"}</button></div>`;
         } else if (view === "withdraw") {
-          markup = `${tournamentSummary(t)}<p>ここまでの釣果で大会を終了する？ 残りの投数は使わず、ビクの記録を計量するよ。</p><div class="tournament-actions"><button data-tournament-action="withdraw">ここで大会を終了する</button><button class="tournament-secondary" data-tournament-action="creel">大会を続ける</button></div>`;
+          markup = `${tournamentSummary(t)}<p>ここまでの釣果で大会を終了する？ 残りの投数は使わず、ビクの記録を計量するよ。</p>${ShuTournament.entryFee(t) ? `<p class="tournament-note">途中終了は順位賞・優勝記録の対象外。1投以上なら参加賞は受け取れる。参加費は戻らないよ。</p>` : ""}<div class="tournament-actions"><button data-tournament-action="withdraw">ここで大会を終了する</button><button class="tournament-secondary" data-tournament-action="creel">大会を続ける</button></div>`;
         } else {
           markup = `${tournamentSummary(t)}${tournamentCreel(t)}${tournamentParticipants(t)}<p>${d.venue}で${d.fishName}を釣ろう。釣り場は${d.periodLabel}で固定。${d.capacity + 1}匹目からは入れ替えを選べるよ。</p><p class="tournament-note">釣った魚は通常の釣果と図鑑にも残る。投げた時だけエサと10分を消費するよ。</p><div class="tournament-actions"><button data-tournament-action="close">釣りを続ける</button><button class="tournament-secondary" data-tournament-action="confirm-withdraw">ここまでで計量する</button></div>`;
         }
@@ -15057,13 +15121,22 @@
         tournamentPresentationTimer = setTimeout(maybePresentTournament, 0);
       }
       function finishTournamentResults() {
-        if (s.tournament?.phase !== "result" || s.tournament.pending) return;
+        const reward = ShuTournament.resultReward(s.tournament);
+        if (!reward) return;
         const record = ShuTournament.score(s.tournament.creel);
         const name = ShuTournament.definition(s.tournament).name;
+        const nextRecords = ShuTournament.recordResult(s.tournamentRecords, s.tournament, s.gameMinutes);
         s.tournamentGathering = ShuTournament.gathering(s.tournament, s.gameMinutes);
+        // Money, items, records and retirement of the result share one save.
+        // Closing twice or reloading can never claim a completed result again.
+        s.money += reward.money;
+        for (const [id, count] of Object.entries(reward.items)) s.items[id] = (s.items[id] || 0) + count;
+        for (const [id, count] of Object.entries(reward.baits)) s.baits[id] = (s.baits[id] || 0) + count;
+        s.tournamentRecords = nextRecords;
         s.tournament = null;
         $("#tournamentModal").classList.remove("open");
         log(`${name}を終了。${record.count}匹・合計${ShuTournament.cm(record.total)}cm。日常の釣りへ戻った。`);
+        if (reward.eligible && reward.tier !== "none") log(`大会の賞品：${tournamentPrizeText(reward)}${reward.trophy ? "。優勝を記録した！" : "。"}`);
         if (s.tournamentGathering) showRescueToast("湖畔のみんなにAで挨拶できるよ。しばらくすると、それぞれの仕事へ戻る。", 4200);
         render();
         save();
@@ -15075,15 +15148,23 @@
         if (!button || !$("#tournamentModal").classList.contains("open")) return;
         const action = button.dataset.tournamentAction;
         if (action === "start") {
-          if (s.tournament || battle) return;
+          if (s.tournament || battle || tournamentView !== "entry") return;
+          const fee = ShuTournament.entryFee("lakeFuna");
+          if (!Number.isFinite(s.money) || s.money < fee) {
+            renderTournament("entry");
+            showRescueToast(`大会の参加費は${fee.toLocaleString("ja-JP")}円。もう少し貯めてこよう。`);
+            return;
+          }
           s.tournament = ShuTournament.create("lakeFuna", s.gameMinutes, Date.now());
+          s.money -= fee;
           s.tournamentGathering = null;
-          log("サム主催・星湖フナ大会に参加！ 湖畔の村人4人と90分・最大9投で勝負。ビクへ最大5匹を集めよう。");
+          log(`参加費${fee.toLocaleString("ja-JP")}円を支払って星湖フナ大会に参加！ 湖畔の村人4人と90分・最大9投で勝負。ビクへ最大5匹を集めよう。`);
           close();
           render();
           save();
           showRescueToast("🎣 フナ大会開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。", 4200);
         } else if (action === "close") close();
+        else if (!s.tournament && (action === "records" || action === "entry")) renderTournament(action);
         else if (action === "finish") finishTournamentResults();
         else if (s.tournament?.pending && (action === "release" || button.hasAttribute("data-tournament-replace"))) {
           const index = action === "release" ? null : Number(button.dataset.tournamentReplace);
@@ -18204,7 +18285,8 @@
           `<h4 class="inventory-section-heading">ワンコずのおもちゃ</h4>${ownedDogToyMarkup}` +
           `<h4 class="inventory-section-heading">ルアー（将来用）</h4>${lureMarkup}` +
           `<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}` +
-          `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}`;
+          `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}` +
+          `<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`;
         document.querySelectorAll("[data-use-item]").forEach((button) =>
           button.onclick = () => useFieldItem(button.dataset.useItem),
         );
@@ -21202,7 +21284,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=177-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=178-1").catch(() => {});
       renderRecord();
     </script>
   </body>
