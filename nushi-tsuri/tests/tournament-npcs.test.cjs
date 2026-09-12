@@ -184,7 +184,7 @@ test("the actual transparent atlas renders every fishing and talking pose, with 
     assert.ok(transparent > 2200, "transparent padding, no baked checkerboard");
   }
   const html = fs.readFileSync(path.join(root, "index.html"), "utf8"), sw = fs.readFileSync(path.join(root, "sw.js"), "utf8");
-  for (const source of ["tournament-npcs.js?v=175-1", "tournament.js?v=175-1"]) {
+  for (const source of ["tournament-npcs.js?v=176-1", "tournament.js?v=175-1"]) {
     assert.ok(html.includes(source)); assert.ok(sw.includes(source));
   }
   assert.ok(sw.includes(N.asset));
