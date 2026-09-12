@@ -1771,7 +1771,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#worldPixels) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels) {
         display: none !important;
       }
       .forage-layer {
@@ -6399,6 +6399,26 @@
       .tournament-npc-label { position: absolute; left: 50%; bottom: -24%; transform: translateX(-50%); padding: 2px 5px; border: 1px solid #debf79; border-radius: 4px; color: #fff0c5; background: #142b35e8; white-space: nowrap; font-size: clamp(9px, 1vw, 13px); font-weight: bold; }
       .tournament-npc.nearby .tournament-npc-label { color: #1c332a; background: #ffe5a2; }
       .tournament-npc.nearby .tournament-npc-label::before { content: "A · "; }
+      .rival-dog { width: 2.7%; aspect-ratio: 128 / 96; }
+      .rival-dog[data-rival="chappie"] { width: 3.1%; }
+      .rival-dog .tournament-npc-label { display: none; }
+      .rival-dog.nearby .tournament-npc-label { display: block; }
+      .rival-guide-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+      .rival-guide-card { min-width: 0; padding: 14px; border: 1px solid #718a9388; border-radius: 8px; background: #28455044; }
+      .rival-guide-card h3 { margin: 0 0 5px; color: #ffe09a; font-size: 1.05em; }
+      .rival-guide-art { display: flex; gap: 12px; align-items: end; margin-bottom: 10px; }
+      .rival-guide-art > canvas, .rival-guide-art > img { width: 74px; height: 98px; object-fit: contain; image-rendering: pixelated; }
+      .rival-guide-art > canvas.rival-guide-dog { width: 105px; height: 80px; }
+      .rival-guide-card p { margin: 8px 0; line-height: 1.55; }
+      .rival-guide-card small { color: #b8d7d3; }
+      .rival-guide-dog-note { padding-top: 8px; border-top: 1px solid #ffffff24; }
+      .rival-shop-actions { display: flex; flex-wrap: wrap; gap: 7px; margin: 10px 0; }
+      .rival-shop-actions button { min-height: 38px; padding: 6px 12px; font-size: .85em; }
+      .tournament-select { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+      .tournament-select button { min-height: 40px; padding: 7px 12px; font-size: .9em; }
+      .tournament-select button[aria-pressed="true"] { outline: 2px solid #ffe09a; outline-offset: 2px; }
+      .tournament-participant .rival-dog-name { color: #f0d993; }
+      @media (max-width: 640px) { .rival-guide-grid { grid-template-columns: 1fr; } }
       .tournament-participants { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
       .tournament-participant { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 5px; padding: 7px; border: 1px solid #62878077; border-radius: 6px; background: #264a4533; }
       .tournament-participant canvas { width: 44px; height: 58px; image-rendering: pixelated; }
@@ -6517,7 +6537,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v178</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v179</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6615,6 +6635,7 @@
           <div id="questBoardMarker" class="quest-board-marker" aria-hidden="true"></div>
           <div id="forageLayer" class="forage-layer" aria-hidden="true"></div>
           <div id="tournamentNpcLayer" class="tournament-npc-layer" aria-label="湖畔の大会参加者" hidden></div>
+          <div id="rivalLayer" class="tournament-npc-layer" aria-label="名手と相棒犬" hidden></div>
           <div id="player" class="player"><canvas class="player-sprite" id="playerSprite" width="92" height="116" aria-hidden="true"></canvas></div>
           <div id="dog" class="companion canvas-dog"><canvas id="dogSprite" width="320" height="320"></canvas></div>
           <div id="petScene" class="pet-scene" aria-hidden="true"><canvas id="petSceneCanvas" width="200" height="160"></canvas></div>
@@ -6912,6 +6933,9 @@
                 <g mask="url(#samBehindCounter)">
                   <image class="shopkeeper-sam-svg" href="assets/sam-front.png" x="570" y="178" width="142" height="292" preserveAspectRatio="xMidYMax meet" />
                 </g>
+                <svg x="780" y="390" width="118" height="160" viewBox="667 1077 328 443" preserveAspectRatio="xMidYMax meet" overflow="hidden" role="img" aria-label="サムの相棒犬チャッピー">
+                  <image href="assets/rival-dogs-v179.png" width="1024" height="1536" />
+                </svg>
               </svg>
             </div>
             <div class="shop-panel">
@@ -6920,6 +6944,7 @@
               <h2>サミュエル・オールドマン</h2>
               <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
               <p id="samWeatherHint" class="sam-weather-hint"></p>
+              <div class="rival-shop-actions"><button id="rivalGuideOffer">名手と相棒犬の紹介</button><button id="chappieTalk">チャッピーに挨拶</button></div>
               <button class="shop-practice" id="tournamentOffer">
                 <span>🎣 サムの釣り大会</span><small id="tournamentOfferStatus">フナ大会 受付中</small>
               </button>
@@ -7164,6 +7189,12 @@
           <header class="tournament-heading"><div><small>サム主催 · 釣り大会</small><h2 id="tournamentTitle">星湖フナ大会</h2></div><button id="tournamentClose" class="close">閉じる</button></header>
           <div id="tournamentBody"></div>
         </section>
+        <section class="modal tournament-modal" id="rivalGuide" role="dialog" aria-modal="true" aria-labelledby="rivalGuideTitle">
+          <header class="tournament-heading"><div><small>星湖の釣り人たち</small><h2 id="rivalGuideTitle">名手と相棒犬</h2></div><button class="close" data-close>閉じる</button></header>
+          <p>湖畔で相手のほうを向いてAで挨拶。腕を競うなら、サムの受付から「星湖名手挑戦」へ。</p>
+          <div class="rival-guide-grid" id="rivalGuideBody"></div>
+          <div class="tournament-actions"><button id="rivalGuideBack">サムの店へ戻る</button></div>
+        </section>
         <div class="modal" id="tackle">
           <button class="close" data-close>閉じる</button>
           <h2>仕掛けを選ぶ</h2>
@@ -7208,8 +7239,9 @@
     <script src="music-tracks.js?v=170-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
-    <script src="tournament-npcs.js?v=176-1"></script>
-    <script src="tournament.js?v=178-1"></script>
+    <script src="rival-anglers.js?v=179-1"></script>
+    <script src="tournament-npcs.js?v=179-1"></script>
+    <script src="tournament.js?v=179-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
     <script src="scene-layers.js?v=165-1"></script>
@@ -11473,9 +11505,11 @@
         const landscape = ShuPixel.calendar(value);
         return `${landscape.seasonLabel}${landscape.seasonDay}日・${clock.day}日目 ${hour}:${minute} ${landscape.periodLabel}`;
       }
-      let tournamentPresentationTimer = 0, tournamentView = "entry";
+      let tournamentPresentationTimer = 0, tournamentView = "entry", tournamentEntryId = "lakeFuna";
       let activeTournamentNpcId = null, tournamentNpcAtlas = null, tournamentTalkCursor = 0;
       const tournamentNpcLastLines = new Map();
+      let activeRivalId = null, rivalTalkReturn = null;
+      const rivalAtlases = new Map();
       function sceneGameMinutes(state = s) {
         return ShuTournament.sceneMinutes(state.tournament, state.gameMinutes);
       }
@@ -14878,6 +14912,104 @@
         if (playerHomeIsActive() || !isAtPlayerHomeMapEntrance()) return false;
         return transitionPlayerHome("exterior", "map");
       }
+      function ensureRivalAtlas(id) {
+        const src = ShuRivals.dogById(id) ? ShuRivals.dogAsset : ShuRivals.asset;
+        if (!rivalAtlases.has(src)) {
+          const atlas = new Image();
+          rivalAtlases.set(src, atlas);
+          atlas.onload = () => {
+            renderTournamentNpcs(); renderRivals(); paintTournamentPortraits(); paintRivalGuide();
+            if (activeRivalId || activeTournamentNpcId) renderTournamentTalk(false);
+          };
+          atlas.src = src;
+        }
+        return rivalAtlases.get(src);
+      }
+      function currentRivalPlacements() {
+        const context = currentTournamentNpcContext();
+        // During village events the visitors give their shore positions to the
+        // contestants. Masters are then drawn by the tournament layer itself.
+        return [
+          ...(!context ? ShuRivals.placements : []),
+          ...ShuRivals.dogPlacements.filter(p => p.id === "chappie"
+            ? !$("#store").classList.contains("open") && rivalTalkReturn !== "store"
+            : !context || context.id === "lakeMasters"),
+        ];
+      }
+      function nearbyRival() {
+        if (playerHomeIsActive() || battle) return null;
+        const facing = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[s.direction] || [0, 1];
+        return currentRivalPlacements().map(p => ({ ...p, distance: Math.hypot(p.x - s.x, p.y - s.y) }))
+          .filter(p => p.distance <= 6.5 && (p.distance < 1.8 ||
+            ((p.x - s.x) * facing[0] + (p.y - s.y) * facing[1]) / p.distance >= .35) &&
+            isWalkableWorldSegment(s.x, s.y, p.x, p.y))
+          .sort((a, b) => a.distance - b.distance)[0] || null;
+      }
+      function renderRivals() {
+        const layer = $("#rivalLayer");
+        layer.hidden = playerHomeIsActive() || Boolean(battle);
+        if (layer.hidden) return;
+        const placements = currentRivalPlacements(), context = currentTournamentNpcContext();
+        const key = placements.map(p => p.id).join(",");
+        if (layer.dataset.roster !== key) {
+          layer.innerHTML = placements.map(p => {
+            const person = ShuRivals.character(p.id), dog = ShuRivals.dogById(p.id);
+            return `<div class="tournament-npc${dog ? " rival-dog" : ""}" data-rival="${p.id}" role="img" aria-label="${person.name}・${p.place}"><canvas width="${dog ? 128 : 96}" height="${dog ? 96 : 128}" aria-hidden="true"></canvas><span class="tournament-npc-label">${person.shortName || person.name}</span></div>`;
+          }).join("");
+          layer.dataset.roster = key;
+        }
+        const near = nearbyRival();
+        for (const p of placements) {
+          const node = layer.querySelector(`[data-rival="${p.id}"]`), dog = ShuRivals.dogById(p.id);
+          node.style.left = `${worldToMapX(p.x)}%`; node.style.top = `${worldToMapY(p.y)}%`;
+          node.style.zIndex = p.y > s.y ? "6" : "4";
+          node.classList.toggle("nearby", near?.id === p.id);
+          const sitting = !context || context.phase === "result" || p.id === "chappie" || activeRivalId === p.id;
+          const pose = `${sitting}:${p.facing}`, canvas = node.querySelector("canvas");
+          if (canvas.dataset.pose !== pose && ShuRivals.draw(canvas, ensureRivalAtlas(p.id), p.id,
+              { talking: !dog, sitting, facing: p.facing })) canvas.dataset.pose = pose;
+        }
+      }
+      function openRivalTalk(id, fromShop = false) {
+        if (!ShuRivals.character(id) || battle || $("#catchCard").classList.contains("show")) return false;
+        if (fromShop) {
+          if (id !== "chappie" || !$("#store").classList.contains("open")) return false;
+          close();
+        } else if (nearbyRival()?.id !== id || document.querySelector(".modal.open")) return false;
+        activeRivalId = id; rivalTalkReturn = fromShop ? "store" : null;
+        renderRivalTalk(true); open("tournamentTalk"); renderRivals(); return true;
+      }
+      function renderRivalTalk(nextLine = true) {
+        const person = ShuRivals.character(activeRivalId);
+        if (!person) return;
+        const dog = ShuRivals.dogById(person.id), context = currentTournamentNpcContext();
+        $("#tournamentTalkName").textContent = person.name;
+        $("#tournamentTalkStatus").textContent = dog ? `${dog.owner}の相棒 · ${dog.breed}`
+          : `${person.style} · 相棒${ShuRivals.dogById(person.dogId).name}`;
+        if (nextLine || !tournamentNpcLastLines.has(person.id)) {
+          const roll = ShuTournamentNpcs.random((context?.seed || s.gameMinutes) ^ Math.imul(++tournamentTalkCursor, 2654435761))();
+          tournamentNpcLastLines.set(person.id, ShuRivals.dialogue(person.id,
+            { tournament: Boolean(context), after: context?.phase === "result" }, tournamentNpcLastLines.get(person.id), roll));
+        }
+        $("#tournamentTalkLine").textContent = dog ? tournamentNpcLastLines.get(person.id) : `「${tournamentNpcLastLines.get(person.id)}」`;
+        ShuRivals.drawPortrait($("#tournamentTalkPortrait"), ensureRivalAtlas(person.id), person.id);
+      }
+      function paintRivalGuide() {
+        for (const canvas of document.querySelectorAll("[data-rival-art]"))
+          ShuRivals.draw(canvas, ensureRivalAtlas(canvas.dataset.rivalArt), canvas.dataset.rivalArt, { talking: true, sitting: true });
+      }
+      function renderRivalGuide() {
+        const entries = [...ShuRivals.anglers, { id: "sam", name: "サミュエル・オールドマン", dogId: "chappie",
+          role: "大会主催者・釣具店の店主", style: "経験と勘の釣り", strength: "長年の経験で水と魚を読む。店では道具の扱いを教えてくれる。",
+          description: "おなじみの帽子とサングラス、釣りベストのサム。理屈派のリアオとは、会えば釣りの持論で張り合っている。" }];
+        $("#rivalGuideBody").innerHTML = entries.map(person => {
+          const dog = ShuRivals.dogById(person.dogId), placement = ShuRivals.placements.find(p => p.id === person.id);
+          return `<article class="rival-guide-card"><div class="rival-guide-art">${person.id === "sam" ? '<img src="assets/sam-front.png" alt="サム">' : `<canvas width="96" height="128" data-rival-art="${person.id}" aria-label="${person.name}"></canvas>`}<canvas class="rival-guide-dog" width="128" height="96" data-rival-art="${dog.id}" aria-label="${dog.name}"></canvas></div>
+            <h3>${person.name}</h3><small>${person.role} · ${placement?.place || "サムの店"}</small><p>${person.description}</p>
+            <p><b>${person.style}</b><br>${person.strength}</p><div class="rival-guide-dog-note"><b>相棒：${dog.name}</b><small> · ${dog.breed} / ${dog.color}</small><p>${dog.description}</p><small>${dog.collar}</small></div></article>`;
+        }).join("");
+        paintRivalGuide();
+      }
       function currentTournamentNpcContext() {
         if (s.tournament) return s.tournament.version === 2 ? s.tournament : null;
         if (s.tournamentGathering?.expiresAt <= s.gameMinutes) {
@@ -14900,7 +15032,8 @@
             isWalkableWorldSegment(s.x, s.y, npc.x, npc.y))
           .sort((a, b) => a.distance - b.distance)[0] || null;
       }
-      function ensureTournamentNpcAtlas() {
+      function ensureTournamentNpcAtlas(id) {
+        if (ShuRivals.byId(id)) return ensureRivalAtlas(id);
         if (!tournamentNpcAtlas) {
           tournamentNpcAtlas = new Image();
           tournamentNpcAtlas.onload = () => {
@@ -14922,7 +15055,7 @@
           layer.innerHTML = placements.map(p => `<div class="tournament-npc" data-tournament-npc="${p.id}" role="img" aria-label="${ShuTournamentNpcs.byId(p.id).name}・${p.place}"><canvas width="96" height="128" aria-hidden="true"></canvas><span class="tournament-npc-label">${ShuTournamentNpcs.byId(p.id).name}</span></div>`).join("");
           layer.dataset.venue = key;
         }
-        const atlas = ensureTournamentNpcAtlas(), near = nearbyTournamentNpc();
+        const near = nearbyTournamentNpc();
         for (const placement of placements) {
           const node = layer.querySelector(`[data-tournament-npc="${placement.id}"]`);
           node.style.left = `${worldToMapX(placement.x)}%`;
@@ -14932,21 +15065,21 @@
           const talking = context.phase === "result" || activeTournamentNpcId === placement.id;
           const pose = `${talking}:${placement.facing}`;
           const canvas = node.querySelector("canvas");
-          if (canvas.dataset.pose !== pose && ShuTournamentNpcs.draw(canvas, atlas, placement.id, { talking, facing: placement.facing }))
+          if (canvas.dataset.pose !== pose && ShuTournamentNpcs.draw(canvas, ensureTournamentNpcAtlas(placement.id), placement.id, { talking, facing: placement.facing }))
             canvas.dataset.pose = pose;
         }
       }
       function paintTournamentPortraits() {
         for (const canvas of document.querySelectorAll("[data-tournament-portrait]"))
-          ShuTournamentNpcs.draw(canvas, ensureTournamentNpcAtlas(), canvas.dataset.tournamentPortrait, { talking: true });
+          ShuTournamentNpcs.draw(canvas, ensureTournamentNpcAtlas(canvas.dataset.tournamentPortrait), canvas.dataset.tournamentPortrait, { talking: true });
       }
       function tournamentParticipants(t = null) {
         if (t?.version === 1) return "";
-        const d = ShuTournament.definition(t || "lakeFuna");
+        const d = ShuTournament.definition(t || tournamentEntryId);
         const rows = t ? ShuTournament.standings(t) : [];
         return `<div class="tournament-participants" aria-label="大会の参加者">${(ShuTournamentNpcs.venues[d.id] || []).map(p => {
           const npc = ShuTournamentNpcs.byId(p.id), row = rows.find(r => r.id === p.id);
-          return `<div class="tournament-participant"><canvas width="96" height="128" data-tournament-portrait="${p.id}" aria-hidden="true"></canvas><div><b>${npc.name}</b><small>${p.place}</small><small>${row ? `${row.count}匹 · ${ShuTournament.cm(row.total)} cm` : npc.role}</small></div></div>`;
+          return `<div class="tournament-participant"><canvas width="96" height="128" data-tournament-portrait="${p.id}" aria-hidden="true"></canvas><div><b>${npc.name}</b><small>${p.place}</small><small>${row ? `${row.count}匹 · ${ShuTournament.cm(row.total)} cm` : npc.role}</small>${npc.dogId ? `<small class="rival-dog-name">相棒 ${ShuRivals.dogById(npc.dogId).name}</small>` : ""}</div></div>`;
         }).join("")}</div>`;
       }
       function openTournamentTalk(id) {
@@ -14958,6 +15091,7 @@
         return true;
       }
       function renderTournamentTalk(nextLine = true) {
+        if (activeRivalId) return renderRivalTalk(nextLine);
         const t = currentTournamentNpcContext(), npc = ShuTournamentNpcs.byId(activeTournamentNpcId);
         if (!t || !npc) return;
         const rows = ShuTournament.standings(t), player = rows.find(r => r.id === "player"), row = rows.find(r => r.id === npc.id);
@@ -14976,7 +15110,7 @@
           tournamentNpcLastLines.set(npc.id, line);
         }
         $("#tournamentTalkLine").textContent = `「${tournamentNpcLastLines.get(npc.id)}」`;
-        ShuTournamentNpcs.drawPortrait($("#tournamentTalkPortrait"), ensureTournamentNpcAtlas(), npc.id);
+        ShuTournamentNpcs.drawPortrait($("#tournamentTalkPortrait"), ensureTournamentNpcAtlas(npc.id), npc.id);
       }
       function positionTournamentHud() {
         const world = $("#world");
@@ -14995,7 +15129,7 @@
             `🎣 残り${ShuTournament.remaining(t)}分・${remainingCasts}投 ｜ ビク ${t.creel.length}/${d.capacity}`;
           hud.setAttribute("aria-label", `${hud.textContent}。大会ビクを開く`);
         }
-        $("#tournamentOfferStatus").textContent = d ? "参加中 · ビクを見る" : "フナ大会 受付中";
+        $("#tournamentOfferStatus").textContent = d ? "参加中 · ビクを見る" : "フナ大会・名手挑戦 受付中";
       }
       function tournamentSummary(t) {
         const score = ShuTournament.score(t.creel);
@@ -15050,7 +15184,7 @@
       function renderTournament(view = tournamentView) {
         tournamentView = view;
         const t = s.tournament;
-        const d = ShuTournament.definition(t || "lakeFuna");
+        const d = ShuTournament.definition(t || tournamentEntryId);
         $("#tournamentTitle").textContent = !t && view === "records" ? "大会の記録・トロフィー" : t?.phase === "result" ? `${d.name} · 結果` : d.name;
         const closeButton = $("#tournamentClose");
         closeButton.hidden = Boolean(t?.pending);
@@ -15060,15 +15194,17 @@
           markup = `${tournamentRecordsMarkup()}<div class="tournament-actions"><button data-tournament-action="entry">大会の受付へ戻る</button><button class="tournament-secondary" data-tournament-action="close">閉じる</button></div>`;
         } else if (!t) {
           const fee = ShuTournament.entryFee(d), canAfford = Number.isFinite(s.money) && s.money >= fee;
-          markup = `<p>サム「湖畔にみんなが集まっとるぞ。今日は${d.fishName}の大きさで腕を競おう！」</p>
+          markup = `<nav class="tournament-select" aria-label="参加する大会">${Object.values(ShuTournament.definitions).map(event => `<button class="tournament-secondary" data-tournament-select="${event.id}" aria-pressed="${event.id === d.id}">${event.name}</button>`).join("")}</nav>
+            <p>サム「${d.id === "lakeMasters" ? "あの名手三人を相手にするか。リアオの理屈も、見事な釣果で黙らせてみせい！" : `湖畔にみんなが集まっとるぞ。今日は${d.fishName}の大きさで腕を競おう！`}」</p>
             <div class="tournament-entry-fee"><strong>参加費 ${fee.toLocaleString("ja-JP")}円</strong> · 所持金 ${s.money.toLocaleString("ja-JP")}円
               <small${canAfford ? "" : ' class="insufficient"'}>${canAfford ? "参加ボタンを押すと参加費を支払って開始するよ。" : `あと${Math.max(0, fee - s.money).toLocaleString("ja-JP")}円で参加できるよ。通常の釣りや依頼で貯めてこよう。`}</small></div>
-            <div class="tournament-actions"><button data-tournament-action="start"${canAfford ? "" : " disabled"}>${fee.toLocaleString("ja-JP")}円でフナ大会に参加</button><button class="tournament-secondary" data-tournament-action="records">大会の記録・トロフィー</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>
+            <div class="tournament-actions"><button data-tournament-action="start"${canAfford ? "" : " disabled"}>${fee.toLocaleString("ja-JP")}円で${d.id === "lakeMasters" ? "名手挑戦" : "フナ大会"}に参加</button><button class="tournament-secondary" data-tournament-action="records">大会の記録・トロフィー</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>
+            ${d.id === "lakeMasters" ? '<p class="tournament-note">名手との上級勝負。相手の最終合計は120〜169cmが目安。賞金・エサは通常大会と同じで、初優勝では専用の「星湖名手杯」を獲得するよ。</p>' : ""}
             ${tournamentParticipants()}
             <div class="tournament-rules"><div><small>対象魚 / 会場</small><b>${d.fishName}</b><small>${d.venue}</small></div><div><small>制限時間</small><b>${d.duration}分・最大${ShuTournament.maxCasts(d)}投</b><small>1投${d.castMinutes}分（ゲーム内）</small></div><div><small>競う記録</small><b>最大${d.capacity}匹の合計サイズ</b><small>同点なら最大魚を比較</small></div></div>
             <p>大会中は${d.periodLabel}の釣り場に固定。釣り上げた${d.fishName}を専用ビクへ入れ、${d.capacity + 1}匹目からは入れ替えかリリースを選べるよ。${d.capacity}匹未満でも計量できる。</p>
             <p class="tournament-note">空振り・投げた後の回収も1投。投げる前の準備や移動では時間を使わない。大会を終えると、参加前の時計から使った時間だけ進んだ日常に戻る。</p>
-            <p class="tournament-note">あなたと村人4人の計5人で勝負。湖畔では相手のほうを向いてAで話しかけられる。釣果・図鑑・売却代金はいつもどおり残るよ。</p>
+            <p class="tournament-note">あなたと${d.id === "lakeMasters" ? "名手" : "村人"}${d.npcProfiles.length}人の計${d.npcProfiles.length + 1}人で勝負。湖畔では相手のほうを向いてAで話しかけられる。釣果・図鑑・売却代金はいつもどおり残るよ。</p>
             <p class="tournament-note">いつものエサを使うよ。フナには練り餌やトウモロコシがおすすめ。</p>
             ${tournamentPrizeTable(d)}`;
         } else if (t.pending) {
@@ -15102,6 +15238,7 @@
       function openTournament() {
         if (battle || $("#catchCard").classList.contains("show")) return;
         close();
+        if (!s.tournament) tournamentEntryId = "lakeFuna";
         renderTournament(s.tournament ? "creel" : "entry");
         open("tournamentModal");
       }
@@ -15146,23 +15283,32 @@
       function handleTournamentAction(event) {
         const button = event.target.closest("button");
         if (!button || !$("#tournamentModal").classList.contains("open")) return;
+        if (button.dataset.tournamentSelect && !s.tournament && tournamentView === "entry") {
+          if (ShuTournament.definition(button.dataset.tournamentSelect)) {
+            tournamentEntryId = button.dataset.tournamentSelect;
+            renderTournament("entry");
+          }
+          return;
+        }
         const action = button.dataset.tournamentAction;
         if (action === "start") {
           if (s.tournament || battle || tournamentView !== "entry") return;
-          const fee = ShuTournament.entryFee("lakeFuna");
+          const definition = ShuTournament.definition(tournamentEntryId);
+          if (!definition) return;
+          const fee = ShuTournament.entryFee(definition);
           if (!Number.isFinite(s.money) || s.money < fee) {
             renderTournament("entry");
             showRescueToast(`大会の参加費は${fee.toLocaleString("ja-JP")}円。もう少し貯めてこよう。`);
             return;
           }
-          s.tournament = ShuTournament.create("lakeFuna", s.gameMinutes, Date.now());
+          s.tournament = ShuTournament.create(definition.id, s.gameMinutes, Date.now());
           s.money -= fee;
           s.tournamentGathering = null;
-          log(`参加費${fee.toLocaleString("ja-JP")}円を支払って星湖フナ大会に参加！ 湖畔の村人4人と90分・最大9投で勝負。ビクへ最大5匹を集めよう。`);
+          log(`参加費${fee.toLocaleString("ja-JP")}円を支払って${definition.name}に参加！ 湖畔の${definition.npcProfiles.length}人と${definition.duration}分・最大${ShuTournament.maxCasts(definition)}投で勝負。ビクへ最大${definition.capacity}匹を集めよう。`);
           close();
           render();
           save();
-          showRescueToast("🎣 フナ大会開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。", 4200);
+          showRescueToast(`🎣 ${definition.name}開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。`, 4200);
         } else if (action === "close") close();
         else if (!s.tournament && (action === "records" || action === "entry")) renderTournament(action);
         else if (action === "finish") finishTournamentResults();
@@ -16520,6 +16666,7 @@
         $("#time").textContent = gameClockLabel(sceneGameMinutes()) + (s.tournament ? "（大会固定）" : "");
         renderTournamentHud();
         renderTournamentNpcs();
+        renderRivals();
         renderWeather();
         renderFishingPreparation();
         renderSoundToggle();
@@ -16539,7 +16686,10 @@
         const landmark = nearbyWorldLandmark();
         const spot = nearbyFishingSpot();
         const tournamentNpc = nearbyTournamentNpc();
-        $("#hint").textContent = tournamentNpc
+        const rival = nearbyRival();
+        $("#hint").textContent = rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)
+          ? `${ShuRivals.character(rival.id).name}がいる。Aで挨拶する。`
+          : tournamentNpc
           ? `${ShuTournamentNpcs.byId(tournamentNpc.id).name}がいる。Aで話しかける。`
           : foragePoint
           ? "✨ 小さなキラキラがある。Aで拾う。"
@@ -17040,6 +17190,8 @@
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
         const tournamentNpc = nearbyTournamentNpc();
+        const rival = nearbyRival();
+        if (rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)) return openRivalTalk(rival.id);
         if (tournamentNpc) return openTournamentTalk(tournamentNpc.id);
         const foragePoint = nearbyForagePoint();
         if (foragePoint) return collectForagePoint(foragePoint.point.id);
@@ -20828,6 +20980,7 @@
           : `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
         renderTournamentHud();
+        renderRivals();
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
         syncSceneSound();
@@ -20841,15 +20994,20 @@
         }
         const openModals = [...document.querySelectorAll(".modal.open")];
         if (!openModals.length) return;
+        const returnToShop = $("#tournamentTalk").classList.contains("open") && rivalTalkReturn === "store";
         const closingDogCare = $("#dogCare")?.classList.contains("open");
         openModals.forEach((x) => x.classList.remove("open"));
         renderTournamentHud();
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
         activeTournamentNpcId = null;
+        activeRivalId = null;
+        rivalTalkReturn = null;
         renderTournamentNpcs();
+        renderRivals();
         syncSceneSound();
         hideStarFortuneReveal({ rerender: false });
+        if (returnToShop) { renderSamShop(); open("store"); return; }
         if (playerHomeIsActive()) {
           hideIdleStatus();
           hideFieldMenu();
@@ -21126,6 +21284,9 @@
       $("#beginCast").onclick = beginFishing;
       $("#tournamentTalkMore").onclick = () => renderTournamentTalk(true);
       $("#tournamentOffer").onclick = openTournament;
+      $("#rivalGuideOffer").onclick = () => { close(); renderRivalGuide(); open("rivalGuide"); };
+      $("#rivalGuideBack").onclick = () => { close(); renderSamShop(); open("store"); };
+      $("#chappieTalk").onclick = () => openRivalTalk("chappie", true);
       $("#tournamentHud").onclick = openTournament;
       $("#world").addEventListener("scroll", positionTournamentHud, { passive: true });
       $("#tournamentClose").onclick = close;
@@ -21284,7 +21445,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=178-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=179-1").catch(() => {});
       renderRecord();
     </script>
   </body>

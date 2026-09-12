@@ -1,10 +1,11 @@
 /* Village identities, event placements and bounded catch plans. The private
  * PRNG never consumes the player's fishing/size random-number stream. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === "object" && module.exports
+    ? require("./rival-anglers.js") : root.ShuRivals);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.ShuTournamentNpcs = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Rivals) {
   "use strict";
   const roster = [
     { id: "gen", name: "源じい", role: "釣り好きのおじいさん", column: 0,
@@ -29,6 +30,7 @@
       ahead: ["やった、今日はぼくのほうが上だった！ また一緒に釣ろうね。", "ぼく、こんなに釣れたの初めてかも。次も頑張るよ！"] },
   ];
   const venues = {
+    lakeMasters: Rivals.placements,
     lakeFuna: [
       { id: "gen", x: 157, y: 31, facing: "left", place: "湖の東岸" },
       { id: "mina", x: 145, y: 49, facing: "left", place: "湖の南東岸" },
@@ -47,7 +49,7 @@
   ];
   // Close-up face crops from the existing conversation poses, in atlas pixels.
   const portraits = [[112, 600, 226], [494, 602, 198], [842, 579, 228], [1200, 680, 206]];
-  const byId = id => roster.find(npc => npc.id === id) || null;
+  const byId = id => roster.find(npc => npc.id === id) || Rivals.byId(id);
   function random(seed) {
     let value = Number(seed) >>> 0;
     return () => { value = (Math.imul(value, 1664525) + 1013904223) >>> 0; return value / 4294967296; };
@@ -77,6 +79,9 @@
       }
       for (let i = kept; i < count; i++) lengths.push(integer(rng, min, Math.min(...lengths)));
       shuffle(lengths, rng);
+      // The technical rival improves his retained five through later swaps.
+      // Plans are still fixed at entry and never react to the player's score.
+      if (profile.finishStrong) lengths.sort((a, b) => a - b);
       const casts = shuffle(Array.from({ length: limit }, (_, i) => i + 1), rng).slice(0, count).sort((a, b) => a - b);
       return { id: profile.id, catches: lengths.map((hundredths, i) => ({ cast: casts[i], hundredths })) };
     });
@@ -102,6 +107,7 @@
       .map(f => ({ fishId, hundredths: f.hundredths }));
   }
   function dialogue(id, context, previous = "", roll = 0) {
+    if (Rivals.byId(id)) return Rivals.dialogue(id, { ...context, tournament: true }, previous, roll);
     const npc = byId(id);
     if (!npc) return "";
     let lines;
@@ -122,6 +128,7 @@
     return choices[Math.min(choices.length - 1, Math.floor(Math.max(0, Math.min(.999999, roll)) * choices.length))] || lines[0];
   }
   function draw(canvas, atlas, id, { talking = false, facing = "left" } = {}) {
+    if (Rivals.byId(id)) return Rivals.draw(canvas, atlas, id, { talking, facing });
     const npc = byId(id);
     if (!npc || !atlas?.complete || !atlas.naturalWidth) return false;
     const ctx = canvas.getContext("2d"), [sx, sy, sw, sh] = frames[npc.column][talking ? 1 : 0];
@@ -138,6 +145,7 @@
     return true;
   }
   function drawPortrait(canvas, atlas, id) {
+    if (Rivals.byId(id)) return Rivals.drawPortrait(canvas, atlas, id);
     const npc = byId(id);
     if (!npc || !atlas?.complete || !atlas.naturalWidth) return false;
     const ctx = canvas.getContext("2d"), [sx, sy, size] = portraits[npc.column];
@@ -146,5 +154,6 @@
     ctx.drawImage(atlas, sx, sy, size, size, 0, 0, canvas.width, canvas.height);
     return true;
   }
-  return { roster, byId, venues, asset, frames, random, generate, normalize, creel, dialogue, draw, drawPortrait };
+  return { roster, byId, venues, asset, frames, rivalProfiles: Rivals.profiles,
+    random, generate, normalize, creel, dialogue, draw, drawPortrait };
 });

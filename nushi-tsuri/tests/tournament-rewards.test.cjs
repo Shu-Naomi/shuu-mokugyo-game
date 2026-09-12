@@ -237,7 +237,8 @@ test("active or unresolved results cannot settle; malformed records normalize sa
     bestLargest: Infinity, firstWinAt: -1,
     last: { at: 100, rank: 8, reason: "<script>" },
   }, unknown: { wins: 100 } });
-  assert.deepEqual(records, { lakeFuna: { played: 2, completed: 2, wins: 2,
-    bestRank: null, bestTotal: 0, bestLargest: 0, firstWinAt: null, last: null } });
+  assert.deepEqual(records.lakeFuna, { played: 2, completed: 2, wins: 2,
+    bestRank: null, bestTotal: 0, bestLargest: 0, firstWinAt: null, last: null });
+  assert.deepEqual(Object.keys(records).sort(), Object.keys(T.definitions).sort());
   assert.deepEqual(T.prize("lakeFuna", "toString"), { money: 0, items: {}, baits: {} });
 });
