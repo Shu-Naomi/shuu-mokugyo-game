@@ -4,7 +4,7 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="((?:pixel-(?:world|cast)|weather|tournament|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:pixel-(?:world|cast)|weather|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
   .replace(/<link rel="stylesheet" href="(pixel-scenes\.css)\?[^\"]+" \/>/,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
