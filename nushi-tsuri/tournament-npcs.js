@@ -45,6 +45,8 @@
     [[748, 57, 335, 502], [790, 570, 290, 488]],
     [[1103, 95, 320, 464], [1186, 650, 233, 408]],
   ];
+  // Close-up face crops from the existing conversation poses, in atlas pixels.
+  const portraits = [[112, 600, 226], [494, 602, 198], [842, 579, 228], [1200, 680, 206]];
   const byId = id => roster.find(npc => npc.id === id) || null;
   function random(seed) {
     let value = Number(seed) >>> 0;
@@ -135,5 +137,14 @@
     ctx.restore();
     return true;
   }
-  return { roster, byId, venues, asset, frames, random, generate, normalize, creel, dialogue, draw };
+  function drawPortrait(canvas, atlas, id) {
+    const npc = byId(id);
+    if (!npc || !atlas?.complete || !atlas.naturalWidth) return false;
+    const ctx = canvas.getContext("2d"), [sx, sy, size] = portraits[npc.column];
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.imageSmoothingEnabled = false;
+    ctx.drawImage(atlas, sx, sy, size, size, 0, 0, canvas.width, canvas.height);
+    return true;
+  }
+  return { roster, byId, venues, asset, frames, random, generate, normalize, creel, dialogue, draw, drawPortrait };
 });
