@@ -1,10 +1,13 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v178-tournament-rewards-178-1";
+const CACHE_NAME = "nushi-tsuri-v179-rival-anglers-179-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
-  "./tournament-npcs.js?v=176-1",
-  "./tournament.js?v=178-1",
+  "./rival-anglers.js?v=179-1",
+  "./tournament-npcs.js?v=179-1",
+  "./tournament.js?v=179-1",
+  "./assets/rival-anglers-v179.png",
+  "./assets/rival-dogs-v179.png",
   "./assets/tournament-villagers-v175.png",
   "./music-tracks.js?v=170-1",
   "./soundscape.js?v=170-1",

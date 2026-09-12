@@ -37,6 +37,13 @@
       references: [{ id: "sam", name: "サム（参考記録）",
         fish: [2450, 2200, 1950, 1750, 1600].map(hundredths => ({ hundredths })) }],
     },
+    lakeMasters: {
+      id: "lakeMasters", name: "星湖名手挑戦", fishId: "funa", fishName: "フナ",
+      waterZones: ["lake"], venue: "星降る湖", duration: 90, castMinutes: 10,
+      capacity: 5, fixedMinute: 360, periodLabel: "朝", rule: "totalLength",
+      rewardRulesVersion: 1, trophyName: "星湖名手杯", npcProfiles: Npcs.rivalProfiles,
+      references: [],
+    },
   };
   const definition = value => {
     const id = typeof value === "string" ? value : value?.id;
@@ -208,9 +215,10 @@
   function normalizeRecords(value) {
     const records = {};
     for (const d of Object.values(definitions)) {
+      const entrants = (d.npcProfiles?.length || 0) + 1;
       const old = value?.[d.id], played = safeCount(old?.played), completed = Math.min(played, safeCount(old?.completed));
       const wins = Math.min(completed, safeCount(old?.wins));
-      const bestRank = Number.isInteger(old?.bestRank) && old.bestRank >= 1 && old.bestRank <= 5
+      const bestRank = Number.isInteger(old?.bestRank) && old.bestRank >= 1 && old.bestRank <= entrants
         ? old.bestRank : null;
       const last = old?.last;
       records[d.id] = {
@@ -220,7 +228,7 @@
         bestLargest: completed ? safeCount(old?.bestLargest, 100000) : 0,
         firstWinAt: wins && Number.isSafeInteger(old?.firstWinAt) && old.firstWinAt >= 0 ? old.firstWinAt : null,
         last: played && last && Number.isSafeInteger(last.at) && last.at >= 0 &&
-          Number.isInteger(last.rank) && last.rank >= 1 && last.rank <= 5 &&
+          Number.isInteger(last.rank) && last.rank >= 1 && last.rank <= entrants &&
           ["complete", "withdrawn", "rescue"].includes(last.reason)
           ? { at: last.at, rank: last.rank, reason: last.reason,
             total: safeCount(last.total, d.capacity * 100000), count: safeCount(last.count, d.capacity) }
