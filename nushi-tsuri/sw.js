@@ -1,10 +1,10 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v177-mebaru-overlap-177-1";
+const CACHE_NAME = "nushi-tsuri-v178-tournament-rewards-178-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./tournament-npcs.js?v=176-1",
-  "./tournament.js?v=175-1",
+  "./tournament.js?v=178-1",
   "./assets/tournament-villagers-v175.png",
   "./music-tracks.js?v=170-1",
   "./soundscape.js?v=170-1",

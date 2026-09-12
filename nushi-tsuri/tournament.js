@@ -7,11 +7,26 @@
   else root.ShuTournament = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (Npcs) {
   "use strict";
+  // Keep the accepted prize rules with each entry, independently of the NPC
+  // save format. Older rounds retain their original free, prize-free terms.
+  const rewardRules = {
+    1: {
+      entryFee: 3000,
+      prizes: {
+        first: { money: 1500, items: { starGrapes: 3 }, baits: { liveMinnow: 3 } },
+        second: { money: 800, items: { starGrapes: 1 }, baits: { shrimp: 3 } },
+        third: { money: 300, items: {}, baits: { shrimp: 2 } },
+        participation: { money: 0, items: {}, baits: { worm: 3 } },
+        none: { money: 0, items: {}, baits: {} },
+      },
+    },
+  };
   const definitions = {
     lakeFuna: {
       id: "lakeFuna", name: "星湖フナ大会", fishId: "funa", fishName: "フナ",
       waterZones: ["lake"], venue: "星降る湖", duration: 90, castMinutes: 10,
       capacity: 5, fixedMinute: 360, periodLabel: "朝", rule: "totalLength",
+      rewardRulesVersion: 1, trophyName: "星湖フナ杯",
       npcProfiles: [
         { id: "gen", count: [4, 6], length: [1700, 3000], total: [9000, 11000] },
         { id: "mina", count: [3, 5], length: [1600, 3200], total: [6500, 10500] },
@@ -35,6 +50,7 @@
     const d = definition(id);
     if (!d) return null;
     return { version: 2, id, phase: "active", startMinutes: Math.max(0, Math.floor(gameMinutes)),
+      rewardRulesVersion: d.rewardRulesVersion,
       seed: Number(seed) >>> 0, participants: Npcs.generate(d, seed),
       casts: 0, inFlight: false, creel: [], pending: null, reason: "", recoveredCast: false };
   }
@@ -49,6 +65,9 @@
         value.startMinutes < 0) return null;
     const state = create(d.id, value.startMinutes, value.seed);
     state.version = value.version;
+    state.rewardRulesVersion = value.version === 2 &&
+      Object.prototype.hasOwnProperty.call(rewardRules, value.rewardRulesVersion)
+      ? value.rewardRulesVersion : 0;
     state.participants = value.version === 1 ? [] : Npcs.normalize(value.participants, d, state.seed);
     state.casts = Math.min(maxCasts(d), Math.max(0, Math.floor(Number(value.casts) || 0)));
     state.creel = (Array.isArray(value.creel) ? value.creel : [])
@@ -161,8 +180,77 @@
     return tournament?.version === 2 && tournament.phase === "result"
       ? { endedAt: value.endedAt, expiresAt: value.expiresAt, tournament } : null;
   }
+  function rulesFor(value) {
+    const candidate = typeof value === "string" ? definition(value) : value;
+    return definition(value) && candidate?.version !== 1 && Object.prototype.hasOwnProperty.call(rewardRules, candidate?.rewardRulesVersion)
+      ? rewardRules[candidate.rewardRulesVersion] : null;
+  }
+  const entryFee = value => rulesFor(value)?.entryFee || 0;
+  function prize(value, tier) {
+    const prizes = rulesFor(value)?.prizes;
+    const reward = prizes && Object.prototype.hasOwnProperty.call(prizes, tier) ? prizes[tier] : null;
+    return reward ? { money: reward.money, items: { ...reward.items }, baits: { ...reward.baits } }
+      : { money: 0, items: {}, baits: {} };
+  }
+  function resultReward(state) {
+    if (!definition(state) || state.phase !== "result" || state.pending || state.inFlight) return null;
+    const player = standings(state).find(row => row.id === "player");
+    const eligible = Boolean(rulesFor(state));
+    const completed = state.reason === "complete" && state.casts === maxCasts(state);
+    const ranked = eligible && completed && player.count > 0;
+    const tier = ranked && player.rank <= 3 ? ["first", "second", "third"][player.rank - 1]
+      : eligible && state.casts > 0 ? "participation" : "none";
+    return { ...prize(state, tier), tier, eligible, completed, ranked,
+      rank: player.rank, score: score(state.creel), trophy: ranked && player.rank === 1 };
+  }
+  const safeCount = (value, max = Number.MAX_SAFE_INTEGER) =>
+    Number.isSafeInteger(value) && value >= 0 ? Math.min(value, max) : 0;
+  function normalizeRecords(value) {
+    const records = {};
+    for (const d of Object.values(definitions)) {
+      const old = value?.[d.id], played = safeCount(old?.played), completed = Math.min(played, safeCount(old?.completed));
+      const wins = Math.min(completed, safeCount(old?.wins));
+      const bestRank = Number.isInteger(old?.bestRank) && old.bestRank >= 1 && old.bestRank <= 5
+        ? old.bestRank : null;
+      const last = old?.last;
+      records[d.id] = {
+        played, completed, wins,
+        bestRank: completed ? bestRank : null,
+        bestTotal: completed ? safeCount(old?.bestTotal, d.capacity * 100000) : 0,
+        bestLargest: completed ? safeCount(old?.bestLargest, 100000) : 0,
+        firstWinAt: wins && Number.isSafeInteger(old?.firstWinAt) && old.firstWinAt >= 0 ? old.firstWinAt : null,
+        last: played && last && Number.isSafeInteger(last.at) && last.at >= 0 &&
+          Number.isInteger(last.rank) && last.rank >= 1 && last.rank <= 5 &&
+          ["complete", "withdrawn", "rescue"].includes(last.reason)
+          ? { at: last.at, rank: last.rank, reason: last.reason,
+            total: safeCount(last.total, d.capacity * 100000), count: safeCount(last.count, d.capacity) }
+          : null,
+      };
+    }
+    return records;
+  }
+  function recordResult(records, state, gameMinutes) {
+    const next = normalizeRecords(records), reward = resultReward(state);
+    if (!reward?.eligible) return next;
+    const record = next[state.id], at = safeCount(gameMinutes);
+    record.played = safeCount(record.played + 1);
+    if (reward.completed) {
+      record.completed = safeCount(record.completed + 1);
+      record.bestTotal = Math.max(record.bestTotal, reward.score.total);
+      record.bestLargest = Math.max(record.bestLargest, reward.score.largest);
+    }
+    if (reward.ranked) record.bestRank = Math.min(record.bestRank || reward.rank, reward.rank);
+    if (reward.trophy) {
+      record.wins = safeCount(record.wins + 1);
+      record.firstWinAt ??= at;
+    }
+    record.last = { at, rank: reward.rank, reason: state.reason,
+      total: reward.score.total, count: reward.score.count };
+    return next;
+  }
   const cm = hundredths => (hundredths / 100).toFixed(2);
   return { definitions, definition, create, normalize, maxCasts, elapsed, remaining,
     sceneMinutes, canCast, commitCast, finishCast, choose, finishEarly, score, rank, standings,
-    completedCasts, gathering, normalizeGathering, cm };
+    completedCasts, gathering, normalizeGathering, entryFee, prize, resultReward,
+    normalizeRecords, recordResult, cm };
 });

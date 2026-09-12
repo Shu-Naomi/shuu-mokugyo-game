@@ -83,7 +83,7 @@ test("real nine-cast flow keeps ordinary catches, fixed morning, saved ninth-fis
   let app = boot(original), w = app.window;
   try {
     enter(w);
-    assert.equal(read(w, "s.money"), original.money, "no stage-3 fee or reward");
+    assert.equal(read(w, "s.money"), original.money - 3000, "entry fee is paid once");
     w.eval('cast(fishingSpotById("lake-shallow")); beginFishing(); wait();');
     assert.equal(read(w, "s.tournament.casts"), 0, "pre-throw cancellation costs nothing");
     assert.equal(read(w, "s.gameMinutes"), 1435);
@@ -135,7 +135,8 @@ test("real nine-cast flow keeps ordinary catches, fixed morning, saved ninth-fis
     assert.match(w.document.querySelector("#tournamentTitle").textContent, /結果/);
     click(w, '[data-tournament-action="finish"]');
     assert.equal(read(w, "s.tournament"), null);
-    assert.equal(read(w, "s.money"), money, "replacement/reload/results never pay a catch twice");
+    assert.equal(read(w, "s.money"), money + 1500, "only the first-place prize is added at results");
+    assert.equal(read(w, "s.tournamentRecords.lakeFuna.wins"), 1);
     assert.equal(read(w, "sceneGameMinutes()"), 1525);
     assert.equal(w.document.querySelector("#weather").dataset.weather, "cloudy");
     assert.equal(read(w, "gameClockAt(sceneGameMinutes()).period"), "night");
