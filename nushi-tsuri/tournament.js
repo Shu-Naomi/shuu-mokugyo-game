@@ -1,30 +1,41 @@
-/* Tournament rules and saved state. No random draws, inventory, clock or UI
+/* Tournament rules and saved state. No player RNG, inventory, clock or UI
  * side effects: the existing cast/catch flow remains their single owner. */
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === "object" && module.exports
+    ? require("./tournament-npcs.js") : root.ShuTournamentNpcs);
   if (typeof module === "object" && module.exports) module.exports = api;
   else root.ShuTournament = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Npcs) {
   "use strict";
   const definitions = {
     lakeFuna: {
       id: "lakeFuna", name: "星湖フナ大会", fishId: "funa", fishName: "フナ",
       waterZones: ["lake"], venue: "星降る湖", duration: 90, castMinutes: 10,
       capacity: 5, fixedMinute: 360, periodLabel: "朝", rule: "totalLength",
-      // Stage 1 has one transparent reference entry, not simulated villagers.
+      npcProfiles: [
+        { id: "gen", count: [4, 6], length: [1700, 3000], total: [9000, 11000] },
+        { id: "mina", count: [3, 5], length: [1600, 3200], total: [6500, 10500] },
+        { id: "take", count: [2, 5], length: [1300, 2900], total: [3800, 9300] },
+        { id: "haru", count: [1, 4], length: [1000, 2800], total: [1800, 7600] },
+      ],
+      // Preserve the opponent of a v174 tournament already in progress.
       references: [{ id: "sam", name: "サム（参考記録）",
         fish: [2450, 2200, 1950, 1750, 1600].map(hundredths => ({ hundredths })) }],
     },
   };
-  const definition = value => definitions[typeof value === "string" ? value : value?.id] || null;
+  const definition = value => {
+    const id = typeof value === "string" ? value : value?.id;
+    return Object.prototype.hasOwnProperty.call(definitions, id) ? definitions[id] : null;
+  };
   const maxCasts = value => {
     const d = definition(value);
     return d ? Math.floor(d.duration / d.castMinutes) : 0;
   };
-  function create(id, gameMinutes) {
+  function create(id, gameMinutes, seed = Number(gameMinutes) ^ 0x75af128d) {
     const d = definition(id);
     if (!d) return null;
-    return { version: 1, id, phase: "active", startMinutes: Math.max(0, Math.floor(gameMinutes)),
+    return { version: 2, id, phase: "active", startMinutes: Math.max(0, Math.floor(gameMinutes)),
+      seed: Number(seed) >>> 0, participants: Npcs.generate(d, seed),
       casts: 0, inFlight: false, creel: [], pending: null, reason: "", recoveredCast: false };
   }
   function specimen(value, d) {
@@ -34,9 +45,11 @@
   }
   function normalize(value) {
     const d = definition(value);
-    if (!d || value.version !== 1 || !Number.isFinite(value.startMinutes) ||
+    if (!d || ![1, 2].includes(value.version) || !Number.isFinite(value.startMinutes) ||
         value.startMinutes < 0) return null;
-    const state = create(d.id, value.startMinutes);
+    const state = create(d.id, value.startMinutes, value.seed);
+    state.version = value.version;
+    state.participants = value.version === 1 ? [] : Npcs.normalize(value.participants, d, state.seed);
     state.casts = Math.min(maxCasts(d), Math.max(0, Math.floor(Number(value.casts) || 0)));
     state.creel = (Array.isArray(value.creel) ? value.creel : [])
       .map(f => specimen(f, d)).filter(Boolean).slice(0, Math.min(d.capacity, state.casts));
@@ -126,9 +139,30 @@
   }
   function standings(state) {
     const d = definition(state);
-    return d ? rank([{ id: "player", name: "あなた", fish: state.creel }, ...d.references]) : [];
+    if (!d) return [];
+    const opponents = state.version === 1 ? d.references : (state.participants || []).map(record => ({
+      id: record.id, name: Npcs.byId(record.id)?.name || record.id,
+      fish: Npcs.creel(record, completedCasts(state), d.capacity, d.fishId),
+    }));
+    return rank([{ id: "player", name: "あなた", fish: state.creel }, ...opponents]);
+  }
+  function completedCasts(state) {
+    return Math.max(0, (state?.casts || 0) - (state?.inFlight ? 1 : 0));
+  }
+  function gathering(state, gameMinutes) {
+    return state?.version === 2 && state.phase === "result" && !state.pending
+      ? { endedAt: gameMinutes, expiresAt: gameMinutes + 60, tournament: normalize(state) } : null;
+  }
+  function normalizeGathering(value, gameMinutes) {
+    if (!value || !Number.isFinite(value.endedAt) || value.endedAt > gameMinutes ||
+        !Number.isFinite(value.expiresAt) || value.expiresAt <= gameMinutes ||
+        value.expiresAt > value.endedAt + 60) return null;
+    const tournament = normalize(value.tournament);
+    return tournament?.version === 2 && tournament.phase === "result"
+      ? { endedAt: value.endedAt, expiresAt: value.expiresAt, tournament } : null;
   }
   const cm = hundredths => (hundredths / 100).toFixed(2);
   return { definitions, definition, create, normalize, maxCasts, elapsed, remaining,
-    sceneMinutes, canCast, commitCast, finishCast, choose, finishEarly, score, rank, standings, cm };
+    sceneMinutes, canCast, commitCast, finishCast, choose, finishEarly, score, rank, standings,
+    completedCasts, gathering, normalizeGathering, cm };
 });
