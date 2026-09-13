@@ -64,8 +64,11 @@
   }
   function generate(definition, seed) {
     const rng = random(seed), limit = Math.floor(definition.duration / definition.castMinutes);
+    // Keep the same seeded fish/count/size plan when the player receives
+    // extra throws. Only spread the rivals' reveal times across the round.
+    const planLimit = Math.min(limit, definition.npcPlanCasts || limit);
     return (definition.npcProfiles || []).map(profile => {
-      const count = integer(rng, Math.min(limit, profile.count[0]), Math.min(limit, profile.count[1]));
+      const count = integer(rng, Math.min(planLimit, profile.count[0]), Math.min(planLimit, profile.count[1]));
       const kept = Math.min(count, definition.capacity), [min, max] = profile.length;
       const low = Math.max(kept * min, profile.total[0]);
       const high = Math.min(kept * max, profile.total[1]);
@@ -82,8 +85,8 @@
       // The technical rival improves his retained five through later swaps.
       // Plans are still fixed at entry and never react to the player's score.
       if (profile.finishStrong) lengths.sort((a, b) => a - b);
-      const casts = shuffle(Array.from({ length: limit }, (_, i) => i + 1), rng).slice(0, count).sort((a, b) => a - b);
-      return { id: profile.id, catches: lengths.map((hundredths, i) => ({ cast: casts[i], hundredths })) };
+      const casts = shuffle(Array.from({ length: planLimit }, (_, i) => i + 1), rng).slice(0, count).sort((a, b) => a - b);
+      return { id: profile.id, catches: lengths.map((hundredths, i) => ({ cast: Math.ceil(casts[i] * limit / planLimit), hundredths })) };
     });
   }
   function normalize(records, definition, seed) {

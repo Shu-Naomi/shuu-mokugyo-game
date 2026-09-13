@@ -26,7 +26,7 @@
       id: "lakeFuna", name: "星湖フナ大会", fishId: "funa", fishName: "フナ",
       waterZones: ["lake"], venue: "星降る湖", duration: 90, castMinutes: 10,
       capacity: 5, fixedMinute: 360, periodLabel: "朝", rule: "totalLength",
-      rewardRulesVersion: 1, trophyName: "星湖フナ杯",
+      regulationVersion: 1, rewardRulesVersion: 1, trophyName: "星湖フナ杯",
       npcProfiles: [
         { id: "gen", count: [4, 6], length: [1700, 3000], total: [9000, 11000] },
         { id: "mina", count: [3, 5], length: [1600, 3200], total: [6500, 10500] },
@@ -39,14 +39,21 @@
     },
     lakeMasters: {
       id: "lakeMasters", name: "星湖名手挑戦", fishId: "funa", fishName: "フナ",
-      waterZones: ["lake"], venue: "星降る湖", duration: 90, castMinutes: 10,
+      waterZones: ["lake"], venue: "星降る湖", duration: 120, castMinutes: 10,
       capacity: 5, fixedMinute: 360, periodLabel: "朝", rule: "totalLength",
+      regulationVersion: 2, npcPlanCasts: 9,
       rewardRulesVersion: 1, trophyName: "星湖名手杯", npcProfiles: Npcs.rivalProfiles,
       references: [],
     },
   };
+  // A round already accepted in v179 keeps its nine throws, including a
+  // saved last-fish choice/result. New entries use the longer regulation.
+  const legacyMasters = { ...definitions.lakeMasters, duration: 90, regulationVersion: 1 };
   const definition = value => {
     const id = typeof value === "string" ? value : value?.id;
+    if (id === "lakeMasters" && typeof value === "object" &&
+        (value.regulationVersion === 1 || value.version && value.regulationVersion !== 2))
+      return legacyMasters;
     return Object.prototype.hasOwnProperty.call(definitions, id) ? definitions[id] : null;
   };
   const maxCasts = value => {
@@ -57,6 +64,7 @@
     const d = definition(id);
     if (!d) return null;
     return { version: 2, id, phase: "active", startMinutes: Math.max(0, Math.floor(gameMinutes)),
+      regulationVersion: d.regulationVersion,
       rewardRulesVersion: d.rewardRulesVersion,
       seed: Number(seed) >>> 0, participants: Npcs.generate(d, seed),
       casts: 0, inFlight: false, creel: [], pending: null, reason: "", recoveredCast: false };
@@ -72,6 +80,7 @@
         value.startMinutes < 0) return null;
     const state = create(d.id, value.startMinutes, value.seed);
     state.version = value.version;
+    state.regulationVersion = d.regulationVersion;
     state.rewardRulesVersion = value.version === 2 &&
       Object.prototype.hasOwnProperty.call(rewardRules, value.rewardRulesVersion)
       ? value.rewardRulesVersion : 0;

@@ -12,6 +12,7 @@ const progress = w => read(w, "({money:s.money,items:s.items,baits:s.baits,caugh
 
 test("three stronger, distinct plans are reproducible and never reveal a future catch", () => {
   const definition = T.definition("lakeMasters");
+  const limit = T.maxCasts(definition);
   for (let seed = 0; seed < 1000; seed++) {
     const t = T.create("lakeMasters", 500, seed * 317 + 19);
     assert.deepEqual(t.participants.map(p => p.id), ["liao", "asual", "dancer"]);
@@ -20,18 +21,18 @@ test("three stronger, distinct plans are reproducible and never reveal a future 
       assert.ok(record.catches.length >= p.count[0] && record.catches.length <= p.count[1]);
       for (const f of record.catches) {
         assert.ok(f.hundredths >= p.length[0] && f.hundredths <= p.length[1]);
-        assert.ok(f.cast >= 1 && f.cast <= 9);
+        assert.ok(f.cast >= 1 && f.cast <= limit);
       }
       if (record.id === "dancer") assert.deepEqual(record.catches.map(c => c.hundredths),
         record.catches.map(c => c.hundredths).sort((a,b)=>a-b), "technical rival improves through later swaps");
     }
-    for (let cast = 0; cast <= 9; cast++) {
+    for (let cast = 0; cast <= limit; cast++) {
       t.casts = cast;
       const rows = T.standings(t);
       assert.equal(rows.length, 4);
       for (const row of rows.filter(r => r.id !== "player")) {
         assert.ok(row.count <= Math.min(5, cast));
-        if (cast === 9) {
+        if (cast === limit) {
           const p = definition.npcProfiles.find(p => p.id === row.id);
           assert.ok(row.total >= p.total[0] && row.total <= p.total[1]);
           assert.ok(row.total > 11000, "stronger than the village leader's final ceiling");
@@ -165,14 +166,15 @@ test("masters casting, final choice and reloading preserve plans and award only 
   let app=boot({...seed(),baits:{worm:20},tournamentRecords:{lakeFuna:{played:1,completed:1,wins:1,bestRank:1,bestTotal:13000,bestLargest:3000,firstWinAt:400}}}),w=app.window;
   try {
     enter(w);const plan=read(w,"s.tournament.participants");
-    for(let i=0;i<9;i++){
+    for(let i=0;i<12;i++){
       w.eval('cast(fishingSpotById("lake-shallow"));beginFishing();battle.cast=25;launchSurfaceCast();');
       w.eval(`battle.f=fish.find(f=>f.id==="funa");battle.specimen=rollFishSpecimen(battle.f,()=>.5);Object.assign(battle.specimen,{hundredths:${3900+i},cm:${3900+i}/100,cmText:((${3900+i})/100).toFixed(2)});caught();`);
       w.hideCatchCard();w.maybePresentTournament();
-      if(i>=5&&i<8){click(w,'[data-tournament-replace="0"]');click(w,'[data-tournament-action="close"]');}
+      if(i>=5&&i<11){click(w,'[data-tournament-replace="0"]');click(w,'[data-tournament-action="close"]');}
+      if(i===8)assert.equal(read(w,"s.tournament.phase"),"active","three more attempts after the old limit");
     }
     assert.ok(read(w,"s.tournament.pending"));
-    const ninth=saved(w);app.dispose();app=boot(ninth);w=app.window;
+    const twelfth=saved(w);app.dispose();app=boot(twelfth);w=app.window;
     assert.deepEqual(read(w,"s.tournament.participants"),plan);
     click(w,'[data-tournament-replace="1"]');
     assert.equal(read(w,"ShuTournament.resultReward(s.tournament).rank"),1);
@@ -180,9 +182,9 @@ test("masters casting, final choice and reloading preserve plans and award only 
     const money=read(w,"s.money");
     click(w,'[data-tournament-action="finish"]');
     assert.equal(read(w,"s.money"),money+1500);
-    assert.equal(read(w,"s.baits.worm"),11);
-    assert.equal(read(w,"s.gameMinutes"),590);
-    assert.equal(read(w,"s.caught.funa"),seed().caught.funa+9);
+    assert.equal(read(w,"s.baits.worm"),8);
+    assert.equal(read(w,"s.gameMinutes"),620);
+    assert.equal(read(w,"s.caught.funa"),seed().caught.funa+12);
     assert.equal(read(w,"s.tournamentRecords.lakeFuna.wins"),1);
     assert.equal(read(w,"s.tournamentRecords.lakeMasters.wins"),1);
     assert.equal(read(w,"s.tournamentRecords.lakeFuna.firstWinAt"),400);
@@ -229,6 +231,6 @@ test("original alpha atlases render all fourteen poses and seven face portraits 
   }
   if(process.env.RIVAL_QA_PATH)fs.writeFileSync(process.env.RIVAL_QA_PATH,sheet.toBuffer("image/png"));
   const html=fs.readFileSync(path.join(root,"index.html"),"utf8"),sw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  for(const source of ["rival-anglers.js?v=179-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
-  assert.ok(html.includes("rival-anglers.js?v=179-1"));
+  for(const source of ["rival-anglers.js?v=180-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
+  assert.ok(html.includes("rival-anglers.js?v=180-1"));
 });

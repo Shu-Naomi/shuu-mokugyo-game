@@ -8,6 +8,14 @@
   "use strict";
   const asset = "assets/rival-anglers-v179.png";
   const dogAsset = "assets/rival-dogs-v179.png";
+  const hostAsset = "assets/sam-tournament-v180.png";
+  const host = { id: "sam", name: "サミュエル・オールドマン", shortName: "サム", dogId: "chappie",
+    role: "大会主催者・ベテラン釣り人", style: "経験と勘の釣り",
+    strength: "長年の経験で水と魚を読む。大会では一投ごとの判断を見守っている。",
+    description: "魚の帽子とサングラス、白いひげ、使い込んだ釣りベストが目印。竿を持って大会を取り仕切る、星湖のベテラン。理屈派のリアオとは釣りの持論で張り合っている。",
+    idle: ["大事なのは、最後の一投まで水を読むことじゃ。", "チャッピーも見とるぞ。肩の力を抜いて、いい釣りを見せてみい。"] };
+  const hostFrames = [[44, 43, 734, 950], [875, 31, 632, 962]];
+  const hostPortrait = [1032, 132, 236];
   const anglers = [
     { id: "liao", name: "リアオ・ダモディ", shortName: "リアオ", role: "再現性を追う理論派", dogId: "crow", column: 0,
       color: "#355640", style: "精密・安定型", strength: "同じ条件を丁寧に再現し、大きさのそろった五匹を集める。",
@@ -20,7 +28,7 @@
       ahead: ["今回は僕の勝ちだ。一投ずつ積んだ差が、最後に残ったね。", "計画どおり、とは言い切れないな。君のおかげで、最後まで考えさせられた。"],
       behind: ["君のほうが上だった。敗因は持ち帰って、次の一投に生かすよ。", "負けた記録も捨てない。クロー、帰ったら作戦を練り直そう。"],
       tied: ["合計も最大魚も同じか。実に興味深い勝負だったね。", "同順位だ。次に差が出る条件を、考えておくよ。"],
-      unfinished: ["今日はここまでだね。次は九投分の答えを、一緒に出そう。", "無理は精度を落とす。休んでから、また勝負しよう。"],
+      unfinished: ["今日はここまでだね。次は最後の一投まで、一緒に答えを出そう。", "無理は精度を落とす。休んでから、また勝負しよう。"],
       noFish: ["釣れない条件が分かった。それも次の一匹につながる記録だよ。", "深さとエサを、一つずつ変えてみよう。君の次の挑戦を待っている。"],
       idle: ["サムは『勘を信じろ』と言う。僕は『その勘を記録しろ』と言う。いつもそこで言い合いだ。", "クローは浮きより先に僕の焦りに気づく。いい相棒には、ごまかしが利かないね。", "勝負なら、サムの受付で星湖名手挑戦を選んでくれ。準備はいつでもできているよ。"] },
     { id: "asual", name: "アスアル・マダケン", shortName: "アスアル", role: "大物を見抜く名手", dogId: "cloud", column: 1,
@@ -103,12 +111,13 @@
   const dogPortraits = [[655, 9, 197], [660, 378, 197], [660, 738, 195], [662, 1077, 205]];
   const byId = id => anglers.find(n => n.id === id) || null;
   const dogById = id => dogs.find(n => n.id === id) || null;
-  const character = id => byId(id) || dogById(id);
+  const character = id => byId(id) || dogById(id) || (id === "sam" ? host : null);
   function choose(lines, previous = "", roll = 0) {
     const choices = lines.filter(line => line !== previous);
     return choices[Math.min(choices.length - 1, Math.floor(Math.max(0, Math.min(.999999, roll)) * choices.length))] || lines[0];
   }
   function dialogue(id, context = {}, previous = "", roll = 0) {
+    if (id === "sam") return choose(host.idle, previous, roll);
     const dog = dogById(id), npc = byId(id);
     if (dog) return choose(context.after || !context.tournament ? dog.idle : dog.fishing, previous, roll);
     if (!npc) return "";
@@ -122,9 +131,10 @@
     return choose(lines, previous, roll);
   }
   function draw(canvas, atlas, id, { talking = false, sitting = talking, facing = "left" } = {}) {
-    const npc = byId(id), dog = dogById(id);
+    const npc = byId(id) || (id === "sam" ? host : null), dog = dogById(id);
     if ((!npc && !dog) || !atlas?.complete || !atlas.naturalWidth) return false;
-    const frame = dog ? dogFrames[dog.row][sitting ? 1 : 0] : frames[npc.column][talking ? 1 : 0];
+    const frame = id === "sam" ? hostFrames[talking ? 1 : 0]
+      : dog ? dogFrames[dog.row][sitting ? 1 : 0] : frames[npc.column][talking ? 1 : 0];
     const [sx, sy, sw, sh] = frame, ctx = canvas.getContext("2d");
     const target = dog ? (id === "chappie" ? .99 : .86) : id === "liao" ? .9 : id === "dancer" ? .96 : .99;
     const scale = Math.min((canvas.width - 4) / sw, (canvas.height - 2) * target / sh);
@@ -135,13 +145,14 @@
     ctx.restore(); return true;
   }
   function drawPortrait(canvas, atlas, id) {
-    const npc = byId(id), dog = dogById(id);
+    const npc = byId(id) || (id === "sam" ? host : null), dog = dogById(id);
     if ((!npc && !dog) || !atlas?.complete || !atlas.naturalWidth) return false;
-    const [x, y, size] = dog ? dogPortraits[dog.row] : portraits[npc.column];
+    const [x, y, size] = id === "sam" ? hostPortrait : dog ? dogPortraits[dog.row] : portraits[npc.column];
     const ctx = canvas.getContext("2d"); ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.imageSmoothingEnabled = false;
     ctx.drawImage(atlas, x, y, size, size, 0, 0, canvas.width, canvas.height); return true;
   }
   return { anglers, dogs, byId, dogById, character, placements, dogPlacements, profiles,
-    asset, dogAsset, frames, portraits, dogFrames, dogPortraits, dialogue, draw, drawPortrait };
+    asset, dogAsset, host, hostAsset, hostFrames, hostPortrait,
+    frames, portraits, dogFrames, dogPortraits, dialogue, draw, drawPortrait };
 });

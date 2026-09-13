@@ -6418,6 +6418,13 @@
       .tournament-select button { min-height: 40px; padding: 7px 12px; font-size: .9em; }
       .tournament-select button[aria-pressed="true"] { outline: 2px solid #ffe09a; outline-offset: 2px; }
       .tournament-participant .rival-dog-name { color: #f0d993; }
+      .tournament-host { display: flex; align-items: center; gap: 12px; margin: 10px 0 14px; padding: 8px 10px; border-bottom: 1px solid #718a9377; }
+      .tournament-host-art { display: flex; align-items: flex-end; flex: 0 0 138px; }
+      .tournament-host-art canvas { width: 60px; height: 80px; image-rendering: pixelated; }
+      .tournament-host-art canvas:last-child { width: 78px; height: 60px; }
+      .tournament-host p { margin: 4px 0; line-height: 1.5; }
+      .tournament-host small { color: #f0d993; }
+      @media (max-width: 640px) { .tournament-host { gap: 8px; padding: 6px; } .tournament-host-art { flex-basis: 112px; } .tournament-host-art canvas { width: 50px; height: 66px; } .tournament-host-art canvas:last-child { width: 62px; height: 49px; } }
       @media (max-width: 640px) { .rival-guide-grid { grid-template-columns: 1fr; } }
       .tournament-participants { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; margin: 10px 0; }
       .tournament-participant { display: grid; grid-template-columns: 44px minmax(0, 1fr); align-items: center; gap: 5px; padding: 7px; border: 1px solid #62878077; border-radius: 6px; background: #264a4533; }
@@ -6537,7 +6544,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v179</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v180</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7239,9 +7246,9 @@
     <script src="music-tracks.js?v=170-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
-    <script src="rival-anglers.js?v=179-1"></script>
-    <script src="tournament-npcs.js?v=179-1"></script>
-    <script src="tournament.js?v=179-1"></script>
+    <script src="rival-anglers.js?v=180-1"></script>
+    <script src="tournament-npcs.js?v=180-1"></script>
+    <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
     <script src="scene-layers.js?v=165-1"></script>
@@ -13793,6 +13800,9 @@
           top: 88,
           bottom: 96,
         },
+        // The sign faces south. Read it from the small strip directly in
+        // front, facing the board; never intercept A on the river path.
+        questBoardInteractionBounds = { left: 120.5, right: 126.5, top: 74, bottom: 78.5 },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
           { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
@@ -13827,7 +13837,7 @@
             interior: "yaoya",
           },
           {
-            id: "quest-board", x: 121, y: 73, radius: 7,
+            id: "quest-board", x: 123.5, y: 74, radius: 4.5,
             hint: "村の依頼掲示板だ。Aで今日の依頼を見る。",
             message: "住民の今日のお願いが貼られている。",
             questBoard: true,
@@ -14143,6 +14153,12 @@
       function isOnRiverBridge(x, y) {
         return inWorldRect(x, y, riverBridgeBounds);
       }
+      function isOnRiverBridgeSpan(x, y) {
+        // The broad walkable bridge bounds include dry approach paths.
+        // Only the span over the channel prevents a cast from this position.
+        return isOnRiverBridge(x, y) &&
+          Math.abs(x - riverCenterWorldX(y)) <= riverHalfWidth(y) + 1;
+      }
       function isRiverWater(x, y) {
         if (y < 50 || y > 132 || isOnRiverBridge(x, y)) return false;
         return Math.abs(x - riverCenterWorldX(y)) < riverHalfWidth(y);
@@ -14240,9 +14256,14 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         return isSeaWater(x, y) && (x >= 176 || y >= 125);
       }
-      function nearbyWorldLandmark(x = s.x, y = s.y) {
+      function isAtQuestBoardFront(x = s.x, y = s.y, direction = s.direction) {
+        return direction === "up" && inWorldRect(x, y, questBoardInteractionBounds) &&
+          isWalkableWorld(x, y);
+      }
+      function nearbyWorldLandmark(x = s.x, y = s.y, direction = s.direction) {
         return worldLandmarks.find((landmark) =>
-          Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
+          landmark.questBoard ? isAtQuestBoardFront(x, y, direction) :
+            Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
         ) || null;
       }
       function foragePointPosition(pointOrId) {
@@ -14407,7 +14428,7 @@
         showRescueToast(`🐾 ${name}が隠し採集ポイントを見つけた！`, 3200);
         armDogIdle();
         scheduleIdleStatus(3400);
-        scheduleFieldMenu(3400);
+        scheduleFieldMenu();
         save();
       }
       function startDogForageDiscovery(point, itemId) {
@@ -14913,7 +14934,7 @@
         return transitionPlayerHome("exterior", "map");
       }
       function ensureRivalAtlas(id) {
-        const src = ShuRivals.dogById(id) ? ShuRivals.dogAsset : ShuRivals.asset;
+        const src = id === "sam" ? ShuRivals.hostAsset : ShuRivals.dogById(id) ? ShuRivals.dogAsset : ShuRivals.asset;
         if (!rivalAtlases.has(src)) {
           const atlas = new Image();
           rivalAtlases.set(src, atlas);
@@ -14996,15 +15017,14 @@
       }
       function paintRivalGuide() {
         for (const canvas of document.querySelectorAll("[data-rival-art]"))
-          ShuRivals.draw(canvas, ensureRivalAtlas(canvas.dataset.rivalArt), canvas.dataset.rivalArt, { talking: true, sitting: true });
+          ShuRivals.draw(canvas, ensureRivalAtlas(canvas.dataset.rivalArt), canvas.dataset.rivalArt,
+            { talking: canvas.dataset.rivalPose !== "fishing", sitting: true });
       }
       function renderRivalGuide() {
-        const entries = [...ShuRivals.anglers, { id: "sam", name: "サミュエル・オールドマン", dogId: "chappie",
-          role: "大会主催者・釣具店の店主", style: "経験と勘の釣り", strength: "長年の経験で水と魚を読む。店では道具の扱いを教えてくれる。",
-          description: "おなじみの帽子とサングラス、釣りベストのサム。理屈派のリアオとは、会えば釣りの持論で張り合っている。" }];
+        const entries = [...ShuRivals.anglers, ShuRivals.host];
         $("#rivalGuideBody").innerHTML = entries.map(person => {
           const dog = ShuRivals.dogById(person.dogId), placement = ShuRivals.placements.find(p => p.id === person.id);
-          return `<article class="rival-guide-card"><div class="rival-guide-art">${person.id === "sam" ? '<img src="assets/sam-front.png" alt="サム">' : `<canvas width="96" height="128" data-rival-art="${person.id}" aria-label="${person.name}"></canvas>`}<canvas class="rival-guide-dog" width="128" height="96" data-rival-art="${dog.id}" aria-label="${dog.name}"></canvas></div>
+          return `<article class="rival-guide-card"><div class="rival-guide-art"><canvas width="96" height="128" data-rival-art="${person.id}" aria-label="${person.name}"></canvas><canvas class="rival-guide-dog" width="128" height="96" data-rival-art="${dog.id}" aria-label="${dog.name}"></canvas></div>
             <h3>${person.name}</h3><small>${person.role} · ${placement?.place || "サムの店"}</small><p>${person.description}</p>
             <p><b>${person.style}</b><br>${person.strength}</p><div class="rival-guide-dog-note"><b>相棒：${dog.name}</b><small> · ${dog.breed} / ${dog.color}</small><p>${dog.description}</p><small>${dog.collar}</small></div></article>`;
         }).join("");
@@ -15195,7 +15215,7 @@
         } else if (!t) {
           const fee = ShuTournament.entryFee(d), canAfford = Number.isFinite(s.money) && s.money >= fee;
           markup = `<nav class="tournament-select" aria-label="参加する大会">${Object.values(ShuTournament.definitions).map(event => `<button class="tournament-secondary" data-tournament-select="${event.id}" aria-pressed="${event.id === d.id}">${event.name}</button>`).join("")}</nav>
-            <p>サム「${d.id === "lakeMasters" ? "あの名手三人を相手にするか。リアオの理屈も、見事な釣果で黙らせてみせい！" : `湖畔にみんなが集まっとるぞ。今日は${d.fishName}の大きさで腕を競おう！`}」</p>
+            ${tournamentHost(d.id === "lakeMasters" ? "あの名手三人を相手にするか。リアオの理屈も、見事な釣果で黙らせてみせい！" : `湖畔にみんなが集まっとるぞ。今日は${d.fishName}の大きさで腕を競おう！`)}
             <div class="tournament-entry-fee"><strong>参加費 ${fee.toLocaleString("ja-JP")}円</strong> · 所持金 ${s.money.toLocaleString("ja-JP")}円
               <small${canAfford ? "" : ' class="insufficient"'}>${canAfford ? "参加ボタンを押すと参加費を支払って開始するよ。" : `あと${Math.max(0, fee - s.money).toLocaleString("ja-JP")}円で参加できるよ。通常の釣りや依頼で貯めてこよう。`}</small></div>
             <div class="tournament-actions"><button data-tournament-action="start"${canAfford ? "" : " disabled"}>${fee.toLocaleString("ja-JP")}円で${d.id === "lakeMasters" ? "名手挑戦" : "フナ大会"}に参加</button><button class="tournament-secondary" data-tournament-action="records">大会の記録・トロフィー</button><button class="tournament-secondary" data-tournament-action="close">あとで参加する</button></div>
@@ -15223,7 +15243,7 @@
             ${tournamentRewardMarkup(t)}
             ${tournamentSummary(t)}${tournamentCreel(t)}
             <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th>順位</th><th>選手</th><th>匹数</th><th>合計 cm</th><th>最大 cm</th></tr></thead><tbody>${rows.map(row => `<tr${row.id === "player" ? " data-player" : ""}><td>${row.rank}位</td><td>${row.name}</td><td>${row.count}</td><td>${ShuTournament.cm(row.total)}</td><td>${ShuTournament.cm(row.largest)}</td></tr>`).join("")}</tbody></table></div>
-            <p>サム「${player.count === 0 ? "魚が気まぐれな日もあるさ。エサや深さを変えて、また挑んでみよう" : player.rank === 1 ? "見事な釣果じゃ！ また一緒に腕を競おう" : "いい勝負だったな。次はもっと大きなフナを狙おう"}」</p>
+            ${tournamentHost(player.count === 0 ? "魚が気まぐれな日もあるさ。エサや深さを変えて、また挑んでみよう" : player.rank === 1 ? "見事な釣果じゃ！ また一緒に腕を競おう" : "いい勝負だったな。次はもっと大きなフナを狙おう")}
             <p class="tournament-note">合計サイズ → 最大魚の順で比較。両方同じなら同順位。${t.version === 1 ? "この大会は参加時のサムの参考記録と比較するよ。" : "結果を閉じた後も、湖畔のみんなに挨拶できるよ。"}</p>
             <div class="tournament-actions"><button data-tournament-action="finish">${ShuTournament.resultReward(t)?.eligible ? "成績と賞品を保存して日常へ戻る" : "大会を終えて日常へ戻る"}</button></div>`;
         } else if (view === "withdraw") {
@@ -15231,8 +15251,11 @@
         } else {
           markup = `${tournamentSummary(t)}${tournamentCreel(t)}${tournamentParticipants(t)}<p>${d.venue}で${d.fishName}を釣ろう。釣り場は${d.periodLabel}で固定。${d.capacity + 1}匹目からは入れ替えを選べるよ。</p><p class="tournament-note">釣った魚は通常の釣果と図鑑にも残る。投げた時だけエサと10分を消費するよ。</p><div class="tournament-actions"><button data-tournament-action="close">釣りを続ける</button><button class="tournament-secondary" data-tournament-action="confirm-withdraw">ここまでで計量する</button></div>`;
         }
+        if (t?.phase === "active" && !t.pending && view !== "withdraw")
+          markup += tournamentHost("まだ竿はしまわんぞ。最後の一投まで、水の様子を読んでみい。", true);
         $("#tournamentBody").innerHTML = markup;
         paintTournamentPortraits();
+        paintRivalGuide();
         $("#tournamentModal").scrollTop = 0;
       }
       function openTournament() {
@@ -15241,6 +15264,9 @@
         if (!s.tournament) tournamentEntryId = "lakeFuna";
         renderTournament(s.tournament ? "creel" : "entry");
         open("tournamentModal");
+      }
+      function tournamentHost(line, fishing = false) {
+        return `<div class="tournament-host" role="group" aria-label="大会主催者サムとチャッピー"><div class="tournament-host-art"><canvas width="96" height="128" data-rival-art="sam" data-rival-pose="${fishing ? "fishing" : "greeting"}" role="img" aria-label="大会用のサム"></canvas><canvas width="128" height="96" data-rival-art="chappie" role="img" aria-label="相棒犬チャッピー"></canvas></div><div><small>主催：サムとチャッピー</small><p>サム「${line}」</p></div></div>`;
       }
       function maybePresentTournament() {
         if (!$("#game").classList.contains("active") || battle ||
@@ -15278,7 +15304,7 @@
         render();
         save();
         scheduleIdleStatus(450);
-        scheduleFieldMenu(450);
+        scheduleFieldMenu();
       }
       function handleTournamentAction(event) {
         const button = event.target.closest("button");
@@ -16332,7 +16358,7 @@
         direction = s.direction,
       ) {
         // A bridge remains a crossing, never an invisible fishing hotspot.
-        if (isOnRiverBridge(playerX, playerY)) return null;
+        if (!isWalkableWorld(playerX, playerY) || isOnRiverBridgeSpan(playerX, playerY)) return null;
         const facing = {
           left: [-1, 0],
           right: [1, 0],
@@ -16342,13 +16368,20 @@
         const [dx, dy] = facing;
         const sideX = -dy;
         const sideY = dx;
-        // Fish only toward the water directly in front of the player.  Eight
-        // world units cover one blocked four-unit step plus an uneven bank,
-        // without reaching water behind shops, fences or the player's back.
-        for (const distance of [2, 4, 6, 8]) {
-          for (const side of [0, -1.5, 1.5, -3, 3]) {
+        // Trace a small forward fan continuously enough to find the narrow
+        // river. Every ray stops at a wall, solid prop or bridge span; a
+        // water sample behind such an obstacle must not become a cast spot.
+        const rays = [0, -.1875, .1875, -.375, .375].map(slope => ({ slope, blocked: false }));
+        for (let distance = .5; distance <= 8; distance += .5) {
+          for (const ray of rays) {
+            if (ray.blocked) continue;
+            const side = ray.slope * distance;
             const x = playerX + dx * distance + sideX * side;
             const y = playerY + dy * distance + sideY * side;
+            if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y) || isOnRiverBridgeSpan(x, y)) {
+              ray.blocked = true;
+              continue;
+            }
             const zone = waterZoneAtWorld(x, y);
             if (zone) return { zone, x, y };
           }
@@ -16701,7 +16734,7 @@
             ? "SAM'S FISHING SHOPだ。Aで店内へ入る。"
             : near(67, 108, 8) && canReceiveDogRescue()
               ? "砂浜の柔らかい土だ。エサが無い時はワンコに相談できそう。"
-              : near(109, 84, 7)
+              : isOnRiverBridgeSpan(s.x, s.y)
                 ? "石造りの湖見橋だ。ここは渡る場所。釣りは岸へ降りてから。"
                 : landmark
                   ? landmark.hint
@@ -16794,12 +16827,12 @@
         $("#menu").setAttribute("aria-expanded", "true");
         return true;
       }
-      function scheduleFieldMenu(delay = 430) {
+      function scheduleFieldMenu() {
         hideFieldMenu();
         fieldMenuTimer = setTimeout(() => {
           fieldMenuTimer = 0;
           showFieldMenu();
-        }, delay);
+        }, 5000);
       }
       function toggleFieldMenu() {
         if (fieldMenuIsOpen()) hideFieldMenu();
@@ -17183,6 +17216,7 @@
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
       function action() {
+        scheduleFieldMenu();
         if ($("#tournamentTalk").classList.contains("open")) return renderTournamentTalk(true);
         if (battle || document.querySelector(".modal.open") ||
             $("#catchCard").classList.contains("show")) return;
@@ -17203,7 +17237,7 @@
           open("store");
         }
         else if (near(67, 108, 8) && canReceiveDogRescue()) rescue();
-        else if (near(109, 84, 7))
+        else if (isOnRiverBridgeSpan(s.x, s.y))
           log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
         else if (landmark?.questBoard) openQuestBoard();
         else if (landmark?.id === "harbor-shop") openVehicleShop();
@@ -17299,7 +17333,7 @@
             showRescueToast(`🪱 ${reward.message}`);
             armDogIdle();
             scheduleIdleStatus(3000);
-            scheduleFieldMenu(3000);
+            scheduleFieldMenu();
           }, DOG_DIG_DURATION_MS);
         }, DOG_BARK_LEAD_MS);
         return true;
@@ -17481,6 +17515,7 @@
           return;
         }
         hideIdleStatus();
+        hideFieldMenu();
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
@@ -19859,7 +19894,7 @@
         delete card.dataset.specialCatch;
         queueTournamentPresentation();
         scheduleIdleStatus(450);
-        scheduleFieldMenu(450);
+        scheduleFieldMenu();
       }
       function renderCatchFishLife(f, step) {
         const hangingFish = $("#catchFish");
@@ -20966,7 +21001,7 @@
         render();
         armDogIdle();
         scheduleIdleStatus(900);
-        scheduleFieldMenu(900);
+        scheduleFieldMenu();
         queueTournamentPresentation();
       }
       function open(id) {
@@ -21014,7 +21049,7 @@
           renderPlayerHome();
         } else {
           scheduleIdleStatus(450);
-          scheduleFieldMenu(450);
+          scheduleFieldMenu();
         }
       }
       function backAction() {
@@ -21210,7 +21245,7 @@
         render();
         armDogIdle();
         scheduleIdleStatus(750);
-        scheduleFieldMenu(750);
+        scheduleFieldMenu();
         log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
         maybePresentTournament();
         if (s.tournament?.recoveredCast) {
@@ -21445,7 +21480,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=179-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=180-1").catch(() => {});
       renderRecord();
     </script>
   </body>
