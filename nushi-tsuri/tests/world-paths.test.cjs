@@ -35,8 +35,8 @@ test("the actual four-unit movement traverses the three painted paths in both di
         assert.deepEqual(read(w, "[s.x,s.y]"), [x, y], route.name + " return");
       }
     }
-    // The sign remains usable from the newly opened path beside it.
-    w.eval("s.x=119;s.y=72;render()"); w.action();
+    // Read the sign from its painted front, leaving the river path free.
+    w.eval('s.x=123;s.y=76;s.direction="up";render()'); w.action();
     assert.ok(w.document.querySelector("#questBoard").classList.contains("open"));
     w.close(); w.save();
     assert.deepEqual(read(w, "({money:s.money,caught:s.caught,baits:s.baits,ownedRods:s.ownedRods,items:s.items})"), inventory);
@@ -45,9 +45,9 @@ test("the actual four-unit movement traverses the three painted paths in both di
   } finally { app.dispose(); }
   const resumed = boot(saved);
   try {
-    assert.deepEqual(read(resumed.window, "[s.x,s.y]"), [119, 72]);
+    assert.deepEqual(read(resumed.window, "[s.x,s.y]"), [123, 76]);
     resumed.window.move("down");
-    assert.deepEqual(read(resumed.window, "[s.x,s.y]"), [119, 76]);
+    assert.deepEqual(read(resumed.window, "[s.x,s.y]"), [123, 80]);
     assert.equal(read(resumed.window, "s.money"), original.money);
     assert.deepEqual(resumed.errors, []);
   } finally { resumed.dispose(); }
@@ -82,7 +82,8 @@ test("all facilities, piers and home remain reachable on every four-unit movemen
           const [x,y]=queue[i], key=x+','+y;
           if (visited.has(key)) continue;
           visited.add(key);
-          for (const p of worldLandmarks) if (Math.hypot(x-p.x,y-p.y)<p.radius) reached.add(p.id);
+          for (const p of worldLandmarks)
+            if (p.questBoard ? isAtQuestBoardFront(x,y,"up") : Math.hypot(x-p.x,y-p.y)<p.radius) reached.add(p.id);
           if (isAtSamShopEntrance(x,y)) reached.add('sam-shop');
           if (isNearPracticePond(x,y)) reached.add('practice-pond');
           if (inWorldRect(x,y,PLAYER_HOME_MAP_ENTRY)) reached.add('home');
