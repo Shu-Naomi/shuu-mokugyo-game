@@ -231,6 +231,6 @@ test("original alpha atlases render all fourteen poses and seven face portraits 
   }
   if(process.env.RIVAL_QA_PATH)fs.writeFileSync(process.env.RIVAL_QA_PATH,sheet.toBuffer("image/png"));
   const html=fs.readFileSync(path.join(root,"index.html"),"utf8"),sw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  for(const source of ["rival-anglers.js?v=180-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
-  assert.ok(html.includes("rival-anglers.js?v=180-1"));
+  for(const source of ["rival-anglers.js?v=181-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
+  assert.ok(html.includes("rival-anglers.js?v=181-1"));
 });

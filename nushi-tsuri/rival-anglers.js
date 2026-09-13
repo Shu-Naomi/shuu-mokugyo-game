@@ -109,6 +109,67 @@
     [[76, 1077, 472, 443], [667, 1077, 328, 443]],
   ];
   const dogPortraits = [[655, 9, 197], [660, 378, 197], [660, 738, 195], [662, 1077, 205]];
+  // Greetings are cosmetic: a separate cursor chooses them, never fishing RNG.
+  const dogGreetings = {
+    crow: { rate: 1.08, tempo: 1.15, lines: [
+      { sound: "bark", action: "perk", text: "「ワンッ！」クローはすっと立ち、こちらを見て小さくしっぽを振った。" },
+      { sound: "whine", action: "nuzzle", text: "「クゥーン」クローがそっと手元へ鼻を寄せる。なでると、片耳を倒して甘えてきた。" },
+      { sound: "bark", action: "tilt", text: "「ワン！」首をかしげたクロー。こちらの返事を聞くと、行儀よくおすわりした。" },
+    ] },
+    cloud: { rate: 1.16, tempo: 1.05, lines: [
+      { sound: "bark", action: "hop", text: "「ワンッ！」クラウドが軽く弾んでご挨拶。白い尾先と銀色の札が揺れている。" },
+      { sound: "whine", action: "nuzzle", text: "「クゥーン」クラウドがそっと近づき、手に頬を寄せた。なでられて、目元がやわらいだ。" },
+      { sound: "bark", action: "bow", text: "「ワン！」クラウドが前かがみになり、遊びに誘っている。しっぽが楽しそうだ。" },
+    ] },
+    jamie: { rate: .93, tempo: .85, lines: [
+      { sound: "bark", action: "perk", text: "「ワン！」ジェイミーが立ち上がり、太いしっぽを振って迎えてくれた。" },
+      { sound: "whine", action: "nuzzle", text: "「クゥーン」ジェイミーが体を寄せて、なでてほしそうに見上げている。ゆっくりなでると、ご満悦だ。" },
+      { sound: "whine", action: "tilt", text: "「クゥン」ジェイミーが首をかしげておすわり。もう少し一緒にいたいみたいだ。" },
+    ] },
+    chappie: { rate: .80, tempo: .65, lines: [
+      { sound: "bark", action: "perk", text: "「ワフッ！」チャッピーがゆったり立ち上がり、大きなしっぽを振って迎えてくれた。" },
+      { sound: "whine", action: "nuzzle", text: "「クゥーン」チャッピーが静かに鼻を寄せてきた。首元をなでると、安心したように体を傾けた。" },
+      { sound: "bark", action: "nod", text: "「ワン」チャッピーは落ち着いてうなずくように頭を下げ、おすわり。サムの店番も頼もしい。" },
+    ] },
+  };
+  const dogReactionDuration = 2600;
+  function dogGreeting(id, turn = 0) {
+    const profile = dogGreetings[id];
+    return profile ? { ...profile.lines[Math.abs(Math.trunc(turn)) % profile.lines.length], rate: profile.rate } : null;
+  }
+  function dogReactionPose(id, action, elapsed) {
+    const p = Math.max(0, Math.min(1, elapsed / dogReactionDuration));
+    const envelope = Math.sin(Math.PI * p) ** 2;
+    const tempo = dogGreetings[id]?.tempo || 1;
+    const wag = Math.sin(elapsed / 95 * tempo) * envelope;
+    const greeting = action === "perk" || action === "hop";
+    return {
+      sitting: !greeting || p < .12 || p > .72,
+      approach: action === "nuzzle" ? envelope : 0,
+      tail: wag * .22,
+      lean: (action === "nuzzle" ? .055 : action === "tilt" ? .07 : 0) * envelope,
+      bob: action === "hop" ? -Math.abs(Math.sin(p * Math.PI * 3)) * envelope * 5
+        : action === "nod" || action === "bow" ? envelope * 2.5 : 0,
+      stretch: action === "bow" ? -.07 * envelope : action === "perk" ? .025 * envelope : 0,
+      heart: action === "nuzzle" ? envelope : 0,
+    };
+  }
+  // Measured sitting-tail cutouts. The rest of each original pose stays fixed;
+  // the tail pivots at its root, with a small overlap to keep the seam closed.
+  const sittingTails = [
+    [899, 301, 96, 58, 904, 321], [889, 668, 111, 64, 896, 693],
+    [880, 1015, 108, 48, 885, 1036], [883, 1233, 115, 212, 891, 1401],
+  ];
+  function drawDogTail(ctx, atlas, frame, row, angle) {
+    const [sx, sy, sw, sh] = frame;
+    const [tx, ty, tw, th, ax, ay] = sittingTails[row];
+    ctx.save(); ctx.beginPath();
+    ctx.rect(sx, sy, sw, sh); ctx.rect(tx, ty, tw, th); ctx.clip("evenodd");
+    ctx.drawImage(atlas, sx, sy, sw, sh, sx, sy, sw, sh); ctx.restore();
+    ctx.save(); ctx.translate(ax, ay); ctx.rotate(angle); ctx.translate(-ax, -ay);
+    ctx.drawImage(atlas, tx - 2, ty - 2, tw + 4, th + 4, tx - 2, ty - 2, tw + 4, th + 4);
+    ctx.restore();
+  }
   const byId = id => anglers.find(n => n.id === id) || null;
   const dogById = id => dogs.find(n => n.id === id) || null;
   const character = id => byId(id) || dogById(id) || (id === "sam" ? host : null);
@@ -130,18 +191,25 @@
       : context.caughtLast ? npc.caught : npc.fishing;
     return choose(lines, previous, roll);
   }
-  function draw(canvas, atlas, id, { talking = false, sitting = talking, facing = "left" } = {}) {
+  function draw(canvas, atlas, id, { talking = false, sitting = talking, facing = "left", motion = null } = {}) {
     const npc = byId(id) || (id === "sam" ? host : null), dog = dogById(id);
     if ((!npc && !dog) || !atlas?.complete || !atlas.naturalWidth) return false;
     const frame = id === "sam" ? hostFrames[talking ? 1 : 0]
       : dog ? dogFrames[dog.row][sitting ? 1 : 0] : frames[npc.column][talking ? 1 : 0];
     const [sx, sy, sw, sh] = frame, ctx = canvas.getContext("2d");
     const target = dog ? (id === "chappie" ? .99 : .86) : id === "liao" ? .9 : id === "dancer" ? .96 : .99;
-    const scale = Math.min((canvas.width - 4) / sw, (canvas.height - 2) * target / sh);
+    const padding = motion ? 10 : 4;
+    const scale = Math.min((canvas.width - padding) / sw, (canvas.height - (motion ? 8 : 2)) * target / sh);
     ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false;
     ctx.save(); ctx.translate(canvas.width / 2, canvas.height - 2);
     if (!(dog ? sitting : talking) && facing === "right") ctx.scale(-1, 1);
-    ctx.drawImage(atlas, sx, sy, sw, sh, -sw * scale / 2, -sh * scale, sw * scale, sh * scale);
+    if (motion && dog) {
+      ctx.translate(0, motion.bob || 0); ctx.rotate(motion.lean || 0);
+      ctx.scale(1, 1 + (motion.stretch || 0));
+      ctx.scale(scale, scale); ctx.translate(-sw / 2 - sx, -sh - sy);
+      if (sitting && motion.tail) drawDogTail(ctx, atlas, frame, dog.row, motion.tail);
+      else ctx.drawImage(atlas, sx, sy, sw, sh, sx, sy, sw, sh);
+    } else ctx.drawImage(atlas, sx, sy, sw, sh, -sw * scale / 2, -sh * scale, sw * scale, sh * scale);
     ctx.restore(); return true;
   }
   function drawPortrait(canvas, atlas, id) {
@@ -154,5 +222,6 @@
   }
   return { anglers, dogs, byId, dogById, character, placements, dogPlacements, profiles,
     asset, dogAsset, host, hostAsset, hostFrames, hostPortrait,
-    frames, portraits, dogFrames, dogPortraits, dialogue, draw, drawPortrait };
+    frames, portraits, dogFrames, dogPortraits, dogGreetings, dogGreeting,
+    dogReactionDuration, dogReactionPose, dialogue, draw, drawPortrait };
 });
