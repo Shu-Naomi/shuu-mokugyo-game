@@ -1,11 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v182-pet-life-182-1";
+const CACHE_NAME = "nushi-tsuri-v182-pet-life-182-2";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./pet-life.js?v=182-1",
   "./pet-life-ui.js?v=182-1",
-  "./pet-life.css?v=182-1",
+  "./pet-life.css?v=182-2",
   "./rival-anglers.js?v=181-1",
   "./assets/audio/dog-friendly-whine-v181.wav",
   "./tournament-npcs.js?v=180-1",
@@ -287,3 +287,4 @@ self.addEventListener("fetch", (event) => {
       }),
   );
 });
+
