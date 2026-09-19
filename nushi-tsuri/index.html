@@ -11739,6 +11739,7 @@
         inventoryTab = "items",
         samShopTab = "tackle",
         samBaitPurchaseCount = 1,
+        locationPurchaseCount = 1,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
         fortuneRevealTimer = 0,
@@ -13786,6 +13787,7 @@
           // trapped a four-unit step between the shop wall and false water.
           [[143, 98], [226, 91], [226, 100], [179, 102], [179, 110], [143, 109]],
           [[123, 119], [123, 128], [158, 128], [158, 119]],
+          [[138, 118], [144, 118], [144, 122], [138, 122]],
           // Join the lower boat-shop pier to the north quay. Its former
           // endpoint at y=113 left six units of water before the y=119 pier.
           [[151, 108], [158, 108], [158, 121], [151, 121]],
@@ -13852,7 +13854,7 @@
           { id: "main-shrine", left: 178, right: 211, top: 36, bottom: 64 },
           { id: "sam-shop", left: 182, right: 211, top: 70, bottom: 92 },
           { id: "fish-market", left: 146, right: 174, top: 86, bottom: 103 },
-          { id: "harbor-shop", left: 123, right: 147, top: 104, bottom: 121 },
+          { id: "harbor-shop", left: 126, right: 145, top: 104, bottom: 121 },
         ],
         worldLandmarks = [
           {
@@ -13902,7 +13904,8 @@
             interior: "fish-market",
           },
           {
-            id: "harbor-shop", x: 135, y: 123, radius: 8,
+            id: "harbor-shop", x: 140, y: 123, radius: 7,
+            interaction: {left:134,right:145,top:119,bottom:126},
             hint: "港の舟具屋だ。Aでタライやカヌーを見る。",
             message: "港の舟具屋。南の島へ渡る日のための舟が並んでいる。",
           },
@@ -13938,7 +13941,7 @@
               { left: 77, right: 86, top: 53, bottom: 65 },
             ],
             events: [
-              { id: "map-exit", x: 6, y: 80, radius: 7 },
+              { id: "map-exit", x: 94, y: 80, radius: 7 },
               { id: "front-door", x: 52, y: 67, radius: 6 },
             ],
           },
@@ -14235,7 +14238,8 @@
             inWorldRect(x, y, harborCornerPassageBounds);
           return !(
             isShrineApproach || isWestShrineApproach ||
-            isSamShopApproach || isHarborCornerPassage
+            isSamShopApproach || isHarborCornerPassage ||
+            (bounds.id === "harbor-shop" && inWorldRect(x,y,{left:138,right:144,top:118,bottom:121}))
           );
         });
       }
@@ -14299,6 +14303,7 @@
       function nearbyWorldLandmark(x = s.x, y = s.y, direction = s.direction) {
         return worldLandmarks.find((landmark) =>
           landmark.questBoard ? isAtQuestBoardFront(x, y, direction) :
+          landmark.interaction ? inWorldRect(x,y,landmark.interaction) && isWalkableWorld(x,y) :
             Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
         ) || null;
       }
@@ -14517,6 +14522,7 @@
         if (!interior) return false;
         hideStarFortuneReveal({ rerender: false });
         activeLocationId = id;
+        locationPurchaseCount = 1;
         $("#locationPixels").setAttribute("aria-label", interior.alt);
         const closeButton = $("#locationInterior [data-close]");
         if (closeButton)
@@ -14548,8 +14554,9 @@
         const interior = locationInteriors[activeLocationId];
         if (!holder || !interior) return;
         let markup = "";
+        const purchaseCount = activeLocationId === "yaoya" ? locationPurchaseCount : 1;
         if (interior.goods?.length) {
-          markup = `<div class="location-goods-heading"><b>品ぞろえ</b><span>用途／価格</span></div>` +
+          markup = (activeLocationId === "yaoya" ? `<div class="quantity-picker" role="group" aria-label="購入個数"><button data-location-count-step="-1" ${purchaseCount===1?"disabled":""}>−</button><output aria-live="polite">${purchaseCount}個</output><button data-location-count-step="1" ${purchaseCount===100?"disabled":""}>＋</button><button data-location-count="1">1個</button><button data-location-count="10">10個</button><small>10個からは10個ずつ</small></div>` : "") + `<div class="location-goods-heading"><b>品ぞろえ</b><span>用途／合計価格</span></div>` +
             interior.goods.map((id) => {
               const item = fieldItemData[id];
               if (!item) return "";
@@ -14559,8 +14566,8 @@
                 : `食べる・体力＋${item.heal}`;
               const fortuneClass = item.use === "offering" ? " fortune" : "";
               return `<button class="location-good${fortuneClass}" data-buy-location-item="${id}">` +
-                `${item.icon}<span><b>${item.name}</b><small>${purpose}</small></span>` +
-                `<strong><span>${item.price}円</span><small>所持 ×${count}</small></strong></button>`;
+                `${item.icon}<span><b>${item.name} ×${purchaseCount}</b><small>${purpose}</small></span>` +
+                `<strong><span>${item.price * purchaseCount}円</span><small>所持 ×${count}</small></strong></button>`;
             }).join("");
         } else if (activeLocationId === "main-shrine") {
           const offerings = Object.entries(fieldItemData)
@@ -14571,14 +14578,16 @@
               const purpose = item.fortune === "lucky"
                 ? `上向き運・大当たり${starFortuneChance("starGazer", item.fortune)}%`
                 : `通常運・大当たり${starFortuneChance("starGazer", item.fortune)}%`;
-              return `<button class="location-good fortune" data-draw-fortune="${id}"${fortuneRevealInProgress ? " disabled" : ""}>` +
-                `${item.icon}<span><b>${item.name}を供える</b><small>${purpose}</small></span>` +
-                `<strong>×${count}</strong></button>`;
+              return [1,10].map(draws => `<button class="location-good fortune" data-draw-fortune="${id}" data-fortune-count="${draws}"${fortuneRevealInProgress || count<draws ? " disabled" : ""}>` +
+                `${item.icon}<span><b>${item.name}で${draws===10?"10連":"1回"}引く</b><small>${purpose}／1回あたり</small></span>` +
+                `<strong>${draws}個使用<small>所持 ×${count}</small></strong></button>`).join("");
             }).join("") +
             `<p class="star-fortune-lineup"><b>大当たり：星見の竿</b><br>` +
             `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
             `<b>🌠 星湖の秘餌</b>：通常${starFortuneChance("baitNushi1")}%／星ぶどう${starFortuneChance("baitNushi1", "lucky")}%（ヌシの深み専用）</p>`;
         }
+        if (activeLocationId === "main-shrine" && Array.isArray(s.starFortuneLastBatch) && s.starFortuneLastBatch.length === 10)
+          markup += `<section class="fortune-batch-results"><h3>前回の10連結果</h3><ol>${s.starFortuneLastBatch.map(result=>`<li>${escapePetText(result?.fortune)}：${escapePetText(result?.message)}</li>`).join("")}</ol></section>`;
         if (interior.kitchen) markup += cookingKitchenMarkup();
         holder.innerHTML = markup;
         holder.hidden = !markup;
@@ -14586,8 +14595,14 @@
           button.onclick = () => buyLocationItem(button.dataset.buyLocationItem),
         );
         document.querySelectorAll("[data-draw-fortune]").forEach((button) =>
-          button.onclick = () => drawStarFortune(button.dataset.drawFortune),
+          button.onclick = () => drawStarFortune(button.dataset.drawFortune, Number(button.dataset.fortuneCount)),
         );
+        holder.querySelectorAll("[data-location-count-step]").forEach(button=>{
+          const next=nextPurchaseCount(locationPurchaseCount,Number(button.dataset.locationCountStep));
+          button.setAttribute("aria-label",`購入個数を${Math.abs(next-locationPurchaseCount)}${next<locationPurchaseCount?"減らす":"増やす"}`);
+          button.onclick=()=>{locationPurchaseCount=next;renderLocationGoods();};
+        });
+        holder.querySelectorAll("[data-location-count]").forEach(button=>button.onclick=()=>{locationPurchaseCount=Number(button.dataset.locationCount);renderLocationGoods();});
         document.querySelectorAll("[data-cook-recipe]").forEach((button) =>
           button.onclick = () => cookRecipe(button.dataset.cookRecipe),
         );
@@ -14846,7 +14861,7 @@
       }
       function playerHomeHint(event = nearbyPlayerHomeEvent()) {
         if (event?.id === "map-exit")
-          return "村へ戻る道だ。Aでメインマップへ戻る。";
+          return "右の道が村への出口だ。Aで村へ戻る。";
         if (event?.id === "front-door")
           return "主人公宅の玄関だ。Aで中へ入る。";
         if (event?.id === "interior-door")
@@ -14861,7 +14876,7 @@
         if (dog) return `${dogProfileData[dog.dogId].name}だ。Aで遊ぶ・おやつ。`;
         return playerHomeState.area === "interior"
           ? "主人公宅。家具やワンコに近づいてAで調べる。"
-          : "主人公宅の庭先。玄関か村へ戻る道をAで調べる。";
+          : "主人公宅の庭先。玄関は上、村へ戻る道は右だよ。";
       }
       function playerHomeSceneSize(width, height) {
         // Both backgrounds use the same 2:1 map coordinates. Fit the whole
@@ -15712,29 +15727,25 @@
         }, 305);
         return moved;
       }
+      function escapePetText(value) {
+        const el=document.createElement("span");el.textContent=String(value??"");return el.innerHTML;
+      }
+      function nextPurchaseCount(value,direction) {
+        const count=Math.max(1,Math.min(100,Math.trunc(Number(value)||1)));
+        return direction>0 ? Math.min(100,count+(count>=10?10:1)) : Math.max(1,count-(count>10?10:1));
+      }
       function buyLocationItem(id) {
-        const item = fieldItemData[id];
-        if (!item || item.shop !== activeLocationId) return false;
-        if (s.money < item.price) {
-          setLocationDialogue(`「${item.name}は${item.price}円だよ。今は少し足りないみたいだね」`);
-          log(`${item.name}は${item.price}円。今はお金が足りない。`);
-          return false;
-        }
-        s.money -= item.price;
-        s.items[id] = (s.items[id] || 0) + 1;
-        const useMessage = item.use === "offering"
-          ? "星占い神社で星みくじを引く時に供えてね"
-          : "体力が減ったら道具袋から食べてね";
-        setLocationDialogue(`「${item.name}を一つ。${useMessage}」`);
-        log(`${item.source}で${item.name}を買った。道具袋に入れた。`);
-        renderLocationGoods();
-        markPurchaseButton(
-          document.querySelector?.(`[data-buy-location-item="${id}"]`),
-        );
-        vibrate(20);
-        render();
-        save();
-        return true;
+        const item=fieldItemData[id];
+        if(!item || item.shop!==activeLocationId)return false;
+        const amount=activeLocationId==="yaoya"?locationPurchaseCount:1;
+        if(!Number.isInteger(amount)||amount<1||amount>100)return false;
+        const price=item.price*amount;
+        if(!Number.isFinite(s.money)||s.money<price){setLocationDialogue(`「${item.name}${amount}個は${price}円だよ。今は少し足りないみたいだね」`);return false;}
+        s.money-=price;s.items[id]=(s.items[id]||0)+amount;
+        renderLocationGoods();render();
+        setLocationDialogue(`「${item.name}を${amount}個、${price}円だよ。${item.use==="offering"?"星占い神社で供えてね":"道具袋から食べてね"}」`);
+        markPurchaseButton(document.querySelector(`[data-buy-location-item="${id}"]`));
+        log(`${item.source}で${item.name}を${amount}個（${price}円）買った。`);save();return true;
       }
       function renderSamShop() {
         renderWeather();
@@ -15752,7 +15763,10 @@
           const step = Number(button.dataset.baitCountStep);
           button.disabled = step < 0
             ? purchaseCount <= 1
-            : purchaseCount >= 99;
+            : purchaseCount >= 100;
+          const next = nextPurchaseCount(purchaseCount,step);
+          button.setAttribute("aria-label",`購入セット数を${Math.abs(next-purchaseCount)}${step<0?"減らす":"増やす"}`);
+          button.textContent = `${step<0?"−":"＋"}${Math.abs(next-purchaseCount)||1}`;
         });
         document.querySelectorAll("[data-buy-bait]").forEach((button) => {
           const id = button.dataset.buyBait;
@@ -15845,7 +15859,7 @@
       function setSamBaitPurchaseCount(value) {
         const parsed = Math.trunc(Number(value));
         const next = Number.isFinite(parsed)
-          ? Math.max(1, Math.min(99, parsed))
+          ? Math.max(1, Math.min(100, parsed))
           : 1;
         if (next === samBaitPurchaseCount) return false;
         samBaitPurchaseCount = next;
@@ -16157,32 +16171,17 @@
         );
         return true;
       }
-      function drawStarFortune(offeringId) {
-        const offering = fieldItemData[offeringId];
-        if (
-          activeLocationId !== "main-shrine" ||
-          fortuneRevealInProgress ||
-          !offering ||
-          offering.use !== "offering"
-        ) return false;
-        if ((s.items[offeringId] || 0) < 1) {
-          setLocationDialogue(`「${offering.name}は八百屋にある。供える品を一つ持っておいで」`);
-          log(`${offering.name}を持っていないため、星みくじは引けない。`);
-          return false;
-        }
-        s.items[offeringId]--;
-        const prizeId = rollStarFortune(offering.fortune);
-        const result = grantStarFortunePrize(prizeId);
-        if (!result) return false;
-        setLocationDialogue(`鈴が鳴り、${result.fortune}の札が落ちた。${result.message}`);
-        log(result.logMessage);
-        vibrate(result.jackpot ? [35, 45, 90, 50, 120] : [20, 40, 45]);
-        showStarFortuneReveal(result);
-        renderLocationGoods();
-        renderInventory();
-        render();
-        save();
-        return true;
+      function drawStarFortune(offeringId, count=1) {
+        const offering=fieldItemData[offeringId];
+        if(activeLocationId!=="main-shrine"||fortuneRevealInProgress||!offering||offering.use!=="offering"||![1,10].includes(count))return false;
+        if((s.items[offeringId]||0)<count){setLocationDialogue(`「${offering.name}が${count}個必要だよ」`);return false;}
+        s.items[offeringId]-=count;
+        const results=Array.from({length:count},()=>grantStarFortunePrize(rollStarFortune(offering.fortune)));
+        if(count===10)s.starFortuneLastBatch=results.map(({fortune,message})=>({fortune,message}));
+        const result=count===1?results[0]:{jackpot:results.some(r=>r.jackpot),fortune:"星みくじ・10連結果",message:results.map((r,i)=>`${i+1}. ${r.message}`).join("\n")};
+        for(const r of results)log(r.logMessage);
+        setLocationDialogue(count===10?"10連の結果が出たよ。下の結果一覧でも確認できる。":`鈴が鳴り、${result.fortune}の札が落ちた。${result.message}`);
+        showStarFortuneReveal(result);renderLocationGoods();renderInventory();render();save();return true;
       }
       function openVehicleShop() {
         const owned = s.ownedVehicles
@@ -21478,7 +21477,7 @@
       );
       document.querySelectorAll("[data-bait-count-step]").forEach((button) =>
         button.onclick = () => setSamBaitPurchaseCount(
-          samBaitPurchaseCount + Number(button.dataset.baitCountStep),
+          nextPurchaseCount(samBaitPurchaseCount, Number(button.dataset.baitCountStep)),
         ),
       );
       document.querySelectorAll("[data-bait-count]").forEach((button) =>

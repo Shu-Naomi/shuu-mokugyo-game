@@ -149,7 +149,7 @@
   function drawPart(ctx,part,options={}) {
     const transform=options.transforms?.[part.id]||{},parent=options.transforms?.[part.parent]||{};
     if(transform.hidden||parent.hidden)return;
-    const dx=(transform.x||0)+(parent.x||0),dy=(transform.y||0)+(parent.y||0);
+    const dx=(transform.x||0)+(parent.x||0)+(part.offset?.[0]||0),dy=(transform.y||0)+(parent.y||0)+(part.offset?.[1]||0);
     const time=options.motionTime||0;
     ctx.save();
     if(part.motion==='sway'&&time) {
@@ -161,6 +161,9 @@
         const strip=Math.min(4,h-y),offset=Math.round(bend*(1-y/h)**2);
         ctx.drawImage(part.canvas,0,y,part.canvas.width,strip,part.left+dx+offset,part.top+dy+y,part.canvas.width,strip);
       }
+    } else if(part.flipX) {
+      ctx.translate(part.left+dx+part.canvas.width,part.top+dy);ctx.scale(-1,1);
+      ctx.drawImage(transform.image||part.canvas,0,0,part.canvas.width,part.canvas.height);
     } else ctx.drawImage(transform.image||part.canvas,part.left+dx,part.top+dy,part.canvas.width,part.canvas.height);
     ctx.restore();
   }
