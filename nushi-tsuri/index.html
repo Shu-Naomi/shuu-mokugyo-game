@@ -6543,6 +6543,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
+    <link rel="stylesheet" href="pet-life.css?v=182-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6662,6 +6663,7 @@
           <i class="pixel-prop prop-log detail-log" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-a" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-b" aria-hidden="true"></i>
+          <div class="pet-shop-marker" aria-label="アスアルのペットショップ">🐟 アスアルの店</div>
           <div id="questBoardMarker" class="quest-board-marker" aria-hidden="true"></div>
           <div id="forageLayer" class="forage-layer" aria-hidden="true"></div>
           <div id="tournamentNpcLayer" class="tournament-npc-layer" aria-label="湖畔の大会参加者" hidden></div>
@@ -6698,7 +6700,9 @@
               <label for="aquariumFishSelect">これまでに釣った魚から1匹</label>
               <select id="aquariumFishSelect"></select>
               <button id="aquariumPlaceFish" disabled>水槽に入れる</button>
-              <small>飼えるのは1匹。新しい魚を入れると入れ替わるよ。釣果数・図鑑・持ち物は減らない。</small>
+              <button id="aquariumZoom" aria-pressed="false">ズーム</button>
+              <button id="homePetAquarium">飼育水槽を開く</button>
+              <small>ここは釣った魚1匹の展示用。エサやり・水換え・成長は持ち歩き飼育水槽でできるよ。</small>
             </div>
           </div>
         </div>
@@ -7143,6 +7147,7 @@
             <div class="inventory-content">
               <section class="inventory-panel active" data-inventory-panel="items">
                 <h3>持ち物</h3>
+                <button class="pet-tank-link" id="openPetAquarium">🐟 持ち歩き飼育水槽</button>
                 <div class="inventory-vitals">
                   <span>❤️ 体力</span>
                   <div class="inventory-hp-meter"><i id="inventoryHpFill"></i></div>
@@ -7251,8 +7256,12 @@
               <div class="dog-care-profile">
                 <small id="dogCareRole">案内・調査役</small>
                 <h3 id="dogCareName">シュウ</h3>
+                <div id="dogCareHearts" class="dog-hearts" role="img"></div>
                 <div class="dog-affinity-line"><b id="dogCareTier">顔なじみ</b><span id="dogCarePoints">0 / 100</span></div>
                 <div class="dog-affinity-meter"><i id="dogCareAffinityFill"></i></div>
+                <div class="dog-trick-label"><b>芸</b><span id="dogCareTrickPoints"></span></div>
+                <div id="dogCareFrisbees" class="dog-frisbees" role="img"></div>
+                <div class="dog-trick-meter"><i id="dogCareTrickFill"></i></div>
                 <p id="dogCareMessage" aria-live="polite">今日は何をして遊ぼう？</p>
                 <div class="dog-care-best" id="dogCareCatchBest">わんこキャッチ BEST 0 / 3</div>
               </div>
@@ -7262,7 +7271,8 @@
               <section><h3>🎾 おもちゃ<small>好感度は一日1回</small></h3><div class="dog-care-grid" id="dogCareToys"></div></section>
             </div>
             <footer class="dog-care-footer">
-              <button id="dogCarePet">ナデナデする<small>好感度は変わらないよ</small></button>
+              <button id="dogCarePet">ナデナデする<small>なつき度＋8・一日3回</small></button>
+              <button id="dogCareTrain">芸を練習する<small>芸＋25・一日1回</small></button>
               <button id="dogCareTakeFishing">この子と釣りへ行く<small>同行ワンコにする</small></button>
             </footer>
           </div>
@@ -7272,6 +7282,8 @@
     <script src="music-tracks.js?v=170-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
+    <script src="pet-life.js?v=182-1"></script>
+    <script src="pet-life-ui.js?v=182-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -11551,12 +11563,14 @@
       function advanceGameTime(state, minutes = CAST_TIME_MINUTES) {
         const amount = Math.max(0, Math.floor(Number(minutes) || 0));
         state.gameMinutes = normalizeGameMinutes(state.gameMinutes) + amount;
+        if(state.petLife)ShuPetLife.sync(state,petCatalog,gameClockAt(state.gameMinutes).dayIndex);
         return gameClockAt(state.gameMinutes);
       }
       function sleepUntilNextMorning(state) {
         const current = gameClockAt(state.gameMinutes);
         state.gameMinutes = (current.dayIndex + 1) * GAME_MINUTES_PER_DAY +
           GAME_START_MINUTES;
+        if(state.petLife)ShuPetLife.sync(state,petCatalog,gameClockAt(state.gameMinutes).dayIndex);
         return gameClockAt(state.gameMinutes);
       }
       function migrateLegacyGameClock(state) {
@@ -11740,6 +11754,7 @@
         samShopTab = "tackle",
         samBaitPurchaseCount = 1,
         locationPurchaseCount = 1,
+        petUi = null,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
         fortuneRevealTimer = 0,
@@ -12120,7 +12135,7 @@
       for (const id of dogIds)
         s.dogAffinity[id] = Math.max(
           0,
-          Math.min(100, Math.floor(Number(s.dogAffinity[id]) || 0)),
+          Math.min(2000, Math.floor(Number(s.dogAffinity[id]) || 0)),
         );
       if (!s.dogTreats || typeof s.dogTreats !== "object" ||
           Array.isArray(s.dogTreats)) s.dogTreats = {};
@@ -12258,6 +12273,14 @@
         if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      const petCatalog = fish.map(f=>{
+        const tiers=fishSizeProfiles[f.id],normal=fishSizeTierById(f.id,"normal"),small=fishSizeTierById(f.id,"small");
+        const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
+        return {id:f.id,name:f.name,price:f.id==="nushi"?0:Math.max(300,Math.round(f.price*3/50)*50),
+          start:Math.min(max,f.id==="nushi"?(s.sizeRecords.nushi?.hundredths||normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
+          waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai"].includes(f.id)?"海水":"淡水"};
+      });
+      ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex);
       s.tournament = ShuTournament.normalize(s.tournament);
       s.tournamentGathering = ShuTournament.normalizeGathering(s.tournamentGathering, s.gameMinutes);
       s.tournamentRecords = ShuTournament.normalizeRecords(s.tournamentRecords);
@@ -13894,7 +13917,8 @@
           },
           {
             id: "watermill", x: 198, y: 33, radius: 8,
-            hint: "水車の家だ。Aで水音を聞く。",
+            hint: "アスアルのペットショップだ。Aで魚とコンテストの受付へ。",
+            petShop: true, interaction: {left:191,right:204,top:31.2,bottom:37.5},
             message: "森の水車小屋。苔むした水路から、湖へ細い水が注いでいる。",
           },
           {
@@ -14423,22 +14447,23 @@
         delete cycle.active[pointId];
         if (!cycle.harvested.includes(pointId)) cycle.harvested.push(pointId);
         cycle.dogFound = cycle.dogFound.filter((id) => id !== pointId);
+        const amount = ShuPetLife.forageCount(s,s.dog);
         if (item.destination === "bait")
-          s.baits[item.destinationId] = (s.baits[item.destinationId] || 0) + 1;
+          s.baits[item.destinationId] = (s.baits[item.destinationId] || 0) + amount;
         else if (item.destination === "item")
-          s.items[item.destinationId] = (s.items[item.destinationId] || 0) + 1;
+          s.items[item.destinationId] = (s.items[item.destinationId] || 0) + amount;
         else
           s.dogTreats[item.destinationId] =
-            (s.dogTreats[item.destinationId] || 0) + 1;
+            (s.dogTreats[item.destinationId] || 0) + amount;
         const destination = item.destination === "bait"
           ? `釣りエサ「${baitData[item.destinationId].name}」に入れた。`
           : item.destination === "item"
             ? "調理素材袋に入れた。"
           : "ワンコずのおやつ袋に入れた。";
-        log(`${item.name}を拾った！ ${destination}`);
+        log(`${item.name}を${amount}個拾った！ ${destination}`);
         vibrate([18, 28, 36]);
         render();
-        showRescueToast(`${item.icon} ${item.name}を拾った！`, 2800);
+        showRescueToast(`${item.icon} ${item.name}を${amount}個拾った！`, 2800);
         save();
         return true;
       }
@@ -14499,7 +14524,7 @@
         if (battle || rescueInProgress || forageDiscoveryInProgress) return false;
         forageWalkSteps += 1;
         if (forageWalkSteps < 8) return false;
-        const affinity = Math.max(0, Math.min(100, Number(s.dogAffinity[s.dog]) || 0));
+        const affinity = Math.max(0, Math.min(100, (Number(s.dogAffinity[s.dog]) || 0) / 20));
         const chance = (.025 + affinity * .00055) *
           (1 + mealEffectBonus("dogDiscovery"));
         if (boundedRandom(random) > chance) return false;
@@ -15006,7 +15031,7 @@
           ...ShuRivals.dogPlacements.filter(p => p.id === "chappie"
             ? !$("#store").classList.contains("open")
             : !context || context.id === "lakeMasters"),
-        ];
+        ].filter(p=>!(petUi?.active && petUi.mode==="shop" && ["asual","cloud"].includes(p.id)));
       }
       function nearbyRival() {
         if (playerHomeIsActive() || battle) return null;
@@ -15532,6 +15557,13 @@
           Number.isFinite(Number(state.caught?.[value])) &&
           Number(state.caught?.[value]) >= 1 ? value : null;
       }
+      function aquariumDefaultLength(id) {
+        const normal=fishSizeTierById(id,"normal");return normal?Math.round((normal.minHundredths+normal.maxHundredths)/2):2000;
+      }
+      function homeAquariumLength() {
+        const id=s.homeAquariumFishId,normal=aquariumDefaultLength(id),max=fishSizeProfiles[id]?.at(-1)?.maxHundredths||20000;
+        return Math.min(max,Math.max(1,Math.floor(Number(s.homeAquariumSizeHundredths)||s.sizeRecords[id]?.hundredths||normal)));
+      }
       function aquariumAvailableFish() {
         return fish.filter((f) => normalizeAquariumFishId(f.id));
       }
@@ -15547,7 +15579,7 @@
         const choices = aquariumAvailableFish();
         const current = fish.find((f) => f.id === s.homeAquariumFishId);
         $("#aquariumStatus").textContent = current
-          ? `水槽の魚：${current.name}（1匹）`
+          ? `水槽の魚：${current.name}（1匹・${ShuPetLife.cm(homeAquariumLength())}cm）`
           : choices.length ? "まだ魚は入っていない。" : "まずは魚を1匹釣ってみよう。";
         const select = $("#aquariumFishSelect");
         select.innerHTML = choices.length
@@ -15574,6 +15606,7 @@
             !normalizeAquariumFishId(id) || s.homeAquariumFishId === id) return false;
         // History-based display only: never consume a catch or award money.
         s.homeAquariumFishId = id;
+        s.homeAquariumSizeHundredths = s.sizeRecords[id]?.hundredths || aquariumDefaultLength(id);
         save();
         renderAquariumControls();
         renderHomeAquarium();
@@ -15624,10 +15657,10 @@
         drawAquariumFish();
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
-      function aquariumFishPose(id, elapsed) {
+      function aquariumFishPose(id, elapsed, measuredLength = null) {
         const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
         const normal = fishSizeTierById(id, "normal");
-        const lengthCm = normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
+        const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
         const width = Math.max(18, Math.min(36, 18 * Math.sqrt(lengthCm / 10)));
         const left = width / 2 + 4, right = 100 - left;
         const travel = bottomDweller ? 18 : 14, turn = .7;
@@ -15652,7 +15685,7 @@
           stopAquariumAnimation();
           return;
         }
-        const pose = aquariumFishPose(id, aquariumElapsed);
+        const pose = aquariumFishPose(id, aquariumElapsed, homeAquariumLength());
         const cells = fishSwimFrameCounts[id] || 8;
         const frame = Math.floor(aquariumElapsed / (pose.bottomDweller ? .24 : .18)) % cells;
         const [width, height] = fishFrameFallbackSizes[id] || [320, 160];
@@ -16763,6 +16796,7 @@
         drawPetScene();
       }
       function render() {
+        if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
         if (!isWalkableWorld(s.x, s.y)) {
@@ -17358,6 +17392,7 @@
         else if (isOnRiverBridgeSpan(s.x, s.y))
           log("湖見橋だ。橋は通行専用。竿を出すなら湖岸か川岸へ降りよう。");
         else if (landmark?.questBoard) openQuestBoard();
+        else if (landmark?.petShop) petUi.open("shop");
         else if (landmark?.id === "harbor-shop") openVehicleShop();
         else if (landmark?.interior) openLocationInterior(landmark);
         else if (landmark) log(landmark.message);
@@ -17758,7 +17793,7 @@
         return true;
       }
       function dogAffinityTier(value) {
-        const amount = Math.max(0, Math.min(100, Number(value) || 0));
+        const amount = Math.max(0, Math.min(100, (Number(value) || 0) / 20));
         return [
           [100, "ずっと一緒"],
           [75, "家族"],
@@ -17769,11 +17804,7 @@
         ].find(([minimum]) => amount >= minimum)?.[1] || "顔なじみ";
       }
       function addDogAffinity(dogId, amount) {
-        if (!dogProfileData[dogId]) return 0;
-        const before = Math.max(0, Math.min(100, Number(s.dogAffinity[dogId]) || 0));
-        const after = Math.max(0, Math.min(100, before + Math.max(0, Number(amount) || 0)));
-        s.dogAffinity[dogId] = after;
-        return after - before;
+        return ShuPetLife.addAffinity(s,dogId,amount);
       }
       function dogToyPlayedToday(dogId, toyId) {
         return s.dogToyPlayDays?.[dogId]?.[toyId] === gameClockAt(s.gameMinutes).day;
@@ -18062,6 +18093,14 @@
           }
           return true;
         }
+        if (scene.mode === "pet" || scene.mode === "train") {
+          const pulse=frame%4<2?0:3;
+          drawDogCareSprite(ctx,dogId,64,-4+pulse,"stand",164);
+          drawDogCareHand(ctx,220,scene.mode==="pet"?48+pulse:85,null);
+          drawDogCareHearts(ctx,frame,-14);
+          if(label)label.textContent=scene.mode==="pet"?"ナデナデ…いい子だね♡":"おすわり、お手、待て。上手にできたね！";
+          return true;
+        }
         if (scene.mode === "celebrate") {
           drawDogCareSprite(ctx, dogId, 63, -8 - (frame % 4 < 2 ? 5 : 0), "stand", 166);
           drawDogCareHearts(ctx, frame, -10);
@@ -18161,6 +18200,7 @@
         if (!game) return false;
         const bonusTarget = game.score === 3 ? 4 : game.score === 2 ? 2 : 0;
         const bonusGained = addDogAffinity(game.dogId, bonusTarget);
+        ShuPetLife.addTricks(s,game.dogId,game.score*3);
         s.dogCatchBest[game.dogId] = Math.max(s.dogCatchBest[game.dogId] || 0, game.score);
         const profile = dogProfileData[game.dogId];
         const baseText = game.baseGained ? `通常好感度＋${game.baseGained}` : "通常分は絆満タン";
@@ -18234,14 +18274,22 @@
         $("#dogCareDogs").innerHTML = dogIds.map((id) => {
           const dog = dogProfileData[id];
           const points = s.dogAffinity[id] || 0;
-          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${dog.name}　${points}</button>`;
+          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${dog.name}　${Math.floor(points/100)}/20</button>`;
         }).join("");
         $("#dogCareRole").textContent =
           `${profile.role}／採集：${profile.forageSpecialty}`;
         $("#dogCareName").textContent = profile.name;
         $("#dogCareTier").textContent = dogAffinityTier(affinity);
-        $("#dogCarePoints").textContent = `${affinity} / 100`;
-        $("#dogCareAffinityFill").style.width = `${affinity}%`;
+        const gauge=ShuPetLife.dogGauge(affinity),tricks=ShuPetLife.dogGauge(s.dogTricks[dogId],ShuPetLife.TRICK_MAX);
+        $("#dogCarePoints").textContent = affinity===ShuPetLife.DOG_MAX?"MAX":`次の♡ ${gauge.progress}%`;
+        $("#dogCareAffinityFill").style.width = `${gauge.progress}%`;
+        $("#dogCareHearts").innerHTML=gauge.hearts.map(color=>`<span class="${color}" aria-hidden="true">${color==="white"?"♡":"♥"}</span>`).join("");
+        $("#dogCareHearts").setAttribute("aria-label",`なつき度 ${gauge.level}/20段階、金色${gauge.hearts.filter(c=>c==="gold").length}個、赤色${gauge.hearts.filter(c=>c==="red").length}個`);
+        $("#dogCareFrisbees").innerHTML=Array.from({length:10},(_,i)=>`<span class="${i<tricks.level?"earned":"unearned"}" aria-hidden="true">🥏</span>`).join("");
+        $("#dogCareFrisbees").setAttribute("aria-label",`芸 ${tricks.level}/10段階`);
+        $("#dogCareTrickPoints").textContent=tricks.points===1000?"MAX":`次の🥏 ${tricks.progress}%`;
+        $("#dogCareTrickFill").style.width=`${tricks.progress}%`;
+        $("#dogCareTrain").disabled=busy||ShuPetLife.dogDay(s,dogId,gameClockAt(s.gameMinutes).dayIndex).trained||tricks.points===1000;
         $("#dogCareMessage").textContent = dogCareStatusMessage || profile.greeting;
         $("#dogCareCatchBest").textContent = `わんこキャッチ BEST ${s.dogCatchBest[dogId] || 0} / 3`;
         $("#dogCareTreats").innerHTML = Object.entries(dogCareData)
@@ -18254,7 +18302,7 @@
               : item.samShop ? "サムの店"
               : item.crafted ? "手作り" : "星みくじ限定";
             const status = treated ? "今日はおやつ済み" : `×${count}`;
-            return `<button class="dog-care-card ${treated ? "played" : ""}" data-give-dog-treat="${id}" ${busy || treated || count < 1 || affinity >= 100 ? "disabled" : ""}>` +
+            return `<button class="dog-care-card ${treated ? "played" : ""}" data-give-dog-treat="${id}" ${busy || treated || count < 1 || affinity >= ShuPetLife.DOG_MAX ? "disabled" : ""}>` +
               `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}</small></span><strong>${status}</strong></button>`;
           }).join("");
         const playedToday = dogPlayedToday(dogId);
@@ -18308,7 +18356,7 @@
           renderDogCare();
           return false;
         }
-        if ((s.dogAffinity[dogId] || 0) >= 100) {
+        if ((s.dogAffinity[dogId] || 0) >= ShuPetLife.DOG_MAX) {
           dogCareStatusMessage = `${dogProfileData[dogId].name}との絆はもう満タン。おやつは取っておこう。`;
           renderDogCare();
           return false;
@@ -18342,6 +18390,7 @@
         }
         const day = gameClockAt(s.gameMinutes).day;
         s.dogToyPlayDays[dogId][id] = day;
+        ShuPetLife.addTricks(s,dogId,10);
         const gained = addDogAffinity(dogId, item.affection);
         if (item.motion === "catch")
           return beginDogCatchGame(dogId, id, gained);
@@ -18356,14 +18405,18 @@
         return true;
       }
       function petDogCare() {
-        const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
-        if (dogCareIsBusy()) return false;
-        dogCareStatusMessage = `${dogProfileData[dogId].name}をやさしくナデナデ。しっぽが嬉しそうに揺れている♡`;
-        log(`${dogProfileData[dogId].name}をナデナデした。好感度はおやつや遊びで上がる。`);
-        vibrate([18, 30, 18]);
-        playGameAudioSample("dogPetBark", { restart: true });
-        renderDogCare();
-        return true;
+        const dogId=dogProfileData[dogCareSelectedId]?dogCareSelectedId:s.dog;
+        if(dogCareIsBusy())return false;
+        const gained=ShuPetLife.pet(s,dogId,gameClockAt(s.gameMinutes).dayIndex);
+        dogCareStatusMessage=`${dogProfileData[dogId].name}をナデナデ♡ ${gained?`なつき度＋${gained}`:"今日はもうたっぷり仲良くなったね"}`;
+        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("pet",dogId,null,1800);save();return true;
+      }
+      function trainDogCare() {
+        const dogId=dogCareSelectedId;
+        if(dogCareIsBusy()||!dogProfileData[dogId]||s.dogTricks[dogId]>=1000)return false;
+        if(!ShuPetLife.train(s,dogId,gameClockAt(s.gameMinutes).dayIndex))return false;
+        dogCareStatusMessage=`${dogProfileData[dogId].name}とおすわり・お手・待てを練習した！ 芸＋25・なつき度＋5`;
+        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("train",dogId,null,2400);save();return true;
       }
       function takeDogFishing() {
         const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
@@ -21152,6 +21205,7 @@
           return;
         }
         const openModals = [...document.querySelectorAll(".modal.open")];
+        petUi?.stop();
         if (!openModals.length) return;
         const returnToShop = $("#tournamentTalk").classList.contains("open") && rivalTalkReturn === "store";
         const closingDogCare = $("#dogCare")?.classList.contains("open");
@@ -21367,6 +21421,19 @@
           s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
           "まだ記録はない。";
       }
+      petUi = ShuPetUI.create({state:s,catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
+        parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
+        canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
+        changed:()=>{save();render();},paintRivals:paintRivalGuide,pose:aquariumFishPose,
+        ratio:id=>{const [w,h]=fishFrameFallbackSizes[id]||[320,160];return w/h;},
+        sizeLabel:(id,length)=>fishSizeTierAt(id,length)?.label||"幼魚",
+        drawFish:(element,id,frame)=>{const cells=fishSwimFrameCounts[id]||8,n=frame%cells,key=`${id}:${n}`;
+          if(element.dataset.petFrame!==key){drawFishAtlasFrame(element,fishAssets[id],cells,n,id);element.dataset.petFrame=key;}}
+      });
+      $("#openPetAquarium").onclick=()=>petUi.open("aquarium");
+      $("#homePetAquarium").onclick=()=>petUi.open("aquarium");
+      $("#aquariumZoom").onclick=()=>{const zoomed=$("#aquariumModal").classList.toggle("aquarium-zoom");$("#aquariumZoom").textContent=zoomed?"元の表示":"ズーム";$("#aquariumZoom").setAttribute("aria-pressed",String(zoomed));drawAquariumFish();};
+      $("#dogCareTrain").onclick=trainDogCare;
       $("#start").onclick = () => {
         $("#title").classList.remove("active");
         $("#game").classList.add("active");
