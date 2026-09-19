@@ -60,22 +60,22 @@
     }
     function paint(now){
       frame=0;if(!live()||document.hidden)return;
-      if(now-lastPaint>=50){
+      const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if(!lastPaint||now-lastPaint>=50){
         lastPaint=now;
         const f=P.selected(s),el=modal.querySelector("#petTankFish"),stage=modal.querySelector("#petTankStage");
         if(f&&el&&stage){
           const t=(now-started)/1000,box=stage.getBoundingClientRect(),pose=ctx.pose(f.species,t);
           const ratio=ctx.ratio(f.species),growth=Math.sqrt(f.length/Math.max(1,f.bornSize));
           const width=Math.min(box.width*(zoom?.46:.30)*growth,box.width*.60,box.height*.38*ratio);
-          const reduced=matchMedia("(prefers-reduced-motion: reduce)").matches;
           el.style.width=`${width}px`;el.style.height=`${width/ratio}px`;
           // Preserve enough turning room even at the largest zoomed size.
-          el.style.left=`${reduced?50:32+(pose.x/100)*36}%`;el.style.top=`${pose.y}%`;
+          el.style.left=`${reduced?50:32+(pose.x/100)*36}%`;el.style.top=`${reduced?50:pose.y}%`;
           el.style.transform=`translate(-50%,-50%) scaleX(${reduced?1:pose.facing})`;
           ctx.drawFish(el,f.species,reduced?0:Math.floor(t/(pose.bottomDweller?.24:.18)));
         }
       }
-      if(mode==="aquarium"&&P.selected(s))frame=requestAnimationFrame(paint);
+      if(!reduced&&mode==="aquarium"&&P.selected(s))frame=requestAnimationFrame(paint);
     }
     function start(){if(frame||!live()||document.hidden)return;started=performance.now();lastPaint=0;frame=requestAnimationFrame(paint);}
     modal.onclick=event=>{
@@ -111,6 +111,7 @@
     };
     document.addEventListener("visibilitychange",()=>document.hidden?stop():start());
     window.addEventListener("pagehide",stop);
+    window.addEventListener("resize",()=>{if(live()&&mode==="aquarium"){stop();start();}});
     return {open,render,stop,get mode(){return mode;},get active(){return live();}};
   }
   root.ShuPetUI={create};

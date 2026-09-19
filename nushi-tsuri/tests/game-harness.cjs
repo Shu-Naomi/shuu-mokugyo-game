@@ -6,7 +6,7 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
   .replace(/<script src="((?:pet-life(?:-ui)?|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="(pixel-scenes\.css)\?[^\"]+" \/>/,
+  .replace(/<link rel="stylesheet" href="((?:pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({

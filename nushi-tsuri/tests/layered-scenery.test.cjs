@@ -9,6 +9,9 @@ const env={season:'spring',period:'day'};
 const bytes=c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data;
 const hash=c=>crypto.createHash('sha256').update(bytes(c)).digest('hex');
 const canvasFor=image=>{const c=createCanvas(image.width,image.height);c.getContext('2d').drawImage(image,0,0);return c;};
+// Master extraction is lossless; the v182 return sign is deliberately moved
+// during composition. Disable that authored placement only for fidelity QA.
+const originalPlacement=scene=>{const sign=scene.parts.find(p=>p.id==='return-sign');if(sign){sign.offset=[0,0];sign.flipX=false;}return scene;};
 const load=async(id,e=env)=>{
   const definition=Data.get(id,e);
   const source=await loadImage(path.join(root,definition.source));
@@ -19,6 +22,7 @@ const load=async(id,e=env)=>{
 test('the detailed world and v160 home masters reassemble with zero changed pixels at native resolution',async()=>{
   for(const id of ['world','home-exterior','home-interior']) {
     const {source,scene}=await load(id),c=createCanvas(scene.width,scene.height),overlay=createCanvas(scene.width,scene.height);
+    originalPlacement(scene);
     assert.ok(scene.width>=1536&&scene.height>=864,'never downsample the master to the former 640/960 canvas');
     Art.compose(c,scene,{patches:false});assert.equal(hash(c),hash(canvasFor(source)),id+' must keep every original pixel');
     const expected=hash(c);
@@ -29,6 +33,28 @@ test('the detailed world and v160 home masters reassemble with zero changed pixe
     const kinds=new Set(scene.parts.map(p=>p.kind));
     assert.ok(kinds.has('ground')&&kinds.has('water')&&kinds.has('props'));
   }
+});
+
+test('the home return sign moves to the right, flips its arrow, and leaves every pixel outside its old/new bounds intact',async()=>{
+  const {scene}=await load('home-exterior'),part=scene.parts.find(p=>p.id==='return-sign');
+  const before=createCanvas(scene.width,scene.height),after=createCanvas(scene.width,scene.height);
+  Art.compose(after,scene,{patches:false});const dx=part.offset[0],dy=part.offset[1];
+  assert.equal(dx,1460);assert.equal(part.flipX,true);
+  originalPlacement(scene);Art.compose(before,scene,{patches:false});
+  const a=bytes(before),b=bytes(after);let changed=0;
+  for(let y=0;y<scene.height;y++)for(let x=0;x<scene.width;x++){
+    const i=(y*scene.width+x)*4;if(a[i]===b[i]&&a[i+1]===b[i+1]&&a[i+2]===b[i+2])continue;
+    changed++;const inside=(ox,oy)=>x>=part.left+ox&&x<part.right+ox&&y>=part.top+oy&&y<part.bottom+oy;
+    assert.ok(inside(0,0)||inside(dx,dy),'only the sign and its vacated footprint change');
+  }
+  assert.ok(changed>1000);
+  const expected=createCanvas(part.canvas.width,part.canvas.height),e=expected.getContext('2d');
+  e.translate(expected.width,0);e.scale(-1,1);e.drawImage(part.canvas,0,0);
+  assert.deepEqual(after.getContext('2d').getImageData(part.left+dx,part.top+dy,expected.width,expected.height).data,bytes(expected),'the visible arrow really points the other way');
+  const d=Data.get('home-exterior'),small=createCanvas(160,90);
+  small.getContext('2d').drawImage(before,0,0,160,90);
+  const scaled=Art.prepare(small,null,d,env,createCanvas).parts.find(p=>p.id==='return-sign');
+  assert.ok(Math.abs(scaled.offset[0]-1460*160/1774)<.0001,'placement follows authoring coordinates at other resolutions');
 });
 
 test('removing or moving a part exposes a clean underlay, including attached cottage props and tank glass',async()=>{
@@ -88,7 +114,7 @@ test('every active location uses a present detailed master and the four seasons/
       // Native fidelity is tested above. Small QA canvases make this 480-scene
       // clock/asset matrix inexpensive; the game itself always uses the master.
       const small=createCanvas(160,90);small.getContext('2d').drawImage(image,0,0,160,90);
-      const scene=Art.prepare(small,null,d,e,createCanvas),c=createCanvas(160,90);Art.compose(c,scene,{patches:false});
+      const scene=originalPlacement(Art.prepare(small,null,d,e,createCanvas)),c=createCanvas(160,90);Art.compose(c,scene,{patches:false});
       variants.add(hash(c));
       const colors=new Set(),sourceColors=new Set();const rgba=bytes(c),original=bytes(small);
       for(let i=0;i<rgba.length;i+=16){colors.add((rgba[i]<<16)|(rgba[i+1]<<8)|rgba[i+2]);sourceColors.add((original[i]<<16)|(original[i+1]<<8)|original[i+2]);}

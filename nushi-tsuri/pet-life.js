@@ -24,7 +24,7 @@
     const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY).flatMap(f=>{
       const spec=catalog.find(s=>s.id===f?.species);
       if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(spec.id==="nushi"&&!(state.caught?.nushi>0)))return [];
-      used.add(f.uid);const bornSize=int(f.bornSize,spec.start,spec.max);
+      used.add(f.uid);const bornSize=int(f.bornSize,spec.min||spec.start,spec.max);
       return [{uid:f.uid,species:spec.id,bornSize,length:int(f.length,bornSize,spec.max),
         acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
         fedDay:int(f.fedDay,-1,day),changedDay:int(f.changedDay,-1,day),
@@ -67,7 +67,8 @@
     if(species==="nushi"&&(!(state.caught?.nushi>0)||p.nushiClaimed))return {ok:false,message:"ヌシを釣った記録があると、一匹を飼育水槽へ迎えられる。"};
     if(!Number.isFinite(state.money)||state.money<spec.price)return {ok:false,message:`${spec.price}円が必要だよ。`};
     state.money-=spec.price;
-    const f={uid:`pet-${p.nextId++}`,species,bornSize:spec.start,length:spec.start,acquiredDay:day,lastDay:day,
+    const initial=species==="nushi"?int(state.sizeRecords?.nushi?.hundredths??spec.start,spec.min||spec.start,spec.max):spec.start;
+    const f={uid:`pet-${p.nextId++}`,species,bornSize:initial,length:initial,acquiredDay:day,lastDay:day,
       fedDay:-1,changedDay:-1,water:100,health:90,careDays:0};
     p.fish.push(f);p.selected=f.uid;if(species==="nushi")p.nushiClaimed=true;
     return {ok:true,message:`${spec.name}（${cm(f.length)}cm）を飼育水槽へ迎えた。`,fish:f};
@@ -110,8 +111,8 @@
     if(!state.petLife.dogDaily[id]||state.petLife.dogDaily[id].day!==day)state.petLife.dogDaily[id]={day,pets:0,trained:false};
     return state.petLife.dogDaily[id];
   }
-  function pet(state,id,day){const d=dogDay(state,id,day);if(d.pets>=3)return 0;d.pets++;return addAffinity(state,id,8);}
-  function train(state,id,day){const d=dogDay(state,id,day);if(d.trained)return false;d.trained=true;addTricks(state,id,25);addAffinity(state,id,5);return true;}
+  function pet(state,id,day){if(!(id in state.dogAffinity))return 0;const d=dogDay(state,id,day);if(d.pets>=3)return 0;d.pets++;return addAffinity(state,id,8);}
+  function train(state,id,day){if(!(id in state.dogTricks))return false;const d=dogDay(state,id,day);if(d.trained)return false;d.trained=true;addTricks(state,id,25);addAffinity(state,id,5);return true;}
   const forageCount=(state,id)=>1+Math.floor(int(state.dogAffinity[id],0,DOG_MAX)/500);
   const trickChance=(state,id)=>Math.min(.95,.35+Math.floor(int(state.dogTricks[id],0,TRICK_MAX)/100)*.06);
   function fishScore(f){

@@ -6569,7 +6569,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v181</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v182</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7289,8 +7289,8 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=165-1"></script>
-    <script src="layered-scenery.js?v=169-1"></script>
+    <script src="scene-layers.js?v=182-1"></script>
+    <script src="layered-scenery.js?v=182-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -12277,7 +12277,7 @@
         const tiers=fishSizeProfiles[f.id],normal=fishSizeTierById(f.id,"normal"),small=fishSizeTierById(f.id,"small");
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,price:f.id==="nushi"?0:Math.max(300,Math.round(f.price*3/50)*50),
-          start:Math.min(max,f.id==="nushi"?(s.sizeRecords.nushi?.hundredths||normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
+          min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
           waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai"].includes(f.id)?"海水":"淡水"};
       });
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex);
@@ -18318,7 +18318,7 @@
               : playedToday ? "今日は別のおもちゃ" : item.action;
             const bonus = item.motion === "catch" ? "／2成功＋2・全成功＋4" : "";
             return `<button class="dog-care-card ${playedToday ? "played" : ""}" data-play-dog-toy="${id}" ${busy || !owned || playedToday ? "disabled" : ""}>` +
-              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}${bonus}</small></span><strong>${status}</strong></button>`;
+              `<i>${item.icon}</i><span><b>${item.name}</b><small>${source}／好感度＋${item.affection}／芸＋10${bonus}</small></span><strong>${status}</strong></button>`;
           }).join("");
         $("#dogCarePet").disabled = busy;
         $("#dogCareTakeFishing").disabled = busy;
@@ -21677,7 +21677,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=181-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=182-1").catch(() => {});
       renderRecord();
     </script>
   </body>

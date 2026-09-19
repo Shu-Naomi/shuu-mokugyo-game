@@ -103,7 +103,8 @@
       const b=bounds[i];
       if(b.right<=b.left||b.bottom<=b.top) return null;
       const canvas=canvasFactory(b.right-b.left,b.bottom-b.top),ctx=canvas.getContext('2d');
-      return {...descriptor,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[],rainSamples:[]};
+      const offset=descriptor.offset?.map((v,axis)=>v*(axis?height:width)/definition.units[axis]);
+      return {...descriptor,offset,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[],rainSamples:[]};
     });
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
       const n=y*width+x,part=parts[labels[n]],offset=n*4;
@@ -327,7 +328,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=169-1');
+            worker=new Worker('scenery-worker.js?v=182-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
