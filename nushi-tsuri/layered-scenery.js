@@ -103,7 +103,8 @@
       const b=bounds[i];
       if(b.right<=b.left||b.bottom<=b.top) return null;
       const canvas=canvasFactory(b.right-b.left,b.bottom-b.top),ctx=canvas.getContext('2d');
-      return {...descriptor,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[],rainSamples:[]};
+      const offset=descriptor.offset?.map((v,axis)=>v*(axis?height:width)/definition.units[axis]);
+      return {...descriptor,offset,...b,canvas,ctx,image:ctx.createImageData(canvas.width,canvas.height),samples:[],rainSamples:[]};
     });
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
       const n=y*width+x,part=parts[labels[n]],offset=n*4;
@@ -149,7 +150,7 @@
   function drawPart(ctx,part,options={}) {
     const transform=options.transforms?.[part.id]||{},parent=options.transforms?.[part.parent]||{};
     if(transform.hidden||parent.hidden)return;
-    const dx=(transform.x||0)+(parent.x||0),dy=(transform.y||0)+(parent.y||0);
+    const dx=(transform.x||0)+(parent.x||0)+(part.offset?.[0]||0),dy=(transform.y||0)+(parent.y||0)+(part.offset?.[1]||0);
     const time=options.motionTime||0;
     ctx.save();
     if(part.motion==='sway'&&time) {
@@ -161,6 +162,9 @@
         const strip=Math.min(4,h-y),offset=Math.round(bend*(1-y/h)**2);
         ctx.drawImage(part.canvas,0,y,part.canvas.width,strip,part.left+dx+offset,part.top+dy+y,part.canvas.width,strip);
       }
+    } else if(part.flipX) {
+      ctx.translate(part.left+dx+part.canvas.width,part.top+dy);ctx.scale(-1,1);
+      ctx.drawImage(transform.image||part.canvas,0,0,part.canvas.width,part.canvas.height);
     } else ctx.drawImage(transform.image||part.canvas,part.left+dx,part.top+dy,part.canvas.width,part.canvas.height);
     ctx.restore();
   }
@@ -324,7 +328,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=169-1');
+            worker=new Worker('scenery-worker.js?v=182-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }

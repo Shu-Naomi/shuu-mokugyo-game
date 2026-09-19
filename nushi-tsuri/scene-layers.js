@@ -86,7 +86,7 @@
       box('porch-bench','props',1051,504,156,80,{parent:'cottage'}),
       box('crates-and-pails','props',1364,476,157,115),
       box('left-fence','fences',26,460,450,110,{filter:'wood'}),
-      box('return-sign','props',136,504,88,107),
+      box('return-sign','props',136,504,88,107,{offset:[1460,0],flipX:true}),
       box('garden-flowers','grass',472,383,199,233,{...vegetation,motion:'sway'}),
       box('porch-flowers','grass',1202,396,144,194,{...vegetation,motion:'sway'}),
       box('foreground-left-fence','fences',209,795,340,92),

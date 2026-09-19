@@ -161,5 +161,5 @@ test('weather is part of the scenery cache key and is available offline with the
     assert.equal(builds,3);
   } finally {controller.dispose();}
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const module of ['weather','layered-scenery','scenery-worker'])assert.ok(sw.includes(`./${module}.js?v=169-1`));
+  for(const [module,version] of [['weather','169-1'],['layered-scenery','182-1'],['scenery-worker','182-1']])assert.ok(sw.includes(`./${module}.js?v=${version}`));
 });

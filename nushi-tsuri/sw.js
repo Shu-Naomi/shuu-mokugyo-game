@@ -1,8 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v181-dog-greetings-181-1";
+const CACHE_NAME = "nushi-tsuri-v182-pet-life-182-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
+  "./pet-life.js?v=182-1",
+  "./pet-life-ui.js?v=182-1",
+  "./pet-life.css?v=182-1",
   "./rival-anglers.js?v=181-1",
   "./assets/audio/dog-friendly-whine-v181.wav",
   "./tournament-npcs.js?v=180-1",
@@ -31,9 +34,9 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=168-1",
   "./pixel-scenes.css?v=165-1",
-  "./scene-layers.js?v=165-1",
-  "./layered-scenery.js?v=169-1",
-  "./scenery-worker.js?v=169-1",
+  "./scene-layers.js?v=182-1",
+  "./layered-scenery.js?v=182-1",
+  "./scenery-worker.js?v=182-1",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",
