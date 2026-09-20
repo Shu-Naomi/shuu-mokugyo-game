@@ -6543,7 +6543,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
-    <link rel="stylesheet" href="pet-life.css?v=182-2" />
+    <link rel="stylesheet" href="pet-life.css?v=183-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6569,7 +6569,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v182</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v183</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7279,11 +7279,12 @@
         </div>
       </main>
     </section>
-    <script src="music-tracks.js?v=170-1"></script>
+    <script src="music-tracks.js?v=183-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
-    <script src="pet-life.js?v=182-1"></script>
-    <script src="pet-life-ui.js?v=182-1"></script>
+    <script src="pet-life.js?v=183-1"></script>
+    <script src="aquarium-life.js?v=183-1"></script>
+    <script src="pet-life-ui.js?v=183-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -12918,9 +12919,10 @@
             volume: .64,
           },
           rivalDogWhine: {
-            src: "assets/audio/dog-friendly-whine-v181.wav",
-            volume: .60,
+            src: "assets/audio/dog-friendly-whine-v183.wav",
+            volume: .45,
           },
+          fishFeed: { src: "assets/audio/fish-feed-v183.wav", volume: .40 },
           dogBark: {
             src: "assets/audio/dog-bark-before-dig.mp3",
             volume: .78,
@@ -15078,9 +15080,10 @@
         const id = greeting.sound === "whine" ? "rivalDogWhine" : "rivalDogBark";
         const sample = gameAudioSample(id);
         if (!sample) return false;
-        sample.playbackRate = greeting.rate;
-        sample.preservesPitch = false;
-        sample.webkitPreservesPitch = false;
+        const whine = greeting.sound === "whine";
+        sample.playbackRate = whine ? Math.max(.94, Math.min(1.04, greeting.rate)) : greeting.rate;
+        sample.preservesPitch = whine;
+        sample.webkitPreservesPitch = whine;
         const played = playGameAudioSample(id);
         if (played) rivalDogLastSound = now;
         return played;
@@ -21425,6 +21428,8 @@
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
         changed:()=>{save();render();},paintRivals:paintRivalGuide,pose:aquariumFishPose,
+        feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
+        stopFeedSound:()=>stopGameAudioSample("fishFeed"),
         ratio:id=>{const [w,h]=fishFrameFallbackSizes[id]||[320,160];return w/h;},
         sizeLabel:(id,length)=>fishSizeTierAt(id,length)?.label||"幼魚",
         drawFish:(element,id,frame)=>{const cells=fishSwimFrameCounts[id]||8,n=frame%cells,key=`${id}:${n}`;
@@ -21677,7 +21682,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=182-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=183-1").catch(() => {});
       renderRecord();
     </script>
   </body>

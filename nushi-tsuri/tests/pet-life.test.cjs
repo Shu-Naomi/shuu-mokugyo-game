@@ -37,9 +37,9 @@ test('each dog has its own daily petting/training limit and earned ability contr
 test('live fish purchase is atomic, unique and separate from catches; full tanks or insufficient funds cost nothing',()=>{
   const s=state(),before=copy(s.caught);
   const a=P.acquire(s,'moroko',catalog,0);assert.equal(a.ok,true);assert.equal(a.fish.length,750);assert.equal(s.money,9700);
-  for(let i=1;i<P.CAPACITY;i++)assert.equal(P.acquire(s,'moroko',catalog,0).ok,true);
+  for(let i=1;i<P.CAPACITY*P.TANK_CAPACITY;i++)assert.equal(P.acquire(s,'moroko',catalog,0).ok,true);
   const full=copy(s);assert.equal(P.acquire(s,'moroko',catalog,0).ok,false);assert.deepEqual(s,full);
-  assert.equal(new Set(s.petLife.fish.map(f=>f.uid)).size,P.CAPACITY);assert.deepEqual(s.caught,before);
+  assert.equal(new Set(s.petLife.fish.map(f=>f.uid)).size,P.CAPACITY*P.TANK_CAPACITY);assert.deepEqual(s.caught,before);
   const poor=state({money:299});const original=copy(poor);assert.equal(P.acquire(poor,'moroko',catalog,0).ok,false);assert.deepEqual(poor,original);
 });
 

@@ -55,7 +55,7 @@ test('repeated renders keep one loop; returning to a place resumes it, with a bo
   const context=audioContext(),player=Sound.createMusicPlayer({load:async()=>({duration:90})});
   await player.set('map-summer',context,{});
   for(let i=0;i<25;i++)await player.set('map-summer',context,{});
-  assert.equal(context.sources.length,1);assert.equal(context.sources[0].loopEnd,40);
+  assert.equal(context.sources.length,1);assert.equal(context.sources[0].loopEnd,Sound.tracks["map-summer"].duration);
   context.currentTime+=9.25;player.stop(.1);
   assert.ok(context.sources[0].stopTime-context.currentTime<=.12);
   context.sources[0].finish();
@@ -119,5 +119,5 @@ test('all twelve different original scores and two wildlife loops decode fully a
     const decoded=execFileSync('ffmpeg',['-v','error','-i',path.join(root,src),'-f','f32le','-ac','1','-ar','8000','pipe:1'],{maxBuffer:2*1024*1024});
     assert.ok(Math.abs(decoded.length/4/8000-48)<.1);assert.ok(sw.includes('./'+src));
   }
-  for(const module of ['music-tracks','soundscape'])assert.ok(sw.includes(`./${module}.js?v=170-1`));
+  for(const module of ['music-tracks','soundscape'])assert.ok(sw.includes(`./${module}.js?v=${module==="music-tracks"?"183-1":"170-1"}`));
 });

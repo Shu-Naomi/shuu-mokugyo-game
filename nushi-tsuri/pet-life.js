@@ -2,7 +2,7 @@
 (function(root,factory){const api=factory();if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
   "use strict";
-  const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6;
+  const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6,TANK_CAPACITY=5;
   const num=(v,fallback=0)=>Number.isFinite(Number(v))?Number(v):fallback;
   const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,num(v,lo)));
   const int=(v,lo=0,hi=1e9)=>Math.floor(clamp(v,lo,hi));
@@ -14,18 +14,18 @@
   ];
   const kinds={bond:"なつき度コンテスト",tricks:"芸コンテスト",fish:"魚の品評会"};
   function normalize(state,catalog,dogIds,day){
-    const old=record(state.petLife),migrated=old.version!==1;
+    const old=record(state.petLife),migrated=!(old.version>=1);
     state.dogAffinity=record(state.dogAffinity);state.dogTricks=record(state.dogTricks);
     for(const id of dogIds){
       state.dogAffinity[id]=migrated?int(state.dogAffinity[id],0,100)*20:int(state.dogAffinity[id],0,DOG_MAX);
       state.dogTricks[id]=int(state.dogTricks[id],0,TRICK_MAX);
     }
     const used=new Set();
-    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY).flatMap(f=>{
+    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY*TANK_CAPACITY).flatMap((f,index)=>{
       const spec=catalog.find(s=>s.id===f?.species);
       if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(spec.id==="nushi"&&!(state.caught?.nushi>0)))return [];
       used.add(f.uid);const bornSize=int(f.bornSize,spec.min||spec.start,spec.max);
-      return [{uid:f.uid,species:spec.id,bornSize,length:int(f.length,bornSize,spec.max),
+      return [{uid:f.uid,species:spec.id,tank:old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),
         acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
         fedDay:int(f.fedDay,-1,day),changedDay:int(f.changedDay,-1,day),
         water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,day+1)}];
@@ -41,11 +41,21 @@
       ? {kind:last.kind,course:last.course,name:last.name.slice(0,40),day:int(last.day,0,day),score:int(last.score,0,100),
         rank:int(last.rank,1,4),reward:int(last.reward,0,1600),marks:Array.isArray(last.marks)?last.marks.slice(0,5).map(Boolean):[],
         detail:typeof last.detail==="string"?last.detail.slice(0,160):""}:null;
-    state.petLife={version:1,fish:specimens,food:int(old.food??10,0,99999),
+    // v182's individual tanks retain their positions and every specimen's history.
+    // Repair invalid assignments into compatible empty space without duplicating fish.
+    const placed=[];
+    for(const f of specimens){
+      const fits=t=>placed.filter(a=>a.tank===t).length<TANK_CAPACITY&&placed.filter(a=>a.tank===t).every(a=>waterKind(catalog,a.species)===waterKind(catalog,f.species));
+      if(!fits(f.tank))f.tank=Array.from({length:CAPACITY},(_,i)=>i).find(fits);
+      if(f.tank!==undefined)placed.push(f);
+    }
+    state.petLife={version:2,fish:placed,food:int(old.food??10,0,99999),
       nextId:Math.max(int(old.nextId,1),...specimens.map(f=>Number(f.uid.slice(4))+1)),
-      selected:used.has(old.selected)?old.selected:specimens[0]?.uid||null,
+      selected:placed.some(f=>f.uid===old.selected)?old.selected:placed[0]?.uid||null,
+      selectedTank:int(old.selectedTank??placed.find(f=>f.uid===old.selected)?.tank??placed[0]?.tank??0,0,CAPACITY-1),
       nushiClaimed:old.nushiClaimed===true||specimens.some(f=>f.species==="nushi"),dogDaily,entries,best,lastResult};
-    sync(state,catalog,day);return state.petLife;
+    sync(state,catalog,day);for(let t=0;t<CAPACITY;t++)shareWater(state,t);
+    selectTank(state,state.petLife.selectedTank);return state.petLife;
   }
   function sync(state,catalog,day){
     if(!state.petLife)return false;let changed=false;
@@ -60,31 +70,61 @@
     }return changed;
   }
   const selected=state=>state.petLife.fish.find(f=>f.uid===state.petLife.selected)||null;
-  function acquire(state,species,catalog,day){
+  const residents=(state,tank=state.petLife.selectedTank)=>state.petLife.fish.filter(f=>f.tank===tank);
+  const waterKind=(catalog,species)=>catalog.find(s=>s.id===species)?.waterLabel||"淡水";
+  const canHouse=(state,species,catalog,tank)=>Number.isInteger(tank)&&tank>=0&&tank<CAPACITY&&residents(state,tank).length<TANK_CAPACITY&&residents(state,tank).every(f=>waterKind(catalog,f.species)===waterKind(catalog,species));
+  function shareWater(state,tank){
+    const group=residents(state,tank);if(!group.length)return;
+    const water=Math.min(...group.map(f=>f.water)),changedDay=Math.max(...group.map(f=>f.changedDay));
+    for(const f of group){f.water=water;f.changedDay=changedDay;}
+  }
+  function selectTank(state,tank){
+    if(!Number.isInteger(tank)||tank<0||tank>=CAPACITY)return false;
+    state.petLife.selectedTank=tank;
+    if(!residents(state,tank).some(f=>f.uid===state.petLife.selected))state.petLife.selected=residents(state,tank)[0]?.uid||null;
+    return true;
+  }
+  function moveFish(state,uid,tank,catalog,day){
+    sync(state,catalog,day);const f=state.petLife.fish.find(f=>f.uid===uid);
+    if(!f||f.tank===tank||!canHouse(state,f.species,catalog,tank))return {ok:false,message:"同じ水の種類で、空きのある水槽を選ぼう（1槽5匹まで）。"};
+    f.tank=tank;shareWater(state,tank);selectTank(state,tank);state.petLife.selected=uid;
+    return {ok:true,message:`水槽${tank+1}へお引っ越しした。エサや成長の記録もそのままだよ。`};
+  }
+  function acquire(state,species,catalog,day,tank=null){
     const p=state.petLife,spec=catalog.find(f=>f.id===species);
     if(!spec)return {ok:false,message:"この魚は迎えられない。"};
-    if(p.fish.length>=CAPACITY)return {ok:false,message:`飼育水槽は${CAPACITY}槽とも使用中だよ。`};
+    if(tank===null)tank=[p.selectedTank,...Array.from({length:CAPACITY},(_,i)=>i)].find(t=>canHouse(state,species,catalog,t));
+    if(!canHouse(state,species,catalog,tank))return {ok:false,message:"この水槽は満員か、水の種類が違うよ。1槽5匹まで迎えられる。"};
     if(species==="nushi"&&(!(state.caught?.nushi>0)||p.nushiClaimed))return {ok:false,message:"ヌシを釣った記録があると、一匹を飼育水槽へ迎えられる。"};
     if(!Number.isFinite(state.money)||state.money<spec.price)return {ok:false,message:`${spec.price}円が必要だよ。`};
     state.money-=spec.price;
     const initial=species==="nushi"?int(state.sizeRecords?.nushi?.hundredths??spec.start,spec.min||spec.start,spec.max):spec.start;
-    const f={uid:`pet-${p.nextId++}`,species,bornSize:initial,length:initial,acquiredDay:day,lastDay:day,
+    sync(state,catalog,day);
+    const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,acquiredDay:day,lastDay:day,
       fedDay:-1,changedDay:-1,water:100,health:90,careDays:0};
-    p.fish.push(f);p.selected=f.uid;if(species==="nushi")p.nushiClaimed=true;
+    p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);if(species==="nushi")p.nushiClaimed=true;
     return {ok:true,message:`${spec.name}（${cm(f.length)}cm）を飼育水槽へ迎えた。`,fish:f};
+  }
+  function rehome(state,uid,catalog,day){
+    const p=state.petLife,index=p.fish.findIndex(f=>f.uid===uid),f=p.fish[index];
+    if(!f||f.species==="nushi")return {ok:false,message:"この魚は託せないよ。ヌシは一度だけ迎えられる一匹だよ。"};
+    sync(state,catalog,day);p.fish.splice(index,1);selectTank(state,p.selectedTank);
+    return {ok:true,message:`${catalog.find(a=>a.id===f.species)?.name||"魚"} #${f.uid.slice(4)}をアスアルに託した。水槽に空きができたよ。`};
   }
   function care(state,uid,action,day,catalog){
     sync(state,catalog,day);const p=state.petLife,f=p.fish.find(f=>f.uid===uid);
     if(!f)return {ok:false,message:"先にお世話する魚を選ぼう。"};
+    const group=residents(state,f.tank);
     if(action==="feed"){
-      if(f.fedDay===day)return {ok:false,message:"今日はエサをあげたよ。また明日ね。"};
-      if(p.food<1)return {ok:false,message:"魚のエサはアスアルのお店で買えるよ。"};
-      p.food--;f.fedDay=day;f.health=int(f.health+2,20,100);
-      return {ok:true,message:"エサをぱくっ。水質40%以上で日付が変わると、約0.1cm成長するよ。"};
+      const hungry=group.filter(a=>a.fedDay!==day);
+      if(!hungry.length)return {ok:false,message:"今日はみんなエサを食べたよ。また明日ね。"};
+      if(p.food<hungry.length)return {ok:false,message:`この水槽には${hungry.length}食必要だよ。エサはアスアルのお店で買えるよ。`};
+      p.food-=hungry.length;for(const a of hungry){a.fedDay=day;a.health=int(a.health+2,20,100);}
+      return {ok:true,fed:hungry.map(a=>a.uid),message:`${hungry.length}匹がエサをぱくっ。水質40%以上で翌日になると、約0.1cm成長するよ。`};
     }
     if(action==="water"){
-      if(f.changedDay===day||f.water>=100)return {ok:false,message:"水はきれいだよ。水換えは一日一回まで。"};
-      f.water=100;f.changedDay=day;f.health=int(f.health+2,20,100);
+      if(group.every(a=>a.changedDay===day)||group.every(a=>a.water>=100))return {ok:false,message:"水はきれいだよ。水換えは一日一回まで。"};
+      for(const a of group){a.water=100;a.changedDay=day;a.health=int(a.health+2,20,100);}
       return {ok:true,message:"きれいな水に入れ替えた。魚が気持ちよさそうに泳いでいる。"};
     }return {ok:false,message:"お世話の方法を選ぼう。"};
   }
@@ -141,6 +181,6 @@
       day,score,rank,reward,detail,marks};return {ok:true,result:p.lastResult};
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,courses,kinds,normalize,sync,selected,acquire,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm});
 });
