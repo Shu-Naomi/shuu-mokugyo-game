@@ -1,11 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v183-season-aquarium-183-1";
+const CACHE_NAME = "nushi-tsuri-v184-aquarium-turn-184-1";
 const CORE_ASSETS = [
   "./",
   "./index.html",
   "./pet-life.js?v=183-1",
-  "./pet-life-ui.js?v=183-1",
-  "./aquarium-life.js?v=183-1",
+  "./pet-life-ui.js?v=184-1",
+  "./aquarium-life.js?v=184-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=183-1",
   "./rival-anglers.js?v=181-1",

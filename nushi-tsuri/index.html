@@ -6569,7 +6569,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v183</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v184</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7283,8 +7283,8 @@
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="pet-life.js?v=183-1"></script>
-    <script src="aquarium-life.js?v=183-1"></script>
-    <script src="pet-life-ui.js?v=183-1"></script>
+    <script src="aquarium-life.js?v=184-1"></script>
+    <script src="pet-life-ui.js?v=184-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -15626,6 +15626,7 @@
         const id = normalizeAquariumFishId(s.homeAquariumFishId);
         if (id !== aquariumRenderedFishId) {
           aquariumRenderedFishId = id;
+          if (id) prepareAquariumFish(id);
           aquariumElapsed = 0;
           aquariumLastTime = null;
           for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"]) {
@@ -15666,7 +15667,7 @@
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
         const width = Math.max(18, Math.min(36, 18 * Math.sqrt(lengthCm / 10)));
         const left = width / 2 + 4, right = 100 - left;
-        const travel = bottomDweller ? 18 : 14, turn = .7;
+        const travel = bottomDweller ? 18 : 14, turn = 1.2;
         const leg = travel + turn;
         const cycle = elapsed % (leg * 2);
         const direction = cycle < leg ? 1 : -1;
@@ -15675,12 +15676,30 @@
         const eased = progress * progress * (3 - 2 * progress);
         const x = direction > 0
           ? left + (right - left) * eased : right - (right - left) * eased;
-        // Turn in place at zero travel speed, then ease into the next pass.
-        const facing = local <= travel ? direction
-          : direction * Math.cos(Math.PI * (local - travel) / turn);
+        // Let the hand-drawn five-angle sequence show the body turning.
+        // The direction is geometric; it is never used as a CSS scale.
+        const turning = Math.max(0, Math.min(1, (local - travel) / turn));
+        const turnEase = turning * turning * (3 - 2 * turning);
+        const yaw = Math.PI * (direction > 0 ? turnEase : 1 - turnEase);
         const y = (bottomDweller ? 64 : 46) +
           Math.sin(elapsed * Math.PI / 9) * (bottomDweller ? .8 : 1.25);
-        return { x, y, facing, width, bottomDweller };
+        return { x, y, ...ShuAquariumLife.orientation(yaw), width, bottomDweller };
+      }
+      function prepareAquariumFish(id) {
+        fishAtlasImage(fishAssets[id]);
+        for (let frame = 0; frame < 5; frame += 1)
+          fishAtlasImage(standaloneFishFrameAsset(id, fishTurnAssets[id], frame) || fishTurnAssets[id]);
+      }
+      function drawAquariumSprite(element, id, swimFrame, pose = null) {
+        const turning = pose?.spriteMode === "turn";
+        const cells = turning ? 5 : fishSwimFrameCounts[id] || 8;
+        const frame = turning ? pose.turnFrame : swimFrame % cells;
+        const asset = turning ? fishTurnAssets[id] : fishAssets[id];
+        const key = `${id}:${turning ? "turn" : "swim"}:${frame}`;
+        if (element.dataset.aquariumFrame !== key) {
+          drawFishAtlasFrame(element, asset, cells, frame, id);
+          element.dataset.aquariumFrame = key;
+        }
       }
       function drawAquariumFish() {
         const id = aquariumRenderedFishId;
@@ -15706,12 +15725,8 @@
           element.style.height = `${pixelWidth * height / width}px`;
           element.style.left = `${pose.x}%`;
           element.style.top = `${pose.y}%`;
-          element.style.transform = `translate(-50%, -50%) scaleX(${pose.facing})`;
-          const key = `${id}:${frame}`;
-          if (element.dataset.aquariumFrame !== key) {
-            drawFishAtlasFrame(element, fishAssets[id], cells, frame, id);
-            element.dataset.aquariumFrame = key;
-          }
+          element.style.transform = `translate(-50%, -50%) scaleX(${pose.flip})`;
+          drawAquariumSprite(element, id, frame, pose);
         }
       }
       function playerHomeMoveTarget(area, x, y, direction) {
@@ -21432,8 +21447,7 @@
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
         ratio:id=>{const [w,h]=fishFrameFallbackSizes[id]||[320,160];return w/h;},
         sizeLabel:(id,length)=>fishSizeTierAt(id,length)?.label||"幼魚",
-        drawFish:(element,id,frame)=>{const cells=fishSwimFrameCounts[id]||8,n=frame%cells,key=`${id}:${n}`;
-          if(element.dataset.petFrame!==key){drawFishAtlasFrame(element,fishAssets[id],cells,n,id);element.dataset.petFrame=key;}}
+        prepareFish:prepareAquariumFish,drawFish:drawAquariumSprite
       });
       $("#openPetAquarium").onclick=()=>petUi.open("aquarium");
       $("#homePetAquarium").onclick=()=>petUi.open("aquarium");
@@ -21682,7 +21696,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=183-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=184-1").catch(() => {});
       renderRecord();
     </script>
   </body>
