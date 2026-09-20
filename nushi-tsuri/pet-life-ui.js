@@ -74,6 +74,7 @@
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",zoom);
       modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message" role="status">${esc(message||"毎日、少しずつ仲良くなろう。")}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
       ctx.paintRivals();
+      if(mode==="aquarium")for(const f of P.residents(s))ctx.prepareFish?.(f.species);
       for(const el of modal.querySelectorAll("[data-pet-preview]"))ctx.drawFish(el,el.dataset.petPreview,0);
       if(live())start();
     }
@@ -88,12 +89,12 @@
           for(const pose of poses){
             const el=modal.querySelector(`[data-pet-fish="${pose.uid}"]`),pellet=modal.querySelector(`[data-pet-pellet="${pose.uid}"]`);if(!el)continue;
             el.style.width=`${pose.width}px`;el.style.height=`${pose.height}px`;el.style.left=`${pose.x}px`;el.style.top=`${pose.y}px`;
-            el.style.transform=`translate(-50%,-50%) scaleX(${pose.facing})${pose.bite?" scaleY(1.08)":""}`;
+            el.style.transform=`translate(-50%,-50%) scaleX(${pose.flip})${pose.bite?" scaleY(1.08)":""}`;
             el.style.opacity=pose.depth;el.style.zIndex=String(5+Math.round(pose.y));
             el.classList.toggle("pet-biting",pose.bite);
             if(pellet){pellet.hidden=!pose.food; if(pose.food){pellet.style.left=`${pose.food.x}px`;pellet.style.top=`${pose.food.y}px`;}}
-            ctx.drawFish(el,pose.species,reduced?0:Math.floor(elapsed/(pose.bottomDweller?.24:.18)));
-            lastPoses[pose.uid]={x:pose.x,y:pose.y,facing:pose.facing};
+            ctx.drawFish(el,pose.species,reduced?0:Math.floor(elapsed/(pose.bottomDweller?.24:.18)),pose);
+            lastPoses[pose.uid]={x:pose.x,y:pose.y,yaw:pose.yaw};
           }
           if(feeding){
             const age=elapsed-feeding.at;
