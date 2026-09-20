@@ -2680,155 +2680,6 @@
         line-height: 1.45;
       }
       .star-fortune-lineup b { color: #ffe28a; }
-      .fortune-reveal {
-        position: absolute;
-        z-index: 24;
-        inset: 0;
-        display: none;
-        place-items: center;
-        padding: 18px;
-        overflow: hidden;
-        background:
-          radial-gradient(circle at 50% 48%, #fff0a250, transparent 30%),
-          #071524d9;
-        color: #fff7cf;
-        text-align: center;
-        pointer-events: none;
-      }
-      .fortune-reveal[hidden] { display: none; }
-      .fortune-reveal.show {
-        display: grid;
-        animation: fortune-curtain-in .28s steps(4, end) both;
-      }
-      .fortune-reveal::before {
-        position: absolute;
-        width: min(72vw, 520px);
-        aspect-ratio: 1;
-        border: 3px double #ffe896b8;
-        border-radius: 50%;
-        box-shadow: 0 0 28px #ffd9688c, inset 0 0 28px #ffd9684c;
-        content: "";
-        animation: fortune-ring 1.15s ease-out both;
-      }
-      .fortune-reveal.jackpot {
-        background:
-          radial-gradient(circle at 50% 46%, #fff6b478, transparent 24%),
-          radial-gradient(circle at 22% 24%, #a86cff50, transparent 27%),
-          radial-gradient(circle at 78% 72%, #5fd9ff4a, transparent 26%),
-          linear-gradient(135deg, #130a2bf2, #40225eee 52%, #100927f2);
-        box-shadow: inset 0 0 90px #ffd85d38;
-      }
-      .fortune-reveal.jackpot::before {
-        width: min(94vw, 680px);
-        border: 0;
-        border-radius: 0;
-        background: repeating-conic-gradient(
-          from 0deg,
-          #fff3a22b 0deg 9deg,
-          transparent 9deg 20deg
-        );
-        box-shadow: none;
-        animation: fortune-jackpot-rays 5s linear infinite;
-      }
-      .fortune-reveal-panel {
-        position: relative;
-        z-index: 2;
-        width: min(440px, 82%);
-        padding: clamp(14px, 3vw, 26px);
-        border: 3px double #ffe697;
-        border-radius: 8px;
-        background: #15273fe8;
-        box-shadow: 0 0 0 3px #553d28, 0 10px 30px #000a, inset 0 0 22px #fff0a11c;
-        animation: fortune-slip-in .48s cubic-bezier(.2, .8, .25, 1.2) both;
-      }
-      .fortune-reveal.jackpot .fortune-reveal-panel {
-        border-color: #fff3a5;
-        background: #25133aeb;
-        box-shadow:
-          0 0 0 4px #77509b,
-          0 0 30px #ffe36ba8,
-          0 12px 34px #000b,
-          inset 0 0 30px #c98dff2e;
-        animation:
-          fortune-slip-in .52s cubic-bezier(.2, .8, .25, 1.2) both,
-          fortune-jackpot-pulse .72s ease-in-out .52s infinite alternate;
-      }
-      .fortune-reveal-symbol {
-        display: block;
-        font-size: clamp(2.1rem, 8vw, 4.5rem);
-        line-height: 1;
-        filter: drop-shadow(0 0 10px #ffe06b);
-      }
-      .fortune-reveal-title {
-        display: block;
-        margin-top: 7px;
-        color: #ffe486;
-        font-size: clamp(1.2rem, 4vw, 2.2rem);
-        letter-spacing: .12em;
-        text-shadow: 2px 3px #55351f, 0 0 12px #ffd45c;
-      }
-      .fortune-reveal.jackpot .fortune-reveal-title {
-        color: #fff6a9;
-        font-size: clamp(1.55rem, 5vw, 2.8rem);
-        text-shadow: 3px 4px #5d2f79, 0 0 16px #fff074;
-      }
-      .fortune-reveal-fortune,
-      .fortune-reveal-message {
-        display: block;
-        margin-top: 6px;
-      }
-      .fortune-reveal-fortune { color: #bdeaff; font-weight: 900; }
-      .fortune-reveal-message {
-        color: #fff8dc;
-        font-size: clamp(.62rem, 1.5vw, .82rem);
-        line-height: 1.45;
-      }
-      .fortune-reveal-sparks {
-        position: absolute;
-        z-index: 1;
-        left: 50%;
-        top: 50%;
-      }
-      .fortune-reveal-sparks i {
-        position: absolute;
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: #fff6a8;
-        box-shadow: 0 0 7px #fff, 0 0 15px #ffd95e;
-        opacity: 0;
-        animation: fortune-spark-flight 1.15s ease-out var(--delay) infinite;
-      }
-      .fortune-reveal.jackpot .fortune-reveal-sparks i {
-        width: 11px;
-        height: 11px;
-        background: #fff;
-        box-shadow: 0 0 8px #fff, 0 0 18px #ffe45f, 0 0 26px #b87cff;
-      }
-      @keyframes fortune-curtain-in {
-        from { opacity: 0; }
-        to { opacity: 1; }
-      }
-      @keyframes fortune-ring {
-        from { opacity: 0; transform: scale(.12); }
-        55% { opacity: 1; }
-        to { opacity: .25; transform: scale(1.12); }
-      }
-      @keyframes fortune-slip-in {
-        from { opacity: 0; transform: translateY(-35px) scale(.72) rotate(-2deg); }
-        to { opacity: 1; transform: translateY(0) scale(1) rotate(0); }
-      }
-      @keyframes fortune-jackpot-rays {
-        to { transform: rotate(360deg); }
-      }
-      @keyframes fortune-jackpot-pulse {
-        to { transform: scale(1.035); filter: brightness(1.15); }
-      }
-      @keyframes fortune-spark-flight {
-        0% { opacity: 0; transform: translate(0, 0) scale(.2); }
-        18% { opacity: 1; }
-        100% { opacity: 0; transform: translate(var(--x), var(--y)) scale(1.25); }
-      }
       .vehicle-shop-shell {
         display: grid;
         grid-template-rows: auto auto auto 1fr auto;
@@ -6080,9 +5931,6 @@
         .catch-special-fx::after,
         .catch-special-fx i,
         .fortune-reveal,
-        .fortune-reveal::before,
-        .fortune-reveal-panel,
-        .fortune-reveal-sparks i,
         .quest-board-marker,
         .hud .sound-toggle.audio-ready {
           animation-duration: .001ms !important;
@@ -6544,6 +6392,7 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
     <link rel="stylesheet" href="pet-life.css?v=183-1" />
+    <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6569,7 +6418,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v184</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v185</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7102,21 +6951,7 @@
               </button>
               <small class="location-note" id="locationNote"></small>
             </div>
-            <div class="fortune-reveal" id="fortuneReveal" role="status" aria-live="assertive" hidden>
-              <div class="fortune-reveal-sparks" aria-hidden="true">
-                <i style="--x:-180px;--y:-92px;--delay:.02s"></i><i style="--x:-95px;--y:-155px;--delay:.18s"></i>
-                <i style="--x:12px;--y:-175px;--delay:.08s"></i><i style="--x:132px;--y:-130px;--delay:.24s"></i>
-                <i style="--x:190px;--y:-35px;--delay:.12s"></i><i style="--x:172px;--y:88px;--delay:.3s"></i>
-                <i style="--x:75px;--y:155px;--delay:.16s"></i><i style="--x:-35px;--y:175px;--delay:.34s"></i>
-                <i style="--x:-145px;--y:120px;--delay:.1s"></i><i style="--x:-198px;--y:18px;--delay:.26s"></i>
-              </div>
-              <div class="fortune-reveal-panel">
-                <i class="fortune-reveal-symbol" id="fortuneRevealSymbol" aria-hidden="true">✨</i>
-                <b class="fortune-reveal-title" id="fortuneRevealTitle">当たり！</b>
-                <span class="fortune-reveal-fortune" id="fortuneRevealFortune">星吉</span>
-                <span class="fortune-reveal-message" id="fortuneRevealMessage"></span>
-              </div>
-            </div>
+            <section class="fortune-reveal" id="fortuneReveal" role="dialog" aria-modal="true" aria-labelledby="fortuneRevealTitle" tabindex="-1" hidden></section>
           </div>
         </div>
         <div class="modal shop-modal" id="vehicleShop">
@@ -7279,6 +7114,7 @@
         </div>
       </main>
     </section>
+    <script src="fortune-capsules.js?v=185-1"></script>
     <script src="music-tracks.js?v=183-1"></script>
     <script src="soundscape.js?v=170-1"></script>
     <script src="weather.js?v=169-1"></script>
@@ -11758,9 +11594,8 @@
         petUi = null,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
-        fortuneRevealTimer = 0,
-        fortuneResultAudioTimer = 0,
         fortuneRevealInProgress = false,
+        fortuneCapsules = null,
         playerHomeTransitionTimer = 0,
         homeDogAnimationTimer = 0,
         homeDogLastTime = null,
@@ -14613,8 +14448,8 @@
             `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
             `<b>🌠 星湖の秘餌</b>：通常${starFortuneChance("baitNushi1")}%／星ぶどう${starFortuneChance("baitNushi1", "lucky")}%（ヌシの深み専用）</p>`;
         }
-        if (activeLocationId === "main-shrine" && Array.isArray(s.starFortuneLastBatch) && s.starFortuneLastBatch.length === 10)
-          markup += `<section class="fortune-batch-results"><h3>前回の10連結果</h3><ol>${s.starFortuneLastBatch.map(result=>`<li>${escapePetText(result?.fortune)}：${escapePetText(result?.message)}</li>`).join("")}</ol></section>`;
+        if (activeLocationId === "main-shrine")
+          markup += ShuFortuneCapsules.historyMarkup(s.starFortuneLastDraw, s.starFortuneLastBatch);
         if (interior.kitchen) markup += cookingKitchenMarkup();
         holder.innerHTML = markup;
         holder.hidden = !markup;
@@ -16177,62 +16012,47 @@
         }
         return null;
       }
+      function stopStarFortuneAudio() {
+        for (const id of ["shrineDrawBell", "fortuneWinBell", "fortuneJackpotConfirm"])
+          stopGameAudioSample(id);
+      }
       function hideStarFortuneReveal({ rerender = true } = {}) {
-        clearTimeout(fortuneRevealTimer);
-        clearTimeout(fortuneResultAudioTimer);
-        fortuneRevealTimer = 0;
-        fortuneResultAudioTimer = 0;
+        fortuneCapsules?.hide({ restoreFocus: false });
         fortuneRevealInProgress = false;
-        const reveal = $("#fortuneReveal");
-        if (reveal) {
-          reveal.classList.remove("show", "jackpot");
-          reveal.hidden = true;
-        }
-        if (rerender && activeLocationId === "main-shrine")
+        if (rerender && activeLocationId === "main-shrine") {
           renderLocationGoods();
+          // The draw buttons were rebuilt; return to an actual live control.
+          const offering = s.starFortuneLastDraw?.offeringId;
+          const buttons = [...document.querySelectorAll("[data-draw-fortune]:not(:disabled)")];
+          (buttons.find(b => b.dataset.drawFortune === offering) || buttons[0] ||
+            $("#locationInterior [data-close]"))?.focus({ preventScroll: true });
+        }
         return true;
       }
-      function showStarFortuneReveal(result) {
-        const reveal = $("#fortuneReveal");
-        if (!reveal || !result) return false;
-        hideStarFortuneReveal({ rerender: false });
-        const jackpot = result.jackpot === true;
-        fortuneRevealInProgress = true;
-        $("#fortuneRevealSymbol").textContent = jackpot ? "🎣✨" : "🔔";
-        $("#fortuneRevealTitle").textContent = jackpot ? "大当たり！" : "当たり！";
-        $("#fortuneRevealFortune").textContent = result.fortune;
-        $("#fortuneRevealMessage").textContent = result.message;
-        reveal.hidden = false;
-        reveal.classList.remove("show", "jackpot");
-        void reveal.offsetWidth;
-        reveal.classList.toggle("jackpot", jackpot);
-        reveal.classList.add("show");
-        playGameAudioSample("shrineDrawBell", { restart: true });
-        fortuneResultAudioTimer = setTimeout(() => {
-          fortuneResultAudioTimer = 0;
-          if (!fortuneRevealInProgress) return;
-          playGameAudioSample(
-            jackpot ? "fortuneJackpotConfirm" : "fortuneWinBell",
-            { restart: true },
-          );
-        }, jackpot ? 950 : 800);
-        fortuneRevealTimer = setTimeout(
-          () => hideStarFortuneReveal(),
-          jackpot ? 5000 : 3200,
-        );
-        return true;
+      function showStarFortuneReveal(results) {
+        if (!Array.isArray(results)) results = [results];
+        fortuneRevealInProgress = fortuneCapsules.show(results);
+        return fortuneRevealInProgress;
       }
       function drawStarFortune(offeringId, count=1) {
         const offering=fieldItemData[offeringId];
         if(activeLocationId!=="main-shrine"||fortuneRevealInProgress||!offering||offering.use!=="offering"||![1,10].includes(count))return false;
         if((s.items[offeringId]||0)<count){setLocationDialogue(`「${offering.name}が${count}個必要だよ」`);return false;}
+        // Commit the whole draw before animation. Opening, skipping, closing
+        // or restoring a capsule never rolls again or grants another prize.
         s.items[offeringId]-=count;
-        const results=Array.from({length:count},()=>grantStarFortunePrize(rollStarFortune(offering.fortune)));
-        if(count===10)s.starFortuneLastBatch=results.map(({fortune,message})=>({fortune,message}));
-        const result=count===1?results[0]:{jackpot:results.some(r=>r.jackpot),fortune:"星みくじ・10連結果",message:results.map((r,i)=>`${i+1}. ${r.message}`).join("\n")};
-        for(const r of results)log(r.logMessage);
-        setLocationDialogue(count===10?"10連の結果が出たよ。下の結果一覧でも確認できる。":`鈴が鳴り、${result.fortune}の札が落ちた。${result.message}`);
-        showStarFortuneReveal(result);renderLocationGoods();renderInventory();render();save();return true;
+        const results=Array.from({length:count},()=>{
+          const prizeId=rollStarFortune(offering.fortune);
+          return {...grantStarFortunePrize(prizeId),prizeId,
+            capsule:ShuFortuneCapsules.colorFor(prizeId,dogCareData[prizeId]?.type)};
+        });
+        const savedResults=ShuFortuneCapsules.safeResults(results);
+        if(count===10)s.starFortuneLastBatch=savedResults;
+        s.starFortuneLastDraw={offeringId,results:savedResults};
+        for(const result of results)log(result.logMessage);
+        save();
+        setLocationDialogue(count===10?"10個の星のカプセルが届いたよ。景品は受け取り済みで、下の一覧でも見返せるよ。":"星のカプセルが届いたよ。開けて贈りものを見てみよう。");
+        showStarFortuneReveal(results);renderLocationGoods();renderInventory();render();return true;
       }
       function openVehicleShop() {
         const owned = s.ownedVehicles
@@ -21439,6 +21259,11 @@
           s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
           "まだ記録はない。";
       }
+      fortuneCapsules = ShuFortuneCapsules.create({
+        element:$("#fortuneReveal"),onClose:()=>hideStarFortuneReveal(),
+        sound:id=>{if(!document.hidden)playGameAudioSample(id,{restart:true});},
+        stopSound:stopStarFortuneAudio
+      });
       petUi = ShuPetUI.create({state:s,catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
@@ -21696,7 +21521,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=184-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=185-1").catch(() => {});
       renderRecord();
     </script>
   </body>

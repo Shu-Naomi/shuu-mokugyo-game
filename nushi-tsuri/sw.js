@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v184-aquarium-turn-184-1";
+const CACHE_NAME = "nushi-tsuri-v185-fortune-capsules-185-1";
 const CORE_ASSETS = [
+  "./fortune-capsules.js?v=185-1",
+  "./fortune-capsules.css?v=185-1",
   "./",
   "./index.html",
   "./pet-life.js?v=183-1",
