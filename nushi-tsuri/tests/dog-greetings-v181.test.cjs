@@ -48,6 +48,8 @@ test('each dog answers actual A presses with its voice and three reactions, with
         assert.equal(node.dataset.reaction,R.dogGreeting(dog.id,turn).action);
         if(turn===1){
           assert.equal(clock.plays.at(-1).id,'rivalDogWhine');
+          assert.ok(clock.plays.at(-1).rate>=.94&&clock.plays.at(-1).rate<=1.04);
+          assert.equal(w.gameAudioSample('rivalDogWhine').preservesPitch,true);
           assert.ok(Number(node.style.getPropertyValue('--greeting-heart'))>0);
           const state=read(w,'rivalDogReaction');
           assert.ok(Math.hypot(state.approachX,state.approachY)<=1.250001);
@@ -159,7 +161,7 @@ test('all animated poses retain transparent margins and recognizable artwork',as
 });
 
 test('the friendly whine is a short, unclipped offline asset',()=>{
-  const file='assets/audio/dog-friendly-whine-v181.wav',data=fs.readFileSync(path.join(__dirname,'..',file));
+  const file='assets/audio/dog-friendly-whine-v183.wav',data=fs.readFileSync(path.join(__dirname,'..',file));
   assert.equal(data.toString('ascii',0,4),'RIFF');assert.equal(data.readUInt32LE(24),24000);
   const duration=data.readUInt32LE(40)/2/24000;assert.ok(duration>.5&&duration<1.2);
   let peak=0;for(let i=44;i<data.length;i+=2)peak=Math.max(peak,Math.abs(data.readInt16LE(i)));
