@@ -4,9 +4,9 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="((?:aquarium-life|pet-life(?:-ui)?|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:fortune-capsules|aquarium-life|pet-life(?:-ui)?|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="((?:pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+  .replace(/<link rel="stylesheet" href="((?:fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({
