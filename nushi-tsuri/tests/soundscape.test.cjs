@@ -102,7 +102,7 @@ test('real game scene transitions select music, retain menu context, and stop bi
   }finally{app.dispose();}
 });
 
-test('all twelve different original scores and two wildlife loops decode fully and are cached offline',()=>{
+test('all sixteen different original scores and two wildlife loops decode fully and are cached offline',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   const hashes=new Set();
   for(const [id,track] of Object.entries(Sound.tracks)) {
@@ -113,11 +113,11 @@ test('all twelve different original scores and two wildlife loops decode fully a
     let sum=0,peak=0;for(let i=0;i<count;i++){const v=decoded.readFloatLE(i*4);sum+=v*v;peak=Math.max(peak,Math.abs(v));}
     assert.ok(peak>.12&&peak<.98,id+' avoids silence and clipping');assert.ok(Math.sqrt(sum/count)>.035,id+' remains audible');
   }
-  assert.equal(hashes.size,12,'each place/season has its own composition');
+  assert.equal(hashes.size,16,'each place, season and event has its own composition');
   for(const kind of ['lake','harbor']) {
     const src=`assets/audio/music-v170/${kind}-birds.mp3`;
     const decoded=execFileSync('ffmpeg',['-v','error','-i',path.join(root,src),'-f','f32le','-ac','1','-ar','8000','pipe:1'],{maxBuffer:2*1024*1024});
     assert.ok(Math.abs(decoded.length/4/8000-48)<.1);assert.ok(sw.includes('./'+src));
   }
-  for(const module of ['music-tracks','soundscape'])assert.ok(sw.includes(`./${module}.js?v=${module==="music-tracks"?"183-1":"170-1"}`));
+  for(const module of ['music-tracks','soundscape'])assert.ok(sw.includes(`./${module}.js?v=${"186-1"}`));
 });

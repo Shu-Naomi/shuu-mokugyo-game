@@ -67,7 +67,7 @@ test('each dog answers actual A presses with its voice and three reactions, with
 });
 
 test('rapid input, mute, closing and backgrounding cannot pile up or leave greeting sounds or animation running',()=>{
-  const app=boot({...seed(),soundEnabled:true}),w=app.window,clock=controlledReactions(w);
+  const app=boot({...seed(),soundEnabled:true,tournament:T.create('lakeMasters',500,181)}),w=app.window,clock=controlledReactions(w);
   try{
     approach(w,'jamie');w.action();const initial=clock.plays.length;
     for(let i=0;i<15;i++)w.action();
@@ -92,7 +92,7 @@ test('rapid input, mute, closing and backgrounding cannot pile up or leave greet
 });
 
 test('reduced motion keeps the spoken and written greeting without scheduling a dog animation',()=>{
-  const app=boot({...seed(),soundEnabled:true}),w=app.window,clock=controlledReactions(w);
+  const app=boot({...seed(),soundEnabled:true,tournament:T.create('lakeMasters',500,181)}),w=app.window,clock=controlledReactions(w);
   try{
     w.matchMedia=query=>({matches:query.includes('prefers-reduced-motion')});
     approach(w,'crow');w.action();assert.equal(clock.plays.length,1);
