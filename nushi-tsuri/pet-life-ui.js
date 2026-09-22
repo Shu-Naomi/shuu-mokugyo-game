@@ -61,6 +61,7 @@
       if(!choices.some(a=>a.id===participant))participant=choices[0]?.id||"";
       const entered=p.entries[`${kind}:${course}`]===today;
       const last=p.lastResult;
+      const lastSubject=last?.subject||(last?.kind==="fish"?ctx.catalog.find(f=>f.name===last.name)?.id:ctx.dogs.find(d=>d.name===last?.name)?.id)||"";
       let guide=kind==="bond"?`なつき度で採点。今の評価は${Math.round((s.dogAffinity[participant]||0)/20)}点。`:
         kind==="tricks"?`5つの芸に挑戦。今の一芸あたりの成功率は${Math.round(P.trickChance(s,participant)*100)}%。`:
         "魚種に合わせた成長・体格45点、元気35点、水質20点で採点。";
@@ -68,7 +69,7 @@
         <div class="pet-course-options">${P.courses.map(c=>`<button data-pet-course="${c.id}" aria-pressed="${course===c.id}"><b>${c.name}</b><small>参加費 ${c.fee}円</small></button>`).join("")}</div>
         <p>${guide}</p><p class="pet-note">同点は同順位。各種目・各コースに一日1回参加できるよ。優勝賞金${c.prize}円、2位${Math.floor(c.prize*.5)}円、3位${Math.floor(c.prize*.25)}円。</p>
         ${s.tournament?'<p class="pet-note">釣り大会の終了後に参加できるよ。</p>':""}${btn("enter",entered?"今日は参加済み":`${c.name}に参加する · ${c.fee}円`,entered||!participant||s.money<c.fee||!!s.tournament)}
-        ${last?`<section class="pet-contest-result" aria-label="前回のコンテスト結果"><div class="pet-result-rank">${last.rank===1?"🏆":"🎗️"}<b>${last.rank}位</b></div><div><small>${P.kinds[last.kind]}・${P.courses.find(c=>c.id===last.course).name}／${last.day+1}日目</small><h3>${esc(last.name)} · ${last.score}点</h3><p>${esc(last.detail)}</p>${last.marks.length?`<ol class="pet-trick-results">${last.marks.map((ok,i)=>`<li style="--delay:${i*.2}s">${["おすわり","お手","待て","ターン","キャッチ"][i]} ${ok?"○":"△"}</li>`).join("")}</ol>`:""}<b>賞金 ${last.reward}円 · 受け取り済み</b><p class="pet-note">${last.rank===1?"アスアル「丁寧なお世話が実ったわね。おめでとう」":"アスアル「積み重ねはちゃんと力になる。また一緒に挑戦しましょう」"}</p></div></section>`:""}`;
+        ${last?`<section class="pet-contest-result" aria-label="前回のコンテスト結果">${root.ShuEventCeremony.markup({kind:last.kind,rank:last.rank,subject:lastSubject})}<div class="pet-result-detail"><small>${P.kinds[last.kind]}・${P.courses.find(c=>c.id===last.course).name}／${last.day+1}日目</small><h3>${esc(last.name)} · ${last.score}点</h3><p>${esc(last.detail)}</p>${last.marks.length?`<ol class="pet-trick-results">${last.marks.map((ok,i)=>`<li style="--delay:${i*.2}s">${["おすわり","お手","待て","ターン","キャッチ"][i]} ${ok?"○":"△"}</li>`).join("")}</ol>`:""}<b>賞金 ${last.reward}円 · 受け取り済み</b><p class="pet-note">${last.rank===1?"アスアル「丁寧なお世話が実ったわね。おめでとう」":"アスアル「積み重ねはちゃんと力になる。また一緒に挑戦しましょう」"}</p></div></section>`:""}`;
     }
     function render(){
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",zoom);
@@ -77,6 +78,7 @@
       if(mode==="aquarium")for(const f of P.residents(s))ctx.prepareFish?.(f.species);
       for(const el of modal.querySelectorAll("[data-pet-preview]"))ctx.drawFish(el,el.dataset.petPreview,0);
       if(live())start();
+      ctx.presentationChanged?.();
     }
     function paint(now){
       frame=0;if(!live()||document.hidden){stop();return;}
@@ -156,7 +158,8 @@
     document.addEventListener("visibilitychange",()=>document.hidden?stop():start());
     window.addEventListener("pagehide",stop);
     window.addEventListener("resize",()=>{if(live()&&mode==="aquarium"){stop();start();}});
-    return {open,render,stop,get mode(){return mode;},get active(){return live();}};
+    return {open,render,stop,get mode(){return mode;},get active(){return live();},
+      get music(){return live()&&mode==="shop"&&tab==="contests"?(kind==="fish"?"contest-fish":"contest-pet"):null;}};
   }
   root.ShuPetUI={create};
 })(typeof globalThis!=="undefined"?globalThis:this);

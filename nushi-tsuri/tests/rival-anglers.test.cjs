@@ -67,8 +67,8 @@ test("choosing the masters advertises four entrants and charges the accepted fee
   } finally { app.dispose(); }
 });
 
-test("all seven visitors have reachable, dry conversation approaches on every four-unit grid", () => {
-  const app=boot(),w=app.window;
+test("all seven visitors have reachable, dry tournament approaches on every four-unit grid", () => {
+  const app=boot({...seed(),tournament:T.create("lakeMasters",500,186)}),w=app.window;
   try {
     w.Math.random=()=>.999999;
     const before=progress(w);
@@ -81,7 +81,7 @@ test("all seven visitors have reachable, dry conversation approaches on every fo
           for(const direction of ["up","down","left","right"]){
             if(!isWalkableWorld(x,y))continue;
             s.x=x;s.y=y;s.direction=direction;
-            if(nearbyRival()?.id===${JSON.stringify(p.id)})return true;
+            if((nearbyTournamentNpc()?.id||nearbyRival()?.id)===${JSON.stringify(p.id)})return true;
           } return false;
         })()`);
         assert.equal(reached,true,`${p.id} grid ${ox},${oy}`);
@@ -96,8 +96,8 @@ test("all seven visitors have reachable, dry conversation approaches on every fo
   } finally {app.dispose();}
 });
 
-test("ordinary greetings use bottom portraits, vary lines and own A/B/keyboard without casting", () => {
-  const app=boot({...seed(),x:155,y:28,direction:"down"}),w=app.window;
+test("tournament greetings use bottom portraits, vary lines and own A/B/keyboard without casting", () => {
+  const app=boot({...seed(),x:155,y:28,direction:"down",tournament:T.create("lakeMasters",500,186)}),w=app.window;
   try {
     const before=progress(w);
     w.action();
@@ -111,7 +111,7 @@ test("ordinary greetings use bottom portraits, vary lines and own A/B/keyboard w
     const position=read(w,"[s.x,s.y]");w.move("right");assert.deepEqual(read(w,"[s.x,s.y]"),position);
     assert.deepEqual(progress(w),before);
     click(w,"#back");assert.equal(dialog.classList.contains("open"),false);
-    assert.equal(read(w,"activeRivalId"),null);
+    assert.equal(read(w,"activeTournamentNpcId"),null);
     assert.deepEqual(app.errors,[]);
   } finally {app.dispose();}
 });
@@ -146,7 +146,7 @@ test("shop guide pairs all four owners and dogs; Chappie conversation returns to
 test("visitor layer never duplicates entrants and restores correctly after a village event or reload", () => {
   let app=boot(),w=app.window;
   try {
-    assert.equal(w.document.querySelectorAll("#rivalLayer [data-rival]").length,7);
+    assert.equal(w.document.querySelectorAll("#rivalLayer [data-rival]").length,1);
     offer(w);click(w,'[data-tournament-action="start"]');
     assert.equal(w.document.querySelectorAll("#rivalLayer [data-rival]").length,1);
     assert.equal(w.document.querySelectorAll("#tournamentNpcLayer [data-tournament-npc]").length,4);
@@ -156,7 +156,7 @@ test("visitor layer never duplicates entrants and restores correctly after a vil
     w.eval('ShuTournament.finishEarly(s.tournament);maybePresentTournament()');
     click(w,'[data-tournament-action="finish"]');
     w.eval('s.gameMinutes+=60;render()');
-    assert.equal(w.document.querySelectorAll("#rivalLayer [data-rival]").length,7);
+    assert.equal(w.document.querySelectorAll("#rivalLayer [data-rival]").length,1);
     assert.equal(w.document.querySelector("#tournamentNpcLayer").hidden,true);
     assert.deepEqual(app.errors,[]);
   } finally {app.dispose();}
@@ -190,10 +190,10 @@ test("masters casting, final choice and reloading preserve plans and award only 
     assert.equal(read(w,"s.tournamentRecords.lakeFuna.firstWinAt"),400);
     const claimed=saved(w);app.dispose();app=boot(claimed);w=app.window;
     w.finishTournamentResults();assert.equal(read(w,"s.money"),money+1500);
-    w.eval('s.x=155;s.y=28;s.direction="down";render()');w.action();
-    assert.equal(w.document.querySelector("#tournamentTalkName").textContent,"リアオ・ダモディ");
-    assert.match(w.document.querySelector("#tournamentTalkStatus").textContent,/大会結果/);
-    assert.ok(R.byId("liao").won.some(line=>w.document.querySelector("#tournamentTalkLine").textContent.includes(line)));
+    w.eval('s.x=155;s.y=28;s.direction="down";render()');
+    assert.equal(w.nearbyTournamentNpc(),null,"masters return to work after the results");
+    assert.equal(read(w,"s.tournamentGathering"),null);
+    assert.deepEqual(read(w,"currentRivalPlacements().map(p=>p.id)"),["chappie"]);
     assert.deepEqual(app.errors,[]);
   } finally {app.dispose();}
 });

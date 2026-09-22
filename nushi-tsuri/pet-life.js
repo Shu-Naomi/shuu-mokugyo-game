@@ -39,6 +39,7 @@
     const last=record(old.lastResult);
     const lastResult=kinds[last.kind]&&courses.some(c=>c.id===last.course)&&typeof last.name==="string"
       ? {kind:last.kind,course:last.course,name:last.name.slice(0,40),day:int(last.day,0,day),score:int(last.score,0,100),
+        subject:(last.kind==="fish"?catalog.some(f=>f.id===last.subject):dogIds.includes(last.subject))?last.subject:null,
         rank:int(last.rank,1,4),reward:int(last.reward,0,1600),marks:Array.isArray(last.marks)?last.marks.slice(0,5).map(Boolean):[],
         detail:typeof last.detail==="string"?last.detail.slice(0,160):""}:null;
     // v182's individual tanks retain their positions and every specimen's history.
@@ -178,7 +179,7 @@
     state.money+=reward-c.fee;p.entries[key]=day;p.best[key]=Math.max(p.best[key]||0,score);
     // Fixed result, fee and prize share a save; reopening cannot reroll/claim.
     p.lastResult={kind,course:courseId,name:kind==="fish"?catalog.find(s=>s.id===f.species).name:dog.name,
-      day,score,rank,reward,detail,marks};return {ok:true,result:p.lastResult};
+      subject:kind==="fish"?f.species:dog.id,day,score,rank,reward,detail,marks};return {ok:true,result:p.lastResult};
   }
   const cm=v=>(v/100).toFixed(2);
   return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,care,buyFood,

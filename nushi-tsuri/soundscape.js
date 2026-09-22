@@ -1,5 +1,5 @@
-/* Scene routing and one bounded, cancellable music player. Music never enters
- * the fishing scene. Existing water/operation sounds retain their own mixer. */
+/* Scene routing and one bounded, cancellable music player. Tournament music
+ * accompanies competitive fishing; ordinary fishing keeps water sounds only. */
 (function(root,factory){
   const tracks=typeof module==='object'&&module.exports?require('./music-tracks.js'):root.ShuMusicTracks;
   const api=factory(tracks);
@@ -9,12 +9,14 @@
   const rooms={'home-kitchen':'home','sam-shop':'sam','main-shrine':'shrine',farmhouse:'inn',yaoya:'yaoya',diner:'diner','fish-market':'fish-market'};
   function selectScene(state={}){
     if(!state.active)return {music:null,birds:null};
-    // All phases, including preparation and the catch transition, are music-free.
+    const tournament=state.tournament==='lakeMasters'?'tournament-masters':state.tournament==='lakeFuna'?'tournament-lake':null;
     if(state.fishing){
       const surface=['prep','cast','cast-flight','wait','bite'].includes(state.phase);
       const birds=!surface?null:state.zone==='sea'?(state.locale==='harbor'?'harborBirds':null):state.zone==='river'?null:'lakeBirds';
-      return {music:null,birds};
+      return {music:tournament,birds};
     }
+    if(tournament)return {music:tournament,birds:null};
+    if(['contest-pet','contest-fish'].includes(state.contest))return {music:state.contest,birds:null};
     if(state.store)return {music:'sam',birds:null};
     if(state.location&&rooms[state.location])return {music:rooms[state.location],birds:null};
     if(state.home)return {music:'home',birds:null};

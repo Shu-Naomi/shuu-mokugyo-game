@@ -1,12 +1,19 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v185-fortune-capsules-185-1";
+const CACHE_NAME = "nushi-tsuri-v186-event-celebrations-186-1";
 const CORE_ASSETS = [
+  "./event-ceremony.js?v=186-1",
+  "./event-ceremony.css?v=186-1",
+  "./assets/audio/music-v186/tournament-lake.mp3",
+  "./assets/audio/music-v186/tournament-masters.mp3",
+  "./assets/audio/music-v186/contest-pet.mp3",
+  "./assets/audio/music-v186/contest-fish.mp3",
+
   "./fortune-capsules.js?v=185-1",
   "./fortune-capsules.css?v=185-1",
   "./",
   "./index.html",
-  "./pet-life.js?v=183-1",
-  "./pet-life-ui.js?v=184-1",
+  "./pet-life.js?v=186-1",
+  "./pet-life-ui.js?v=186-1",
   "./aquarium-life.js?v=184-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=183-1",
@@ -18,8 +25,8 @@ const CORE_ASSETS = [
   "./assets/rival-anglers-v179.png",
   "./assets/rival-dogs-v179.png",
   "./assets/tournament-villagers-v175.png",
-  "./music-tracks.js?v=183-1",
-  "./soundscape.js?v=170-1",
+  "./music-tracks.js?v=186-1",
+  "./soundscape.js?v=186-1",
   "./assets/audio/music-v170/boats.mp3",
   "./assets/audio/music-v170/diner.mp3",
   "./assets/audio/music-v170/fish-market.mp3",

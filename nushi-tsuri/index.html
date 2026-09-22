@@ -6392,6 +6392,7 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
     <link rel="stylesheet" href="pet-life.css?v=183-1" />
+    <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
   </head>
   <body>
@@ -6418,7 +6419,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v185</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v186</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7115,12 +7116,13 @@
       </main>
     </section>
     <script src="fortune-capsules.js?v=185-1"></script>
-    <script src="music-tracks.js?v=183-1"></script>
-    <script src="soundscape.js?v=170-1"></script>
+    <script src="music-tracks.js?v=186-1"></script>
+    <script src="soundscape.js?v=186-1"></script>
     <script src="weather.js?v=169-1"></script>
-    <script src="pet-life.js?v=183-1"></script>
+    <script src="event-ceremony.js?v=186-1"></script>
+    <script src="pet-life.js?v=186-1"></script>
     <script src="aquarium-life.js?v=184-1"></script>
-    <script src="pet-life-ui.js?v=184-1"></script>
+    <script src="pet-life-ui.js?v=186-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -11592,6 +11594,7 @@
         samBaitPurchaseCount = 1,
         locationPurchaseCount = 1,
         petUi = null,
+        eventCeremonies = null,
         dogCareSelectedId = null,
         dogCareStatusMessage = "",
         fortuneRevealInProgress = false,
@@ -12158,6 +12161,7 @@
           drawDog();
           drawDogCareScene();
           drawHomeDogs(true);
+          eventCeremonies?.sync();
         };
         image.src = src;
         // Some mobile browsers can finish a cached image before the normal
@@ -12166,11 +12170,13 @@
           drawDog();
           drawDogCareScene();
           drawHomeDogs(true);
+          eventCeremonies?.sync();
         }).catch(() => {});
         setTimeout(() => {
           drawDog();
           drawDogCareScene();
           drawHomeDogs(true);
+          eventCeremonies?.sync();
         }, 300);
         return image;
       }
@@ -12967,7 +12973,7 @@
         zone = battle?.waterZone || "lake",
         locale = battle?.castLocale,
       ) {
-        backgroundMusic.stop(.10);
+        syncSceneSound();
         if (!s.soundEnabled || gameAudio.underwater) return false;
         const sampleId = castingWaterSampleId(zone, locale);
         const activeSample = gameAudio.media[sampleId];
@@ -13083,6 +13089,7 @@
         return ShuSoundscape.selectScene({
           active: $("#game").classList.contains("active"),
           season: ShuPixel.calendar(sceneGameMinutes()).season,
+          tournament: s.tournament?.id, contest: petUi?.music,
           fishing: Boolean(battle), phase: battle?.phase,
           zone: battle?.waterZone || "lake", locale: battle?.castLocale,
           store: $("#store").classList.contains("open"),
@@ -14860,15 +14867,12 @@
         return rivalAtlases.get(src);
       }
       function currentRivalPlacements() {
-        const context = currentTournamentNpcContext();
-        // During village events the visitors give their shore positions to the
-        // contestants. Masters are then drawn by the tournament layer itself.
-        return [
-          ...(!context ? ShuRivals.placements : []),
-          ...ShuRivals.dogPlacements.filter(p => p.id === "chappie"
-            ? !$("#store").classList.contains("open")
-            : !context || context.id === "lakeMasters"),
-        ].filter(p=>!(petUi?.active && petUi.mode==="shop" && ["asual","cloud"].includes(p.id)));
+        // Masters themselves use the tournament layer. Their companions come
+        // only for the masters event; Chappie still greets visitors at Sam's.
+        return ShuRivals.dogPlacements.filter(p => p.id === "chappie"
+          ? !$("#store").classList.contains("open")
+          : s.tournament?.id === "lakeMasters")
+          .filter(p=>!(petUi?.active && petUi.mode==="shop" && p.id==="cloud"));
       }
       function nearbyRival() {
         if (playerHomeIsActive() || battle) return null;
@@ -15031,7 +15035,8 @@
           s.tournamentGathering = null;
           scheduleSave();
         }
-        return s.tournamentGathering?.tournament || null;
+        // v185 saves may still contain the old hour-long masters gathering.
+        return s.tournamentGathering?.tournament.id === "lakeMasters" ? null : s.tournamentGathering?.tournament || null;
       }
       function currentTournamentNpcPlacements() {
         const t = currentTournamentNpcContext();
@@ -15235,11 +15240,12 @@
           const heading = t.reason === "withdrawn" ? "途中終了 · ここまでの記録" :
             t.reason === "rescue" ? "療養のため大会終了 · ここまでの記録" : "計量完了";
           markup = `<p><b>${heading} — ${tied ? "同率" : ""}${player.rank}位</b></p>
+            ${ShuEventCeremony.markup({kind:"angling",rank:player.rank,subject:d.fishId,tied,completed:t.reason==="complete"})}
             ${tournamentRewardMarkup(t)}
             ${tournamentSummary(t)}${tournamentCreel(t)}
             <div class="tournament-table-wrap"><table class="tournament-table"><thead><tr><th>順位</th><th>選手</th><th>匹数</th><th>合計 cm</th><th>最大 cm</th></tr></thead><tbody>${rows.map(row => `<tr${row.id === "player" ? " data-player" : ""}><td>${row.rank}位</td><td>${row.name}</td><td>${row.count}</td><td>${ShuTournament.cm(row.total)}</td><td>${ShuTournament.cm(row.largest)}</td></tr>`).join("")}</tbody></table></div>
             ${tournamentHost(player.count === 0 ? "魚が気まぐれな日もあるさ。エサや深さを変えて、また挑んでみよう" : player.rank === 1 ? "見事な釣果じゃ！ また一緒に腕を競おう" : "いい勝負だったな。次はもっと大きなフナを狙おう")}
-            <p class="tournament-note">合計サイズ → 最大魚の順で比較。両方同じなら同順位。${t.version === 1 ? "この大会は参加時のサムの参考記録と比較するよ。" : "結果を閉じた後も、湖畔のみんなに挨拶できるよ。"}</p>
+            <p class="tournament-note">合計サイズ → 最大魚の順で比較。両方同じなら同順位。${t.version === 1 ? "この大会は参加時のサムの参考記録と比較するよ。" : t.id === "lakeMasters" ? "結果を閉じると、名手たちと相棒犬はそれぞれの仕事へ戻るよ。" : "結果を閉じた後も、湖畔のみんなに挨拶できるよ。"}</p>
             <div class="tournament-actions"><button data-tournament-action="finish">${ShuTournament.resultReward(t)?.eligible ? "成績と賞品を保存して日常へ戻る" : "大会を終えて日常へ戻る"}</button></div>`;
         } else if (view === "withdraw") {
           markup = `${tournamentSummary(t)}<p>ここまでの釣果で大会を終了する？ 残りの投数は使わず、ビクの記録を計量するよ。</p>${ShuTournament.entryFee(t) ? `<p class="tournament-note">途中終了は順位賞・優勝記録の対象外。1投以上なら参加賞は受け取れる。参加費は戻らないよ。</p>` : ""}<div class="tournament-actions"><button data-tournament-action="withdraw">ここで大会を終了する</button><button class="tournament-secondary" data-tournament-action="creel">大会を続ける</button></div>`;
@@ -15252,6 +15258,7 @@
         paintTournamentPortraits();
         paintRivalGuide();
         $("#tournamentModal").scrollTop = 0;
+        eventCeremonies?.sync();
       }
       function openTournament() {
         if (battle || $("#catchCard").classList.contains("show")) return;
@@ -15284,7 +15291,7 @@
         const record = ShuTournament.score(s.tournament.creel);
         const name = ShuTournament.definition(s.tournament).name;
         const nextRecords = ShuTournament.recordResult(s.tournamentRecords, s.tournament, s.gameMinutes);
-        s.tournamentGathering = ShuTournament.gathering(s.tournament, s.gameMinutes);
+        s.tournamentGathering = s.tournament.id === "lakeMasters" ? null : ShuTournament.gathering(s.tournament, s.gameMinutes);
         // Money, items, records and retirement of the result share one save.
         // Closing twice or reloading can never claim a completed result again.
         s.money += reward.money;
@@ -15293,6 +15300,7 @@
         s.tournamentRecords = nextRecords;
         s.tournament = null;
         $("#tournamentModal").classList.remove("open");
+        eventCeremonies?.sync();
         log(`${name}を終了。${record.count}匹・合計${ShuTournament.cm(record.total)}cm。日常の釣りへ戻った。`);
         if (reward.eligible && reward.tier !== "none") log(`大会の賞品：${tournamentPrizeText(reward)}${reward.trophy ? "。優勝を記録した！" : "。"}`);
         if (s.tournamentGathering) showRescueToast("湖畔のみんなにAで挨拶できるよ。しばらくすると、それぞれの仕事へ戻る。", 4200);
@@ -21033,6 +21041,7 @@
         renderRivals();
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
+        eventCeremonies?.sync();
         syncSceneSound();
         renderPixelScenery();
       }
@@ -21052,6 +21061,7 @@
         $(".controls").removeAttribute("aria-hidden");
         $(".controls").inert = false;
         openModals.forEach((x) => x.classList.remove("open"));
+        eventCeremonies?.sync();
         renderTournamentHud();
         if (closingDogCare) cancelDogCareActivity(true, false);
         activeLocationId = null;
@@ -21264,10 +21274,25 @@
         sound:id=>{if(!document.hidden)playGameAudioSample(id,{restart:true});},
         stopSound:stopStarFortuneAudio
       });
+      eventCeremonies = ShuEventCeremony.create({document,paintSubject:(element,pose)=>{
+        if(["bond","tricks"].includes(pose.kind)){
+          if(!dogProfileData[pose.id])return;
+          ensureDogImage(pose.id);
+          let canvas=element.querySelector("canvas");
+          if(!canvas){canvas=document.createElement("canvas");canvas.width=120;canvas.height=120;element.append(canvas);}
+          const context=canvas.getContext("2d");context.imageSmoothingEnabled=false;context.clearRect(0,0,120,120);
+          drawDogCareSprite(context,pose.id,0,-8,pose.dogPose,120);
+        }else if(fishAssets[pose.id]){
+          const [width,height]=fishFrameFallbackSizes[pose.id]||[320,160];
+          element.style.aspectRatio=String(width/height);element.style.height="auto";
+          drawAquariumSprite(element,pose.id,pose.frame);
+        }
+      }});
       petUi = ShuPetUI.create({state:s,catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
         changed:()=>{save();render();},paintRivals:paintRivalGuide,pose:aquariumFishPose,
+        presentationChanged:()=>{eventCeremonies?.sync();syncSceneSound();},
         feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
         ratio:id=>{const [w,h]=fishFrameFallbackSizes[id]||[320,160];return w/h;},
@@ -21521,7 +21546,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=185-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=186-1").catch(() => {});
       renderRecord();
     </script>
   </body>
