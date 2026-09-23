@@ -6419,7 +6419,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v186</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v187</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7115,9 +7115,10 @@
         </div>
       </main>
     </section>
-    <script src="fortune-capsules.js?v=185-1"></script>
+    <script src="fortune-capsules.js?v=187-1"></script>
     <script src="music-tracks.js?v=186-1"></script>
     <script src="soundscape.js?v=186-1"></script>
+    <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=186-1"></script>
@@ -12812,6 +12813,15 @@
           unlockPromise: null,
         };
       const backgroundMusic = ShuSoundscape.createMusicPlayer();
+      const uiAudio = ShuUiFeedback.createPlayer({
+        audio: () => ({ context: gameAudio.context, destination: gameAudio.master }),
+      });
+      const uiFeedback = ShuUiFeedback.create({
+        document,
+        enabled: () => s.soundEnabled && gameAudio.unlocked && !document.hidden,
+        play: kind => uiAudio.play(kind),
+        stop: () => uiAudio.stop(),
+      });
       function ensureAudioContext(resume = true) {
         if (!s.soundEnabled) return null;
         let context = gameAudio.context;
@@ -12947,6 +12957,7 @@
         return true;
       }
       function stopAllGameAudioSamples() {
+        uiFeedback.stop();
         backgroundMusic.stop(.02);
         let stopped = stopRainSound();
         for (const id of Object.keys(gameAudio.media))
@@ -13538,6 +13549,7 @@
       }
       function setSoundEnabled(enabled) {
         s.soundEnabled = Boolean(enabled);
+        if (!s.soundEnabled) uiFeedback.stop();
         if (s.soundEnabled) {
           recoverGameAudio({ announce: true });
         } else {
@@ -21272,6 +21284,7 @@
       fortuneCapsules = ShuFortuneCapsules.create({
         element:$("#fortuneReveal"),onClose:()=>hideStarFortuneReveal(),
         sound:id=>{if(!document.hidden)playGameAudioSample(id,{restart:true});},
+        feedback:kind=>uiFeedback.cue(kind),
         stopSound:stopStarFortuneAudio
       });
       eventCeremonies = ShuEventCeremony.create({document,paintSubject:(element,pose)=>{
@@ -21401,7 +21414,10 @@
         event.stopPropagation();
         handleDogCareCatch();
       };
-      $("#dogCareStage").onclick = () => handleDogCareCatch();
+      $("#dogCareStage").onclick = () => {
+        if (dogCatchGame) uiFeedback.cue("confirm");
+        handleDogCareCatch();
+      };
       document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
         button.onclick = () => setInventoryTab(button.dataset.inventoryTab),
       );
@@ -21442,13 +21458,16 @@
       addEventListener("keydown", recoverGameAudio, { capture: true });
       addEventListener("keydown", (e) => {
         if (dogCatchGame && ["z", "Enter", " "].includes(e.key)) {
+          uiFeedback.cue("confirm", e);
           handleDogCareCatch();
           e.preventDefault();
           return;
         }
         if ($("#catchCard").classList.contains("show")) {
-          if (["z", "x", "Enter", "Escape"].includes(e.key))
+          if (["z", "x", "Enter", "Escape"].includes(e.key)) {
+            uiFeedback.cue(["x", "Escape"].includes(e.key) ? "back" : "confirm", e);
             hideCatchCard();
+          }
           e.preventDefault();
           return;
         }
@@ -21456,11 +21475,13 @@
         if (document.querySelector(".modal.open")) {
           if ($("#tournamentTalk").classList.contains("open") && !nativeInput &&
               (e.key === "z" || (e.key === "Enter" && !e.target?.closest?.("button, a")))) {
+            uiFeedback.cue("confirm", e);
             renderTournamentTalk(true);
             e.preventDefault();
             return;
           }
           if (e.key === "Escape" || (e.key === "x" && !nativeInput)) {
+            uiFeedback.cue("back", e);
             backAction();
             e.preventDefault();
           }
@@ -21469,16 +21490,33 @@
           return;
         }
         if (nativeInput) return;
+        // Focused controls activate through their native click; don't also
+        // route Enter to the field action underneath the button.
+        if (e.key === "Enter" && e.target?.closest?.("button, a") && e.target.id !== "pull") return;
         let m = {
           ArrowLeft: "left",
           ArrowRight: "right",
           ArrowUp: "up",
           ArrowDown: "down",
         }[e.key];
-        if (m) move(m);
-        if (e.key === "z" || e.key === "Enter") battle ? pull() : action();
-        if (e.key === "x" || e.key === "Escape") battle ? wait() : backAction();
-        if (e.key.toLowerCase() === "m" && !battle) toggleFieldMenu();
+        if (m) {
+          if (!battle) uiFeedback.cue("select", e);
+          move(m);
+        }
+        if (e.key === "z" || e.key === "Enter") {
+          uiFeedback.cue("confirm", e);
+          battle ? pull() : action();
+          e.preventDefault();
+        }
+        if (e.key === "x" || e.key === "Escape") {
+          uiFeedback.cue("back", e);
+          battle ? wait() : backAction();
+          e.preventDefault();
+        }
+        if (e.key.toLowerCase() === "m" && !battle) {
+          uiFeedback.cue(fieldMenuIsOpen() ? "back" : "confirm", e);
+          toggleFieldMenu();
+        }
       });
       addEventListener("keyup", (e) => {
         if (e.key === "z" || e.key === "Enter") setBattleReeling(false);
@@ -21546,9 +21584,8 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=186-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=187-1").catch(() => {});
       renderRecord();
     </script>
   </body>
 </html>
-

@@ -1,6 +1,7 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v186-event-celebrations-186-1";
+const CACHE_NAME = "nushi-tsuri-v187-ui-feedback-187-1";
 const CORE_ASSETS = [
+  "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
   "./event-ceremony.css?v=186-1",
   "./assets/audio/music-v186/tournament-lake.mp3",
@@ -8,7 +9,7 @@ const CORE_ASSETS = [
   "./assets/audio/music-v186/contest-pet.mp3",
   "./assets/audio/music-v186/contest-fish.mp3",
 
-  "./fortune-capsules.js?v=185-1",
+  "./fortune-capsules.js?v=187-1",
   "./fortune-capsules.css?v=185-1",
   "./",
   "./index.html",
@@ -298,4 +299,3 @@ self.addEventListener("fetch", (event) => {
       }),
   );
 });
-
