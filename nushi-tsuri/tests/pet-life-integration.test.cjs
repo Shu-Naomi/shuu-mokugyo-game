@@ -119,5 +119,5 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   for(const [file,version] of Object.entries({'pet-life.js':'189-1','pet-life-ui.js':'190-1','aquarium-life.js':'184-1','pet-life.css':'190-1','scene-layers.js':'182-1','layered-scenery.js':'182-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
-  assert.ok(html.includes('./sw.js?v=192-1'));assert.ok(sw.includes('nushi-tsuri-v192-'));
+  assert.ok(html.includes('./sw.js?v=193-1'));assert.ok(sw.includes('nushi-tsuri-v193-'));
 });

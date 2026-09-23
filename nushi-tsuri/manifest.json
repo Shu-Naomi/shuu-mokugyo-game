@@ -4,7 +4,7 @@
   "description": "犬小屋発・和風ぬし釣りゲーム",
   "start_url": "./index.html",
   "scope": "./",
-  "display": "standalone",
+  "display": "fullscreen",
   "orientation": "landscape",
   "background_color": "#f3ead6",
   "theme_color": "#16304d",
