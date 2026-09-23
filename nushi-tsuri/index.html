@@ -5098,8 +5098,8 @@
       .tackle-options .bait-option > i { font-style: normal; font-size: 1.15rem; }
       .tackle-options .bait-option span,
       .tackle-options .bait-option small { display: block; }
-      .tackle-options .bait-option small { color: #b9d8e5; font-size: .56rem; }
-      .tackle-options .bait-option strong { color: #ffe394; }
+      .tackle-options .bait-option small { color: #3c362d; font-size: .69rem; font-weight: 700; line-height: 1.3; }
+      .tackle-options .bait-option strong { color: #473324; }
       .tackle-options .rod-option {
         display: grid;
         grid-template-columns: 44px minmax(0, 1fr);
@@ -5119,7 +5119,7 @@
       .tackle-options .hook-option { display:grid; grid-template-columns:34px 1fr; align-items:center; gap:7px; min-height:48px; text-align:left; }
       .tackle-options .hook-option i { display:grid; place-items:center; font-style:normal; }
       .tackle-options .hook-option span, .tackle-options .hook-option small { display:block; }
-      .tackle-options .hook-option small { color:#c4d9e0; font-size:.56rem; }
+      .tackle-options .hook-option small { color:#3c362d; font-size:.69rem; font-weight:700; line-height:1.3; }
       .tackle-options button:disabled { opacity:.47; }
       .hook-options { grid-template-columns:repeat(3,minmax(102px,1fr)); overflow-x:auto; }
       #inventoryHookOptions { grid-template-columns:1fr; overflow:visible; margin-bottom:12px; }
@@ -5135,7 +5135,7 @@
       .fishdex-chip .tackle-pixel-icon { width:18px; height:18px; display:inline-block; vertical-align:middle; }
       .fishdex-collectible i .tackle-pixel-icon { width:27px; height:27px; }
       .star-fortune-lineup .tackle-pixel-icon { width:20px; height:20px; display:inline-block; vertical-align:middle; }
-      @media (max-height:420px) { .hook-options .hook-option { min-height:44px; padding:4px; } .tackle-options .hook-option small { font-size:.52rem; } }
+      @media (max-height:420px) { .hook-options .hook-option { min-height:44px; padding:4px; } }
       .idle-status {
         position: absolute;
         z-index: 9;
@@ -6443,7 +6443,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v191</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v192</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -21618,7 +21618,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=191-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=192-1").catch(() => {});
       renderRecord();
     </script>
   </body>
