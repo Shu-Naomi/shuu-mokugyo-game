@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v187-ui-feedback-187-1";
+const CACHE_NAME = "nushi-tsuri-v188-aquarium-breeding-188-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -13,11 +13,11 @@ const CORE_ASSETS = [
   "./fortune-capsules.css?v=185-1",
   "./",
   "./index.html",
-  "./pet-life.js?v=186-1",
-  "./pet-life-ui.js?v=186-1",
+  "./pet-life.js?v=188-1",
+  "./pet-life-ui.js?v=188-1",
   "./aquarium-life.js?v=184-1",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=183-1",
+  "./pet-life.css?v=188-1",
   "./rival-anglers.js?v=181-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",

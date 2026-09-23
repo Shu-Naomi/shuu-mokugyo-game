@@ -6391,7 +6391,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
-    <link rel="stylesheet" href="pet-life.css?v=183-1" />
+    <link rel="stylesheet" href="pet-life.css?v=188-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
   </head>
@@ -6419,7 +6419,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v187</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v188</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span>🪱 <b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7121,9 +7121,9 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=186-1"></script>
+    <script src="pet-life.js?v=188-1"></script>
     <script src="aquarium-life.js?v=184-1"></script>
-    <script src="pet-life-ui.js?v=186-1"></script>
+    <script src="pet-life-ui.js?v=188-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -11492,6 +11492,7 @@
           ? { id: value.id, expiresAt }
           : null;
       }
+      const hadStoredSave = localStorage.getItem(key) !== null;
       let s = Object.assign(
           {
             money: 300,
@@ -12120,7 +12121,13 @@
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
           waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai"].includes(f.id)?"海水":"淡水"};
       });
-      ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex);
+      ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
+      function petBirthMessage(state = s) {
+        const birth=state.petLife?.lastBirth;
+        if(!birth||birth.day!==gameClockAt(state.gameMinutes).dayIndex)return "";
+        const name=petCatalog.find(f=>f.id===birth.species)?.name;
+        return name?`水槽${birth.tank+1}で${name}の稚魚が生まれた！`:"";
+      }
       s.tournament = ShuTournament.normalize(s.tournament);
       s.tournamentGathering = ShuTournament.normalizeGathering(s.tournamentGathering, s.gameMinutes);
       s.tournamentRecords = ShuTournament.normalizeRecords(s.tournamentRecords);
@@ -15374,9 +15381,10 @@
         if (s.tournament) { showRescueToast("休むときは、大会ビクから大会を終了しよう。"); return false; }
         sleepUntilNextMorning(s);
         s.hp = s.maxHp;
-        const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。`;
+        const birth=petBirthMessage();
+        const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。${birth}`;
         log(message);
-        showRescueToast("🛏️ 翌朝06:00まで休んだ。体力全回復！", 2800);
+        showRescueToast(`🛏️ 翌朝06:00まで休んだ。体力全回復！${birth?` 🐟 ${birth}`:""}`, birth?4200:2800);
         vibrate(20);
         render();
         save();
@@ -16090,7 +16098,7 @@
           sleepUntilNextMorning(s);
           s.hp = s.maxHp;
           s.calmBonus = Math.max(s.calmBonus, 1);
-          setLocationDialogue("布団へ横になると、湖と水車の音だけが聞こえた。翌朝六時、傷も疲れもすっかり癒えて目を覚ました。");
+          setLocationDialogue(`布団へ横になると、湖と水車の音だけが聞こえた。翌朝六時、傷も疲れもすっかり癒えて目を覚ました。${petBirthMessage()}`);
           log(`湖畔の釣り宿へ泊まり、${gameClockLabel(s.gameMinutes)}に起きた。体力が全回復し、次の釣りも少し穏やかになる。`);
         } else if (activeLocationId === "yaoya" || activeLocationId === "diner") {
           renderLocationGoods();
@@ -21584,7 +21592,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=187-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=188-1").catch(() => {});
       renderRecord();
     </script>
   </body>

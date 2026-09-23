@@ -9,7 +9,7 @@ const catalog=[{id:'moroko',name:'モロコ',start:750,min:100,max:1799,price:30
  {id:'aji',name:'アジ',start:1000,min:500,max:4999,price:550,waterLabel:'海水'},
  {id:'nushi',name:'ヌシ',start:12000,min:10000,max:29999,price:0,waterLabel:'淡水'}];
 const ids=['shuu','riku','grey'];
-function state(){const s={money:100000,caught:{nushi:1},dogAffinity:{shuu:50}};P.normalize(s,catalog,ids,0);return s;}
+function state(){const s={money:100000,caught:{nushi:1,moroko:1,koi:1,aji:1},dogAffinity:{shuu:50}};P.normalize(s,catalog,ids,0);return s;}
 const copy=x=>JSON.parse(JSON.stringify(x));
 const click=(w,q)=>{const b=w.document.querySelector(q);assert.ok(b,q);assert.equal(b.disabled,false,q);b.click();};
 
@@ -45,7 +45,7 @@ test('a full aquarium can rehome one ordinary fish and adopt the unique nushi wi
 });
 
 test('rehome requires confirming the selected specimen; cancel, fish changes, double clicks and reload are safe',()=>{
- const app=boot({...seed(),money:20000,x:199,y:36}),w=app.window;let saved;
+ const app=boot({...seed(),caught:{...seed().caught,moroko:1},money:20000,x:199,y:36}),w=app.window;let saved;
  try{
   click(w,'#action');for(let i=0;i<5;i++)click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');
   click(w,'[data-pet-action="rehome"]');assert.equal(read(w,'s.petLife.fish.length'),5);
@@ -96,7 +96,7 @@ test('one physical scale shows small and large fish distinctly without clipping 
 });
 
 test('UI buys five residents, feeds once with five synchronized bites, moves a fish and survives closing/muting/reload',()=>{
- const app=boot({...seed(),money:20000,x:199,y:36,soundEnabled:true},{petTankStage:[560,290]}),w=app.window;let saved;
+ const app=boot({...seed(),caught:{...seed().caught,moroko:1},money:20000,x:199,y:36,soundEnabled:true},{petTankStage:[560,290]}),w=app.window;let saved;
  const frames=new Map();let nextId=1000,now=0;
  w.requestAnimationFrame=fn=>{const id=++nextId;frames.set(id,fn);return id;};w.cancelAnimationFrame=id=>frames.delete(id);
  const step=ms=>{now+=ms;const pending=[...frames.values()];frames.clear();pending.forEach(fn=>fn(now));};
@@ -117,7 +117,7 @@ test('UI buys five residents, feeds once with five synchronized bites, moves a f
 });
 
 test('silent and reduced-motion feeding still saves care, without late sounds after backgrounding',()=>{
- const app=boot({...seed(),x:199,y:36,soundEnabled:false},{petTankStage:[360,205]}),w=app.window;let bites=0;
+ const app=boot({...seed(),caught:{...seed().caught,moroko:1},x:199,y:36,soundEnabled:false},{petTankStage:[360,205]}),w=app.window;let bites=0;
  try{
   w.matchMedia=()=>({matches:true});w.gameAudioSample('fishFeed').play=()=>{bites++;return Promise.resolve();};
   click(w,'#action');click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');click(w,'[data-pet-action="feed"]');

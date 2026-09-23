@@ -69,7 +69,7 @@ test('ten fortune draws consume ten offerings, award ten actual prizes, block re
 });
 
 test('A enters Asual’s shop; buying, portable feeding, sleep, water change, zoom and reload share one specimen without unlocking catches',()=>{
-  const app=boot({...seed(),x:199,y:36,soundEnabled:false},{petTankStage:[360,180]}),w=app.window;let saved;
+  const app=boot({...seed(),caught:{...seed().caught,moroko:1},x:199,y:36,soundEnabled:false},{petTankStage:[360,180]}),w=app.window;let saved;
   try{
     const old=read(w,'({caught:s.caught,records:s.sizeRecords,display:s.homeAquariumFishId})');
     click(w,'#action');assert.equal(w.document.querySelector('#petLifeModal').classList.contains('open'),true);assert.match(w.document.querySelector('#petLifeTitle').textContent,/アスアル/);
@@ -117,6 +117,6 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'186-1','pet-life-ui.js':'186-1','aquarium-life.js':'184-1','pet-life.css':'183-1','scene-layers.js':'182-1','layered-scenery.js':'182-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
-  assert.ok(html.includes('./sw.js?v=187-1'));assert.ok(sw.includes('nushi-tsuri-v187-'));
+  for(const [file,version] of Object.entries({'pet-life.js':'188-1','pet-life-ui.js':'188-1','aquarium-life.js':'184-1','pet-life.css':'188-1','scene-layers.js':'182-1','layered-scenery.js':'182-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  assert.ok(html.includes('./sw.js?v=188-1'));assert.ok(sw.includes('nushi-tsuri-v188-'));
 });
