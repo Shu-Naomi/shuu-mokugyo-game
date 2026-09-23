@@ -17,6 +17,8 @@
   const sexOf=f=>f.sex==="male"?"male":f.sex==="female"?"female":Number(f.uid.slice(4))%2?"male":"female";
   const starInterval=generation=>Math.max(3,6-Math.min(3,int(generation,0,20)));
   const starLevel=f=>Math.min(5,1+Math.floor(int(f.careDays,0)/starInterval(f.generation)));
+  // Larger species gain more length per cared-for day; lengths are 0.01 cm units.
+  const dailyGrowth=spec=>Math.min(500,Math.max(100,Math.ceil(int(spec?.max)/5000)*100));
   function normalize(state,catalog,dogIds,day,{legacy=true}={}){
     const old=record(state.petLife),migrated=!(old.version>=1);
     state.dogAffinity=record(state.dogAffinity);state.dogTricks=record(state.dogTricks);
@@ -103,7 +105,7 @@
       if(elapsed<=0||!spec)continue;
       const cared=f.fedDay===f.lastDay&&f.water>=40;
       // A ration covers one day, never every skipped day.
-      if(cared){f.length=Math.min(spec.max,f.length+10);f.careDays++;f.stars=Math.max(f.stars,starLevel(f));}
+      if(cared){f.length=Math.min(spec.max,f.length+dailyGrowth(spec));f.careDays++;f.stars=Math.max(f.stars,starLevel(f));}
       f.health=int(f.health+(cared?3:0)-Math.max(0,elapsed-(cared?1:0))*4,20,100);
       f.water=int(f.water-elapsed*8,0,100);f.lastDay=day;changed=true;
     }
@@ -201,7 +203,7 @@
       if(!hungry.length)return {ok:false,message:"今日はみんなエサを食べたよ。また明日ね。"};
       if(p.food<hungry.length)return {ok:false,message:`この水槽には${hungry.length}食必要だよ。エサはアスアルのお店で買えるよ。`};
       p.food-=hungry.length;for(const a of hungry){a.fedDay=day;a.health=int(a.health+2,20,100);}
-      return {ok:true,fed:hungry.map(a=>a.uid),message:`${hungry.length}匹がエサをぱくっ。水質40%以上で翌日になると、約0.1cm成長するよ。`};
+      return {ok:true,fed:hungry.map(a=>a.uid),message:`${hungry.length}匹がエサをぱくっ。水質40%以上なら翌日、魚種に応じて1〜5cm成長するよ。`};
     }
     if(action==="water"){
       if(group.every(a=>a.changedDay===day)||group.every(a=>a.water>=100))return {ok:false,message:"水はきれいだよ。水換えは一日一回まで。"};
@@ -263,6 +265,6 @@
       subject:kind==="fish"?f.species:dog.id,day,score,rank,reward,detail,marks};return {ok:true,result:p.lastResult};
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm});
 });

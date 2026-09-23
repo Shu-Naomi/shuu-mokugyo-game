@@ -52,16 +52,37 @@ test('nushi requires a catch, keeps its measured size and cannot be duplicated o
   P.normalize(s,catalog,ids,0);assert.equal(P.selected(s).length,12345);assert.equal(s.caught.nushi,1);
 });
 
-test('one ration grows a fish by exactly 0.10 cm the next day, once; skipped days never multiply that ration',()=>{
+test('small fish grow 1 cm per cared-for day; a ration never grows fish across skipped days or twice on reload',()=>{
   const s=state(),f=P.acquire(s,'moroko',catalog,0).fish;
   assert.equal(P.care(s,f.uid,'feed',0,catalog).ok,true);assert.equal(s.petLife.food,9);
   assert.equal(P.care(s,f.uid,'feed',0,catalog).ok,false);
   assert.equal(P.sync(s,catalog,0),false);assert.equal(f.length,750);
-  P.sync(s,catalog,1);assert.equal(f.length,760);assert.equal(f.water,92);assert.equal(f.careDays,1);
+  P.sync(s,catalog,1);assert.equal(f.length,850);assert.equal(f.water,92);assert.equal(f.careDays,1);
   assert.equal(P.sync(s,catalog,1),false);
-  P.care(s,f.uid,'feed',1,catalog);P.sync(s,catalog,10);assert.equal(f.length,770);assert.equal(f.careDays,2);
-  P.sync(s,catalog,20);assert.equal(f.length,770);assert.equal(f.water,0);assert.ok(f.health>=20);
-  const saved=copy(s);P.normalize(saved,catalog,ids,20);assert.equal(P.selected(saved).length,770);
+  P.care(s,f.uid,'feed',1,catalog);P.sync(s,catalog,10);assert.equal(f.length,950);assert.equal(f.careDays,2);
+  P.sync(s,catalog,20);assert.equal(f.length,950);assert.equal(f.water,0);assert.ok(f.health>=20);
+  const saved=copy(s);P.normalize(saved,catalog,ids,20);assert.equal(P.selected(saved).length,950);
+});
+
+test('species size sets daily growth from 1 to 5 cm; even the largest fish respects its species maximum',()=>{
+  for(const [max,expected] of [[1799,100],[5000,100],[5001,200],[9999,200],[14999,300],[19999,400],[24999,500],[29999,500]]){
+    assert.equal(P.dailyGrowth({max}),expected,`maximum ${max}`);
+  }
+  const s=state({caught:{moroko:1,nushi:1}}),f=P.acquire(s,'nushi',catalog,0).fish;
+  assert.equal(P.care(s,f.uid,'feed',0,catalog).ok,true);P.sync(s,catalog,1);
+  assert.equal(f.length,12500);assert.equal(P.sync(s,catalog,1),false);
+  f.length=29950;P.care(s,f.uid,'feed',1,catalog);P.sync(s,catalog,2);
+  assert.equal(f.length,29999);
+});
+
+test('a previously saved fish keeps its length and stars, then uses the faster rate on its next day',()=>{
+  const s=state(),f=P.acquire(s,'moroko',catalog,0).fish;
+  f.length=900;f.generation=1;f.stars=2;
+  assert.equal(P.care(s,f.uid,'feed',0,catalog).ok,true);
+  const previous=copy(s);P.normalize(s,catalog,ids,0);assert.deepEqual(s,previous);
+  P.sync(s,catalog,1);assert.equal(P.selected(s).length,1000);
+  assert.equal(P.selected(s).stars,2);assert.equal(P.selected(s).generation,1);
+  assert.equal(s.money,previous.money);assert.deepEqual(s.caught,previous.caught);
 });
 
 test('dirty water prevents growth; water changes and food stock are bounded and maximum size cannot overflow',()=>{

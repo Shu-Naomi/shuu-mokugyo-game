@@ -78,12 +78,13 @@ test('A enters Asual’s shop; buying, portable feeding, sleep, water change, zo
     click(w,'[data-pet-action="feed"]');assert.equal(read(w,'s.petLife.food'),9);assert.equal(w.document.querySelector('[data-pet-action="feed"]').disabled,true);
     click(w,'[data-pet-action="zoom"]');assert.equal(w.document.querySelector('#petLifeModal').classList.contains('pet-zoomed'),true);
     click(w,'[data-pet-action="close"]');w.eval('sleepUntilNextMorning(s);save();render();openInventory()');
-    click(w,'#openPetAquarium');assert.match(w.document.querySelector('.pet-tank-caption').textContent,/7.60cm/);
+    click(w,'#openPetAquarium');assert.match(w.document.querySelector('.pet-tank-caption').textContent,/8.50cm/);
+    assert.match(w.document.querySelector('.pet-stats').textContent,/1日の成長\s*1\.00cm/);
     assert.equal(read(w,'s.petLife.fish[0].water'),92);click(w,'[data-pet-action="water"]');assert.equal(read(w,'s.petLife.fish[0].water'),100);
     assert.deepEqual(read(w,'({caught:s.caught,records:s.sizeRecords,display:s.homeAquariumFishId})'),old);
     saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
-  const reload=boot(saved);try{assert.equal(read(reload.window,'s.petLife.fish[0].length'),760);assert.equal(read(reload.window,'s.petLife.food'),9);assert.equal(read(reload.window,'s.dogAffinity.shuu'),880);assert.deepEqual(reload.errors,[]);}finally{reload.dispose();}
+  const reload=boot(saved);try{assert.equal(read(reload.window,'s.petLife.fish[0].length'),850);assert.equal(read(reload.window,'s.petLife.food'),9);assert.equal(read(reload.window,'s.dogAffinity.shuu'),880);assert.deepEqual(reload.errors,[]);}finally{reload.dispose();}
 });
 
 test('dog UI renders white/red/gold hearts and invisible frisbees, supports training and scales actual pickups',()=>{
@@ -117,6 +118,6 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'188-1','pet-life-ui.js':'188-1','aquarium-life.js':'184-1','pet-life.css':'188-1','scene-layers.js':'182-1','layered-scenery.js':'182-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
-  assert.ok(html.includes('./sw.js?v=188-1'));assert.ok(sw.includes('nushi-tsuri-v188-'));
+  for(const [file,version] of Object.entries({'pet-life.js':'189-1','pet-life-ui.js':'189-1','aquarium-life.js':'184-1','pet-life.css':'188-1','scene-layers.js':'182-1','layered-scenery.js':'182-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  assert.ok(html.includes('./sw.js?v=189-1'));assert.ok(sw.includes('nushi-tsuri-v189-'));
 });

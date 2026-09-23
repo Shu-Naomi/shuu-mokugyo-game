@@ -82,16 +82,16 @@ test('raised descendants earn stars faster, mature for sale and pay only once th
   for(let day=0;day<3;day++){P.care(s,first.uid,'feed',day,catalog);P.sync(s,catalog,day+1);}
   const child=s.petLife.fish[2];P.rehome(s,first.uid,catalog,3);P.rehome(s,s.petLife.fish.find(f=>f.generation===0).uid,catalog,3);
   assert.equal(P.buyBackQuote(child,catalog).eligible,false);
-  for(let day=3;day<18;day++){
+  for(let day=3;day<8;day++){
     if(child.water<72)P.care(s,child.uid,'water',day,catalog);
     P.care(s,child.uid,'feed',day,catalog);P.sync(s,catalog,day+1);
   }
-  assert.equal(child.length,750);assert.ok(child.stars>=4);
-  assert.equal(child.stars>1,true);assert.equal(P.buyBackQuote(child,catalog).eligible,true);
+  assert.equal(child.length,1100);assert.equal(child.stars,2);
+  assert.equal(P.buyBackQuote(child,catalog).eligible,true);
   const price=P.buyBackQuote(child,catalog).price,money=s.money;
-  assert.equal(P.buyBack(s,child.uid,catalog,18).price,price);assert.equal(s.money,money+price);
-  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,18).ok,false);assert.deepEqual(s,paid);
-  P.normalize(s,catalog,ids,18);assert.equal(P.buyBack(s,child.uid,catalog,18).ok,false);
+  assert.equal(P.buyBack(s,child.uid,catalog,8).price,price);assert.equal(s.money,money+price);
+  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,8).ok,false);assert.deepEqual(s,paid);
+  P.normalize(s,catalog,ids,8);assert.equal(P.buyBack(s,child.uid,catalog,8).ok,false);
   assert.equal(s.money,money+price);assert.deepEqual(s.caught,{moroko:1});
 });
 
