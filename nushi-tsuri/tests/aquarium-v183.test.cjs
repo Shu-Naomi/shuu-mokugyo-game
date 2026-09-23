@@ -66,8 +66,8 @@ test('group feeding charges only hungry residents, has no partial failure and gr
  assert.equal(P.care(s,s.petLife.selected,'feed',0,catalog).ok,false);
  const f=s.petLife.fish[0];P.moveFish(s,f.uid,1,catalog,0);assert.equal(P.care(s,f.uid,'feed',0,catalog).ok,false);
  const newcomer=P.acquire(s,'koi',catalog,0,1).fish;assert.equal(P.care(s,f.uid,'feed',0,catalog).fed.length,1);assert.equal(s.petLife.food,4);
- P.normalize(s,catalog,ids,0);P.sync(s,catalog,1);for(const fish of s.petLife.fish)assert.equal(fish.length,fish.bornSize+10);
- P.sync(s,catalog,1);assert.equal(s.petLife.fish.find(f=>f.uid===newcomer.uid).length,2510);
+ P.normalize(s,catalog,ids,0);P.sync(s,catalog,1);for(const fish of s.petLife.fish)assert.equal(fish.length,fish.bornSize+P.dailyGrowth(catalog.find(a=>a.id===fish.species)));
+ P.sync(s,catalog,1);assert.equal(s.petLife.fish.find(f=>f.uid===newcomer.uid).length,2700);
 });
 
 test('water changes cover residents together and a new fish or move cannot refresh dirty water for free',()=>{
