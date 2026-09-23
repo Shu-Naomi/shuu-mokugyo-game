@@ -152,5 +152,5 @@ test('older text-only ten-pull history survives; untrusted save strings cannot i
 test('capsule script and styles ship in both the page and offline cache',()=>{
  const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  for(const [file,version] of [['fortune-capsules.js','187-1'],['fortune-capsules.css','185-1']]){assert.ok(html.includes(file+'?v='+version));assert.ok(sw.includes('./'+file+'?v='+version));}
- assert.ok(html.includes('./sw.js?v=191-1'));assert.ok(sw.includes('nushi-tsuri-v191-'));
+ assert.ok(html.includes('./sw.js?v=192-1'));assert.ok(sw.includes('nushi-tsuri-v192-'));
 });
