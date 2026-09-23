@@ -66,7 +66,7 @@ test('rain modestly increases existing lake/river candidates; secret bait and fr
       const sunny=count(0),rain=count(2);
       assert.ok(rain>sunny&&rain<sunny*1.25,`${target}: ${sunny} -> ${rain}`);
     }
-    w.eval("battle={spot:'lake-deep',bait:'nushiSecret'}");
+    w.eval("battle={spot:'lake-deep',bait:'nushiSecret',hook:'large'}");
     for(const day of [0,1,2]) {
       w.eval(`s.gameMinutes=${day}*1440+720`);
       assert.equal(w.pick(80,'lake-deep').id,'nushi');
