@@ -5112,6 +5112,30 @@
         overflow-wrap: anywhere;
       }
       .tackle-options button.selected { outline:3px solid #69d8ff; }
+      .tackle-pixel-icon { display:block; width:32px; height:32px; flex:none; image-rendering:pixelated; filter:drop-shadow(1px 2px 0 #0a1824a0); }
+      #hudBaitArt { display:inline-block; vertical-align:middle; margin-right:3px; }
+      #hudBaitArt .tackle-pixel-icon { width:19px; height:19px; }
+      .tackle-options .bait-option > i { display:grid; place-items:center; width:34px; height:34px; }
+      .tackle-options .hook-option { display:grid; grid-template-columns:34px 1fr; align-items:center; gap:7px; min-height:48px; text-align:left; }
+      .tackle-options .hook-option i { display:grid; place-items:center; font-style:normal; }
+      .tackle-options .hook-option span, .tackle-options .hook-option small { display:block; }
+      .tackle-options .hook-option small { color:#c4d9e0; font-size:.56rem; }
+      .tackle-options button:disabled { opacity:.47; }
+      .hook-options { grid-template-columns:repeat(3,minmax(102px,1fr)); overflow-x:auto; }
+      #inventoryHookOptions { grid-template-columns:1fr; overflow:visible; margin-bottom:12px; }
+      #inventoryTackleSummary, #castTackleSummary { line-height:1.5; }
+      #inventoryTackleSummary { margin:0 0 10px; }
+      #castTackleSummary { margin:3px 0 9px; }
+      #tackle .close { position:sticky; top:0; z-index:2; }
+      #beginCast { position:sticky; bottom:0; z-index:2; width:100%; min-height:44px; box-shadow:0 -5px 10px #102032d9; }
+      .tackle-summary .tackle-pixel-icon { display:inline-block; width:22px; height:22px; vertical-align:middle; }
+      .inventory-card i .tackle-pixel-icon { width:32px; height:32px; }
+      .shop-item-art { display:inline-block; vertical-align:middle; width:26px; height:26px; margin-right:3px; }
+      .shop-item-art .tackle-pixel-icon { width:26px; height:26px; }
+      .fishdex-chip .tackle-pixel-icon { width:18px; height:18px; display:inline-block; vertical-align:middle; }
+      .fishdex-collectible i .tackle-pixel-icon { width:27px; height:27px; }
+      .star-fortune-lineup .tackle-pixel-icon { width:20px; height:20px; display:inline-block; vertical-align:middle; }
+      @media (max-height:420px) { .hook-options .hook-option { min-height:44px; padding:4px; } .tackle-options .hook-option small { font-size:.52rem; } }
       .idle-status {
         position: absolute;
         z-index: 9;
@@ -6419,9 +6443,9 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v190</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v191</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
-        ><span>🪱 <b id="bait">5</b></span
+        ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span class="grow">🎣 <b id="rod">竹の竿</b></span
         ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
         ><button id="menu" type="button" aria-controls="fieldMenu" aria-expanded="false">メニュー</button>
@@ -6594,7 +6618,7 @@
           <header><b id="statusAvatar">主人公</b><span id="statusCondition">準備よし</span></header>
           <div id="statusHpRow"><span>体力</span><b id="statusHp">100 / 100</b></div>
           <div class="rod-status-row"><span>装備</span><i class="rod-display-art compact" id="statusRodArt" aria-hidden="true"></i><b id="statusRod">竹の竿</b></div>
-          <div><span>仕掛け</span><b id="statusBait">ミミズ ×5</b></div>
+          <div><span>仕掛け</span><b id="statusBait">ミミズ ×5 · ハリ中</b></div>
           <div><span>同行</span><b id="statusDog">リク</b></div>
           <div><span>料理</span><b id="statusMeal">なし</b></div>
         </aside>
@@ -6862,27 +6886,27 @@
                   </div>
                   <div class="grid shop-goods">
                     <button data-buy-bait="worm">
-                      <span><b>🪱 ミミズ ×3</b><small>基本の釣りエサ</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="worm"></i>ミミズ ×3</b><small>万能・小〜中型魚向け</small></span>
                       <strong><em data-sam-total>120円</em><small data-sam-bundle>1セット → 3個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                     <button data-buy-bait="river">
-                      <span><b>🦟 川虫 ×2</b><small>食いつきが良い</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="river"></i>川虫 ×2</b><small>川の小魚・渓流魚向け</small></span>
                       <strong><em data-sam-total>180円</em><small data-sam-bundle>1セット → 2個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                     <button data-buy-bait="paste">
-                      <span><b>🍡 練りエサ ×2</b><small>扱いやすい配合エサ</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="paste"></i>練りエサ ×2</b><small>フナなど雑食魚向け</small></span>
                       <strong><em data-sam-total>240円</em><small data-sam-bundle>1セット → 2個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                     <button data-buy-bait="corn">
-                      <span><b>🌽 トウモロコシ ×3</b><small>フナ・コイを狙いやすい</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="corn"></i>トウモロコシ ×3</b><small>コイ科向け・ハリ小でフナを狙う</small></span>
                       <strong><em data-sam-total>260円</em><small data-sam-bundle>1セット → 3個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                     <button data-buy-bait="shrimp">
-                      <span><b>🦐 オキアミ ×3</b><small>海の回遊魚・根魚向け</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="shrimp"></i>オキアミ ×3</b><small>海の回遊魚・根魚向け</small></span>
                       <strong><em data-sam-total>360円</em><small data-sam-bundle>1セット → 3個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                     <button data-buy-bait="liveMinnow">
-                      <span><b>🐟 活き小魚 ×2</b><small>大型の肉食魚向け</small></span>
+                      <span><b><i class="shop-item-art" data-tackle-icon="liveMinnow"></i>活き小魚 ×2</b><small>スズキなど肉食魚向け</small></span>
                       <strong><em data-sam-total>480円</em><small data-sam-bundle>1セット → 2個</small><small data-sam-stock>所持 ×0</small></strong>
                     </button>
                   </div>
@@ -7015,17 +7039,19 @@
                 </div>
               </section>
               <section class="inventory-panel" data-inventory-panel="tackle">
+                <div class="tackle-summary" id="inventoryTackleSummary"></div>
                 <div class="inventory-tackle-grid">
                   <div>
                     <h3>エサを選ぶ</h3>
                     <div class="tackle-options" id="inventoryBaitOptions"></div>
                   </div>
                   <div>
+                    <h3>ハリを選ぶ <small>3種類とも所持・消耗なし</small></h3>
+                    <div class="tackle-options hook-options" id="inventoryHookOptions"></div>
                     <h3>釣り竿を選ぶ</h3>
                     <div class="tackle-options" id="inventoryRodOptions"></div>
                   </div>
                 </div>
-                <div class="tackle-summary" id="inventoryTackleSummary"></div>
               </section>
             </div>
             <div class="inventory-footer">
@@ -7072,7 +7098,9 @@
         <div class="modal" id="tackle">
           <button class="close" data-close>閉じる</button>
           <h2>仕掛けを選ぶ</h2>
+          <div class="tackle-summary" id="castTackleSummary"></div>
           <p>エサ</p><div class="tackle-options" id="baitOptions"></div>
+          <p>ハリ <small>3種類とも所持・消耗なし</small></p><div class="tackle-options hook-options" id="hookOptions"></div>
           <p>釣具</p><div class="tackle-options" id="rodOptions"></div>
           <button id="beginCast">この仕掛けで釣る</button>
         </div>
@@ -7124,6 +7152,8 @@
     <script src="pet-life.js?v=189-1"></script>
     <script src="aquarium-life.js?v=184-1"></script>
     <script src="pet-life-ui.js?v=190-1"></script>
+    <script src="tackle-balance.js?v=191-1"></script>
+    <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -7610,7 +7640,7 @@
           },
           corn: {
             name: "トウモロコシ", icon: "🌽", price: 260, amount: 3, bite: 1.08,
-            role: "フナ・コイを狙い分ける",
+            role: "コイ科向け・ハリ小ならフナ寄り",
           },
           shrimp: {
             name: "オキアミ", icon: "🦐", price: 360, amount: 3, bite: 1.3,
@@ -7633,51 +7663,13 @@
           },
           liveMinnow: {
             name: "活き小魚", icon: "🐟", price: 480, amount: 2, bite: 1.12,
-            role: "大型の肉食魚向け",
+            role: "スズキ・バスなど肉食魚向け",
           },
           nushiSecret: {
             name: "星湖の秘餌", icon: "🌠", price: 0, amount: 1, bite: 1.8,
-            role: "星みくじ限定・星降る湖の最深部専用",
+            role: "ヌシ専用・湖の最深部・ハリ大のみ",
             exclusiveFish: "nushi",
           },
-        },
-        fishBaitAffinities = {
-          moroko: { river: 1.9, worm: 1, paste: .45, corn: .28, shrimp: .2, liveMinnow: .04 },
-          funa: { corn: 1.85, paste: 1.6, worm: .8, river: .68, shrimp: .3, liveMinnow: .04 },
-          koi: { corn: 2.25, paste: 1.55, worm: .62, river: .32, shrimp: .22, liveMinnow: .04 },
-          aji: { shrimp: 2.1, river: .72, liveMinnow: .58, worm: .52, paste: .3, corn: .03 },
-          ayu: { river: 2.45, worm: .32, shrimp: .14, paste: .08, corn: .03, liveMinnow: .02 },
-          yamame: { river: 2, worm: .72, liveMinnow: .58, shrimp: .32, paste: .05, corn: .03 },
-          namazu: { liveMinnow: 2.2, worm: 1.15, shrimp: .52, river: .3, paste: .08, corn: .03 },
-          unagi: { worm: 1.9, liveMinnow: 1.35, shrimp: .85, river: .4, paste: .08, corn: .03 },
-          bass: { liveMinnow: 2.2, worm: .88, shrimp: .68, river: .52, paste: .08, corn: .03 },
-          kurodai: { shrimp: 1.95, paste: 1.3, corn: .48, worm: .52, river: .32, liveMinnow: .18 },
-          kasago: { shrimp: 2.25, liveMinnow: .78, worm: .76, river: .5, paste: .08, corn: .02 },
-          suzuki: { liveMinnow: 2.4, shrimp: 1.12, worm: .52, river: .48, paste: .04, corn: .02 },
-          hirame: { liveMinnow: 2.55, shrimp: 1.3, worm: .38, river: .28, paste: .03, corn: .01 },
-          nushi: { nushiSecret: 50, liveMinnow: .52, paste: .45, worm: .34, river: .3, shrimp: .2, corn: .16 },
-          bora: { paste: 1.9, shrimp: 1.2, corn: .82, river: .62, worm: .42, liveMinnow: .04 },
-          mebaru: { shrimp: 2.3, river: .92, worm: .72, liveMinnow: .52, paste: .12, corn: .02 },
-          nijimasu: { river: 2.2, worm: .92, liveMinnow: .66, shrimp: .38, paste: .05, corn: .02 },
-        },
-        foragedBaitAffinities = {
-          moroko: { grasshopper: .9, smallShrimp: .5, shell: .12, crab: .08 },
-          funa: { grasshopper: .65, smallShrimp: .55, shell: .35, crab: .18 },
-          koi: { grasshopper: .35, smallShrimp: .38, shell: .5, crab: .24 },
-          aji: { grasshopper: .05, smallShrimp: 1.95, shell: .45, crab: .35 },
-          ayu: { grasshopper: 1.9, smallShrimp: .28, shell: .04, crab: .05 },
-          yamame: { grasshopper: 2.15, smallShrimp: .72, shell: .05, crab: .12 },
-          namazu: { grasshopper: .75, smallShrimp: .62, shell: .1, crab: 1.15 },
-          unagi: { grasshopper: .25, smallShrimp: .9, shell: .35, crab: 1.6 },
-          bass: { grasshopper: 1.45, smallShrimp: .84, shell: .12, crab: 1.1 },
-          kurodai: { grasshopper: .08, smallShrimp: 1.82, shell: 2.15, crab: 2.4 },
-          kasago: { grasshopper: .08, smallShrimp: 2.08, shell: 1.35, crab: 2 },
-          suzuki: { grasshopper: .25, smallShrimp: 1.18, shell: .65, crab: 1.15 },
-          hirame: { grasshopper: .05, smallShrimp: 1.35, shell: .42, crab: 1.2 },
-          nushi: { grasshopper: .12, smallShrimp: .24, shell: .2, crab: .4 },
-          bora: { grasshopper: .3, smallShrimp: 1.05, shell: .72, crab: .42 },
-          mebaru: { grasshopper: .15, smallShrimp: 2.2, shell: 1.4, crab: 1.9 },
-          nijimasu: { grasshopper: 2.05, smallShrimp: .65, shell: .08, crab: .35 },
         },
         rodData = {
           bamboo: {
@@ -11499,6 +11491,7 @@
             bait: 5,
             baits: null,
             selectedBait: "worm",
+            selectedHook: "medium",
             selectedRod: "bamboo",
             ownedRods: ["bamboo"],
             hp: 100,
@@ -12248,6 +12241,8 @@
       for (const id of Object.keys(baitData))
         s.baits[id] = Math.max(0, Math.floor(Number(s.baits[id]) || 0));
       if (!baitData[s.selectedBait]) s.selectedBait = "worm";
+      if (!ShuTackle.hooks[s.selectedHook]) s.selectedHook = "medium";
+      if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
       if (!s.items || typeof s.items !== "object") s.items = {};
       for (const id of Object.keys(fieldItemData))
         s.items[id] = Math.max(0, Number(s.items[id]) || 0);
@@ -14472,7 +14467,7 @@
             }).join("") +
             `<p class="star-fortune-lineup"><b>大当たり：星見の竿</b><br>` +
             `釣りエサ／ルアー／限定の犬おやつ＆おもちゃ／500・2000・10000円／遠征対応ジョイント／図鑑収集品<br>` +
-            `<b>🌠 星湖の秘餌</b>：通常${starFortuneChance("baitNushi1")}%／星ぶどう${starFortuneChance("baitNushi1", "lucky")}%（ヌシの深み専用）</p>`;
+            `<b>${ShuTackleArt.icon("nushiSecret")} 星湖の秘餌</b>：通常${starFortuneChance("baitNushi1")}%／星ぶどう${starFortuneChance("baitNushi1", "lucky")}%（ハリ大・ヌシの深み専用）</p>`;
         }
         if (activeLocationId === "main-shrine")
           markup += ShuFortuneCapsules.historyMarkup(s.starFortuneLastDraw, s.starFortuneLastBatch);
@@ -15663,6 +15658,9 @@
       }
       function renderSamShop() {
         renderWeather();
+        document.querySelectorAll("#samTackleWindow [data-tackle-icon]").forEach((node) => {
+          node.innerHTML = ShuTackleArt.icon(node.dataset.tackleIcon);
+        });
         const purchaseCount = samBaitPurchaseCount;
         const purchaseCountOutput = $("#samBaitPurchaseCount");
         if (purchaseCountOutput)
@@ -16710,6 +16708,11 @@
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
         s.power = rodData[s.selectedRod].power;
+        const hudBaitArt=$("#hudBaitArt");
+        if(hudBaitArt.dataset.bait!==s.selectedBait){
+          hudBaitArt.innerHTML=ShuTackleArt.icon(s.selectedBait);
+          hudBaitArt.dataset.bait=s.selectedBait;
+        }
         $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = gameClockLabel(sceneGameMinutes()) + (s.tournament ? "（大会固定）" : "");
@@ -16782,7 +16785,7 @@
         $("#statusRod").textContent = rodData[s.selectedRod].name;
         syncRodDisplayArt("#statusRodArt");
         $("#statusBait").textContent =
-          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}`;
+          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0} · ${ShuTackle.hooks[s.selectedHook].name}`;
         $("#statusDog").textContent = dogName();
         const activeMeal = activeMealEntry();
         $("#statusMeal").textContent = activeMeal
@@ -17361,14 +17364,12 @@
         const spot = fishingSpotById(spotId);
         const period = gameClockAt(sceneGameMinutes()).period;
         const baitId = battle?.bait || s.selectedBait;
-        if (baitId === "nushiSecret" && spot.id === "lake-deep")
-          return fish.find((candidate) => candidate.id === "nushi");
+        const hookId = battle?.hook || s.selectedHook;
+        if (baitId === "nushiSecret")
+          return spot.id === "lake-deep" && ShuTackle.allowed(baitId, hookId)
+            ? fish.find((candidate) => candidate.id === "nushi") : null;
         const weighted = Object.entries(spot.weights).map(([id, base]) => {
-          let weight = base * (
-            foragedBaitAffinities[id]?.[baitId] ??
-            fishBaitAffinities[id]?.[baitId] ??
-            .08
-          );
+          let weight = base * ShuTackle.weight(id, baitId, hookId);
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -17501,7 +17502,7 @@
           roll -= entry.weight;
           if (roll <= 0) return entry.fish;
         }
-        return weighted[0]?.fish || fish[0];
+        return weighted[0]?.fish || null;
       }
       function setFishingSceneTheme(
         zone = "lake",
@@ -17578,7 +17579,7 @@
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${rodData[s.selectedRod].name}`;
+          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${ShuTackle.hooks[s.selectedHook].name}／${rodData[s.selectedRod].name}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
@@ -18407,7 +18408,7 @@
       }
       function renderInventory() {
         const baitIcons = Object.fromEntries(
-          Object.entries(baitData).map(([id, item]) => [id, item.icon || "🎒"]),
+          Object.entries(baitData).map(([id]) => [id, ShuTackleArt.icon(id)]),
         );
         const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
         $("#inventoryHpText").textContent = `${s.hp} / ${s.maxHp}`;
@@ -18483,25 +18484,27 @@
           .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
         const lureMarkup = Object.entries(lureData)
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<div class="inventory-card"><i>${ShuTackleArt.icon(id)}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
             `<strong>×${s.lures[id] || 0}</strong></div>`)
           .join("");
         const rodPartMarkup = Object.entries(rodPartData)
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<div class="inventory-card"><i>${ShuTackleArt.icon(id)}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
             `<strong>×${s.rodParts[id] || 0}</strong></div>`)
           .join("");
         const collectibleMarkup = Object.entries(fishdexCollectibleData)
           .filter(([id]) => (s.fishdexCollectibles[id] || 0) > 0)
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${item.icon}</i>` +
+            `<div class="inventory-card"><i>${ShuTackleArt.icon({ancientFloat:"float",glassHook:"hookMedium"}[id])||item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>魚図鑑の収集棚に記録済み</small></span>` +
             `<strong>×${s.fishdexCollectibles[id]}</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
         $("#inventoryItems").innerHTML =
           `<h4 class="inventory-section-heading">釣りエサ</h4>${baitMarkup}` +
+          `<h4 class="inventory-section-heading">ハリ（3種類を所持・消耗なし）</h4>` +
+          `${Object.entries(ShuTackle.hooks).map(([id,hook])=>`<div class="inventory-card"><i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i><span><b>${hook.name}</b><br><small>${hook.role}</small></span><strong>${s.selectedHook===id?"装備中":"所持"}</strong></div>`).join("")}` +
           `<h4 class="inventory-section-heading">料理・調理素材</h4>` +
           `${activeMealMarkup}${preparedMealMarkup}${cookingMaterialMarkup}` +
           `<h4 class="inventory-section-heading">食料・奉納品</h4>${itemMarkup}` +
@@ -18543,22 +18546,37 @@
       }
       function renderTackle() {
         const baitMarkup = Object.entries(baitData).map(([id, b]) =>
-          `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}">` +
-          `<i>${b.icon}</i><span><b>${b.name}</b><small>${b.role}</small></span>` +
+          `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}" aria-pressed="${s.selectedBait === id}">` +
+          `<i>${ShuTackleArt.icon(id)}</i><span><b>${b.name}</b><small>${b.role}</small></span>` +
           `<strong>×${s.baits[id] || 0}</strong></button>`).join("");
+        const hookMarkup = Object.entries(ShuTackle.hooks).map(([id, hook]) =>
+          `<button data-pick-hook="${id}" class="hook-option ${s.selectedHook === id ? "selected" : ""}" aria-pressed="${s.selectedHook === id}" ${ShuTackle.allowed(s.selectedBait,id)?"":"disabled title=\"星湖の秘餌はハリ大のみ\""}>` +
+          `<i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i>` +
+          `<span><b>${hook.name}</b><small>${hook.role}</small></span></button>`).join("");
         const rodMarkup = s.ownedRods.map(id =>
           `<button data-pick-rod="${id}" class="rod-option ${s.selectedRod === id ? "selected" : ""}">` +
           `${rodDisplayMarkup(id)}<span>${rodData[id].name}</span></button>`).join("");
         for (const id of ["#baitOptions", "#inventoryBaitOptions"])
           $(id).innerHTML = baitMarkup;
+        for (const id of ["#hookOptions", "#inventoryHookOptions"])
+          $(id).innerHTML = hookMarkup;
         for (const id of ["#rodOptions", "#inventoryRodOptions"])
           $(id).innerHTML = rodMarkup;
         $("#equipmentRod").textContent = rodData[s.selectedRod].name;
-        $("#inventoryTackleSummary").textContent =
-          `現在の仕掛け：${rodData[s.selectedRod].name} ＋ ` +
-          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}`;
+        const summary = `装備中：${rodData[s.selectedRod].name} ＋ ${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0} ＋ ${ShuTackle.hooks[s.selectedHook].name}`;
+        for (const id of ["#inventoryTackleSummary", "#castTackleSummary"])
+          $(id).textContent = summary;
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
           s.selectedBait = b.dataset.pickBait;
+          if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
+          renderTackle();
+          render();
+          save();
+        });
+        document.querySelectorAll("[data-pick-hook]").forEach(b => b.onclick = () => {
+          const hookId = b.dataset.pickHook;
+          if (!ShuTackle.hooks[hookId] || !ShuTackle.allowed(s.selectedBait, hookId)) return;
+          s.selectedHook = hookId;
           renderTackle();
           render();
           save();
@@ -18634,6 +18652,7 @@
           playerY,
           castLocale,
           bait: practice ? practiceBait : s.selectedBait,
+          hook: practice ? "medium" : s.selectedHook,
           baitCommitted: false,
           cast: 0,
           castMin: 0,
@@ -18803,6 +18822,10 @@
               battle.minimumDepth || "shallow",
             );
         const baitId = battle.bait || s.selectedBait;
+        if (!battle.practice && !ShuTackle.allowed(baitId, battle.hook || s.selectedHook)) {
+          $("#battleMsg").textContent = "星湖の秘餌はハリ大にしか付けられないよ。仕掛けでハリ大を選ぼう。";
+          return false;
+        }
         if (!battle.practice && baitId === "nushiSecret" &&
             (battle.waterZone !== "lake" || targetDepth !== "deep")) {
           $("#battleMsg").textContent = battle.waterZone !== "lake"
@@ -21171,8 +21194,11 @@
           .join("");
         const baits = data.baits
           .filter((id) => baitData[id])
-          .map((id) => `<span class="fishdex-chip">${baitData[id].icon || "🪱"} ${baitData[id].name}</span>`)
+          .map((id) => `<span class="fishdex-chip">${ShuTackleArt.icon(id)} ${baitData[id].name}</span>`)
           .join("");
+        const band=ShuTackle.species[f.id]?.band||"medium";
+        const recommendedHook=f.id==="funa"?"small":band;
+        const hookName=ShuTackle.hooks[recommendedHook].name;
         return `<div class="fishdex-hero">
           <div class="fishdex-art-card"><div class="fishdex-art" id="fishdexArt"></div></div>
           <div class="fishdex-identity">
@@ -21198,8 +21224,8 @@
           </section>
           <section class="fishdex-panel">
             <h3>基本タックル（おすすめ）</h3>
-            <div class="fishdex-chip-row">${rods}${baits}</div>
-            <small class="fishdex-tackle-note">どの竿・餌でも釣れるけれど、ここでは狙いやすい組み合わせを表示。</small>
+            <div class="fishdex-chip-row">${rods}${baits}<span class="fishdex-chip">${ShuTackleArt.icon(`hook${recommendedHook[0].toUpperCase()+recommendedHook.slice(1)}`)} ${hookName}</span></div>
+            <small class="fishdex-tackle-note">魚種の基本サイズ帯は${{small:"小型",medium:"標準",large:"大型"}[band]}。個体の極小〜巨大とは別。エサとハリを組み合わせて狙いやすくできるよ。</small>
           </section>
           <section class="fishdex-panel">
             <h3>自分が使ったタックル</h3>
@@ -21234,7 +21260,7 @@
           const known = count > 0;
           const stars = "★".repeat(item.rarity) + "☆".repeat(5 - item.rarity);
           return `<div class="fishdex-collectible ${known ? "known" : "unknown"}">` +
-            `<i>${known ? item.icon : "❔"}</i><span><b>${known ? item.name : "？？？？"}</b>` +
+            `<i>${known ? ShuTackleArt.icon({ancientFloat:"float",glassHook:"hookMedium"}[id])||item.icon : "❔"}</i><span><b>${known ? item.name : "？？？？"}</b>` +
             `<small>${known ? `${stars}　${item.lore}` : "星みくじから見つかる収集品"}</small></span>` +
             `<strong>${known ? `×${count}` : "未発見"}</strong></div>`;
         }).join("");
@@ -21592,7 +21618,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=190-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=191-1").catch(() => {});
       renderRecord();
     </script>
   </body>
