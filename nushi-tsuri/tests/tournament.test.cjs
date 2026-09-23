@@ -97,7 +97,7 @@ test("real nine-cast flow keeps ordinary catches, fixed morning, saved ninth-fis
       assert.equal(read(w, "sceneGameMinutes()"), 360);
       assert.equal(read(w, "gameSceneryEnvironment().period"), "morning");
       assert.equal(w.document.querySelector("#weather").dataset.weather, "sunny", "event day stays fixed across midnight");
-      assert.equal(read(w, "currentSoundScene().music"), null, "cast scene retains ambience without BGM");
+      assert.equal(read(w, "currentSoundScene().music"), "tournament-lake", "tournament casting plays its battle music");
       catchFish(w, i === 6 ? "koi" : "funa", size);
       const count = read(w, "s.caught.funa");
       w.caught();

@@ -95,7 +95,7 @@ test('home and portable draw paths select turn art, restore swimming and handle 
 });
 
 test('portable tank actually renders all five headings and never writes a fractional horizontal scale',()=>{
- const app=boot({...seed(),x:199,y:36},{petTankStage:[360,205]}),w=app.window;
+ const app=boot({...seed(),caught:{...seed().caught,moroko:1},x:199,y:36},{petTankStage:[360,205]}),w=app.window;
  const callbacks=new Map();let next=1000,now=0;
  w.requestAnimationFrame=fn=>{const id=++next;callbacks.set(id,fn);return id;};w.cancelAnimationFrame=id=>callbacks.delete(id);
  const step=()=>{now+=100;const pending=[...callbacks.values()];callbacks.clear();pending.forEach(fn=>fn(now));};

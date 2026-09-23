@@ -29,7 +29,7 @@ function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPre
       // The game declares a global close() for its menus. Keep JSDOM's real
       // teardown before that function shadows window.close, or timers linger.
       dispose = window.close.bind(window);
-      window.localStorage.setItem(saveKey, JSON.stringify(saved));
+      if (saved !== null) window.localStorage.setItem(saveKey, JSON.stringify(saved));
       // JSDOM has no layout engine. Supply explicit phone-sized tank boxes
       // so containment tests exercise real sizing math instead of 0x0 DOMs.
       const bounds = window.Element.prototype.getBoundingClientRect;

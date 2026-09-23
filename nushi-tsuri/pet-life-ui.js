@@ -6,17 +6,17 @@
     const modal=document.createElement("section");
     modal.id="petLifeModal";modal.className="modal pet-life-modal";modal.setAttribute("role","dialog");
     modal.setAttribute("aria-modal","true");modal.setAttribute("aria-labelledby","petLifeTitle");ctx.parent.append(modal);
-    let mode="aquarium",tab="fish",kind="bond",course="beginner",participant=s.dog,message="",zoom=false,frame=0,lastPaint=0,started=0,feeding=null,lastPoses={},elapsed=0,rehomeId=null;
+    let mode="aquarium",tab="fish",kind="bond",course="beginner",participant=s.dog,message="",zoom=false,frame=0,lastPaint=0,started=0,feeding=null,lastPoses={},elapsed=0,rehomeId=null,buybackId=null;
     const spec=id=>ctx.catalog.find(f=>f.id===id);
     const live=()=>modal.classList.contains("open");
     const fishName=f=>`${spec(f.species).name} #${f.uid.slice(4)}`;
     const btn=(action,label,disabled=false)=>`<button data-pet-action="${action}" ${disabled?"disabled":""}>${label}</button>`;
     function pause(){cancelAnimationFrame(frame);frame=0;}
-    function stop(){pause();feeding=null;rehomeId=null;ctx.stopFeedSound?.();}
+    function stop(){pause();feeding=null;rehomeId=null;buybackId=null;ctx.stopFeedSound?.();}
     function changed(){ctx.changed();}
     function open(view="aquarium"){
       if(!ctx.canOpen())return false;
-      ctx.close();mode=view;zoom=false;message="";tab="fish";
+      ctx.close();mode=view;zoom=false;message="";tab="fish";buybackId=null;rehomeId=null;
       if(view==="shop")message="アスアル「育てる時間も、立派な楽しみよ。クラウドと一緒に待っていたわ」";
       P.sync(s,ctx.catalog,ctx.day());render();ctx.open(modal.id);start();return true;
     }
@@ -24,14 +24,23 @@
       return `<header class="pet-heading"><div><small>${mode==="aquarium"?"MY LITTLE AQUARIUM":"ASUAL'S PET HOUSE"}</small><h2 id="petLifeTitle">${mode==="aquarium"?"持ち歩き飼育水槽":"アスアルのペットショップ"}</h2></div><span class="pet-money">${s.money.toLocaleString("ja-JP")}円</span>${btn("close","閉じる")}</header>`;
     }
     function shop(){
-      const p=s.petLife;
-      return `<div class="pet-shop-host"><canvas width="96" height="128" data-rival-art="asual" role="img" aria-label="店主アスアル"></canvas><div><b>水車の家のペットショップ</b><p>魚との出会い、お世話用品、ワンコと魚のコンテスト。</p><small>飼育魚 ${p.fish.length}/${P.CAPACITY*P.TANK_CAPACITY}匹 ・ 魚のエサ ${p.food}食</small></div><canvas width="128" height="96" data-rival-art="cloud" role="img" aria-label="クラウド"></canvas></div>
-        <nav class="pet-tabs" aria-label="ペットショップの売り場">${[["fish","魚の生体"],["supplies","お世話用品"],["contests","コンテスト受付"]].map(([id,label])=>`<button data-pet-tab="${id}" aria-pressed="${tab===id}">${label}</button>`).join("")}${btn("aquarium","飼育水槽を見る")}</nav>
-        ${tab==="fish"?`<p class="pet-note">1槽に5匹、6槽で最大30匹。同じ水の魚を一緒に迎えられるよ。</p>${tankPicker("迎える水槽")}<div class="pet-stock">${ctx.catalog.filter(f=>f.id!=="nushi").map(f=>`<article><div class="pet-fish-thumb" data-pet-preview="${f.id}" role="img" aria-label="${f.name}"></div><div><b>${f.name}</b><small>${P.cm(f.start)}cm ・ ${f.waterLabel}</small><button data-pet-buy="${f.id}" ${!P.canHouse(s,f.id,ctx.catalog,p.selectedTank)||s.money<f.price?"disabled":""}>迎える · ${f.price.toLocaleString("ja-JP")}円</button></div></article>`).join("")}</div>`:
-          tab==="supplies"?`<div class="pet-supplies"><h3>魚のエサ</h3><p>淡水魚にも海水魚にも使える飼育用のエサ。1匹に一日1食。</p>${btn("food-1","10食 · 100円",s.money<100)}${btn("food-10","100食 · 1,000円",s.money<1000)}<p>水換えは飼育水槽から無料でできるよ。最初の10食と6槽分の持ち歩きセットは用意してある。</p></div>`:contest()}`;
+      const p=s.petLife,known=ctx.catalog.filter(f=>f.id!=="nushi"&&s.caught?.[f.id]>0),locked=ctx.catalog.filter(f=>f.id!=="nushi").length-known.length;
+      const nextPrice=P.TANK_PRICES[p.unlockedTanks];
+      return `<div class="pet-shop-host"><canvas width="96" height="128" data-rival-art="asual" role="img" aria-label="店主アスアル"></canvas><div><b>水車の家のペットショップ</b><p>魚との出会い、お世話用品、ワンコと魚のコンテスト。</p><small>飼育魚 ${p.fish.length}/${p.unlockedTanks*P.TANK_CAPACITY}匹 ・ 水槽 ${p.unlockedTanks}/6槽 ・ 魚のエサ ${p.food}食</small></div><canvas width="128" height="96" data-rival-art="cloud" role="img" aria-label="クラウド"></canvas></div>
+        <nav class="pet-tabs" aria-label="ペットショップの売り場">${[["fish","魚の生体"],["supplies","お世話用品・水槽"],["buyback","魚の買い取り"],["contests","コンテスト受付"]].map(([id,label])=>`<button data-pet-tab="${id}" aria-pressed="${tab===id}">${label}</button>`).join("")}${btn("aquarium","飼育水槽を見る")}</nav>
+        ${tab==="fish"?`<p class="pet-note">自分で釣って図鑑に登録した魚種から迎えられるよ。未登録 ${locked}種。1槽に同じ水の魚を5匹まで。</p>${tankPicker("迎える水槽")}<div class="pet-stock">${known.length?known.map(f=>`<article><div class="pet-fish-thumb" data-pet-preview="${f.id}" role="img" aria-label="${f.name}"></div><div><b>${f.name}</b><small>${P.cm(f.start)}cm ・ ${f.waterLabel}</small><button data-pet-buy="${f.id}" ${!P.canHouse(s,f.id,ctx.catalog,p.selectedTank)||s.money<f.price?"disabled":""}>迎える · ${f.price.toLocaleString("ja-JP")}円</button></div></article>`).join(""):'<p class="pet-note">魚を一匹釣ると、その魚種の販売が始まるよ。</p>'}</div>`:
+          tab==="supplies"?`<div class="pet-supplies"><h3>魚のエサ</h3><p>淡水魚にも海水魚にも使える飼育用のエサ。1匹に一日1食。</p>${btn("food-1","10食 · 100円",s.money<100)}${btn("food-10","100食 · 1,000円",s.money<1000)}<h3>飼育水槽</h3><p>最初の水槽と10食は用意してあるよ。新しい水槽を買うと、同じ水の魚をさらに5匹迎えられる。</p>${nextPrice?btn("tank",`水槽${p.unlockedTanks+1}を購入 · ${nextPrice.toLocaleString("ja-JP")}円`,s.money<nextPrice):'<p>水槽は6槽そろっているよ。</p>'}<p>水換えは飼育水槽から無料でできるよ。</p></div>`:
+          tab==="buyback"?buyback():contest()}`;
+    }
+    function buyback(){
+      const fish=s.petLife.fish.filter(f=>f.species!=="nushi");
+      return `<p class="pet-note">健康に育った魚をアスアルが買い取るよ。体長が成魚の大きさになり、3日以上お世話をして元気60%以上が目安。手放した魚は水槽からいなくなるよ。</p><div class="pet-buyback-list">${fish.length?fish.map(f=>{
+        const quote=P.buyBackQuote(f,ctx.catalog),confirm=buybackId===f.uid;
+        return `<article><div><b>${esc(fishName(f))}</b><small>水槽${f.tank+1} ・ ${P.cm(f.length)}cm ・ ${f.sex==="female"?"♀":"♂"} ・ 第${f.generation+1}世代 ${"★".repeat(f.stars)}</small><small>${quote.eligible?`${quote.price.toLocaleString("ja-JP")}円で買い取り`:esc(quote.reason)}</small></div><div>${confirm?`<p>この魚を${quote.price.toLocaleString("ja-JP")}円で売る？</p>${btn("buyback-confirm","買い取りを確定",!quote.eligible)}${btn("buyback-cancel","やめる")}`:`<button data-pet-buyback="${f.uid}" ${quote.eligible?"":"disabled"}>買い取りを相談する</button>`}</div></article>`;
+      }).join(""):'<p>買い取りを相談できる魚はまだいないよ。</p>'}</div>`;
     }
     function tankPicker(label="水槽"){
-      return `<label class="pet-tank-picker">${label}<select id="petTankSelect">${Array.from({length:P.CAPACITY},(_,i)=>{
+      return `<label class="pet-tank-picker">${label}<select id="petTankSelect">${Array.from({length:s.petLife.unlockedTanks},(_,i)=>{
         const group=P.residents(s,i),water=group.length?spec(group[0].species).waterLabel:"空き";
         return `<option value="${i}" ${s.petLife.selectedTank===i?"selected":""}>水槽${i+1} · ${group.length}/5匹 · ${water}</option>`;
       }).join("")}</select></label>`;
@@ -47,24 +56,25 @@
           <div class="pet-glass"></div><div class="pet-scale" style="width:${dims.rulerCm/dims.widthCm*100}%">${dims.rulerCm}cm</div><span class="pet-tank-width">水槽幅 ${dims.widthCm}cm</span>
           <div class="pet-tank-caption">${group.length}匹 · ${spec(group[0].species).waterLabel} <small>${f?`${spec(f.species).name} ${P.cm(f.length)}cm · ${ctx.sizeLabel(f.species,f.length)}`:""}</small></div>
         </div><div class="pet-tank-info"><label for="petFishSelect">様子を見る魚</label><select id="petFishSelect">${group.map(a=>`<option value="${a.uid}" ${a.uid===p.selected?"selected":""}>${fishName(a)} · ${P.cm(a.length)}cm</option>`).join("")}</select>
-          ${f?`<h3>${fishName(f)}</h3><div class="pet-stats"><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span></div>`:""}
+          ${f?`<h3>${fishName(f)}</h3><div class="pet-stats"><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>性別 <b>${f.sex==="female"?"♀ メス":"♂ オス"}</b></span><span>世代・星 <b>第${f.generation+1}世代 ${"★".repeat(f.stars)}</b></span></div>`:""}
+          ${p.lastBirth?.tank===p.selectedTank&&p.lastBirth.day===today?`<p class="pet-birth" role="status">✨ ${esc(spec(p.lastBirth.species).name)}の稚魚が生まれたよ！ 水槽の仲間を見てみよう。</p>`:""}
           <p>${hungry.length?`まだ食べていない子 ${hungry.length}匹`:"今日はみんなエサやり済み"} ・ エサ残り${p.food}食</p><div class="pet-care-actions">${btn("feed",`みんなにエサ${hungry.length?` · ${hungry.length}食`:""}`,!hungry.length||p.food<hungry.length)}${btn("water","水槽の水換え",group.every(a=>a.changedDay===today)||group.every(a=>a.water>=100))}</div>
-          <p class="pet-note">1匹に一日1食。水質40%以上で翌日0.1cm成長。体長は共通の縮尺で表示し、大きな魚には広い水槽を用意するよ。</p>
-          <label class="pet-move-label">お引っ越し先<select id="petMoveTank">${Array.from({length:P.CAPACITY},(_,i)=>i).filter(i=>f&&i!==p.selectedTank&&P.canHouse(s,f.species,ctx.catalog,i)).map(i=>`<option value="${i}">水槽${i+1} · ${P.residents(s,i).length}/5匹</option>`).join("")}</select></label>${btn("move","この魚を移す",!f||!Array.from({length:P.CAPACITY},(_,i)=>i).some(i=>i!==p.selectedTank&&P.canHouse(s,f.species,ctx.catalog,i)))}
+          <p class="pet-note">同じ魚種の成魚のオスとメスを一緒の水槽で、毎日エサ・水質60%以上・元気70%以上を3日続けると稚魚が生まれるよ（空きが必要）。★はお世話で増え、次の世代ほど早く育つ。品評会の体格点にも加算されるよ。</p>
+          <label class="pet-move-label">お引っ越し先<select id="petMoveTank">${Array.from({length:p.unlockedTanks},(_,i)=>i).filter(i=>f&&i!==p.selectedTank&&P.canHouse(s,f.species,ctx.catalog,i)).map(i=>`<option value="${i}">水槽${i+1} · ${P.residents(s,i).length}/5匹</option>`).join("")}</select></label>${btn("move","この魚を移す",!f||!Array.from({length:p.unlockedTanks},(_,i)=>i).some(i=>i!==p.selectedTank&&P.canHouse(s,f.species,ctx.catalog,i)))}
           ${f&&f.species!=="nushi"?`<div class="pet-rehome">${rehomeId===f.uid?`<p>${esc(fishName(f))}（${P.cm(f.length)}cm）をアスアルに託す？ この魚は水槽からいなくなり、元には戻せないよ。返金はないよ。</p>${btn("rehome-confirm","この魚を託す")}${btn("rehome-cancel","やめる")}`:btn("rehome","アスアルに託す")}</div>`:""}
         </div></div>`:'<div class="pet-empty"><span>🐟</span><h3>この水槽には、まだ魚がいないよ。</h3><p>湖の北東のアスアルのお店で迎えるか、別の水槽からお引っ越ししよう。</p></div>'}
-        <footer class="pet-tank-footer"><span>全${p.fish.length}/30匹 ・ 1槽5匹まで ・ エサ ${p.food}食</span>${s.caught.nushi>0&&!p.nushiClaimed?btn("nushi","釣ったヌシを迎える",!P.canHouse(s,"nushi",ctx.catalog,p.selectedTank)):""}<small>自宅の展示水槽とは別に、1匹ずつ成長を記録するよ。</small></footer>`;
+        <footer class="pet-tank-footer"><span>全${p.fish.length}/${p.unlockedTanks*P.TANK_CAPACITY}匹 ・ 水槽${p.unlockedTanks}/6槽 ・ エサ ${p.food}食</span>${s.caught.nushi>0&&!p.nushiClaimed?btn("nushi","釣ったヌシを迎える",!P.canHouse(s,"nushi",ctx.catalog,p.selectedTank)):""}<small>自宅の展示水槽とは別に、1匹ずつ成長を記録するよ。水槽はアスアルから購入できるよ。</small></footer>`;
     }
     function contest(){
       const p=s.petLife,c=P.courses.find(c=>c.id===course),today=ctx.day();
-      const choices=kind==="fish"?p.fish.map(f=>({id:f.uid,name:`${fishName(f)} · ${P.cm(f.length)}cm`})) : ctx.dogs;
+      const choices=kind==="fish"?p.fish.map(f=>({id:f.uid,name:`${fishName(f)} · ${P.cm(f.length)}cm · 第${f.generation+1}世代 ★${f.stars}`})) : ctx.dogs;
       if(!choices.some(a=>a.id===participant))participant=choices[0]?.id||"";
       const entered=p.entries[`${kind}:${course}`]===today;
       const last=p.lastResult;
       const lastSubject=last?.subject||(last?.kind==="fish"?ctx.catalog.find(f=>f.name===last.name)?.id:ctx.dogs.find(d=>d.name===last?.name)?.id)||"";
       let guide=kind==="bond"?`なつき度で採点。今の評価は${Math.round((s.dogAffinity[participant]||0)/20)}点。`:
         kind==="tricks"?`5つの芸に挑戦。今の一芸あたりの成功率は${Math.round(P.trickChance(s,participant)*100)}%。`:
-        "魚種に合わせた成長・体格45点、元気35点、水質20点で採点。";
+        "成長・体格と★で45点、元気35点、水質20点で採点。";
       return `<div class="pet-contest-selectors"><label>種目<select id="petContestKind">${Object.entries(P.kinds).map(([id,name])=>`<option value="${id}" ${kind===id?"selected":""}>${name}</option>`).join("")}</select></label><label>参加する子<select id="petContestParticipant" ${choices.length?"":"disabled"}>${choices.length?choices.map(a=>`<option value="${a.id}" ${participant===a.id?"selected":""}>${esc(a.name)}</option>`).join(""):'<option value="">飼育中の魚がいない</option>'}</select></label></div>
         <div class="pet-course-options">${P.courses.map(c=>`<button data-pet-course="${c.id}" aria-pressed="${course===c.id}"><b>${c.name}</b><small>参加費 ${c.fee}円</small></button>`).join("")}</div>
         <p>${guide}</p><p class="pet-note">同点は同順位。各種目・各コースに一日1回参加できるよ。優勝賞金${c.prize}円、2位${Math.floor(c.prize*.5)}円、3位${Math.floor(c.prize*.25)}円。</p>
@@ -111,10 +121,17 @@
     function start(){if(frame||!live()||document.hidden)return;lastPaint=0;frame=requestAnimationFrame(paint);}
     modal.onclick=event=>{
       const b=event.target.closest("button");if(!b||b.disabled||!live())return;
-      if(b.dataset.petTab){tab=b.dataset.petTab;message="";render();return;}
+      if(b.dataset.petTab){tab=b.dataset.petTab;buybackId=null;message="";render();return;}
       if(b.dataset.petCourse){course=b.dataset.petCourse;render();return;}
       if(b.dataset.petBuy){const result=P.acquire(s,b.dataset.petBuy,ctx.catalog,ctx.day(),s.petLife.selectedTank);message=result.message;if(result.ok)changed();render();return;}
+      if(b.dataset.petBuyback){buybackId=s.petLife.fish.some(f=>f.uid===b.dataset.petBuyback)?b.dataset.petBuyback:null;render();return;}
       const action=b.dataset.petAction;
+      if(action==="buyback-cancel"){buybackId=null;render();return;}
+      if(action==="buyback-confirm"){
+        if(!buybackId)return;
+        const result=P.buyBack(s,buybackId,ctx.catalog,ctx.day());buybackId=null;message=result.message;
+        if(result.ok)changed();render();return;
+      }
       if(action==="rehome"){rehomeId=P.selected(s)?.uid||null;render();return;}
       if(action==="rehome-cancel"){rehomeId=null;render();return;}
       if(action==="rehome-confirm"){
@@ -140,6 +157,9 @@
       if(action==="food-1"||action==="food-10"){
         const count=action==="food-1"?1:10;
         const ok=P.buyFood(s,count);message=ok?`魚のエサを${count*10}食買った。`:"お金かエサ袋の空きが足りないよ。";if(ok)changed();render();return;
+      }
+      if(action==="tank"){
+        const result=P.buyTank(s);message=result.message;if(result.ok)changed();render();return;
       }
       if(action==="enter"){
         const result=P.enter(s,kind,course,participant,ctx.day(),ctx.catalog,ctx.dogs);

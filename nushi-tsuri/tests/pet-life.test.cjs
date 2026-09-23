@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const P=require('../pet-life.js');
 const catalog=[{id:'moroko',name:'モロコ',price:300,min:300,start:750,max:1799},{id:'nushi',name:'ヌシ',price:0,min:10000,start:12000,max:29999}];
 const dogs=[{id:'shuu',name:'シュウ'},{id:'riku',name:'リク'},{id:'grey',name:'グレイ'}],ids=dogs.map(d=>d.id);
-function state(extra={}){const s={money:10000,caught:{funa:3},dogAffinity:{shuu:44,riku:100},...extra};P.normalize(s,catalog,ids,0);return s;}
+function state(extra={}){const s={money:10000,caught:{funa:3,moroko:1},dogAffinity:{shuu:44,riku:100},...extra};P.normalize(s,catalog,ids,0);return s;}
 const copy=v=>JSON.parse(JSON.stringify(v));
 
 test('legacy friendship percentages migrate once; existing money, catches, trophies and display fish stay intact',()=>{

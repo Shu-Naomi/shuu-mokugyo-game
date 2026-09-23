@@ -120,7 +120,7 @@ test('result animation stops on close, hidden page and reduced motion, then resu
 });
 
 test('masters and their dogs attend only their tournament, including old gathering saves; Asual remains a usable shopkeeper',()=>{
-  let app=boot({...seed(),money:10000}),w=app.window;
+  let app=boot({...seed(),caught:{...seed().caught,moroko:1},money:10000}),w=app.window;
   try{
     assert.deepEqual(read(w,'currentRivalPlacements().map(p=>p.id)'),['chappie']);
     w.openTournament();click(w,'[data-tournament-select="lakeMasters"]');click(w,'[data-tournament-action="start"]');
