@@ -20,7 +20,7 @@ test("unchanged field sparkles keep their nodes; hidden records refresh when ope
     assert.equal(bookChanges.takeRecords().length, 0, "20 log updates and another menu do not rebuild a hidden book");
     window.eval('s.caught.koi = 1; open("record")');
     assert.equal(bookChanges.takeRecords().length, 1);
-    assert.equal(window.document.querySelector("#fishdexDiscovered").textContent, "5 / 17");
+    assert.equal(window.document.querySelector("#fishdexDiscovered").textContent, "5 / 20");
     assert.match(window.document.querySelector('[data-fishdex-id="koi"]').textContent, /コイ.*1匹/s);
     assert.match(window.document.querySelector("#log").textContent, /描画確認 19/);
     window.eval('log("開いている図鑑の新しい記録")');

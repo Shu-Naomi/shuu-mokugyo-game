@@ -1774,6 +1774,24 @@
       .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels) {
         display: none !important;
       }
+      .map.v54-map.coast > :not(#player):not(#dog):not(#coastPixels):not(#boatVisual) { display: none !important; }
+      .map.v54-map.coast #worldPixels { display: none !important; }
+      .map.v54-map #coastPixels { display: none; }
+      .map.v54-map.coast #coastPixels {
+        display: block !important;
+        position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+        image-rendering: pixelated; pointer-events: none;
+      }
+      .map.v54-map #boatVisual { display: none; }
+      .map.v54-map.coast.boating #boatVisual {
+        display: block !important; position: absolute; width: 9%; height: 13%;
+        transform: translate(-50%,-55%); z-index: 7; image-rendering: pixelated;
+        pointer-events: none;
+      }
+      .map.v54-map.coast.boating #player,
+      .map.v54-map.coast.boating #dog { display: none !important; }
+      #boatHud:not([hidden]) { display: inline-flex; white-space: nowrap; color: #fcdea0; }
+      #boatHud[hidden] { display: none !important; }
       .forage-layer {
         position: absolute;
         inset: 0;
@@ -6443,16 +6461,18 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v193</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v194</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
-        ><span class="grow">🎣 <b id="rod">竹の竿</b></span
+        ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
         ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
         ><button id="menu" type="button" aria-controls="fieldMenu" aria-expanded="false">メニュー</button>
       </header>
       <main class="world" id="world">
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
+          <canvas id="coastPixels" width="960" height="540" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
+          <canvas id="boatVisual" width="64" height="48" aria-hidden="true"></canvas>
           <div class="lake">
             <i class="lake-island island-a"></i>
             <i class="lake-island island-b"></i>
@@ -6984,12 +7004,12 @@
             <button class="close" data-close>港へ戻る</button>
             <small class="shop-brand">HOSHIMI HARBOR BOAT GEAR</small>
             <h2>港の舟具屋</h2>
-            <p class="shop-dialogue" id="vehicleShopDialogue">「島へ渡る日が来たら、相棒になる舟を選びな」</p>
+            <p class="shop-dialogue" id="vehicleShopDialogue">「港の桟橋から小島へ漕ぎ出すなら、相棒になる舟を選びな」</p>
             <div class="grid shop-goods">
               <button data-buy-vehicle="tarai"><span>タライ</span><small>600円</small></button>
               <button data-buy-vehicle="canoe"><span>カヌー</span><small>3500円</small></button>
             </div>
-            <small class="vehicle-shop-note">買った舟は道具袋の「装備」で選べる。南の島への進水地点は今後追加予定。</small>
+            <small class="vehicle-shop-note">装備したら港の桟橋でA。タライは1体力／3マス、カヌーは2体力／5マス。小島で休憩できる。</small>
           </div>
         </div>
         <div class="modal inventory-modal" id="inventory">
@@ -7029,7 +7049,7 @@
                   </div>
                   <div class="equipment-row">
                     <span>🛶 乗り物</span><b id="equipmentVehicle">なし</b>
-                    <small>南の島用。今のフィールドでは進水できない。</small>
+                    <small>装備して港の桟橋でA。出航後の移動に体力を使う。</small>
                     <div class="equipment-options" id="vehicleEquipmentOptions"></div>
                   </div>
                   <div class="equipment-row">
@@ -7152,7 +7172,8 @@
     <script src="pet-life.js?v=189-1"></script>
     <script src="aquarium-life.js?v=184-1"></script>
     <script src="pet-life-ui.js?v=190-1"></script>
-    <script src="tackle-balance.js?v=191-1"></script>
+    <script src="tackle-balance.js?v=194-1"></script>
+    <script src="coast-voyage.js?v=194-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7322,6 +7343,9 @@
             icon: "🐟",
             shadowRow: 3,
           },
+          { id: "shirogisu", name: "シロギス", price: 300, resistance: 84, w: 0, icon: "🐟", shadowRow: 3 },
+          { id: "ainame", name: "アイナメ", price: 570, resistance: 119, w: 0, icon: "🐟", shadowRow: 3 },
+          { id: "madai", name: "マダイ", price: 1200, resistance: 156, w: 0, icon: "🐠", shadowRow: 3 },
         ],
         fishEncyclopediaData = {
           moroko: {
@@ -7545,6 +7569,27 @@
             baits: ["river", "worm", "liveMinnow"],
             tip: "朝夕の流心へ川虫を流そう。上流への疾走は糸を送り、水面へ向かったらAを離して跳躍をいなすのがコツだよ。",
           },
+          shirogisu: {
+            number: 18, scientific: "Sillago japonica", habitats: ["sea"], rarity: 2,
+            rarityLabel: "少し珍しい", ecology: "砂浜に沿った浅い海で群れ、砂底の小さな生き物を探す魚。細長い銀白色の体を持つ。",
+            locations: "白砂の小島（浅場〜沖）", time: "いつでも（朝が狙い目）",
+            rods: ["bamboo", "youngBamboo"], baits: ["worm", "shrimp", "smallShrimp"],
+            tip: "白砂の小島から砂底へ。ミミズやオキアミとハリ小で小気味よいアタリを待とう。",
+          },
+          ainame: {
+            number: 19, scientific: "Hexagrammos otakii", habitats: ["sea"], rarity: 3,
+            rarityLabel: "珍しい", ecology: "沿岸の岩場や海藻の陰を好み、甲殻類や小魚を食べる底生の魚。",
+            locations: "岩礁の小島（沿岸〜沖）", time: "いつでも（夕方が狙い目）",
+            rods: ["youngBamboo", "clearStream"], baits: ["shrimp", "crab", "liveMinnow"],
+            tip: "岩礁を回り込み、岩陰の中層へオキアミやカニを落としてみよう。",
+          },
+          madai: {
+            number: 20, scientific: "Pagrus major", habitats: ["sea"], rarity: 4,
+            rarityLabel: "とても珍しい", ecology: "沿岸の岩礁や砂礫底に暮らすタイ科の魚。硬い歯で貝類や甲殻類も食べる。",
+            locations: "岩礁の小島（深場）", time: "いつでも（朝・夕が狙い目）",
+            rods: ["clearStream", "starGazer"], baits: ["shrimp", "crab", "shell"],
+            tip: "岩礁の沖へ投げ、ハリ大と甲殻類のエサで力強い引きを受け止めよう。",
+          },
         },
         fishingSpots = [
           {
@@ -7619,6 +7664,18 @@
             role: "海の深場・大型スズキとヒラメ、魚礁のメバル、沖へ出るボラと港の大型クロダイ",
             weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16, bora: 0.07, mebaru: 0.16 },
           },
+          { id: "coast-sand-shallow", zone: "sea", depth: "shallow", name: "白砂の小島・砂浜", role: "砂底にシロギスと回遊魚",
+            weights: { shirogisu: .53, aji: .25, bora: .12, hirame: .10 } },
+          { id: "coast-sand-mid", zone: "sea", depth: "mid", name: "白砂の小島・沿岸", role: "砂底のシロギスとヒラメ",
+            weights: { shirogisu: .37, aji: .24, hirame: .19, suzuki: .12, bora: .08 } },
+          { id: "coast-sand-deep", zone: "sea", depth: "deep", name: "白砂の小島・沖", role: "回遊するスズキと砂底のヒラメ",
+            weights: { shirogisu: .19, aji: .2, hirame: .28, suzuki: .25, bora: .08 } },
+          { id: "coast-reef-shallow", zone: "sea", depth: "shallow", name: "岩礁の小島・浅場", role: "岩陰のメバルとアイナメ",
+            weights: { ainame: .38, kasago: .25, mebaru: .27, aji: .10 } },
+          { id: "coast-reef-mid", zone: "sea", depth: "mid", name: "岩礁の小島・沿岸", role: "岩礁のアイナメとクロダイ",
+            weights: { ainame: .32, kasago: .2, mebaru: .16, kurodai: .18, madai: .14 } },
+          { id: "coast-reef-deep", zone: "sea", depth: "deep", name: "岩礁の小島・沖", role: "沖のマダイと岩陰のアイナメ",
+            weights: { madai: .34, ainame: .23, kurodai: .21, kasago: .14, suzuki: .08 } },
         ],
         baitData = {
           worm: {
@@ -8210,6 +8267,9 @@
           nushi: "assets/fish-nushi-v31.png",
           bora: "assets/fish-bora-v137.png",
           mebaru: "assets/mebaru-v144/swim-00.png",
+          shirogisu: "assets/fish-shirogisu-v194.svg",
+          ainame: "assets/fish-ainame-v194.svg",
+          madai: "assets/fish-madai-v194.svg",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -8232,6 +8292,9 @@
           nushi: "assets/fish-nushi-mouth-v68.png",
           bora: "assets/fish-bora-mouth-open-v137.png",
           mebaru: "assets/mebaru-v144/mouth-open-00.png",
+          shirogisu: "assets/fish-shirogisu-mouth-v194.svg",
+          ainame: "assets/fish-ainame-mouth-v194.svg",
+          madai: "assets/fish-madai-mouth-v194.svg",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
@@ -8258,6 +8321,9 @@
           nushi: "assets/fish-nushi-turn-v70.png",
           bora: "assets/fish-bora-turn-v137.png",
           mebaru: "assets/mebaru-v144/turn-00.png",
+          shirogisu: "assets/fish-shirogisu-turn-v194.svg",
+          ainame: "assets/fish-ainame-turn-v194.svg",
+          madai: "assets/fish-madai-turn-v194.svg",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -9756,6 +9822,18 @@
           },
         ],
       };
+      // Six independent tiers preserve specimen-size rolls for the new fish.
+      for (const [id,lengths] of Object.entries({
+        shirogisu: [[9,14],[14,18],[18,23],[23,27],[27,32],[32,40]],
+        ainame: [[16,22],[22,29],[29,37],[37,44],[44,53],[53,70]],
+        madai: [[20,27],[27,35],[35,46],[46,56],[56,70],[70,90]],
+      })) {
+        const base=fishSizeProfiles.funa;
+        fishSizeProfiles[id]=base.map((tier,index)=>({
+          ...tier,minHundredths:lengths[index][0]*100,
+          maxHundredths:lengths[index][1]*100-1,
+        }));
+      }
       const SURFACE_CAST_MOTION_MS = ShuCast.DURATION;
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
@@ -10875,6 +10953,17 @@
           },
         ],
       };
+      // Coastal species inherit a tested fight rig and have their own art,
+      // catch tiers, hook choices, feeding preferences and encyclopedia pages.
+      for (const [id,base,intro] of [
+        ["shirogisu","moroko","砂底を横切る小さなアタリ。"],
+        ["ainame","kasago","岩陰へ潜ろうとする強い引き。"],
+        ["madai","kurodai","赤い体で沖へ向かう大きな引き。"],
+      ]) {
+        fishMouthProfiles[id] = { ...fishMouthProfiles[base] };
+        fishMotionProfiles[id] = { ...fishMotionProfiles[base] };
+        fightProfiles[id] = { ...fightProfiles[base], intro };
+      }
       /* v103: procedural life motion remains as the fallback for species that
          have not yet received a dedicated atlas. */
       const fishLifeProfiles = {
@@ -10943,6 +11032,9 @@
           speedGain: .12, response: .24, falloff: 1.15, pulse: .005,
           grounded: .45,
         },
+        shirogisu: { wave: .11,bend: 5.7,lag: 1.4,idle: .3,speedGain: .18,response: .38,falloff: .87,pulse: .007 },
+        ainame: { wave: .065,bend: 3.4,lag: 1,idle: .24,speedGain: .14,response: .25,falloff: 1.08,pulse: .006 },
+        madai: { wave: .073,bend: 4.2,lag: 1.1,idle: .27,speedGain: .15,response: .28,falloff: 1,pulse: .006 },
         nushi: {
           wave: .05, bend: 2.8, lag: 1, idle: .18,
           speedGain: .11, response: .18, falloff: 1.25, pulse: .005,
@@ -10969,6 +11061,9 @@
           nushi: [288, 210],
           bora: [320, 160],
           mebaru: [320, 160],
+          shirogisu: [64, 32],
+          ainame: [64, 32],
+          madai: [64, 32],
         },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
@@ -11500,6 +11595,8 @@
             equipment: null,
             ownedHands: null,
             ownedVehicles: null,
+            mapRegion: "village",
+            boatActive: false,
             dogAffinity: null,
             dogTreats: null,
             dogTreatDays: null,
@@ -12089,7 +12186,7 @@
               spotId: fishingSpots.some((spot) => spot.id === record.last.spotId)
                 ? record.last.spotId
                 : "",
-              castLocale: ["lake", "river", "beach", "harbor", "sea"]
+              castLocale: ["lake", "river", "beach", "harbor", "sea", "coast-sand", "coast-reef"]
                   .includes(record.last.castLocale)
                 ? record.last.castLocale
                 : "",
@@ -12112,7 +12209,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,price:f.id==="nushi"?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai"].includes(f.id)?"海水":"淡水"};
       });
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
       function petBirthMessage(state = s) {
@@ -12260,6 +12357,16 @@
       s.hp = Number.isFinite(s.hp)
         ? Math.max(0, Math.min(s.maxHp, Math.round(s.hp)))
         : s.maxHp;
+      // Old saves stay in the village. A missing boat or invalid sea location
+      // restores a safe dock without changing inventory or fishing records.
+      s.mapRegion = s.mapRegion === "coast" ? "coast" : "village";
+      s.boatActive = s.mapRegion === "coast" && s.boatActive === true;
+      if (s.mapRegion === "coast" && !s.equipment.vehicle) {
+        s.mapRegion = "village";
+        s.boatActive = false;
+        s.x = ShuCoast.docks.harbor.land.x;
+        s.y = ShuCoast.docks.harbor.land.y;
+      }
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       function save() {
@@ -13620,6 +13727,63 @@
       function near(x, y, r = 13) {
         return Math.hypot(s.x - x, s.y - y) < r;
       }
+      function activeLandingDock() {
+        if (s.mapRegion !== "coast") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
+          ? { id:"harbor",...ShuCoast.docks.harbor } : null;
+        return Object.entries(ShuCoast.docks)
+          .filter(([id])=>id!=="harbor" || s.boatActive)
+          .map(([id,dock])=>({id,...dock}))
+          .find(dock=>ShuCoast.near(s,s.boatActive?dock.water:dock.land,dock.radius)) || null;
+      }
+      function boardBoat() {
+        if (!s.equipment.vehicle || !s.ownedVehicles.includes(s.equipment.vehicle)) {
+          showRescueToast("船を出すには、星見港の舟屋でタライかカヌーを買って装備しよう。");
+          return false;
+        }
+        if (s.tournament) { showRescueToast("大会が終わったら舟を出そう。"); return false; }
+        const dock=activeLandingDock();
+        if (!dock || s.boatActive) return false;
+        s.mapRegion="coast";s.boatActive=true;
+        s.x=dock.water.x;s.y=dock.water.y;
+        s.direction=dock.id==="reef"?"right":"left";
+        dogWorldPosition=null;
+        log(`${vehicleData[s.equipment.vehicle].name}に乗り、${dock.name}から漕ぎ出した。`);
+        render();save();return true;
+      }
+      function landBoat() {
+        if (!s.boatActive || s.mapRegion!=="coast") return false;
+        const dock=activeLandingDock();if(!dock)return false;
+        s.boatActive=false;s.mapRegion=dock.id==="harbor"?"village":"coast";
+        s.x=dock.land.x;s.y=dock.land.y;s.direction="up";
+        dogWorldPosition=null;
+        log(`${dock.name}に船を着けた。`);
+        render();save();return true;
+      }
+      function rescueBoat() {
+        s.mapRegion="village";s.boatActive=false;
+        s.x=ShuCoast.docks.harbor.land.x;s.y=ShuCoast.docks.harbor.land.y;
+        s.direction="up";dogWorldPosition=null;
+        advanceGameTime(s,120);s.hp=Math.min(s.maxHp,Math.max(25,s.hp));
+        log("体力が尽き、漁師に助けられて星見港へ戻った。体力を25まで回復した。");
+        showRescueToast("漁師に助けられて港へ戻った。宿か食事で体力を整えよう。");
+        render();save();
+      }
+      function coastAction() {
+        const dock=activeLandingDock();
+        if (s.boatActive && dock) return landBoat();
+        if (!s.boatActive && dock) return boardBoat();
+        if (!s.boatActive && ShuCoast.near(s,ShuCoast.restPoint,10)) {
+          if (s.hp>=s.maxHp) {showRescueToast("小島の焚き火で一息。体力は満タンだ。");return true;}
+          const healed=Math.min(30,s.maxHp-s.hp);
+          advanceGameTime(s,30);s.hp+=healed;
+          log(`白砂の小島で30分休み、体力を${healed}回復した。`);
+          render();save();return true;
+        }
+        const spot=nearbyFishingSpot();
+        if(spot){cast(spot);return true;}
+        showRescueToast(s.boatActive?"水面へ向いてAで釣れる。桟橋ではAで降りられる。":"水辺へ向いてAで釣ろう。桟橋ではAで乗船できる。");
+        return true;
+      }
       function worldToMapX(x) {
         return x / WORLD_SCALE_X;
       }
@@ -13789,7 +13953,7 @@
             id: "harbor-shop", x: 140, y: 123, radius: 7,
             interaction: {left:134,right:145,top:119,bottom:126},
             hint: "港の舟具屋だ。Aでタライやカヌーを見る。",
-            message: "港の舟具屋。南の島へ渡る日のための舟が並んでいる。",
+            message: "港の舟具屋。小島への航海に使えるタライとカヌーが並んでいる。",
           },
         ];
       const PLAYER_HOME_MAP_ENTRY = {
@@ -13995,7 +14159,12 @@
       }
       function renderPixelScenery() {
         const env = gameSceneryEnvironment();
-        if (!playerHomeIsActive() && !battle)
+        if (s.mapRegion === "coast" && !battle) {
+          if (pixelSceneCache.get($("#coastPixels")) !== env.key) {
+            ShuCoast.paint($("#coastPixels"), env);
+            pixelSceneCache.set($("#coastPixels"), env.key);
+          }
+        } else if (!playerHomeIsActive() && !battle)
           paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
         if ($("#store").classList.contains("open"))
           paintPixelScene($("#shopPixels"), env.key, c => ShuScenery.paint(c, "room-sam-shop", env));
@@ -14129,6 +14298,8 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
           return false;
+        if (s.mapRegion === "coast") return s.boatActive
+          ? ShuCoast.water(x,y) : ShuCoast.shore(x,y);
         if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
@@ -14168,6 +14339,7 @@
       function waterZoneAtWorld(x, y) {
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
           return null;
+        if (s.mapRegion === "coast") return ShuCoast.water(x,y) ? "sea" : null;
         if (isPracticePondWater(x, y)) return null;
         if (isLakeWater(x, y)) return "lake";
         if (isRiverWater(x, y)) return "river";
@@ -14183,6 +14355,7 @@
           isWalkableWorld(x, y);
       }
       function nearbyWorldLandmark(x = s.x, y = s.y, direction = s.direction) {
+        if (s.mapRegion === "coast") return null;
         return worldLandmarks.find((landmark) =>
           landmark.questBoard ? isAtQuestBoardFront(x, y, direction) :
           landmark.interaction ? inWorldRect(x,y,landmark.interaction) && isWalkableWorld(x,y) :
@@ -14267,6 +14440,7 @@
       function renderForagePoints() {
         const layer = $("#forageLayer");
         if (!layer) return;
+        if (s.mapRegion === "coast") { layer.innerHTML = ""; renderedForageMarkup = ""; return; }
         const cycle = ensureForageCycle();
         const dogFound = new Set(cycle.dogFound);
         const markup = Object.keys(cycle.active).map((pointId) => {
@@ -14285,6 +14459,7 @@
         }
       }
       function nearbyForagePoint(x = s.x, y = s.y, radius = 7.5) {
+        if (s.mapRegion === "coast") return null;
         const cycle = ensureForageCycle();
         let nearest = null;
         for (const [pointId, itemId] of Object.entries(cycle.active)) {
@@ -14889,7 +15064,7 @@
           .filter(p=>!(petUi?.active && petUi.mode==="shop" && p.id==="cloud"));
       }
       function nearbyRival() {
-        if (playerHomeIsActive() || battle) return null;
+        if (s.mapRegion === "coast" || playerHomeIsActive() || battle) return null;
         const facing = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[s.direction] || [0, 1];
         return currentRivalPlacements().map(p => ({ ...p, distance: Math.hypot(p.x - s.x, p.y - s.y) }))
           .filter(p => p.distance <= 6.5 && (p.distance < 1.8 ||
@@ -14899,7 +15074,7 @@
       }
       function renderRivals() {
         const layer = $("#rivalLayer");
-        layer.hidden = playerHomeIsActive() || Boolean(battle);
+        layer.hidden = s.mapRegion === "coast" || playerHomeIsActive() || Boolean(battle);
         if (layer.hidden) return;
         const placements = currentRivalPlacements(), context = currentTournamentNpcContext();
         const key = placements.map(p => p.id).join(",");
@@ -15058,7 +15233,7 @@
           t.participants.some(npc => npc.id === p.id)) : [];
       }
       function nearbyTournamentNpc() {
-        if (playerHomeIsActive() || battle) return null;
+        if (s.mapRegion === "coast" || playerHomeIsActive() || battle) return null;
         const facing = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[s.direction] || [0, 1];
         return currentTournamentNpcPlacements().map(npc => ({ ...npc, distance: Math.hypot(npc.x - s.x, npc.y - s.y) }))
           .filter(npc => npc.distance <= 6.5 && (npc.distance < 1.8 ||
@@ -15081,7 +15256,7 @@
       }
       function renderTournamentNpcs() {
         const layer = $("#tournamentNpcLayer"), context = currentTournamentNpcContext();
-        layer.hidden = !context || playerHomeIsActive() || Boolean(battle);
+        layer.hidden = s.mapRegion === "coast" || !context || playerHomeIsActive() || Boolean(battle);
         if (layer.hidden) return;
         const placements = currentTournamentNpcPlacements();
         const key = `${context.id}:${placements.map(p => p.id).join(",")}`;
@@ -16086,7 +16261,7 @@
           .filter(Boolean);
         $("#vehicleShopDialogue").textContent = owned.length
           ? `「今持っている舟は${owned.join("と")}だ。装備し直すなら道具袋を開きな」`
-          : "「島へ渡る日が来たら、相棒になる舟を選びな」";
+          : "「港の桟橋から白砂と岩礁の小島へ行ける。相棒になる舟を選びな」";
         open("vehicleShop");
       }
       function useLocationService() {
@@ -16350,7 +16525,7 @@
         setSurfaceCastMotionFrame(0, true);
         $("#castZoneName").textContent = battle.practice
           ? "SAM'S TRY POND・水面"
-          : {
+          : battle.coastType ? `${ShuCoast.docks[battle.coastType].name}・海面` : {
               lake: "星降る湖・湖面",
               river: "民家川・水面",
               sea: castLocale === "harbor" ? "星見港・海面" : "潮見浜・海面",
@@ -16404,11 +16579,13 @@
       function nearbyFishingSpot() {
         const water = fishingWaterNearPlayer();
         if (!water) return null;
+        const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x):null;
         return {
-          ...fishingSpotById(`${water.zone}-shallow`),
+          ...fishingSpotById(coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
           waterZone: water.zone,
           waterX: water.x,
           waterY: water.y,
+          coastType,
         };
       }
       function dogFollowPosition() {
@@ -16661,6 +16838,10 @@
       }
       function render() {
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
+        const coast=s.mapRegion==="coast";
+        const mapElement=$("#map");
+        mapElement.classList.toggle("coast",coast);
+        mapElement.classList.toggle("boating",coast&&s.boatActive);
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
         if (!isWalkableWorld(s.x, s.y)) {
@@ -16670,7 +16851,6 @@
         }
         const mapX = worldToMapX(s.x);
         const mapY = worldToMapY(s.y);
-        const mapElement = $("#map");
         const worldElement = $("#world");
         const mapWidth = Math.max(1, mapElement.clientWidth || innerWidth * 2.4);
         const mapHeight = Math.max(1, mapElement.clientHeight || mapWidth * 9 / 16);
@@ -16690,6 +16870,12 @@
           `translate3d(${-cameraX / WORLD_SCALE_X}%, ${-cameraY / WORLD_SCALE_Y}%, 0)`;
         $("#player").style.left = `${mapX}%`;
         $("#player").style.top = `${mapY}%`;
+        const boatVisual=$("#boatVisual");
+        if (coast&&s.boatActive) {
+          boatVisual.style.left=`${mapX}%`;
+          boatVisual.style.top=`${mapY}%`;
+          ShuCoast.paintBoat(boatVisual,s.equipment.vehicle,s.direction,playerAnimFrame);
+        }
         renderPlayer();
         const dogPosition = dogFollowPosition();
         $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
@@ -16704,6 +16890,9 @@
         drawDog();
         renderForagePoints();
         renderQuestBoardStatus();
+        const boatHud=$("#boatHud");
+        boatHud.hidden=!coast;
+        if(coast)boatHud.textContent=`${s.boatActive?(s.equipment.vehicle==="canoe"?"🛶":"🛁"):"🏝"} ${s.hp}/${s.maxHp}`;
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
@@ -16739,7 +16928,21 @@
         const spot = nearbyFishingSpot();
         const tournamentNpc = nearbyTournamentNpc();
         const rival = nearbyRival();
-        $("#hint").textContent = rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)
+        $("#hint").textContent = coast
+          ? s.boatActive
+            ? activeLandingDock()
+              ? `${activeLandingDock().name}の桟橋。Aで上陸。移動は${ShuCoast.costFor(s.equipment.vehicle)}体力ずつ使う。`
+              : `沿岸の海。Aで釣る。${vehicleData[s.equipment.vehicle]?.name||"舟"}は移動1回で体力${ShuCoast.costFor(s.equipment.vehicle)}消費。`
+            : activeLandingDock()
+              ? `${activeLandingDock().name}の桟橋。Aで舟に乗る。`
+              : ShuCoast.near(s,ShuCoast.restPoint,10)
+                ? "焚き火だ。Aで30分休んで体力を30回復。"
+                : "小島の水辺へ向いてAで釣る。桟橋へ戻れば乗船できる。"
+          : !s.equipment.vehicle && activeLandingDock()
+            ? "舟屋でタライかカヌーを購入・装備すると、この桟橋から小島へ行ける。"
+          : s.equipment.vehicle && activeLandingDock()
+            ? `${vehicleData[s.equipment.vehicle].name}の進水地点。Aで沿岸へ出発。`
+          : rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)
           ? `${ShuRivals.character(rival.id).name}がいる。Aで挨拶する。`
           : tournamentNpc
           ? `${ShuTournamentNpcs.byId(tournamentNpc.id).name}がいる。Aで話しかける。`
@@ -16872,12 +17075,12 @@
         if (playerHomeIsActive()) return movePlayerHome(d);
         if (battle || rescueInProgress || forageDiscoveryInProgress ||
             document.querySelector(".modal.open")) return;
-        if (d === "left" && isAtPlayerHomeMapEntrance())
+        if (s.mapRegion!=="coast" && d === "left" && isAtPlayerHomeMapEntrance())
           return enterPlayerHomeFromMap();
         hideIdleStatus();
         hideFieldMenu();
-        wakeDog();
-        dogWalking = true;
+        if (s.mapRegion!=="coast") wakeDog();
+        dogWalking = s.mapRegion!=="coast";
         const startingWalk = !playerWalking;
         playerWalking = true;
         if (startingWalk) {
@@ -16893,13 +17096,19 @@
         const previousX = s.x;
         const previousY = s.y;
         let moved = false;
-        let n = 4;
+        let n = s.mapRegion==="coast" && s.boatActive
+          ? ShuCoast.stepFor(s.equipment.vehicle) : 4;
         ({
           left: () => (s.x -= n),
           right: () => (s.x += n),
           up: () => (s.y -= n),
           down: () => (s.y += n),
         })[d]();
+        if (s.mapRegion==="coast" && s.boatActive &&
+            s.hp < ShuCoast.costFor(s.equipment.vehicle)) {
+          s.x=previousX;s.y=previousY;
+          return rescueBoat();
+        }
         if (
           !isWalkableWorld(s.x, s.y) ||
           !isWalkableWorldSegment(previousX, previousY, s.x, s.y)
@@ -16910,14 +17119,18 @@
           // The dog follows the exact tile the player just proved walkable.
           // It therefore rounds piers and buildings through the same gaps,
           // instead of tweening diagonally between two unrelated safe points.
-          advanceDogTrail(previousX, previousY);
+          if (s.mapRegion!=="coast" || !s.boatActive) advanceDogTrail(previousX, previousY);
           moved = true;
+          if (s.mapRegion==="coast" && s.boatActive) {
+            s.hp=Math.max(0,s.hp-ShuCoast.costFor(s.equipment.vehicle));
+            advanceGameTime(s,2);
+          }
         }
         render();
-        if (moved && enterPlayerHomeFromMap()) return;
+        if (moved && s.mapRegion!=="coast" && enterPlayerHomeFromMap()) return;
         $("#player").classList.add("walking");
         $("#dog").classList.add("walking");
-        if (moved) maybeDogDiscoverForagePoint();
+        if (moved && s.mapRegion!=="coast") maybeDogDiscoverForagePoint();
         clearTimeout(walkTimer);
         clearTimeout(dogWalkTimer);
         walkTimer = setTimeout(() => {
@@ -17244,6 +17457,8 @@
         if (playerHomeState.transitioning) return;
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
+        if (s.mapRegion==="coast") return coastAction();
+        if (activeLandingDock()) return boardBoat();
         const tournamentNpc = nearbyTournamentNpc();
         const rival = nearbyRival();
         if (rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)) return openRivalTalk(rival.id);
@@ -17433,7 +17648,7 @@
               evening: 1.55,
               night: 0.75,
             }[period] || 1;
-            if (battle?.castLocale !== "harbor") weight = 0;
+            if (battle?.castLocale !== "harbor" && battle?.coastType !== "reef") weight = 0;
           }
           if (id === "hirame") {
             weight *= {
@@ -17442,7 +17657,7 @@
               evening: 1.45,
               night: 0.65,
             }[period] || 1;
-            if (battle?.castLocale !== "beach") weight = 0;
+            if (battle?.castLocale !== "beach" && battle?.coastType !== "sand") weight = 0;
           }
           if (id === "bora") {
             weight *= {
@@ -17543,7 +17758,8 @@
         const minimumDepth = zone === "sea" && isCapeDeepWater(spot.waterX, spot.waterY)
           ? "mid"
           : "shallow";
-        const profile = fishingSpotById(`${zone}-${minimumDepth}`);
+        const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x):null);
+        const profile = fishingSpotById(coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
           reeling: false,
@@ -17555,7 +17771,11 @@
           waterY: spot.waterY,
           playerX: s.x,
           playerY: s.y,
-          castLocale: zone === "sea" ? seaCastLocaleAtWorld(s.x, s.y) : zone,
+          castLocale: zone === "sea"
+            ? coastType ? coastType === "reef" ? "harbor" : "beach"
+              : seaCastLocaleAtWorld(s.x,s.y)
+            : zone,
+          coastType,
         };
         setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
@@ -18323,7 +18543,7 @@
         }
         s.equipment.vehicle = next;
         log(next
-          ? `${vehicleData[next].name}を次の進水用に装備した。`
+          ? `${vehicleData[next].name}を装備した。港の桟橋でAを押せば出航できる。`
           : "乗り物装備を外した。");
         renderInventory();
         render();
@@ -18358,7 +18578,7 @@
         s.money -= item.price;
         s.ownedVehicles.push(id);
         s.equipment.vehicle = id;
-        log(`${item.name}を買って装備した。南の島への進水地点で使える予定だ。`);
+        log(`${item.name}を買って装備した。港の桟橋から小島へ出航できる。`);
         renderInventory();
         render();
         save();
@@ -18772,7 +18992,9 @@
               battle.minimumDepth || "shallow",
             );
         battle.depth = depth;
-        battle.spot = `${battle.waterZone || "lake"}-${depth}`;
+        battle.spot = battle.coastType
+          ? `coast-${battle.coastType}-${depth}`
+          : `${battle.waterZone || "lake"}-${depth}`;
         const spot = fishingSpotById(battle.spot);
         const f = battle.practice
           ? fish.find((candidate) => candidate.id === "funa")
@@ -21618,7 +21840,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=193-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=194-1").catch(() => {});
       renderRecord();
     </script>
   </body>
