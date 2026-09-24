@@ -16,7 +16,7 @@ function fixedCatches(window,spot='lake-mid',bait='corn',hook='small',casts=1000
 }
 
 test('species data and hook bands favor funa with corn + small hook, carp with large hook, and still allow bycatch',()=>{
-  assert.equal(Object.keys(Balance.species).length,17);
+  assert.equal(Object.keys(Balance.species).length,20);
   for(const [id,profile] of Object.entries(Balance.species)){
     assert.ok(['small','medium','large'].includes(profile.band),id);
     assert.ok(Object.keys(profile.baits).length>=8,id);
@@ -116,7 +116,7 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
 
 test('release references and offline cache contain both pixel and balance modules',()=>{
   const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const id of ['tackle-balance','tackle-art']){
-    assert.ok(html.includes(`${id}.js?v=191-1`));assert.ok(sw.includes(`./${id}.js?v=191-1`));
+  for(const [id,version] of [['tackle-balance','194-1'],['tackle-art','191-1']]){
+    assert.ok(html.includes(`${id}.js?v=${version}`));assert.ok(sw.includes(`./${id}.js?v=${version}`));
   }
 });

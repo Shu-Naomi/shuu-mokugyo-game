@@ -151,6 +151,18 @@
         shell: 0.08, crab: 0.35,
       },
     },
+    shirogisu: { band: "small", baits: {
+      worm: 2.1, shrimp: 1.55, smallShrimp: 1.9, river: .8,
+      crab: .45, shell: .35, liveMinnow: .08, paste: .12, corn: .03,
+    } },
+    ainame: { band: "medium", baits: {
+      shrimp: 1.8, smallShrimp: 1.75, crab: 2.2, shell: 1.25,
+      liveMinnow: 1.4, worm: .75, river: .35, paste: .06, corn: .02,
+    } },
+    madai: { band: "large", baits: {
+      shrimp: 2.1, smallShrimp: 1.65, crab: 2.35, shell: 2.05,
+      liveMinnow: .6, worm: .4, river: .2, paste: .18, corn: .08,
+    } },
   };
   const baitDefaults = {
     worm: 1, river: .08, paste: .08, corn: .08,

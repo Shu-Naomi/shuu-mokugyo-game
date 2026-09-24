@@ -3,7 +3,7 @@
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
-  const bottom=id=>['hirame','kasago','namazu','unagi'].includes(id);
+  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame'].includes(id);
   function orientation(yaw){
     yaw=clamp(yaw,0,Math.PI);
     const turning=yaw>0&&yaw<Math.PI;

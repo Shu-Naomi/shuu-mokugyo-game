@@ -47,11 +47,11 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
  }
 });
 
-test('all 17 species use real, nonempty five-angle art with matching offline assets',async()=>{
+test('all 20 species use real, nonempty five-angle art with matching offline assets',async()=>{
  const app=boot();let records;
  try{records=read(app.window,`fish.map(f=>({id:f.id,size:fishFrameFallbackSizes[f.id],frames:Array.from({length:5},(_,frame)=>({asset:standaloneFishFrameAsset(f.id,fishTurnAssets[f.id],frame)||fishTurnAssets[f.id],frame:f.id==='mebaru'?0:frame,cells:f.id==='mebaru'?1:5}))}))`);}
  finally{app.dispose();}
- assert.equal(records.length,17);
+ assert.equal(records.length,20);
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
  for(const fish of records){
   for(const f of fish.frames){
