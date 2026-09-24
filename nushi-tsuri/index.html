@@ -1784,7 +1784,7 @@
       }
       .map.v54-map #boatVisual { display: none; }
       .map.v54-map.coast.boating #boatVisual {
-        display: block !important; position: absolute; width: 9%; height: 13%;
+        display: block !important; position: absolute; width: 6.5%; height: 9%;
         transform: translate(-50%,-55%); z-index: 7; image-rendering: pixelated;
         pointer-events: none;
       }
@@ -7173,15 +7173,15 @@
     <script src="aquarium-life.js?v=184-1"></script>
     <script src="pet-life-ui.js?v=190-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
-    <script src="coast-voyage.js?v=194-1"></script>
+    <script src="coast-voyage.js?v=195-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=182-1"></script>
-    <script src="layered-scenery.js?v=182-1"></script>
+    <script src="scene-layers.js?v=195-1"></script>
+    <script src="layered-scenery.js?v=195-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -14139,7 +14139,9 @@
       }
       function surfaceSceneryKind() {
         return battle?.practice ? "pond" : battle?.waterZone === "sea"
-          ? battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY) : battle?.waterZone || "lake";
+          ? battle.coastType ? `coast-${battle.coastType}`
+            : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
+          : battle?.waterZone || "lake";
       }
       function paintSurfaceScenery() {
         if (!battle) return;
@@ -16339,7 +16341,10 @@
           // Clear harbor basin, kept left of the large right-hand pier.
           return castLanePoint([[60, 75], [62, 66], [63, 57], [61, 48]], value);
         }
-        if (surface.classList.contains("art-sea-beach")) {
+        if (surface.classList.contains("art-sea-coast-reef")) {
+          return castLanePoint([[52, 72], [57, 61], [60, 51], [57, 40]], value);
+        }
+        if (surface.classList.contains("art-sea-beach") || surface.classList.contains("art-sea-coast-sand")) {
           // Bend left into the open sea so deep casts avoid the right rocks.
           return castLanePoint([[59, 67], [61, 57], [58, 47], [54, 38]], value);
         }
@@ -16579,7 +16584,7 @@
       function nearbyFishingSpot() {
         const water = fishingWaterNearPlayer();
         if (!water) return null;
-        const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x):null;
+        const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null;
         return {
           ...fishingSpotById(coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
           waterZone: water.zone,
@@ -17674,7 +17679,7 @@
               evening: 1.35,
               night: 1.7,
             }[period] || 1;
-            weight *= battle?.castLocale === "harbor" ? 1.4 : 0.72;
+            weight *= battle?.castLocale === "harbor" || battle?.coastType === "reef" ? 1.4 : 0.72;
           }
           weight *= ShuWeather.fishMultiplier(id, sceneGameMinutes(), Boolean(battle?.practice));
           weight *= questRumorFishMultiplier(id, spot.zone);
@@ -17758,7 +17763,7 @@
         const minimumDepth = zone === "sea" && isCapeDeepWater(spot.waterX, spot.waterY)
           ? "mid"
           : "shallow";
-        const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x):null);
+        const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null);
         const profile = fishingSpotById(coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
@@ -17772,8 +17777,7 @@
           playerX: s.x,
           playerY: s.y,
           castLocale: zone === "sea"
-            ? coastType ? coastType === "reef" ? "harbor" : "beach"
-              : seaCastLocaleAtWorld(s.x,s.y)
+            ? coastType ? `coast-${coastType}` : seaCastLocaleAtWorld(s.x,s.y)
             : zone,
           coastType,
         };
@@ -18857,6 +18861,7 @@
         const castLocale = waterZone === "sea"
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
+        const coastType = battle?.coastType || /^coast-(sand|reef)-/.exec(spot.id)?.[1] || null;
         close();
         battle = {
           phase: "cast",
@@ -18871,6 +18876,7 @@
           playerX,
           playerY,
           castLocale,
+          coastType,
           bait: practice ? practiceBait : s.selectedBait,
           hook: practice ? "medium" : s.selectedHook,
           baitCommitted: false,
@@ -21018,6 +21024,15 @@
         }
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
         setBattleReeling(false);
+        // B deliberately pays out line; simply releasing A only pauses reeling.
+        if (battle.ten < 18 || Date.now() - (battle.lineFeedAt || 0) < 650) return;
+        battle.lineFeedAt = Date.now();
+        battle.ten = Math.max(3, battle.ten - Math.max(14, Math.min(24, battle.ten * .24)));
+        battle.retrieval = Math.max(0, (battle.retrieval || 0) - .018);
+        battle.retrievalDelta = -.018;
+        battle.recoveryMessage = "糸を送り、張力を逃がした。魚との距離が少し開く。";
+        battle.gillRecovery = Math.max(battle.gillRecovery || 0, 5);
+        drawBattle();
       }
       function drawBattle() {
         if (!battle || battle.phase !== "fight") return;
@@ -21840,7 +21855,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=194-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=195-1").catch(() => {});
       renderRecord();
     </script>
   </body>

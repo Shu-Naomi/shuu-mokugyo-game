@@ -133,6 +133,16 @@
     'main-shrine':'star-shrine','fish-market':'fish-market',
   };
   function surface(kind,period) {
+    if (kind === 'coast-sand' || kind === 'coast-reef') {
+      const source = `assets/cast-${kind}-v195.svg`;
+      return {id:'surface-'+kind,source,units:[100,100],parts:[
+        box('sky','sky',0,0,100,38),
+        box('distant-islands','ground',0,25,100,25),
+        box('open-water','water',0,37,100,63,water),
+        box('shore','path',0,70,100,30,{filter:'earth'}),
+        box('rock-edge','rocks',0,48,100,52,{filter:'stone'}),
+      ]};
+    }
     const prefix={lake:'cast-lake',river:'cast-river',beach:'cast-sea-beach',harbor:'cast-sea-harbor',pond:'cast-sam-pond'}[kind] || 'cast-lake';
     const version=kind==='pond'?78:['beach','harbor'].includes(kind)?76:77;
     const time={dawn:'morning',morning:'morning',day:'day-soft',evening:'evening',night:'night'}[period] || 'day-soft';
@@ -190,7 +200,7 @@
         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
   }
   const ids=['world','home-exterior','home-interior',...Object.keys(rooms).map(id=>'room-'+id),
-    ...['lake','river','beach','harbor','pond'].map(id=>'surface-'+id),
+    ...['lake','river','beach','harbor','pond','coast-sand','coast-reef'].map(id=>'surface-'+id),
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
     'underwater-sea-deep-true'];
   function assets() {

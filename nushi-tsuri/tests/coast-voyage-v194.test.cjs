@@ -30,9 +30,9 @@ test('harbor A boards an owned boat, movement consumes stamina and time, island 
     const w=app.window;
     assert.equal(state(w).region,'village');
     w.eval('action()');
-    assert.deepEqual(state(w),{region:'coast',boat:true,x:161,y:123,hp:80,minutes:500});
+    assert.deepEqual(state(w),{region:'coast',boat:true,x:166,y:123,hp:80,minutes:500});
     w.eval('move("left")');
-    assert.equal(state(w).x,156);
+    assert.equal(state(w).x,161);
     assert.equal(state(w).hp,78);
     assert.equal(state(w).minutes,502);
     w.eval('s.x=ShuCoast.docks.sand.water.x;s.y=ShuCoast.docks.sand.water.y;action()');
@@ -63,7 +63,7 @@ test('unowned boat cannot launch, tarai drains one health, exhausting the boat r
   const app=boot(withBoat('tarai',{hp:2}));
   try{
     const w=app.window;w.eval('action();move("left")');
-    assert.deepEqual([state(w).x,state(w).hp],[158,1]);
+    assert.deepEqual([state(w).x,state(w).hp],[163,1]);
     w.eval('move("up")');assert.equal(state(w).hp,0);
     w.eval('move("left")');
     assert.equal(state(w).region,'village');
