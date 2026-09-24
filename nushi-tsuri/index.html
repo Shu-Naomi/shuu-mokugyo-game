@@ -6461,7 +6461,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v195</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v196</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7170,10 +7170,10 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=189-1"></script>
-    <script src="aquarium-life.js?v=184-1"></script>
+    <script src="aquarium-life.js?v=196-1"></script>
     <script src="pet-life-ui.js?v=190-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
-    <script src="coast-voyage.js?v=195-1"></script>
+    <script src="coast-voyage.js?v=196-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -8267,9 +8267,9 @@
           nushi: "assets/fish-nushi-v31.png",
           bora: "assets/fish-bora-v137.png",
           mebaru: "assets/mebaru-v144/swim-00.png",
-          shirogisu: "assets/fish-shirogisu-v194.svg",
-          ainame: "assets/fish-ainame-v194.svg",
-          madai: "assets/fish-madai-v194.svg",
+          shirogisu: "assets/fish-shirogisu-v196.png",
+          ainame: "assets/fish-ainame-v196.png",
+          madai: "assets/fish-madai-v196.png",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -8292,9 +8292,9 @@
           nushi: "assets/fish-nushi-mouth-v68.png",
           bora: "assets/fish-bora-mouth-open-v137.png",
           mebaru: "assets/mebaru-v144/mouth-open-00.png",
-          shirogisu: "assets/fish-shirogisu-mouth-v194.svg",
-          ainame: "assets/fish-ainame-mouth-v194.svg",
-          madai: "assets/fish-madai-mouth-v194.svg",
+          shirogisu: "assets/fish-shirogisu-mouth-v196.png",
+          ainame: "assets/fish-ainame-mouth-v196.png",
+          madai: "assets/fish-madai-mouth-v196.png",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
@@ -8321,9 +8321,9 @@
           nushi: "assets/fish-nushi-turn-v70.png",
           bora: "assets/fish-bora-turn-v137.png",
           mebaru: "assets/mebaru-v144/turn-00.png",
-          shirogisu: "assets/fish-shirogisu-turn-v194.svg",
-          ainame: "assets/fish-ainame-turn-v194.svg",
-          madai: "assets/fish-madai-turn-v194.svg",
+          shirogisu: "assets/fish-shirogisu-turn-v196.png",
+          ainame: "assets/fish-ainame-turn-v196.png",
+          madai: "assets/fish-madai-turn-v196.png",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -10953,17 +10953,88 @@
           },
         ],
       };
-      // Coastal species inherit a tested fight rig and have their own art,
-      // catch tiers, hook choices, feeding preferences and encyclopedia pages.
-      for (const [id,base,intro] of [
-        ["shirogisu","moroko","砂底を横切る小さなアタリ。"],
-        ["ainame","kasago","岩陰へ潜ろうとする強い引き。"],
-        ["madai","kurodai","赤い体で沖へ向かう大きな引き。"],
-      ]) {
+      // Coastal fish share the stable hook/mouth rig, but their strokes and
+      // named fight phases have their own recognizable rhythm and direction.
+      for (const [id, base] of [["shirogisu", "moroko"],
+                               ["ainame", "kasago"], ["madai", "kurodai"]]) {
         fishMouthProfiles[id] = { ...fishMouthProfiles[base] };
-        fishMotionProfiles[id] = { ...fishMotionProfiles[base] };
-        fightProfiles[id] = { ...fightProfiles[base], intro };
       }
+      fishMotionProfiles.shirogisu = {
+        ...fishMotionProfiles.moroko, beat: 1.22, speedBeat: .19,
+        burst: 1.5, thrust: .19, stretch: .024, squeeze: .015,
+        recoil: 3.1, sway: 1.15, roll: .8, turnFrames: 3, turnArc: 2.8,
+      };
+      fishMotionProfiles.ainame = {
+        ...fishMotionProfiles.kasago, beat: .39, speedBeat: .07,
+        burst: 1.42, thrust: .15, recoil: 1.38, sway: .72,
+        roll: .55, restingDrag: .945, turnFrames: 7, turnArc: 3.4,
+      };
+      fishMotionProfiles.madai = {
+        ...fishMotionProfiles.kurodai, beat: .52, speedBeat: .095,
+        burst: 1.55, thrust: .22, recoil: 2.25, sway: 1.42,
+        roll: 1.75, turnFrames: 6, turnArc: 5.2,
+      };
+      const sandDart = fightProfiles.moroko.moods[0];
+      const sandRest = fightProfiles.moroko.moods[1];
+      fightProfiles.shirogisu = {
+        intro: "砂の上を低く滑り、尾を素早く振って短く走る。",
+        moods: [
+          { ...sandDart, id:"sand-skip", name:"砂上すべり", weight:.52,
+            speedX:5.8, speedY:1.25, min:380, max:620, signature:true,
+            hold:"シロギスが砂の上を素早く横切る！Aを離して短い走りをいなそう！",
+            loose:"細い体の小刻みな走り。糸を送ればすぐ落ち着く。" },
+          { ...sandRest, id:"sand-hug", name:"砂底へ伏せる",
+            icon:"▂", weight:.25, min:500, max:750, motion:"cling",
+            speedX:1.5, speedY:.3, tension:3.5, reel:1.2, calm:false,
+            hold:"シロギスが砂底に沿って粘る。Aでゆっくり寄せよう！",
+            loose:"底に沿った小さな動きが止まるまで糸を送る。" },
+          { ...sandRest, id:"sand-pause", name:"砂間の静止",
+            weight:.23, hold:"シロギスが止まった！Aで一気に寄せよう！",
+            loose:"砂の上で静止している。Aで距離を詰めよう！" },
+        ],
+      };
+      const rockMoods = fightProfiles.kasago.moods;
+      fightProfiles.ainame = {
+        intro: "岩の割れ目をたどり、低い姿勢から力強く潜る。",
+        moods: [
+          { ...rockMoods[0], id:"crevice-dive", name:"岩隙への潜り",
+            weight:.44, speedX:1.4, speedY:3.2,
+            hold:"アイナメが岩の隙間へ潜る！Aを離して根をかわそう！",
+            loose:"岩陰に入る前に糸を送って頭が上がるのを待つ。" },
+          { ...rockMoods[1], id:"rock-glide", name:"岩沿いの移動",
+            weight:.31, speedX:1.8, speedY:1.75,
+            hold:"アイナメが岩沿いを低く泳ぐ。Aは慎重に！",
+            loose:"岩伝いの横移動に合わせて糸を送る。" },
+          { ...rockMoods[2], id:"tail-flick", name:"尾のひと振り",
+            weight:.13, speedX:4.1, speedY:1.15,
+            hold:"アイナメが尾を鋭く振った！今はAを離そう！",
+            loose:"短い一振り。力が抜けるまで待とう。" },
+          { ...rockMoods[3], id:"rock-still", name:"岩間で静止",
+            weight:.12, hold:"アイナメが岩陰で止まった！Aで引き出そう！",
+            loose:"隙間で静止している。Aで距離を詰めよう！" },
+        ],
+      };
+      const seaMoods = fightProfiles.kurodai.moods;
+      fightProfiles.madai = {
+        intro: "赤い高い魚体を傾け、沖へ長く走ってから深く潜る。",
+        moods: [
+          { ...seaMoods[0], id:"open-sea-dive", name:"沖への潜行",
+            weight:.38, speedX:1.8, speedY:2.8,
+            hold:"マダイが沖の深みへ潜る！Aを離して重さをいなそう！",
+            loose:"長い潜行に糸を送り、頭が上がるのを待とう。" },
+          { ...seaMoods[1], id:"broadside-flash", name:"魚体ひねり",
+            weight:.28, speedX:2.2, speedY:1.15,
+            hold:"マダイが赤い体を横に向けて粘る。慎重に巻こう！",
+            loose:"大きな体の横抵抗が弱まるまで糸を送る。" },
+          { ...seaMoods[2], id:"open-sea-run", name:"沖への走り",
+            weight:.23, speedX:5.1, speedY:1.5, signature:true,
+            hold:"マダイが沖へ一気に走る！今すぐAを離せ！",
+            loose:"長い走りに糸を合わせ、向きが変わるのを待つ。" },
+          { ...seaMoods[3], id:"current-glide", name:"潮乗り",
+            weight:.11, hold:"マダイが潮に乗って緩んだ！Aで寄せよう！",
+            loose:"力を抜いている。今なら安全に巻ける！" },
+        ],
+      };
       /* v103: procedural life motion remains as the fallback for species that
          have not yet received a dedicated atlas. */
       const fishLifeProfiles = {
@@ -15698,11 +15769,15 @@
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
         const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
+        const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
         const width = Math.max(18, Math.min(36, 18 * Math.sqrt(lengthCm / 10)));
-        const left = width / 2 + 4, right = 100 - left;
-        const travel = bottomDweller ? 18 : 14, turn = 1.2;
+        // Swift species make shorter dashes in the home tank. This keeps the
+        // same low screen-space speed and turns gently at the boundaries.
+        const dashMargin = Math.max(0, (swim.speed - 1) * 35);
+        const left = width / 2 + 4 + dashMargin, right = 100 - left;
+        const travel = (bottomDweller ? 18 : 14) / swim.speed, turn = 1.2;
         const leg = travel + turn;
         const cycle = elapsed % (leg * 2);
         const direction = cycle < leg ? 1 : -1;
@@ -15716,8 +15791,8 @@
         const turning = Math.max(0, Math.min(1, (local - travel) / turn));
         const turnEase = turning * turning * (3 - 2 * turning);
         const yaw = Math.PI * (direction > 0 ? turnEase : 1 - turnEase);
-        const y = (bottomDweller ? 64 : 46) +
-          Math.sin(elapsed * Math.PI / 9) * (bottomDweller ? .8 : 1.25);
+        const y = (bottomDweller ? 64 : 46) + swim.depth * 30 +
+          Math.sin(elapsed * Math.PI / 9) * (bottomDweller ? .8 : 1.25) * Math.min(1, swim.bob);
         return { x, y, ...ShuAquariumLife.orientation(yaw), width, bottomDweller };
       }
       function prepareAquariumFish(id) {
@@ -16879,7 +16954,7 @@
         if (coast&&s.boatActive) {
           boatVisual.style.left=`${mapX}%`;
           boatVisual.style.top=`${mapY}%`;
-          ShuCoast.paintBoat(boatVisual,s.equipment.vehicle,s.direction,playerAnimFrame);
+          ShuCoast.paintBoat(boatVisual,s.equipment.vehicle,s.direction,playerAnimFrame,s.avatar,playerWalking);
         }
         renderPlayer();
         const dogPosition = dogFollowPosition();
@@ -17095,6 +17170,8 @@
             if (!playerWalking) return;
             playerAnimFrame = (playerAnimFrame + 1) % 4;
             drawPlayer();
+            if (s.mapRegion==="coast" && s.boatActive)
+              ShuCoast.paintBoat($("#boatVisual"),s.equipment.vehicle,s.direction,playerAnimFrame,s.avatar,true);
           }, 90);
         }
         s.direction = d;
@@ -17145,6 +17222,8 @@
           playerWalkInterval = 0;
           $("#player").classList.remove("walking");
           drawPlayer();
+          if (s.mapRegion==="coast" && s.boatActive)
+            ShuCoast.paintBoat($("#boatVisual"),s.equipment.vehicle,s.direction,0,s.avatar,false);
           scheduleIdleStatus();
           scheduleFieldMenu();
         }, 365);
@@ -19168,6 +19247,9 @@
             ayu: "riffle",
             nijimasu: "upstream-surge",
             kasago: "root-dive",
+            shirogisu: "sand-skip",
+            ainame: "crevice-dive",
+            madai: "open-sea-run",
             hirame: "cling",
             nushi: "feint",
           }[fishId]);
@@ -19183,6 +19265,9 @@
         if (fishId === "nijimasu" && cycle % 3 === 2)
           return byId("surface-leap");
         if (fishId === "kasago" && cycle % 3 === 2) return byId("root-dive");
+        if (fishId === "shirogisu" && cycle % 3 === 1) return byId("sand-skip");
+        if (fishId === "ainame" && cycle % 3 === 2) return byId("crevice-dive");
+        if (fishId === "madai" && cycle % 3 === 2) return byId("open-sea-run");
         return null;
       }
       function setFishCourse(mood) {
@@ -19685,6 +19770,12 @@
             ? 1.25 - .38 * Math.abs(Math.sin(currentRadians))
             : battle.f.id === "namazu"
               ? 1.16 - .18 * Math.abs(Math.sin(currentRadians))
+              : battle.f.id === "shirogisu"
+                ? 1.1 + .35 * Math.max(0, Math.sin(currentRadians * 2))
+                : battle.f.id === "ainame"
+                  ? .78 + .58 * Math.abs(Math.sin(currentRadians)) ** 4
+                  : battle.f.id === "madai"
+                    ? .97 + .23 * Math.abs(Math.sin(currentRadians))
               : 1;
         const phaseAdvance =
           (profile.beat + Math.min(6, speed) * profile.speedBeat) *
@@ -21855,7 +21946,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=195-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=196-1").catch(() => {});
       renderRecord();
     </script>
   </body>

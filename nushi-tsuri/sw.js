@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v195-coastal-fishing-195-1";
+const CACHE_NAME = "nushi-tsuri-v196-coast-art-196-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -16,9 +16,10 @@ const CORE_ASSETS = [
   "./pet-life.js?v=189-1",
   "./pet-life-ui.js?v=190-1",
   "./tackle-balance.js?v=194-1",
-  "./coast-voyage.js?v=195-1",
+  "./coast-voyage.js?v=196-1",
+  "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
-  "./aquarium-life.js?v=184-1",
+  "./aquarium-life.js?v=196-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=190-1",
   "./rival-anglers.js?v=181-1",
@@ -119,6 +120,15 @@ const CORE_ASSETS = [
   "./assets/fish-madai-v194.svg",
   "./assets/fish-madai-turn-v194.svg",
   "./assets/fish-madai-mouth-v194.svg",
+  "./assets/fish-shirogisu-v196.png",
+  "./assets/fish-shirogisu-turn-v196.png",
+  "./assets/fish-shirogisu-mouth-v196.png",
+  "./assets/fish-ainame-v196.png",
+  "./assets/fish-ainame-turn-v196.png",
+  "./assets/fish-ainame-mouth-v196.png",
+  "./assets/fish-madai-v196.png",
+  "./assets/fish-madai-turn-v196.png",
+  "./assets/fish-madai-mouth-v196.png",
   "./assets/fish-funa-v124.png",
   "./assets/fish-koi-v114.png",
   "./assets/fish-namazu-v115.png",
