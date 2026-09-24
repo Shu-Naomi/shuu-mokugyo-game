@@ -10,9 +10,9 @@
     reef: [[48,79],[62,71],[81,73],[92,87],[89,102],[76,113],[58,111],[44,100]],
   };
   const docks = {
-    harbor: { name: "星見港", land: { x:154,y:123 }, water: { x:161,y:123 }, radius: 8 },
-    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:105,y:77 }, radius: 8 },
-    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:98,y:92 }, radius: 8 },
+    harbor: { name: "星見港", land: { x:154,y:123 }, water: { x:166,y:123 }, radius: 8 },
+    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:100,y:77 }, radius: 8 },
+    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:104,y:92 }, radius: 8 },
   };
   const restPoint = { x:146,y:70 };
   function inside(x,y,polygon) {
@@ -24,9 +24,17 @@
     return hit;
   }
   function shore(x,y) { return Object.values(islands).some(poly=>inside(x,y,poly)); }
-  function water(x,y) { return Number.isFinite(x) && Number.isFinite(y) && x>=2 && x<=width-2 && y>=2 && y<=height-2 && !shore(x,y); }
+  function water(x,y) { return Number.isFinite(x) && Number.isFinite(y) && x>=2 && x<=width-2 && y>=2 && y<=height-2 && !shore(x,y) && !(x>=148 && x<=157 && y>=119 && y<=129); }
   function near(a,b,r=8) { return Math.hypot(a.x-b.x,a.y-b.y)<=r; }
-  function coastName(x) { return x<103 ? "reef" : "sand"; }
+  function coastName(x,y) {
+    if (!Number.isFinite(y)) return x<103 ? "reef" : "sand";
+    const distanceToIsland = polygon => Math.min(...polygon.map(([ax,ay],index) => {
+      const [bx,by]=polygon[(index+1)%polygon.length];
+      const progress=Math.max(0,Math.min(1,((x-ax)*(bx-ax)+(y-ay)*(by-ay))/((bx-ax)**2+(by-ay)**2)));
+      return Math.hypot(x-(ax+(bx-ax)*progress),y-(ay+(by-ay)*progress));
+    }));
+    return distanceToIsland(islands.reef) < distanceToIsland(islands.sand) ? "reef" : "sand";
+  }
   function stepFor(vehicle) { return vehicle==="canoe" ? 5 : 3; }
   function costFor(vehicle) { return vehicle==="canoe" ? 2 : 1; }
   function paint(canvas,environment={}) {

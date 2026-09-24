@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1280" height="720" viewBox="0 0 320 180" shape-rendering="crispEdges">
+  <defs>
+    <linearGradient id="sky" x2="0" y2="1"><stop stop-color="#3985b1"/><stop offset="1" stop-color="#b2c8c2"/></linearGradient>
+    <linearGradient id="sea" x2="0" y2="1"><stop stop-color="#135477"/><stop offset=".5" stop-color="#1a6683"/><stop offset="1" stop-color="#307f86"/></linearGradient>
+    <pattern id="ripples" width="37" height="15" patternUnits="userSpaceOnUse"><path d="M2 4h12m16 0h5M14 12h10" stroke="#a8d5ce" stroke-width=".75" opacity=".55"/><path d="M4 10h6m19 2h7" stroke="#0a3e60" stroke-width="1"/></pattern>
+    <pattern id="stone" width="13" height="9" patternUnits="userSpaceOnUse"><path d="M2 3h3m3 5h2" stroke="#a9b0a4" stroke-width=".7" opacity=".65"/></pattern>
+  </defs>
+  <path fill="url(#sky)" d="M0 0h320v76H0z"/>
+  <g fill="#f5f0da" opacity=".73"><path d="M26 28h20v-5h13v5h19v5H26zM240 20h27v-5h11v5h18v6h-56z"/></g>
+  <path fill="#5a7884" d="M0 72l29-4 24-14 18 5 10 9 23-3 29 7 18-2 22 3 22-9 22 6 24-5 18 8 40-4v18H0z"/>
+  <path fill="#354f5e" d="M0 77l36-7 16-13 14 2 16 14 34-3 26 6 43-2 26-10 16 8 30-4 32 6 31-3v15H0z"/>
+  <path fill="url(#sea)" d="M0 78h320v102H0z"/>
+  <path fill="url(#ripples)" d="M0 79h320v101H0z"/>
+  <g fill="#667d7e"><path d="M90 99l6-8 14-3 9 5 7 11-39 4zM239 95l11-8 14 2 8 8 10 3-44 3zM176 110l4-5 7-2 5 5 8 4-27 2z"/></g>
+  <g fill="#a8b2a6"><path d="M95 94l9-5 12 3 6 6-13-3zM245 92l11-6 9 4 6 5-13-3zM178 108l5-4 6 1 4 5z"/></g>
+  <g fill="#d1ece1" opacity=".8"><path d="M82 109h49v2H79zM233 105h53v2h-55zM162 117h41v2h-43zM58 132h51v2H56zM217 140h68v2h-70zM133 151h54v2h-55z"/></g>
+  <path fill="#35585e" d="M0 111l11-4 8 4 9-5 10 6 8 3 7-1 12 16 9 7 7 18 16 25H0zM320 108l-14-5-8 9-12-5-8 5-7 9-10 1-8 18-7 12-17 28h91z"/>
+  <path fill="#768684" d="M0 117l12-7 9 5 8-5 11 5 8 5 8-1 11 14 8 6 10 20 9 21H0zM320 114l-13-6-7 9-12-5-8 5-8 9-10 2-9 17-8 12-15 23h90z"/>
+  <path fill="url(#stone)" d="M0 117l12-7 9 5 8-5 11 5 8 5 8-1 11 14 8 6 10 20 9 21H0zM320 114l-13-6-7 9-12-5-8 5-8 9-10 2-9 17-8 12-15 23h90z"/>
+  <g fill="#4b6666"><path d="M0 146l12-5 13 9 17-3 21 20 9 13H0zM320 144l-10-7-14 7-13-1-18 20-11 17h66z"/></g>
+  <g fill="#aec7b7"><path d="M23 122h9v2h-9zM48 128h8v2h-8zM7 157h14v2H7zM276 125h10v2h-10zM297 119h12v2h-12z"/></g>
+  <g fill="#e3eee1" opacity=".85"><path d="M67 155h34v2H69zM210 161h42v2h-42zM98 170h46v2H95z"/></g>
+</svg>

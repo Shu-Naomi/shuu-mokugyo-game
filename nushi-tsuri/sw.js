@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v194-coastal-voyage-194-1";
+const CACHE_NAME = "nushi-tsuri-v195-coastal-fishing-195-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -16,7 +16,7 @@ const CORE_ASSETS = [
   "./pet-life.js?v=189-1",
   "./pet-life-ui.js?v=190-1",
   "./tackle-balance.js?v=194-1",
-  "./coast-voyage.js?v=194-1",
+  "./coast-voyage.js?v=195-1",
   "./tackle-art.js?v=191-1",
   "./aquarium-life.js?v=184-1",
   "./assets/audio/fish-feed-v183.wav",
@@ -49,9 +49,11 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=168-1",
   "./pixel-scenes.css?v=165-1",
-  "./scene-layers.js?v=182-1",
-  "./layered-scenery.js?v=182-1",
-  "./scenery-worker.js?v=182-1",
+  "./scene-layers.js?v=195-1",
+  "./assets/cast-coast-sand-v195.svg",
+  "./assets/cast-coast-reef-v195.svg",
+  "./layered-scenery.js?v=195-1",
+  "./scenery-worker.js?v=195-1",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",
