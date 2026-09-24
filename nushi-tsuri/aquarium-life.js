@@ -4,6 +4,24 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
   const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame'].includes(id);
+  // Each fish has its own tank pacing and water column. Gameplay and feeding
+  // use the same layout and never change catch records or reel physics.
+  const gaits=Object.freeze({
+    moroko:[1,1,0], funa:[.84,.65,.02], koi:[.64,.6,.08],
+    aji:[1.28,.95,-.03], ayu:[1.18,1.05,-.04],
+    yamame:[1.11,1.15,-.03], nijimasu:[1.16,1.2,-.04],
+    namazu:[.74,.48,.02], unagi:[1.17,1.12,.035],
+    bass:[1.08,.85,0], kurodai:[.83,.65,.05],
+    kasago:[.77,.4,.04], suzuki:[1.22,.82,-.02],
+    hirame:[.66,.28,.055], nushi:[.52,.4,.08],
+    bora:[1.07,.73,.02], mebaru:[.86,.63,.04],
+    shirogisu:[1.36,.42,.025], ainame:[.69,.35,.06],
+    madai:[.89,.68,.035],
+  });
+  const gait=id=>{
+    const [speed,bob,depth]=gaits[id]||gaits.moroko;
+    return {speed,bob,depth};
+  };
   function orientation(yaw){
     yaw=clamp(yaw,0,Math.PI);
     const turning=yaw>0&&yaw<Math.PI;
@@ -21,17 +39,18 @@
   function layout(fish,catalog,width,height,seconds,ratioFor,feeding=null,reduced=false){
     const scale=dimensions(fish,catalog),floor=height*.78;
     const poses=fish.map((f,i)=>{
+      const swim=gait(f.species);
       const ratio=Math.max(.6,ratioFor(f.species)||2),depth=.84+(i%3)*.08;
       const w=Math.min(Math.max(8,width*f.length/100/scale.widthCm*depth),width*.37,height*.20*ratio),h=w/ratio;
       const minX=w/2+width*.045,maxX=width-minX;
-      const speed=(bottom(f.species)?.12:.20)*(1+i*.075),phase=seconds*speed+i*2.399;
+      const speed=(bottom(f.species)?.12:.20)*(1+i*.075)*swim.speed,phase=seconds*speed+i*2.399;
       const sin=Math.sin(phase);
       // Slow down into a broad turn at each end; five painted headings
       // supply the perspective instead of a scaleX squeeze.
       let yaw=reduced?0:Math.PI*smooth(.5-Math.cos(phase)/(2*Math.sin(.19)));
       let x=minX+(maxX-minX)*(.5+.5*sin);
-      const band=bottom(f.species)?.68+.018*(i%3):.25+(i%5)*.08;
-      let y=height*(band+Math.sin(seconds*.45+i)*.015);
+      const band=(bottom(f.species)?.68+.018*(i%3):.25+(i%5)*.08)+swim.depth;
+      let y=height*(band+Math.sin(seconds*.45+i)*.015*swim.bob);
       if(reduced){x=width*(.18+i*.16);y=height*band;}
       let bite=false,food=null;
       const feedIndex=feeding?.ids.indexOf(f.uid)??-1;
@@ -61,5 +80,5 @@
     }
     return {...scale,poses};
   }
-  return Object.freeze({dimensions,layout,orientation});
+  return Object.freeze({dimensions,layout,orientation,gait});
 });

@@ -76,19 +76,25 @@
     ctx.fillStyle="#f3ebc4";ctx.fillRect(145,115,2,3);
     ctx.restore();
   }
-  function paintBoat(canvas,id="tarai",direction="up",frame=0) {
+  let boatAtlas;
+  let pendingBoat;
+  function paintBoat(canvas,id="tarai",direction="up",frame=0,avatar="boy",rowing=false) {
     if(!canvas?.getContext)return;
-    const ctx=canvas.getContext("2d");ctx.clearRect(0,0,canvas.width,canvas.height);
-    const factor=canvas.width/32;ctx.save();ctx.scale(factor,canvas.height/24);ctx.imageSmoothingEnabled=false;
-    const sway=frame%2;
-    ctx.fillStyle="#d0eeee";ctx.fillRect(3,17+sway,27,2);
-    ctx.fillStyle="#273d40";ctx.fillRect(id==="canoe"?1:5,11, id==="canoe"?30:22,8);
-    ctx.fillStyle=id==="canoe"?"#a85632":"#a8956b";ctx.fillRect(id==="canoe"?3:6,10,id==="canoe"?26:20,6);
-    ctx.fillStyle="#d9b27b";ctx.fillRect(11,6,9,7);ctx.fillStyle="#223d55";ctx.fillRect(11,4,9,3);
-    ctx.fillStyle="#f0d1a1";ctx.fillRect(14,6,4,3);
-    ctx.fillStyle="#493d32";ctx.fillRect(direction==="left"?5:direction==="right"?25:23,5,2,13);
-    ctx.fillStyle="#d3aa76";ctx.fillRect(direction==="left"?5:direction==="right"?25:23,14,3,4);
-    ctx.restore();
+    const ctx=canvas.getContext("2d");
+    pendingBoat=[canvas,id,direction,frame,avatar,rowing];
+    if(!boatAtlas && typeof Image !== "undefined") {
+      boatAtlas=new Image();
+      boatAtlas.onload=()=>{
+        if(pendingBoat)paintBoat(...pendingBoat);
+      };
+      boatAtlas.src="assets/coast-boat-v196.png";
+    }
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(!boatAtlas?.complete || !boatAtlas.naturalWidth)return;
+    const column={up:0,right:1,down:2,left:3}[direction] ?? 0;
+    const row=(id==="canoe"?0:4)+(avatar==="girl"?2:0)+(rowing&&frame%2?1:0);
+    ctx.imageSmoothingEnabled=false;
+    ctx.drawImage(boatAtlas,column*64,row*48,64,48,0,0,canvas.width,canvas.height);
   }
   return {width,height,islands,docks,restPoint,inside,shore,water,near,coastName,stepFor,costFor,paint,paintBoat};
 });
