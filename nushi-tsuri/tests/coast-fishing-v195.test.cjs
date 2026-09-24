@@ -11,6 +11,22 @@ const ready = (x, y) => ({ ...seed(), x, y, hp:100, maxHp:100,
   ownedVehicles:['canoe'], equipment:{hands:null,vehicle:'canoe'},
   baits:{worm:8,shrimp:8}, selectedBait:'shrimp', selectedHook:'medium' });
 
+test('the village map mask leaves the coastal water and boat visible', () => {
+  const app=boot(ready(98,92));
+  try {
+    const doc=app.window.document;
+    const rules=[...doc.styleSheets].flatMap(sheet=>[...sheet.cssRules]);
+    const villageMask=rules.find(rule=>rule.selectorText?.startsWith('.map.v54-map > :not(#player)'));
+    assert.ok(villageMask);
+    assert.ok(doc.querySelector('#map').classList.contains('boating'));
+    for(const id of ['coastPixels','boatVisual'])
+      assert.equal(doc.getElementById(id).matches(villageMask.selectorText),false,`${id} must not be hidden by the village mask`);
+    app.window.eval('s.mapRegion="village";s.boatActive=false;render()');
+    for(const id of ['coastPixels','boatVisual'])
+      assert.equal(app.window.getComputedStyle(doc.getElementById(id)).display,'none',`${id} stays hidden in the village`);
+  } finally { app.dispose(); }
+});
+
 test('coast scene and fish spot survive the preparation-to-cast transition on both islands', () => {
   for (const [type,x,y,direction,expected] of [
     ['reef',95,84,'up','coast-reef-deep'],
