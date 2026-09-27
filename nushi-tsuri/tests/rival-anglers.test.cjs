@@ -122,7 +122,7 @@ test("shop guide pairs all four owners and dogs; Chappie conversation returns to
     const before=progress(w);
     w.eval('renderSamShop();open("store")');
     assert.equal(w.document.querySelector('[data-rival="chappie"]'),null,"Chappie appears indoors instead of twice");
-    assert.equal(w.document.querySelector(".shopkeeper-sam-svg").getAttribute("href"),"assets/sam-front.png");
+    assert.equal(w.document.querySelector(".shopkeeper-sam-svg image").getAttribute("href"),R.hostAsset);
     click(w,"#rivalGuideOffer");
     const cards=[...w.document.querySelectorAll(".rival-guide-card")];
     assert.equal(cards.length,4);
@@ -231,6 +231,6 @@ test("original alpha atlases render all fourteen poses and seven face portraits 
   }
   if(process.env.RIVAL_QA_PATH)fs.writeFileSync(process.env.RIVAL_QA_PATH,sheet.toBuffer("image/png"));
   const html=fs.readFileSync(path.join(root,"index.html"),"utf8"),sw=fs.readFileSync(path.join(root,"sw.js"),"utf8");
-  for(const source of ["rival-anglers.js?v=181-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
-  assert.ok(html.includes("rival-anglers.js?v=181-1"));
+  for(const source of ["rival-anglers.js?v=199-1",R.asset,R.dogAsset]) assert.ok(sw.includes(source),source+" cached offline");
+  assert.ok(html.includes("rival-anglers.js?v=199-1"));
 });
