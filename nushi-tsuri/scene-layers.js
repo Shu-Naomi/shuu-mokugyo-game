@@ -134,13 +134,15 @@
   };
   function surface(kind,period) {
     if (kind === 'coast-sand' || kind === 'coast-reef') {
-      const source = `assets/cast-${kind}-v195.svg`;
+      const source = `assets/cast-${kind}-v198.webp`;
       return {id:'surface-'+kind,source,units:[100,100],parts:[
-        box('sky','sky',0,0,100,38),
-        box('distant-islands','ground',0,25,100,25),
-        box('open-water','water',0,37,100,63,water),
-        box('shore','path',0,70,100,30,{filter:'earth'}),
-        box('rock-edge','rocks',0,48,100,52,{filter:'stone'}),
+        box('island-base','ground',0,0,100,100),
+        box('sky','sky',0,0,100,24),
+        box('distant-islands','trees',0,16,100,16,vegetation),
+        box('open-water','water',0,23,100,58,water),
+        box('shore','path',0,73,100,27,{filter:'earth'}),
+        box('left-rocks','rocks',0,30,24,70,{filter:'stone'}),
+        box('right-rocks','rocks',78,30,22,70,{filter:'stone'}),
       ]};
     }
     const prefix={lake:'cast-lake',river:'cast-river',beach:'cast-sea-beach',harbor:'cast-sea-harbor',pond:'cast-sam-pond'}[kind] || 'cast-lake';

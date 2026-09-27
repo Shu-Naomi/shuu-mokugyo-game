@@ -6433,7 +6433,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
-    <link rel="stylesheet" href="pet-life.css?v=190-1" />
+    <link rel="stylesheet" href="pet-life.css?v=198-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
   </head>
@@ -6461,7 +6461,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v197</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v198</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7170,8 +7170,8 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=189-1"></script>
-    <script src="aquarium-life.js?v=196-1"></script>
-    <script src="pet-life-ui.js?v=190-1"></script>
+    <script src="aquarium-life.js?v=198-1"></script>
+    <script src="pet-life-ui.js?v=198-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
     <script src="coast-voyage.js?v=197-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
@@ -7180,8 +7180,8 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=195-1"></script>
-    <script src="layered-scenery.js?v=195-1"></script>
+    <script src="scene-layers.js?v=198-1"></script>
+    <script src="layered-scenery.js?v=198-1"></script>
     <script>
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
@@ -8267,9 +8267,9 @@
           nushi: "assets/fish-nushi-v31.png",
           bora: "assets/fish-bora-v137.png",
           mebaru: "assets/mebaru-v144/swim-00.png",
-          shirogisu: "assets/fish-shirogisu-v196.png",
-          ainame: "assets/fish-ainame-v196.png",
-          madai: "assets/fish-madai-v196.png",
+          shirogisu: "assets/fish-shirogisu-v198.webp",
+          ainame: "assets/fish-ainame-v198.webp",
+          madai: "assets/fish-madai-v198.webp",
         },
         fishGroundAssets = {
           hirame: "assets/fish-hirame-ground-v97-1.png",
@@ -8292,9 +8292,9 @@
           nushi: "assets/fish-nushi-mouth-v68.png",
           bora: "assets/fish-bora-mouth-open-v137.png",
           mebaru: "assets/mebaru-v144/mouth-open-00.png",
-          shirogisu: "assets/fish-shirogisu-mouth-v196.png",
-          ainame: "assets/fish-ainame-mouth-v196.png",
-          madai: "assets/fish-madai-mouth-v196.png",
+          shirogisu: "assets/fish-shirogisu-v198.webp",
+          ainame: "assets/fish-ainame-v198.webp",
+          madai: "assets/fish-madai-v198.webp",
         },
         fishMouthPartAssets = {
           moroko: "assets/fish-moroko-mouth-part-v125.png",
@@ -8321,9 +8321,9 @@
           nushi: "assets/fish-nushi-turn-v70.png",
           bora: "assets/fish-bora-turn-v137.png",
           mebaru: "assets/mebaru-v144/turn-00.png",
-          shirogisu: "assets/fish-shirogisu-turn-v196.png",
-          ainame: "assets/fish-ainame-turn-v196.png",
-          madai: "assets/fish-madai-turn-v196.png",
+          shirogisu: "assets/fish-shirogisu-v198.webp",
+          ainame: "assets/fish-ainame-v198.webp",
+          madai: "assets/fish-madai-v198.webp",
         },
         fishCatchAssets = {
           kasago: "assets/fish-kasago-catch-v58.png",
@@ -11132,9 +11132,9 @@
           nushi: [288, 210],
           bora: [320, 160],
           mebaru: [320, 160],
-          shirogisu: [64, 32],
-          ainame: [64, 32],
-          madai: [64, 32],
+          shirogisu: [448, 224],
+          ainame: [448, 224],
+          madai: [448, 224],
         },
         handDrawnLifeFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
         handDrawnMouthFishIds = new Set(["moroko", "funa", "koi", "namazu", "bora", "mebaru"]),
@@ -11142,6 +11142,39 @@
         standaloneFrameFishIds = new Set(["mebaru"]),
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
+      // Eight swimming cells, five headings and three jaw poses, in reading order.
+      const fishGridAtlasAssets = new Set([fishAssets.shirogisu, fishAssets.ainame, fishAssets.madai]);
+      // Authored cell origins are measured at the head, not the moving tail.
+      // Register the frames at draw time so a tail beat cannot shake the head
+      // or move the hook. No bitmap is stretched or cut into body segments.
+      const coastalFishRegistration = {
+        shirogisu: {scale:.88, heads:[
+          [.957,.619],[.957,.615],[.953,.617],[.955,.626],
+          [.957,.597],[.955,.595],[.953,.595],[.955,.595],
+          [.957,.595],[.831,.662],[.5,.756],[.178,.667],[.043,.541],
+          [.957,.541],[.953,.541],[.939,.541],
+        ]},
+        ainame: {scale:.88, heads:[
+          [.964,.631],[.959,.635],[.957,.635],[.955,.637],
+          [.964,.610],[.959,.595],[.957,.604],[.955,.608],
+          [.962,.608],[.847,.673],[.493,.756],[.151,.676],[.043,.505],
+          [.959,.536],[.957,.536],[.948,.536],
+        ]},
+        madai: {scale:1.16, heads:[
+          [.886,.645],[.863,.654],[.838,.647],[.822,.650],
+          [.895,.612],[.879,.612],[.854,.612],[.843,.607],
+          [.895,.554],[.825,.607],[.518,.650],[.194,.598],[.187,.431],
+          [.875,.451],[.841,.451],[.829,.451],
+        ]},
+      };
+      for (const id of Object.keys(coastalFishRegistration)) {
+        Object.assign(fishMouthProfiles[id],{x:.4,y:.12});
+        fishHookPoseOverrides[id] = {
+          mouth:[{xScale:1,yOffset:0},{xScale:1,yOffset:.035},{xScale:1,yOffset:.085}],
+          turn:[{xScale:1,yOffset:0},{xScale:.725,yOffset:.06},
+            {xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}],
+        };
+      }
       const fishAtlasImageCache = new Map();
       function fishAtlasImage(src) {
         // Reuse the image that began loading as soon as the bite was chosen.
@@ -11322,10 +11355,12 @@
         const key = `${spriteAsset}|${spriteCells}|${spriteFrame}`;
         canvas.dataset.atlasKey = key;
         const fallbackSize = fishFrameFallbackSizes[fishId] || [320, 160];
-        const columns = spriteCells;
-        const rows = 1;
-        const column = spriteFrame;
-        const row = 0;
+        const grid = fishGridAtlasAssets.has(spriteAsset);
+        const cell = grid ? (spriteCells === 5 ? 8 : spriteCells === 3 ? 13 : 0) + spriteFrame : spriteFrame;
+        const columns = grid ? 4 : spriteCells;
+        const rows = grid ? 4 : 1;
+        const column = cell % columns;
+        const row = Math.floor(cell / columns);
         const fallbackX = `${column * (100 / Math.max(1, columns - 1))}%`;
         const fallbackY = `${row * (100 / Math.max(1, rows - 1))}%`;
         // Other hand-drawn fish retain their proven horizontal-atlas path.
@@ -11333,7 +11368,7 @@
         canvas.height = fallbackSize[1];
         canvas.style.display = "block";
         canvas.style.backgroundColor = "transparent";
-        canvas.style.backgroundImage = `url("${spriteAsset}")`;
+        canvas.style.backgroundImage = grid ? "none" : `url("${spriteAsset}")`;
         canvas.style.backgroundRepeat = "no-repeat";
         canvas.style.backgroundSize = `${columns * 100}% ${rows * 100}%`;
         canvas.style.backgroundPositionX = fallbackX;
@@ -11349,16 +11384,25 @@
           const context = canvas.getContext("2d");
           context.imageSmoothingEnabled = false;
           context.clearRect(0, 0, cellWidth, cellHeight);
+          const registration = grid && coastalFishRegistration[
+            Object.keys(coastalFishRegistration).find(id => fishAssets[id] === spriteAsset)];
+          const scale = registration ? registration.scale : 1;
+          const target = spriteCells === 5
+            ? [[.9,.6],[.79,.66],[.5,.69],[.21,.66],[.1,.6]][spriteFrame]
+            : [.9,.6];
+          const origin = registration ? registration.heads[cell] : null;
+          const dx = origin ? (target[0]-origin[0]*scale)*cellWidth : 0;
+          const dy = origin ? (target[1]-origin[1]*scale)*cellHeight : 0;
           context.drawImage(
             image,
             Math.min(image.naturalWidth - cellWidth, column * cellWidth),
             Math.min(image.naturalHeight - cellHeight, row * cellHeight),
             cellWidth,
             cellHeight,
-            0,
-            0,
-            cellWidth,
-            cellHeight,
+            Math.round(dx),
+            Math.round(dy),
+            Math.round(cellWidth*scale),
+            Math.round(cellHeight*scale),
           );
           // The fallback is only needed before the bitmap has decoded.
           canvas.style.backgroundImage = "none";
@@ -20336,7 +20380,7 @@
             delete canvas.dataset.atlasKey;
           }
           renderStandaloneFishFrame(hangingFish, standaloneAsset);
-        } else if (usesHandDrawnMouth) {
+        } else if (usesHandDrawnMouth || fishGridAtlasAssets.has(asset)) {
           clearStandaloneFishFrame(hangingFish);
           hangingFish.classList.add("canvas-atlas");
           hangingFish.style.backgroundImage = "none";
@@ -20471,12 +20515,13 @@
           return false;
         }
         clearStandaloneFishFrame(element);
+        const gridAtlas = fishGridAtlasAssets.has(spriteAsset);
         const segmented =
-          !showingTurn &&
+          !gridAtlas && !showingTurn &&
           !handDrawn &&
           Boolean(spriteAsset) &&
           slices.length === FISH_LIFE_SLICE_COUNT;
-        const canvasMode = !showingTurn && handDrawn && Boolean(spriteAsset);
+        const canvasMode = gridAtlas || (!showingTurn && handDrawn && Boolean(spriteAsset));
         element.classList.toggle("life-segmented", segmented);
         element.classList.toggle("life-canvas", canvasMode);
         const framePosition =
@@ -21218,6 +21263,10 @@
             fishElement,
             mebaruStandaloneFrames.swim[0],
           );
+        } else if (fishGridAtlasAssets.has(fishAssets[battle.f.id])) {
+          fishElement.classList.add("life-canvas");
+          fishElement.style.setProperty("background", "transparent", "important");
+          drawFishAtlasFrame(fishElement, fishAssets[battle.f.id], landingCells, 0, battle.f.id);
         } else {
           fishElement.style.backgroundImage = `url("${fishAssets[battle.f.id]}")`;
           fishElement.style.backgroundSize = `${landingCells * 100}% 100%`;
@@ -21671,7 +21720,10 @@
         feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
         ratio:id=>{const [w,h]=fishFrameFallbackSizes[id]||[320,160];return w/h;},
-        sizeLabel:(id,length)=>fishSizeTierAt(id,length)?.label||"幼魚",
+        sizeLabel:(id,length)=>{
+          const tiers=fishSizeProfiles[id];
+          return fishSizeTierAt(id,length)?.label || (tiers && length>tiers[tiers.length-1].maxHundredths ? "巨大" : "幼魚");
+        },
         prepareFish:prepareAquariumFish,drawFish:drawAquariumSprite
       });
       $("#openPetAquarium").onclick=()=>petUi.open("aquarium");
@@ -21946,7 +21998,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=197-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=198-1").catch(() => {});
       renderRecord();
     </script>
   </body>

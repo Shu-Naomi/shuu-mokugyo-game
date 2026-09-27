@@ -36,6 +36,17 @@
     const widthCm=[120,180,240,360,600,900,1200].find(n=>n>=max*2.8)||Math.ceil(max*2.8/100)*100;
     return {widthCm,rulerCm:widthCm<=240?20:widthCm<=600?50:100};
   }
+  function inspection(id,seconds,reduced=false){
+    const swim=gait(id),travel=4.2/swim.speed,turn=1.4,leg=travel+turn;
+    const cycle=seconds%(leg*2),right=cycle<leg,local=cycle%leg;
+    const progress=smooth(local/travel),turnProgress=smooth((local-travel)/turn);
+    // Spend most of the time swimming sideways so the tail-beat atlas plays.
+    // A short arc at each end joins the painted headings; no perpetual spin.
+    const yaw=reduced?0:Math.PI*(right?turnProgress:1-turnProgress);
+    return {...orientation(yaw),x:reduced?50:44+12*(right?progress:1-progress),
+      y:reduced?43:43+Math.sin(seconds*.8)*1.4*swim.bob,
+      swimFrame:reduced?0:Math.floor(seconds*swim.speed/(bottom(id)?.24:.18))};
+  }
   function layout(fish,catalog,width,height,seconds,ratioFor,feeding=null,reduced=false){
     const scale=dimensions(fish,catalog),floor=height*.78;
     const poses=fish.map((f,i)=>{
@@ -69,7 +80,8 @@
         if(age<at)food={x:tx+Math.cos(targetYaw)*w*.39,y:height*.075+(ty-height*.075)*clamp(age/at,0,1)};
       }
       x=clamp(x,minX,maxX);y=clamp(y,h/2+height*.08,floor-h/2);
-      return {uid:f.uid,species:f.species,x,y,width:w,height:h,...orientation(yaw),depth,bite,food,bottomDweller:bottom(f.species)};
+      return {uid:f.uid,species:f.species,x,y,width:w,height:h,...orientation(yaw),depth,bite,food,bottomDweller:bottom(f.species),
+        swimFrame:reduced?0:Math.floor(seconds*swim.speed/(bottom(f.species)?.24:.18))};
     });
     // A small vertical separation gives passing fish room without teleporting x.
     for(let i=0;i<poses.length;i++)for(let j=0;j<i;j++){
@@ -80,5 +92,5 @@
     }
     return {...scale,poses};
   }
-  return Object.freeze({dimensions,layout,orientation,gait});
+  return Object.freeze({dimensions,layout,orientation,gait,inspection});
 });
