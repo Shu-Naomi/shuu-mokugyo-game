@@ -8,14 +8,16 @@
   "use strict";
   const asset = "assets/rival-anglers-v179.png";
   const dogAsset = "assets/rival-dogs-v179.png";
-  const hostAsset = "assets/sam-tournament-v180.png";
+  const hostAsset = "assets/sam-sprites-v199.webp";
   const host = { id: "sam", name: "サミュエル・オールドマン", shortName: "サム", dogId: "chappie",
     role: "大会主催者・ベテラン釣り人", style: "経験と勘の釣り",
     strength: "長年の経験で水と魚を読む。大会では一投ごとの判断を見守っている。",
-    description: "魚の帽子とサングラス、白いひげ、使い込んだ釣りベストが目印。竿を持って大会を取り仕切る、星湖のベテラン。理屈派のリアオとは釣りの持論で張り合っている。",
+    description: "先がちょんと上がった短い髪と白いもみあげ、サングラスが目印。柔らかな紺のジャケットに青い胸元の布を添えた、海辺の洒落たベテラン。理屈派のリアオとは釣りの持論で張り合っている。",
     idle: ["大事なのは、最後の一投まで水を読むことじゃ。", "チャッピーも見とるぞ。肩の力を抜いて、いい釣りを見せてみい。"] };
-  const hostFrames = [[44, 43, 734, 950], [875, 31, 632, 962]];
-  const hostPortrait = [1032, 132, 236];
+  // Measured bounds of the original alpha artwork: side view during an event,
+  // front view when greeting. Fit these through the same 96x128 NPC renderer.
+  const hostFrames = [[608, 83, 298, 885], [147, 79, 399, 884]];
+  const hostPortrait = [204, 77, 298];
   const anglers = [
     { id: "liao", name: "リアオ・ダモディ", shortName: "リアオ", role: "再現性を追う理論派", dogId: "crow", column: 0,
       color: "#355640", style: "精密・安定型", strength: "同じ条件を丁寧に再現し、大きさのそろった五匹を集める。",
@@ -202,7 +204,8 @@
     const scale = Math.min((canvas.width - padding) / sw, (canvas.height - (motion ? 8 : 2)) * target / sh);
     ctx.clearRect(0, 0, canvas.width, canvas.height); ctx.imageSmoothingEnabled = false;
     ctx.save(); ctx.translate(canvas.width / 2, canvas.height - 2);
-    if (!(dog ? sitting : talking) && facing === "right") ctx.scale(-1, 1);
+    // Sam's new profile faces right in the source; the other atlases face left.
+    if (id === "sam" ? !talking && facing === "left" : !(dog ? sitting : talking) && facing === "right") ctx.scale(-1, 1);
     if (motion && dog) {
       ctx.translate(0, motion.bob || 0); ctx.rotate(motion.lean || 0);
       ctx.scale(1, 1 + (motion.stretch || 0));

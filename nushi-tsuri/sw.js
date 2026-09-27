@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v198-coastal-fish-198-1";
+const CACHE_NAME = "nushi-tsuri-v199-samuel-199-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -28,11 +28,11 @@ const CORE_ASSETS = [
   "./aquarium-life.js?v=198-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=198-1",
-  "./rival-anglers.js?v=181-1",
+  "./rival-anglers.js?v=199-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",
   "./tournament.js?v=180-1",
-  "./assets/sam-tournament-v180.png",
+  "./assets/sam-sprites-v199.webp",
   "./assets/rival-anglers-v179.png",
   "./assets/rival-dogs-v179.png",
   "./assets/tournament-villagers-v175.png",
@@ -115,7 +115,6 @@ const CORE_ASSETS = [
   "./assets/riku-walk.png?v=12",
   "./assets/grey-walk.png?v=12",
   "./assets/dog-idles.png?v=12",
-  "./assets/sam-front.png",
   "./assets/fish-moroko-v125.png",
   "./assets/fish-shirogisu-v194.svg",
   "./assets/fish-shirogisu-turn-v194.svg",

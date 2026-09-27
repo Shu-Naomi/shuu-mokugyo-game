@@ -2185,29 +2185,6 @@
       @keyframes dog-beg {
         50% { transform: translate(-50%, -53%); }
       }
-      .sam {
-        position: absolute;
-        left: 42%;
-        bottom: 1%;
-        width: 52px;
-        height: 70px;
-        z-index: 20;
-        background: url("assets/sam-front.png") center bottom / contain no-repeat;
-        image-rendering: pixelated;
-      }
-      .sam::before {
-        content: none;
-      }
-      .sam::after {
-        content: "サム";
-        position: absolute;
-        left: 50%;
-        top: -13px;
-        transform: translateX(-50%);
-        color: #fff1a5;
-        font: 900 9px monospace;
-        text-shadow: 1px 1px #000;
-      }
       .shop.sam-shop {
         left: 69.4%;
         top: 51.8%;
@@ -6461,7 +6438,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v198</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v199</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6862,7 +6839,9 @@
                   </mask>
                 </defs>
                 <g mask="url(#samBehindCounter)">
-                  <image class="shopkeeper-sam-svg" href="assets/sam-front.png" x="570" y="178" width="142" height="292" preserveAspectRatio="xMidYMax meet" />
+                  <svg class="shopkeeper-sam-svg" x="570" y="178" width="142" height="292" viewBox="147 79 399 884" preserveAspectRatio="xMidYMax meet" overflow="hidden">
+                    <image href="assets/sam-sprites-v199.webp" width="1536" height="1024" />
+                  </svg>
                 </g>
                 <svg x="780" y="390" width="118" height="160" viewBox="667 1077 328 443" preserveAspectRatio="xMidYMax meet" overflow="hidden" role="img" aria-label="サムの相棒犬チャッピー">
                   <image href="assets/rival-dogs-v179.png" width="1024" height="1536" />
@@ -7175,7 +7154,7 @@
     <script src="tackle-balance.js?v=194-1"></script>
     <script src="coast-voyage.js?v=197-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
-    <script src="rival-anglers.js?v=181-1"></script>
+    <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
@@ -21998,7 +21977,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=198-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=199-1").catch(() => {});
       renderRecord();
     </script>
   </body>
