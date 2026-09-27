@@ -22,6 +22,7 @@ test('tap a tiny Moroko beside a nushi to inspect it at a readable size, then re
     assert.ok(parseFloat(normal.style.width)<=12,'Moroko is tiny beside the nushi');
     const target=w.document.querySelector(`#petTankStage [data-pet-inspect="${uid}"]`);
     assert.ok(parseFloat(target.style.width)>=44,'tiny fish still has a finger-size touch target');
+    assert.ok(parseFloat(target.style.getPropertyValue('--marker-width'))<=36,'visible marker remains smaller than the finger-size target');
     assert.match(target.getAttribute('aria-label'),/モロコ.*拡大/);
     assert.equal(w.document.querySelectorAll('.pet-fish-roster button').length,2);
     target.click();clock.step();

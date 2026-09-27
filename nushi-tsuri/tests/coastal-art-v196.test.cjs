@@ -84,7 +84,7 @@ test("coastal species have distinct fighting patterns and ship the new sprites o
       ["deep", "steady", "rush", "rest"],
     ]);
     assert.equal(new Set(phases.map(p => p.beat)).size, 3);
-    for (const p of phases) assert.match(p.art, /-v196\.png$/);
+    for (const p of phases) assert.match(p.art, /-v198\.webp$/);
     const sw = require("node:fs").readFileSync(path.join(__dirname, "../sw.js"), "utf8");
     assert.match(sw, /coast-boat-v196\.png/);
     for (const id of ["shirogisu", "ainame", "madai"]) {

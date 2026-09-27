@@ -61,19 +61,19 @@
       return `<div class="pet-tank-heading">${tankPicker("水槽を切り替える")}${focus?btn("focus-close","水槽全体へ戻る"):btn("zoom",zoom?"全体表示に戻る":"水槽全体を拡大",!group.length)}</div>
         <div class="pet-tank-summary" aria-label="水槽の状態"><strong>水槽${p.selectedTank+1}</strong><span>${group.length}/5匹</span><span>${group.length?`${spec(group[0].species).waterLabel} ・ 水質 ${Math.min(...group.map(a=>a.water))}%`:"魚はまだいないよ"}</span><span>エサ ${p.food}食</span></div>
         ${group.length?`<p class="pet-view-help">${focus?"選んだ魚を見やすい大きさで表示中。魚の一覧や選択欄から別の子にも切り替えられるよ。":"魚にタッチ、または下の一覧から選ぶと、一匹を大きく見られるよ。水槽全体は実際の体長比で表示。"}</p>
-        <div class="pet-fish-roster" role="group" aria-label="この水槽の魚を選んで拡大">${group.map(a=>`<button data-pet-inspect="${a.uid}" aria-pressed="${a.uid===p.selected}"><b>${esc(fishName(a))}</b><small>${P.cm(a.length)}cm ・ ${a.sex==="female"?"♀":"♂"}</small></button>`).join("")}</div>
-        <div class="pet-tank-layout">${focus?`<div id="petInspectStage" class="aquarium-tank pet-tank-stage pet-inspect-stage" role="img" aria-label="${esc(fishName(f))}を拡大表示。${P.cm(f.length)}cm。水槽全体の体長比ではない表示">
+        <div class="pet-fish-roster" role="group" aria-label="この水槽の魚を選んで拡大">${group.map(a=>`<button data-pet-inspect="${a.uid}" aria-pressed="${a.uid===p.selected}"><b>${esc(fishName(a))}</b><small>${P.cm(a.length)}cm ・ ${ctx.sizeLabel(a.species,a.length)} ・ ${a.sex==="female"?"♀":"♂"}</small></button>`).join("")}</div>
+        <div class="pet-tank-layout">${focus?`<div id="petInspectStage" class="aquarium-tank pet-tank-stage pet-inspect-stage" role="img" aria-label="${esc(fishName(f))}を拡大表示。${P.cm(f.length)}cm、${ctx.sizeLabel(f.species,f.length)}。水槽全体の体長比ではない表示">
           <div class="pet-water-light"></div><div class="pet-tank-back"></div><div class="pet-gravel"></div><div class="pet-rock"></div><div class="pet-plant plant-left"></div><div class="pet-plant plant-right"></div>
           <div id="petInspectFish" class="aquarium-fish pet-inspect-fish" aria-hidden="true"></div><div class="pet-glass"></div>
-          <div class="pet-inspect-caption"><strong>${esc(fishName(f))} ・ ${P.cm(f.length)}cm</strong><small>一匹ずつ大きく表示中 · 水槽全体の縮尺とは別</small></div>
+          <div class="pet-inspect-caption"><strong>${esc(fishName(f))} ・ ${P.cm(f.length)}cm ・ ${ctx.sizeLabel(f.species,f.length)}</strong><small>一匹ずつ大きく表示中 · 水槽全体の縮尺とは別</small></div>
         </div>`:`<div id="petTankStage" class="aquarium-tank pet-tank-stage" role="group" aria-label="${group.map(fishName).join("、")}、${group.length}匹が泳ぐ飼育水槽">
           <div class="pet-water-light"></div><div class="pet-tank-back"></div><div class="pet-gravel"></div><div class="pet-rock"></div><div class="pet-plant plant-left"></div><div class="pet-plant plant-right"></div>
           ${Array.from({length:5},(_,i)=>`<i class="pet-bubble" style="--bubble:${i}"></i>`).join("")}
           ${group.map(a=>`<div class="aquarium-fish pet-resident" data-pet-fish="${a.uid}" aria-hidden="true"></div><button class="pet-fish-target" data-pet-inspect="${a.uid}" aria-label="${esc(fishName(a))}を拡大する" aria-pressed="${a.uid===p.selected}"></button><i class="pet-pellet" data-pet-pellet="${a.uid}"></i>`).join("")}
           <div class="pet-glass"></div><div class="pet-scale" style="width:${dims.rulerCm/dims.widthCm*100}%">${dims.rulerCm}cm</div><span class="pet-tank-width">水槽幅 ${dims.widthCm}cm</span>
           <div class="pet-tank-caption">${group.length}匹 · ${spec(group[0].species).waterLabel} <small>${f?`${spec(f.species).name} ${P.cm(f.length)}cm · ${ctx.sizeLabel(f.species,f.length)}`:""}</small></div>
-        </div>`}<div class="pet-tank-info"><label for="petFishSelect">魚を選んで大きく見る</label><select id="petFishSelect">${group.map(a=>`<option value="${a.uid}" ${a.uid===p.selected?"selected":""}>${esc(fishName(a))} · ${P.cm(a.length)}cm</option>`).join("")}</select>
-          ${f?`<h3>${fishName(f)}</h3><div class="pet-stats"><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>1日の成長 <b>${P.cm(P.dailyGrowth(spec(f.species)))}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>性別 <b>${f.sex==="female"?"♀ メス":"♂ オス"}</b></span><span>世代・星 <b>第${f.generation+1}世代 ${"★".repeat(f.stars)}</b></span></div>`:""}
+        </div>`}<div class="pet-tank-info"><label for="petFishSelect">魚を選んで大きく見る</label><select id="petFishSelect">${group.map(a=>`<option value="${a.uid}" ${a.uid===p.selected?"selected":""}>${esc(fishName(a))} · ${P.cm(a.length)}cm ・ ${ctx.sizeLabel(a.species,a.length)}</option>`).join("")}</select>
+          ${f?`<h3>${fishName(f)}</h3><div class="pet-stats"><span>体長 <b>${P.cm(f.length)}cm</b></span><span>サイズ <b data-pet-size-rank>${ctx.sizeLabel(f.species,f.length)}</b></span><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>1日の成長 <b>${P.cm(P.dailyGrowth(spec(f.species)))}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>性別 <b>${f.sex==="female"?"♀ メス":"♂ オス"}</b></span><span>世代・星 <b>第${f.generation+1}世代 ${"★".repeat(f.stars)}</b></span></div>`:""}
           ${p.lastBirth?.tank===p.selectedTank&&p.lastBirth.day===today?`<p class="pet-birth" role="status">✨ ${esc(spec(p.lastBirth.species).name)}の稚魚が生まれたよ！ 水槽の仲間を見てみよう。</p>`:""}
           <p>${hungry.length?`まだ食べていない子 ${hungry.length}匹`:"今日はみんなエサやり済み"} ・ エサ残り${p.food}食</p><div class="pet-care-actions">${btn("feed",`みんなにエサ${hungry.length?` · ${hungry.length}食`:""}`,!hungry.length||p.food<hungry.length)}${btn("water","水槽の水換え",group.every(a=>a.changedDay===today)||group.every(a=>a.water>=100))}</div>
           <p class="pet-note">水質40%以上で毎日エサを食べると、翌日魚種に応じて1〜5cm成長するよ。成魚のオスとメスを同じ水槽で、水質60%以上・元気70%以上のまま3日育てると稚魚が生まれる（空きが必要）。★はお世話で増え、次の世代ほど早く育つよ。</p>
@@ -123,10 +123,12 @@
             el.style.opacity=pose.depth;el.style.zIndex=String(5+Math.round(pose.y));
             if(target){target.style.width=`${Math.max(44,pose.width)}px`;target.style.height=`${Math.max(44,pose.height)}px`;
               target.style.left=`${pose.x}px`;target.style.top=`${pose.y}px`;target.style.zIndex=String(260+Math.round(pose.y));
+              target.style.setProperty("--marker-width",`${Math.max(16,Math.min(36,pose.width*.55))}px`);
+              target.style.setProperty("--marker-height",`${Math.max(12,Math.min(24,pose.height*.8))}px`);
               target.classList.toggle("is-small",pose.width<28);}
             el.classList.toggle("pet-biting",pose.bite);
             if(pellet){pellet.hidden=!pose.food; if(pose.food){pellet.style.left=`${pose.food.x}px`;pellet.style.top=`${pose.food.y}px`;}}
-            ctx.drawFish(el,pose.species,reduced?0:Math.floor(elapsed/(pose.bottomDweller?.24:.18)),pose);
+            ctx.drawFish(el,pose.species,pose.swimFrame,pose);
             lastPoses[pose.uid]={x:pose.x,y:pose.y,yaw:pose.yaw};
           }
           if(feeding){
@@ -140,11 +142,11 @@
           if(f&&el&&box.width&&box.height){
             const ratio=Math.max(.6,ctx.ratio(f.species)||2);
             const width=Math.min(box.width*.78,box.height*.68*ratio,420);
-            const yaw=reduced?0:Math.PI*(.5-.5*Math.cos(elapsed*.62));
-            const pose=root.ShuAquariumLife.orientation(yaw);
+            const pose=root.ShuAquariumLife.inspection(f.species,elapsed,reduced);
             el.style.width=`${width}px`;el.style.height=`${width/ratio}px`;
             el.style.transform=`translate(-50%,-50%) scaleX(${pose.flip})`;
-            ctx.drawFish(el,f.species,reduced?0:Math.floor(elapsed/.18),pose);
+            el.style.left=`${pose.x}%`;el.style.top=`${pose.y}%`;
+            ctx.drawFish(el,f.species,pose.swimFrame,pose);
             inspectStage.style.setProperty("--water-haze",String((100-f.water)/450));
           }
         }

@@ -49,7 +49,7 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
 
 test('all 20 species use real, nonempty five-angle art with matching offline assets',async()=>{
  const app=boot();let records;
- try{records=read(app.window,`fish.map(f=>({id:f.id,size:fishFrameFallbackSizes[f.id],frames:Array.from({length:5},(_,frame)=>({asset:standaloneFishFrameAsset(f.id,fishTurnAssets[f.id],frame)||fishTurnAssets[f.id],frame:f.id==='mebaru'?0:frame,cells:f.id==='mebaru'?1:5}))}))`);}
+ try{records=read(app.window,`fish.map(f=>({id:f.id,size:fishFrameFallbackSizes[f.id],grid:fishGridAtlasAssets.has(fishAssets[f.id]),frames:Array.from({length:5},(_,frame)=>({asset:standaloneFishFrameAsset(f.id,fishTurnAssets[f.id],frame)||fishTurnAssets[f.id],frame:f.id==='mebaru'?0:frame,cells:f.id==='mebaru'?1:5}))}))`);}
  finally{app.dispose();}
  assert.equal(records.length,20);
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
@@ -57,10 +57,12 @@ test('all 20 species use real, nonempty five-angle art with matching offline ass
   for(const f of fish.frames){
    assert.ok(sw.includes('./'+f.asset),fish.id+' cached turn asset');
    if(!images.has(f.asset))images.set(f.asset,await loadImage(path.join(__dirname,'..',f.asset)));
-   const img=images.get(f.asset),width=img.width/f.cells,height=img.height;
-   assert.deepEqual([width,height],fish.size,fish.id+' preserves aspect ratio');
+   const img=images.get(f.asset),width=fish.grid?Math.round(img.width/4):img.width/f.cells,height=fish.grid?Math.round(img.height/4):img.height;
+   if(fish.grid)assert.ok(Math.abs(width/height-fish.size[0]/fish.size[1])<.05,fish.id+' preserves aspect ratio');
+   else assert.deepEqual([width,height],fish.size,fish.id+' preserves aspect ratio');
    const canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
-   ctx.drawImage(img,f.frame*width,0,width,height,0,0,width,height);
+   const cell=fish.grid?8+f.frame:f.frame;
+   ctx.drawImage(img,(fish.grid?cell%4:cell)*width,fish.grid?Math.floor(cell/4)*height:0,width,height,0,0,width,height);
    const data=ctx.getImageData(0,0,width,height).data;let left=width,right=-1,pixels=0;
    for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(data[(y*width+x)*4+3]>100){left=Math.min(left,x);right=Math.max(right,x);pixels++;}
    assert.ok(right-left>=width*.1,fish.id+' face retains visible thickness');
@@ -84,7 +86,8 @@ test('home and portable draw paths select turn art, restore swimming and handle 
      assert.match(el.style.transform,/scaleX\((-?1)\)/);
      assert.match(el.dataset.aquariumFrame,new RegExp(':'+pose.spriteMode+':'));
      const key=id==='mebaru'?el.dataset.standaloneFrameAsset:el.querySelector('canvas').dataset.atlasKey;
-     assert.equal(key.includes('turn'),pose.spriteMode==='turn',id+' correct atlas or PNG');
+     const grid=read(w,`fishGridAtlasAssets.has(fishAssets['${id}'])`);
+     assert.equal(grid?key.split('|')[1]==='5':key.includes('turn'),pose.spriteMode==='turn',id+' correct atlas or PNG');
     }
    }
    // A mode switch with the same numeric frame must still repaint.
