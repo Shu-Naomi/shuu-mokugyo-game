@@ -6461,7 +6461,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v196</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v197</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6471,8 +6471,8 @@
       <main class="world" id="world">
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
-          <canvas id="coastPixels" width="960" height="540" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
-          <canvas id="boatVisual" width="64" height="48" aria-hidden="true"></canvas>
+          <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
+          <canvas id="boatVisual" width="192" height="144" aria-hidden="true"></canvas>
           <div class="lake">
             <i class="lake-island island-a"></i>
             <i class="lake-island island-b"></i>
@@ -7173,7 +7173,7 @@
     <script src="aquarium-life.js?v=196-1"></script>
     <script src="pet-life-ui.js?v=190-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
-    <script src="coast-voyage.js?v=196-1"></script>
+    <script src="coast-voyage.js?v=197-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=181-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -21946,7 +21946,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=196-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=197-1").catch(() => {});
       renderRecord();
     </script>
   </body>
