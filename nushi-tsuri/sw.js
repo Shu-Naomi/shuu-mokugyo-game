@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v196-coast-art-196-1";
+const CACHE_NAME = "nushi-tsuri-v197-coast-art-197-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -16,7 +16,10 @@ const CORE_ASSETS = [
   "./pet-life.js?v=189-1",
   "./pet-life-ui.js?v=190-1",
   "./tackle-balance.js?v=194-1",
-  "./coast-voyage.js?v=196-1",
+  "./coast-voyage.js?v=197-1",
+  "./assets/coast-world-v197.webp",
+  "./assets/coast-canoe-v197.webp",
+  "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
   "./aquarium-life.js?v=196-1",
