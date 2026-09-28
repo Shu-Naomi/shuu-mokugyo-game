@@ -30,6 +30,10 @@ test('Sam hosts beside Chappie in entry, creel, result and guide while the shop 
     assert.equal(w.document.querySelector('.shopkeeper-sam-svg').getAttribute('x'),'570');
     assert.equal(w.document.querySelector('.shopkeeper-sam-svg').getAttribute('viewBox'),R.hostFrames[1].join(' '),'shop selects only the same front pose as the guide');
     assert.equal(w.document.querySelector('.shopkeeper-sam-svg').getAttribute('height'),'292','keep the established counter scale');
+    const shopImage=w.document.querySelector('.shopkeeper-sam-svg image');
+    assert.equal(shopImage.getAttribute('clip-path'),'url(#samShopFrontFrame)','clip the atlas before the SVG idle/drop-shadow filter can reveal adjacent poses');
+    const frontClip=w.document.querySelector('#samShopFrontFrame rect');
+    assert.deepEqual(['x','y','width','height'].map(key=>Number(frontClip.getAttribute(key))),R.hostFrames[1],'only the front pose is painted in the shop');
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

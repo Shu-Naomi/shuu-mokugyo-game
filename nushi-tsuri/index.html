@@ -6837,10 +6837,13 @@
                     <rect width="1536" height="1152" fill="white" />
                     <path d="M408 334H924V468H408ZM454 270H570V371H454Z" fill="black" />
                   </mask>
+                  <clipPath id="samShopFrontFrame" clipPathUnits="userSpaceOnUse">
+                    <rect x="147" y="79" width="399" height="884" />
+                  </clipPath>
                 </defs>
                 <g mask="url(#samBehindCounter)">
                   <svg class="shopkeeper-sam-svg" x="570" y="178" width="142" height="292" viewBox="147 79 399 884" preserveAspectRatio="xMidYMax meet" overflow="hidden">
-                    <image href="assets/sam-sprites-v199.webp" width="1536" height="1024" />
+                    <image href="assets/sam-sprites-v199.webp" width="1536" height="1024" clip-path="url(#samShopFrontFrame)" />
                   </svg>
                 </g>
                 <svg x="780" y="390" width="118" height="160" viewBox="667 1077 328 443" preserveAspectRatio="xMidYMax meet" overflow="hidden" role="img" aria-label="サムの相棒犬チャッピー">
@@ -21977,7 +21980,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=199-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=199-2").catch(() => {});
       renderRecord();
     </script>
   </body>
