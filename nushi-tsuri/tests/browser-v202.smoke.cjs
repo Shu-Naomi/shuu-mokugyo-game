@@ -58,6 +58,18 @@ async function smoke(url){
   async function checkRegion(region,screenshot=false){
     assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),M.regions[region].name);
     assert.equal(await page.locator('#map').evaluate(el=>el.classList.contains('mountain')),true);
+    if(screenshot){
+      const arrivalDelta=await page.locator('#map').evaluate(map=>{
+        const player=map.querySelector('#player'),pose=getComputedStyle(player),camera=new DOMMatrixReadOnly(getComputedStyle(map).transform);
+        const translation=map.style.transform.match(/translate3d\(([-\d.]+)%,\s*([-\d.]+)%/);
+        return Math.max(
+          Math.abs(parseFloat(pose.left)-parseFloat(player.style.left)/100*map.clientWidth),
+          Math.abs(parseFloat(pose.top)-parseFloat(player.style.top)/100*map.clientHeight),
+          Math.abs(camera.m41-Number(translation[1])/100*map.clientWidth),
+          Math.abs(camera.m42-Number(translation[2])/100*map.clientHeight));
+      });
+      assert.ok(arrivalDelta<.75,region+' actor/camera still interpolates from the previous map: '+arrivalDelta);
+    }
     await page.waitForFunction(()=>{
       const c=document.querySelector('#mountainPixels'),data=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();
       for(let i=0;i<data.length;i+=4*307)if(data[i+3]>100)colors.add(data[i]+','+data[i+1]+','+data[i+2]);

@@ -1782,6 +1782,9 @@
         position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
         image-rendering: pixelated; pointer-events: none;
       }
+      .map.region-arrival,
+      .map.region-arrival > #player,
+      .map.region-arrival > #dog { transition: none !important; }
       .map.v54-map #mountainPixels { display: none; }
       .map.v54-map.mountain > :not(#player):not(#dog):not(#mountainPixels) { display: none !important; }
       .map.v54-map.mountain #worldPixels { display: none !important; }
@@ -13942,7 +13945,14 @@
         Object.assign(s,{x:target.x,y:target.y,direction:target.direction});
         dogWorldPosition=null;
         log(s.mapRegion==="village"?"山道を下り、村の北口へ戻った。":`山道を進み、${ShuMountain.regionData(s.mapRegion).name}へやってきた。`);
-        hideIdleStatus(); hideFieldMenu(); render(); save(); return true;
+        const mapElement=$("#map");
+        mapElement.classList.add("region-arrival");
+        hideIdleStatus(); hideFieldMenu(); render();
+        // Commit the new scene coordinates together, before restoring the
+        // normal short walking transitions.
+        mapElement.getBoundingClientRect();
+        mapElement.classList.remove("region-arrival");
+        save(); return true;
       }
       function mountainAction() {
         const exit=ShuMountain.exitAt(s.x,s.y,s.mapRegion);
