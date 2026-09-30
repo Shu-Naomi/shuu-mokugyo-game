@@ -16654,8 +16654,11 @@
         playerY = s.y,
         direction = s.direction,
       ) {
+        const coast = s.mapRegion === "coast";
+        // Village walls, trees and the river bridge share coordinates with
+        // the islands, but those obstacles do not exist on the coast map.
         // A bridge remains a crossing, never an invisible fishing hotspot.
-        if (!isWalkableWorld(playerX, playerY) || isOnRiverBridgeSpan(playerX, playerY)) return null;
+        if (!isWalkableWorld(playerX, playerY) || (!coast && isOnRiverBridgeSpan(playerX, playerY))) return null;
         const facing = {
           left: [-1, 0],
           right: [1, 0],
@@ -16675,7 +16678,7 @@
             const side = ray.slope * distance;
             const x = playerX + dx * distance + sideX * side;
             const y = playerY + dy * distance + sideY * side;
-            if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y) || isOnRiverBridgeSpan(x, y)) {
+            if (!coast && (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y) || isOnRiverBridgeSpan(x, y))) {
               ray.blocked = true;
               continue;
             }
@@ -22112,7 +22115,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=200-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=200-3").catch(() => {});
       renderRecord();
     </script>
   </body>
