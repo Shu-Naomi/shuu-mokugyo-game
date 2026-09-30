@@ -125,7 +125,9 @@ test('trick level changes actual contest outcomes; a stored result cannot reroll
 test('fish judging rewards growth and care independently of species; invalid entry or active fishing tournament charges nothing',()=>{
   const s=state(),f=P.acquire(s,'moroko',catalog,0).fish;
   const initial=P.fishScore(f).score;f.length+=75;f.health=100;f.water=100;assert.ok(P.fishScore(f).score>initial);assert.ok(P.fishScore(f).score<100);f.xp=1083;f.length=catalog[0].max;f.stars=5;assert.equal(P.fishScore(f).score,100);
-  assert.equal(P.enter(s,'fish','advanced',f.uid,0,catalog,dogs).result.rank,1);
+  // Neutral audience judgment keeps this growth/care test deterministic.
+  // Random audience effects have their own range and persistence tests.
+  assert.equal(P.enter(s,'fish','advanced',f.uid,0,catalog,dogs,()=>.5).result.rank,1);
   for(const args of [['fish','beginner','pet-99'],['bond','invalid','shuu'],['tricks','beginner','missing']]){const before=copy(s);assert.equal(P.enter(s,...args,0,catalog,dogs).ok,false);assert.deepEqual(s,before);}
   s.tournament={active:true};const before=copy(s);assert.equal(P.enter(s,'bond','beginner','shuu',0,catalog,dogs).ok,false);assert.deepEqual(s,before);
   s.tournament=null;s.money=99;assert.equal(P.enter(s,'bond','beginner','shuu',0,catalog,dogs).ok,false);assert.equal(s.money,99);
