@@ -17035,6 +17035,10 @@
         const mapElement=$("#map");
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
+        if(mountain) {
+          const canvas=$("#mountainPixels"), label=ShuMountain.regionData(s.mapRegion).name;
+          if(canvas.getAttribute("aria-label")!==label)canvas.setAttribute("aria-label",label);
+        }
         mapElement.classList.toggle("boating",coast&&s.boatActive);
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
