@@ -16,7 +16,8 @@ function fixedCatches(window,spot='lake-mid',bait='corn',hook='small',casts=1000
 }
 
 test('species data and hook bands favor funa with corn + small hook, carp with large hook, and still allow bycatch',()=>{
-  assert.equal(Object.keys(Balance.species).length,20);
+  assert.equal(Object.keys(Balance.species).length,24);
+  for(const id of ['streamNushi','coastNushi','caveNushi','starNushi'])assert.equal(Balance.species[id].band,'large',id);
   for(const [id,profile] of Object.entries(Balance.species)){
     assert.ok(['small','medium','large'].includes(profile.band),id);
     assert.ok(Object.keys(profile.baits).length>=8,id);

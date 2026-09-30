@@ -27,5 +27,7 @@ jobs:
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
         with:
           node-version: '22'
+      - name: Install audio decoder
+        run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm install --no-audit --no-fund
       - run: node --test --test-concurrency=2 *.test.cjs

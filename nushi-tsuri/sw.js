@@ -39,7 +39,7 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
-  "./aquarium-life.js?v=198-1",
+  "./aquarium-life.js?v=202-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=200-1",
   "./rival-anglers.js?v=199-1",
