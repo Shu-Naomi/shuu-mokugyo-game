@@ -33,7 +33,7 @@ test('all draw categories use the requested five colors, including duplicate toy
    w.hideStarFortuneReveal();
   }
   assert.equal(read(w,"s.ownedRods.filter(id=>id==='starGazer').length"),1);
-  assert.equal(read(w,'s.rodParts.expeditionJoint'),1);
+  assert.equal(read(w,'s.rodParts.expeditionJoint'),0);assert.equal(read(w,'s.rodCopies.starGazer'),2);
   assert.equal(read(w,'s.dogTreats.stardustCookie'),2);
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
@@ -152,5 +152,5 @@ test('older text-only ten-pull history survives; untrusted save strings cannot i
 test('capsule script and styles ship in both the page and offline cache',()=>{
  const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  for(const [file,version] of [['fortune-capsules.js','187-1'],['fortune-capsules.css','185-1']]){assert.ok(html.includes(file+'?v='+version));assert.ok(sw.includes('./'+file+'?v='+version));}
- assert.ok(html.includes('./sw.js?v=199-2'));assert.ok(sw.includes('nushi-tsuri-v199-'));
+ assert.ok(html.includes('./sw.js?v=200-1'));assert.ok(sw.includes('nushi-tsuri-v200-'));
 });

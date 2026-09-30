@@ -91,8 +91,8 @@ test('dog UI renders white/red/gold hearts and invisible frisbees, supports trai
   const app=boot({...seed(),dogAffinity:{shuu:0,riku:100}}),w=app.window;
   try{
     w.openDogCare('shuu');assert.equal(w.document.querySelectorAll('#dogCareHearts .white').length,10);assert.equal(w.document.querySelectorAll('#dogCareFrisbees .earned').length,0);
-    click(w,'#dogCarePet');assert.equal(read(w,'s.dogAffinity.shuu'),8);w.resetDogCareScene('shuu',true);
-    click(w,'#dogCareTrain');assert.equal(read(w,'s.dogTricks.shuu'),25);assert.equal(read(w,'s.dogAffinity.shuu'),13);w.resetDogCareScene('shuu',true);
+    click(w,'#dogCarePet');assert.equal(read(w,'s.dogAffinity.shuu'),4);w.resetDogCareScene('shuu',true);
+    click(w,'#dogCareTrain');assert.equal(read(w,'s.dogTricks.shuu'),15);assert.equal(read(w,'s.dogAffinity.shuu'),6);w.resetDogCareScene('shuu',true);
     assert.equal(w.document.querySelector('#dogCareTrain').disabled,true);
     w.eval('s.dogAffinity.shuu=1100;s.dogTricks.shuu=200;renderDogCare()');
     assert.equal(w.document.querySelectorAll('#dogCareHearts .red').length,9);assert.equal(w.document.querySelectorAll('#dogCareHearts .gold').length,1);assert.equal(w.document.querySelectorAll('#dogCareFrisbees .earned').length,2);
@@ -106,7 +106,9 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
   const app=boot({...seed(),dogAffinity:{shuu:100}}),w=app.window;
   try{
     w.eval('petUi.open("shop")');click(w,'[data-pet-tab="contests"]');assert.equal(w.document.querySelectorAll('[data-pet-course]').length,3);
-    const money=read(w,'s.money');click(w,'[data-pet-course="advanced"]');click(w,'[data-pet-action="enter"]');
+    w.Math.random=()=>.999;const money=read(w,'s.money');click(w,'[data-pet-course="advanced"]');click(w,'[data-pet-action="enter"]');
+    assert.equal(read(w,'s.money'),money-800);
+    for(let i=0;i<3;i++)click(w,'[data-pet-action="contest-next"]');
     assert.equal(read(w,'s.money'),money-800+1600);assert.match(w.document.querySelector('.pet-contest-result').textContent,/1位.*100点/s);
     assert.equal(w.document.querySelector('[data-pet-action="enter"]').disabled,true);
     click(w,'[data-pet-action="close"]');w.eval('petUi.open("shop")');click(w,'[data-pet-tab="contests"]');assert.equal(w.document.querySelector('[data-pet-action="enter"]').disabled,true);
@@ -118,6 +120,6 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'189-1','pet-life-ui.js':'198-1','aquarium-life.js':'198-1','pet-life.css':'198-1','scene-layers.js':'198-1','layered-scenery.js':'198-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
-  assert.ok(html.includes('./sw.js?v=199-2'));assert.ok(sw.includes('nushi-tsuri-v199-'));
+  for(const [file,version] of Object.entries({'pet-life.js':'200-1','pet-life-ui.js':'200-1','aquarium-life.js':'198-1','pet-life.css':'200-1','scene-layers.js':'198-1','layered-scenery.js':'198-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  assert.ok(html.includes('./sw.js?v=200-1'));assert.ok(sw.includes('nushi-tsuri-v200-'));
 });

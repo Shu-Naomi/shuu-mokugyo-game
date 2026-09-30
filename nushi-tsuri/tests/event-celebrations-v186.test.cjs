@@ -73,6 +73,10 @@ test('pet results retain the actual animal across selection, close and reload; c
       if(kind==='fish')w.eval('ShuPetLife.acquire(s,"mebaru",petCatalog,gameClockAt(s.gameMinutes).dayIndex,0);save()');
       reception(w);select(w,'petContestKind',kind);
       const before=read(w,'s.money');click(w,'[data-pet-action="enter"]');
+      click(w,'[data-pet-action="contest-next"]');
+      if(kind==='tricks')for(const trick of w.ShuPetLife.TRICKS)click(w,`[data-pet-trick="${trick}"]`);
+      else click(w,'[data-pet-action="contest-next"]');
+      click(w,'[data-pet-action="contest-next"]');
       const result=read(w,'s.petLife.lastResult'),after=read(w,'s.money');
       assert.equal(after,before-100+result.reward);
       const expected=kind==='fish'?'mebaru':'shuu';assert.equal(result.subject,expected);
@@ -105,6 +109,7 @@ test('result animation stops on close, hidden page and reduced motion, then resu
   const app=boot({...seed(),dogAffinity:{shuu:100}}),w=app.window;
   try{
     reception(w);click(w,'[data-pet-action="enter"]');
+    for(let i=0;i<3;i++)click(w,'[data-pet-action="contest-next"]');
     const before=read(w,'({money:s.money,result:s.petLife.lastResult})');
     Object.defineProperty(w.document,'hidden',{value:true,configurable:true});w.document.dispatchEvent(new w.Event('visibilitychange'));
     assert.equal(read(w,'eventCeremonies.running'),false);assert.ok(w.document.querySelector('.event-ceremony').classList.contains('event-paused'));

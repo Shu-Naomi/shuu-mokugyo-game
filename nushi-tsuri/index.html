@@ -6410,9 +6410,10 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
-    <link rel="stylesheet" href="pet-life.css?v=198-1" />
+    <link rel="stylesheet" href="pet-life.css?v=200-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
+      <link rel="stylesheet" href="fishing-duel.css?v=200-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6438,7 +6439,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v199</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v200</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6915,7 +6916,7 @@
                 </section>
                 <section class="shop-category" aria-labelledby="samRodHeading">
                   <div class="shop-category-heading">
-                    <b id="samRodHeading">釣り竿</b><small>一本物</small>
+                    <b id="samRodHeading">釣り竿</b><small>役割を選ぼう</small>
                   </div>
                   <div class="grid shop-goods">
                     <button data-buy-rod="youngBamboo">
@@ -6931,7 +6932,8 @@
                       <strong><em data-sam-price>50000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                   </div>
-                  <p class="sam-window-note">星見の竿は、星占い神社の「星みくじ」限定。</p>
+                  <div id="samNewTackle" class="grid shop-goods"></div>
+                  <p class="sam-window-note">星見の竿は星みくじ限定。重なった竿は道具袋で保管・売却・強化を選べるよ。</p>
                 </section>
               </div>
               <div class="sam-shop-window" id="samGoodsWindow" data-sam-shop-panel="goods" role="tabpanel" hidden>
@@ -7151,10 +7153,11 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=189-1"></script>
+    <script src="pet-life.js?v=200-1"></script>
     <script src="aquarium-life.js?v=198-1"></script>
-    <script src="pet-life-ui.js?v=198-1"></script>
+    <script src="pet-life-ui.js?v=200-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
+    <script src="fishing-duel.js?v=200-1"></script>
     <script src="coast-voyage.js?v=197-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
@@ -7735,6 +7738,9 @@
             castMin: 10, castMax: 100, castSpeed: 2.25, atlasColumn: 100,
             price: 50000, samShop: true,
           },
+          shoreReed: {name:"潮騒の竿",power:32,control:1.65,castMin:15,castMax:100,castSpeed:2.3,atlasColumn:50,price:65000,samShop:true},
+          tideMaster: {name:"海王の竿",power:38,control:1.95,castMin:18,castMax:100,castSpeed:2.15,atlasColumn:75,price:120000,samShop:true},
+          lureRod: {name:"湖畔のルアーロッド",power:25,control:1.5,castMin:10,castMax:100,castSpeed:2.6,atlasColumn:50,price:25000,samShop:true},
         },
         fieldItemData = {
           vegetableOnigiri: {
@@ -8180,7 +8186,7 @@
         lureData = {
           silverSpoon: {
             name: "銀のスプーンルアー", icon: "🥄",
-            desc: "将来のルアー釣りで使える、きらめく金属ルアー。",
+            desc: "ルアーロッドで使う万能スプーン。バスやマス類を誘いやすい。", price: 600,
           },
           starMinnow: {
             name: "星色ミノー", icon: "🐟",
@@ -11486,8 +11492,8 @@
           state.fishCatchRecords = {};
         if (!state.fishCrowns || typeof state.fishCrowns !== "object")
           state.fishCrowns = {};
-        const rodId = rodData[state.selectedRod] ? state.selectedRod : "bamboo";
-        const baitId = baitData[currentBattle.bait]
+        const rodId = rodData[currentBattle.rod||state.selectedRod] ? currentBattle.rod||state.selectedRod : "bamboo";
+        const baitId = currentBattle.method==="lure" ? currentBattle.lure||"silverSpoon" : baitData[currentBattle.bait]
           ? currentBattle.bait
           : state.selectedBait;
         const entry = state.fishCatchRecords[f.id] || { tackles: {}, last: null };
@@ -12272,11 +12278,11 @@
         for (const [combo, count] of Object.entries(record.tackles || {})) {
           const [rodId, baitId] = combo.split("|");
           const amount = Math.max(0, Math.floor(Number(count) || 0));
-          if (rodData[rodId] && baitData[baitId] && amount)
+          if (rodData[rodId] && (baitData[baitId]||lureData[baitId]) && amount)
             tackles[`${rodId}|${baitId}`] = amount;
         }
         const last = record.last &&
-            rodData[record.last.rodId] && baitData[record.last.baitId]
+            rodData[record.last.rodId] && (baitData[record.last.baitId]||lureData[record.last.baitId])
           ? {
               rodId: record.last.rodId,
               baitId: record.last.baitId,
@@ -12308,6 +12314,7 @@
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
           waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai"].includes(f.id)?"海水":"淡水"};
       });
+      ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
       function petBirthMessage(state = s) {
         const birth=state.petLife?.lastBirth;
@@ -12466,6 +12473,7 @@
       }
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
+      if(s.ownedRods.includes("moroko"))s.rodCopies.moroko=Math.max(1,s.rodCopies.moroko||0);
       function save() {
         clearTimeout(saveTimer);
         saveTimer = 0;
@@ -15936,6 +15944,14 @@
       }
       function renderSamShop() {
         renderWeather();
+        $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("")+
+          `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
+        $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
+        $("#samNewTackle [data-buy-lure]").onclick=()=>{
+          if(s.money<600){setSamShopDialogue("「スプーンは600円じゃ。もう少し貯めておいで」");return;}
+          s.money-=600;s.lures.silverSpoon=(s.lures.silverSpoon||0)+1;renderSamShop();render();save();
+          setSamShopDialogue("「短く巻いて、止めて、また誘う。魚が食いついたらAを押し直して合わせるんじゃ」");
+        };
         document.querySelectorAll("#samTackleWindow [data-tackle-icon]").forEach((node) => {
           node.innerHTML = ShuTackleArt.icon(node.dataset.tackleIcon);
         });
@@ -16097,7 +16113,7 @@
           return false;
         }
         s.money -= price;
-        s.ownedRods.push(id);
+        ShuFishing.grantRod(s,id);
         s.selectedRod = id;
         log(`${item.name}を買って装備した！`);
         render();
@@ -16213,24 +16229,11 @@
       }
       function grantStarFortunePrize(prizeId, random = Math.random) {
         if (prizeId === "starGazer") {
-          if (!s.ownedRods.includes("starGazer")) {
-            s.ownedRods.push("starGazer");
-            s.selectedRod = "starGazer";
-            return {
-              fortune: "星大吉・大当たり",
-              message: "湖面の星が一直線に輝いた。星見の竿を授かった！",
-              logMessage: "星みくじの大当たりで星見の竿を授かり、そのまま装備した。",
-              jackpot: true,
-            };
-          }
-          s.calmBonus = Math.max(s.calmBonus, 2);
-          s.rodParts.expeditionJoint = (s.rodParts.expeditionJoint || 0) + 1;
-          return {
-            fortune: "星大吉・再会",
-            message: "星見の竿の札が星守りと遠征対応ジョイントへ変わった！",
-            logMessage: "星見の竿が重なり、星守りの加護と遠征対応ジョイントを得た。",
-            jackpot: true,
-          };
+          const first=ShuFishing.grantRod(s,"starGazer");
+          if(first)s.selectedRod="starGazer";
+          return {fortune:first?"星大吉・大当たり":"星大吉・再会",
+            message:first?"湖面の星が輝いた。星見の竿を授かった！":`星見の竿をもう一本授かった！所持${s.rodCopies.starGazer}本。道具袋で保管・売却・強化を選べるよ。`,
+            logMessage:first?"星見の竿を授かり装備した。":"重なった星見の竿を一本保管した。",jackpot:true};
         }
         if (rodPartData[prizeId]) {
           s.rodParts[prizeId] = (s.rodParts[prizeId] || 0) + 1;
@@ -17002,7 +17005,7 @@
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = rodData[s.selectedRod].name;
-        s.power = rodData[s.selectedRod].power;
+        s.power = ShuFishing.rod(s,s.selectedRod,rodData).power;
         const hudBaitArt=$("#hudBaitArt");
         if(hudBaitArt.dataset.bait!==s.selectedBait){
           hudBaitArt.innerHTML=ShuTackleArt.icon(s.selectedBait);
@@ -17690,11 +17693,11 @@
         const period = gameClockAt(sceneGameMinutes()).period;
         const baitId = battle?.bait || s.selectedBait;
         const hookId = battle?.hook || s.selectedHook;
-        if (baitId === "nushiSecret")
+        if (battle?.method!=="lure" && baitId === "nushiSecret")
           return spot.id === "lake-deep" && ShuTackle.allowed(baitId, hookId)
             ? fish.find((candidate) => candidate.id === "nushi") : null;
         const weighted = Object.entries(spot.weights).map(([id, base]) => {
-          let weight = base * ShuTackle.weight(id, baitId, hookId);
+          let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -17855,7 +17858,7 @@
           showRescueToast(`大会の釣り場は${ShuTournament.definition(s.tournament).venue}。大会ビクで残り投数を確認できるよ。`);
           return;
         }
-        if ((s.baits[s.selectedBait] || 0) < 1 && canReceiveDogRescue()) {
+        if (s.fishingMethod!=="lure" && (s.baits[s.selectedBait] || 0) < 1 && canReceiveDogRescue()) {
           rescue();
           return;
         }
@@ -17908,7 +17911,7 @@
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0}／${ShuTackle.hooks[s.selectedHook].name}／${rodData[s.selectedRod].name}`;
+          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${s.fishingMethod==="lure"?"銀のスプーンルアー":`${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait]||0}／${ShuTackle.hooks[s.selectedHook].name}`}／${rodData[s.selectedRod].name}／${ShuFishing.modes[s.fightMode]}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
@@ -18839,7 +18842,7 @@
           `<h4 class="inventory-section-heading">食料・奉納品</h4>${itemMarkup}` +
           `<h4 class="inventory-section-heading">ワンコずのおやつ</h4>${dogTreatMarkup}` +
           `<h4 class="inventory-section-heading">ワンコずのおもちゃ</h4>${ownedDogToyMarkup}` +
-          `<h4 class="inventory-section-heading">ルアー（将来用）</h4>${lureMarkup}` +
+          `<h4 class="inventory-section-heading">ルアー</h4>${lureMarkup}` +
           `<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}` +
           `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}` +
           `<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`;
@@ -18884,7 +18887,7 @@
           `<span><b>${hook.name}</b><small>${hook.role}</small></span></button>`).join("");
         const rodMarkup = s.ownedRods.map(id =>
           `<button data-pick-rod="${id}" class="rod-option ${s.selectedRod === id ? "selected" : ""}">` +
-          `${rodDisplayMarkup(id)}<span>${rodData[id].name}</span></button>`).join("");
+          `${rodDisplayMarkup(id)}<span>${rodData[id].name}${s.rodLevels[id]?` ＋${s.rodLevels[id]}`:""}<small>${ShuFishing.roles[id]} · ${s.rodCopies[id]||1}本</small></span></button>`).join("");
         for (const id of ["#baitOptions", "#inventoryBaitOptions"])
           $(id).innerHTML = baitMarkup;
         for (const id of ["#hookOptions", "#inventoryHookOptions"])
@@ -18892,9 +18895,19 @@
         for (const id of ["#rodOptions", "#inventoryRodOptions"])
           $(id).innerHTML = rodMarkup;
         $("#equipmentRod").textContent = rodData[s.selectedRod].name;
-        const summary = `装備中：${rodData[s.selectedRod].name} ＋ ${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0} ＋ ${ShuTackle.hooks[s.selectedHook].name}`;
+        const summary = `装備中：${rodData[s.selectedRod].name} ＋ ${s.fishingMethod==="lure"?"銀のスプーンルアー":`${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait]||0} ＋ ${ShuTackle.hooks[s.selectedHook].name}`} ／ ${ShuFishing.modes[s.fightMode]}`;
         for (const id of ["#inventoryTackleSummary", "#castTackleSummary"])
           $(id).textContent = summary;
+        for(const id of ["#inventoryTackleSummary","#castTackleSummary"]){
+          let panel=$(id).nextElementSibling;
+          if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
+          panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が右へ走る時は離す。糸がたわんだら引いて、左の水面へ寄せよう。強い魚には丈夫な竿が必要。":"Aを押して巻く。張力が上がったら離して糸を送ろう。"}</p>
+            <div role="group" aria-label="釣り方"><button data-fishing-method="bait" aria-pressed="${s.fishingMethod==="bait"}">エサ釣り</button><button data-fishing-method="lure" aria-pressed="${s.fishingMethod==="lure"}" ${s.ownedRods.includes("lureRod")&&s.lures.silverSpoon>0?"":"disabled"}>スプーンで誘う</button></div><small>スプーンにはルアーロッドが必要。サムの店で購入できるよ。アワセ後は一度Aを離してから引く。</small>
+            ${s.rodCopies.starGazer>1?`<div class="rod-duplicates"><b>星見の竿 ${s.rodCopies.starGazer}本 · 強化＋${s.rodLevels.starGazer}</b><button data-rod-duplicate="sell">余分な一本を売る · 12000円</button><button data-rod-duplicate="upgrade" ${s.rodLevels.starGazer>=5?"disabled":""}>一本を重ねて強化</button><small>選ばなければ保管。最後の一本は残るよ。</small></div>`:""}`;
+          panel.querySelectorAll("[data-fight-mode]").forEach(b=>b.onclick=()=>{s.fightMode=b.dataset.fightMode;renderTackle();save();});
+          panel.querySelectorAll("[data-fishing-method]").forEach(b=>b.onclick=()=>{s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save();});
+          panel.querySelectorAll("[data-rod-duplicate]").forEach(b=>b.onclick=()=>{const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save();});
+        }
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
           s.selectedBait = b.dataset.pickBait;
           if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
@@ -18912,18 +18925,20 @@
         });
         document.querySelectorAll("[data-pick-rod]").forEach(b => b.onclick = () => {
           s.selectedRod = b.dataset.pickRod;
+          if(s.selectedRod!=="lureRod")s.fishingMethod="bait";
           renderTackle();
           render();
           save();
         });
       }
       function beginFishing() {
+        if(s.fishingMethod==="lure"&&s.selectedRod!=="lureRod"&&!battle?.practice){$("#battleMsg").textContent="スプーンにはルアーロッドを装備しよう。Bで仕掛け変更できるよ。";return false;}
         const practice = Boolean(battle?.practice);
         const tutorial = Boolean(battle?.tutorial);
         const practiceBait = battle?.bait || "paste";
         if (!practice) {
           s.bait = s.baits[s.selectedBait] || 0;
-          if (s.bait < 1) {
+          if (s.fishingMethod!=="lure" && s.bait < 1) {
             if (canReceiveDogRescue()) {
               stopCastingWaterSound(.1);
               battle = null;
@@ -18970,6 +18985,11 @@
         close();
         battle = {
           phase: "cast",
+          fightMode:s.fightMode,
+          rod:practice?"bamboo":s.selectedRod,
+          equipment:ShuFishing.rod(s,practice?"bamboo":s.selectedRod,rodData),
+          method:practice?"bait":s.fishingMethod,
+          lure:s.selectedLure,
           practice,
           tutorial,
           spot: spot.id,
@@ -19074,7 +19094,8 @@
       function commitCastResources() {
         if (!battle || battle.practice || battle.baitCommitted) return true;
         const baitId = battle.bait || s.selectedBait;
-        if ((s.baits[baitId] || 0) < 1) {
+        if(battle.method==="lure"&&!(s.lures[battle.lure]>0)){lose("スプーンルアーがないため竿を戻した。");return false;}
+        if (battle.method!=="lure" && (s.baits[baitId] || 0) < 1) {
           lose("投げる直前にエサがないことへ気づき、竿を戻した。");
           return false;
         }
@@ -19085,7 +19106,7 @@
           }
           battle.tournamentCast = true;
         }
-        s.baits[baitId]--;
+        if(battle.method!=="lure")s.baits[baitId]--;
         s.bait = s.baits[s.selectedBait] || 0;
         advanceGameTime(s);
         applyCastTimeTheme($("#castSurface"), sceneGameMinutes());
@@ -19155,11 +19176,11 @@
               battle.minimumDepth || "shallow",
             );
         const baitId = battle.bait || s.selectedBait;
-        if (!battle.practice && !ShuTackle.allowed(baitId, battle.hook || s.selectedHook)) {
+        if (!battle.practice && battle.method!=="lure" && !ShuTackle.allowed(baitId, battle.hook || s.selectedHook)) {
           $("#battleMsg").textContent = "星湖の秘餌はハリ大にしか付けられないよ。仕掛けでハリ大を選ぼう。";
           return false;
         }
-        if (!battle.practice && baitId === "nushiSecret" &&
+        if (!battle.practice && battle.method!=="lure" && baitId === "nushiSecret" &&
             (battle.waterZone !== "lake" || targetDepth !== "deep")) {
           $("#battleMsg").textContent = battle.waterZone !== "lake"
             ? "星湖の秘餌は、星降る湖のヌシだけに使う特別なエサだ。"
@@ -19206,7 +19227,9 @@
           ? 850 + Math.random() * 650
           : (1500 + Math.random() * 2600) /
             baitData[battle.bait || s.selectedBait].bite;
+        if(battle.method==="lure")return startLurePresentation();
         battle.phase = "wait";
+        battle.biteScheduledAt = Date.now();
         battle.biteAt = Date.now() + delay;
         battle.nibbleAt = battle.biteAt - Math.min(850, Math.max(420, delay * .42));
         battle.nibbleShown = false;
@@ -19232,6 +19255,46 @@
           : "B<br><small>竿を上げる</small>";
         vibrate([28, 25, 48]);
         return true;
+      }
+      function startLurePresentation(){
+        beginUnderwaterFromSurface();battle.phase="lure";battle.attraction=0;battle.lureHeld=false;
+        $("#castSurface").classList.remove("cast-throwing");
+        $("#fishScene").classList.add("lure-search");
+        let lure=$("#lurePreview");if(!lure){lure=document.createElement("div");lure.id="lurePreview";$("#fishScene").append(lure);}
+        lure.innerHTML=ShuTackleArt.icon("silverSpoon");lure.hidden=false;
+        $("#fishName").textContent="スプーンで誘う";$("#phaseLabel").textContent=" 誘い中";
+        $("#battleMsg").textContent="Aで短く巻く、離して止める。興味を示す魚を待とう。";
+        $("#pull").innerHTML="A<br><small>誘う</small>";$("#wait").innerHTML="B<br><small>回収する</small>";
+        updateLurePresentation();return true;
+      }
+      function revealLureFish(){
+        battle.phase="interest";battle.biteScheduledAt=Date.now();battle.biteAt=Date.now()+1600;
+        const el=$("#battleFish");el.className=`battle-fish fish-${battle.f.id}`;
+        el.style.backgroundImage=`url("${fishAssets[battle.f.id]}")`;
+        el.style.backgroundSize=`${(fishSwimFrameCounts[battle.f.id]||8)*100}% 100%`;el.style.opacity="1";
+        battle.facing=-1;battle.turnMouthProjection=-1;
+        $("#fishName").textContent=battle.f.name;$("#phaseLabel").textContent=" 魚が接近";
+        $("#battleMsg").textContent=`${battle.f.name}がスプーンに興味を示した！口に触れるまで、まだ合わせない。`;
+        renderBattleFish();
+      }
+      function updateLurePresentation(){
+        if(!battle||!["lure","interest","bite"].includes(battle.phase)||battle.method!=="lure")return;
+        const lure=$("#lurePreview");if(!lure)return;
+        if(battle.phase==="lure"){
+          battle.attraction=Math.max(0,(battle.attraction||0)+(battle.lureHeld?.1:-.018));
+          if(battle.attraction>=1)revealLureFish();
+        }
+        const mood=fightProfiles[battle.f.id].moods.find(m=>m.calm)||fightProfiles[battle.f.id].moods[0];
+        if(battle.phase!=="lure"){animateFishBody(mood,.65,.7);renderBattleFish();}
+        let x=battle.x-9,y=battle.y;
+        if(battle.phase!=="lure"){
+          const mouth=battleMouthAndHook();x=mouth.rootX/10;y=mouth.rootY/5;
+          if(battle.phase==="interest")x-=Math.max(0,(battle.biteAt-Date.now())/1600)*10;
+        }else{x-=Math.sin((battle.attraction||0)*18)*3;y+=Math.cos((battle.attraction||0)*14)*2;}
+        lure.style.left=`${x}%`;lure.style.top=`${y}%`;
+        $("#linePath").setAttribute("d",`M 150 48 Q 285 160 ${x*10} ${y*5}`);
+        if(battle.phase==="interest"&&Date.now()>=battle.biteAt){battle.phase="wait";syncBitePhase();}
+        else if(battle.phase==="bite")syncBitePhase();
       }
       function beginUnderwaterFromSurface() {
         const scene = $("#fishScene");
@@ -19557,7 +19620,7 @@
         battle.signatureCycle = (battle.signatureCycle || 0) + 1;
         battle.nextMood =
           Date.now() + selected.min + Math.random() * (selected.max - selected.min);
-        battle.motionX = selected.calm
+        battle.motionX = battle.fightMode==="nushi" && !selected.calm ? 1 : selected.calm
           ? battle.facing || 1
           : Math.random() < 0.5
             ? -1
@@ -19569,6 +19632,7 @@
           ? 1
           : Math.random() < 0.5 ? -1 : 1;
         setFishCourse(selected);
+        if(battle.fightMode==="nushi"&&!selected.calm)battle.targetVx=Math.abs(battle.targetVx);
         const stageLabel = battle.f.id === "nushi"
           ? ` 第${["壱", "弐", "参"][nushiStage - 1]}相・`
           : " ";
@@ -19646,10 +19710,14 @@
         return true;
       }
       function updateRetrieval(mood) {
-        const control = battle.practice
-          ? Math.max(1.7, rodData[s.selectedRod].control)
-          : rodData[s.selectedRod].control;
-        const power = battle.practice ? Math.max(20, s.power) : s.power;
+        const equipment=battle.equipment||ShuFishing.rod(s,s.selectedRod,rodData);
+        const control = battle.practice?Math.max(1.7,equipment.control):equipment.control;
+        const power = battle.practice?Math.max(20,equipment.power):equipment.power;
+        if(battle.fightMode==="nushi"){
+          ShuFishing.step(battle,mood,equipment,fishPullMultiplier()*mealTensionMultiplier());
+          if(battle.f.id==="hirame"&&!battle.sandLifted&&battle.retrieval>=.12)releaseHirameFromSand();
+          updateNushiFightStage();return;
+        }
         const before = battle.retrieval || 0;
         if (battle.reeling) {
           const sandGrip = battle.f.id === "hirame" && !battle.sandLifted
@@ -19933,6 +20001,7 @@
           heavy: 0.13,
           root: 0.34,
         }[mood.motion] || 0.18;
+        if(battle.fightMode==="nushi"&&!mood.calm){battle.targetVx=Math.abs(battle.targetVx);battle.motionX=1;}
         battle.vx += (battle.targetVx - battle.vx) * acceleration;
         battle.vy += (battle.targetVy - battle.vy) * acceleration;
         const motionProfile = fishMotionProfiles[battle.f.id];
@@ -19957,7 +20026,7 @@
           battle.startX + (battle.surfaceX - battle.startX) * progress;
         const baseY =
           battle.startY + (battle.surfaceY - battle.startY) * progress;
-        const lineSpring = battle.reeling
+        const lineSpring = battle.fightMode==="nushi"&&!mood.calm ? .025 : battle.reeling
           ? 0.24 + progress * 0.08
           : mood.calm
             ? 0.14
@@ -20216,6 +20285,8 @@
         surfaceTransitionTimer = 0;
         scene.classList.remove(
           "nushi-fight",
+          "duel-nushi",
+          "lure-search",
           "water-rush",
           "fighting",
           "landing",
@@ -20226,6 +20297,7 @@
           "surface-diving",
           "sand-flatfish",
         );
+        if($("#lurePreview"))$("#lurePreview").hidden=true;
         const castSurface = $("#castSurface");
         castSurface.className = "cast-surface";
         castSurface.style.removeProperty("--cast-target-x");
@@ -20848,13 +20920,14 @@
         };
       }
       function drawFishTackle(anchor) {
-        const bait = battle.bait || s.selectedBait || "worm";
+        const bait = battle.method==="lure"?"silverSpoon":battle.bait || s.selectedBait || "worm";
         for (const [id, layer] of [
           ["#fishTackleBack", "fish-tackle-back"],
           ["#fishTackleFront", "fish-tackle-front"],
         ]) {
           const tackle = $(id);
           tackle.className = `fish-tackle ${layer} bait-${bait}`;
+          if(!tackle.querySelector(".hook-spoon")){const art=document.createElement("span");art.className="hook-spoon";art.innerHTML=ShuTackleArt.icon("silverSpoon");tackle.append(art);}
           tackle.style.left = `${anchor.rootX / 10}%`;
           tackle.style.top = `calc(${anchor.rootY / 5}% - 7px)`;
           tackle.style.transform =
@@ -20881,7 +20954,8 @@
       }
       function syncBitePhase(now = Date.now()) {
         if (!battle || !["wait", "bite"].includes(battle.phase)) return false;
-        const biteWindow = battle.practice ? 2800 : 1050;
+        if(document.hidden||battle.pausedAt)return false;
+        const biteWindow = battle.practice ? 2800 : 1500;
         // A timer callback can arrive after the entire window (phone stall or
         // background throttling). Resolve that case even if "bite" was skipped.
         if (now > battle.biteAt + biteWindow) {
@@ -20898,7 +20972,7 @@
           $("#phaseLabel").textContent = battle.practice ? " ③ 合わせる！" : " アタリ！";
           $("#battleMsg").textContent = battle.practice
             ? "サム「ウキが消えた！今だ、Aで合わせる！」"
-            : "消し込んだ！！今だ、Aで合わせる！";
+            : battle.method==="lure"?"食いついた！Aを離して押し直し、一度引いて合わせる！":"消し込んだ！！今だ、Aで合わせる！";
           $("#pull").innerHTML = "A<br><small>合わせる！</small>";
         } else if (battle.phase === "wait" && !battle.nibbleShown && now >= battle.nibbleAt) {
           battle.nibbleShown = true;
@@ -20912,7 +20986,8 @@
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
-          if (!battle) return;
+          if (!battle || document.hidden || battle.pausedAt) return;
+          if(battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase)){updateLurePresentation();updateWaterFx();return;}
           if (battle.phase !== "fight") updateWaterFx();
           if (["cast", "wait", "bite"].includes(battle.phase) ||
               (battle.phase === "cast-flight" && !surfaceCastAnimationFrame))
@@ -20937,9 +21012,8 @@
             return;
           }
           if (battle.phase !== "fight") return;
-          const control = battle.practice
-            ? Math.max(1.7, rodData[s.selectedRod].control)
-            : rodData[s.selectedRod].control;
+          const equipment=battle.equipment||ShuFishing.rod(s,s.selectedRod,rodData);
+          const control = battle.practice?Math.max(1.7,equipment.control):equipment.control;
           if (!battle.mood || Date.now() > battle.nextMood) chooseFishMood();
           const mood = battle.mood;
           if (battle.gillWash) {
@@ -20955,10 +21029,10 @@
           moveBattleFish(mood);
           updateWaterFx();
           renderBattleFish();
-          if (battle.reeling) {
+          if (battle.fightMode!=="nushi" && battle.reeling) {
             battle.ten += (mood.tension * fishPullMultiplier()) /
               control * mealTensionMultiplier();
-          } else {
+          } else if(battle.fightMode!=="nushi") {
             battle.ten = Math.max(3, battle.ten - mood.release * control);
           }
           battle.ten = Math.min(battle.practice ? 88 : 110, battle.ten);
@@ -20977,7 +21051,7 @@
             $("#battleMsg").textContent = battle.recoveryMessage;
           } else {
             $("#battleMsg").textContent =
-              warning + fishTakingLine + (battle.reeling ? mood.hold : mood.loose);
+              warning + (battle.fightMode==="nushi"?(mood.calm?"糸がたわんだ。今が引く時！ ":"魚が走る！Aを離していなそう。 "):fishTakingLine) + (battle.reeling ? mood.hold : mood.loose);
           }
           drawBattle();
           const arrival = Math.hypot(
@@ -20995,6 +21069,7 @@
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") return launchSurfaceCast();
         if (battle.phase === "cast-flight") return;
+        if(["lure","interest"].includes(battle.phase)){battle.lureHeld=true;return;}
         if (["wait", "bite"].includes(battle.phase) && !syncBitePhase()) return;
         if (battle.phase === "wait") {
           if (battle.practice)
@@ -21003,14 +21078,17 @@
             );
           return lose("まだ前アタリだった。早合わせで逃げられた……。");
         }
-        if (battle.phase === "bite") startFight();
-        if (battle.phase === "fight") setBattleReeling(true);
+        if (battle.phase === "bite") {startFight();return;}
+        if (battle.phase === "fight" && !battle.awaitFightRelease) setBattleReeling(true);
       }
       function startFight() {
         stopCastingWaterSound(.24);
         playGameAudioSample("reelHookSet", { restart: true });
         beginUnderwaterFromSurface();
         battle.phase = "fight";
+        battle.reeling=false;battle.awaitFightRelease=true;
+        $("#fishScene").classList.remove("lure-search");
+        if($("#lurePreview"))$("#lurePreview").hidden=true;
         const f = battle.f;
         battle.waterAudioWeight = fishWaterWeight(
           f.id,
@@ -21060,6 +21138,7 @@
         battle.turnRoll = 0;
         const scene = $("#fishScene");
         scene.classList.add("fighting", "hook-reveal");
+        scene.classList.toggle("duel-nushi",battle.fightMode==="nushi");
         scene.classList.toggle("nushi-fight", f.id === "nushi");
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
@@ -21154,6 +21233,7 @@
       }
       function drawBattle() {
         if (!battle || battle.phase !== "fight") return;
+        const slack=battle.fightMode==="nushi"?battle.lineSlack:battle.calm;
         const remaining = Math.max(0, 1 - (battle.retrieval || 0));
         $("#distanceMeter").style.width = remaining * 100 + "%";
         const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
@@ -21163,11 +21243,11 @@
         const linePath = $("#linePath");
         linePath.setAttribute(
           "d",
-          battle.calm
+          slack
             ? `M 150 48 Q 250 118 190 205 Q 270 310 ${anchor.lineX} ${anchor.lineY}`
             : `M 150 48 Q 285 150 ${anchor.lineX} ${anchor.lineY}`,
         );
-        linePath.classList.toggle("slack", battle.calm);
+        linePath.classList.toggle("slack", slack);
         drawFishTackle(anchor);
         updateTensionFeedback();
       }
@@ -21513,7 +21593,7 @@
             const [rodId, baitId] = combo.split("|");
             return {
               rod: rodData[rodId],
-              bait: baitData[baitId],
+              bait: baitData[baitId]||lureData[baitId],
               count: Math.max(0, Math.floor(Number(count) || 0)),
             };
           })
@@ -21526,14 +21606,14 @@
               .join("")}</div>`
           : `<p>この図鑑での仕掛け記録はまだないよ。</p>`;
         const last = record?.last;
-        if (!last || !rodData[last.rodId] || !baitData[last.baitId]) return chips;
+        if (!last || !rodData[last.rodId] || !(baitData[last.baitId]||lureData[last.baitId])) return chips;
         const period = {
           morning: "朝",
           day: "昼",
           evening: "夕",
           night: "夜",
         }[last.period] || "時刻不明";
-        return `${chips}<small class="fishdex-tackle-note">最後の釣果：${rodData[last.rodId].name}＋${baitData[last.baitId].name}／${fishdexCatchLocation(last)}／${period}</small>`;
+        return `${chips}<small class="fishdex-tackle-note">最後の釣果：${rodData[last.rodId].name}＋${(baitData[last.baitId]||lureData[last.baitId]).name}／${fishdexCatchLocation(last)}／${period}</small>`;
       }
       function fishdexCrownsMarkup(f) {
         const crowns = s.fishCrowns?.[f.id] || {};
@@ -21694,10 +21774,44 @@
           drawAquariumSprite(element,pose.id,pose.frame);
         }
       }});
+      function drawContestDog(canvas,id,pose={}){
+        const ctx=canvas.getContext("2d");if(!ctx)return;
+        ctx.clearRect(0,0,canvas.width,canvas.height);ctx.imageSmoothingEnabled=false;
+        if(!dogProfileData[id]){ShuRivals.draw(canvas,ensureRivalAtlas(id),id,{talking:true,sitting:pose.phase!=="entrance"});return;}
+        ensureDogImage(id);
+        const time=pose.elapsed||0,active=pose.success===true;
+        ctx.save();ctx.scale(canvas.width/144,canvas.height/128);
+        if(active&&pose.trick&&dogIdleImage.complete&&dogIdleImage.naturalWidth){
+          const lying=pose.trick==="伏せ",row={shuu:0,riku:1,grey:2}[id],col=lying?1:0;
+          const paw=lying?{shuu:240,riku:242,grey:245}[id]:id==="riku"?232:300;
+          const sourceHeight=id==="riku"&&!lying?280:320;
+          ctx.translate(11,112-paw*.38);ctx.scale(.38,.38);
+          const arms=lying?[]:pose.trick==="チンチン"?[0,1]:[pose.trick==="おかわり"?1:0];
+          const boxes=id==="riku"?[[111,183,31,47],[154,183,31,47]]:[[108,222,39,76],[172,222,39,76]];
+          // Lift the actual foreleg pixels from the sitting atlas. The fur,
+          // paws, silhouette and ground anchor remain the original artwork.
+          ctx.save();ctx.beginPath();ctx.rect(0,0,320,320);
+          for(const index of arms){const [x,y,w,h]=boxes[index];ctx.rect(x,y,w,h);}
+          ctx.clip("evenodd");ctx.drawImage(dogIdleImage,col*320,row*320,320,sourceHeight,0,0,320,sourceHeight);ctx.restore();
+          for(const index of arms){
+            const [x,y,w,h]=boxes[index],pivotX=x+w/2,pivotY=y;
+            const high=pose.trick==="ハイタッチ",angle=(index===0?1:-1)*(high?2.1:pose.trick==="チンチン"?1.5:1.15)+(high?Math.sin(time*7)*.08:0);
+            ctx.save();ctx.translate(pivotX,pivotY);ctx.rotate(angle);ctx.translate(-pivotX,-pivotY);
+            ctx.drawImage(dogIdleImage,col*320+x,row*320+y,w,h,x,y,w,h);ctx.restore();
+          }
+        }else{
+          const entrance=pose.phase==="entrance"?Math.round(Math.sin(time*5))*2:0;
+          const jump=active?Math.round(Math.max(0,Math.sin(time*6))*7):0;
+          ctx.translate(entrance,18-jump);
+          if(pose.success===false){ctx.translate(5,5);ctx.rotate(Math.sin(time*6)*.035);}
+          drawDogCareSprite(ctx,id,0,0,pose.phase==="entrance"||active?Math.floor(time*6)%2?"walk-a":"walk-b":"stand",144);
+        }
+        ctx.restore();
+      }
       petUi = ShuPetUI.create({state:s,catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
-        changed:()=>{save();render();},paintRivals:paintRivalGuide,pose:aquariumFishPose,
+        changed:()=>{save();render();},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
         presentationChanged:()=>{eventCeremonies?.sync();syncSceneSound();},
         feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
@@ -21755,10 +21869,27 @@
         clearInterval(moveHoldInterval);
         moveHoldInterval = 0;
       }
-      function releaseHeldInputs() {
-        stopMoving();
+      let battleActionHeld=false;
+      function releaseBattleAction(){
+        battleActionHeld=false;
+        if(battle){battle.lureHeld=false;battle.awaitFightRelease=false;}
         setBattleReeling(false);
       }
+      function pressBattleAction(){
+        if(battleActionHeld||document.hidden)return;
+        battleActionHeld=true;pull();
+      }
+      function pauseBattle(){if(battle&&!battle.pausedAt)battle.pausedAt=Date.now();releaseHeldInputs();}
+      function resumeBattle(){
+        if(battle?.pausedAt){
+          const now=Date.now(),paused=battle.pausedAt;
+          for(const key of ["biteAt","nibbleAt"])if(Number.isFinite(battle[key]))battle[key]+=now-Math.max(paused,battle.biteScheduledAt||paused);
+          if(battle.nextMood)battle.nextMood+=now-paused;
+          battle.pausedAt=0;
+        }
+        releaseHeldInputs();
+      }
+      function releaseHeldInputs() {stopMoving();releaseBattleAction();}
       document.querySelectorAll("[data-move]").forEach((b) => {
         b.onpointerdown = (e) => {
           e.preventDefault();
@@ -21783,11 +21914,11 @@
       $("#pull").onpointerdown = (e) => {
         e.preventDefault();
         e.currentTarget.setPointerCapture?.(e.pointerId);
-        pull();
+        pressBattleAction();
       };
-      $("#pull").onpointerup = () => setBattleReeling(false);
-      $("#pull").onpointercancel = () => setBattleReeling(false);
-      $("#pull").onlostpointercapture = () => setBattleReeling(false);
+      $("#pull").onpointerup = releaseBattleAction;
+      $("#pull").onpointercancel = releaseBattleAction;
+      $("#pull").onlostpointercapture = releaseBattleAction;
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
       $("#tournamentTalkMore").onclick = () => renderTournamentTalk(true);
@@ -21901,7 +22032,7 @@
         }
         if (e.key === "z" || e.key === "Enter") {
           uiFeedback.cue("confirm", e);
-          battle ? pull() : action();
+          if(!e.repeat){battle ? pressBattleAction() : action();}
           e.preventDefault();
         }
         if (e.key === "x" || e.key === "Escape") {
@@ -21915,7 +22046,7 @@
         }
       });
       addEventListener("keyup", (e) => {
-        if (e.key === "z" || e.key === "Enter") setBattleReeling(false);
+        if (e.key === "z" || e.key === "Enter") releaseBattleAction();
       });
       addEventListener("resize", () => {
         if ($("#game").classList.contains("active")) {
@@ -21930,7 +22061,7 @@
         }
       });
       $("#fishScene").addEventListener("contextmenu", e => e.preventDefault());
-      addEventListener("blur", releaseHeldInputs);
+      addEventListener("blur", pauseBattle);
       addEventListener("pagehide", () => {
         releaseHeldInputs();
         stopRivalDogReaction();
@@ -21948,7 +22079,7 @@
         renderHomeAquarium();
         renderHomeDogs();
         if (document.hidden) {
-          releaseHeldInputs();
+          pauseBattle();
           stopRivalDogReaction(); renderRivals();
           stopSurfaceCastAnimation();
           save();
@@ -21958,11 +22089,12 @@
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
         } else {
+          resumeBattle();
           startSurfaceCastAnimation();
           if (s.soundEnabled) recoverGameAudio();
         }
       });
-      addEventListener("focus", () => recoverGameAudio());
+      addEventListener("focus", () => {resumeBattle();recoverGameAudio();});
       addEventListener("pageshow", () => {
         recoverGameAudio();
         startSurfaceCastAnimation();
@@ -21980,7 +22112,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=199-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=200-1").catch(() => {});
       renderRecord();
     </script>
   </body>
