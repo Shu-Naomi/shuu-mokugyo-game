@@ -1,9 +1,10 @@
 .duel-options{padding:10px;margin:8px 0 14px;background:#122e3e;border:1px solid #8b7955;border-radius:8px;color:#e6dcc0}
 .duel-options>div{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .duel-options button{min-height:42px;font-size:12px;padding:7px 10px}
-.duel-options button[aria-pressed="true"]{outline:2px solid #e2bd6b;background:#3c554e}
+.duel-options button[aria-pressed="true"]{outline:2px solid #e2bd6b;background:#3c554e;color:#f4ead0}
+.duel-options button:disabled{opacity:.47}
 .duel-options p,.duel-options small{font-size:12px;line-height:1.6;display:block}
-.rod-option small{display:block;font-size:11px;color:#becdca;line-height:1.45}
+.rod-option small{display:block;font-size:11px;color:#3c362d;font-weight:700;line-height:1.45}
 .rod-duplicates{margin-top:12px;padding-top:10px;border-top:1px solid #64727b}
 #lurePreview{position:absolute;width:32px;height:32px;z-index:28;pointer-events:none;transform:translate(-50%,-50%);image-rendering:pixelated}
 #lurePreview svg{width:100%;height:100%;filter:drop-shadow(0 2px 0 #122c3e)}
