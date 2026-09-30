@@ -41,7 +41,7 @@ test("secret bait is more common than the rod across the full draw range and the
   } finally { app.dispose(); }
 });
 
-test("draws consume one offering, prevent repeated taps, award secret bait and duplicate compensation, and survive save/reload", () => {
+test("draws consume one offering, prevent repeated taps, award secret bait and duplicate rod storage, and survive save/reload", () => {
   const original = { ...seed(), items: { starGrapes: 4 }, baits: { worm: 7, nushiSecret: 2 }, rodParts: { expeditionJoint: 3 } };
   const app = boot(original), w = app.window;
   let saved;
@@ -60,7 +60,7 @@ test("draws consume one offering, prevent repeated taps, award secret bait and d
     assert.equal(read(w, "s.ownedRods.filter(id => id === 'starGazer').length"), 1);
     assert.equal(read(w, "s.selectedRod"), "starGazer");
     assert.equal(read(w, "s.baits.nushiSecret"), 4);
-    assert.equal(read(w, "s.rodParts.expeditionJoint"), 4);
+    assert.equal(read(w, "s.rodParts.expeditionJoint"), 3);assert.equal(read(w,"s.rodCopies.starGazer"),2);
     assert.equal(read(w, "s.money"), original.money);
     assert.equal(read(w, "s.caught.funa"), original.caught.funa);
     saved = JSON.parse(w.localStorage.getItem(saveKey));
@@ -70,7 +70,7 @@ test("draws consume one offering, prevent repeated taps, award secret bait and d
   try {
     assert.equal(read(resumed.window, "s.baits.nushiSecret"), 4);
     assert.equal(read(resumed.window, "s.items.starGrapes"), 0);
-    assert.equal(read(resumed.window, "s.rodParts.expeditionJoint"), 4);
+    assert.equal(read(resumed.window, "s.rodParts.expeditionJoint"), 3);
     assert.equal(read(resumed.window, "s.ownedRods.filter(id => id === 'starGazer').length"), 1);
     assert.deepEqual(resumed.errors, []);
   } finally { resumed.dispose(); }

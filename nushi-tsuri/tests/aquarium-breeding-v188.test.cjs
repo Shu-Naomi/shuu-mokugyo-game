@@ -34,24 +34,25 @@ test('live sales require a self-caught fish; purchases and descendants never alt
   assert.deepEqual(s.caught,{moroko:1});
 });
 
-test('three consecutive healthy fed days produce one opposite-sex fry and reload cannot duplicate it',()=>{
+test('three consecutive healthy fed days produce eggs, then fry hatch without duplication',()=>{
   const s=state();const male=P.acquire(s,'moroko',catalog,0,0).fish;
   const female=P.acquire(s,'moroko',catalog,0,0).fish;
   assert.equal(male.sex,'male');assert.equal(female.sex,'female');
   for(let day=0;day<3;day++){
     assert.equal(P.care(s,male.uid,'feed',day,catalog).ok,true);
     P.sync(s,catalog,day+1);
-    assert.equal(s.petLife.fish.length,day===2?3:2);
+    assert.equal(s.petLife.fish.length,2);
   }
+  assert.equal(s.petLife.eggs.length,1);P.sync(s,catalog,5);
   const child=s.petLife.fish[2];assert.equal(child.generation,1);assert.equal(child.sex,'male');
   assert.equal(child.length,600);assert.deepEqual(s.caught,{moroko:1});
-  assert.deepEqual(s.petLife.lastBirth,{uid:child.uid,species:'moroko',tank:0,day:3});
-  assert.equal(P.sync(s,catalog,3),false);
-  const saved=copy(s);P.normalize(s,catalog,ids,3);assert.deepEqual(s,saved);
-  assert.equal(P.sync(s,catalog,3),false);assert.equal(s.petLife.fish.length,3);
+  assert.deepEqual(s.petLife.lastBirth,{uid:child.uid,species:'moroko',tank:0,day:5});
+  assert.equal(P.sync(s,catalog,5),false);
+  const saved=copy(s);P.normalize(s,catalog,ids,5);assert.deepEqual(s,saved);
+  assert.equal(P.sync(s,catalog,5),false);assert.equal(s.petLife.fish.length,3);
   assert.ok(P.starInterval(1)<P.starInterval(0));
   const first={...male,stars:1,length:male.bornSize,health:100,water:100};
-  assert.equal(P.fishScore({...first,stars:2}).score-P.fishScore(first).score,2);
+  assert.equal(P.fishScore({...first,stars:3}).score-P.fishScore(first).score,3);
 });
 
 test('separated or same-sex fish, dirty water, skipped care and full tanks cannot create free fry',()=>{
@@ -80,18 +81,18 @@ test('raised descendants earn stars faster, mature for sale and pay only once th
   const s=state(),first=P.acquire(s,'moroko',catalog,0,0).fish;
   P.acquire(s,'moroko',catalog,0,0);s.petLife.food=100;
   for(let day=0;day<3;day++){P.care(s,first.uid,'feed',day,catalog);P.sync(s,catalog,day+1);}
-  const child=s.petLife.fish[2];P.rehome(s,first.uid,catalog,3);P.rehome(s,s.petLife.fish.find(f=>f.generation===0).uid,catalog,3);
+  P.sync(s,catalog,5);const child=s.petLife.fish[2];P.rehome(s,first.uid,catalog,5);P.rehome(s,s.petLife.fish.find(f=>f.generation===0).uid,catalog,5);
   assert.equal(P.buyBackQuote(child,catalog).eligible,false);
-  for(let day=3;day<8;day++){
+  for(let day=5;day<10;day++){
     if(child.water<72)P.care(s,child.uid,'water',day,catalog);
     P.care(s,child.uid,'feed',day,catalog);P.sync(s,catalog,day+1);
   }
   assert.equal(child.length,1100);assert.equal(child.stars,2);
   assert.equal(P.buyBackQuote(child,catalog).eligible,true);
   const price=P.buyBackQuote(child,catalog).price,money=s.money;
-  assert.equal(P.buyBack(s,child.uid,catalog,8).price,price);assert.equal(s.money,money+price);
-  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,8).ok,false);assert.deepEqual(s,paid);
-  P.normalize(s,catalog,ids,8);assert.equal(P.buyBack(s,child.uid,catalog,8).ok,false);
+  assert.equal(P.buyBack(s,child.uid,catalog,10).price,price);assert.equal(s.money,money+price);
+  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,10).ok,false);assert.deepEqual(s,paid);
+  P.normalize(s,catalog,ids,10);assert.equal(P.buyBack(s,child.uid,catalog,10).ok,false);
   assert.equal(s.money,money+price);assert.deepEqual(s.caught,{moroko:1});
 });
 
@@ -123,15 +124,16 @@ test('real shop hides unseen species, buys a tank, shows sex and confirms a sing
   }finally{reload.dispose();}
 });
 
-test('three real home sleeps announce the fry and save the new family without awarding a catch',()=>{
+test('five real home sleeps reveal eggs and announce the fry and save the new family without awarding a catch',()=>{
   const app=boot({...seed(),caught:{...seed().caught,moroko:1},money:5000}),w=app.window;let saved;
   try{
     w.eval('petUi.open("shop")');click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-buy="moroko"]');
     click(w,'[data-pet-action="aquarium"]');assert.match(w.document.querySelector('#petFishSelect').textContent,/モロコ/);
-    for(let day=0;day<3;day++){
+    for(let day=0;day<5;day++){
       click(w,'[data-pet-action="feed"]');click(w,'[data-pet-action="close"]');
       assert.equal(w.eval('sleepAtPlayerHome()'),true);
       w.eval('petUi.open("aquarium")');
+      if(day===2){assert.equal(read(w,"s.petLife.eggs.length"),1);assert.ok(w.document.querySelector(".pet-eggs"));}
     }
     assert.equal(read(w,'s.petLife.fish.length'),3);
     assert.match(w.document.querySelector('#rescueToast').textContent,/稚魚が生まれた/);

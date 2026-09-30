@@ -41,3 +41,30 @@
 @media(max-height:480px){.pet-inspect-stage{min-height:175px!important}.pet-view-help{font-size:11px;margin:0 0 5px}.pet-life-modal .pet-fish-roster button{min-height:42px}.pet-fish-roster{padding-bottom:5px}.pet-inspect-caption{padding:3px 6px}}
 @media(max-width:540px){.pet-stock{grid-template-columns:1fr}.pet-tank-layout{grid-template-columns:1fr}.pet-money{font-size:11px}.pet-heading{gap:6px}.pet-shop-host>canvas:last-child{display:none}.pet-course-options{gap:4px}.pet-contest-result{padding:10px;gap:9px}}
 @media(prefers-reduced-motion:reduce){.pet-food-speck,.pet-cleaning,.pet-trick-results li{animation:none!important}}
+.pet-eggs{position:absolute;z-index:24;bottom:17%;left:calc(24% + var(--egg-slot)*13%);width:35px;height:24px;pointer-events:none}
+.pet-eggs i{position:absolute;background:#d9a35c;width:7px;height:7px;box-shadow:-2px 0 #73593f,2px 0 #73593f,0 -2px #73593f,0 2px #6e5138,inset 2px 2px #ffedb5,inset -2px -2px #ac7241}
+.pet-eggs i:nth-child(1){left:3px;top:4px}.pet-eggs i:nth-child(2){left:14px;top:1px}.pet-eggs i:nth-child(3){left:24px;top:5px}.pet-eggs i:nth-child(4){left:9px;top:13px}.pet-eggs i:nth-child(5){left:20px;top:14px}
+.egg-plant{border-left:3px solid #458e6b;transform:rotate(-8deg)}.egg-gravel{bottom:10%}
+.pet-egg-notice{color:#efd7a1;background:#244342;padding:8px;border:1px solid #77834e}
+.pet-stage-heading{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.pet-stage-heading small{color:#b6c9c6}
+.pet-live-stage{position:relative;width:min(560px,100%);height:240px;margin:12px auto;background:repeating-linear-gradient(90deg,#2b2545 0 30px,#312b4b 30px 34px);border:4px solid #c9a468;box-shadow:inset 0 0 0 3px #73614b;overflow:hidden;image-rendering:pixelated}
+.pet-stage-curtain:before,.pet-stage-curtain:after{content:"";position:absolute;z-index:7;width:40px;top:0;bottom:25%;background:repeating-linear-gradient(90deg,#7e485d 0 10px,#ab6674 10px 14px,#613949 14px 19px);border-bottom:5px solid #d29b6f}
+.pet-stage-curtain:before{left:0}.pet-stage-curtain:after{right:0}
+.pet-stage-lamps{display:flex;justify-content:space-around;padding:8px 40px;border-top:4px solid #e3c393}.pet-stage-lamps i{width:12px;height:8px;background:#f4d68d;box-shadow:0 4px #a4774b,0 8px 0 2px #4e384c}
+.pet-stage-audience{position:absolute;top:24px;left:40px;right:40px;height:100px;display:flex;justify-content:space-around;background:#322d49;border-bottom:5px solid #b27a7b}
+.pet-stage-audience canvas{width:60px;height:80px;image-rendering:pixelated;align-self:flex-end}
+.pet-stage-floor{position:absolute;bottom:0;height:110px;width:100%;background:repeating-linear-gradient(0deg,#886552 0 14px,#5f493f 14px 16px,#a0795b 16px 18px);border-top:5px solid #d5b380;box-shadow:inset 0 4px #4d3c3d}
+.pet-stage-dog{position:absolute;left:50%;bottom:16px;width:144px;height:128px;transform:translateX(-50%);image-rendering:pixelated;z-index:4}
+.pet-stage-name{position:absolute;bottom:4px;left:0;right:0;z-index:6;text-align:center;color:#fff0c4;font-size:13px;text-shadow:2px 2px #29343f}
+.pet-stage-reaction{position:absolute;top:100px;left:50%;transform:translateX(-50%);padding:5px 10px;background:#e9e1bd;border:3px solid #6f6b68;color:#263a43;z-index:6;white-space:nowrap;font-size:12px;box-shadow:2px 3px #172b3c}
+.pet-stage-reaction:after{content:"";position:absolute;left:45%;bottom:-8px;border-top:7px solid #e9e1bd;border-right:7px solid transparent}
+.pet-stage-direction{font-size:13px;line-height:1.6}.pet-stage-aquarium{position:absolute;z-index:4;left:25%;right:25%;bottom:22px;height:104px;border:4px solid #74929c;background:repeating-linear-gradient(0deg,#236078 0 16px,#286c80 16px 18px);box-shadow:inset 0 3px #a5d6dc,3px 3px #364f64}
+.pet-stage-fish{position:absolute;top:48%;left:50%;width:120px;height:60px;image-rendering:pixelated}.pet-stage-gravel{position:absolute;bottom:0;width:100%;height:10px;background:repeating-linear-gradient(90deg,#999169 0 5px,#d1bd84 5px 9px,#666f59 9px 13px)}
+.pet-trick-commands{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.pet-trick-commands button{flex:1;min-width:115px;display:flex;flex-direction:column;gap:5px}.pet-trick-commands small{font-size:11px}.pet-proficiency{display:block;width:100%;height:6px;background:#142839;border:1px solid #788b7a}.pet-proficiency i{display:block;height:100%;background:#daba74}
+.pet-contest-rivals{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0}.pet-contest-rivals article{padding:7px;background:#203b49;border:1px solid #668080;display:flex;align-items:center;flex-wrap:wrap}.pet-contest-rivals canvas{width:38px;height:50px;image-rendering:pixelated}.pet-contest-rivals canvas[data-contest-dog]{width:50px;height:45px}.pet-contest-rivals span{width:100%;font-size:12px}.pet-contest-rivals small{display:block;color:#bdcbbc;font-size:11px}
+.pet-standings{list-style:none;padding:0;margin:10px 0}.pet-standings li{display:flex;gap:8px;padding:5px;border-bottom:1px solid #557371}.pet-standings strong{margin-left:auto}
+.is-entrance .pet-stage-dog{animation:pet-stage-enter 1.2s steps(8,end) both}.is-cheering .pet-stage-audience canvas{animation:pet-stage-cheer .45s steps(2,end) infinite;animation-delay:calc(var(--spectator)*.1s)}.is-puzzled .pet-stage-audience canvas{transform:rotate(-3deg)}
+@keyframes pet-stage-enter{from{left:10%;opacity:0}to{left:50%;opacity:1}}@keyframes pet-stage-cheer{50%{transform:translateY(-6px)}}
+@media(max-height:500px){.pet-live-stage{height:210px}.pet-stage-audience{height:75px}.pet-stage-reaction{top:75px}.pet-contest-rivals{margin:7px 0}.pet-stage-heading{font-size:12px}.pet-trick-commands button{min-width:105px}}
+@media(max-width:540px){.pet-contest-rivals{grid-template-columns:1fr}.pet-contest-rivals span{width:auto;flex:1}.pet-live-stage{height:220px}}
+@media(prefers-reduced-motion:reduce){.is-entrance .pet-stage-dog,.is-cheering .pet-stage-audience canvas{animation:none}}

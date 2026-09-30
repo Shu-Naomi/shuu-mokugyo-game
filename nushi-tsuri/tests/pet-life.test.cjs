@@ -20,15 +20,15 @@ test('hearts advance white to ten red then ten gold; frisbees and their progress
     const g=P.dogGauge(points);assert.equal(g.hearts.filter(c=>c==='red').length,red);assert.equal(g.hearts.filter(c=>c==='gold').length,gold);assert.equal(g.progress,progress);
   }
   const s=state();P.addAffinity(s,'shuu',50);assert.equal(s.dogTricks.shuu,0);
-  P.addTricks(s,'shuu',125);assert.equal(P.dogGauge(s.dogTricks.shuu,P.TRICK_MAX).level,1);assert.equal(s.dogAffinity.shuu,930);
+  P.addTricks(s,'shuu',125);assert.equal(P.dogGauge(s.dogTricks.shuu,P.TRICK_MAX).level,1);assert.equal(s.dogAffinity.shuu,905);
 });
 
 test('each dog has its own daily petting/training limit and earned ability controls forage quantity and trick success',()=>{
   const s=state({dogAffinity:{shuu:0,riku:0,grey:0}});
-  for(let i=0;i<3;i++)assert.equal(P.pet(s,'shuu',0),8);
-  assert.equal(P.pet(s,'shuu',0),0);assert.equal(P.pet(s,'riku',0),8);
+  for(let i=0;i<3;i++)assert.equal(P.pet(s,'shuu',0),4);
+  assert.equal(P.pet(s,'shuu',0),0);assert.equal(P.pet(s,'riku',0),4);
   assert.equal(P.train(s,'shuu',0),true);assert.equal(P.train(s,'shuu',0),false);
-  assert.equal(s.dogTricks.shuu,25);assert.equal(P.train(s,'shuu',1),true);assert.equal(P.pet(s,'shuu',1),8);
+  assert.equal(s.dogTricks.shuu,15);assert.equal(P.train(s,'shuu',1),true);assert.equal(P.pet(s,'shuu',1),4);
   for(const [points,quantity] of [[0,1],[499,1],[500,2],[1000,3],[1500,4],[2000,5]]){s.dogAffinity.shuu=points;assert.equal(P.forageCount(s,'shuu'),quantity);}
   s.dogTricks.shuu=0;assert.equal(P.trickChance(s,'shuu'),.35);s.dogTricks.shuu=1000;assert.equal(P.trickChance(s,'shuu'),.95);
   assert.equal(P.pet(s,'unknown',1),0);assert.equal(P.train(s,'unknown',1),false);
@@ -107,10 +107,10 @@ test('malformed pet saves cannot create an unearned nushi, duplicate specimens o
 test('all three courses charge once, award fixed prizes and preserve participation through reload',()=>{
   const s=state({dogAffinity:{shuu:100}});
   for(const c of P.courses){
-    const before=s.money,result=P.enter(s,'bond',c.id,'shuu',0,catalog,dogs);
+    const before=s.money,result=P.enter(s,'bond',c.id,'shuu',0,catalog,dogs,()=>.999);
     assert.equal(result.ok,true);assert.equal(result.result.score,100);assert.equal(result.result.rank,1);assert.equal(s.money,before-c.fee+c.prize);
     const saved=copy(s);assert.equal(P.enter(s,'bond',c.id,'riku',0,catalog,dogs).ok,false);assert.deepEqual(s,saved);
-    P.normalize(s,catalog,ids,0);assert.equal(P.enter(s,'bond',c.id,'shuu',0,catalog,dogs).ok,false);
+    P.normalize(s,catalog,ids,0);assert.equal(P.enter(s,'bond',c.id,'shuu',0,catalog,dogs,()=>.999).ok,false);
   }
   assert.equal(P.enter(s,'bond','beginner','shuu',1,catalog,dogs).ok,true);
 });
@@ -119,12 +119,12 @@ test('trick level changes actual contest outcomes; a stored result cannot reroll
   const s=state();let rolls=0;const rng=()=>{rolls++;return .8;};
   const low=P.enter(s,'tricks','beginner','shuu',0,catalog,dogs,rng);assert.equal(low.result.score,0);assert.equal(low.result.reward,0);
   s.dogTricks.shuu=1000;const high=P.enter(s,'tricks','advanced','shuu',0,catalog,dogs,rng);assert.equal(high.result.score,100);assert.equal(high.result.rank,1);
-  const original=copy(s);assert.equal(P.enter(s,'tricks','advanced','shuu',0,catalog,dogs,rng).ok,false);assert.deepEqual(s,original);assert.equal(rolls,10);
+  const paidRolls=rolls,original=copy(s);assert.equal(P.enter(s,'tricks','advanced','shuu',0,catalog,dogs,rng).ok,false);assert.deepEqual(s,original);assert.equal(rolls,paidRolls);
 });
 
 test('fish judging rewards growth and care independently of species; invalid entry or active fishing tournament charges nothing',()=>{
   const s=state(),f=P.acquire(s,'moroko',catalog,0).fish;
-  const initial=P.fishScore(f).score;f.length+=75;f.health=100;f.water=100;assert.ok(P.fishScore(f).score>initial);assert.equal(P.fishScore(f).score,100);
+  const initial=P.fishScore(f).score;f.length+=75;f.health=100;f.water=100;assert.ok(P.fishScore(f).score>initial);assert.ok(P.fishScore(f).score<100);f.xp=1083;f.length=catalog[0].max;f.stars=5;assert.equal(P.fishScore(f).score,100);
   assert.equal(P.enter(s,'fish','advanced',f.uid,0,catalog,dogs).result.rank,1);
   for(const args of [['fish','beginner','pet-99'],['bond','invalid','shuu'],['tricks','beginner','missing']]){const before=copy(s);assert.equal(P.enter(s,...args,0,catalog,dogs).ok,false);assert.deepEqual(s,before);}
   s.tournament={active:true};const before=copy(s);assert.equal(P.enter(s,'bond','beginner','shuu',0,catalog,dogs).ok,false);assert.deepEqual(s,before);

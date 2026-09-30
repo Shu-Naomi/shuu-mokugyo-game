@@ -57,6 +57,9 @@ test("three indoor dogs use A to open that dog's existing care; companion and sa
       const position = read(window, `homeDogs.find(d=>d.dogId==='${id}')`);
       window.eval("for(let i=0;i<40;i++) advanceHomeDogs(.05); drawHomeDogs()");
       assert.deepEqual(read(window, `homeDogs.filter(d=>d.dogId==='${id}').map(d=>[d.x,d.y])`), [[position.x, position.y]], "nearby dog waits for A");
+      // Another roaming dog can approach during the simulated two seconds.
+      // Re-approach the intended dog before testing its A interaction.
+      walkTo(window, `!nearbyPlayerHomeEvent('interior',point.x,point.y) && nearbyHomeDog(point.x,point.y)?.dogId === '${id}'`);
       window.document.querySelector("#action").click();
       assert.equal(window.document.querySelector("#dogCare").classList.contains("open"), true);
       assert.equal(window.eval("dogCareSelectedId"), id);

@@ -104,7 +104,7 @@ test("a delayed tick cannot leave fishing stuck in wait after the bite window", 
 });
 
 test("A uses the actual bite deadline even when the timer has not refreshed the phase", () => {
-  for (const [phase, offset, succeeds] of [["wait", 0, true], ["wait", 1050, true], ["wait", 1051, false], ["bite", 1051, false], ["wait", -1, false]]) {
+  for (const [phase, offset, succeeds] of [["wait", 0, true], ["wait", 1500, true], ["wait", 1501, false], ["bite", 1501, false], ["wait", -1, false]]) {
     const app = boot(), { window } = app;
     try {
       prepareCast(window);
