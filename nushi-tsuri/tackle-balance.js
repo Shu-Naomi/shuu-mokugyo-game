@@ -164,6 +164,12 @@
       liveMinnow: .6, worm: .4, river: .2, paste: .18, corn: .08,
     } },
   };
+  Object.assign(species,{
+    streamNushi:{band:"large",baits:{river:1.6,worm:1.1,liveMinnow:1.4,grasshopper:1.2,star:5}},
+    coastNushi:{band:"large",baits:{shrimp:1.2,smallShrimp:1.2,shell:2.2,crab:2,liveMinnow:1.1,star:5}},
+    caveNushi:{band:"large",baits:{worm:1.8,liveMinnow:1.5,smallShrimp:.8,star:5.5}},
+    starNushi:{band:"large",baits:{worm:.4,corn:1.8,paste:1.8,star:8}},
+  });
   const baitDefaults = {
     worm: 1, river: .08, paste: .08, corn: .08,
     shrimp: .08, liveMinnow: .08, grasshopper: .08,

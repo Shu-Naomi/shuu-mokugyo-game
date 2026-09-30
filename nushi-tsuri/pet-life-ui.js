@@ -25,7 +25,7 @@
       return `<header class="pet-heading"><div><small>${mode==="aquarium"?"MY LITTLE AQUARIUM":"ASUAL'S PET HOUSE"}</small><h2 id="petLifeTitle">${mode==="aquarium"?"持ち歩き飼育水槽":"アスアルのペットショップ"}</h2></div><span class="pet-money">${s.money.toLocaleString("ja-JP")}円</span>${btn("close","閉じる")}</header>`;
     }
     function shop(){
-      const p=s.petLife,known=ctx.catalog.filter(f=>f.id!=="nushi"&&s.caught?.[f.id]>0),locked=ctx.catalog.filter(f=>f.id!=="nushi").length-known.length;
+      const p=s.petLife,known=ctx.catalog.filter(f=>f.id!=="nushi"&&!f.legendary&&s.caught?.[f.id]>0),locked=ctx.catalog.filter(f=>f.id!=="nushi"&&!f.legendary).length-known.length;
       const nextPrice=P.TANK_PRICES[p.unlockedTanks];
       return `<div class="pet-shop-host"><canvas width="96" height="128" data-rival-art="asual" role="img" aria-label="店主アスアル"></canvas><div><b>水車の家のペットショップ</b><p>魚との出会い、お世話用品、ワンコと魚のコンテスト。</p><small>飼育魚 ${p.fish.length}/${p.unlockedTanks*P.TANK_CAPACITY}匹 ・ 水槽 ${p.unlockedTanks}/6槽 ・ 魚のエサ ${p.food}食</small></div><canvas width="128" height="96" data-rival-art="cloud" role="img" aria-label="クラウド"></canvas></div>
         <nav class="pet-tabs" aria-label="ペットショップの売り場">${[["fish","魚の生体"],["supplies","お世話用品・水槽"],["buyback","魚の買い取り"],["contests","コンテスト受付"]].map(([id,label])=>`<button data-pet-tab="${id}" aria-pressed="${tab===id}">${label}</button>`).join("")}${btn("aquarium","飼育水槽を見る")}</nav>

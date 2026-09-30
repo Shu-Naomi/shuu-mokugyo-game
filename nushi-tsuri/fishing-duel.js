@@ -13,10 +13,11 @@
   const strengths={bamboo:1,youngBamboo:1.25,clearStream:1.9,starGazer:2.8,moroko:2.3,shoreReed:3.3,tideMaster:4.8,lureRod:2.6};
   const fishStrength={moroko:.7,funa:1,ayu:1.1,yamame:1.3,aji:.9,kasago:1.2,mebaru:1.1,
     shirogisu:.9,bass:2,nijimasu:2.1,namazu:2.3,unagi:1.9,bora:2.1,koi:2.9,
-    kurodai:2.8,suzuki:3.3,hirame:3,ainame:2.3,madai:3.2,nushi:4.4};
+    kurodai:2.8,suzuki:3.3,hirame:3,ainame:2.3,madai:3.2,nushi:4.4,streamNushi:3.2,coastNushi:3.8,caveNushi:4.4,starNushi:6};
+  const minStrength={nushi:3.5,streamNushi:2.4,coastNushi:3,caveNushi:3.4,starNushi:4};
   const spoon={moroko:.2,funa:.35,koi:.45,ayu:.35,yamame:2.3,nijimasu:2.5,bass:4.8,
     namazu:1.5,unagi:.55,aji:1.8,mebaru:1.6,kasago:1.4,suzuki:3.1,hirame:2.2,
-    kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18};
+    kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -77,10 +78,10 @@
       b.retrieval=before-(running?.0016*ratio:0);
     }
     // Starter gear is never sufficient for the nushi, even at the best timing.
-    if(b.f.id==="nushi"&&equipment.strength<3.5)b.retrieval=Math.min(.6,b.retrieval);
+    if(!b.practice&&equipment.strength<(minStrength[b.f.id]||0))b.retrieval=Math.min(.6,b.retrieval);
     b.retrieval=clamp(b.retrieval,0,1);b.retrievalDelta=b.retrieval-before;
     b.ten=clamp(b.ten,3,b.practice?88:110);b.lineSlack=!running&&!b.reeling;
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
-  return Object.freeze({modes,roles,strengths,fishStrength,spoon,normalize,grantRod,duplicate,rod,step});
+  return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,step});
 });
