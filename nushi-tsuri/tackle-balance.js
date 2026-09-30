@@ -164,11 +164,21 @@
       liveMinnow: .6, worm: .4, river: .2, paste: .18, corn: .08,
     } },
   };
+  Object.assign(species,{
+    streamNushi:{band:"large",baits:{river:1.6,worm:1.1,liveMinnow:1.4,grasshopper:1.2,star:5}},
+    coastNushi:{band:"large",baits:{shrimp:1.2,smallShrimp:1.2,shell:2.2,crab:2,liveMinnow:1.1,star:5}},
+    caveNushi:{band:"large",baits:{worm:1.8,liveMinnow:1.5,smallShrimp:.8,star:5.5}},
+    starNushi:{band:"large",baits:{worm:.4,corn:1.8,paste:1.8,star:8}},
+  });
   const baitDefaults = {
     worm: 1, river: .08, paste: .08, corn: .08,
     shrimp: .08, liveMinnow: .08, grasshopper: .08,
     smallShrimp: .08, shell: .08, crab: .08,
   };
+  // Regional bosses use the same explicit fallback bait multipliers as the
+  // rest of the catalogue, with their preferred foods overriding defaults.
+  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi"])
+    species[id].baits={...baitDefaults,...species[id].baits};
   function allowed(baitId, hookId) { return baitId !== "nushiSecret" || hookId === "large"; }
   function weight(fishId, baitId, hookId = "medium") {
     if (!hooks[hookId] || !allowed(baitId, hookId)) return 0;

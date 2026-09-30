@@ -17,6 +17,8 @@
     bora:[1.07,.73,.02], mebaru:[.86,.63,.04],
     shirogisu:[1.36,.42,.025], ainame:[.69,.35,.06],
     madai:[.89,.68,.035],
+    streamNushi:[.71,.78,-.01], coastNushi:[.62,.54,.055],
+    caveNushi:[.46,.36,.07], starNushi:[.38,.26,.10],
   });
   const gait=id=>{
     const [speed,bob,depth]=gaits[id]||gaits.moroko;

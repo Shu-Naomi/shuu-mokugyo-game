@@ -1782,6 +1782,9 @@
         position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
         image-rendering: pixelated; pointer-events: none;
       }
+      .map.region-arrival,
+      .map.region-arrival > #player,
+      .map.region-arrival > #dog { transition: none !important; }
       .map.v54-map #mountainPixels { display: none; }
       .map.v54-map.mountain > :not(#player):not(#dog):not(#mountainPixels) { display: none !important; }
       .map.v54-map.mountain #worldPixels { display: none !important; }
@@ -4909,6 +4912,10 @@
         width: clamp(165px, 26vw, 310px);
         aspect-ratio: 48 / 35;
       }
+      .battle-fish.fish-streamNushi { width: clamp(155px, 25vw, 290px); aspect-ratio: 2 / 1; }
+      .battle-fish.fish-coastNushi { width: clamp(170px, 28vw, 330px); aspect-ratio: 2 / 1; }
+      .battle-fish.fish-caveNushi { width: clamp(180px, 30vw, 355px); aspect-ratio: 2 / 1; }
+      .battle-fish.fish-starNushi { width: clamp(205px, 34vw, 410px); aspect-ratio: 2 / 1; }
       .battle-fish.burst {
         filter:
           hue-rotate(var(--fish-hue, 0deg))
@@ -6446,7 +6453,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v201</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v202</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7161,13 +7168,15 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=200-1"></script>
-    <script src="aquarium-life.js?v=198-1"></script>
-    <script src="pet-life-ui.js?v=200-1"></script>
-    <script src="tackle-balance.js?v=194-1"></script>
-    <script src="fishing-duel.js?v=200-1"></script>
+    <script src="pet-life.js?v=202-1"></script>
+    <script src="aquarium-life.js?v=202-1"></script>
+    <script src="pet-life-ui.js?v=202-1"></script>
+    <script src="tackle-balance.js?v=202-1"></script>
+    <script src="fishing-duel.js?v=202-1"></script>
     <script src="coast-voyage.js?v=201-1"></script>
-    <script src="mountain-region.js?v=201-1"></script>
+    <script src="mountain-region.js?v=202-1"></script>
+    <script src="regional-nushi.js?v=202-1"></script>
+    <script src="nushi-atlas.js?v=202-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7340,8 +7349,10 @@
           { id: "shirogisu", name: "シロギス", price: 300, resistance: 84, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "ainame", name: "アイナメ", price: 570, resistance: 119, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "madai", name: "マダイ", price: 1200, resistance: 156, w: 0, icon: "🐠", shadowRow: 3 },
+          ...ShuRegional.fish,
         ],
         fishEncyclopediaData = {
+          ...ShuRegional.encyclopedia,
           moroko: {
             number: 1,
             scientific: "Gnathopogon caerulescens",
@@ -9832,6 +9843,19 @@
           maxHundredths:lengths[index][1]*100-1,
         }));
       }
+
+      for(const [id,definition] of Object.entries(ShuRegional.bosses)){
+        fishAssets[id]=fishMouthAssets[id]=fishTurnAssets[id]=definition.asset;
+        fishMouthProfiles[id]={...fishMouthProfiles.nushi,x:.4,y:.12};
+        fishHookPoseOverrides[id]={mouth:[{xScale:1,yOffset:0},{xScale:1,yOffset:.035},{xScale:1,yOffset:.085}],
+          turn:[{xScale:1,yOffset:0},{xScale:.725,yOffset:.06},{xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}]};
+        const rate={streamNushi:1.2,coastNushi:.95,caveNushi:.8,starNushi:1.1}[id];
+        fishMotionProfiles[id]={...fishMotionProfiles.nushi,beat:.4*rate,stretch:0,squeeze:0};
+        fightProfiles[id]={intro:`${definition.name}の力を、丈夫な竿で受け止めよう。`,
+          moods:fightProfiles.nushi.moods.map(m=>({...m,speedX:(m.speedX||0)*rate,speedY:(m.speedY||0)*(id==="caveNushi"?1.25:1),
+            hold:m.hold?.replaceAll("ヌシ",definition.name).replaceAll("湖","水辺"),loose:m.loose?.replaceAll("ヌシ",definition.name)}))};
+        fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:definition.lengths[i][0]*100,maxHundredths:definition.lengths[i][1]*100-1}));
+      }
       const SURFACE_CAST_MOTION_MS = ShuCast.DURATION;
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
@@ -11141,7 +11165,8 @@
         FISH_LIFE_SLICE_COUNT = 7,
         FISH_LIFE_SLICE_OVERLAP = 1.35;
       // Eight swimming cells, five headings and three jaw poses, in reading order.
-      const fishGridAtlasAssets = new Set([fishAssets.shirogisu, fishAssets.ainame, fishAssets.madai]);
+      const fishGridAtlasAssets = new Set([fishAssets.shirogisu, fishAssets.ainame, fishAssets.madai,...Object.values(ShuRegional.bosses).map(f=>f.asset)]);
+      for(const id of Object.keys(ShuRegional.bosses))fishLifeProfiles[id]={...fishLifeProfiles.nushi,bend:0,pulse:0};
       // Authored cell origins are measured at the head, not the moving tail.
       // Register the frames at draw time so a tail beat cannot shake the head
       // or move the hook. No bitmap is stretched or cut into body segments.
@@ -11350,7 +11375,7 @@
           return;
         }
         clearStandaloneFishFrame(element);
-        const key = `${spriteAsset}|${spriteCells}|${spriteFrame}`;
+        const key = `${spriteAsset}|${spriteCells}|${spriteFrame}|${fishId}`;
         canvas.dataset.atlasKey = key;
         const fallbackSize = fishFrameFallbackSizes[fishId] || [320, 160];
         const grid = fishGridAtlasAssets.has(spriteAsset);
@@ -11374,6 +11399,11 @@
         const image = fishAtlasImage(spriteAsset);
         const paint = () => {
           if (canvas.dataset.atlasKey !== key || !image.naturalWidth) return;
+          if(ShuNushiAtlas.bounds[fishId]){
+            canvas.width=480;canvas.height=240;const context=canvas.getContext("2d");context.clearRect(0,0,480,240);
+            ShuNushiAtlas.draw(context,image,fishId,spriteCells,spriteFrame);
+            canvas.style.backgroundImage="none";canvas.style.display="block";return;
+          }
           const cellWidth = Math.max(1, Math.round(image.naturalWidth / columns));
           const cellHeight = Math.max(1, Math.round(image.naturalHeight / rows));
           canvas.width = cellWidth;
@@ -12317,12 +12347,13 @@
         if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      ShuRegional.normalize(s);
       const petCatalog = fish.map(f=>{
         const tiers=fishSizeProfiles[f.id],normal=fishSizeTierById(f.id,"normal"),small=fishSizeTierById(f.id,"small");
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
-        return {id:f.id,name:f.name,price:f.id==="nushi"?0:Math.max(300,Math.round(f.price*3/50)*50),
+        return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -12473,7 +12504,7 @@
         : s.maxHp;
       // Old saves stay in the village. A missing boat or invalid sea location
       // restores a safe dock without changing inventory or fishing records.
-      s.mapRegion = ["village","coast","stream"].includes(s.mapRegion) ? s.mapRegion : "village";
+      s.mapRegion = ["village","coast"].includes(s.mapRegion) || ShuMountain.isRegion(s.mapRegion) ? s.mapRegion : "village";
       s.boatActive = s.mapRegion === "coast" && s.boatActive === true;
       if (s.mapRegion === "coast" && !s.equipment.vehicle) {
         s.mapRegion = "village";
@@ -13843,7 +13874,7 @@
         return Math.hypot(s.x - x, s.y - y) < r;
       }
       function activeLandingDock() {
-        if (s.mapRegion === "stream") return null;
+        if (ShuMountain.isRegion(s.mapRegion)) return null;
         if (s.mapRegion === "village") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
           ? { id:"harbor",...ShuCoast.docks.harbor } : null;
         return Object.entries(ShuCoast.docks)
@@ -13900,7 +13931,7 @@
         showRescueToast(s.boatActive?"水面へ向いてAで釣れる。桟橋ではAで降りられる。":"水辺へ向いてAで釣ろう。桟橋ではAで乗船できる。");
         return true;
       }
-      function travelMountain(entering) {
+      function travelMountain(entering, destination=null) {
         if (entering && s.tournament) {
           showRescueToast("大会が終わったら、北の渓流へ出かけよう。");
           return false;
@@ -13909,21 +13940,30 @@
         clearInterval(playerWalkInterval); playerWalkInterval=0;
         playerWalking=false; dogWalking=false; playerAnimFrame=0;
         $("#player").classList.remove("walking"); $("#dog").classList.remove("walking");
-        s.mapRegion=entering?"stream":"village"; s.boatActive=false;
-        Object.assign(s,entering?ShuMountain.entry:ShuMountain.villageReturn);
+        const target=destination || {region:entering?"stream":"village",...(entering?ShuMountain.entry:ShuMountain.villageReturn)};
+        s.mapRegion=target.region;s.boatActive=false;
+        Object.assign(s,{x:target.x,y:target.y,direction:target.direction});
         dogWorldPosition=null;
-        log(entering?"北の山道を登り、星見渓流へやってきた。":"山道を下り、村の北口へ戻った。");
-        hideIdleStatus(); hideFieldMenu(); render(); save(); return true;
+        log(s.mapRegion==="village"?"山道を下り、村の北口へ戻った。":`山道を進み、${ShuMountain.regionData(s.mapRegion).name}へやってきた。`);
+        const mapElement=$("#map");
+        mapElement.classList.add("region-arrival");
+        hideIdleStatus(); hideFieldMenu(); render();
+        // Commit the new scene coordinates together, before restoring the
+        // normal short walking transitions.
+        mapElement.getBoundingClientRect();
+        mapElement.classList.remove("region-arrival");
+        save(); return true;
       }
       function mountainAction() {
-        if(ShuMountain.atReturnGate(s.x,s.y))return travelMountain(false);
+        const exit=ShuMountain.exitAt(s.x,s.y,s.mapRegion);
+        if(exit)return travelMountain(exit.region!=="village",exit);
         const spot=nearbyFishingSpot();
         if(spot){cast(spot);return true;}
-        const landmark=ShuMountain.landmarkAt(s.x,s.y);
+        const landmark=ShuMountain.landmarkAt(s.x,s.y,s.mapRegion);
         if(landmark)log(landmark.message);
-        else showRescueToast(ShuMountain.onBridge(s.x,s.y)
+        else showRescueToast(ShuMountain.onBridge(s.x,s.y,s.mapRegion)
           ?"木の橋だ。釣りは川岸へ降りてから。"
-          :"川・池・沼の水辺へ向いてAで釣る。南の山道で村へ戻れる。");
+          :`${ShuMountain.regionData(s.mapRegion).name}。水辺へ向いてAで釣る。南の入口から戻れる。`);
         return true;
       }
       function worldToMapX(x) {
@@ -14308,10 +14348,11 @@
             ShuCoast.paint($("#coastPixels"), env);
             pixelSceneCache.set($("#coastPixels"), env.key);
           }
-        } else if (s.mapRegion === "stream" && !battle) {
-          if (pixelSceneCache.get($("#mountainPixels")) !== env.key) {
-            ShuMountain.paint($("#mountainPixels"),env);
-            pixelSceneCache.set($("#mountainPixels"),env.key);
+        } else if (ShuMountain.isRegion(s.mapRegion) && !battle) {
+          const key=`${s.mapRegion}:${env.key}`;
+          if (pixelSceneCache.get($("#mountainPixels")) !== key) {
+            ShuMountain.paint($("#mountainPixels"),env,s.mapRegion);
+            pixelSceneCache.set($("#mountainPixels"),key);
           }
         } else if (!playerHomeIsActive() && !battle)
           paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
@@ -14449,7 +14490,7 @@
           return false;
         if (s.mapRegion === "coast") return s.boatActive
           ? ShuCoast.water(x,y) : ShuCoast.shore(x,y);
-        if (s.mapRegion === "stream") return ShuMountain.walkable(x,y);
+        if (ShuMountain.isRegion(s.mapRegion)) return ShuMountain.walkable(x,y,s.mapRegion);
         if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
@@ -14480,7 +14521,7 @@
               return { x: candidateX, y: candidateY };
           }
         }
-        return s.mapRegion === "stream" ? {x:ShuMountain.entry.x,y:ShuMountain.entry.y} : { x: 123, y: 92 };
+        return ShuMountain.isRegion(s.mapRegion) ? {x:ShuMountain.regionData(s.mapRegion).entry.x,y:ShuMountain.regionData(s.mapRegion).entry.y} : { x: 123, y: 92 };
       }
       function fishingSpotById(id, fallback = true) {
         return fishingSpots.find((spot) => spot.id === id) ||
@@ -14490,8 +14531,8 @@
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
           return null;
         if (s.mapRegion === "coast") return ShuCoast.water(x,y) ? "sea" : null;
-        if (s.mapRegion === "stream") {
-          const type=ShuMountain.waterType(x,y);
+        if (ShuMountain.isRegion(s.mapRegion)) {
+          const type=ShuMountain.waterType(x,y,s.mapRegion);
           return type ? type==="stream"?"river":"lake" : null;
         }
         if (isPracticePondWater(x, y)) return null;
@@ -16704,7 +16745,7 @@
       ) {
         if(!isWalkableWorld(playerX,playerY))return null;
         if(s.mapRegion==="coast")return ShuCoast.fishingWater(playerX,playerY,direction);
-        if(s.mapRegion==="stream")return ShuMountain.fishingWater(playerX,playerY,direction);
+        if(ShuMountain.isRegion(s.mapRegion))return ShuMountain.fishingWater(playerX,playerY,direction,s.mapRegion);
         // A bridge remains a crossing, never an invisible fishing hotspot.
         if (!isWalkableWorld(playerX, playerY) || isOnRiverBridgeSpan(playerX, playerY)) return null;
         const facing = {
@@ -16740,7 +16781,7 @@
         const water = fishingWaterNearPlayer();
         if (!water) return null;
         const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null;
-        const mountainType=s.mapRegion==="stream"?water.type:null;
+        const mountainType=ShuMountain.isRegion(s.mapRegion)?water.type:null;
         return {
           ...fishingSpotById(mountainType?`mountain-${mountainType}-shallow`:coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
           waterZone: water.zone,
@@ -17000,10 +17041,14 @@
       }
       function render() {
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
-        const coast=s.mapRegion==="coast", mountain=s.mapRegion==="stream";
+        const coast=s.mapRegion==="coast", mountain=ShuMountain.isRegion(s.mapRegion);
         const mapElement=$("#map");
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
+        if(mountain) {
+          const canvas=$("#mountainPixels"), label=ShuMountain.regionData(s.mapRegion).name;
+          if(canvas.getAttribute("aria-label")!==label)canvas.setAttribute("aria-label",label);
+        }
         mapElement.classList.toggle("boating",coast&&s.boatActive);
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
@@ -17102,11 +17147,11 @@
                 ? "焚き火だ。Aで30分休んで体力を30回復。"
                 : "小島の水辺へ向いてAで釣る。桟橋へ戻れば乗船できる。"
           : mountain
-            ? ShuMountain.atReturnGate(s.x,s.y) ? "南の山道だ。Aか下へ進むと村の北口へ戻る。"
-              : ShuMountain.onBridge(s.x,s.y) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
+            ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "南の入口だ。Aか下へ進むと来た道へ戻る。"
+              : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
               : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。距離で深さを狙い分けよう。`
-              : ShuMountain.landmarkAt(s.x,s.y) ? `${ShuMountain.landmarkAt(s.x,s.y).name}だ。Aで辺りを調べる。`
-              : "星見渓流。川・池・沼の水辺で釣り、南の山道で村へ戻る。"
+              : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
+              : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、南の入口から戻れる。`
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
           : !s.equipment.vehicle && activeLandingDock()
             ? "舟屋でタライかボートを購入・装備すると、この桟橋から小島へ行ける。"
@@ -17249,8 +17294,11 @@
           return enterPlayerHomeFromMap();
         if(s.mapRegion==="village" && d==="up" && s.y<=6 && ShuMountain.atVillageGate(s.x,s.y))
           return travelMountain(true);
-        if(s.mapRegion==="stream" && d==="down" && s.y>=129 && ShuMountain.atReturnGate(s.x,s.y))
-          return travelMountain(false);
+        if(ShuMountain.isRegion(s.mapRegion) && d==="down" && s.y>=129 && ShuMountain.atReturnGate(s.x,s.y,s.mapRegion))
+          return travelMountain(false,ShuMountain.exitAt(s.x,s.y,s.mapRegion));
+        if(ShuMountain.isRegion(s.mapRegion) && d==="up" && s.y<=6){
+          const exit=ShuMountain.exitAt(s.x,s.y,s.mapRegion);if(exit)return travelMountain(true,exit);
+        }
         hideIdleStatus();
         hideFieldMenu();
         if (s.mapRegion!=="coast") wakeDog();
@@ -17636,7 +17684,7 @@
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
         if (s.mapRegion==="coast") return coastAction();
-        if (s.mapRegion==="stream") return mountainAction();
+        if (ShuMountain.isRegion(s.mapRegion)) return mountainAction();
         if (ShuMountain.atVillageGate(s.x,s.y)) return travelMountain(true);
         if (activeLandingDock()) return boardBoat();
         const tournamentNpc = nearbyTournamentNpc();
@@ -17762,8 +17810,8 @@
         const hookId = battle?.hook || s.selectedHook;
         if (battle?.method!=="lure" && baitId === "nushiSecret")
           return spot.id === "lake-deep" && ShuTackle.allowed(baitId, hookId)
-            ? fish.find((candidate) => candidate.id === "nushi") : null;
-        const weighted = Object.entries(spot.weights).map(([id, base]) => {
+            ? fish.find((candidate) => candidate.id === (ShuRegional.candidates(s,spot.id,period).starNushi?"starNushi":"nushi")) : null;
+        const weighted = Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
           let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
           if (id === "suzuki") {
             weight *= {
@@ -17939,7 +17987,7 @@
           ? "mid"
           : "shallow";
         const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null);
-        const mountainType=spot.mountainType || (s.mapRegion==="stream"?ShuMountain.waterType(spot.waterX,spot.waterY):null);
+        const mountainType=spot.mountainType || (ShuMountain.isRegion(s.mapRegion)?ShuMountain.waterType(spot.waterX,spot.waterY,s.mapRegion):null);
         const profile = fishingSpotById(mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
@@ -19051,7 +19099,7 @@
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
         const coastType = battle?.coastType || /^coast-(sand|reef)-/.exec(spot.id)?.[1] || null;
-        const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh)-/.exec(spot.id)?.[1] || null;
+        const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh|highPond|highMarsh|underground)-/.exec(spot.id)?.[1] || null;
         close();
         battle = {
           phase: "cast",
@@ -19211,7 +19259,7 @@
         preloadFishAnimation(f.id);
         battle.x = f.id === "hirame"
           ? clampBattle(55 + distance * .05, 55, 60)
-          : clampBattle(54 + distance * .4, 54, f.id === "nushi" ? 90 : 94);
+          : clampBattle(54 + distance * .4, 54, ({streamNushi:80,coastNushi:76,caveNushi:74,starNushi:67})[f.id] || (f.id === "nushi" ? 90 : 94));
         battle.y = f.id === "hirame"
           ? 76
           : clampBattle(44 + distance * .18, 44, f.id === "nushi" ? 66 : 72);
@@ -19395,7 +19443,7 @@
             return byId("sand-rush");
           }
         }
-        if (fishId === "nushi" && battle.nushiStageChanged) {
+        if (ShuRegional.legendary(fishId) && battle.nushiStageChanged) {
           battle.nushiStageChanged = false;
           return byId(battle.nushiStage === 2 ? "sweep" : "rush");
         }
@@ -19495,7 +19543,7 @@
           bora: 0.38,
           nushi: 0.34,
         }[battle.f.id] || 0;
-        if (battle.f.id === "nushi") {
+        if (ShuRegional.legendary(battle.f.id)) {
           chance = [0, 0.24, 0.42][(battle.nushiStage || 1) - 1];
         }
         if (isRainbowLeap && mood.id === "surface-leap") chance = 1;
@@ -19512,9 +19560,9 @@
           startX: battle.x,
           startY: battle.y,
           returnY: clampBattle(
-            battle.y + (battle.f.id === "nushi" ? 8 : 5),
+            battle.y + (ShuRegional.legendary(battle.f.id) ? 8 : 5),
             34,
-            battle.f.id === "nushi" ? 70 : 78,
+            ShuRegional.legendary(battle.f.id) ? 70 : 78,
           ),
           facing: battle.facing || 1,
           handled: false,
@@ -19523,7 +19571,7 @@
         };
         battle.nextGillWashTick =
           battle.swimTick +
-          (battle.f.id === "nushi" ? 78 : isRainbowLeap ? 84 : 96);
+          (ShuRegional.legendary(battle.f.id) ? 78 : isRainbowLeap ? 84 : 96);
         battle.turning = null;
         battle.turnDepth = 0;
         battle.turnSpriteFrame = 0;
@@ -19543,7 +19591,7 @@
         stopFightReelSound();
         setGillWashAudioFocus(true);
         playGameAudioSample("fishGillWash", { restart: true });
-        vibrate(battle.f.id === "nushi" ? [90, 35, 130] : [65, 30, 90]);
+        vibrate(ShuRegional.legendary(battle.f.id) ? [90, 35, 130] : [65, 30, 90]);
         return true;
       }
       function finishGillWash() {
@@ -19564,7 +19612,7 @@
           $("#phaseLabel").textContent = " ◎ 疲労";
         } else {
           battle.retrieval = clampBattle(
-            battle.retrieval - (battle.f.id === "nushi" ? 0.07 : 0.04),
+            battle.retrieval - (ShuRegional.legendary(battle.f.id) ? 0.07 : 0.04),
             0,
             1,
           );
@@ -19612,7 +19660,7 @@
         battle.x = clampBattle(
           battle.x,
           5,
-          battle.f.id === "nushi" ? 90 : 96,
+          ShuRegional.legendary(battle.f.id) ? 90 : 96,
         );
         battle.y = clampBattle(battle.y, 3, 82);
         battle.facing = direction;
@@ -19621,21 +19669,21 @@
         const bodyMotion = animateFishBody(battle.mood, battle.speed, 1.32);
         battle.renderAngle += bodyMotion.roll * 0.45;
         battle.renderScale =
-          (battle.f.id === "nushi" ? 1.16 : 1.1) *
+          (ShuRegional.legendary(battle.f.id) ? 1.16 : 1.1) *
           (1 + Math.sin(event.tick * 1.7) * 0.025);
         if (event.tick === 3 || event.tick === 9)
           showSurfaceSplash(
             battle.x,
             12,
-            battle.f.id === "nushi" ? 1.25 : 1,
+            ShuRegional.legendary(battle.f.id) ? 1.25 : 1,
           );
         if (battle.reeling) {
           event.wrongTicks++;
           battle.ten +=
-            (battle.f.id === "nushi" ? 9.4 : 7.8) /
+            (ShuRegional.legendary(battle.f.id) ? 9.4 : 7.8) /
             control * mealTensionMultiplier();
           battle.retrieval = clampBattle(
-            battle.retrieval - (battle.f.id === "nushi" ? 0.009 : 0.006),
+            battle.retrieval - (ShuRegional.legendary(battle.f.id) ? 0.009 : 0.006),
             0,
             1,
           );
@@ -19648,7 +19696,7 @@
           event.handled = event.safeTicks >= 6;
           battle.ten = Math.max(
             3,
-            battle.ten - (battle.f.id === "nushi" ? 5.2 : 4.4) * control,
+            battle.ten - (ShuRegional.legendary(battle.f.id) ? 5.2 : 4.4) * control,
           );
           $("#battleMsg").textContent = isRainbowLeap
             ? "糸を送ってニジマスの跳躍をいなす！"
@@ -19662,7 +19710,7 @@
         const moods = fightProfiles[battle.f.id].moods;
         const previous = battle.mood?.id;
         const boosted = battle.calmBoost > 0;
-        const nushiStage = battle.f.id === "nushi"
+        const nushiStage = ShuRegional.legendary(battle.f.id)
           ? battle.nushiStage || nushiFightStage()
           : 1;
         const weighted = moods.map((mood) => {
@@ -19704,7 +19752,7 @@
           : Math.random() < 0.5 ? -1 : 1;
         setFishCourse(selected);
         if(battle.fightMode==="nushi"&&!selected.calm)battle.targetVx=Math.abs(battle.targetVx);
-        const stageLabel = battle.f.id === "nushi"
+        const stageLabel = ShuRegional.legendary(battle.f.id)
           ? ` 第${["壱", "弐", "参"][nushiStage - 1]}相・`
           : " ";
         $("#phaseLabel").textContent = `${stageLabel}${selected.icon} ${selected.name}`;
@@ -19719,6 +19767,10 @@
           return { minX: 55, maxX: 60, minY: 74, maxY: 78 };
         }
         const base = {
+          streamNushi: { minX: 43, maxX: 80, minY: 30, maxY: 72 },
+          coastNushi: { minX: 43, maxX: 76, minY: 35, maxY: 72 },
+          caveNushi: { minX: 44, maxX: 74, minY: 36, maxY: 70 },
+          starNushi: { minX: 44, maxX: 67, minY: 36, maxY: 68 },
           nushi: { minX: 44, maxX: 90, minY: 36, maxY: 72 },
           koi: { minX: 43, maxX: 94, minY: 46, maxY: 82 },
           namazu: { minX: 42, maxX: 96, minY: 42, maxY: 83 },
@@ -19729,7 +19781,7 @@
         const progress = battle.retrieval || 0;
         return {
           minX: base.minX + (7 - base.minX) * progress,
-          maxX: base.maxX + ((battle.f.id === "nushi" ? 88 : 92) - base.maxX) * progress,
+          maxX: base.maxX + ((ShuRegional.legendary(battle.f.id) ? Math.min(base.maxX,88) : 92) - base.maxX) * progress,
           minY: base.minY + (8 - base.minY) * progress,
           maxY: base.maxY + (74 - base.maxY) * progress,
         };
@@ -19762,7 +19814,7 @@
         return true;
       }
       function updateNushiFightStage() {
-        if (!battle || battle.f.id !== "nushi") return false;
+        if (!battle || !ShuRegional.legendary(battle.f.id)) return false;
         const nextStage = nushiFightStage();
         const currentStage = battle.nushiStage || 1;
         if (nextStage <= currentStage) return false;
@@ -19807,6 +19859,7 @@
           battle.retrieval = before - slip;
         }
         battle.retrieval = clampBattle(battle.retrieval, 0, 1);
+        if(!battle.practice&&equipment.strength<(ShuFishing.minStrength[battle.f.id]||0))battle.retrieval=Math.min(.6,battle.retrieval);
         battle.retrievalDelta = battle.retrieval - before;
         if (
           battle.f.id === "hirame" &&
@@ -20002,7 +20055,7 @@
             setFishCourse(mood);
           }
         } else if (mood.motion === "thrash") {
-          const switchEvery = battle.f.id === "nushi" ? 8 : 7;
+          const switchEvery = ShuRegional.legendary(battle.f.id) ? 8 : 7;
           if (battle.moodTick % switchEvery === 0) {
             battle.motionX *= -1;
             battle.motionY = battle.moodTick % (switchEvery * 2) === 0 ? 1 : -1;
@@ -20197,7 +20250,7 @@
           nushi: 122,
         }[battle.f.id];
         if (battle.tailKick) {
-          const wakeCount = mood?.danger ? 4 : battle.f.id === "nushi" ? 3 : 2;
+          const wakeCount = mood?.danger ? 4 : ShuRegional.legendary(battle.f.id) ? 3 : 2;
           const tailX = fishX - battle.facing * tailDistance;
           for (let i = 0; i < wakeCount; i++) {
             waterFxState.wakes.push({
@@ -20509,7 +20562,7 @@
           clearStandaloneFishFrame(hangingFish);
           hangingFish.classList.add("canvas-atlas");
           hangingFish.style.backgroundImage = "none";
-          drawFishAtlasFrame(hangingFish, asset, cells, frame);
+          drawFishAtlasFrame(hangingFish, asset, cells, frame, f.id);
         } else {
           clearStandaloneFishFrame(hangingFish);
           hangingFish.classList.remove("canvas-atlas");
@@ -20562,19 +20615,19 @@
         hideIdleStatus();
         const card = $("#catchCard");
         const hangingFish = $("#catchFish");
-        const specialCatch = f.id === "nushi"
+        const specialCatch = ShuRegional.legendary(f.id)
           ? "nushi"
           : specimen?.tierId === "giant"
             ? "giant"
             : "";
         $("#catchBadge").textContent = badgeOverride ||
-          (f.id === "nushi" ? "🌟 LEGEND!" : "🎣 GET!");
+          (ShuRegional.legendary(f.id) ? "🌟 LEGEND!" : "🎣 GET!");
         $("#catchTitle").textContent = f.name;
         const detail = first
           ? `初釣果！ ＋${f.price}円`
           : `${s.caught[f.id]}匹目 ・ ＋${f.price}円`;
         $("#catchDetail").textContent = detailOverride ||
-          (f.id === "nushi" ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail);
+          (ShuRegional.legendary(f.id) ? `${detail} ・ ${dogName()}もしっぽぶんぶん！` : detail);
         hangingFish.className = `catch-fish fish-${f.id}`;
         const specimenScale = fishVisualScale(specimen);
         hangingFish.style.setProperty(
@@ -20590,7 +20643,7 @@
           "special-nushi",
         );
         void card.offsetWidth;
-        card.classList.toggle("legend", f.id === "nushi");
+        card.classList.toggle("legend", ShuRegional.legendary(f.id));
         card.classList.toggle("special-giant", specialCatch === "giant");
         card.classList.toggle("special-nushi", specialCatch === "nushi");
         card.dataset.specialCatch = specialCatch || "normal";
@@ -21129,7 +21182,7 @@
             battle.x - battle.surfaceX,
             battle.y - battle.surfaceY,
           );
-          const landingRadius = battle.f.id === "nushi" ? 11 : 7;
+          const landingRadius = ShuRegional.legendary(battle.f.id) ? 11 : 7;
           if (battle.retrieval >= 0.999 && arrival <= landingRadius)
             return surfaceCatch();
           if (battle.ten >= 100) return lose("糸が切れた……");
@@ -21210,7 +21263,7 @@
         const scene = $("#fishScene");
         scene.classList.add("fighting", "hook-reveal");
         scene.classList.toggle("duel-nushi",battle.fightMode==="nushi");
-        scene.classList.toggle("nushi-fight", f.id === "nushi");
+        scene.classList.toggle("nushi-fight", ShuRegional.legendary(f.id));
         const fishElement = $("#battleFish");
         fishElement.className = `battle-fish fish-${f.id}`;
         const fightCanvas = fishElement.querySelector(".fish-frame-canvas");
@@ -21246,7 +21299,7 @@
         clearTimeout(hookRevealTimer);
         hookRevealTimer = setTimeout(
           finishHookReveal,
-          f.id === "nushi" ? 1090 : 820,
+          ShuRegional.legendary(f.id) ? 1090 : 820,
         );
         fishElement.style.opacity = "1";
         $("#phaseLabel").textContent = battle.practice
@@ -21503,6 +21556,7 @@
         s.caught[f.id] = (s.caught[f.id] || 0) + 1;
         const salePrice = specimen?.price ?? f.price;
         const fishdexResult = updateFishdexCatchRecord(s, f, specimen, battle);
+        ShuRegional.recordCatch(s,f.id,battle);
         const crownDetail = fishdexResult.newCrown === "tiny"
           ? "👑 極小金冠！"
           : fishdexResult.newCrown === "giant"
@@ -21539,7 +21593,7 @@
             (newSizeRecord ? " ・ 最大記録！" : "") +
             (crownDetail ? ` ・ ${crownDetail}` : "") +
             hazardDetail +
-            (f.id === "nushi" ? ` ・ ${dogName()}もしっぽぶんぶん！` : "")
+            (ShuRegional.legendary(f.id) ? ` ・ ${dogName()}もしっぽぶんぶん！` : "")
           : "";
         endBattle();
         showCatchCard(
@@ -21547,7 +21601,7 @@
           first,
           specimenDetail || catchDetail + hazardDetail,
           specimen
-            ? f.id === "nushi"
+            ? ShuRegional.legendary(f.id)
               ? `🌟 ${specimen.tierLabel} LEGEND!`
               : `🎣 ${specimen.tierLabel} GET!`
             : "",
@@ -22183,7 +22237,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=201-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=202-1").catch(() => {});
       renderRecord();
     </script>
   </body>
