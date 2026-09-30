@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v200-fishing-pet-life-200-2";
+const CACHE_NAME = "nushi-tsuri-v201-coast-stream-201-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -18,7 +18,10 @@ const CORE_ASSETS = [
   "./tackle-balance.js?v=194-1",
   "./fishing-duel.js?v=200-1",
   "./fishing-duel.css?v=200-2",
-  "./coast-voyage.js?v=197-1",
+  "./coast-voyage.js?v=201-1",
+  "./mountain-region.js?v=201-1",
+  "./assets/mountain-world-v201.png",
+  "./assets/coast-rowboat-v201.png",
   "./assets/coast-world-v197.webp",
   "./assets/fish-shirogisu-v198.webp",
   "./assets/fish-ainame-v198.webp",
@@ -57,7 +60,7 @@ const CORE_ASSETS = [
   "./weather.js?v=169-1",
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=168-1",
-  "./pixel-scenes.css?v=165-1",
+  "./pixel-scenes.css?v=201-1",
   "./scene-layers.js?v=198-1",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",

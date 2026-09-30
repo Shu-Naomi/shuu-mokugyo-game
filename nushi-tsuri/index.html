@@ -1771,7 +1771,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#boatVisual) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#boatVisual) {
         display: none !important;
       }
       .map.v54-map.coast > :not(#player):not(#dog):not(#coastPixels):not(#boatVisual) { display: none !important; }
@@ -1780,6 +1780,13 @@
       .map.v54-map.coast #coastPixels {
         display: block !important;
         position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
+        image-rendering: pixelated; pointer-events: none;
+      }
+      .map.v54-map #mountainPixels { display: none; }
+      .map.v54-map.mountain > :not(#player):not(#dog):not(#mountainPixels) { display: none !important; }
+      .map.v54-map.mountain #worldPixels { display: none !important; }
+      .map.v54-map.mountain #mountainPixels {
+        display: block !important; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
         image-rendering: pixelated; pointer-events: none;
       }
       .map.v54-map #boatVisual { display: none; }
@@ -6409,7 +6416,7 @@
         .tournament-choices button { min-height: 44px; padding: 7px 10px; }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=165-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=201-1" />
     <link rel="stylesheet" href="pet-life.css?v=200-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
@@ -6439,7 +6446,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v200</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v201</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6450,6 +6457,7 @@
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
           <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
+          <canvas id="mountainPixels" width="1536" height="864" role="img" aria-label="星見渓流と木漏れ日の池、葦の沼"></canvas>
           <canvas id="boatVisual" width="192" height="144" aria-hidden="true"></canvas>
           <div class="lake">
             <i class="lake-island island-a"></i>
@@ -6991,9 +6999,9 @@
             <p class="shop-dialogue" id="vehicleShopDialogue">「港の桟橋から小島へ漕ぎ出すなら、相棒になる舟を選びな」</p>
             <div class="grid shop-goods">
               <button data-buy-vehicle="tarai"><span>タライ</span><small>600円</small></button>
-              <button data-buy-vehicle="canoe"><span>カヌー</span><small>3500円</small></button>
+              <button data-buy-vehicle="canoe"><span>ボート</span><small>3500円</small></button>
             </div>
-            <small class="vehicle-shop-note">装備したら港の桟橋でA。タライは1体力／3マス、カヌーは2体力／5マス。小島で休憩できる。</small>
+            <small class="vehicle-shop-note">装備したら港の桟橋でA。タライは1体力／3マス、ボートは2体力／5マス。小島で休憩できる。</small>
           </div>
         </div>
         <div class="modal inventory-modal" id="inventory">
@@ -7158,7 +7166,8 @@
     <script src="pet-life-ui.js?v=200-1"></script>
     <script src="tackle-balance.js?v=194-1"></script>
     <script src="fishing-duel.js?v=200-1"></script>
-    <script src="coast-voyage.js?v=197-1"></script>
+    <script src="coast-voyage.js?v=201-1"></script>
+    <script src="mountain-region.js?v=201-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7661,6 +7670,7 @@
             weights: { ainame: .32, kasago: .2, mebaru: .16, kurodai: .18, madai: .14 } },
           { id: "coast-reef-deep", zone: "sea", depth: "deep", name: "岩礁の小島・沖", role: "沖のマダイと岩陰のアイナメ",
             weights: { madai: .34, ainame: .23, kurodai: .21, kasago: .14, suzuki: .08 } },
+          ...ShuMountain.spots,
         ],
         baitData = {
           worm: {
@@ -8235,7 +8245,7 @@
         },
         vehicleData = {
           tarai: { name: "タライ", icon: "🛁", price: 600 },
-          canoe: { name: "カヌー", icon: "🛶", price: 3500 },
+          canoe: { name: "ボート", icon: "🛶", price: 3500 },
         },
         fishAssets = {
           moroko: "assets/fish-moroko-v125.png",
@@ -12463,7 +12473,7 @@
         : s.maxHp;
       // Old saves stay in the village. A missing boat or invalid sea location
       // restores a safe dock without changing inventory or fishing records.
-      s.mapRegion = s.mapRegion === "coast" ? "coast" : "village";
+      s.mapRegion = ["village","coast","stream"].includes(s.mapRegion) ? s.mapRegion : "village";
       s.boatActive = s.mapRegion === "coast" && s.boatActive === true;
       if (s.mapRegion === "coast" && !s.equipment.vehicle) {
         s.mapRegion = "village";
@@ -13833,7 +13843,8 @@
         return Math.hypot(s.x - x, s.y - y) < r;
       }
       function activeLandingDock() {
-        if (s.mapRegion !== "coast") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
+        if (s.mapRegion === "stream") return null;
+        if (s.mapRegion === "village") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
           ? { id:"harbor",...ShuCoast.docks.harbor } : null;
         return Object.entries(ShuCoast.docks)
           .filter(([id])=>id!=="harbor" || s.boatActive)
@@ -13842,7 +13853,7 @@
       }
       function boardBoat() {
         if (!s.equipment.vehicle || !s.ownedVehicles.includes(s.equipment.vehicle)) {
-          showRescueToast("船を出すには、星見港の舟屋でタライかカヌーを買って装備しよう。");
+          showRescueToast("船を出すには、星見港の舟屋でタライかボートを買って装備しよう。");
           return false;
         }
         if (s.tournament) { showRescueToast("大会が終わったら舟を出そう。"); return false; }
@@ -13887,6 +13898,32 @@
         const spot=nearbyFishingSpot();
         if(spot){cast(spot);return true;}
         showRescueToast(s.boatActive?"水面へ向いてAで釣れる。桟橋ではAで降りられる。":"水辺へ向いてAで釣ろう。桟橋ではAで乗船できる。");
+        return true;
+      }
+      function travelMountain(entering) {
+        if (entering && s.tournament) {
+          showRescueToast("大会が終わったら、北の渓流へ出かけよう。");
+          return false;
+        }
+        clearTimeout(walkTimer); clearTimeout(dogWalkTimer);
+        clearInterval(playerWalkInterval); playerWalkInterval=0;
+        playerWalking=false; dogWalking=false; playerAnimFrame=0;
+        $("#player").classList.remove("walking"); $("#dog").classList.remove("walking");
+        s.mapRegion=entering?"stream":"village"; s.boatActive=false;
+        Object.assign(s,entering?ShuMountain.entry:ShuMountain.villageReturn);
+        dogWorldPosition=null;
+        log(entering?"北の山道を登り、星見渓流へやってきた。":"山道を下り、村の北口へ戻った。");
+        hideIdleStatus(); hideFieldMenu(); render(); save(); return true;
+      }
+      function mountainAction() {
+        if(ShuMountain.atReturnGate(s.x,s.y))return travelMountain(false);
+        const spot=nearbyFishingSpot();
+        if(spot){cast(spot);return true;}
+        const landmark=ShuMountain.landmarkAt(s.x,s.y);
+        if(landmark)log(landmark.message);
+        else showRescueToast(ShuMountain.onBridge(s.x,s.y)
+          ?"木の橋だ。釣りは川岸へ降りてから。"
+          :"川・池・沼の水辺へ向いてAで釣る。南の山道で村へ戻れる。");
         return true;
       }
       function worldToMapX(x) {
@@ -14057,8 +14094,8 @@
           {
             id: "harbor-shop", x: 140, y: 123, radius: 7,
             interaction: {left:134,right:145,top:119,bottom:126},
-            hint: "港の舟具屋だ。Aでタライやカヌーを見る。",
-            message: "港の舟具屋。小島への航海に使えるタライとカヌーが並んでいる。",
+            hint: "港の舟具屋だ。Aでタライやボートを見る。",
+            message: "港の舟具屋。小島への航海に使えるタライとボートが並んでいる。",
           },
         ];
       const PLAYER_HOME_MAP_ENTRY = {
@@ -14271,6 +14308,11 @@
             ShuCoast.paint($("#coastPixels"), env);
             pixelSceneCache.set($("#coastPixels"), env.key);
           }
+        } else if (s.mapRegion === "stream" && !battle) {
+          if (pixelSceneCache.get($("#mountainPixels")) !== env.key) {
+            ShuMountain.paint($("#mountainPixels"),env);
+            pixelSceneCache.set($("#mountainPixels"),env.key);
+          }
         } else if (!playerHomeIsActive() && !battle)
           paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
         if ($("#store").classList.contains("open"))
@@ -14407,6 +14449,7 @@
           return false;
         if (s.mapRegion === "coast") return s.boatActive
           ? ShuCoast.water(x,y) : ShuCoast.shore(x,y);
+        if (s.mapRegion === "stream") return ShuMountain.walkable(x,y);
         if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
@@ -14437,7 +14480,7 @@
               return { x: candidateX, y: candidateY };
           }
         }
-        return { x: 123, y: 92 };
+        return s.mapRegion === "stream" ? {x:ShuMountain.entry.x,y:ShuMountain.entry.y} : { x: 123, y: 92 };
       }
       function fishingSpotById(id, fallback = true) {
         return fishingSpots.find((spot) => spot.id === id) ||
@@ -14447,6 +14490,10 @@
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
           return null;
         if (s.mapRegion === "coast") return ShuCoast.water(x,y) ? "sea" : null;
+        if (s.mapRegion === "stream") {
+          const type=ShuMountain.waterType(x,y);
+          return type ? type==="stream"?"river":"lake" : null;
+        }
         if (isPracticePondWater(x, y)) return null;
         if (isLakeWater(x, y)) return "lake";
         if (isRiverWater(x, y)) return "river";
@@ -14462,7 +14509,7 @@
           isWalkableWorld(x, y);
       }
       function nearbyWorldLandmark(x = s.x, y = s.y, direction = s.direction) {
-        if (s.mapRegion === "coast") return null;
+        if (s.mapRegion !== "village") return null;
         return worldLandmarks.find((landmark) =>
           landmark.questBoard ? isAtQuestBoardFront(x, y, direction) :
           landmark.interaction ? inWorldRect(x,y,landmark.interaction) && isWalkableWorld(x,y) :
@@ -14547,7 +14594,7 @@
       function renderForagePoints() {
         const layer = $("#forageLayer");
         if (!layer) return;
-        if (s.mapRegion === "coast") { layer.innerHTML = ""; renderedForageMarkup = ""; return; }
+        if (s.mapRegion !== "village") { layer.innerHTML = ""; renderedForageMarkup = ""; return; }
         const cycle = ensureForageCycle();
         const dogFound = new Set(cycle.dogFound);
         const markup = Object.keys(cycle.active).map((pointId) => {
@@ -14566,7 +14613,7 @@
         }
       }
       function nearbyForagePoint(x = s.x, y = s.y, radius = 7.5) {
-        if (s.mapRegion === "coast") return null;
+        if (s.mapRegion !== "village") return null;
         const cycle = ensureForageCycle();
         let nearest = null;
         for (const [pointId, itemId] of Object.entries(cycle.active)) {
@@ -15171,7 +15218,7 @@
           .filter(p=>!(petUi?.active && petUi.mode==="shop" && p.id==="cloud"));
       }
       function nearbyRival() {
-        if (s.mapRegion === "coast" || playerHomeIsActive() || battle) return null;
+        if (s.mapRegion !== "village" || playerHomeIsActive() || battle) return null;
         const facing = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[s.direction] || [0, 1];
         return currentRivalPlacements().map(p => ({ ...p, distance: Math.hypot(p.x - s.x, p.y - s.y) }))
           .filter(p => p.distance <= 6.5 && (p.distance < 1.8 ||
@@ -15181,7 +15228,7 @@
       }
       function renderRivals() {
         const layer = $("#rivalLayer");
-        layer.hidden = s.mapRegion === "coast" || playerHomeIsActive() || Boolean(battle);
+        layer.hidden = s.mapRegion !== "village" || playerHomeIsActive() || Boolean(battle);
         if (layer.hidden) return;
         const placements = currentRivalPlacements(), context = currentTournamentNpcContext();
         const key = placements.map(p => p.id).join(",");
@@ -15340,7 +15387,7 @@
           t.participants.some(npc => npc.id === p.id)) : [];
       }
       function nearbyTournamentNpc() {
-        if (s.mapRegion === "coast" || playerHomeIsActive() || battle) return null;
+        if (s.mapRegion !== "village" || playerHomeIsActive() || battle) return null;
         const facing = { up: [0, -1], down: [0, 1], left: [-1, 0], right: [1, 0] }[s.direction] || [0, 1];
         return currentTournamentNpcPlacements().map(npc => ({ ...npc, distance: Math.hypot(npc.x - s.x, npc.y - s.y) }))
           .filter(npc => npc.distance <= 6.5 && (npc.distance < 1.8 ||
@@ -15363,7 +15410,7 @@
       }
       function renderTournamentNpcs() {
         const layer = $("#tournamentNpcLayer"), context = currentTournamentNpcContext();
-        layer.hidden = s.mapRegion === "coast" || !context || playerHomeIsActive() || Boolean(battle);
+        layer.hidden = s.mapRegion !== "village" || !context || playerHomeIsActive() || Boolean(battle);
         if (layer.hidden) return;
         const placements = currentTournamentNpcPlacements();
         const key = `${context.id}:${placements.map(p => p.id).join(",")}`;
@@ -16634,6 +16681,7 @@
         setSurfaceCastMotionFrame(0, true);
         $("#castZoneName").textContent = battle.practice
           ? "SAM'S TRY POND・水面"
+          : battle.mountainType ? `${ShuMountain.names[battle.mountainType]}・水面`
           : battle.coastType ? `${ShuCoast.docks[battle.coastType].name}・海面` : {
               lake: "星降る湖・湖面",
               river: "民家川・水面",
@@ -16654,6 +16702,9 @@
         playerY = s.y,
         direction = s.direction,
       ) {
+        if(!isWalkableWorld(playerX,playerY))return null;
+        if(s.mapRegion==="coast")return ShuCoast.fishingWater(playerX,playerY,direction);
+        if(s.mapRegion==="stream")return ShuMountain.fishingWater(playerX,playerY,direction);
         // A bridge remains a crossing, never an invisible fishing hotspot.
         if (!isWalkableWorld(playerX, playerY) || isOnRiverBridgeSpan(playerX, playerY)) return null;
         const facing = {
@@ -16689,12 +16740,14 @@
         const water = fishingWaterNearPlayer();
         if (!water) return null;
         const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null;
+        const mountainType=s.mapRegion==="stream"?water.type:null;
         return {
-          ...fishingSpotById(coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
+          ...fishingSpotById(mountainType?`mountain-${mountainType}-shallow`:coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
           waterZone: water.zone,
           waterX: water.x,
           waterY: water.y,
           coastType,
+          mountainType,
         };
       }
       function dogFollowPosition() {
@@ -16947,9 +17000,10 @@
       }
       function render() {
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
-        const coast=s.mapRegion==="coast";
+        const coast=s.mapRegion==="coast", mountain=s.mapRegion==="stream";
         const mapElement=$("#map");
         mapElement.classList.toggle("coast",coast);
+        mapElement.classList.toggle("mountain",mountain);
         mapElement.classList.toggle("boating",coast&&s.boatActive);
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
@@ -17047,8 +17101,15 @@
               : ShuCoast.near(s,ShuCoast.restPoint,10)
                 ? "焚き火だ。Aで30分休んで体力を30回復。"
                 : "小島の水辺へ向いてAで釣る。桟橋へ戻れば乗船できる。"
+          : mountain
+            ? ShuMountain.atReturnGate(s.x,s.y) ? "南の山道だ。Aか下へ進むと村の北口へ戻る。"
+              : ShuMountain.onBridge(s.x,s.y) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
+              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。距離で深さを狙い分けよう。`
+              : ShuMountain.landmarkAt(s.x,s.y) ? `${ShuMountain.landmarkAt(s.x,s.y).name}だ。Aで辺りを調べる。`
+              : "星見渓流。川・池・沼の水辺で釣り、南の山道で村へ戻る。"
+          : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
           : !s.equipment.vehicle && activeLandingDock()
-            ? "舟屋でタライかカヌーを購入・装備すると、この桟橋から小島へ行ける。"
+            ? "舟屋でタライかボートを購入・装備すると、この桟橋から小島へ行ける。"
           : s.equipment.vehicle && activeLandingDock()
             ? `${vehicleData[s.equipment.vehicle].name}の進水地点。Aで沿岸へ出発。`
           : rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)
@@ -17184,8 +17245,12 @@
         if (playerHomeIsActive()) return movePlayerHome(d);
         if (battle || rescueInProgress || forageDiscoveryInProgress ||
             document.querySelector(".modal.open")) return;
-        if (s.mapRegion!=="coast" && d === "left" && isAtPlayerHomeMapEntrance())
+        if (s.mapRegion==="village" && d === "left" && isAtPlayerHomeMapEntrance())
           return enterPlayerHomeFromMap();
+        if(s.mapRegion==="village" && d==="up" && s.y<=6 && ShuMountain.atVillageGate(s.x,s.y))
+          return travelMountain(true);
+        if(s.mapRegion==="stream" && d==="down" && s.y>=129 && ShuMountain.atReturnGate(s.x,s.y))
+          return travelMountain(false);
         hideIdleStatus();
         hideFieldMenu();
         if (s.mapRegion!=="coast") wakeDog();
@@ -17238,10 +17303,10 @@
           }
         }
         render();
-        if (moved && s.mapRegion!=="coast" && enterPlayerHomeFromMap()) return;
+        if (moved && s.mapRegion==="village" && enterPlayerHomeFromMap()) return;
         $("#player").classList.add("walking");
         $("#dog").classList.add("walking");
-        if (moved && s.mapRegion!=="coast") maybeDogDiscoverForagePoint();
+        if (moved && s.mapRegion==="village") maybeDogDiscoverForagePoint();
         clearTimeout(walkTimer);
         clearTimeout(dogWalkTimer);
         walkTimer = setTimeout(() => {
@@ -17571,6 +17636,8 @@
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
         if (s.mapRegion==="coast") return coastAction();
+        if (s.mapRegion==="stream") return mountainAction();
+        if (ShuMountain.atVillageGate(s.x,s.y)) return travelMountain(true);
         if (activeLandingDock()) return boardBoat();
         const tournamentNpc = nearbyTournamentNpc();
         const rival = nearbyRival();
@@ -17872,7 +17939,8 @@
           ? "mid"
           : "shallow";
         const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null);
-        const profile = fishingSpotById(coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
+        const mountainType=spot.mountainType || (s.mapRegion==="stream"?ShuMountain.waterType(spot.waterX,spot.waterY):null);
+        const profile = fishingSpotById(mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
           reeling: false,
@@ -17888,6 +17956,7 @@
             ? coastType ? `coast-${coastType}` : seaCastLocaleAtWorld(s.x,s.y)
             : zone,
           coastType,
+          mountainType,
         };
         setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
@@ -18982,6 +19051,7 @@
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
         const coastType = battle?.coastType || /^coast-(sand|reef)-/.exec(spot.id)?.[1] || null;
+        const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh)-/.exec(spot.id)?.[1] || null;
         close();
         battle = {
           phase: "cast",
@@ -19002,6 +19072,7 @@
           playerY,
           castLocale,
           coastType,
+          mountainType,
           bait: practice ? practiceBait : s.selectedBait,
           hook: practice ? "medium" : s.selectedHook,
           baitCommitted: false,
@@ -19124,7 +19195,7 @@
               battle.minimumDepth || "shallow",
             );
         battle.depth = depth;
-        battle.spot = battle.coastType
+        battle.spot = battle.mountainType ? `mountain-${battle.mountainType}-${depth}` : battle.coastType
           ? `coast-${battle.coastType}-${depth}`
           : `${battle.waterZone || "lake"}-${depth}`;
         const spot = fishingSpotById(battle.spot);
@@ -19181,8 +19252,8 @@
           return false;
         }
         if (!battle.practice && battle.method!=="lure" && baitId === "nushiSecret" &&
-            (battle.waterZone !== "lake" || targetDepth !== "deep")) {
-          $("#battleMsg").textContent = battle.waterZone !== "lake"
+            (battle.mountainType || battle.waterZone !== "lake" || targetDepth !== "deep")) {
+          $("#battleMsg").textContent = battle.mountainType || battle.waterZone !== "lake"
             ? "星湖の秘餌は、星降る湖のヌシだけに使う特別なエサだ。"
             : "星湖の秘餌はまだ投げない。メーターを遠くまで伸ばし、ヌシの深みを狙おう。";
           $("#phaseLabel").textContent = " 秘餌は最深部専用";
@@ -22112,7 +22183,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=200-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=201-1").catch(() => {});
       renderRecord();
     </script>
   </body>

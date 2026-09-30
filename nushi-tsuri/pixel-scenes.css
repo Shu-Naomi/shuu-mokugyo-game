@@ -1,7 +1,7 @@
 /* Detailed master pixels stay at native resolution. Art masks and motion
    overlays share one rectangle; live fish, players and dogs remain separate. */
 .map.v54-map { background-image: none; }
-.map.v54-map > #worldPixels { display: block !important; }
+.map.v54-map:not(.coast):not(.mountain) > #worldPixels { display: block !important; }
 .pixel-scene { display: block; position: absolute; inset: 0; width: 100%; height: 100%; image-rendering: pixelated; pointer-events: none; }
 #worldPixels { z-index: 0; }
 .scenery-motion, .scenery-foreground { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; image-rendering: pixelated; }

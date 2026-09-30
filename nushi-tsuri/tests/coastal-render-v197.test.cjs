@@ -48,7 +48,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
   class DelayedImage {
     constructor(){images.push(this);this.complete=false;this.naturalWidth=0;}
     set src(src){this.url=src;}
-    finish(){this.complete=true;this.naturalWidth=2048;this.onload();}
+    finish(){this.complete=true;this.naturalWidth=1254;this.onload();}
   }
   const context={Image:DelayedImage};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
@@ -58,11 +58,11 @@ test('late image loads repaint the latest heading, avatar and environment withou
   coast.paintBoat(canvas,'canoe','up',0,'boy');
   coast.paintBoat(canvas,'canoe','left',1,'girl',true);
   coast.paint(canvas,{period:'day'});coast.paint(canvas,{period:'night'});
-  images.find(i=>i.url.includes('coast-canoe-v197')).finish();
-  assert.equal(calls.at(-1)[1],1476,'load must not restore the obsolete upward view');
-  assert.equal(calls.at(-1)[2],384,'load must keep the selected girl');
-  const stroke=images.find(i=>i.url.includes('coast-canoe-stroke'));
-  stroke.finish();assert.equal(calls.at(-1)[0],stroke,'late stroke frame replaces resting pose');
+  const atlas=images.find(i=>i.url.includes('coast-rowboat-v201'));
+  atlas.finish();
+  assert.equal(calls.at(-1)[1],940.5,'load must not restore the obsolete upward view');
+  assert.equal(calls.at(-1)[2],914,'load must keep the selected girl stroke');
+  assert.equal(calls.at(-1)[0],atlas,'latest pose is taken from the two-oar atlas');
   images.find(i=>i.url.includes('coast-world')).finish();
   assert.equal(tints.at(-1),'rgba(9,20,48,.49)','late map load keeps the latest night palette');
 });
