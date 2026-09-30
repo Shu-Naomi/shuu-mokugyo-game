@@ -175,6 +175,10 @@
     shrimp: .08, liveMinnow: .08, grasshopper: .08,
     smallShrimp: .08, shell: .08, crab: .08,
   };
+  // Regional bosses use the same explicit fallback bait multipliers as the
+  // rest of the catalogue, with their preferred foods overriding defaults.
+  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi"])
+    species[id].baits={...baitDefaults,...species[id].baits};
   function allowed(baitId, hookId) { return baitId !== "nushiSecret" || hookId === "large"; }
   function weight(fishId, baitId, hookId = "medium") {
     if (!hooks[hookId] || !allowed(baitId, hookId)) return 0;

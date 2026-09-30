@@ -66,8 +66,8 @@ test('all 24 species use real, nonempty five-angle art with matching offline ass
    }
    const canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
    const cell=fish.grid?8+f.frame:f.frame;
-   const [sx,sy,sw,sh]=f.rect||[(fish.grid?cell%4:cell)*width,fish.grid?Math.floor(cell/4)*height:0,width,height];
-   ctx.drawImage(img,sx,sy,sw,sh,0,0,width,height);
+   const [sx,sy,sourceWidth,sourceHeight]=f.rect||[(fish.grid?cell%4:cell)*width,fish.grid?Math.floor(cell/4)*height:0,width,height];
+   ctx.drawImage(img,sx,sy,sourceWidth,sourceHeight,0,0,width,height);
    const data=ctx.getImageData(0,0,width,height).data;let left=width,right=-1,pixels=0;
    for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(data[(y*width+x)*4+3]>100){left=Math.min(left,x);right=Math.max(right,x);pixels++;}
    assert.ok(right-left>=width*.1,fish.id+' face retains visible thickness');
