@@ -80,7 +80,7 @@
   },
   "tournament-masters": {
     "title": "名手への挑戦・火花の水面",
-    "src": "assets/audio/music-v204/tournament-masters.mp3",
+    "src": "assets/audio/music-v205/tournament-masters.mp3",
     "duration": 50.526315789473685,
     "bpm": 152
   },

@@ -3,7 +3,9 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const tracks=require('../music-tracks.js');
 const root=path.resolve(__dirname,'..'),folder=path.join(root,'assets/audio/music-v204');
-const audit=JSON.parse(fs.readFileSync(path.join(folder,'arrangement.json'),'utf8'));
+const previous=JSON.parse(fs.readFileSync(path.join(folder,'arrangement.json'),'utf8'));
+const heavy=JSON.parse(fs.readFileSync(path.join(root,'assets/audio/music-v205/arrangement.json'),'utf8'));
+const audit={...previous,tracks:{...previous.tracks,...heavy.tracks}};
 const sha=bytes=>crypto.createHash('sha256').update(bytes).digest('hex');
 
 // Read the saved performance independently of the Python arranger. Channel 0
@@ -45,11 +47,11 @@ test('all sixteen sampled arrangements preserve the original performed melody, t
   assert.equal(audit.version,204);assert.equal(audit.sampleRate,44100);
   assert.deepEqual(Object.keys(audit.tracks).sort(),Object.keys(tracks).sort());
   for(const [id,record] of Object.entries(audit.tracks)){
-    assert.equal(tracks[id].src,`assets/audio/music-v204/${id}.mp3`);
+    assert.equal(tracks[id].src,record.audioSrc||`assets/audio/music-v204/${id}.mp3`);
     assert.equal(tracks[id].duration,record.duration,id+' exact original score duration');
     assert.equal(tracks[id].bpm,record.bpm);
     assert.equal(sha(fs.readFileSync(path.join(root,record.source))),record.sourceSha256,id+' original composer remains unchanged');
-    const data=fs.readFileSync(path.join(folder,id+'.mid'));
+    const data=fs.readFileSync(path.join(root,tracks[id].src.replace(/\.mp3$/,'.mid')));
     assert.equal(sha(data),record.midiSha256);
     const played=performance(data),beat=60/record.bpm,tolerance=beat/played.ppq*1.5;
     assert.equal(played.tempo,Math.round(60000000/record.bpm),id+' original tempo');
@@ -73,9 +75,16 @@ test('masters retains the sparse bridge and complete return, with acoustic drums
   assert.ok(bridge.length>0);
   assert.ok(bridge.every(n=>Math.abs(n.start/beat-Math.round(n.start/beat))<1e-8),'the original bridge omits alternate half-beat cells');
   const programs=Object.values(record.instruments).map(n=>n.program);
-  for(const program of [61,30,33,48,45])assert.ok(programs.includes(program));
+  for(const program of [29,30,34,48,44])assert.ok(programs.includes(program));
   assert.ok(record.instruments['9'],'sampled percussion part');
   assert.ok(record.pcmPeak<.82&&record.pcmRms>.07);
+  assert.equal(heavy.version,205);
+  assert.deepEqual(Object.keys(heavy.tracks),['tournament-masters']);
+  assert.deepEqual(record.originalMelody,previous.tracks['tournament-masters'].originalMelody,'the heavier version keeps every original note');
+  for(const [id,old] of Object.entries(previous.tracks))if(id!=='tournament-masters'){
+    assert.equal(tracks[id].src,`assets/audio/music-v204/${id}.mp3`);
+    assert.equal(sha(fs.readFileSync(path.join(root,tracks[id].src))),old.audioSha256,'other fifteen recordings remain exact');
+  }
 });
 
 test('sample bank license and provenance ship with the recordings; the game downloads only rendered music',()=>{
@@ -83,6 +92,6 @@ test('sample bank license and provenance ship with the recordings; the game down
   assert.match(license,/GeneralUser GS v2\.0\.3/);
   assert.equal(audit.soundfont.sha256,'9575028c7a1f589f5770fccc8cff2734566af40cd26ed836944e9a5152688cfe');
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  assert.doesNotMatch(sw,/\.sf2|music-v204\/[^"\n]+\.mid/);
+  assert.doesNotMatch(sw,/\.sf2|music-v20[45]\/[^"\n]+\.mid/);
   assert.doesNotMatch(sw,/music-v(?:170|183|186)\/(?!lake-birds|harbor-birds)[^"\n]+\.mp3/);
 });
