@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v204-real-instruments-204-1";
+const CACHE_NAME = "nushi-tsuri-v205-masters-heavy-rock-205-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -46,7 +46,7 @@ const CORE_ASSETS = [
   "./assets/rival-anglers-v179.png",
   "./assets/rival-dogs-v179.png",
   "./assets/tournament-villagers-v175.png",
-  "./music-tracks.js?v=204-1",
+  "./music-tracks.js?v=205-1",
   "./soundscape.js?v=186-1",
   "./assets/audio/music-v204/map-spring.mp3",
   "./assets/audio/music-v204/map-summer.mp3",
@@ -61,7 +61,7 @@ const CORE_ASSETS = [
   "./assets/audio/music-v204/fish-market.mp3",
   "./assets/audio/music-v204/boats.mp3",
   "./assets/audio/music-v204/tournament-lake.mp3",
-  "./assets/audio/music-v204/tournament-masters.mp3",
+  "./assets/audio/music-v205/tournament-masters.mp3",
   "./assets/audio/music-v204/contest-pet.mp3",
   "./assets/audio/music-v204/contest-fish.mp3",
 
