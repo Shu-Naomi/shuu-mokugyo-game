@@ -11,9 +11,10 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['sw.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
+        for(const file of ['sw.js','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
-          'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png']){
+          'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
+          ...Object.values(require('../music-tracks.js')).map(track=>track.src)]){
           const asset=await fetch(publicUrl+file+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
           assert.equal(asset.status,200,file);
           assert.equal(digest(Buffer.from(await asset.arrayBuffer())),digest(fs.readFileSync(path.join(root,file))),file+' deployed bytes');
@@ -86,7 +87,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v203/);
+    assert.match(await page.locator('.hud').innerText(),/v204/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -140,7 +141,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v203/);
+    assert.match(await page.locator('.hud').innerText(),/v204/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -180,6 +181,61 @@ async function touchSmoke(url){
     console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'844x390',rotatedPhone:true,taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
   }finally{await browser.close();}
 }
+async function audioSmoke(url,mobile){
+  const browser=await chromium.launch({headless:true}),errors=[];
+  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
+    isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
+  await context.addInitScript(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),
+    {key:saveKey,state:{...seed(),money:10000,hp:100,soundEnabled:false}});
+  const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
+  try{
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    await page.locator('#start')[mobile?'tap':'click']();
+    await page.locator('#soundToggle')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>backgroundMusic.stats().playing==='map-spring');
+    assert.equal(await page.evaluate(()=>gameAudio.context.state),'running','gesture unlocks real Web Audio');
+    await page.evaluate(()=>openTournament());
+    await page.locator('[data-tournament-select="lakeMasters"]')[mobile?'tap':'click']();
+    await page.locator('[data-tournament-action="start"]')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>backgroundMusic.stats().playing==='tournament-masters');
+    const checked=await page.evaluate(async mobile=>{
+      const decode=new OfflineAudioContext(2,44100,44100),records=[];
+      for(const [id,track] of Object.entries(ShuMusicTracks)){
+        if(mobile&&id!=='tournament-masters')continue;
+        const response=await fetch(track.src);if(!response.ok)throw Error(id+' HTTP '+response.status);
+        const buffer=await decode.decodeAudioData(await response.arrayBuffer());
+        let sum=0,peak=0;const channel=buffer.getChannelData(0);
+        for(const value of channel){sum+=value*value;peak=Math.max(peak,Math.abs(value));}
+        records.push({id,duration:buffer.duration,expected:track.duration,rms:Math.sqrt(sum/channel.length),peak});
+        if(id==='tournament-masters'){
+          // Render a real AudioBufferSource repeat starting 100 ms before the
+          // score boundary. Both sides must contain music, with no codec gap.
+          const offline=new OfflineAudioContext(2,13230,44100),source=offline.createBufferSource();
+          source.buffer=buffer;source.loop=true;source.loopStart=0;source.loopEnd=Math.min(buffer.duration,track.duration);
+          source.connect(offline.destination);source.start(0,source.loopEnd-.1);
+          const rendered=await offline.startRendering(),a=rendered.getChannelData(0);
+          const rms=(start,end)=>Math.sqrt(a.slice(start,end).reduce((s,v)=>s+v*v,0)/(end-start));
+          records.at(-1).loop={before:rms(3528,4410),after:rms(4410,5292),jump:Math.abs(a[4410]-a[4409])};
+        }
+      }
+      return records;
+    },mobile);
+    assert.equal(checked.length,mobile?1:16);
+    for(const record of checked){
+      assert.ok(Math.abs(record.duration-record.expected)<.002,record.id+' exact decoded loop duration');
+      assert.ok(record.peak<.98&&record.peak>.12,record.id+' decoded without clipping');
+      assert.ok(record.rms>.035,record.id+' audible sampled score');
+      if(record.loop){assert.ok(record.loop.before>.015&&record.loop.after>.015,'music continues across the real loop');assert.ok(record.loop.jump<.09,'bounded loop transition');}
+    }
+    await page.locator('#soundToggle')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>backgroundMusic.stats().playing===null);
+    await page.locator('#soundToggle')[mobile?'tap':'click']();
+    await page.waitForFunction(()=>backgroundMusic.stats().playing==='tournament-masters');
+    assert.equal(await page.evaluate(()=>backgroundMusic.stats().lastError),null);
+    assert.deepEqual(errors,[]);
+    console.log('AUDIO_SMOKE_PASS '+JSON.stringify({mobile,tracks:checked.length,mastersPlayback:true,muteResume:true,loop:checked.find(r=>r.loop)?.loop,errors}));
+  }finally{await browser.close();}
+}
 (async()=>{
   let server;
   try{
@@ -202,6 +258,6 @@ async function touchSmoke(url){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
-    await smoke(url);await touchSmoke(url);
+    await smoke(url);await touchSmoke(url);await audioSmoke(url,false);await audioSmoke(url,true);
   }finally{if(server)await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

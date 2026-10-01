@@ -119,5 +119,5 @@ test('all sixteen different original scores and two wildlife loops decode fully 
     const decoded=execFileSync('ffmpeg',['-v','error','-i',path.join(root,src),'-f','f32le','-ac','1','-ar','8000','pipe:1'],{maxBuffer:2*1024*1024});
     assert.ok(Math.abs(decoded.length/4/8000-48)<.1);assert.ok(sw.includes('./'+src));
   }
-  for(const module of ['music-tracks','soundscape'])assert.ok(sw.includes(`./${module}.js?v=${"186-1"}`));
+  for(const [module,version] of [['music-tracks','204-1'],['soundscape','186-1']])assert.ok(sw.includes(`./${module}.js?v=${version}`));
 });
