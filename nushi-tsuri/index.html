@@ -6453,7 +6453,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v202</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v203</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7174,7 +7174,7 @@
     <script src="tackle-balance.js?v=202-1"></script>
     <script src="fishing-duel.js?v=202-1"></script>
     <script src="coast-voyage.js?v=201-1"></script>
-    <script src="mountain-region.js?v=202-1"></script>
+    <script src="mountain-region.js?v=203-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
@@ -17322,12 +17322,16 @@
         let moved = false;
         let n = s.mapRegion==="coast" && s.boatActive
           ? ShuCoast.stepFor(s.equipment.vehicle) : 4;
-        ({
-          left: () => (s.x -= n),
-          right: () => (s.x += n),
-          up: () => (s.y -= n),
-          down: () => (s.y += n),
-        })[d]();
+        if (ShuMountain.isRegion(s.mapRegion)) {
+          Object.assign(s, ShuMountain.moveTarget(previousX, previousY, d, n, s.mapRegion));
+        } else {
+          ({
+            left: () => (s.x -= n),
+            right: () => (s.x += n),
+            up: () => (s.y -= n),
+            down: () => (s.y += n),
+          })[d]();
+        }
         if (s.mapRegion==="coast" && s.boatActive &&
             s.hp < ShuCoast.costFor(s.equipment.vehicle)) {
           s.x=previousX;s.y=previousY;
@@ -17339,7 +17343,7 @@
         ) {
           s.x = previousX;
           s.y = previousY;
-        } else {
+        } else if (s.x !== previousX || s.y !== previousY) {
           // The dog follows the exact tile the player just proved walkable.
           // It therefore rounds piers and buildings through the same gaps,
           // instead of tweening diagonally between two unrelated safe points.
@@ -22237,7 +22241,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=202-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=203-1").catch(() => {});
       renderRecord();
     </script>
   </body>

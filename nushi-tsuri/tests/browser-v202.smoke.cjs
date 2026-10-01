@@ -86,7 +86,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v202/);
+    assert.match(await page.locator('.hud').innerText(),/v203/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -122,6 +122,64 @@ async function smoke(url){
     console.log('BROWSER_SMOKE_PASS '+JSON.stringify({url,walkingSteps:steps,maps:[...hashes.keys()],saveReloads:2,errors}));
   }finally{await browser.close();}
 }
+// These fixed routes follow the dirt painted into the stream background.
+// They deliberately do not ask the collision model to find its own way around
+// a bad road, as the broader map-connectivity check above does.
+async function touchSmoke(url){
+  const browser=await chromium.launch({headless:true}),errors=[];
+  let taps=0;
+  async function openStream(extra={}){
+    const context=await browser.newContext({viewport:{width:390,height:844},
+      deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'ja-JP'});
+    const state={...seed(),hp:100,mapRegion:'stream',...M.entry,soundEnabled:false,...extra};
+    await context.addInitScript(({key,state})=>{
+      if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
+    },{key:saveKey,state});
+    const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
+    await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
+    await page.locator('#game.active').waitFor({state:'visible'});
+    assert.match(await page.locator('.hud').innerText(),/v203/);
+    const position=()=>page.locator('#player').evaluate(el=>({
+      x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
+      y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
+    }));
+    async function leg(direction,count,x,y){
+      for(let i=0;i<count;i++){await page.locator(`[data-move="${direction}"]`).tap();taps++;}
+      const p=await position();assert.ok(Math.abs(p.x-x)<.001&&Math.abs(p.y-y)<.001,
+        'touch '+direction+' expected '+x+','+y+' but got '+JSON.stringify(p));
+    }
+    return {context,page,position,leg};
+  }
+  try{
+    const road=await openStream(),{page,leg}=road;
+    await leg('up',9,152,92);await leg('left',1,148,92);await leg('up',5,148,72);
+    await leg('left',17,80,72);await leg('up',10,80,32);await leg('left',1,76,32);
+    await leg('up',5,76,12);await leg('left',1,72,12);await leg('up',1,72,8);
+    await page.locator('#action').tap();
+    assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),'峠の池');
+    const savedPosition=await road.position();await page.reload({waitUntil:'domcontentloaded'});
+    await page.locator('#start').tap();assert.deepEqual(await road.position(),savedPosition);
+    assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),'峠の池');
+    await road.context.close();
+
+    const cave=await openStream({x:148,y:72}),c=cave.leg;
+    await c('up',1,148,68);await c('right',6,172,68);await c('up',3,172,56);
+    await c('right',1,176,56);await c('up',2,176,48);await c('right',3,188,48);
+    await c('up',1,188,44);await c('right',3,200,44);await c('up',2,200,36);
+    await c('right',4,216,36);await c('up',2,216,28);await cave.page.locator('#action').tap();
+    assert.equal(await cave.page.locator('#mountainPixels').getAttribute('aria-label'),'岩窟の地下湖');
+    await cave.context.close();
+
+    const rail=await openStream({x:112,y:72}),r=rail.leg;
+    await r('up',1,112,70);await r('up',1,112,70);
+    await r('left',8,80,70);await r('right',17,148,70);
+    await rail.context.close();
+    assert.deepEqual(errors,[],'touchscreen runtime errors');
+    console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'844x390',rotatedPhone:true,taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
+  }finally{await browser.close();}
+}
 (async()=>{
   let server;
   try{
@@ -144,6 +202,6 @@ async function smoke(url){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
-    await smoke(url);
+    await smoke(url);await touchSmoke(url);
   }finally{if(server)await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});
