@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v202-mountain-nushi-202-1";
+const CACHE_NAME = "nushi-tsuri-v203-stream-collision-203-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -19,7 +19,7 @@ const CORE_ASSETS = [
   "./fishing-duel.js?v=202-1",
   "./fishing-duel.css?v=200-2",
   "./coast-voyage.js?v=201-1",
-  "./mountain-region.js?v=202-1",
+  "./mountain-region.js?v=203-1",
   "./regional-nushi.js?v=202-1",
   "./nushi-atlas.js?v=202-1",
   "./assets/mountain-world-v201.png",

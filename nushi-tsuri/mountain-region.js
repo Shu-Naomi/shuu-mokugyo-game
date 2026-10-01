@@ -7,8 +7,8 @@
   const width = 240, height = 135;
   const asset = "assets/mountain-world-v201.png";
   const villageGate = { left:116, right:132, top:2, bottom:10 };
-  const returnGate = { left:140, right:156, top:125, bottom:133 };
-  const entry = { x:148, y:128, direction:"up" };
+  const returnGate = { left:146, right:158, top:125, bottom:133 };
+  const entry = { x:152, y:128, direction:"up" };
   const villageReturn = { x:124, y:8, direction:"down" };
   const bridge = { left:87, right:140, top:69.5, bottom:74.5 };
   // Traced against the finished painting, in the same 240 x 135 world units
@@ -26,25 +26,35 @@
   };
   const trails = [
     // Village road, bridge approach, and the east bank fork.
-    [[148,133],[147,124],[144,115],[145,101],[150,92],[162,80],[152,76],[139,73]],
-    [[139,73],[156,71],[176,65],[180,59],[193,51],[201,46],[215,38],[219,30]],
+    [[150,133],[152,125],[154,119],[154,113],[156,105],[155,100],[152,94],[148,86],[147,77],[147,72],[139,72]],
+    [[139,72],[147,72],[156,68],[164,66],[172,65],[174,58],[177,52],[187,47],[194,44],[202,39],[211,34],[219,30]],
     // West-bank trail, pond shore and northern pass.
-    [[88,72],[84,69],[75,66],[69,63],[76,55],[78,46],[80,36],[84,31],
-      [79,25],[76,18],[71,10],[73,2]],
-    [[69,63],[59,59],[50,56],[42,54],[34,50],[25,47],[21,40],[24,32]],
-    [[24,32],[31,26],[43,24],[59,23],[73,24],[79,25]],
+    [[87,72],[82,70],[79,68],[79,61],[79,55],[80,46],[80,39],[78,33],
+      [75,26],[74,18],[71,10],[73,2]],
+    [[79,69],[73,66],[64,64],[59,61],[56,58],[48,54],[39,53],[31,50],[24,46],[19,41],[20,35],[24,31]],
+    [[24,31],[28,26],[43,24],[59,22],[71,25],[75,26]],
     // The ridge follows the painted switchback, rather than crossing a cliff.
-    [[215,38],[203,34],[192,29],[185,27],[177,19],[166,12],[155,7],[152,2]],
+    [[211,34],[217,29],[212,24],[201,24],[190,24],[181,22],[173,18],[167,12],[158,7],[152,2]],
     // Marsh approach, with both banks reachable on foot.
-    [[160,81],[167,84],[169,91],[172,101],[185,109],[197,117],[208,120],[220,113]],
-    [[176,65],[184,73],[185,77],[198,76],[216,78],[228,84],[230,95],[225,108],[220,113]],
+    [[170,79],[165,86],[167,95],[170,102],[185,109],[198,114],[211,117],[221,111]],
+    [[147,74],[158,76],[170,79],[185,78],[198,76],[216,78],[228,84],[231,96],[225,108],[221,111]],
+    [[156,105],[163,105],[170,102]],
+  ];
+  // Only the ground around a trunk is solid; overhanging foliage does not
+  // turn a neighbouring dirt road into an invisible wall.
+  const treeBases=[
+    {x:143.6,y:127.6,rx:2.1,ry:1.6}, {x:144,y:116,rx:2.2,ry:1.6},
+    {x:137.1,y:95.4,rx:1.8,ry:1.4}, {x:164.5,y:81.5,rx:1.8,ry:1.4},
+    {x:180.7,y:62,rx:1.8,ry:1.4}, {x:55.6,y:56.2,rx:1.9,ry:1.5},
+    {x:40.6,y:55.5,rx:1.8,ry:1.3}, {x:74.1,y:51.7,rx:1.8,ry:1.4},
+    {x:73.3,y:73.6,rx:1.8,ry:1.5},
   ];
   const landmarks = [
     { id:"pass", x:73, y:8, name:"北の峠", message:"尾根を渡る風が、遠くの森の匂いを運んでくる。" },
     { id:"cave", x:219, y:30, name:"岩窟の入口", message:"岩窟の奥から、かすかな水音が聞こえる。" },
   ];
   const regions={
-    stream:{asset,name:"星見渓流",waters,trails,bridges:[bridge],entry,returnGate,landmarks},
+    stream:{asset,name:"星見渓流",waters,trails,trailRadius:4.5,treeBases,bridges:[bridge],entry,returnGate,landmarks},
     mountainPond:{asset:"assets/pass-pond-v202.png",name:"峠の池",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       waters:{highPond:[[89,32],[104,29],[126,29],[145,34],[166,39],[187,48],[199,62],[194,78],[179,90],[157,97],[137,100],[113,98],[91,94],[69,87],[50,76],[44,60],[52,46],[69,39]]},
@@ -99,12 +109,26 @@
   function walkable(x,y,region="stream") {
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<2||x>238||y<2||y>133)return false;
     const data=regionData(region);
+    if(data.treeBases?.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<=1))return false;
     if(onBridge(x,y,region))return true;
     if(waterType(x,y,region))return false;
     if(inRect(x,y,data.returnGate))return true;
-    if(data.trails.some(path=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=4)))return true;
+    if(data.trails.some(path=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadius||4))))return true;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
     return Object.entries(data.waters).some(([id,poly])=>(id!=="stream"||y>=26) && edgeDistance(x,y,poly)<=6);
+  }
+  function moveTarget(x,y,direction="up",stride=4,region="stream") {
+    const delta={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[direction];
+    if(!delta||!Number.isFinite(stride)||stride<=0||!walkable(x,y,region))return {x,y};
+    const [dx,dy]=delta;
+    // A rejected final tile must not cancel the safe approach to a corner.
+    // Sweep every quarter unit, retaining each complete safe one-unit step.
+    for(let moved=0;moved<stride;moved+=1){
+      const amount=Math.min(1,stride-moved);
+      if(![.25,.5,.75,1].every(t=>walkable(x+dx*amount*t,y+dy*amount*t,region)))break;
+      x+=dx*amount;y+=dy*amount;
+    }
+    return {x,y};
   }
   function atVillageGate(x,y) { return inRect(x,y,villageGate); }
   function atReturnGate(x,y,region="stream") { return inRect(x,y,regionData(region).returnGate); }
@@ -158,5 +182,5 @@
     if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
   }
   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
-    landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};
+    landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};
 });
