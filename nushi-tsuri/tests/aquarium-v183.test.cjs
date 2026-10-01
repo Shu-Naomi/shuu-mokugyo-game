@@ -130,7 +130,7 @@ test('silent and reduced-motion feeding still saves care, without late sounds af
 test('four new seasonal loops and pet sounds decode, avoid clipping and ship with matching cache references',()=>{
  const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  for(const season of ['spring','summer','autumn','winter']){
-  const track=Music['map-'+season];assert.ok(track.src.includes('music-v183'));
+  const track=Music['map-'+season];assert.ok(track.src.includes('music-v204'));
   const data=execFileSync('ffmpeg',['-v','error','-i',path.join(root,track.src),'-f','f32le','-ac','1','-ar','8000','pipe:1'],{maxBuffer:4e6});
   const values=new Float32Array(data.buffer,data.byteOffset,data.length/4);let peak=0,sum=0;
   for(const n of values){peak=Math.max(peak,Math.abs(n));sum+=n*n;}
