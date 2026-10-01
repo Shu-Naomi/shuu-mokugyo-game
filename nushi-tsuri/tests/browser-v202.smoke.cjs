@@ -136,7 +136,9 @@ async function touchSmoke(url){
       if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
     },{key:saveKey,state});
     const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
-    await page.goto(url,{waitUntil:'domcontentloaded'});await page.locator('#start').tap();
+    await page.goto(url,{waitUntil:'domcontentloaded'});
+    assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
+    await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
     assert.match(await page.locator('.hud').innerText(),/v203/);
     const position=()=>page.locator('#player').evaluate(el=>({
@@ -175,7 +177,7 @@ async function touchSmoke(url){
     await r('left',8,80,70);await r('right',17,148,70);
     await rail.context.close();
     assert.deepEqual(errors,[],'touchscreen runtime errors');
-    console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'390x844',taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
+    console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'844x390',rotatedPhone:true,taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
   }finally{await browser.close();}
 }
 (async()=>{
