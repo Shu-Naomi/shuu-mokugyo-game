@@ -67,9 +67,14 @@ test('B pays out line for immediate tension relief at a small distance cost',()=
     assert.equal(read(w,'battle.reeling'),false);
     assert.ok(read(w,'battle.ten')<=69);
     assert.ok(read(w,'battle.retrieval')<.5);
+    assert.match(w.document.querySelector('#battleMsg').textContent,/張力が下がり、魚との距離が少し開いた/);
     const first=read(w,'battle.retrieval');
     w.eval('wait()');
     assert.equal(read(w,'battle.retrieval'),first,'rapid repeat does not pay out twice');
+    assert.match(w.document.querySelector('#battleMsg').textContent,/少し待とう/);
+    w.eval('battle.lineFeedAt=0;battle.ten=10;wait()');
+    assert.equal(read(w,'battle.retrieval'),first,'low tension does not need more line');
+    assert.match(w.document.querySelector('#battleMsg').textContent,/張力は低い/);
     assert.deepEqual(app.errors,[]);
   } finally { app.dispose(); }
 });

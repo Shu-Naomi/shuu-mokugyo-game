@@ -10,7 +10,7 @@ function controlledReactions(w){
   Object.defineProperty(w.performance,'now',{value:()=>now,configurable:true});
   for(const id of ['rivalDogBark','rivalDogWhine']){
     const sample=w.gameAudioSample(id);
-    sample.play=function(){this.paused=false;plays.push({id,rate:this.playbackRate});return Promise.resolve();};
+    sample.play=function(){this.paused=false;plays.push({id,rate:this.playbackRate,pitch:this.preservesPitch,webkitPitch:this.webkitPreservesPitch});return Promise.resolve();};
   }
   return {plays,advance(ms){now+=ms;const id=read(w,'rivalDogAnimation');if(id){w.cancelAnimationFrame(id);w.animateRivalDogReaction(now);}},
     pending:()=>Boolean(read(w,'rivalDogAnimation'))};
@@ -35,7 +35,9 @@ test('each dog answers actual A presses with its voice and three reactions, with
     for(const dog of R.dogs){
       approach(w,dog.id);w.action();
       const voiceCount=clock.plays.length;
-      assert.equal(clock.plays.at(-1).rate,R.dogGreetings[dog.id].rate);
+      assert.equal(clock.plays.at(-1).rate,1,'a greeting bark keeps its recorded speed');
+      assert.equal(clock.plays.at(-1).pitch,true);
+      assert.equal(clock.plays.at(-1).webkitPitch,true);
       assert.match(w.document.querySelector('#tournamentTalkLine').textContent,/ワ[ンフ]/);
       w.renderRivalTalk(false);w.renderRivals();
       assert.equal(clock.plays.length,voiceCount,'an image load/redraw must not bark again');
@@ -44,6 +46,10 @@ test('each dog answers actual A presses with its voice and three reactions, with
         if(turn){clock.advance(400);w.document.querySelector('#tournamentTalkMore').click();}
         lines.add(w.document.querySelector('#tournamentTalkLine').textContent);
         clock.advance(650);
+        const played=clock.plays.at(-1),greeting=R.dogGreeting(dog.id,turn);
+        assert.equal(played.id,greeting.sound==='whine'?'rivalDogWhine':'rivalDogBark');
+        assert.equal(played.pitch,true);assert.equal(played.webkitPitch,true);
+        if(greeting.sound==='bark')assert.equal(played.rate,1,'every bark stays natural, including the third greeting');
         const node=w.document.querySelector(`[data-rival="${dog.id}"]`);
         assert.equal(node.dataset.reaction,R.dogGreeting(dog.id,turn).action);
         if(turn===1){

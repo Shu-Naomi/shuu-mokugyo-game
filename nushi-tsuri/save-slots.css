@@ -1,0 +1,24 @@
+.title-box{max-height:calc(100dvh - 24px);overflow:auto}
+.save-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;margin:12px 0 6px}
+.title .save-slot{padding:8px 10px;min-height:66px;text-align:left;font-size:14px;color:#edf1db;background:#183944;border-color:#72948b;box-shadow:0 3px 0 #0a242c}
+.save-slot b,.save-slot small{display:block;line-height:1.45}
+.save-slot small{font-size:11px;font-weight:500;overflow-wrap:anywhere}
+.title .save-slot[aria-pressed="true"]{color:#332517;background:linear-gradient(#fff0b4,#d99a43);border-color:#ffe59b;outline:2px solid #ffe59b}
+.save-slot:disabled{opacity:.65}
+.title .save-note{margin:5px 0 8px;font-size:12px;line-height:1.45;color:#d4e6d6}
+.title #saveSlotNotice{color:#ffd69b}
+#activeSaveSlot{font-size:.8em;color:#d8e8cf;white-space:nowrap}
+.field-menu{max-height:calc(100% - 58px);overflow-y:auto;overscroll-behavior:contain}
+@media(max-height:560px){
+ .title-box{padding:10px 16px;max-height:calc(100dvh - 16px)}
+ .title h1{font-size:clamp(26px,5vw,40px);line-height:1.15}
+ .title h2{font-size:18px;margin:4px 0}
+ .title p{font-size:12px;margin:5px 0}
+ .save-slots{margin:7px 0 4px;gap:7px}
+ .title .save-slot{min-height:57px;padding:5px 9px;font-size:13px}
+ .title .save-note{font-size:11px;margin:4px 0}
+ .title .avatar-select,.title .dog-select{margin:5px 0;gap:6px}
+ .title .avatar-select button,.title .dog-select button{min-height:30px;padding:4px 10px;font-size:12px}
+ .title #start{min-height:37px;padding:6px 28px;font-size:15px}
+ .field-menu{max-height:calc(100% - 40px)}
+}

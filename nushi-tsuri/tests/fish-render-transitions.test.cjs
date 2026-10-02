@@ -52,7 +52,8 @@ function assertSingleMebaru(app, label) {
       `${label}: no old fish underneath the transparent bitmap`);
   }
   assert.equal(app.window.getComputedStyle(app.canvas).display, "block", label);
-  assert.match(app.pixels(), /mebaru-v144\//, label);
+  assert.match(app.pixels(), /fish-reef-v208\.png$/, label);
+  assert.equal(app.canvas.dataset.artSpecies,"mebaru",label+": correct cell within the shared atlas");
   for (const layer of app.element.querySelectorAll(".fish-life-slice, .fish-direct-frame")) {
     const style = app.window.getComputedStyle(layer);
     assert.ok(style.display === "none" || style.visibility === "hidden" || style.opacity === "0", label);
@@ -80,19 +81,19 @@ test("a slow first mebaru frame clears the previous fish, while a slow next fram
     const app = setup(surface);
     try {
       app.render("funa");
-      assert.match(app.pixels(), /fish-funa/);
-      const loadFirst = app.delayed("assets/mebaru-v144/swim-00.png");
+      assert.match(app.pixels(), /fish-lake-v208\.png$/);
+      const loadFirst = app.delayed("assets/fish-reef-v208.png");
       app.render("mebaru");
       assert.equal(app.pixels(), null, `${surface}: the previous species must not survive while decoding`);
       assert.doesNotMatch(app.window.getComputedStyle(app.canvas).backgroundImage, /url\(/);
       loadFirst();
       assertSingleMebaru(app, `${surface}: first decoded frame`);
       const firstPixels = app.pixels();
-      const loadNext = app.delayed("assets/mebaru-v144/swim-02.png");
+      const loadNext = app.delayed("assets/fish-reef-v208.png");
       app.render("mebaru", surface === "battle" ? 2 : 1);
       assert.equal(app.pixels(), firstPixels, `${surface}: do not blink between mebaru frames`);
       loadNext();
-      assert.match(app.pixels(), /mebaru-v144\/swim-02\.png$/);
+      assert.match(app.pixels(), /fish-reef-v208\.png$/);
       assert.deepEqual(app.errors, []);
     } finally { app.dispose(); }
   }
@@ -102,18 +103,18 @@ test("late image loads cannot restore a previous species over the current fish",
   for (const surface of ["battle", "catch"]) {
     const app = setup(surface);
     try {
-      const loadOldAtlas = app.delayed("assets/fish-funa-v124.png");
+      const loadOldAtlas = app.delayed("assets/fish-lake-v208.png");
       app.render("funa");
       app.render("mebaru");
       const mebaruPixels = app.pixels();
       loadOldAtlas();
       assert.equal(app.pixels(), mebaruPixels, `${surface}: the old atlas callback is ignored`);
       assertSingleMebaru(app, `${surface}: old atlas completed late`);
-      const loadOldMebaru = app.delayed("assets/mebaru-v144/swim-02.png");
+      const loadOldMebaru = app.delayed("assets/fish-reef-v208.png");
       app.render("mebaru", surface === "battle" ? 2 : 1);
       app.render("bora");
       const boraPixels = app.pixels();
-      assert.match(boraPixels, /fish-bora/);
+      assert.match(boraPixels, /fish-swimmers-v208\.png$/);
       loadOldMebaru();
       assert.equal(app.pixels(), boraPixels, `${surface}: the old mebaru callback is ignored`);
       assert.deepEqual(app.errors, []);

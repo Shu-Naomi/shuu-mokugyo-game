@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v205-masters-heavy-rock-205-1";
+const CACHE_NAME = "nushi-tsuri-v209-fish-cooking-and-companions-209-3";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -17,7 +17,19 @@ const CORE_ASSETS = [
   "./coast-voyage.js?v=201-1",
   "./mountain-region.js?v=203-1",
   "./regional-nushi.js?v=202-1",
+  "./lake-story.js?v=206-1",
+  "./lake-story.css?v=206-1",
+  "./save-slots.js?v=207-1",
+  "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
+  "./fish-art.js?v=208-1",
+  "./assets/fish-lake-v208.png",
+  "./assets/fish-stream-v208.png",
+  "./assets/fish-swimmers-v208.png",
+  "./assets/fish-reef-v208.png",
+  "./assets/fish-coastal-v208.png",
+  "./assets/fish-legendary-v208.png",
+
   "./assets/mountain-world-v201.png",
   "./assets/pass-pond-v202.png",
   "./assets/pass-marsh-v202.png",

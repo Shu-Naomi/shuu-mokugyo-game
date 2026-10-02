@@ -11,9 +11,10 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['sw.js','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
+        for(const file of ['sw.js','fish-art.js','save-slots.js','save-slots.css','lake-story.js','lake-story.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
+          ...new Set(Object.values(require('../fish-art.js').species).map(f=>f.asset)),
           ...Object.values(require('../music-tracks.js')).map(track=>track.src)]){
           const asset=await fetch(publicUrl+file+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
           assert.equal(asset.status,200,file);
@@ -87,7 +88,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v205/);
+    assert.match(await page.locator('.hud').innerText(),/v209/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -141,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v205/);
+    assert.match(await page.locator('.hud').innerText(),/v209/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -179,6 +180,100 @@ async function touchSmoke(url){
     await rail.context.close();
     assert.deepEqual(errors,[],'touchscreen runtime errors');
     console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'844x390',rotatedPhone:true,taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
+  }finally{await browser.close();}
+}
+async function storySmoke(url,mobile){
+  const browser=await chromium.launch({headless:true}),errors=[];
+  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
+    isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
+  const state={...seed(),soundEnabled:false};
+  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
+  const snapshot=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,pets:s.petLife,dog:s.dogAffinity}));
+  async function checkLayout(){
+    const result=await page.evaluate(()=>{
+      const book=document.querySelector('#lakeStory'),pane=document.querySelector('#lakeStoryPage'),close=document.querySelector('#lakeStoryClose');
+      const b=book.getBoundingClientRect(),p=pane.getBoundingClientRect(),c=close.getBoundingClientRect();
+      return {inside:b.left>=-1&&b.right<=innerWidth+1&&b.top>=-1&&b.bottom<=innerHeight+1,
+        closeInside:c.top>=b.top&&c.bottom<=b.bottom&&c.right<=b.right,pane:p.height>100&&p.width>150,
+        horizontal:pane.scrollWidth<=pane.clientWidth+1};
+    });
+    assert.ok(Object.values(result).every(Boolean),'readable journal layout '+JSON.stringify(result));
+  }
+  try{
+    await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');const before=await snapshot();
+    await press('#menu');await press('[data-field-menu-target="story"]');
+    assert.match(await page.locator('#lakeStoryPage').innerText(),/空白の手帳/);
+    assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),1,'no future boss spoilers');
+    await checkLayout();await press('#lakeStoryClose');assert.equal(await snapshot(),before);
+    await page.evaluate(()=>{renderSamShop();open('store');});await press('#samStoryOffer');
+    await press('#lakeStoryClose');assert.ok(await page.locator('#store').isVisible(),'returns to Sam');
+    await page.evaluate(()=>close());
+
+    // A legacy save with explicit completed catches restores the whole story.
+    const finished={...state,caught:{...state.caught,streamNushi:1,coastNushi:1,caveNushi:1,starNushi:1},
+      fishCatchRecords:{funa:{tackles:{'bamboo|worm':1},last:{rodId:'bamboo',baitId:'worm',
+        spotId:'mountain-highPond-mid',castLocale:'river',period:'day'}}}};
+    // pagehide saves the live game: install the fixture in that live state
+    // first so reload cannot overwrite it with the earlier one-page journal.
+    await page.evaluate(saved=>{s.caught=saved.caught;s.fishCatchRecords=saved.fishCatchRecords;delete s.lakeStory;save();},finished);
+    await page.reload({waitUntil:'domcontentloaded'});await press('#start');const finishedBefore=await snapshot();
+    await press('#menu');await press('[data-field-menu-target="story"]');
+    assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),10);
+    await press('#lakeStoryIndex [data-story-page="stream"]');
+    await page.locator('#lakeStoryPage img').evaluate(image=>image.decode());await checkLayout();
+    await press('#lakeStoryIndex [data-story-page="ending"]');
+    assert.match(await page.locator('#lakeStoryPage').innerText(),/星の帰る場所|白い頁/);await checkLayout();
+    await page.locator('#lakeStoryPage').evaluate(el=>{el.scrollTop=el.scrollHeight;});
+    assert.ok(await page.locator('#lakeStoryClose').isVisible(),'close stays visible while reading');
+    await page.locator('#lakeStoryPage').evaluate(el=>{el.scrollTop=0;});
+    console.log('STORY_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
+    if(mobile)await press('#lakeStoryClose');else await page.keyboard.press('Escape');
+    assert.equal(await snapshot(),finishedBefore,'reading awards no extra catch or money');
+    await page.reload({waitUntil:'domcontentloaded'});await press('#start');
+    assert.equal(await page.evaluate(()=>ShuLakeStory.completed(s)),true,'ending read status survives reload');
+    await page.evaluate(()=>open('record'));await press('#fishdexStoryOffer');await press('#lakeStoryClose');
+    assert.ok(await page.locator('#record').isVisible(),'returns to archive');
+    assert.deepEqual(errors,[]);
+    console.log('STORY_SMOKE_PASS '+JSON.stringify({mobile,chapters:10,sourceReturns:2,noSpoilers:true,saveReload:true,resourcesPreserved:true,errors}));
+  }finally{await browser.close();}
+}
+async function saveSlotSmoke(url,mobile){
+  const browser=await chromium.launch({headless:true}),errors=[];
+  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
+  const secondKey=require('../save-slots.js').keys[2],original={...seed(),money:4321,soundEnabled:false};
+  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:original});
+  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
+  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
+  const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
+  const playing=slot=>page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);
+  async function selection(){await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});}
+  try{
+    await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
+    await press('[data-save-slot="2"]');await press('[data-avatar="girl"]');await press('[data-dog="grey"]');
+    assert.equal(await stored(saveKey),oldBytes);assert.equal(await stored(secondKey),null);
+    const layout=await page.locator('.title-box').evaluate(box=>({inside:box.getBoundingClientRect().top>=-1&&box.getBoundingClientRect().bottom<=innerHeight+1,horizontal:box.scrollWidth<=box.clientWidth+1,cards:[...box.querySelectorAll('[data-save-slot]')].every(b=>b.getBoundingClientRect().width>90)}));
+    assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
+    console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
+    await press('#start');await playing(2);assert.equal(await stored(saveKey),oldBytes);
+    const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
+    await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
+    await selection();await press('[data-save-slot="1"]');await press('#start');await playing(1);
+    assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await stored(secondKey),secondBytes);
+    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await press('#start');await playing(2);
+    assert.equal(await page.evaluate(()=>s.money),8888);assert.equal(await page.evaluate(()=>s.items.fishBento),4);
+    const discovery=await page.evaluate(()=>{const cycle=ensureForageCycle(),point=foragePointData.find(p=>!cycle.harvested.includes(p.id));delete cycle.active[point.id];const before=s.baits.shell,amount=ShuPetLife.forageCount(s,s.dog);startDogForageDiscovery(point,'shell');return {id:point.id,before,amount};});
+    await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:10000});
+    assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
+    assert.equal(await page.locator(`[data-forage-point="${discovery.id}"]`).count(),0);assert.match(await page.locator('#rescueToast').innerText(),/Grey.*貝.*掘り出した/);
+    assert.equal(JSON.parse(await stored(secondKey)).baits.shell,discovery.before+discovery.amount);assert.equal(JSON.parse(await stored(saveKey)).money,11111);
+    await page.reload({waitUntil:'domcontentloaded'});await press('#start');await playing(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
+    await selection(); // On the title page, pagehide must preserve damaged data.
+    await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
+    assert.equal(await page.locator('#start').isDisabled(),true);assert.equal(await page.locator('#saveSlotNotice').isVisible(),true);
+    await press('[data-save-slot="1"]');await press('#start');await playing(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
+    assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,dogPickup:true,corruptProtected:true,errors}));
   }finally{await browser.close();}
 }
 async function audioSmoke(url,mobile){
@@ -232,6 +327,59 @@ async function audioSmoke(url,mobile){
     await page.locator('#soundToggle')[mobile?'tap':'click']();
     await page.waitForFunction(()=>backgroundMusic.stats().playing==='tournament-masters');
     assert.equal(await page.evaluate(()=>backgroundMusic.stats().lastError),null);
+    await page.evaluate(()=>close());
+    const voices=[];
+    for(const id of ['crow','cloud','jamie','chappie']){
+      const reached=await page.evaluate(id=>{
+        const p=ShuRivals.dogPlacements.find(p=>p.id===id);
+        for(let x=p.x-6;x<=p.x+6;x+=2)for(let y=p.y-6;y<=p.y+6;y+=2)
+        for(const direction of ['up','down','left','right']){
+          if(!isWalkableWorld(x,y))continue;s.x=x;s.y=y;s.direction=direction;
+          if(nearbyRival()?.id===id){render();return true;}
+        }return false;
+      },id);
+      assert.equal(reached,true,id+' reachable for a real A press');
+      await page.waitForFunction(()=>performance.now()-rivalDogLastSound>=300);
+      await page.locator('#action')[mobile?'tap':'click']();
+      await page.waitForFunction(()=>{
+        const voice=gameAudioSample('rivalDogBark');return !voice.paused&&voice.currentTime>.02;
+      });
+      const bark=await page.evaluate(()=>{
+        const voice=gameAudioSample('rivalDogBark');
+        return {rate:voice.playbackRate,pitch:voice.preservesPitch,webkitPitch:voice.webkitPreservesPitch};
+      });
+      assert.deepEqual(bark,{rate:1,pitch:true,webkitPitch:true},id+' natural bark');
+      await page.waitForFunction(()=>performance.now()-rivalDogLastSound>=300);
+      await page.locator('#tournamentTalkMore')[mobile?'tap':'click']();
+      await page.waitForFunction(()=>{
+        const voice=gameAudioSample('rivalDogWhine');return !voice.paused&&voice.currentTime>.02;
+      });
+      const whine=await page.evaluate(()=>{
+        const voice=gameAudioSample('rivalDogWhine');return {rate:voice.playbackRate,pitch:voice.preservesPitch};
+      });
+      assert.ok(whine.rate>=.94&&whine.rate<=1.04);assert.equal(whine.pitch,true);
+      voices.push({id,bark,whine});
+      await page.locator('#tournamentTalk [data-close]')[mobile?'tap':'click']();
+    }
+    await page.evaluate(()=>{
+      s.tournament=null;openPracticePond();beginFishing();battle.cast=50;
+      launchSurfaceCast();settleSurfaceCast();battle.biteAt=Date.now();pull();
+      clearInterval(timer);timer=0;finishHookReveal();
+      battle.ten=90;battle.retrieval=.5;battle.startMeters=30;drawBattle();
+    });
+    assert.match(await page.locator('#pull').innerText(),/離して待つ/);
+    assert.match(await page.locator('#wait').innerText(),/1回で糸を出す/);
+    await page.locator('#wait')[mobile?'tap':'click']();
+    assert.match(await page.locator('#battleMsg').innerText(),/張力が下がり、魚との距離が少し開いた/);
+    const feed=await page.evaluate(()=>({tension:battle.ten,retrieval:battle.retrieval,reeling:battle.reeling}));
+    assert.ok(feed.tension<70);assert.ok(feed.retrieval<.5);assert.equal(feed.reeling,false);
+    const layout=await page.locator('#battleUi').evaluate(panel=>{
+      const bounds=panel.getBoundingClientRect(),scene=document.querySelector('#fishScene').getBoundingClientRect();
+      return bounds.top>=scene.top&&bounds.bottom<=scene.bottom&&panel.scrollWidth<=panel.clientWidth;
+    });
+    assert.equal(layout,true,'line-feed explanation fits the fishing scene');
+    console.log('FIGHT_CONTROL_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
+    console.log('DOG_LINE_SMOKE_PASS '+JSON.stringify({mobile,voices,lineFeed:feed,feedbackVisible:true}));
     assert.deepEqual(errors,[]);
     console.log('AUDIO_SMOKE_PASS '+JSON.stringify({mobile,tracks:checked.length,mastersPlayback:true,muteResume:true,loop:checked.find(r=>r.loop)?.loop,errors}));
   }finally{await browser.close();}
@@ -258,6 +406,7 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
-    await smoke(url);await touchSmoke(url);await audioSmoke(url,false);await audioSmoke(url,true);
+    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
+    const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
   }finally{if(server)await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

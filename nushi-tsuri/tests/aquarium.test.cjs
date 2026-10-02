@@ -171,7 +171,7 @@ test("A → select one → replace → swim → leave/return → save/reload; ex
     choose(window, "mebaru");
     assert.equal(window.eval("s.homeAquariumFishId"), "mebaru");
     assert.equal(window.document.querySelectorAll("#aquariumPreview > .aquarium-fish:not([hidden])").length, 1);
-    assert.equal(window.document.querySelector("#aquariumPreviewFish").classList.contains("standalone-frame"), true);
+    assert.equal(window.document.querySelector("#aquariumPreviewFish").classList.contains("standalone-frame"), false);
     choose(window, "funa");
     assert.equal(window.document.querySelector("#aquariumPreviewFish").classList.contains("standalone-frame"), false);
     assert.equal(window.document.querySelectorAll("#aquariumPreviewFish img").length, 0);

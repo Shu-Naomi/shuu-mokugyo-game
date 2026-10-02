@@ -37,7 +37,7 @@ test('coastal grid art survives underwater headings, landing, catch and aquarium
         const el=w.document.querySelector('#battleFish'),canvas=el.querySelector('canvas');
         assert.ok(el.classList.contains('life-canvas'));
         assert.equal(el.dataset.spriteMode,mode);
-        assert.match(canvas.dataset.atlasKey,new RegExp(`fish-${id}-v198\\.webp`));
+        assert.match(canvas.dataset.atlasKey,new RegExp(`fish-coastal-v208\\.png.*${id}$`));
         assert.equal(w.getComputedStyle(canvas).display,'block');
         assert.doesNotMatch(w.getComputedStyle(el).backgroundImage,/url\(/);
       }
@@ -47,10 +47,10 @@ test('coastal grid art survives underwater headings, landing, catch and aquarium
       for(let step=0;step<10;step++) {
         w.eval(`renderCatchFishLife(fish.find(f=>f.id==='${id}'),${step})`);
         assert.ok(w.document.querySelector('#catchFish').classList.contains('canvas-atlas'));
-        assert.match(w.document.querySelector('#catchFish canvas').dataset.atlasKey,new RegExp(`fish-${id}-v198\\.webp`));
+        assert.match(w.document.querySelector('#catchFish canvas').dataset.atlasKey,new RegExp(`fish-coastal-v208\\.png.*${id}$`));
       }
       w.eval(`drawAquariumSprite($('#homeAquariumFish'),'${id}',4,{spriteMode:'swim'})`);
-      assert.match(w.document.querySelector('#homeAquariumFish canvas').dataset.atlasKey,new RegExp(`fish-${id}-v198\\.webp`));
+      assert.match(w.document.querySelector('#homeAquariumFish canvas').dataset.atlasKey,new RegExp(`fish-coastal-v208\\.png.*${id}$`));
     }
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

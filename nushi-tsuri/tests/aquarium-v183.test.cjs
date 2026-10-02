@@ -144,5 +144,5 @@ test('four new seasonal loops and pet sounds decode, avoid clipping and ship wit
   assert.ok(sw.includes(file));assert.ok(html.includes(file));
  }
  assert.ok(sw.includes('./aquarium-life.js?v=202-1'));assert.ok(html.includes('aquarium-life.js?v=202-1'));
- assert.ok(html.includes('sample.preservesPitch = whine'));
+ assert.ok(html.includes('sample.preservesPitch = true'));
 });

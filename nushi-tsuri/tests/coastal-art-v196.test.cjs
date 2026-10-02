@@ -84,13 +84,12 @@ test("coastal species have distinct fighting patterns and ship the new sprites o
       ["deep", "steady", "rush", "rest"],
     ]);
     assert.equal(new Set(phases.map(p => p.beat)).size, 3);
-    for (const p of phases) assert.match(p.art, /-v198\.webp$/);
+    for (const p of phases) assert.equal(p.art, 'assets/fish-coastal-v208.png');
     const sw = require("node:fs").readFileSync(path.join(__dirname, "../sw.js"), "utf8");
     assert.match(sw, /coast-boat-v196\.png/);
-    for (const id of ["shirogisu", "ainame", "madai"]) {
-      for (const suffix of ["", "-turn", "-mouth"])
-        assert.ok(sw.includes(`fish-${id}${suffix}-v196.png`));
-    }
+    assert.ok(sw.includes('./assets/fish-coastal-v208.png'));
+    for (const id of ["shirogisu", "ainame", "madai"])
+      assert.equal(read(w, `ShuFishArt.species['${id}'].asset`), phases[0].art);
     assert.deepEqual(app.errors, []);
   } finally { app.dispose(); }
 });
