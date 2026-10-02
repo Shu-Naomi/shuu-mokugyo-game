@@ -72,6 +72,25 @@ module.exports=async function features(url,mobile){
     });
     await screenshot('DOG_LAYOUT');
     assert.ok(layout.inside&&layout.horizontal&&layout.wide&&layout.stageInside&&layout.buttons&&layout.height>=100,'care layout '+JSON.stringify(layout));
+    let portraitLayout=null;
+    if(mobile){
+      await page.setViewportSize({width:390,height:844});
+      portraitLayout=await page.locator('#dogCare').evaluate(el=>{
+        const box=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
+          hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
+        return {inside:box.left>=-1&&box.right<=innerWidth+1&&box.top>=-1&&box.bottom<=innerHeight+1,
+          stageInside:stage.left>=hero.left-1&&stage.right<=hero.right+1&&stage.top>=hero.top-1&&stage.bottom<=hero.bottom+1,
+          large:stage.width>=100&&stage.height>=innerHeight*.4,
+          buttons:[...el.querySelectorAll('.dog-care-footer button')].every(b=>{
+            const r=b.getBoundingClientRect();return r.left>=box.left&&r.right<=box.right&&r.top>=box.top&&r.bottom<=box.bottom;})};
+      });
+      await screenshot('DOG_LAYOUT_PORTRAIT');
+      assert.ok(Object.values(portraitLayout).every(Boolean),'rotated care layout '+JSON.stringify(portraitLayout));
+      await press('#dogCarePet');
+      await page.waitForFunction(()=>dogCareScene.mode==='pet'&&Date.now()-dogCareScene.startedAt>400);
+      await screenshot('DOG_PET_PORTRAIT');await careIdle();
+      await page.setViewportSize({width:844,height:390});
+    }
     // Petting, eating and the outbound/return training motion for every dog.
     for(const id of ['riku','shuu','grey']){
       await press(`[data-dog-care-id="${id}"]`);await press('#dogCarePet');
@@ -134,6 +153,6 @@ module.exports=async function features(url,mobile){
       battle.turning={from:1,to:-1};battle.turnSpriteFrame=3;battle.x=50;battle.y=58;drawBattle();});
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
     console.log('V209_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
-      dogs:3,catchScore:3,companion:true,stayHomeReload:true,layout,errors}));
+      dogs:3,catchScore:3,companion:true,stayHomeReload:true,layout,portraitLayout,errors}));
   }finally{await browser.close();}
 };

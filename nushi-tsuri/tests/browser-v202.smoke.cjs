@@ -247,7 +247,7 @@ async function saveSlotSmoke(url,mobile){
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
-  const playing=slot=>page.waitForFunction(slot=>document.querySelector('#game').classList.contains('active')&&document.querySelector('#activeSaveSlot').textContent===`セーブ${slot}`,slot);
+  const playing=slot=>page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);
   async function selection(){await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});}
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
