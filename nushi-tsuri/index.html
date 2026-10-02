@@ -2956,7 +2956,7 @@
       .dog-care-hero {
         display: grid;
         grid-template-columns: minmax(320px, 2.2fr) minmax(200px, .8fr);
-        align-items: center;
+        align-items: stretch;
         gap: 10px;
         min-height: 0;
         margin: 0 10px;
@@ -2969,8 +2969,9 @@
       .dog-care-stage {
         position: relative;
         width: 100%;
-        aspect-ratio: 16 / 9;
-        min-height: 180px;
+        height: 100%;
+        aspect-ratio: auto;
+        min-height: 0;
         overflow: hidden;
         border: 2px solid #e6c975;
         border-radius: 7px;
@@ -2982,6 +2983,7 @@
         display: block;
         width: 100%;
         height: 100%;
+        object-fit: contain;
         image-rendering: pixelated;
       }
       .dog-care-stage.catch-active {
@@ -3125,7 +3127,7 @@
       .dog-care-card strong { color: #ffe083; font-size: .64rem; white-space: nowrap; }
       .dog-care-card:disabled { opacity: .48; filter: grayscale(.55); }
       .dog-care-card.played { border-color: #6b7b80; background: #24313b; }
-      .dog-care-footer {
+      #dogCare .dog-care-footer {
         display: grid;
         grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 7px;
@@ -6160,7 +6162,7 @@
         }
         .dog-care-modal { inset: .5%; }
         .dog-care-shell {
-          grid-template-rows: auto auto minmax(0, 1.2fr) minmax(0, .82fr) auto;
+          grid-template-rows: auto auto minmax(120px, 1.8fr) minmax(0, .65fr) auto;
         }
         .dog-care-heading { padding: 4px 8px; }
         .dog-care-heading h2 { font-size: .98rem; }
@@ -6205,7 +6207,7 @@
         .dog-care-card { min-height: 36px; padding: 3px 5px; }
         .dog-care-card b { font-size: .59rem; }
         .dog-care-card small { font-size: .48rem; }
-        .dog-care-footer { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px 7px 5px; }
+        #dogCare .dog-care-footer { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px 7px 5px; }
         .dog-care-footer button { min-height: 31px; font-size: .62rem; }
         .fishdex-modal {
           inset: 1.5%;
@@ -22663,7 +22665,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=209-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=209-3").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

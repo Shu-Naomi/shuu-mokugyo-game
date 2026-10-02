@@ -63,12 +63,15 @@ module.exports=async function features(url,mobile){
     assert.equal(await page.evaluate(()=>s.dog),'shuu','opening care does not choose a companion');
     await page.waitForFunction(()=>dogIdleImage.complete&&dogIdleImage.naturalWidth>0);
     const layout=await page.locator('#dogCare').evaluate(el=>{
-      const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect();
+      const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
+        hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
       return {inside:bounds.top>=-1&&bounds.bottom<=innerHeight+1,horizontal:el.scrollWidth<=el.clientWidth+1,
-        wide:stage.width>=innerWidth*.4,height:stage.height,buttons:[...el.querySelectorAll('.dog-care-footer button')]
+        wide:stage.width>=innerWidth*.4,height:stage.height,stageInside:stage.top>=hero.top&&stage.bottom<=hero.bottom,
+        buttons:[...el.querySelectorAll('.dog-care-footer button')]
           .every(b=>{const r=b.getBoundingClientRect();return r.top>=bounds.top&&r.bottom<=bounds.bottom+1&&r.width>=100;})};
     });
-    assert.ok(layout.inside&&layout.horizontal&&layout.wide&&layout.buttons&&layout.height>=100,'care layout '+JSON.stringify(layout));
+    await screenshot('DOG_LAYOUT');
+    assert.ok(layout.inside&&layout.horizontal&&layout.wide&&layout.stageInside&&layout.buttons&&layout.height>=100,'care layout '+JSON.stringify(layout));
     // Petting, eating and the outbound/return training motion for every dog.
     for(const id of ['riku','shuu','grey']){
       await press(`[data-dog-care-id="${id}"]`);await press('#dogCarePet');
