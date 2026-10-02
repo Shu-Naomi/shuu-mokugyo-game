@@ -214,7 +214,9 @@ async function storySmoke(url,mobile){
     // A legacy save with explicit completed catches restores the whole story.
     const finished={...state,caught:{...state.caught,streamNushi:1,coastNushi:1,caveNushi:1,starNushi:1},
       fishCatchRecords:{funa:{last:{spotId:'mountain-highPond-mid'}}}};
-    await page.evaluate(({key,saved})=>localStorage.setItem(key,JSON.stringify(saved)),{key:saveKey,saved:finished});
+    // pagehide saves the live game: install the fixture in that live state
+    // first so reload cannot overwrite it with the earlier one-page journal.
+    await page.evaluate(saved=>{s.caught=saved.caught;s.fishCatchRecords=saved.fishCatchRecords;delete s.lakeStory;save();},finished);
     await page.reload({waitUntil:'domcontentloaded'});await press('#start');const finishedBefore=await snapshot();
     await press('#menu');await press('[data-field-menu-target="story"]');
     assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),10);
@@ -266,6 +268,7 @@ async function saveSlotSmoke(url,mobile){
     assert.equal(await page.locator(`[data-forage-point="${discovery.id}"]`).count(),0);assert.match(await page.locator('#rescueToast').innerText(),/Grey.*貝.*掘り出した/);
     assert.equal(JSON.parse(await stored(secondKey)).baits.shell,discovery.before+discovery.amount);assert.equal(JSON.parse(await stored(saveKey)).money,11111);
     await page.reload({waitUntil:'domcontentloaded'});await press('#start');await playing(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
+    await selection(); // On the title page, pagehide must preserve damaged data.
     await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
     assert.equal(await page.locator('#start').isDisabled(),true);assert.equal(await page.locator('#saveSlotNotice').isVisible(),true);
     await press('[data-save-slot="1"]');await press('#start');await playing(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
