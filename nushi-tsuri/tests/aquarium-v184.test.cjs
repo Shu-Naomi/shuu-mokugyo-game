@@ -5,6 +5,7 @@ const fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read}=require('./game-harness.cjs');
 const A=require('../aquarium-life.js');
+const Art=require('../fish-art.js');
 const specimen={uid:'fish1',species:'moroko',length:1800};
 const catalog=[{id:'moroko',max:2500}];
 const poseAt=(t,feed=null,reduced=false)=>A.layout([specimen],catalog,360,205,t,()=>256/110,feed,reduced).poses[0];
@@ -47,27 +48,19 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
  }
 });
 
-test('all 24 species use real, nonempty five-angle art with matching offline assets',async()=>{
+test('all 24 species remain visibly thick in all seven painted headings with offline assets',async()=>{
  const app=boot();let records;
- try{records=read(app.window,`fish.map(f=>({id:f.id,size:fishFrameFallbackSizes[f.id],grid:fishGridAtlasAssets.has(fishAssets[f.id]),frames:Array.from({length:5},(_,frame)=>({asset:standaloneFishFrameAsset(f.id,fishTurnAssets[f.id],frame)||fishTurnAssets[f.id],frame:f.id==='mebaru'?0:frame,cells:f.id==='mebaru'?1:5,rect:ShuNushiAtlas.frame(f.id,5,frame)?.rect}))}))`);}
+ try{records=read(app.window,`fish.map(f=>({id:f.id,asset:fishTurnAssets[f.id]}))`);}
  finally{app.dispose();}
  assert.equal(records.length,24);
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
  for(const fish of records){
-  for(const f of fish.frames){
-   assert.ok(sw.includes('./'+f.asset),fish.id+' cached turn asset');
-   if(!images.has(f.asset))images.set(f.asset,await loadImage(path.join(__dirname,'..',f.asset)));
-   const img=images.get(f.asset),width=f.rect?f.rect[2]:fish.grid?Math.round(img.width/4):img.width/f.cells,height=f.rect?f.rect[3]:fish.grid?Math.round(img.height/4):img.height;
-   // Boss sheets have authored unequal gutters. Their production 480×240
-   // registration is verified in regional-art-v202.test.cjs.
-   if(!f.rect){
-    if(fish.grid)assert.ok(Math.abs(width/height-fish.size[0]/fish.size[1])<.05,fish.id+' preserves aspect ratio');
-    else assert.deepEqual([width,height],fish.size,fish.id+' preserves aspect ratio');
-   }
+  assert.ok(sw.includes('./'+fish.asset),fish.id+' cached turn asset');
+  if(!images.has(fish.asset))images.set(fish.asset,await loadImage(path.join(__dirname,'..',fish.asset)));
+  for(let frame=0;frame<7;frame++){
+   const img=images.get(fish.asset),width=448,height=224;
    const canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
-   const cell=fish.grid?8+f.frame:f.frame;
-   const [sx,sy,sourceWidth,sourceHeight]=f.rect||[(fish.grid?cell%4:cell)*width,fish.grid?Math.floor(cell/4)*height:0,width,height];
-   ctx.drawImage(img,sx,sy,sourceWidth,sourceHeight,0,0,width,height);
+   assert.equal(Art.draw(ctx,img,fish.id,7,frame),true);
    const data=ctx.getImageData(0,0,width,height).data;let left=width,right=-1,pixels=0;
    for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(data[(y*width+x)*4+3]>100){left=Math.min(left,x);right=Math.max(right,x);pixels++;}
    assert.ok(right-left>=width*.1,fish.id+' face retains visible thickness');
@@ -76,7 +69,7 @@ test('all 24 species use real, nonempty five-angle art with matching offline ass
  }
 });
 
-test('home and portable draw paths select turn art, restore swimming and handle Mebaru individual PNGs',()=>{
+test('home and portable draw paths select seven-heading turn art and restore swimming for every fish',()=>{
  const app=boot(),w=app.window;
  try{
   w.eval(`playerHomeState.area='interior';document.querySelector('#aquariumModal').classList.add('open');`);
@@ -90,9 +83,9 @@ test('home and portable draw paths select turn art, restore swimming and handle 
      const el=w.document.querySelector(selector);
      assert.match(el.style.transform,/scaleX\((-?1)\)/);
      assert.match(el.dataset.aquariumFrame,new RegExp(':'+pose.spriteMode+':'));
-     const key=id==='mebaru'?el.dataset.standaloneFrameAsset:el.querySelector('canvas').dataset.atlasKey;
-     const grid=read(w,`fishGridAtlasAssets.has(fishAssets['${id}'])`);
-     assert.equal(grid?key.split('|')[1]==='5':key.includes('turn'),pose.spriteMode==='turn',id+' correct atlas or PNG');
+     const canvas=el.querySelector('canvas'),key=canvas.dataset.atlasKey;
+     assert.equal(canvas.dataset.artSpecies,id);
+     assert.equal(key.split('|')[1]==='7',pose.spriteMode==='turn',id+' correct painted heading');
     }
    }
    // A mode switch with the same numeric frame must still repaint.
@@ -102,7 +95,7 @@ test('home and portable draw paths select turn art, restore swimming and handle 
  }finally{app.dispose();}
 });
 
-test('portable tank actually renders all five headings and never writes a fractional horizontal scale',()=>{
+test('portable tank actually renders all seven headings and never writes a fractional horizontal scale',()=>{
  const app=boot({...seed(),caught:{...seed().caught,moroko:1},x:199,y:36},{petTankStage:[360,205]}),w=app.window;
  const callbacks=new Map();let next=1000,now=0;
  w.requestAnimationFrame=fn=>{const id=++next;callbacks.set(id,fn);return id;};w.cancelAnimationFrame=id=>callbacks.delete(id);
@@ -116,7 +109,7 @@ test('portable tank actually renders all five headings and never writes a fracti
    assert.match(el.style.transform,/scaleX\((-?1)\)/);
    if(el.dataset.aquariumFrame.includes(':turn:'))frames.add(Number(el.dataset.aquariumFrame.split(':').at(-1)));
   }
-  assert.deepEqual([...frames].sort(),[0,1,2,3,4]);
+  assert.deepEqual([...frames].sort(),[0,1,2,3,4,5,6]);
   assert.deepEqual(read(w,'s.petLife'),stateBefore,'rendering does not mutate fish or progress');
   click('[data-pet-action="close"]');step();
   assert.equal(w.document.querySelector('#petLifeModal').classList.contains('open'),false);

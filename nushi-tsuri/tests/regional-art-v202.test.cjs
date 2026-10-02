@@ -13,19 +13,20 @@ test('real production boss painters isolate all swim, turn and jaw frames and co
   };
   try{
     for(const [id,data]of Object.entries(R.bosses)){
-      w.decodedFish=await loadImage(path.join(__dirname,'..',data.asset));
-      w.eval(`fishAtlasImageCache.set('${data.asset}',window.decodedFish)`);
-      for(const [cells,count]of [[8,8],[5,5],[3,3]])for(let frame=0;frame<count;frame++){
+      const asset=read(w,`fishAssets.${id}`);
+      w.decodedFish=await loadImage(path.join(__dirname,'..',asset));
+      w.eval(`fishAtlasImageCache.set('${asset}',window.decodedFish)`);
+      for(const [cells,count]of [[8,8],[7,7],[3,3]])for(let frame=0;frame<count;frame++){
         w.eval(`drawFishAtlasFrame($('#catchFish'),fishAssets.${id},${cells},${frame},'${id}')`);
         const canvas=w.document.querySelector('#catchFish canvas'),native=backing.get(canvas);
-        assert.equal(canvas.width,480);assert.equal(canvas.height,240);
-        const pixels=native.getContext('2d').getImageData(0,0,480,240).data;let opaque=0,border=0;
-        for(let i=3;i<pixels.length;i+=4)if(pixels[i]>100){opaque++;const n=(i-3)/4,x=n%480,y=Math.floor(n/480);if(x===0||x===479||y===0||y===239)border++;}
-        assert.ok(opaque>10000,`${id}/${cells}/${frame} must paint a complete fish`);
+        assert.equal(canvas.width,448);assert.equal(canvas.height,224);
+        const pixels=native.getContext('2d').getImageData(0,0,448,224).data;let opaque=0,border=0;
+        for(let i=3;i<pixels.length;i+=4)if(pixels[i]>100){opaque++;const n=(i-3)/4,x=n%448,y=Math.floor(n/448);if(x===0||x===447||y===0||y===223)border++;}
+        assert.ok(opaque>(cells===7?3500:10000),`${id}/${cells}/${frame} must paint a complete fish`);
         assert.equal(border,0,`${id}/${cells}/${frame} clips fins or contains a neighbour`);
       }
       w.eval(`renderCatchFishLife(fish.find(f=>f.id==='${id}'),5)`);
-      assert.equal(w.document.querySelector('#catchFish canvas').width,480);
+      assert.equal(w.document.querySelector('#catchFish canvas').width,448);
     }assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

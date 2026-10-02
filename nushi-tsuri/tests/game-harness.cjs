@@ -4,9 +4,9 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="((?:regional-nushi|nushi-atlas|fishing-duel|ui-feedback|event-ceremony|fortune-capsules|aquarium-life|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:fish-art|save-slots|lake-story|regional-nushi|nushi-atlas|fishing-duel|ui-feedback|event-ceremony|fortune-capsules|aquarium-life|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="((?:fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+  .replace(/<link rel="stylesheet" href="((?:save-slots|lake-story|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({
@@ -17,19 +17,20 @@ const seed = () => ({
   questCompletions: 4, x: 10, y: 79, direction: "left",
 });
 
-function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPreview: [440, 180] }) {
+function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPreview: [440, 180] }, options = {}) {
   const errors = [];
   let dispose;
   const virtualConsole = new VirtualConsole();
   virtualConsole.on("jsdomError", (error) => errors.push(error.message));
   const dom = new JSDOM(html, {
-    url: "http://localhost/nushi-tsuri/", runScripts: "dangerously",
+    url: options.url || "http://localhost/nushi-tsuri/", runScripts: "dangerously",
     pretendToBeVisual: true, virtualConsole,
     beforeParse(window) {
       // The game declares a global close() for its menus. Keep JSDOM's real
       // teardown before that function shadows window.close, or timers linger.
       dispose = window.close.bind(window);
       if (saved !== null) window.localStorage.setItem(saveKey, JSON.stringify(saved));
+      for (const [key,value] of Object.entries(options.storage || {})) window.localStorage.setItem(key, typeof value === "string" ? value : JSON.stringify(value));
       // JSDOM has no layout engine. Supply explicit phone-sized tank boxes
       // so containment tests exercise real sizing math instead of 0x0 DOMs.
       const bounds = window.Element.prototype.getBoundingClientRect;
@@ -71,7 +72,7 @@ function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPre
       };
     },
   });
-  dom.window.document.querySelector("#start").click();
+  if (options.start !== false) dom.window.document.querySelector("#start").click();
   return { dom, window: dom.window, errors, dispose };
 }
 const read = (window, expression) => JSON.parse(window.eval(`JSON.stringify(${expression})`));

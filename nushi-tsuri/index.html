@@ -2955,7 +2955,7 @@
       }
       .dog-care-hero {
         display: grid;
-        grid-template-columns: minmax(320px, 1.65fr) minmax(210px, .85fr);
+        grid-template-columns: minmax(320px, 2.2fr) minmax(200px, .8fr);
         align-items: center;
         gap: 10px;
         min-height: 0;
@@ -2969,8 +2969,8 @@
       .dog-care-stage {
         position: relative;
         width: 100%;
-        aspect-ratio: 20 / 9;
-        min-height: 150px;
+        aspect-ratio: 16 / 9;
+        min-height: 180px;
         overflow: hidden;
         border: 2px solid #e6c975;
         border-radius: 7px;
@@ -3143,6 +3143,7 @@
         font-weight: 900;
       }
       .dog-care-footer button small { color: #ffe7b0; font-size: .55rem; }
+      .companion[hidden] { display: none !important; }
       .quest-board-modal {
         inset: 1.5%;
         padding: 0;
@@ -5059,6 +5060,10 @@
         height: 64px;
         touch-action: none;
       }
+      .fish-scene.fighting .battle-actions button small {
+        font-size: 11px;
+        line-height: 1.25;
+      }
       .cast-meter {
         position: relative;
         height: 18px;
@@ -6162,7 +6167,7 @@
         .dog-care-tabs { gap: 4px; padding: 4px 7px; }
         .dog-care-tabs button { min-height: 28px; padding: 3px 6px; font-size: .65rem; }
         .dog-care-hero {
-          grid-template-columns: minmax(220px, 43vw) minmax(0, 1fr);
+          grid-template-columns: minmax(250px, 55vw) minmax(0, 1fr);
           align-items: stretch;
           gap: 7px;
           margin: 0 7px;
@@ -6200,7 +6205,7 @@
         .dog-care-card { min-height: 36px; padding: 3px 5px; }
         .dog-care-card b { font-size: .59rem; }
         .dog-care-card small { font-size: .48rem; }
-        .dog-care-footer { padding: 4px 7px 5px; }
+        .dog-care-footer { grid-template-columns: repeat(4, minmax(0, 1fr)); padding: 4px 7px 5px; }
         .dog-care-footer button { min-height: 31px; font-size: .62rem; }
         .fishdex-modal {
           inset: 1.5%;
@@ -6425,6 +6430,8 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=201-1" />
     <link rel="stylesheet" href="pet-life.css?v=200-1" />
+    <link rel="stylesheet" href="lake-story.css?v=206-1" />
+    <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=200-2" />
@@ -6439,6 +6446,12 @@
         <h1>ぬし釣り犬小屋</h1>
         <h2>星降る湖</h2>
         <p>Fableリクの釣りメモを手に、湖のヌシを追え。</p>
+        <div class="save-slots" role="group" aria-label="冒険のセーブを選ぶ">
+          <button class="save-slot" data-save-slot="1" aria-pressed="true"><b>セーブ1</b><small></small></button>
+          <button class="save-slot" data-save-slot="2" aria-pressed="false"><b>セーブ2</b><small></small></button>
+        </div>
+        <p class="save-note">選んだ冒険だけに自動セーブするよ。</p>
+        <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
         <div class="avatar-select" aria-label="主人公を選ぶ">
           <button data-avatar="boy">🧢 男の子</button>
           <button data-avatar="girl">🧢 女の子</button>
@@ -6453,7 +6466,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v205</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v209</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6609,6 +6622,10 @@
               <span class="field-menu-icon" aria-hidden="true">📖</span>
               <span class="field-menu-label">図鑑</span>
             </button>
+            <button type="button" data-field-menu-target="story">
+              <span class="field-menu-icon" aria-hidden="true">✦</span>
+              <span class="field-menu-label">湖の手帳<small>旅の思い出を読む</small></span>
+            </button>
             <button type="button" data-field-menu-target="tackle">
               <span class="field-menu-icon" aria-hidden="true">🎣</span>
               <span class="field-menu-label">タックル<small>装備を変更</small></span>
@@ -6624,6 +6641,10 @@
             <button type="button" data-field-menu-target="dog">
               <span class="field-menu-icon" aria-hidden="true">🐕</span>
               <span class="field-menu-label">犬と遊ぶ<small>好感度・お世話</small></span>
+            </button>
+            <button type="button" data-field-menu-target="saveSlots">
+              <span class="field-menu-icon" aria-hidden="true">💾</span>
+              <span class="field-menu-label">セーブ選択へ<small>保存して冒険を切り替える</small></span>
             </button>
           </nav>
         </aside>
@@ -6805,6 +6826,7 @@
             <strong id="catchTitle"></strong>
             <small id="catchDetail"></small>
             <button class="catch-close" id="catchClose">A　つづける</button>
+            <button id="catchStoryButton" hidden>湖の手帳に記す</button>
           </div>
         </div>
         <div class="modal fishdex-modal" id="record" aria-label="魚図鑑">
@@ -6821,6 +6843,7 @@
               </div>
               <button class="fishdex-close" data-close>閉じる</button>
             </header>
+            <button id="fishdexStoryOffer" class="lake-story-return">湖の手帳を読む</button>
             <nav class="fishdex-filters" id="fishdexFilters" aria-label="生息地で絞り込む">
               <button class="active" data-fishdex-filter="all">すべて</button>
               <button data-fishdex-filter="lake">湖</button>
@@ -6843,6 +6866,16 @@
             </div>
           </div>
         </div>
+        <section class="modal lake-story-modal" id="lakeStory" role="dialog" aria-modal="true" aria-labelledby="lakeStoryTitle" tabindex="-1">
+          <header class="lake-story-header">
+            <div><h2 id="lakeStoryTitle">湖の手帳</h2><p id="lakeStoryStatus"></p></div>
+            <button id="lakeStoryClose">手帳を閉じる</button>
+          </header>
+          <div class="lake-story-layout">
+            <nav class="lake-story-index" id="lakeStoryIndex" aria-label="旅の思い出"></nav>
+            <article class="lake-story-page" id="lakeStoryPage" aria-labelledby="lakeStoryPageTitle" tabindex="0"></article>
+          </div>
+        </section>
         <div class="modal shop-modal" id="store">
           <div class="shop-layout">
             <div class="shop-interior" aria-label="木の棚に釣り竿、ルアー、釣り糸が並ぶサムの釣具店内">
@@ -6873,6 +6906,8 @@
               <h2>サミュエル・オールドマン</h2>
               <p class="shop-dialogue" id="shopDialogue" aria-live="polite">「いらっしゃい。釣具は未来を引き寄せるんじゃよ」</p>
               <p id="samWeatherHint" class="sam-weather-hint"></p>
+              <p id="samStoryLine" class="lake-story-offer"></p>
+              <button id="samStoryOffer" class="lake-story-return">湖の手帳を読む</button>
               <div class="rival-shop-actions"><button id="rivalGuideOffer">名手と相棒犬の紹介</button><button id="chappieTalk">チャッピーに挨拶</button></div>
               <button class="shop-practice" id="tournamentOffer">
                 <span>🎣 サムの釣り大会</span><small id="tournamentOfferStatus">フナ大会 受付中</small>
@@ -7132,7 +7167,7 @@
             <nav class="dog-care-tabs" id="dogCareDogs" aria-label="お世話するワンコ"></nav>
             <section class="dog-care-hero">
               <div class="dog-care-stage" id="dogCareStage">
-                <canvas id="dogCareSceneCanvas" width="320" height="144" aria-label="ワンコのおやつ・おもちゃドット絵モーション"></canvas>
+                <canvas id="dogCareSceneCanvas" width="320" height="180" aria-label="ワンコを撫でる・食べる・走って戻るモーション"></canvas>
                 <div class="dog-care-stage-label" id="dogCareSceneLabel">のんびり待機中</div>
                 <button class="dog-care-catch-button" id="dogCareCatchButton" hidden>キャッチ！<small>光ったら画面をタップ</small></button>
               </div>
@@ -7157,6 +7192,7 @@
               <button id="dogCarePet">ナデナデする<small>なつき度＋8・一日3回</small></button>
               <button id="dogCareTrain">芸を練習する<small>芸＋25・一日1回</small></button>
               <button id="dogCareTakeFishing">この子と釣りへ行く<small>同行ワンコにする</small></button>
+              <button id="dogCareStayHome">家で待ってて<small>同行をやめてお留守番</small></button>
             </footer>
           </div>
         </div>
@@ -7176,7 +7212,10 @@
     <script src="coast-voyage.js?v=201-1"></script>
     <script src="mountain-region.js?v=203-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
+    <script src="lake-story.js?v=206-1"></script>
+    <script src="save-slots.js?v=207-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
+    <script src="fish-art.js?v=208-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7186,6 +7225,10 @@
     <script src="scene-layers.js?v=198-1"></script>
     <script src="layered-scenery.js?v=198-1"></script>
     <script>
+      const saveSlots = ShuSaveSlots.create(() => localStorage);
+      const activeSaveSlot = saveSlots.initial(location.search);
+      const loadedSaveSlot = saveSlots.read(activeSaveSlot);
+      let selectedSaveSlot = activeSaveSlot, titleAvatar = "boy", titleDog = "riku", gameStarted = false;
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
         WORLD_HEIGHT = 135,
@@ -8002,6 +8045,18 @@
             name: "魚の切り身（調理分）", icon: "🐟",
             desc: "釣った魚を売る時に、一切れだけ調理用に残したもの。",
           },
+          shirogisuFillet: {
+            name: "シロギスの切り身", icon: "🐟",
+            desc: "シロギスの釣果から一切れ。天ぷらや、いつもの魚料理に。",
+          },
+          ayuFillet: {
+            name: "アユの切り身", icon: "🐟",
+            desc: "アユの釣果から一切れ。塩焼きや、いつもの魚料理に。",
+          },
+          madaiFillet: {
+            name: "マダイの切り身", icon: "🐟",
+            desc: "マダイの釣果から一切れ。潮汁や、いつもの魚料理に。",
+          },
         },
         preparedMealData = {
           shellSoup: {
@@ -8018,6 +8073,21 @@
             name: "小エビの炊き込み飯", icon: "🍚",
             effect: "dogDiscovery", bonus: .35,
             effectLabel: "犬の隠し採集発見率 ＋35%",
+          },
+          shirogisuTempura: {
+            name: "シロギスの天ぷら", icon: "🍤", heal:30,
+            effect: "tensionResistance", bonus:.08,
+            effectLabel: "体力＋30／糸のテンション上昇 −8%",
+          },
+          ayuShioyaki: {
+            name: "アユの塩焼き", icon: "🐟", heal:25,
+            effect: "rareForage", bonus:.2,
+            effectLabel: "体力＋25／珍しい採集物の抽選率 ＋20%",
+          },
+          madaiUshiojiru: {
+            name: "マダイの潮汁", icon: "🍲", heal:35,
+            effect: "dogDiscovery", bonus:.35,
+            effectLabel: "体力＋35／犬の隠し採集発見率 ＋35%",
           },
         },
         cookingRecipeData = {
@@ -8056,6 +8126,33 @@
             ],
             output: { kind: "meal", id: "shrimpRice", amount: 1 },
             resultLabel: "食事／犬の発見率＋35%",
+          },
+          shirogisuTempura: {
+            name: "シロギスの天ぷら", icon:"🍤",
+            ingredients:[
+              {storage:"cookingIngredients",id:"shirogisuFillet",name:"シロギスの切り身",amount:1},
+              {storage:"items",id:"wildGreens",name:"山菜",amount:1},
+            ],
+            output:{kind:"meal",id:"shirogisuTempura",amount:1},
+            resultLabel:"食事／体力＋30・テンション上昇−8%",
+          },
+          ayuShioyaki: {
+            name:"アユの塩焼き",icon:"🐟",
+            ingredients:[
+              {storage:"cookingIngredients",id:"ayuFillet",name:"アユの切り身",amount:1},
+              {storage:"items",id:"wildGreens",name:"山菜",amount:1},
+            ],
+            output:{kind:"meal",id:"ayuShioyaki",amount:1},
+            resultLabel:"食事／体力＋25・珍しい採集率＋20%",
+          },
+          madaiUshiojiru: {
+            name:"マダイの潮汁",icon:"🍲",
+            ingredients:[
+              {storage:"cookingIngredients",id:"madaiFillet",name:"マダイの切り身",amount:1},
+              {storage:"baits",id:"shell",name:"貝",amount:1},
+            ],
+            output:{kind:"meal",id:"madaiUshiojiru",amount:1},
+            resultLabel:"食事／体力＋35・犬の発見率＋35%",
           },
         },
         questRumorData = {
@@ -8876,7 +8973,7 @@
             ],
           },
         },
-        key = "nushi-inugoya-v2";
+        key = saveSlots.keyFor(activeSaveSlot);
       const fishSizeProfiles = {
         moroko: [
           {
@@ -11198,6 +11295,24 @@
             {xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}],
         };
       }
+      // v208: every fish uses the same detailed art and seven authored
+      // headings. Preserve each species' gameplay, size and movement profile.
+      for(const [id,art]of Object.entries(ShuFishArt.species)){
+        fishAssets[id]=fishTurnAssets[id]=fishMouthAssets[id]=art.asset;
+        fishMouthPartAssets[id]=art.asset;
+        fishGridAtlasAssets.add(art.asset);
+        fishSwimFrameCounts[id]=8;
+        fishFrameFallbackSizes[id]=[448,224];
+        handDrawnLifeFishIds.delete(id);
+        handDrawnMouthFishIds.delete(id);
+        standaloneFrameFishIds.delete(id);
+        fixedFaceFishIds.add(id);
+        Object.assign(fishMouthProfiles[id],{x:ShuFishArt.headOffset,y:.12});
+        fishHookPoseOverrides[id]={turn:ShuFishArt.turn,mouth:ShuFishArt.mouth};
+        fishMotionProfiles[id].turnFrames=Math.max(9,fishMotionProfiles[id].turnFrames||0);
+      }
+      fishGroundAssets.hirame=fishAssets.hirame;
+      delete fishCatchAssets.kasago;
       const fishAtlasImageCache = new Map();
       function fishAtlasImage(src) {
         // Reuse the image that began loading as soon as the bite was chosen.
@@ -11363,6 +11478,24 @@
         fishId = "",
       ) {
         const canvas = fishAtlasCanvas(element);
+        if(ShuFishArt.species[fishId]?.asset===spriteAsset){
+          clearStandaloneFishFrame(element);
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${fishId}`;
+          const changed=canvas.dataset.artSpecies!==fishId;
+          if(canvas.width!==448)canvas.width=448;
+          if(canvas.height!==224)canvas.height=224;
+          if(changed)canvas.getContext('2d').clearRect(0,0,448,224);
+          canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
+          canvas.style.display='block';canvas.style.backgroundImage='none';
+          const image=fishAtlasImage(spriteAsset);
+          const paint=()=>{
+            if(canvas.dataset.atlasKey!==key||!image.naturalWidth)return;
+            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame);
+          };
+          if(image.complete&&image.naturalWidth)paint();
+          else{image.addEventListener('load',paint,{once:true});if(image.decode)image.decode().then(paint).catch(()=>{});}
+          return;
+        }
         const standaloneAsset = standaloneFishFrameAsset(
           fishId,
           spriteAsset,
@@ -11722,7 +11855,7 @@
           ? { id: value.id, expiresAt }
           : null;
       }
-      const hadStoredSave = localStorage.getItem(key) !== null;
+      const hadStoredSave = loadedSaveSlot.ok && loadedSaveSlot.exists;
       let s = Object.assign(
           {
             money: 300,
@@ -11779,7 +11912,7 @@
             soundEnabled: true,
             mapVersion: 49,
           },
-          JSON.parse(localStorage.getItem(key) || "{}"),
+          loadedSaveSlot.ok ? loadedSaveSlot.data : {},
         ),
         battle = null,
         timer = 0,
@@ -12204,6 +12337,7 @@
       if (!rodData[s.selectedRod] || !s.ownedRods.includes(s.selectedRod))
         s.selectedRod = "bamboo";
       if (!dogProfileData[s.dog]) s.dog = "riku";
+      s.dogFollowing = s.dogFollowing !== false;
       if (!s.dogAffinity || typeof s.dogAffinity !== "object" ||
           Array.isArray(s.dogAffinity)) s.dogAffinity = {};
       for (const id of dogIds)
@@ -12515,11 +12649,13 @@
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       if(s.ownedRods.includes("moroko"))s.rodCopies.moroko=Math.max(1,s.rodCopies.moroko||0);
+      ShuLakeStory.normalize(s);
       function save() {
         clearTimeout(saveTimer);
         saveTimer = 0;
+        if (!gameStarted) return false;
         try {
-          localStorage.setItem(key, JSON.stringify(s));
+          if (!saveSlots.write(activeSaveSlot, s)) throw Error("Save failed");
           $("#saveStatus").hidden = true;
           return true;
         } catch (_) {
@@ -12559,6 +12695,9 @@
       }
       function cookingIngredientCount(ingredient, state = s) {
         const storage = state[ingredient.storage];
+        if(ingredient.storage==="cookingIngredients"&&ingredient.id==="fishFillet")
+          return Object.keys(cookingIngredientData).reduce((count,id)=>
+            count+Math.max(0,Math.floor(Number(storage?.[id])||0)),0);
         return Math.max(0, Math.floor(Number(storage?.[ingredient.id]) || 0));
       }
       function canCookRecipe(recipeId, state = s) {
@@ -12571,16 +12710,28 @@
         const storage = state[ingredient.storage];
         if (!storage || cookingIngredientCount(ingredient, state) < ingredient.amount)
           return false;
+        if(ingredient.storage==="cookingIngredients"&&ingredient.id==="fishFillet"){
+          let remaining=ingredient.amount;
+          for(const id of Object.keys(cookingIngredientData)){
+            const take=Math.min(remaining,Math.max(0,Math.floor(Number(storage[id])||0)));
+            storage[id]=(storage[id]||0)-take;remaining-=take;
+            if(!remaining)break;
+          }
+          return true;
+        }
         storage[ingredient.id] -= ingredient.amount;
         return true;
+      }
+      function cookingFilletId(fishId){
+        return {shirogisu:"shirogisuFillet",ayu:"ayuFillet",madai:"madaiFillet"}[fishId]||"fishFillet";
       }
       function grantCookingFishFillet(fishId, state = s) {
         if (!fishId || fishId === "nushi") return 0;
         if (!state.cookingIngredients ||
             typeof state.cookingIngredients !== "object")
           state.cookingIngredients = {};
-        state.cookingIngredients.fishFillet =
-          (state.cookingIngredients.fishFillet || 0) + 1;
+        const id=cookingFilletId(fishId);
+        state.cookingIngredients[id] = (state.cookingIngredients[id] || 0) + 1;
         return 1;
       }
       function activeMealStatusLabel(state = s) {
@@ -12623,6 +12774,7 @@
         const meal = preparedMealData[mealId];
         if (!meal || battle || (s.preparedMeals[mealId] || 0) < 1) return false;
         s.preparedMeals[mealId] -= 1;
+        s.hp=Math.min(s.maxHp,s.hp+(meal.heal||0));
         s.activeMeal = { id: mealId, expiresAt: nextMorningMealExpiry() };
         log(`${meal.name}を食べた！ ${meal.effectLabel}（次の朝06:00まで）。`);
         if (locationInteriors[activeLocationId]?.kitchen)
@@ -12659,7 +12811,7 @@
         }).join("");
         return `<section class="cooking-kitchen">` +
           `<div class="location-goods-heading"><b>簡単調理</b><span>素材2つ／無料</span></div>` +
-          `<p class="cooking-kitchen-status">${activeLabel}</p>${recipes}` +
+          `<p class="cooking-kitchen-status">${activeLabel}<br>魚種別の切り身は釣果から一切れ。普通の魚料理にも使えるよ。衣・油・塩は台所で用意するね。</p>${recipes}` +
           `<div class="location-goods-heading"><b>作り置き</b><span>効果は同時に1つ</span></div>` +
           `${readyMeals}</section>`;
       }
@@ -13891,6 +14043,7 @@
         const dock=activeLandingDock();
         if (!dock || s.boatActive) return false;
         s.mapRegion="coast";s.boatActive=true;
+        ShuLakeStory.visit(s,"coast");
         s.x=dock.water.x;s.y=dock.water.y;
         s.direction=dock.id==="reef"?"right":"left";
         dogWorldPosition=null;
@@ -13942,6 +14095,7 @@
         $("#player").classList.remove("walking"); $("#dog").classList.remove("walking");
         const target=destination || {region:entering?"stream":"village",...(entering?ShuMountain.entry:ShuMountain.villageReturn)};
         s.mapRegion=target.region;s.boatActive=false;
+        ShuLakeStory.visit(s,target.region);
         Object.assign(s,{x:target.x,y:target.y,direction:target.direction});
         dogWorldPosition=null;
         log(s.mapRegion==="village"?"山道を下り、村の北口へ戻った。":`山道を進み、${ShuMountain.regionData(s.mapRegion).name}へやってきた。`);
@@ -14667,7 +14821,7 @@
         }
         return nearest;
       }
-      function collectForagePoint(pointId) {
+      function collectForagePoint(pointId, { foundBy = null } = {}) {
         const cycle = ensureForageCycle();
         const itemId = cycle.active[pointId];
         const item = forageData[itemId];
@@ -14675,7 +14829,7 @@
         delete cycle.active[pointId];
         if (!cycle.harvested.includes(pointId)) cycle.harvested.push(pointId);
         cycle.dogFound = cycle.dogFound.filter((id) => id !== pointId);
-        const amount = ShuPetLife.forageCount(s,s.dog);
+        const amount = ShuPetLife.forageCount(s,foundBy || s.dog);
         if (item.destination === "bait")
           s.baits[item.destinationId] = (s.baits[item.destinationId] || 0) + amount;
         else if (item.destination === "item")
@@ -14688,10 +14842,12 @@
           : item.destination === "item"
             ? "調理素材袋に入れた。"
           : "ワンコずのおやつ袋に入れた。";
-        log(`${item.name}を${amount}個拾った！ ${destination}`);
+        const finder = foundBy ? dogProfileData[foundBy]?.name || dogName() : "";
+        const message = finder ? `${finder}が${item.name}を${amount}個掘り出した！` : `${item.name}を${amount}個拾った！`;
+        log(`${message} ${destination}`);
         vibrate([18, 28, 36]);
         render();
-        showRescueToast(`${item.icon} ${item.name}を${amount}個拾った！`, 2800);
+        showRescueToast(`${item.icon} ${message}`, finder ? 3200 : 2800);
         save();
         return true;
       }
@@ -14707,28 +14863,28 @@
           return position && Math.hypot(s.x - position.x, s.y - position.y) < radius;
         });
       }
-      function finishDogForageDiscovery(point, itemId, dogId) {
+      function finishDogForageDiscovery(point, itemId, dogId, discoveryCycle) {
         const cycle = ensureForageCycle();
-        if (!cycle.harvested.includes(point.id)) {
-          cycle.active[point.id] = itemId;
-          if (!cycle.dogFound.includes(point.id)) cycle.dogFound.push(point.id);
-        }
+        const sameCycle = !discoveryCycle || ["dayIndex","period","expiresAt"].every(key => cycle[key] === discoveryCycle[key]);
+        clearTimeout(forageDiscoveryTimer);
         forageDiscoveryTimer = 0;
         forageDiscoveryInProgress = false;
         stopGameAudioSample("dogDig");
-        const name = dogProfileData[dogId]?.name || dogName();
-        log(`${name}がクンクンして隠し採集ポイントを見つけた！`);
-        render();
-        showRescueToast(`🐾 ${name}が隠し採集ポイントを見つけた！`, 3200);
+        let collected = false;
+        if (sameCycle && point && forageData[itemId] && !cycle.harvested.includes(point.id)) {
+          cycle.active[point.id] = itemId;
+          collected = collectForagePoint(point.id, { foundBy: dogId });
+        }
         armDogIdle();
         scheduleIdleStatus(3400);
         scheduleFieldMenu();
-        save();
+        return collected;
       }
       function startDogForageDiscovery(point, itemId) {
-        if (!point || !forageData[itemId] || forageDiscoveryInProgress)
+        if (!s.dogFollowing || !point || !forageData[itemId] || forageDiscoveryInProgress)
           return false;
         const dogId = s.dog;
+        const discoveryCycle = ensureForageCycle();
         const name = dogProfileData[dogId]?.name || dogName();
         forageDiscoveryInProgress = true;
         forageWalkSteps = 0;
@@ -14744,12 +14900,12 @@
           playGameAudioSample("dogDig", { restart: true });
           $("#hint").textContent = `${name}がクンクンしながら隠れた採集場所を探している……`;
           forageDiscoveryTimer = setTimeout(() =>
-            finishDogForageDiscovery(point, itemId, dogId), 1450);
+            finishDogForageDiscovery(point, itemId, dogId, discoveryCycle), 1450);
         }, DOG_BARK_LEAD_MS);
         return true;
       }
       function maybeDogDiscoverForagePoint(random = Math.random) {
-        if (battle || rescueInProgress || forageDiscoveryInProgress) return false;
+        if (!s.dogFollowing || battle || rescueInProgress || forageDiscoveryInProgress) return false;
         forageWalkSteps += 1;
         if (forageWalkSteps < 8) return false;
         const affinity = Math.max(0, Math.min(100, (Number(s.dogAffinity[s.dog]) || 0) / 20));
@@ -14782,7 +14938,8 @@
           closeButton.textContent = interior.closeLabel || "外へ出る";
         $("#locationBrand").textContent = interior.brand;
         $("#locationTitle").textContent = interior.title;
-        $("#locationDialogue").textContent = interior.dialogue;
+        const storyLine = ShuLakeStory.dialogue(s,id);
+        $("#locationDialogue").textContent = interior.dialogue + (storyLine ? "\n\n" + storyLine : "");
         $("#locationActionLabel").textContent = interior.actionLabel;
         $("#locationActionCost").textContent = interior.actionCost;
         $("#locationAction").hidden = interior.service === false ||
@@ -15304,9 +15461,11 @@
         const sample = gameAudioSample(id);
         if (!sample) return false;
         const whine = greeting.sound === "whine";
-        sample.playbackRate = whine ? Math.max(.94, Math.min(1.04, greeting.rate)) : greeting.rate;
-        sample.preservesPitch = whine;
-        sample.webkitPreservesPitch = whine;
+        // Keep the recorded bark intact: changing speed and pitch stretched
+        // Chappie's greeting into a howl and made smaller dogs sound squeaky.
+        sample.playbackRate = whine ? Math.max(.94, Math.min(1.04, greeting.rate)) : 1;
+        sample.preservesPitch = true;
+        sample.webkitPreservesPitch = true;
         const played = playGameAudioSample(id);
         if (played) rivalDogLastSound = now;
         return played;
@@ -15924,8 +16083,10 @@
       }
       function drawAquariumSprite(element, id, swimFrame, pose = null) {
         const turning = pose?.spriteMode === "turn";
-        const cells = turning ? 5 : fishSwimFrameCounts[id] || 8;
-        const frame = turning ? pose.turnFrame : swimFrame % cells;
+        const cells = turning ? (ShuFishArt.species[id]?7:5) : fishSwimFrameCounts[id] || 8;
+        const frame = turning ? (cells===7
+          ? Number.isFinite(pose.yaw)?Math.round(pose.yaw/Math.PI*6):[0,2,3,4,6][pose.turnFrame||0]
+          : pose.turnFrame) : swimFrame % cells;
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
         const key = `${id}:${turning ? "turn" : "swim"}:${frame}`;
         if (element.dataset.aquariumFrame !== key) {
@@ -16032,6 +16193,7 @@
       }
       function renderSamShop() {
         renderWeather();
+        $("#samStoryLine").textContent = ShuLakeStory.dialogue(s,"sam");
         $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("")+
           `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
         $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
@@ -17086,6 +17248,7 @@
         }
         renderPlayer();
         const dogPosition = dogFollowPosition();
+        $("#dog").hidden = !s.dogFollowing;
         $("#dog").style.left = `${dogDisplayLeft(dogPosition)}%`;
         $("#dog").style.top = `${dogDisplayTop(dogPosition)}%`;
         $("#dog").style.zIndex = dogDisplayTop(dogPosition) > mapY ? "6" : "4";
@@ -17204,7 +17367,7 @@
         syncRodDisplayArt("#statusRodArt");
         $("#statusBait").textContent =
           `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0} · ${ShuTackle.hooks[s.selectedHook].name}`;
-        $("#statusDog").textContent = dogName();
+        $("#statusDog").textContent = s.dogFollowing ? dogName() : "みんな家でお留守番";
         const activeMeal = activeMealEntry();
         $("#statusMeal").textContent = activeMeal
           ? `${activeMeal.icon} ${activeMeal.name}`
@@ -17280,10 +17443,12 @@
       function openFieldMenuTarget(target) {
         hideFieldMenu();
         if (target === "record") open("record");
+        else if (target === "story") openLakeStory();
         else if (target === "tackle") openInventory("tackle");
         else if (target === "items") openInventory("items");
         else if (target === "quests") openQuestBoard();
         else if (target === "dog") openDogCare();
+        else if (target === "saveSlots") return returnToSaveSelection();
       }
       function move(d) {
         if (playerHomeState.transitioning) return;
@@ -17386,7 +17551,7 @@
       }
       function drawDog() {
         const canvas = $("#dogSprite");
-        if (!canvas) return;
+        if (!canvas || !s.dogFollowing) return;
         // Main-map art now scales with the scene as the home already does.
         // Reuse its paw registration so walking/sitting/sleeping share one
         // ground point instead of inheriting each PNG's transparent margin.
@@ -17561,7 +17726,7 @@
         renderPlayer();
       }
       function setDogIdle(mode) {
-        if (battle) return;
+        if (battle || !s.dogFollowing) return;
         clearTimeout(companionReactionTimer);
         clearTimeout(reactionTransitionTimer);
         companionReaction = "";
@@ -17639,11 +17804,12 @@
       }
       function armDogIdle() {
         wakeDog();
+        if (!s.dogFollowing) return;
         idleTimer = setTimeout(() => setDogIdle("sit"), 1000);
         idleActionTimer = setTimeout(randomDogIdle, 30000);
       }
       function randomDogIdle() {
-        if (battle) return;
+        if (battle || !s.dogFollowing) return;
         // Leave the linked nap as a short wake-and-return sequence instead of
         // turning a curled-up dog directly into a digging or begging sprite.
         if (dogIdleMode === "idle-sleep") {
@@ -17723,7 +17889,7 @@
           total + Math.max(0, Number(count) || 0), 0);
       }
       function canReceiveDogRescue() {
-        return totalBaitCount() < 1 && s.money < baitData.worm.price;
+        return s.dogFollowing && totalBaitCount() < 1 && s.money < baitData.worm.price;
       }
       function showRescueToast(message, duration = 2600) {
         const toast = $("#rescueToast");
@@ -18142,7 +18308,7 @@
       }
       function drawDogCareBackdrop(ctx, frame = 0) {
         ctx.fillStyle = "#0a2135";
-        ctx.fillRect(0, 0, 320, 144);
+        ctx.fillRect(0, 0, 320, 180);
         ctx.fillStyle = "#12364a";
         ctx.fillRect(0, 18, 320, 4);
         ctx.fillRect(0, 42, 320, 3);
@@ -18153,11 +18319,11 @@
             ctx.fillRect(x, y, twinkle, twinkle);
           });
         ctx.fillStyle = "#2f5947";
-        ctx.fillRect(0, 111, 320, 33);
+        ctx.fillRect(0, 165, 320, 15);
         ctx.fillStyle = "#3d6b52";
-        ctx.fillRect(0, 111, 320, 4);
+        ctx.fillRect(0, 165, 320, 4);
         ctx.fillStyle = "#244636";
-        for (let x = 0; x < 320; x += 24) ctx.fillRect(x, 131, 13, 3);
+        for (let x = 0; x < 320; x += 24) ctx.fillRect(x, 175, 13, 3);
       }
       function drawDogCareFallback(ctx, dogId, x, y, size = 150) {
         const unit = Math.max(2, Math.round(size / 32));
@@ -18189,22 +18355,76 @@
           return;
         }
         const cell = dogId === "riku" ? 362 : 320;
-        const row = pose === "walk-a" ? 0 : pose === "walk-b" ? 2 : 1;
+        const row = pose.endsWith("-a") ? 0 : pose.endsWith("-b") ? 2 : 1;
+        const column = pose.includes("left") ? 1 : 2;
         const sourceHeight = dogId === "riku" && row === 1 ? cell - 12 : cell;
-        const lift = dogId === "riku"
-          ? ({ 0: -5, 1: 3, 2: 8 }[row] || 0)
-          : 0;
+        // Use the actual paws, since Riku's rows have very different margins.
+        const paws = {
+          shuu: [[283,283],[283,283],[286,286]],
+          riku: [[342,342],[286,286],[222,222]],
+          grey: [[296,296],[299,299],[294,294]],
+        };
+        const scale = size / cell;
+        const center = dogId === "riku" ? column === 1 ? 199 : 162 : cell / 2;
         ctx.drawImage(
           image,
-          cell * 2,
+          cell * column,
           cell * row,
           cell,
           sourceHeight,
-          Math.round(x),
-          Math.round(y + lift),
+          Math.round(x + size / 2 - center * scale),
+          Math.round(y + size * .9 - paws[dogId][row][column-1] * scale),
           size,
           Math.round(size * sourceHeight / cell),
         );
+      }
+      function drawDogCareCloseup(ctx, dogId, mode, progress, now) {
+        const image = dogIdleImage;
+        if (!image?.complete || !image.naturalWidth) {
+          drawDogCareSprite(ctx, dogId, 55, 8, "stand", 182);
+          return;
+        }
+        const row = {shuu:0,riku:1,grey:2}[dogId], size = dogId==="riku"?220:188, scale = size / 320;
+        const originX=144-size/2,originY=166-({shuu:298,riku:232,grey:300}[dogId])*scale;
+        const head = [75, 0, 170, 168];
+        const active = mode === "pet" || mode === "treat";
+        const tilt = active ? Math.sin(progress * Math.PI * 3) * .035 : 0;
+        ctx.save(); ctx.translate(originX, originY); ctx.scale(scale, scale);
+        // Keep the seated body and paws still while the authored head moves.
+        ctx.save(); ctx.beginPath(); ctx.rect(0,0,320,320); ctx.rect(...head);
+        ctx.clip("evenodd"); ctx.drawImage(image,0,row*320,320,320,0,0,320,320); ctx.restore();
+        ctx.save(); ctx.translate(160,160); ctx.rotate(tilt); ctx.translate(-160,-160);
+        const ears = dogId === "riku" ? [[87,12,61,48],[150,12,60,48]] : [[99,9,43,68],[178,9,43,68]];
+        ctx.save(); ctx.beginPath(); ctx.rect(...head);
+        for(const ear of ears)ctx.rect(...ear);
+        ctx.clip("evenodd");ctx.drawImage(image,0,row*320,320,320,0,0,320,320);ctx.restore();
+        for(const [index,ear]of ears.entries()){
+          const [x,y,w,h]=ear,pivotX=x+w/2,pivotY=y+h;
+          ctx.save();ctx.translate(pivotX,pivotY);
+          ctx.rotate(active ? Math.sin(progress*Math.PI*5+index*.8)*.055 : Math.sin(now/1700+index)*.012);
+          ctx.drawImage(image,x,row*320+y,w,h,x-pivotX,y-pivotY,w,h);ctx.restore();
+        }
+        const eyes={shuu:[[135,103],[184,103]],riku:[[131,88],[170,88]],grey:[[132,97],[182,97]]}[dogId];
+        const relaxed=mode==="pet"&&progress>.16&&progress<.93;
+        const blink=relaxed||now%4700>4500;
+        if(blink)for(const [x,y]of eyes){
+          ctx.drawImage(image,x-9,row*320+y-18,18,5,x-9,y-8,18,18);
+          ctx.strokeStyle="#34241d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(x-7,y);
+          ctx.quadraticCurveTo(x,y+4,x+7,y);ctx.stroke();
+        }
+        const lip={shuu:[160,140],riku:[150,121],grey:[160,132]}[dogId];
+        if(mode==="treat"&&progress>.36&&progress<.85){
+          const chew=Math.sin(progress*Math.PI*22);
+          ctx.strokeStyle="#34241d";ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(lip[0]-7,lip[1]);
+          ctx.quadraticCurveTo(lip[0],lip[1]+Math.max(0,chew)*5,lip[0]+7,lip[1]);ctx.stroke();
+          if(chew>.4){ctx.fillStyle="#d68783";ctx.fillRect(lip[0]-3,lip[1]+1,6,3);}
+        }
+        ctx.restore();ctx.restore();
+        const project=([x,y])=>({
+          x:originX+(160+(x-160)*Math.cos(tilt)-(y-160)*Math.sin(tilt))*scale,
+          y:originY+(160+(x-160)*Math.sin(tilt)+(y-160)*Math.cos(tilt))*scale,
+        });
+        return {...project(lip),crown:project({shuu:[160,67],riku:[150,58],grey:[160,67]}[dogId])};
       }
       function drawDogCareProp(ctx, itemId, x, y, scale = 1) {
         const u = Math.max(1, Math.round(2 * scale));
@@ -18273,7 +18493,40 @@
           ctx.fillRect(px + 7 * u, py - 4 * u, u, u);
         }
       }
-      function drawDogCareHand(ctx, x, y, itemId = null, treatScale = 1) {
+      function dogCareEase(value) {
+        const t=Math.max(0,Math.min(1,value));
+        return t*t*(3-2*t);
+      }
+      function dogCarePetHand(crown, progress) {
+        let x,y,phase;
+        if(progress<.18){
+          const t=dogCareEase(progress/.18);
+          x=350+(crown.x-350)*t;y=crown.y-30+22*t;phase="approach";
+        }else if(progress<.42){
+          const t=dogCareEase((progress-.18)/.24);
+          x=crown.x+24*t;y=crown.y-8+Math.sin(t*Math.PI)*2;phase="stroke";
+        }else if(progress<.54){
+          const t=dogCareEase((progress-.42)/.12);
+          x=crown.x+24*(1-t);y=crown.y-8-Math.sin(t*Math.PI)*12;phase="lift";
+        }else if(progress<.8){
+          const t=dogCareEase((progress-.54)/.26);
+          x=crown.x+24*t;y=crown.y-8+Math.sin(t*Math.PI)*2;phase="stroke";
+        }else{
+          const t=dogCareEase((progress-.8)/.2);
+          x=crown.x+24+(350-crown.x-24)*t;y=crown.y-8-22*t;phase="withdraw";
+        }
+        return {x,y,phase};
+      }
+      function dogCareTreatHand(mouth, progress) {
+        const approach=dogCareEase(progress/.26),withdraw=dogCareEase((progress-.78)/.22);
+        return {
+          x:350+(mouth.x+11-350)*approach+(350-mouth.x-11)*withdraw,
+          y:mouth.y-7+6*approach-6*withdraw,
+          food:1-dogCareEase((progress-.42)/.3),
+          phase:progress<.26?"approach":progress<.78?"feed":"withdraw",
+        };
+      }
+      function drawDogCareHand(ctx, x, y, itemId = null, treatScale = 1, pose = "feed") {
         const px = Math.round(x);
         const py = Math.round(y);
         ctx.fillStyle = "#d7e8ef";
@@ -18282,14 +18535,20 @@
         ctx.fillRect(px + 19, py - 11, 9, 26);
         ctx.fillStyle = "#e7ad83";
         ctx.fillRect(px + 2, py - 8, 20, 20);
-        ctx.fillRect(px - 8, py - 5, 14, 7);
-        ctx.fillRect(px - 6, py + 4, 13, 6);
+        if(pose==="stroke"){
+          for(const [i,left]of [-14,-18,-16,-12].entries())ctx.fillRect(px+left,py-6+i*4,18-left,3);
+        }else{
+          ctx.fillRect(px - 8, py - 5, 14, 7);
+          ctx.fillRect(px - 6, py + 4, 13, 6);
+        }
         ctx.fillStyle = "#f3c19a";
-        ctx.fillRect(px - 10, py - 4, 14, 4);
-        ctx.fillRect(px - 8, py + 5, 14, 3);
+        ctx.fillRect(px-(pose==="stroke"?17:10),py-4,pose==="stroke"?21:14,3);
+        ctx.fillRect(px-(pose==="stroke"?13:8),py+5,pose==="stroke"?19:14,3);
         ctx.fillRect(px + 5, py - 11, 7, 5);
-        if (itemId && treatScale > .08)
-          drawDogCareProp(ctx, itemId, px - 11, py + 1, treatScale);
+        if (itemId && treatScale > .02) {
+          ctx.save();ctx.translate(px-11,py+1);ctx.scale(treatScale,treatScale);
+          drawDogCareProp(ctx,itemId,0,0,1);ctx.restore();
+        }
       }
       function drawDogCareHearts(ctx, frame, offsetX = 0) {
         const rise = (frame % 8) * 2;
@@ -18337,43 +18596,60 @@
           ? scene.dogId
           : dogCareSelectedId || s.dog;
         const frame = scene.frame || 0;
+        const progress = scene.duration ? Math.max(0,Math.min(1,(now-scene.startedAt)/scene.duration)) : 0;
+        canvas.dataset.careMode = scene.mode;
+        canvas.dataset.careProgress = progress.toFixed(3);
+        delete canvas.dataset.handPhase;
         const label = $("#dogCareSceneLabel");
         ctx.imageSmoothingEnabled = false;
         ctx.clearRect(0, 0, canvas.width, canvas.height);
         drawDogCareBackdrop(ctx, frame);
         updateDogCareCatchButton(false, false);
         if (scene.mode === "treat") {
-          const progress = Math.max(0, Math.min(1, (now - scene.startedAt) / scene.duration));
-          const handIn = Math.max(0, Math.min(1, progress / .22));
-          const handOut = Math.max(0, Math.min(1, (progress - .82) / .18));
-          const approach = Math.max(0, Math.min(1, (progress - .12) / .38));
-          const chomp = progress > .48 && progress < .76 ? frame % 2 : 0;
-          const dogX = 18 + Math.round(52 * approach);
-          const dogY = -5 + chomp * 3;
-          drawDogCareSprite(ctx, dogId, dogX, dogY, "stand", 164);
-          const handX = 354 - 108 * handIn + 92 * handOut;
-          const treatScale = progress < .52
-            ? 1
-            : Math.max(0, 1 - (progress - .52) / .25);
-          drawDogCareHand(ctx, handX, 87 + chomp, scene.itemId, treatScale);
-          if (progress > .68) drawDogCareHearts(ctx, frame);
-          if (label) label.textContent = progress < .23
-            ? "手からおやつをどうぞ"
-            : progress < .52 ? "くんくん……はむっ！" : "もぐもぐ…おいしいね♡";
+          const mouth = drawDogCareCloseup(ctx,dogId,"treat",progress,now) || {x:144,y:85};
+          const hand=dogCareTreatHand(mouth,progress);
+          canvas.dataset.handPhase=hand.phase;
+          drawDogCareHand(ctx,hand.x,hand.y,scene.itemId,hand.food);
+          if(progress>.74)drawDogCareHearts(ctx,frame);
+          if(label)label.textContent=progress<.3?"クンクン…おやつだ！":progress<.85?"もぐもぐ…おいしいね♡":"ごちそうさま！";
+          return true;
+        }
+        if (scene.mode === "train") {
+          const run = progress<.42 ? progress/.42 : progress<.58 ? 1 : Math.max(0,1-(progress-.58)/.3);
+          const returning=progress>.58&&progress<.88;
+          const walking=progress<.42||returning;
+          const pose=walking?`walk-${returning?"left-":""}${frame%4<2?"a":"b"}`:"stand";
+          drawDogCareSprite(ctx,dogId,12+140*run,20,pose,160);
+          if(progress>.88)drawDogCareHearts(ctx,frame,-30);
+          if(label)label.textContent=progress<.42?"走って、待て！":progress<.58?"上手に止まれたね":progress<.88?"おいで！ こっちへ戻ろう":"戻ってきた！ いい子だね♡";
+          return true;
+        }
+        if (scene.mode === "pet") {
+          const face=drawDogCareCloseup(ctx,dogId,"pet",progress,now)||{x:144,y:83};
+          const hand=dogCarePetHand(face.crown||{x:face.x,y:face.y-40},progress);
+          canvas.dataset.handPhase=hand.phase;
+          drawDogCareHand(ctx,hand.x,hand.y,null,1,"stroke");
+          drawDogCareHearts(ctx,frame,-18);
+          if(label)label.textContent="ゆっくりナデナデ…目を細めて、いい気持ち♡";
+          return true;
+        }
+        if (scene.mode === "idle") {
+          drawDogCareCloseup(ctx,dogId,"idle",0,now);
+          if(label)label.textContent="今日は何をして遊ぼう？";
           return true;
         }
         if (scene.mode === "toy") {
           const progress = Math.max(0, Math.min(1, (now - scene.startedAt) / scene.duration));
           const pulse = frame % 4 < 2 ? 0 : 5;
           if (dogCareData[scene.itemId]?.motion === "tug") {
-            drawDogCareSprite(ctx, dogId, 49 - pulse, -4, frame % 4 < 2 ? "walk-a" : "walk-b", 164);
+            drawDogCareSprite(ctx, dogId, 49 - pulse, 20, frame % 4 < 2 ? "walk-a" : "walk-b", 164);
             drawDogCareProp(ctx, scene.itemId, 238 + pulse, 91, 1);
             ctx.fillStyle = "#f3d878";
             ctx.fillRect(192, 89, Math.max(2, 34 + pulse), 3);
             if (label) label.textContent = "ぐいぐい！ ひっぱりっこ！";
           } else {
             const leap = progress < .7 ? Math.round(Math.sin(progress / .7 * Math.PI) * 18) : 0;
-            drawDogCareSprite(ctx, dogId, 35 + Math.round(progress * 48), -2 - leap, progress < .7 ? "walk-a" : "stand", 164);
+            drawDogCareSprite(ctx, dogId, 35 + Math.round(progress * 48), 22 - leap, progress < .7 ? "walk-a" : "stand", 164);
             drawDogCareProp(ctx, scene.itemId, 244, 91 - pulse, 1);
             if (label) label.textContent = progress < .7 ? "ヌシ人形へ、えいっ！" : "キュッ♪ つかまえた！";
           }
@@ -18392,7 +18668,7 @@
           if (game.phase === "throw") {
             const flight = dogCatchPosition(game, now);
             const dogX = 20 + Math.round(52 * Math.min(1, flight.progress / .7));
-            drawDogCareSprite(ctx, dogId, dogX, -3, frame % 4 < 2 ? "walk-a" : "walk-b", 158);
+            drawDogCareSprite(ctx, dogId, dogX, 21, frame % 4 < 2 ? "walk-a" : "walk-b", 158);
             drawDogCareProp(ctx, game.toyId, flight.x, flight.y, game.toyId === "starFrisbee" ? .85 : 1);
             ctx.fillStyle = "#07131d";
             ctx.fillRect(18, 124, 284, 9);
@@ -18404,25 +18680,19 @@
               : `第${game.throwIndex + 1}投　${game.score} / 3　画面のどこでもタップ`;
             if (label) label.textContent = hint;
           } else {
-            drawDogCareSprite(ctx, dogId, game.lastSuccess ? 65 : 36, -3, "stand", 160);
+            const returning=Math.max(0,Math.min(1,(now-game.resultStartedAt)/650));
+            const dogX=72-52*returning;
+            drawDogCareSprite(ctx, dogId, dogX, 21, returning<.95?`walk-left-${frame%4<2?"a":"b"}`:"stand", 160);
             if (game.lastSuccess) {
-              drawDogCareProp(ctx, game.toyId, 205, 86, .85);
+              drawDogCareProp(ctx, game.toyId, returning<.95?dogX+23:dogX+135, 105, .65);
               drawDogCareHearts(ctx, frame, -12);
             }
-            if (label) label.textContent = game.lastSuccess ? "ナイスキャッチ！" : "おしい！ 次はいけるよ";
+            if (label) label.textContent = game.lastSuccess ? "ナイスキャッチ！ 持って帰るよ" : "おしい！ 次はいけるよ";
           }
           return true;
         }
-        if (scene.mode === "pet" || scene.mode === "train") {
-          const pulse=frame%4<2?0:3;
-          drawDogCareSprite(ctx,dogId,64,-4+pulse,"stand",164);
-          drawDogCareHand(ctx,220,scene.mode==="pet"?48+pulse:85,null);
-          drawDogCareHearts(ctx,frame,-14);
-          if(label)label.textContent=scene.mode==="pet"?"ナデナデ…いい子だね♡":"おすわり、お手、待て。上手にできたね！";
-          return true;
-        }
         if (scene.mode === "celebrate") {
-          drawDogCareSprite(ctx, dogId, 63, -8 - (frame % 4 < 2 ? 5 : 0), "stand", 166);
+          drawDogCareSprite(ctx, dogId, 63, 16 - (frame % 4 < 2 ? 5 : 0), "stand", 166);
           drawDogCareHearts(ctx, frame, -10);
           if (label) label.textContent = "いっしょに遊べてうれしいね♡";
           return true;
@@ -18642,6 +18912,11 @@
           }).join("");
         $("#dogCarePet").disabled = busy;
         $("#dogCareTakeFishing").disabled = busy;
+        $("#dogCareTakeFishing").innerHTML = dogId===s.dog&&s.dogFollowing
+          ? "この子が同行中<small>外ではこの子だけが付いてくる</small>"
+          : "この子と釣りへ行く<small>同行ワンコにする</small>";
+        $("#dogCareStayHome").hidden = playerHomeState.area!=="interior";
+        $("#dogCareStayHome").disabled = busy || dogId!==s.dog || !s.dogFollowing;
         document.querySelectorAll("[data-dog-care-id]").forEach((button) =>
           button.onclick = () => selectDogCare(button.dataset.dogCareId),
         );
@@ -18742,6 +19017,7 @@
         const dogId = dogProfileData[dogCareSelectedId] ? dogCareSelectedId : s.dog;
         if (dogCareIsBusy()) return false;
         s.dog = dogId;
+        s.dogFollowing = true;
         ensureDogImage(dogId);
         document.querySelectorAll("[data-dog]").forEach((button) =>
           button.classList.toggle("active", button.dataset.dog === dogId),
@@ -18751,6 +19027,14 @@
         save();
         close();
         armDogIdle();
+        return true;
+      }
+      function leaveDogAtHome() {
+        if(playerHomeState.area!=="interior"||dogCareIsBusy()||dogCareSelectedId!==s.dog||!s.dogFollowing)return false;
+        s.dogFollowing=false;
+        wakeDog();
+        log(`${dogName()}に家で待っていてもらうことにした。`);
+        save();close();render();
         return true;
       }
       function equipHand(id) {
@@ -19022,7 +19306,7 @@
         for(const id of ["#inventoryTackleSummary","#castTackleSummary"]){
           let panel=$(id).nextElementSibling;
           if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
-          panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が右へ走る時は離す。糸がたわんだら引いて、左の水面へ寄せよう。強い魚には丈夫な竿が必要。":"Aを押して巻く。張力が上がったら離して糸を送ろう。"}</p>
+          panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が右へ走る時はAを離して待つ。糸がたわんだらAで引いて、左の水面へ寄せよう。強い魚には丈夫な竿が必要。":"Aを押して巻く。張力が上がったらAを離して待とう。"} Bを1回押すと糸を出して張力をすぐ逃がせる。魚との距離は少し開くので、張力が高い時に使おう。</p>
             <div role="group" aria-label="釣り方"><button data-fishing-method="bait" aria-pressed="${s.fishingMethod==="bait"}">エサ釣り</button><button data-fishing-method="lure" aria-pressed="${s.fishingMethod==="lure"}" ${s.ownedRods.includes("lureRod")&&s.lures.silverSpoon>0?"":"disabled"}>スプーンで誘う</button></div><small>スプーンにはルアーロッドが必要。サムの店で購入できるよ。アワセ後は一度Aを離してから引く。</small>
             ${s.rodCopies.starGazer>1?`<div class="rod-duplicates"><b>星見の竿 ${s.rodCopies.starGazer}本 · 強化＋${s.rodLevels.starGazer}</b><button data-rod-duplicate="sell">余分な一本を売る · 12000円</button><button data-rod-duplicate="upgrade" ${s.rodLevels.starGazer>=5?"disabled":""}>一本を重ねて強化</button><small>選ばなければ保管。最後の一本は残るよ。</small></div>`:""}`;
           panel.querySelectorAll("[data-fight-mode]").forEach(b=>b.onclick=()=>{s.fightMode=b.dataset.fightMode;renderTackle();save();});
@@ -19913,10 +20197,11 @@
           // successful v68 poses. v82.1 makes this JS value the only visible
           // sprite clock, so the painted mouth and the hook always read the
           // same exact frame on fast and delayed-render browsers alike.
-          const phaseFrame = Math.min(4, Math.floor(progress * 5));
+          const headings=ShuFishArt.species[battle.f.id]?7:5;
+          const phaseFrame = Math.min(headings-1, Math.floor(progress * headings));
           battle.turnSpriteFrame = turn.from > 0
             ? phaseFrame
-            : 4 - phaseFrame;
+            : headings-1 - phaseFrame;
           battle.turnDepth = curve;
           battle.turnMouthProjection =
             turn.from * Math.cos(progress * Math.PI);
@@ -19963,7 +20248,7 @@
               frames: motionProfile.turnFrames || 4,
               flipped: false,
             };
-            battle.turnSpriteFrame = battle.facing > 0 ? 0 : 4;
+            battle.turnSpriteFrame = battle.facing > 0 ? 0 : (ShuFishArt.species[battle.f.id]?6:4);
             battle.turnHold = 0;
           }
         } else {
@@ -20479,6 +20764,7 @@
           $(id).classList.remove("warn", "danger", "slack");
       }
       function hideCatchCard() {
+        $("#catchStoryButton").hidden = true;
         clearTimeout(catchTimer);
         clearInterval(catchAnimationTimer);
         catchAnimationTimer = 0;
@@ -20617,6 +20903,7 @@
         specimen = null,
       ) {
         hideIdleStatus();
+        $("#catchStoryButton").hidden = true;
         const card = $("#catchCard");
         const hangingFish = $("#catchFish");
         const specialCatch = ShuRegional.legendary(f.id)
@@ -20853,12 +21140,12 @@
           spriteMode = "ground";
         } else if (battle.turning) {
           spriteAsset = fishTurnAssets[battle.f.id];
-          spriteCells = 5;
+          spriteCells = ShuFishArt.species[battle.f.id]?7:5;
           spriteFrame = battle.turnSpriteFrame || 0;
           spriteMode = "turn";
         } else if (
           mouthState !== "closed" &&
-          (!fixedFaceFishIds.has(battle.f.id) ||
+          (ShuFishArt.species[battle.f.id] || !fixedFaceFishIds.has(battle.f.id) ||
             handDrawnMouthFishIds.has(battle.f.id))
         ) {
           const requestedFrame = mouthState === "open" ? 2 : 1;
@@ -21296,8 +21583,8 @@
         $("#distanceMeter").parentElement.style.display = "block";
         $("#ten").parentElement.style.display = "block";
         $("#fishName").textContent = f.name;
-        $("#pull").innerHTML = "A<br><small>押して巻く</small>";
-        $("#wait").innerHTML = "B<br><small>糸を送る</small>";
+        $("#pull").innerHTML = "A<br><small>押して巻く<br>離して待つ</small>";
+        $("#wait").innerHTML = "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
         chooseFishMood(true);
         fishElement.classList.add("hooked");
         clearTimeout(hookRevealTimer);
@@ -21310,7 +21597,7 @@
           ? " ④ 巻く／送る"
           : $("#phaseLabel").textContent;
         $("#battleMsg").textContent = battle.practice
-          ? "サム「掛かった！Aを押して巻く。赤くなったら離して糸を送るんだ」"
+          ? "サム「Aを押して巻く、離して待つ。張力が高い時はBを1回。糸が出て張力が下がるが、魚は少し遠ざかるぞ」"
           : f.id === "hirame" && !battle.sandLifted
             ? "ヒラメが砂底にぺったり張り付いている！まずAで引き剥がし、左上の水面へ寄せよう。"
             : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
@@ -21350,13 +21637,23 @@
         if (battle.phase !== "fight") return lose("竿を上げて仕掛けを回収した。");
         setBattleReeling(false);
         // B deliberately pays out line; simply releasing A only pauses reeling.
-        if (battle.ten < 18 || Date.now() - (battle.lineFeedAt || 0) < 650) return;
+        if (Date.now() - (battle.lineFeedAt || 0) < 650) {
+          $("#battleMsg").textContent = "続けて糸を出すには少し待とう。Aを離して魚の動きを見よう。";
+          return;
+        }
+        if (battle.ten < 18) {
+          battle.recoveryMessage = "張力は低い。今は糸を出さなくて大丈夫。魚が落ち着いたらAで巻こう。";
+          battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
+          $("#battleMsg").textContent = battle.recoveryMessage;
+          return;
+        }
         battle.lineFeedAt = Date.now();
         battle.ten = Math.max(3, battle.ten - Math.max(14, Math.min(24, battle.ten * .24)));
         battle.retrieval = Math.max(0, (battle.retrieval || 0) - .018);
         battle.retrievalDelta = -.018;
-        battle.recoveryMessage = "糸を送り、張力を逃がした。魚との距離が少し開く。";
-        battle.gillRecovery = Math.max(battle.gillRecovery || 0, 5);
+        battle.recoveryMessage = "糸を出した！張力が下がり、魚との距離が少し開いた。Aを離して待ち、落ち着いたら巻こう。";
+        battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
+        $("#battleMsg").textContent = battle.recoveryMessage;
         drawBattle();
       }
       function drawBattle() {
@@ -21575,8 +21872,9 @@
         const tournamentDetail = tournamentCatch === "choice"
           ? " ・ 大会ビクが満杯：つづけるで入れ替え"
           : tournamentCatch === "kept" ? ` ・ 大会ビク ${s.tournament.creel.length}/${ShuTournament.definition(s.tournament).capacity}匹` : "";
+        const filletName=cookingIngredientData[cookingFilletId(f.id)].name;
         const filletLog = filletReward
-          ? " 調理用の魚の切り身も一切れ残した。"
+          ? ` 調理用の${filletName}も一切れ残した。`
           : "";
         log(specimen
           ? `${spot.name}で【${specimen.tierLabel}】${f.name} ${specimen.cmText}cmを釣り上げた！ ${salePrice}円獲得。${newSizeRecord ? "最大記録！" : ""}${crownDetail}${filletLog}`
@@ -21590,7 +21888,7 @@
         const catchDetail = (first
           ? `初釣果！ ＋${salePrice}円`
           : `${s.caught[f.id]}匹目 ・ ＋${salePrice}円`) +
-          (filletReward ? " ・ 調理用切り身×1" : "") +
+          (filletReward ? ` ・ ${filletName}×1` : "") +
           questDetail + tournamentDetail;
         const specimenDetail = specimen
             ? `${specimen.tierLabel} ${specimen.cmText}cm ・ ${catchDetail}` +
@@ -21611,6 +21909,11 @@
             : "",
           specimen,
         );
+        const storyChapter = ShuLakeStory.catchChapter(f.id);
+        if(first && storyChapter){
+          $("#catchStoryButton").dataset.storyChapter = storyChapter;
+          $("#catchStoryButton").hidden = false;
+        }
       }
       function endBattle() {
         if (battle?.tournamentCast && s.tournament) {
@@ -21652,6 +21955,11 @@
         renderRivals();
         stopHomeDogAnimation();
         if (id === "record") renderRecord();
+        if (id === "lakeStory") {
+          releaseHeldInputs();
+          renderLakeStory();
+          $("#lakeStoryClose").focus({preventScroll:true});
+        }
         eventCeremonies?.sync();
         syncSceneSound();
         renderPixelScenery();
@@ -21663,6 +21971,9 @@
           return;
         }
         const openModals = [...document.querySelectorAll(".modal.open")];
+        const closingStory = $("#lakeStory").classList.contains("open");
+        const storyTarget = closingStory ? lakeStoryReturn : null;
+        if(closingStory)lakeStoryReturn=null;
         petUi?.stop();
         if (!openModals.length) return;
         const returnToShop = $("#tournamentTalk").classList.contains("open") && rivalTalkReturn === "store";
@@ -21683,6 +21994,12 @@
         renderRivals();
         syncSceneSound();
         hideStarFortuneReveal({ rerender: false });
+        if(storyTarget){
+          if(storyTarget==="store")renderSamShop();
+          open(storyTarget);$(storyTarget==="store"?"#samStoryOffer":"#fishdexStoryOffer").focus({preventScroll:true});
+          return;
+        }
+        if(closingStory)$("#menu").focus({preventScroll:true});
         if (returnToShop) { renderSamShop(); open("store"); return; }
         if (playerHomeIsActive()) {
           hideIdleStatus();
@@ -21699,6 +22016,36 @@
       }
       function fishdexIsKnown(f) {
         return Math.max(0, Number(s.caught?.[f.id]) || 0) > 0;
+      }
+      let lakeStoryReturn = null;
+      function openLakeStory(id = null, from = null) {
+        if (battle || playerHomeState.transitioning || $("#catchCard").classList.contains("show")) return false;
+        if (document.querySelector(".modal.open") && !["record","store"].includes(from)) return false;
+        if (from) close();
+        lakeStoryReturn = ["record","store"].includes(from) ? from : null;
+        const available = ShuLakeStory.chapters(s);
+        const selected = available.find(p=>p.id===id)?.id ||
+          (id ? s.lakeStory.selected : ShuLakeStory.unread(s)[0]?.id) || s.lakeStory.selected;
+        ShuLakeStory.markRead(s,selected);
+        save(); open("lakeStory"); return true;
+      }
+      function renderLakeStory(id = s.lakeStory.selected) {
+        const available=ShuLakeStory.chapters(s),page=available.find(p=>p.id===id)||available[0];
+        ShuLakeStory.markRead(s,page.id);save();
+        const e=ShuLakeStory.escape,index=available.indexOf(page),left=ShuLakeStory.unread(s).length;
+        $("#lakeStoryStatus").textContent = `${available.length}篇の思い出${left ? ` ・ 未読${left}篇` : ""}${ShuLakeStory.completed(s) ? " ・ 物語を読み終えた" : ""}`;
+        $("#lakeStoryIndex").innerHTML = available.map(p=>`<button type="button" data-story-page="${p.id}" aria-pressed="${p.id===page.id}">${s.lakeStory.read.includes(p.id)?"":"<span class=\"story-unread\">未読</span>"}${e(p.title)}<small>${e(p.place)}</small></button>`).join("");
+        $("#lakeStoryPage").innerHTML = `<p class="lake-story-place">${e(page.place)}</p><h3 id="lakeStoryPageTitle">${e(page.title)}</h3>
+          ${page.art?`<img class="lake-story-scene" src="${page.art}" alt="${e(page.place)}の景色">`:""}
+          ${ShuLakeStory.prose(page,dogName()).map(p=>`<p>${e(p)}</p>`).join("")}
+          <blockquote>${e(page.quote)}<small>― ${e(page.speaker)}</small></blockquote>
+          <footer class="lake-story-footer"><button data-story-page="${available[index-1]?.id||""}" ${index===0?"disabled":""}>前の頁</button>
+            <button data-story-page="${available[index+1]?.id||""}" ${index===available.length-1?"disabled":""}>次の頁</button></footer>`;
+        $("#lakeStoryPage").scrollTop=0;
+      }
+      function closeLakeStory() {
+        close();
+        save();
       }
       function fishdexNumber(f) {
         return String(fishEncyclopediaData[f.id]?.number || 0).padStart(3, "0");
@@ -21955,7 +22302,62 @@
       $("#homePetAquarium").onclick=()=>petUi.open("aquarium");
       $("#aquariumZoom").onclick=()=>{const zoomed=$("#aquariumModal").classList.toggle("aquarium-zoom");$("#aquariumZoom").textContent=zoomed?"元の表示":"ズーム";$("#aquariumZoom").setAttribute("aria-pressed",String(zoomed));drawAquariumFish();};
       $("#dogCareTrain").onclick=trainDogCare;
+      function navigateToSaveSlot(url) { location.assign(url); }
+      function returnToSaveSelection() {
+        if (!gameStarted || battle || rescueInProgress || forageDiscoveryInProgress) return false;
+        if (!save()) {
+          showRescueToast("保存できなかったので、この冒険を開いたままにしているよ。もう一度試してね。", 4200);
+          return false;
+        }
+        navigateToSaveSlot(ShuSaveSlots.titleUrl(location.href, activeSaveSlot));
+        return true;
+      }
+      function renderSaveSlotSelection(refreshChoices = false) {
+        const selected = saveSlots.read(selectedSaveSlot);
+        if (refreshChoices) {
+          const state = selectedSaveSlot === activeSaveSlot && selected.ok ? s : selected.data || {};
+          titleAvatar = ["boy","girl"].includes(state.avatar) ? state.avatar : "boy";
+          titleDog = dogProfileData[state.dog] ? state.dog : "riku";
+        }
+        for (const button of document.querySelectorAll("[data-save-slot]")) {
+          const id = Number(button.dataset.saveSlot), saved = saveSlots.read(id);
+          button.setAttribute("aria-pressed", String(id === selectedSaveSlot));
+          button.disabled = !saved.ok;
+          let text = "空き · 新しい冒険を始める";
+          if (!saved.ok) text = saved.error === "invalid" ? "読み込めないデータ · 上書きを停止" : "保存データにアクセスできない";
+          else if (saved.exists) {
+            const state = saved.data, minutes = Number.isFinite(state.gameMinutes) ? state.gameMinutes : legacyTimeToGameMinutes(state.time);
+            const day = gameClockAt(minutes).dayIndex + 1;
+            const money = Math.max(0, Math.floor(Number(state.money) || 0));
+            const catches = Object.values(state.caught || {}).reduce((sum,count) => sum + Math.max(0,Math.floor(Number(count) || 0)),0);
+            text = `${day}日目 · ${money}円 · 釣果${catches}匹`;
+          }
+          button.querySelector("small").textContent = text;
+        }
+        for (const b of document.querySelectorAll("[data-dog]")) b.classList.toggle("active", b.dataset.dog === titleDog);
+        for (const b of document.querySelectorAll("[data-avatar]")) b.classList.toggle("active", b.dataset.avatar === titleAvatar);
+        $("#start").disabled = !selected.ok;
+        $("#start").textContent = selected.exists ? `セーブ${selectedSaveSlot}の続きへ` : `セーブ${selectedSaveSlot}で始める`;
+        $("#saveSlotNotice").hidden = selected.ok;
+        $("#saveSlotNotice").textContent = selected.ok ? "" : "このセーブは読み込めないので、上書きせず保護しているよ。もう一方のセーブを選んでね。";
+      }
+      document.querySelectorAll("[data-save-slot]").forEach(button => button.onclick = () => {
+        if (gameStarted || !saveSlots.read(Number(button.dataset.saveSlot)).ok) return;
+        selectedSaveSlot = Number(button.dataset.saveSlot);
+        renderSaveSlotSelection(true);
+      });
       $("#start").onclick = () => {
+        if (gameStarted || !saveSlots.read(selectedSaveSlot).ok) return;
+        if (selectedSaveSlot !== activeSaveSlot) {
+          navigateToSaveSlot(ShuSaveSlots.launchUrl(location.href, selectedSaveSlot, {avatar:titleAvatar,dog:titleDog}));
+          return;
+        }
+        gameStarted = true;
+        if(s.dog!==titleDog)s.dogFollowing=true;
+        s.avatar = titleAvatar; s.dog = titleDog;
+        ensureAvatarImages(); ensureDogImage();
+        saveSlots.remember(activeSaveSlot);
+        $("#activeSaveSlot").textContent = `セーブ${activeSaveSlot}`;
         $("#title").classList.remove("active");
         $("#game").classList.add("active");
         render();
@@ -21973,7 +22375,9 @@
       document.querySelectorAll("[data-dog]").forEach((b) => {
         b.classList.toggle("active", b.dataset.dog === s.dog);
         b.onclick = () => {
+          if (!gameStarted) { titleDog = b.dataset.dog; renderSaveSlotSelection(); return; }
           s.dog = b.dataset.dog;
+          s.dogFollowing = true;
           ensureDogImage();
           document
             .querySelectorAll("[data-dog]")
@@ -21986,6 +22390,7 @@
       document.querySelectorAll("[data-avatar]").forEach((b) => {
         b.classList.toggle("active", b.dataset.avatar === s.avatar);
         b.onclick = () => {
+          if (!gameStarted) { titleAvatar = b.dataset.avatar; renderSaveSlotSelection(); return; }
           s.avatar = b.dataset.avatar;
           ensureAvatarImages();
           document
@@ -22032,6 +22437,22 @@
         b.onlostpointercapture = stopMoving;
       });
       $("#catchClose").onclick = hideCatchCard;
+      $("#catchStoryButton").onclick = () => {const id=$("#catchStoryButton").dataset.storyChapter;hideCatchCard();openLakeStory(id);};
+      $("#fishdexStoryOffer").onclick = () => openLakeStory(null,"record");
+      $("#samStoryOffer").onclick = () => openLakeStory(null,"store");
+      $("#lakeStoryClose").onclick = closeLakeStory;
+      $("#lakeStory").onkeydown = event => {
+        if(event.key!=="Tab")return;
+        const controls=[...$("#lakeStory").querySelectorAll("button:not(:disabled), article[tabindex]")];
+        const first=controls[0],last=controls[controls.length-1];
+        if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+      };
+      $("#lakeStory").onclick = event => {
+        const button=event.target.closest("[data-story-page]");
+        if(!button || button.disabled || !button.dataset.storyPage)return;
+        renderLakeStory(button.dataset.storyPage);$("#lakeStoryPage").focus({preventScroll:true});
+      };
       $("#soundToggle").onclick = () => setSoundEnabled(!s.soundEnabled);
       $("#action").onclick = action;
       $("#back").onclick = backAction;
@@ -22065,6 +22486,7 @@
       $("#aquariumPlaceFish").onclick = () => placeAquariumFish($("#aquariumFishSelect").value);
       $("#dogCarePet").onclick = petDogCare;
       $("#dogCareTakeFishing").onclick = takeDogFishing;
+      $("#dogCareStayHome").onclick = leaveDogAtHome;
       $("#dogCareCatchButton").onclick = (event) => {
         event.preventDefault();
         event.stopPropagation();
@@ -22241,8 +22663,17 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=205-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=209-2").catch(() => {});
       renderRecord();
+      renderSaveSlotSelection(true);
+      const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
+      if (launchSaveSlot.play) {
+        if (launchSaveSlot.avatar) titleAvatar = launchSaveSlot.avatar;
+        if (launchSaveSlot.dog) titleDog = launchSaveSlot.dog;
+        renderSaveSlotSelection();
+        history.replaceState(null, "", ShuSaveSlots.titleUrl(location.href, activeSaveSlot));
+        $("#start").click();
+      }
     </script>
   </body>
 </html>
