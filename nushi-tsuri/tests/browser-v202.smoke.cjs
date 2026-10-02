@@ -213,7 +213,8 @@ async function storySmoke(url,mobile){
 
     // A legacy save with explicit completed catches restores the whole story.
     const finished={...state,caught:{...state.caught,streamNushi:1,coastNushi:1,caveNushi:1,starNushi:1},
-      fishCatchRecords:{funa:{last:{spotId:'mountain-highPond-mid'}}}};
+      fishCatchRecords:{funa:{tackles:{'bamboo|worm':1},last:{rodId:'bamboo',baitId:'worm',
+        spotId:'mountain-highPond-mid',castLocale:'river',period:'day'}}}};
     // pagehide saves the live game: install the fixture in that live state
     // first so reload cannot overwrite it with the earlier one-page journal.
     await page.evaluate(saved=>{s.caught=saved.caught;s.fishCatchRecords=saved.fishCatchRecords;delete s.lakeStory;save();},finished);
