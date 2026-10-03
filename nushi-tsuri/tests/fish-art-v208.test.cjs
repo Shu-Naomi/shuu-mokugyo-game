@@ -7,10 +7,10 @@ test('all 24 fish paint complete, unclipped silhouettes in every swim, turn and 
   const images=new Map(),canvas=createCanvas(448,224),ctx=canvas.getContext('2d');
   assert.equal(Object.keys(Art.species).length,24);
   for(const [id,species]of Object.entries(Art.species)){
-    if(!images.has(species.asset))images.set(species.asset,await loadImage(path.join(__dirname,'..',species.asset)));
+    for(const asset of Art.assets(id))if(!images.has(asset))images.set(asset,await loadImage(path.join(__dirname,'..',asset)));
     const image=images.get(species.asset);
     for(const cells of [8,7,3])for(let frame=0;frame<cells;frame++){
-      assert.equal(Art.draw(ctx,image,id,cells,frame),true);
+      assert.equal(Art.draw(ctx,image,id,cells,frame,src=>images.get(src)),true);
       const data=ctx.getImageData(0,0,448,224).data;let opaque=0,edge=0;
       for(let n=0;n<448*224;n++)if(data[n*4+3]>100){
         opaque++;const x=n%448,y=Math.floor(n/448);if(x<2||x>445||y<2||y>221)edge++;
@@ -24,13 +24,13 @@ test('all 24 fish paint complete, unclipped silhouettes in every swim, turn and 
 test('real tail beats change the rear projection while every fish keeps its head still',async()=>{
   const images=new Map();
   for(const [id,species]of Object.entries(Art.species)){
-    if(!images.has(species.asset))images.set(species.asset,await loadImage(path.join(__dirname,'..',species.asset)));
+    for(const asset of Art.assets(id))if(!images.has(asset))images.set(asset,await loadImage(path.join(__dirname,'..',asset)));
     const canvas=createCanvas(448,224),ctx=canvas.getContext('2d'),image=images.get(species.asset);
-    Art.draw(ctx,image,id,8,2);const first=Buffer.from(ctx.getImageData(0,0,448,224).data);
-    Art.draw(ctx,image,id,8,6);const second=Buffer.from(ctx.getImageData(0,0,448,224).data);
+    Art.draw(ctx,image,id,8,2,src=>images.get(src));const first=Buffer.from(ctx.getImageData(0,0,448,224).data);
+    Art.draw(ctx,image,id,8,6,src=>images.get(src));const second=Buffer.from(ctx.getImageData(0,0,448,224).data);
     assert.notDeepEqual(first,second,id+' has an actual animated tail');
     const head=()=>Buffer.from(ctx.getImageData(345,0,103,224).data);
-    Art.draw(ctx,image,id,8,2);const a=head();Art.draw(ctx,image,id,8,6);
+    Art.draw(ctx,image,id,8,2,src=>images.get(src));const a=head();Art.draw(ctx,image,id,8,6,src=>images.get(src));
     assert.deepEqual(head(),a,id+' has a stationary head and lip');
   }
 });
@@ -59,8 +59,8 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  assert.ok(sw.includes('fish-art.js?v=208-1'));
-  for(const asset of new Set(Object.values(Art.species).map(s=>s.asset)))assert.ok(sw.includes(asset),asset);
+  assert.ok(sw.includes('fish-art.js?v=212-1'));
+  for(const asset of new Set(Object.keys(Art.species).flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);
   const app=boot();try{
     assert.deepEqual(read(app.window,'fish.map(f=>f.id).sort()'),Object.keys(Art.species).sort());
     assert.equal(read(app.window,'fish.find(f=>f.id==="shirogisu").resistance'),84);

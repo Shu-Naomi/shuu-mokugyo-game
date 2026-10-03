@@ -2,24 +2,25 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),path=requ
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot}=require('./game-harness.cjs');
 
-test('the downward petting hand has five separated fingertips and a diagonal upper sleeve',()=>{
+test('the relaxed hand rests across the crown without fingers hanging down the face',()=>{
   const app=boot(),w=app.window;
   try{
     const canvas=createCanvas(320,180),ctx=canvas.getContext('2d'),x=150,y=40;
     w.drawDogCareHand(ctx,x,y,null,1,'stroke');
-    const pixels=ctx.getImageData(0,0,320,180).data,angle=.45;
-    let fingers=0,inside=false;
-    // Sample across the finger tips, perpendicular to their direction.
-    for(let lx=-20;lx<=26;lx+=.1){
-      const px=Math.round(x+lx*Math.cos(angle)),py=Math.round(y+lx*Math.sin(angle));
-      const opaque=pixels[(py*320+px)*4+3]>180;
-      if(opaque&&!inside)fingers++;inside=opaque;
+    const pixels=ctx.getImageData(0,0,320,180).data;
+    let upper=0,side=0,below=0,contact=0,left=320,right=0;
+    for(let py=0;py<180;py++)for(let px=0;px<320;px++){
+      const i=(py*320+px)*4;
+      if(pixels[i+3]<180)continue;
+      if(!py)upper++;if(px===319)side++;
+      if(pixels[i]>170&&pixels[i]-pixels[i+2]>55&&pixels[i+1]<220){
+        if(py>y+11)below++;
+        if(py>=y-2&&py<=y+2){contact++;left=Math.min(left,px);right=Math.max(right,px);}
+      }
     }
-    assert.equal(fingers,5,'four fingers plus the thumb');
-    let upper=0,side=0;
-    for(let px=0;px<320;px++)if(pixels[px*4+3]>180)upper++;
-    for(let py=0;py<180;py++)if(pixels[(py*320+319)*4+3]>180)side++;
-    assert.ok(upper>10,'sleeve enters from the upper edge');assert.equal(side,0,'no horizontal arm from the side');
+    assert.ok(right-left>40&&contact>90,'broad palm and fingers lie across the head');
+    assert.equal(below,0,'no fingers point down over the brows and eyes');
+    assert.ok(upper>10,'the sleeve enters from above');assert.equal(side,0,'no side-only arm');
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

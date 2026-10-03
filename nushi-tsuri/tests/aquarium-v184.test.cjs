@@ -56,11 +56,11 @@ test('all 24 species remain visibly thick in all seven painted headings with off
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
  for(const fish of records){
   assert.ok(sw.includes('./'+fish.asset),fish.id+' cached turn asset');
-  if(!images.has(fish.asset))images.set(fish.asset,await loadImage(path.join(__dirname,'..',fish.asset)));
+  for(const src of Art.assets(fish.id))if(!images.has(src))images.set(src,await loadImage(path.join(__dirname,'..',src)));
   for(let frame=0;frame<7;frame++){
    const img=images.get(fish.asset),width=448,height=224;
    const canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
-   assert.equal(Art.draw(ctx,img,fish.id,7,frame),true);
+   assert.equal(Art.draw(ctx,img,fish.id,7,frame,src=>images.get(src)),true);
    const data=ctx.getImageData(0,0,width,height).data;let left=width,right=-1,pixels=0;
    for(let y=0;y<height;y++)for(let x=0;x<width;x++)if(data[(y*width+x)*4+3]>100){left=Math.min(left,x);right=Math.max(right,x);pixels++;}
    assert.ok(right-left>=width*.1,fish.id+' face retains visible thickness');

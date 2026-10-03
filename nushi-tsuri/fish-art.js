@@ -10,6 +10,21 @@
   const species={};
   for(const [group,definition]of Object.entries(groups))
     definition.ids.forEach((id,index)=>species[id]={group,index,asset:`assets/fish-${group}-v208.png`});
+  // The v208 lake drawing gave these two freshwater fish whiting's dorsal
+  // fins. Reuse their species-specific originals, without altering any PNG.
+  // Near-front headings project the authored three-quarter views in depth.
+  const native={
+    moroko:{asset:'assets/fish-moroko-v125.png',mouth:'assets/fish-moroko-mouth-open-v125.png',turn:'assets/fish-moroko-turn-v70.png',
+      boxes:[[16,13,222,84],[305,2,158,105],[305,2,158,105],[595,0,89,110],[819,3,154,104],[819,3,154,104],[16,13,222,84],[16,13,222,84]],
+      heads:[[.99,.57],[.98,.76],[.98,.76],[.5,.88],[.02,.76],[.02,.76],[.99,.57],[.99,.61]]},
+    ayu:{asset:'assets/fish-ayu-turn-v95.png',mouth:'assets/fish-ayu-mouth-v95.png',turn:'assets/fish-ayu-turn-v95.png',
+      boxes:[[20,25,279,110],[382,11,195,137],[382,11,195,137],[739,12,120,137],[1023,12,194,137],[1023,12,194,137],[20,25,279,110],[662,28,280,104]],
+      heads:[[.99,.70],[.99,.80],[.99,.80],[.5,.84],[.01,.80],[.01,.80],[.99,.70],[.99,.78]]},
+  };
+  for(const [id,definition]of Object.entries(native))species[id].asset=definition.asset;
+  const assets=id=>native[id]?[...new Set([native[id].asset,native[id].turn,native[id].mouth])]:[species[id].asset];
+  const projection=(id,cell)=>native[id]&&(cell===2||cell===4)? .58 : 1;
+  const cellAsset=(id,cell)=>native[id]?(cell===7?native[id].mouth:cell>0&&cell<6?native[id].turn:native[id].asset):species[id].asset;
   const turn=[1,.72,.36,0,-.36,-.72,-1].map((xScale,i)=>({xScale,yOffset:[0,.025,.06,.08,.06,.025,0][i]}));
   const mouth=[{xScale:1,yOffset:0},{xScale:1,yOffset:.025},{xScale:1,yOffset:.05}];
   const heads=[[.985,.62],[.985,.68],[.98,.75],[.5,.75],[.02,.72],[.015,.65],[.015,.62],[.985,.72]];
@@ -30,11 +45,11 @@
     return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:index%8/8*Math.PI*2};
   }
   function sourceHead(id,cell,flip=false){
-    const point=specialHeads[id]?.[cell]||heads[cell];
+    const point=native[id]?.heads[cell]||specialHeads[id]?.[cell]||heads[cell];
     // Barbels extend past the actual lip: never attach the hook to a whisker.
     return flip?[1-point[0],point[1]]:point;
   }
-  function source(id,cell){const d=species[id];return groups[d.group].boxes[d.index*8+cell];}
+  function source(id,cell){const d=species[id];return native[id]?.boxes[cell]||groups[d.group].boxes[d.index*8+cell];}
   const isolatedCells=new WeakMap();
   function isolatedCell(ctx,image,id,cell){
     let cache=isolatedCells.get(image);
@@ -85,16 +100,17 @@
     if(scales[id])return scales[id];
     let scale=Infinity;
     for(const p of [...Array.from({length:7},(_,i)=>pose(id,7,i)),pose(id,3,2)]){
-      const box=source(id,p.cell),head=sourceHead(id,p.cell,p.flip),tx=p.target[0]*448,ty=p.target[1]*224;
+      const raw=source(id,p.cell),box=[raw[0],raw[1],raw[2]*projection(id,p.cell),raw[3]],head=sourceHead(id,p.cell,p.flip),tx=p.target[0]*448,ty=p.target[1]*224;
       for(const [room,extent]of [[tx-22,head[0]*box[2]],[448-tx-22,(1-head[0])*box[2]],[ty-8,head[1]*box[3]],[224-ty-8,(1-head[1])*box[3]]])
         if(extent>0)scale=Math.min(scale,room/extent);
     }
     scales[id]=scale;return scale;
   }
-  function paint(ctx,image,id,p,alpha=1){
+  function paint(ctx,image,id,p,alpha=1,resolveImage){
+    if(native[id])image=resolveImage(cellAsset(id,p.cell));
     const isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id);
     image=isolated.image;
-    const width=box[2]*scale,height=box[3]*scale,x=p.target[0]*448-head[0]*width,y=p.target[1]*224-head[1]*height;
+    const width=box[2]*scale*projection(id,p.cell),height=box[3]*scale,x=p.target[0]*448-head[0]*width,y=p.target[1]*224-head[1]*height;
     ctx.save();ctx.globalAlpha=alpha;
     if(p.flip){ctx.translate(448,0);ctx.scale(-1,1);}
     const dx=p.flip?448-x-width:x;
@@ -109,14 +125,17 @@
     }
     ctx.restore();
   }
-  function draw(ctx,image,id,cells=8,frame=0){
+  function draw(ctx,image,id,cells=8,frame=0,resolveImage){
     if(!species[id])return false;
-    ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=true;
     const p=pose(id,cells,frame);
+    // Wait for the requested original rather than cropping the wrong image.
+    if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
+      cells===3&&p.jaw===1&&!resolveImage(native[id].asset)))return false;
+    ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=true;
     if(cells===3&&p.jaw===1){
-      paint(ctx,image,id,pose(id,3,0),.45);paint(ctx,image,id,p,.55);
-    }else paint(ctx,image,id,p);
+      paint(ctx,image,id,pose(id,3,0),.45,resolveImage);paint(ctx,image,id,p,.55,resolveImage);
+    }else paint(ctx,image,id,p,1,resolveImage);
     return true;
   }
-  return Object.freeze({species,groups,turn,mouth,headOffset,pose,sourceHead,scaleFor,draw});
+  return Object.freeze({species,groups,turn,mouth,headOffset,pose,sourceHead,scaleFor,draw,assets});
 });
