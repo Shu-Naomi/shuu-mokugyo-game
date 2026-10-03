@@ -175,8 +175,15 @@
             x,y,Math.max(.1,nextX-x)+.3,Math.max(.1,bottom-top));
         }
       }
-      // Keep the cache bounded when the dex and several tank fish are opened.
-      if(turnCache.size>=96)turnCache.delete(turnCache.keys().next().value);
+      // Flatten the resampled strips and release their intermediate surfaces.
+      // Mobile browsers and native Canvas otherwise retain those allocations
+      // until a later garbage collection, despite the visible frame being tiny.
+      const pixels=painter.getImageData(0,0,448,224);
+      tile.width=448;tile.height=224;tile.getContext('2d').putImageData(pixels,0,0);
+      if(turnCache.size>=48){
+        const oldest=turnCache.keys().next().value,expired=turnCache.get(oldest);
+        expired.width=1;expired.height=1;turnCache.delete(oldest);
+      }
       turnCache.set(key,tile);
     }
     ctx.drawImage(tile,0,0);
