@@ -195,7 +195,9 @@ module.exports=async function features(url,mobile){
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
     for(const id of ['moroko','ayu','shirogisu']){
       await page.evaluate(id=>{Object.assign(battle,{f:fish.find(f=>f.id===id),turning:null,mouthState:'closed',frame:0});
-        renderBattleFish();drawBattle();},id);
+        startFight();finishHookReveal();renderBattleFish();drawBattle();},id);
+      assert.ok((await page.locator('#battleFish').getAttribute('class')).includes('fish-'+id));
+      assert.equal(await page.locator('#fishName').innerText(),await page.evaluate(id=>fish.find(f=>f.id===id).name,id));
       await screenshot('FISH_'+id.toUpperCase());
     }
     console.log('V212_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
