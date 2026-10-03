@@ -75,7 +75,9 @@
       }
     }else{
       b.ten=Math.max(3,b.ten-(running?2.8:4.2)*equipment.control);
-      b.retrieval=before-(running?.0016*ratio:0);
+      // Correctly yielding to a run must preserve enough of the short slack
+      // window's gain. The old loss erased every gain with a suitable sea rod.
+      b.retrieval=before-(running?.00045*ratio:0);
     }
     // Starter gear is never sufficient for the nushi, even at the best timing.
     if(!b.practice&&equipment.strength<(minStrength[b.f.id]||0))b.retrieval=Math.min(.6,b.retrieval);

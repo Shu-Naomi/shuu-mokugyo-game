@@ -6468,7 +6468,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v212</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v213</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7210,14 +7210,14 @@
     <script src="aquarium-life.js?v=202-1"></script>
     <script src="pet-life-ui.js?v=202-1"></script>
     <script src="tackle-balance.js?v=202-1"></script>
-    <script src="fishing-duel.js?v=202-1"></script>
+    <script src="fishing-duel.js?v=213-1"></script>
     <script src="coast-voyage.js?v=201-1"></script>
     <script src="mountain-region.js?v=203-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=206-1"></script>
     <script src="save-slots.js?v=207-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=212-1"></script>
+    <script src="fish-art.js?v=213-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -11311,7 +11311,7 @@
         fixedFaceFishIds.add(id);
         Object.assign(fishMouthProfiles[id],{x:ShuFishArt.headOffset,y:.12});
         fishHookPoseOverrides[id]={turn:ShuFishArt.turn,mouth:ShuFishArt.mouth};
-        fishMotionProfiles[id].turnFrames=Math.max(9,fishMotionProfiles[id].turnFrames||0);
+        fishMotionProfiles[id].turnFrames=Math.max(12,fishMotionProfiles[id].turnFrames||0);
       }
       fishGroundAssets.hirame=fishAssets.hirame;
       delete fishCatchAssets.kasago;
@@ -11482,7 +11482,8 @@
         const canvas = fishAtlasCanvas(element);
         if(ShuFishArt.species[fishId]?.asset===spriteAsset){
           clearStandaloneFishFrame(element);
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${fishId}`;
+          const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):undefined;
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${fishId}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.width!==448)canvas.width=448;
           if(canvas.height!==224)canvas.height=224;
@@ -11493,7 +11494,7 @@
           const sources=ShuFishArt.assets(fishId).map(fishAtlasImage);
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
-            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame,fishAtlasImage);
+            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame,fishAtlasImage,{swimFrame});
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
             source.addEventListener('load',paint,{once:true});if(source.decode)source.decode().then(paint).catch(()=>{});
@@ -11924,6 +11925,8 @@
         catchTimer = 0,
         catchAnimationTimer = 0,
         catchAnimationStep = 0,
+        battleArtAnimationFrame = 0,
+        battleArtLastPaintAt = 0,
         landingTimer = 0,
         hookRevealTimer = 0,
         castLandingTimer = 0,
@@ -13748,7 +13751,7 @@
           return stopFightReelSound();
         if (battle.reeling)
           return startFightReelSound("reelPlayerWind");
-        if (!battle.reeling && battle.retrievalDelta < -0.001)
+        if (!battle.reeling && battle.retrievalDelta < -(battle.fightMode==='nushi'?.0001:.001))
           return startFightReelSound("reelFishPull");
         return stopFightReelSound();
       }
@@ -16090,7 +16093,7 @@
         const turning = pose?.spriteMode === "turn";
         const cells = turning ? (ShuFishArt.species[id]?7:5) : fishSwimFrameCounts[id] || 8;
         const frame = turning ? (cells===7
-          ? Number.isFinite(pose.yaw)?Math.round(pose.yaw/Math.PI*6):[0,2,3,4,6][pose.turnFrame||0]
+          ? Number.isFinite(pose.yaw)?pose.yaw/Math.PI*6:[0,2,3,4,6][pose.turnFrame||0]
           : pose.turnFrame) : swimFrame % cells;
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
         const key = `${id}:${turning ? "turn" : "swim"}:${frame}`;
@@ -16107,7 +16110,7 @@
         }
         const pose = aquariumFishPose(id, aquariumElapsed, homeAquariumLength());
         const cells = fishSwimFrameCounts[id] || 8;
-        const frame = Math.floor(aquariumElapsed / (pose.bottomDweller ? .24 : .18)) % cells;
+        const frame = (aquariumElapsed / (pose.bottomDweller ? .24 : .18)) % cells;
         const [width, height] = fishFrameFallbackSizes[id] || [320, 160];
         const selectors = ["#homeAquariumFish"];
         if ($("#aquariumModal").classList.contains("open")) selectors.push("#aquariumPreviewFish");
@@ -20246,7 +20249,9 @@
           // sprite clock, so the painted mouth and the hook always read the
           // same exact frame on fast and delayed-render browsers alike.
           const headings=ShuFishArt.species[battle.f.id]?7:5;
-          const phaseFrame = Math.min(headings-1, Math.floor(progress * headings));
+          const phaseFrame = ShuFishArt.species[battle.f.id]
+            ? progress*(headings-1)
+            : Math.min(headings-1, Math.floor(progress * headings));
           battle.turnSpriteFrame = turn.from > 0
             ? phaseFrame
             : headings-1 - phaseFrame;
@@ -20254,8 +20259,8 @@
           battle.turnMouthProjection =
             turn.from * Math.cos(progress * Math.PI);
           battle.turnProgress = progress;
-          battle.turnArcY = -curve * (motionProfile.turnArc || 4);
-          battle.turnRoll =
+          battle.turnArcY = ShuFishArt.species[battle.f.id]?0:-curve * (motionProfile.turnArc || 4);
+          battle.turnRoll = ShuFishArt.species[battle.f.id]?0:
             -turnDirection *
             curve *
             (motionProfile.turnRoll || 6);
@@ -20339,6 +20344,8 @@
           fatigueFactor *
           beatTiming *
           intensity;
+        battle.swimAdvance=phaseAdvance*(frameCount/8);
+        battle.artTickAt=Date.now();
         const previousStroke = battle.tailStroke || 0;
         battle.swimPhase = (
           (battle.swimPhase || 0) + phaseAdvance * (frameCount / 8)
@@ -20367,17 +20374,18 @@
         battle.frame = Math.floor(battle.swimPhase) % frameCount;
         battle.tailStroke = stroke;
         battle.tailKick = stroke >= 0.82 && previousStroke < 0.82;
-        battle.bodyStretch = 1 + stroke * profile.stretch * effort;
-        battle.bodySquash = 1 - stroke * profile.squeeze * effort;
-        battle.visualOffsetX =
+        const lateral=Boolean(ShuFishArt.species[battle.f.id]);
+        battle.bodyStretch = lateral?1:1 + stroke * profile.stretch * effort;
+        battle.bodySquash = lateral?1:1 - stroke * profile.squeeze * effort;
+        battle.visualOffsetX = lateral?0:
           -(battle.facing || 1) * stroke * profile.recoil * effort *
             strokePower;
-        battle.visualOffsetY = wave * profile.sway * effort;
+        battle.visualOffsetY = lateral?0:wave * profile.sway * effort;
         animateFishMouth(mood, speed, intensity);
         return {
           wave,
           stroke,
-          roll: wave * profile.roll * effort,
+          roll: lateral?0:wave * profile.roll * effort,
           thrust:
             Math.pow(stroke, 1.65) * profile.thrust * effort * strokePower,
         };
@@ -20525,10 +20533,10 @@
           (battle.facing < 0 ? -battle.pitch : battle.pitch) + bodyMotion.roll;
         const swimFrameCount = fishSwimFrameCounts[battle.f.id] || 8;
         battle.renderScale =
-          (mood.scale || 1) *
+          (mood.scale || 1) * (ShuFishArt.species[battle.f.id]?1:
           (1 + Math.cos(
             (battle.swimPhase / swimFrameCount) * Math.PI * 4,
-          ) * 0.006);
+          ) * 0.006));
         battle.speed = speed;
       }
       function resetWaterFx() {
@@ -21164,6 +21172,22 @@
           displayScale: (battle.renderScale || 1) * specimenScale,
         };
       }
+      function stopBattleFishArt() {
+        cancelAnimationFrame(battleArtAnimationFrame);
+        battleArtAnimationFrame=0;battleArtLastPaintAt=0;
+      }
+      function startBattleFishArt() {
+        stopBattleFishArt();
+        const paint=now=>{
+          battleArtAnimationFrame=0;
+          if(!battle||battle.phase!=="fight")return;
+          if(!document.hidden&&!battle.pausedAt&&now-battleArtLastPaintAt>=32){
+            battleArtLastPaintAt=now;renderBattleFish();syncBattleFishLine();
+          }
+          battleArtAnimationFrame=requestAnimationFrame(paint);
+        };
+        battleArtAnimationFrame=requestAnimationFrame(paint);
+      }
       function renderBattleFish() {
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
@@ -21179,7 +21203,11 @@
               : "closed");
         let spriteAsset = fishAssets[battle.f.id];
         let spriteCells = fishSwimFrameCounts[battle.f.id] || 8;
-        let spriteFrame = (battle.frame || 0) % spriteCells;
+        const artFraction=battle.pausedAt||document.hidden?0:
+          clampBattle((Date.now()-(battle.artTickAt??Date.now()))/120,0,1);
+        const artSwimFrame=(battle.frame||0)+(battle.swimPhase||0)%1+(battle.swimAdvance||0)*artFraction;
+        element.dataset.artSwimFrame=String(artSwimFrame);
+        let spriteFrame = ShuFishArt.species[battle.f.id]?artSwimFrame%spriteCells:(battle.frame || 0) % spriteCells;
         let spriteMode = "swim";
         let hookPoseFrame = null;
         const showingTurn = Boolean(battle.turning && !sandGrounded);
@@ -21190,6 +21218,10 @@
           spriteAsset = fishTurnAssets[battle.f.id];
           spriteCells = ShuFishArt.species[battle.f.id]?7:5;
           spriteFrame = battle.turnSpriteFrame || 0;
+          if(spriteCells===7&&Number.isFinite(battle.turning.frames)&&Number.isFinite(battle.turning.frame)){
+            const progress=clampBattle((battle.turning.frame+artFraction)/battle.turning.frames,0,1);
+            spriteFrame=(battle.turning.from>0?progress:1-progress)*6;
+          }
           spriteMode = "turn";
         } else if (
           mouthState !== "closed" &&
@@ -21294,8 +21326,9 @@
         const hookPoseFrame = Number(
           fishElement.dataset.hookPoseFrame ?? spriteFrame,
         );
-        const pose =
-          fishHookPoseOverrides[battle.f.id]?.[spriteMode]?.[hookPoseFrame] ||
+        const pose = ShuFishArt.species[battle.f.id]&&(spriteMode==='turn'||spriteMode==='mouth')
+          ? ShuFishArt.hookPose(battle.f.id,spriteMode==='turn'?7:3,hookPoseFrame)
+          : fishHookPoseOverrides[battle.f.id]?.[spriteMode]?.[hookPoseFrame] ||
           fishHookPoseFrames[spriteMode]?.[hookPoseFrame];
         const mouthProjection = spriteMode === "turn" && pose
           ? pose.xScale
@@ -21506,7 +21539,7 @@
                 ? "！テンション高め。 "
                 : "";
           const fishTakingLine =
-            !battle.reeling && battle.retrievalDelta < -0.001
+            !battle.reeling && battle.retrievalDelta < -(battle.fightMode==='nushi'?.0001:.001)
               ? "魚に糸を奪われる！ "
               : "";
           if (battle.gillRecovery > 0) {
@@ -21580,6 +21613,7 @@
         battle.tensionBand = "safe";
         battle.frame = 0;
         battle.swimPhase = 0;
+        battle.swimAdvance=0;battle.artTickAt=Date.now();
         battle.tailStroke = 0;
         battle.tailKick = false;
         battle.bodyStretch = 1;
@@ -21634,6 +21668,7 @@
         $("#pull").innerHTML = "A<br><small>押して巻く<br>離して待つ</small>";
         $("#wait").innerHTML = "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
         chooseFishMood(true);
+        startBattleFishArt();
         fishElement.classList.add("hooked");
         clearTimeout(hookRevealTimer);
         hookRevealTimer = setTimeout(
@@ -21712,6 +21747,12 @@
         const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
         $("#distanceLabel").textContent = `左の水面まで ${meters}m`;
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
+        syncBattleFishLine();
+        updateTensionFeedback();
+      }
+      function syncBattleFishLine() {
+        if(!battle||battle.phase!=="fight")return;
+        const slack=battle.fightMode==="nushi"?battle.lineSlack:battle.calm;
         const anchor = battleMouthAndHook();
         const linePath = $("#linePath");
         linePath.setAttribute(
@@ -21722,7 +21763,6 @@
         );
         linePath.classList.toggle("slack", slack);
         drawFishTackle(anchor);
-        updateTensionFeedback();
       }
       function showSurfaceSplash(
         x = battle.surfaceX || 12,
@@ -21964,6 +22004,7 @@
         }
       }
       function endBattle() {
+        stopBattleFishArt();
         if (battle?.tournamentCast && s.tournament) {
           ShuTournament.finishCast(s.tournament);
           save();
@@ -22711,7 +22752,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=212-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=213-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
