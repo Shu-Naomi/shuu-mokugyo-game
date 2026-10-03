@@ -14,7 +14,7 @@ async function waitForPublication(){
         for(const file of ['sw.js','fish-art.js','save-slots.js','save-slots.css','lake-story.js','lake-story.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
-          ...new Set(Object.values(require('../fish-art.js').species).map(f=>f.asset)),
+          ...new Set(Object.keys(require('../fish-art.js').species).flatMap(id=>require('../fish-art.js').assets(id))),
           ...Object.values(require('../music-tracks.js')).map(track=>track.src)]){
           const asset=await fetch(publicUrl+file+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
           assert.equal(asset.status,200,file);
@@ -88,7 +88,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v211/);
+    assert.match(await page.locator('.hud').innerText(),/v212/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -142,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v211/);
+    assert.match(await page.locator('.hud').innerText(),/v212/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,

@@ -11,7 +11,7 @@ module.exports=async function features(url,mobile){
     cookingIngredients:{shirogisuFillet:1,ayuFillet:1,madaiFillet:1},items:{wildGreens:2},baits:{shell:1},
     dogTreats:{samBiscuit:3},ownedDogToys:['rubberBall']}});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  page.on('response',r=>{if(r.status()>=400&&/fish-.*v208\.png|fish-art\.js/.test(r.url()))failedAssets.push(r.url());});
+  page.on('response',r=>{if(r.status()>=400&&/\/assets\/fish-.*\.(png|webp)|fish-art\.js/.test(r.url()))failedAssets.push(r.url());});
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const settle=()=>page.waitForFunction(()=>!playerHomeState.transitioning);
   const careIdle=()=>page.waitForFunction(()=>!dogCareIsBusy());
@@ -79,16 +79,19 @@ module.exports=async function features(url,mobile){
     const handArt=await page.evaluate(()=>{
       const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
       const ctx=canvas.getContext('2d');drawDogCareHand(ctx,150,40,null,1,'stroke');
-      const pixels=ctx.getImageData(0,0,320,180).data;let fingers=0,inside=false,upper=0,side=0;
-      for(let x=-20;x<=26;x+=.1){
-        const px=Math.round(150+x*Math.cos(.45)),py=Math.round(40+x*Math.sin(.45));
-        const opaque=pixels[(py*320+px)*4+3]>180;if(opaque&&!inside)fingers++;inside=opaque;
+      const pixels=ctx.getImageData(0,0,320,180).data;let upper=0,side=0,below=0,contact=0,left=320,right=0;
+      for(let y=0;y<180;y++)for(let x=0;x<320;x++){
+        const i=(y*320+x)*4;if(pixels[i+3]<180)continue;
+        if(!y)upper++;if(x===319)side++;
+        if(pixels[i]>170&&pixels[i]-pixels[i+2]>55&&pixels[i+1]<220){
+          if(y>51)below++;
+          if(y>=38&&y<=42){contact++;left=Math.min(left,x);right=Math.max(right,x);}
+        }
       }
-      for(let x=0;x<320;x++)if(pixels[x*4+3]>180)upper++;
-      for(let y=0;y<180;y++)if(pixels[(y*320+319)*4+3]>180)side++;
-      return {fingers,upper,side};
+      return {upper,side,below,contact,span:right-left};
     });
-    assert.equal(handArt.fingers,5);assert.ok(handArt.upper>10);assert.equal(handArt.side,0);
+    assert.ok(handArt.span>40&&handArt.contact>90);assert.equal(handArt.below,0);
+    assert.ok(handArt.upper>10);assert.equal(handArt.side,0);
     const layout=await page.locator('#dogCare').evaluate(el=>{
       const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
         hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
@@ -149,7 +152,7 @@ module.exports=async function features(url,mobile){
     assert.equal(await page.locator('.companion:visible').count(),1);assert.match(await page.locator('#dog').getAttribute('class'),/riku/);
     // Real images paint 24 fish in swim, seven turn headings and mouth poses.
     const fishResult=await page.evaluate(async()=>{
-      await Promise.all([...new Set(Object.values(ShuFishArt.species).map(f=>f.asset))].map(async src=>{
+      await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(id)))].map(async src=>{
         const image=fishAtlasImage(src);await image.decode();
       }));
       const results=[];
@@ -162,19 +165,44 @@ module.exports=async function features(url,mobile){
             sandLifted:true,x:50,y:58,facing:1,frame:2});renderBattleFish();drawBattle();
           const canvas=document.querySelector('#battleFish canvas'),pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
           let opaque=0;for(let i=3;i<pixels.length;i+=4)if(pixels[i]>100)opaque++;
+          let tallFins=null;
+          if(heading===null&&['moroko','ayu','shirogisu'].includes(id)){
+            const top=[];let left=448,right=0;
+            for(let x=0;x<448;x++){
+              let y=0;while(y<224&&pixels[(y*448+x)*4+3]<100)y++;
+              top[x]=y;if(y<224){left=Math.min(left,x);right=Math.max(right,x);}
+            }
+            const a=Math.round(left+(right-left)*.2),b=Math.round(left+(right-left)*.8);
+            let run=0;tallFins=0;
+            for(let x=a;x<=b+1;x++){
+              const back=top[a]+(top[b]-top[a])*(x-a)/(b-a);
+              if(x<=b&&back-top[x]>(right-left)*.05)run++;
+              else if(run){if(run>=8)tallFins++;run=0;}
+            }
+          }
           const hook=battleMouthAndHook();results.push({mode,id,heading,opaque,art:canvas.dataset.artSpecies,
-            hook:[hook.rootX,hook.rootY,hook.lineX,hook.lineY],atlas:canvas.dataset.atlasKey});
+            hook:[hook.rootX,hook.rootY,hook.lineX,hook.lineY],atlas:canvas.dataset.atlasKey,tallFins});
         }
         close();
       }return results;
     });
     assert.equal(fishResult.length,24*9*2);
-    for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));}
+    for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));
+      if(r.tallFins!==null)assert.equal(r.tallFins,r.id==='shirogisu'?2:1,r.id+' actual dorsal silhouette');}
     await page.evaluate(()=>{s.fightMode='nushi';openPracticePond();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();
       battle.biteAt=Date.now();pull();clearInterval(timer);timer=0;finishHookReveal();battle.f=fish.find(f=>f.id==='nushi');
       battle.turning={from:1,to:-1};battle.turnSpriteFrame=3;battle.x=50;battle.y=58;drawBattle();});
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
-    console.log('V211_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+    for(const id of ['moroko','ayu','shirogisu']){
+      await page.evaluate(id=>{Object.assign(battle,{f:fish.find(f=>f.id===id),turning:null,mouthState:'closed',frame:0});
+        startFight();finishHookReveal();renderBattleFish();drawBattle();},id);
+      assert.ok((await page.locator('#battleFish').getAttribute('class')).includes('fish-'+id));
+      assert.equal(await page.locator('#fishName').innerText(),await page.evaluate(id=>fish.find(f=>f.id===id).name,id));
+      await page.waitForFunction(()=>!document.querySelector('#fishScene').classList.contains('surface-diving'));
+      await screenshot('FISH_'+id.toUpperCase());
+    }
+    console.log('V212_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+      speciesArt:fishResult.filter(r=>r.tallFins!==null).map(({mode,id,tallFins})=>({mode,id,tallFins})),
       dogs:3,careArt,handArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}
 };

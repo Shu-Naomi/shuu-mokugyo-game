@@ -6468,7 +6468,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v211</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v212</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7217,7 +7217,7 @@
     <script src="lake-story.js?v=206-1"></script>
     <script src="save-slots.js?v=207-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=208-1"></script>
+    <script src="fish-art.js?v=212-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -11297,8 +11297,8 @@
             {xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}],
         };
       }
-      // v208: every fish uses the same detailed art and seven authored
-      // headings. Preserve each species' gameplay, size and movement profile.
+      // Every fish uses the common renderer and seven headings. Preserve each
+      // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
         fishAssets[id]=fishTurnAssets[id]=fishMouthAssets[id]=art.asset;
         fishMouthPartAssets[id]=art.asset;
@@ -11490,12 +11490,15 @@
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
           const image=fishAtlasImage(spriteAsset);
+          const sources=ShuFishArt.assets(fishId).map(fishAtlasImage);
           const paint=()=>{
-            if(canvas.dataset.atlasKey!==key||!image.naturalWidth)return;
-            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame);
+            if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
+            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame,fishAtlasImage);
           };
-          if(image.complete&&image.naturalWidth)paint();
-          else{image.addEventListener('load',paint,{once:true});if(image.decode)image.decode().then(paint).catch(()=>{});}
+          for(const source of sources)if(!source.complete||!source.naturalWidth){
+            source.addEventListener('load',paint,{once:true});if(source.decode)source.decode().then(paint).catch(()=>{});
+          }
+          paint();
           return;
         }
         const standaloneAsset = standaloneFishFrameAsset(
@@ -18565,31 +18568,34 @@
         }
       }
       function drawDogCareStrokingHand(ctx,x,y) {
-        ctx.save();ctx.translate(x,y);ctx.rotate(.45);
-        const shape=(points,color,outline=false)=>{
-          ctx.beginPath();ctx.moveTo(...points[0]);
-          for(const point of points.slice(1))ctx.lineTo(...point);
-          ctx.closePath();ctx.fillStyle=color;ctx.fill();
-          if(outline){ctx.strokeStyle="#885642";ctx.lineWidth=1;ctx.lineJoin="round";ctx.stroke();}
+        ctx.save();ctx.translate(x,y);
+        const skin="#e7ad83",edge="#885642";
+        const path=(color,draw,outline=true)=>{
+          ctx.beginPath();draw();ctx.closePath();ctx.fillStyle=color;ctx.fill();
+          if(outline){ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.lineJoin="round";ctx.stroke();}
         };
-        // The sleeve and wrist enter from above/right, with the palm facing down.
-        shape([[8,-24],[21,-19],[78,-89],[61,-102]],"#d7e8ef");
-        shape([[16,-34],[24,-26],[78,-89],[70,-97]],"#b5ccd8");
-        shape([[-1,-24],[6,-36],[20,-27],[12,-19]],"#e7ad83",true);
-        shape([[3,-32],[16,-36],[24,-25],[14,-18]],"#82a9b9");
-        shape([[-12,-10],[-10,-20],[-2,-25],[10,-25],[19,-19],[15,-9],[9,-7],[-5,-8]],"#e7ad83",true);
-        // Four distinct fingers and an angled thumb; gaps remain at the tips.
-        const fingers=[
-          [[-12,-9],[-7,-10],[-8,2],[-10,5],[-13,3]],
-          [[-5,-10],[0,-10],[0,5],[-2,7],[-5,6]],
-          [[2,-11],[7,-10],[8,3],[6,6],[3,5]],
-          [[9,-11],[13,-8],[15,0],[13,3],[10,2]],
-          [[14,-15],[18,-13],[23,-4],[23,1],[20,3],[17,1],[14,-8]],
-        ];
-        for(const finger of fingers)shape(finger,"#e7ad83",true);
-        ctx.fillStyle="#f3c19a";
-        [[-11,-5],[-4,-4],[4,-4],[11,-4],[17,-7]].forEach(([fx,fy])=>ctx.fillRect(fx,fy,2,5));
-        shape([[-8,-17],[-4,-21],[7,-21],[12,-17],[8,-12],[-5,-12]],"#f3c19a");
+        // A relaxed right hand seen from the back. The fingers lie along the
+        // crown; the thumb curls beside the palm, instead of five claws down.
+        path("#d7e8ef",()=>{ctx.moveTo(13,-21);ctx.lineTo(77,-106);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
+        path("#b5ccd8",()=>{ctx.moveTo(25,-18);ctx.lineTo(91,-98);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
+        path(skin,()=>{ctx.moveTo(7,-14);ctx.lineTo(17,-27);ctx.lineTo(31,-17);ctx.lineTo(21,-3);});
+        // Four softly bent fingers, longest in the middle, are staggered in
+        // depth. Each has a rounded tip and joins the same broad palm.
+        const fingers=[[-19,-15,-34,-12],[-20,-11,-40,-7],[-19,-7,-39,-2],[-15,-3,-32,2]];
+        for(const [baseX,baseY,tipX,tipY]of fingers)path(skin,()=>{
+          ctx.moveTo(baseX,baseY);ctx.quadraticCurveTo(tipX+5,baseY-1,tipX,tipY-2);
+          ctx.quadraticCurveTo(tipX-3,tipY,tipX,tipY+2);
+          ctx.quadraticCurveTo(baseX-5,tipY+4,baseX+6,baseY+5);
+        });
+        path(skin,()=>{ctx.moveTo(-18,-15);ctx.quadraticCurveTo(-6,-21,7,-15);
+          ctx.lineTo(22,-10);ctx.quadraticCurveTo(24,-3,14,2);
+          ctx.quadraticCurveTo(0,6,-17,2);ctx.quadraticCurveTo(-23,-4,-18,-15);});
+        path(skin,()=>{ctx.moveTo(12,-1);ctx.quadraticCurveTo(5,2,-3,7);
+          ctx.quadraticCurveTo(-7,10,-11,7);ctx.quadraticCurveTo(-14,4,-10,2);
+          ctx.quadraticCurveTo(-4,-1,0,-6);});
+        path("#f3c19a",()=>{ctx.moveTo(-15,-13);ctx.quadraticCurveTo(-5,-17,5,-12);
+          ctx.lineTo(16,-8);ctx.quadraticCurveTo(5,-1,-15,-3);},false);
+        path("#82a9b9",()=>{ctx.moveTo(14,-26);ctx.lineTo(20,-31);ctx.lineTo(35,-20);ctx.lineTo(29,-13);},false);
         ctx.restore();
       }
       function drawDogCareHearts(ctx, frame, offsetX = 0) {
@@ -22705,7 +22711,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=211-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=212-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
