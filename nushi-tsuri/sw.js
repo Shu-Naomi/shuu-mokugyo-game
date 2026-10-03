@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v212-hand-and-fish-212-1";
+const CACHE_NAME = "nushi-tsuri-v213-continuous-turn-and-coast-nushi-213-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -12,7 +12,7 @@ const CORE_ASSETS = [
   "./pet-life.js?v=202-1",
   "./pet-life-ui.js?v=202-1",
   "./tackle-balance.js?v=202-1",
-  "./fishing-duel.js?v=202-1",
+  "./fishing-duel.js?v=213-1",
   "./fishing-duel.css?v=200-2",
   "./coast-voyage.js?v=201-1",
   "./mountain-region.js?v=203-1",
@@ -22,7 +22,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=207-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=212-1",
+  "./fish-art.js?v=213-1",
   "./assets/fish-lake-v208.png",
   "./assets/fish-stream-v208.png",
   "./assets/fish-swimmers-v208.png",

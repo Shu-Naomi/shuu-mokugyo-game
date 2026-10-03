@@ -201,7 +201,7 @@ module.exports=async function features(url,mobile){
       await page.waitForFunction(()=>!document.querySelector('#fishScene').classList.contains('surface-diving'));
       await screenshot('FISH_'+id.toUpperCase());
     }
-    console.log('V212_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+    console.log('V213_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
       speciesArt:fishResult.filter(r=>r.tallFins!==null).map(({mode,id,tallFins})=>({mode,id,tallFins})),
       dogs:3,careArt,handArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}

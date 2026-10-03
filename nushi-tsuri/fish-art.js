@@ -29,6 +29,8 @@
   const mouth=[{xScale:1,yOffset:0},{xScale:1,yOffset:.025},{xScale:1,yOffset:.05}];
   const heads=[[.985,.62],[.985,.68],[.98,.75],[.5,.75],[.02,.72],[.015,.65],[.015,.62],[.985,.72]];
   const headOffset=.32;
+  const lerp=(a,b,t)=>a+(b-a)*t;
+  const clamp=(value,min,max)=>Math.max(min,Math.min(max,Number(value)||0));
   const specialHeads={
     namazu:[[.91,.65],[.85,.74],[.835,.74],[.43,.75],[.10,.74],[.146,.70],[.09,.65],[.95,.59]],
     unagi:[[.985,.65],[.96,.90],[.78,.92],[.50,.93],[.03,.78],[.015,.72],[.015,.65],[.985,.64]],
@@ -36,13 +38,20 @@
     nushi:[[.97,.52],[.95,.57],[.87,.62],[.50,.67],[.08,.60],[.05,.58],[.03,.52],[.96,.56]],
   };
   function pose(id,cells,frame){
-    const index=Math.max(0,Math.floor(Number(frame)||0));
+    const clock=Math.max(0,Number(frame)||0),index=Math.floor(clock);
     if(cells===7||cells===5){
-      const heading=cells===5?[0,2,3,4,6][Math.min(4,index)]:Math.min(6,index);
-      return {cell:heading===6?0:heading,heading,flip:heading===6,jaw:0,target:[.5+headOffset*turn[heading].xScale,.62+turn[heading].yOffset],beat:0};
+      const heading=cells===5?[0,2,3,4,6][Math.min(4,index)]:Math.round(clamp(clock,0,6)*16)/16;
+      const from=Math.floor(heading),to=Math.min(6,from+1),mix=heading-from;
+      return {cell:from===6?0:from,heading,flip:from===6,jaw:0,
+        target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
+          .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],beat:0,from,to,mix};
     }
     if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?7:0,jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
-    return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:index%8/8*Math.PI*2};
+    return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:clock%8/8*Math.PI*2};
+  }
+  function hookPose(id,cells,frame){
+    const p=pose(id,cells,frame);
+    return {xScale:(p.target[0]-.5)/headOffset,yOffset:p.target[1]-.62};
   }
   function sourceHead(id,cell,flip=false){
     const point=native[id]?.heads[cell]||specialHeads[id]?.[cell]||heads[cell];
@@ -106,6 +115,79 @@
     }
     scales[id]=scale;return scale;
   }
+  const meshes=new WeakMap(),turnCache=new Map();
+  function mesh(ctx,image,id,heading){
+    const p=pose(id,7,heading),isolated=isolatedCell(ctx,image,id,p.cell);
+    let cache=meshes.get(image);if(!cache){cache=new Map();meshes.set(image,cache);}
+    const key=id+':'+heading;if(cache.has(key))return cache.get(key);
+    const box=isolated.box,tile=ctx.canvas.ownerDocument?.createElement('canvas')||new ctx.canvas.constructor(box[2],box[3]);
+    tile.width=box[2];tile.height=box[3];const painter=tile.getContext('2d');
+    if(p.flip){painter.translate(tile.width,0);painter.scale(-1,1);}
+    painter.drawImage(isolated.image,...box,0,0,tile.width,tile.height);
+    const data=painter.getImageData(0,0,tile.width,tile.height).data,top=[],bottom=[];
+    for(let x=0;x<tile.width;x++){
+      let a=tile.height,b=-1;for(let y=0;y<tile.height;y++)if(data[(y*tile.width+x)*4+3]>32){a=Math.min(a,y);b=y;}
+      top[x]=a;bottom[x]=b+1;
+    }
+    const result={image:tile,top,bottom,head:sourceHead(id,p.cell,p.flip),
+      width:tile.width*scaleFor(id)*projection(id,p.cell),height:tile.height*scaleFor(id)};
+    cache.set(key,result);return result;
+  }
+  function paintTurn(ctx,image,id,p,resolveImage){
+    // Corresponding silhouette columns share one interpolated outline. This
+    // morphs the actual body instead of fading two separate fish over it.
+    const heading=Math.round(p.heading*16)/16,key=id+':'+heading;
+    let tile=turnCache.get(key);
+    if(!tile){
+      const q=pose(id,7,heading),aPose=pose(id,7,q.from),bPose=pose(id,7,q.to);
+      const a=mesh(ctx,native[id]?resolveImage(cellAsset(id,aPose.cell)):image,id,q.from);
+      const b=mesh(ctx,native[id]?resolveImage(cellAsset(id,bPose.cell)):image,id,q.to);
+      tile=ctx.canvas.ownerDocument?.createElement('canvas')||new ctx.canvas.constructor(448,224);
+      tile.width=448;tile.height=224;const painter=tile.getContext('2d');
+      const t=q.mix,h=lerp(a.head[0],b.head[0],t),tx=q.target[0]*448,ty=q.target[1]*224;
+      const width=lerp(a.width,b.width,t),angle=heading/6*Math.PI;
+      const sourceU=(u,m)=>u<h?u/Math.max(.001,h)*m.head[0]:m.head[0]+(u-h)/Math.max(.001,1-h)*(1-m.head[0]);
+      const bend=u=>{
+        const right=Math.pow(Math.max(0,(h-u)/Math.max(.001,h)),1.6);
+        const left=Math.pow(Math.max(0,(u-h)/Math.max(.001,1-h)),1.6);
+        const rear=lerp(left,right,(1+Math.cos(angle))/2);
+        // A yaw bend is projected through the slightly elevated camera only
+        // during a turn. Normal tail beats never shift any row vertically.
+        return {x:-width*.05*Math.sin(angle)*Math.cos(angle)*rear,
+          y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear};
+      };
+      for(let i=0;i<128;i++){
+        const u=i/128,v=(i+1)/128,au=sourceU(u,a),av=sourceU(v,a),bu=sourceU(u,b),bv=sourceU(v,b);
+        const ai=Math.min(a.image.width-1,Math.floor((au+av)/2*a.image.width));
+        const bi=Math.min(b.image.width-1,Math.floor((bu+bv)/2*b.image.width));
+        if(a.bottom[ai]<=a.top[ai]&&b.bottom[bi]<=b.top[bi])continue;
+        const edge=(m,index,end)=>(m[end][index]/m.image.height-m.head[1])*m.height;
+        const validA=a.bottom[ai]>a.top[ai],validB=b.bottom[bi]>b.top[bi];
+        const top=validA&&validB?lerp(edge(a,ai,'top'),edge(b,bi,'top'),t):validA?edge(a,ai,'top'):edge(b,bi,'top');
+        const bottom=validA&&validB?lerp(edge(a,ai,'bottom'),edge(b,bi,'bottom'),t):validA?edge(a,ai,'bottom'):edge(b,bi,'bottom');
+        const start=bend(u),end=bend(v),x=tx+lerp((au-a.head[0])*a.width,(bu-b.head[0])*b.width,t)+start.x;
+        const nextX=tx+lerp((av-a.head[0])*a.width,(bv-b.head[0])*b.width,t)+end.x;
+        const y=ty+top+clamp((start.y+end.y)/2,8-ty-top,216-ty-bottom);
+        for(const [m,index,from,to,alpha]of [[a,ai,au,av,validB?1:1-t],[b,bi,bu,bv,t]]){
+          if(m.bottom[index]<=m.top[index]||alpha<=0)continue;
+          painter.globalAlpha=alpha;
+          painter.drawImage(m.image,from*m.image.width,m.top[index],Math.max(.01,(to-from)*m.image.width),m.bottom[index]-m.top[index],
+            x,y,Math.max(.1,nextX-x)+.3,Math.max(.1,bottom-top));
+        }
+      }
+      // Flatten the resampled strips and release their intermediate surfaces.
+      // Mobile browsers and native Canvas otherwise retain those allocations
+      // until a later garbage collection, despite the visible frame being tiny.
+      const pixels=painter.getImageData(0,0,448,224);
+      tile.width=448;tile.height=224;tile.getContext('2d').putImageData(pixels,0,0);
+      if(turnCache.size>=48){
+        const oldest=turnCache.keys().next().value,expired=turnCache.get(oldest);
+        expired.width=1;expired.height=1;turnCache.delete(oldest);
+      }
+      turnCache.set(key,tile);
+    }
+    ctx.drawImage(tile,0,0);
+  }
   function paint(ctx,image,id,p,alpha=1,resolveImage){
     if(native[id])image=resolveImage(cellAsset(id,p.cell));
     const isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id);
@@ -125,17 +207,24 @@
     }
     ctx.restore();
   }
-  function draw(ctx,image,id,cells=8,frame=0,resolveImage){
+  function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
     if(!species[id])return false;
     const p=pose(id,cells,frame);
     // Wait for the requested original rather than cropping the wrong image.
     if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
       cells===3&&p.jaw===1&&!resolveImage(native[id].asset)))return false;
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=true;
-    if(cells===3&&p.jaw===1){
-      paint(ctx,image,id,pose(id,3,0),.45,resolveImage);paint(ctx,image,id,p,.55,resolveImage);
-    }else paint(ctx,image,id,p,1,resolveImage);
+    if(p.heading!==undefined){
+      try{paintTurn(ctx,image,id,p,resolveImage);}catch{paint(ctx,image,id,p,1,resolveImage);}
+    }else if(cells===3&&p.jaw===1){
+      if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
+      const closed=pose(id,3,0);closed.beat=p.beat;
+      paint(ctx,image,id,closed,.45,resolveImage);paint(ctx,image,id,p,.55,resolveImage);
+    }else{
+      if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
+      paint(ctx,image,id,p,1,resolveImage);
+    }
     return true;
   }
-  return Object.freeze({species,groups,turn,mouth,headOffset,pose,sourceHead,scaleFor,draw,assets});
+  return Object.freeze({species,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets});
 });

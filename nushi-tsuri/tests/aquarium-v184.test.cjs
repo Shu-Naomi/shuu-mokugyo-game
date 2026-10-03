@@ -95,7 +95,7 @@ test('home and portable draw paths select seven-heading turn art and restore swi
  }finally{app.dispose();}
 });
 
-test('portable tank actually renders all seven headings and never writes a fractional horizontal scale',()=>{
+test('portable tank renders continuous turns through all seven headings without a fractional horizontal scale',()=>{
  const app=boot({...seed(),caught:{...seed().caught,moroko:1},x:199,y:36},{petTankStage:[360,205]}),w=app.window;
  const callbacks=new Map();let next=1000,now=0;
  w.requestAnimationFrame=fn=>{const id=++next;callbacks.set(id,fn);return id;};w.cancelAnimationFrame=id=>callbacks.delete(id);
@@ -109,7 +109,9 @@ test('portable tank actually renders all seven headings and never writes a fract
    assert.match(el.style.transform,/scaleX\((-?1)\)/);
    if(el.dataset.aquariumFrame.includes(':turn:'))frames.add(Number(el.dataset.aquariumFrame.split(':').at(-1)));
   }
-  assert.deepEqual([...frames].sort(),[0,1,2,3,4,5,6]);
+  assert.ok(frames.size>14,'intermediate body shapes join the authored headings');
+  assert.ok([...frames].every(frame=>Number.isFinite(frame)&&frame>=0&&frame<=6));
+  assert.deepEqual([...new Set([...frames].map(Math.round))].sort(),[0,1,2,3,4,5,6]);
   assert.deepEqual(read(w,'s.petLife'),stateBefore,'rendering does not mutate fish or progress');
   click('[data-pet-action="close"]');step();
   assert.equal(w.document.querySelector('#petLifeModal').classList.contains('open'),false);
