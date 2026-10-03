@@ -76,6 +76,19 @@ module.exports=async function features(url,mobile){
       return {id,altered};
     }));
     for(const portrait of careArt)assert.equal(portrait.altered,0,portrait.id+' intact original portrait');
+    const handArt=await page.evaluate(()=>{
+      const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
+      const ctx=canvas.getContext('2d');drawDogCareHand(ctx,150,40,null,1,'stroke');
+      const pixels=ctx.getImageData(0,0,320,180).data;let fingers=0,inside=false,upper=0,side=0;
+      for(let x=-20;x<=26;x+=.1){
+        const px=Math.round(150+x*Math.cos(.45)),py=Math.round(40+x*Math.sin(.45));
+        const opaque=pixels[(py*320+px)*4+3]>180;if(opaque&&!inside)fingers++;inside=opaque;
+      }
+      for(let x=0;x<320;x++)if(pixels[x*4+3]>180)upper++;
+      for(let y=0;y<180;y++)if(pixels[(y*320+319)*4+3]>180)side++;
+      return {fingers,upper,side};
+    });
+    assert.equal(handArt.fingers,5);assert.ok(handArt.upper>10);assert.equal(handArt.side,0);
     const layout=await page.locator('#dogCare').evaluate(el=>{
       const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
         hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
@@ -161,7 +174,7 @@ module.exports=async function features(url,mobile){
       battle.biteAt=Date.now();pull();clearInterval(timer);timer=0;finishHookReveal();battle.f=fish.find(f=>f.id==='nushi');
       battle.turning={from:1,to:-1};battle.turnSpriteFrame=3;battle.x=50;battle.y=58;drawBattle();});
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
-    console.log('V210_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
-      dogs:3,careArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
+    console.log('V211_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+      dogs:3,careArt,handArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}
 };

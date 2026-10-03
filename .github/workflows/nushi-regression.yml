@@ -1,7 +1,7 @@
 name: Nushi regression
 on:
   push:
-    branches: [main, codex/v202-mountain-nushi-recovery, codex/v203-stream-collision, codex/v204-real-instrument-arrangements, codex/v205-masters-heavy-rock, codex/v206-lake-story, codex/v210-dog-care-clean]
+    branches: [main, codex/v202-mountain-nushi-recovery, codex/v203-stream-collision, codex/v204-real-instrument-arrangements, codex/v205-masters-heavy-rock, codex/v206-lake-story, codex/v210-dog-care-clean, codex/v211-natural-petting]
     paths:
       - 'nushi-tsuri/**'
       - '.github/workflows/nushi-regression.yml'

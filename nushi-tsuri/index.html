@@ -6468,7 +6468,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v210</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v211</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -18397,15 +18397,20 @@
         ctx.transform(1,0,sway,1,-sway*paw,0);
         ctx.drawImage(image,0,row*320,320,320,0,0,320,320);
         const eyes={shuu:[[135,103],[184,103]],riku:[[131,88],[170,88]],grey:[[132,97],[182,97]]}[dogId];
-        const relaxed=mode==="pet"&&progress>.16&&progress<.93;
-        const blink=relaxed||now%4700>4500;
-        if(blink)for(const [x,y]of eyes){
+        const blinkTime=now%4700;
+        const closure=mode==="pet"
+          ? dogCareEase((progress-.12)/.12)*(1-dogCareEase((progress-.8)/.13))
+          : dogCareEase((blinkTime-4500)/70)*(1-dogCareEase((blinkTime-4590)/110));
+        if(closure>0&&dogId!=="riku")drawDogCareShibaEyelids(ctx,image,dogId,row,closure);
+        else if(closure>0)for(const [x,y]of eyes){
+          ctx.save();ctx.globalAlpha*=closure;
           // Rounded lids stay inside the eyes; no stretched rectangular fur patch.
           ctx.fillStyle={shuu:"#d58b3e",riku:"#282a29",grey:"#28292a"}[dogId];
           ctx.beginPath();ctx.ellipse(x,y,10,10,0,0,Math.PI*2);ctx.fill();
           ctx.strokeStyle=dogId==="shuu"?"#5d321e":"#0a1116";ctx.lineWidth=3;ctx.lineCap="round";
           ctx.beginPath();ctx.moveTo(x-7,y+1);
           ctx.quadraticCurveTo(x,y+5,x+7,y+1);ctx.stroke();
+          ctx.restore();
         }
         const lip={shuu:[160,140],riku:[150,121],grey:[160,132]}[dogId];
         if(mode==="treat"&&progress>.36&&progress<.85){
@@ -18417,6 +18422,23 @@
         ctx.restore();
         const project=([x,y])=>({x:originX+(x+sway*(y-paw))*scale,y:originY+y*scale});
         return {...project(lip),crown:project({shuu:[160,67],riku:[150,58],grey:[160,67]}[dogId])};
+      }
+      function drawDogCareShibaEyelids(ctx,image,dogId,row,closure) {
+        const eyes=dogId==="shuu"?[[135,106],[184,106]]:[[132,94],[182,94]];
+        for(const [side,[x,y]]of eyes.entries()){
+          const ry=dogId==="shuu"?15:13;
+          ctx.save();ctx.globalAlpha*=closure;
+          // Reuse the adjacent coat texture, covering the entire iris and rim.
+          // Shuu has orange/cream temples; Grey's nose bridge is clean dark fur.
+          ctx.save();ctx.beginPath();ctx.ellipse(x,y,14,ry,0,0,Math.PI*2);ctx.clip();
+          ctx.drawImage(image,dogId==="grey"?156:side?x+15:x-28,row*320+y-ry,
+            dogId==="grey"?8:13,ry*2,x-14,y-ry,28,ry*2);
+          ctx.restore();
+          ctx.strokeStyle=dogId==="shuu"?"#503121":"#080f15";
+          ctx.lineWidth=2;ctx.lineCap="round";
+          ctx.beginPath();ctx.moveTo(x-8,y+1);ctx.quadraticCurveTo(x,y+5,x+8,y);ctx.stroke();
+          ctx.restore();
+        }
       }
       function drawDogCareProp(ctx, itemId, x, y, scale = 1) {
         const u = Math.max(1, Math.round(2 * scale));
@@ -18493,19 +18515,19 @@
         let x,y,phase;
         if(progress<.18){
           const t=dogCareEase(progress/.18);
-          x=350+(crown.x-350)*t;y=crown.y-30+22*t;phase="approach";
+          x=crown.x+46*(1-t);y=-60+(crown.y+55)*t;phase="approach";
         }else if(progress<.42){
           const t=dogCareEase((progress-.18)/.24);
-          x=crown.x+24*t;y=crown.y-8+Math.sin(t*Math.PI)*2;phase="stroke";
+          x=crown.x+18*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
         }else if(progress<.54){
           const t=dogCareEase((progress-.42)/.12);
-          x=crown.x+24*(1-t);y=crown.y-8-Math.sin(t*Math.PI)*12;phase="lift";
+          x=crown.x+18*(1-t);y=crown.y-5-Math.sin(t*Math.PI)*14;phase="lift";
         }else if(progress<.8){
           const t=dogCareEase((progress-.54)/.26);
-          x=crown.x+24*t;y=crown.y-8+Math.sin(t*Math.PI)*2;phase="stroke";
+          x=crown.x+18*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
         }else{
           const t=dogCareEase((progress-.8)/.2);
-          x=crown.x+24+(350-crown.x-24)*t;y=crown.y-8-22*t;phase="withdraw";
+          x=crown.x+18+28*t;y=crown.y-5-(crown.y+55)*t;phase="withdraw";
         }
         return {x,y,phase};
       }
@@ -18521,26 +18543,54 @@
       function drawDogCareHand(ctx, x, y, itemId = null, treatScale = 1, pose = "feed") {
         const px = Math.round(x);
         const py = Math.round(y);
+        if(pose==="stroke"){
+          drawDogCareStrokingHand(ctx,px,py);
+          return;
+        }
         ctx.fillStyle = "#d7e8ef";
         ctx.fillRect(px + 22, py - 9, Math.max(0, 320 - px - 22), 22);
         ctx.fillStyle = "#82a9b9";
         ctx.fillRect(px + 19, py - 11, 9, 26);
         ctx.fillStyle = "#e7ad83";
         ctx.fillRect(px + 2, py - 8, 20, 20);
-        if(pose==="stroke"){
-          for(const [i,left]of [-14,-18,-16,-12].entries())ctx.fillRect(px+left,py-6+i*4,18-left,3);
-        }else{
-          ctx.fillRect(px - 8, py - 5, 14, 7);
-          ctx.fillRect(px - 6, py + 4, 13, 6);
-        }
+        ctx.fillRect(px - 8, py - 5, 14, 7);
+        ctx.fillRect(px - 6, py + 4, 13, 6);
         ctx.fillStyle = "#f3c19a";
-        ctx.fillRect(px-(pose==="stroke"?17:10),py-4,pose==="stroke"?21:14,3);
-        ctx.fillRect(px-(pose==="stroke"?13:8),py+5,pose==="stroke"?19:14,3);
+        ctx.fillRect(px-10,py-4,14,3);
+        ctx.fillRect(px-8,py+5,14,3);
         ctx.fillRect(px + 5, py - 11, 7, 5);
         if (itemId && treatScale > .02) {
           ctx.save();ctx.translate(px-11,py+1);ctx.scale(treatScale,treatScale);
           drawDogCareProp(ctx,itemId,0,0,1);ctx.restore();
         }
+      }
+      function drawDogCareStrokingHand(ctx,x,y) {
+        ctx.save();ctx.translate(x,y);ctx.rotate(.45);
+        const shape=(points,color,outline=false)=>{
+          ctx.beginPath();ctx.moveTo(...points[0]);
+          for(const point of points.slice(1))ctx.lineTo(...point);
+          ctx.closePath();ctx.fillStyle=color;ctx.fill();
+          if(outline){ctx.strokeStyle="#885642";ctx.lineWidth=1;ctx.lineJoin="round";ctx.stroke();}
+        };
+        // The sleeve and wrist enter from above/right, with the palm facing down.
+        shape([[8,-24],[21,-19],[78,-89],[61,-102]],"#d7e8ef");
+        shape([[16,-34],[24,-26],[78,-89],[70,-97]],"#b5ccd8");
+        shape([[-1,-24],[6,-36],[20,-27],[12,-19]],"#e7ad83",true);
+        shape([[3,-32],[16,-36],[24,-25],[14,-18]],"#82a9b9");
+        shape([[-12,-10],[-10,-20],[-2,-25],[10,-25],[19,-19],[15,-9],[9,-7],[-5,-8]],"#e7ad83",true);
+        // Four distinct fingers and an angled thumb; gaps remain at the tips.
+        const fingers=[
+          [[-12,-9],[-7,-10],[-8,2],[-10,5],[-13,3]],
+          [[-5,-10],[0,-10],[0,5],[-2,7],[-5,6]],
+          [[2,-11],[7,-10],[8,3],[6,6],[3,5]],
+          [[9,-11],[13,-8],[15,0],[13,3],[10,2]],
+          [[14,-15],[18,-13],[23,-4],[23,1],[20,3],[17,1],[14,-8]],
+        ];
+        for(const finger of fingers)shape(finger,"#e7ad83",true);
+        ctx.fillStyle="#f3c19a";
+        [[-11,-5],[-4,-4],[4,-4],[11,-4],[17,-7]].forEach(([fx,fy])=>ctx.fillRect(fx,fy,2,5));
+        shape([[-8,-17],[-4,-21],[7,-21],[12,-17],[8,-12],[-5,-12]],"#f3c19a");
+        ctx.restore();
       }
       function drawDogCareHearts(ctx, frame, offsetX = 0) {
         const rise = (frame % 8) * 2;
@@ -22655,7 +22705,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=210-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=211-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

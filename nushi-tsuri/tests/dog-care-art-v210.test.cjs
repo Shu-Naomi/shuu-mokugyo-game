@@ -6,7 +6,7 @@ test('care portraits preserve the authored fur and silhouette without cut-out se
   const app=boot(),w=app.window;
   try{
     const source=w.eval('dogIdleImage.src'),image=await loadImage(path.join(__dirname,'..',source.split('?')[0]));
-    const eyes={shuu:[[135,103],[184,103]],riku:[[131,88],[170,88]],grey:[[132,97],[182,97]]};
+    const eyes={shuu:[[135,106],[184,106]],riku:[[131,88],[170,88]],grey:[[132,94],[182,94]]};
     const mouths={shuu:[160,140],riku:[150,121],grey:[160,132]};
     for(const [row,dog]of ['shuu','riku','grey'].entries()){
       const size=dog==='riku'?220:188,scale=size/320,paw={shuu:298,riku:232,grey:300}[dog];
@@ -28,7 +28,8 @@ test('care portraits preserve the authored fur and silhouette without cut-out se
           if(actual[i+3]>100)bottom=Math.max(bottom,y);
           if(actual[i]===expected[i]&&actual[i+1]===expected[i+1]&&actual[i+2]===expected[i+2])continue;
           const sy=(y+.5-oy)/scale,sx=(x+.5-ox)/scale-sway*(sy-paw);
-          const lid=eyes[dog].some(([ex,ey])=>Math.hypot(sx-ex,sy-ey)<12);
+          const [rx,ry]=dog==='shuu'?[15.5,16.5]:dog==='grey'?[15.5,14.5]:[12,12];
+          const lid=eyes[dog].some(([ex,ey])=>Math.hypot((sx-ex)/rx,(sy-ey)/ry)<1);
           const [mx,my]=mouths[dog],mouth=Math.abs(sx-mx)<10&&Math.abs(sy-my)<9;
           assert.ok(lid||mouth,`${dog} ${mode} ${progress}: fur overwritten at ${x},${y}`);changed++;
         }
