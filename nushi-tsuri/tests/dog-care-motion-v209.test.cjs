@@ -52,11 +52,16 @@ test('petting approaches and strokes the crown, lifts for the return and withdra
       const hand=w.dogCarePetHand(crown,i/240);
       if(previous)assert.ok(Math.hypot(hand.x-previous.x,hand.y-previous.y)<9,'no hand teleport');
       if(hand.phase==='stroke'){
-        assert.ok(hand.x>=crown.x&&hand.x<=crown.x+24);
-        assert.ok(hand.y>=crown.y-8.01&&hand.y<=crown.y-5.99);strokes++;
+        assert.ok(hand.x>=crown.x&&hand.x<=crown.x+18);
+        assert.ok(hand.y>=crown.y-5.01&&hand.y<=crown.y-2.99);strokes++;
       }
       previous=hand;
     }
-    assert.ok(strokes>100);assert.ok(w.dogCarePetHand(crown,0).x>320);assert.ok(w.dogCarePetHand(crown,1).x>320);
+    assert.ok(strokes>100);
+    for(const progress of [0,1]){
+      const hand=w.dogCarePetHand(crown,progress);
+      assert.ok(hand.y<-40,'hand enters and exits above the scene');
+      assert.ok(hand.x>crown.x,'approach comes from above/right');
+    }
   }finally{app.dispose();}
 });
