@@ -198,6 +198,7 @@ module.exports=async function features(url,mobile){
         startFight();finishHookReveal();renderBattleFish();drawBattle();},id);
       assert.ok((await page.locator('#battleFish').getAttribute('class')).includes('fish-'+id));
       assert.equal(await page.locator('#fishName').innerText(),await page.evaluate(id=>fish.find(f=>f.id===id).name,id));
+      await page.waitForFunction(()=>!document.querySelector('#fishScene').classList.contains('surface-diving'));
       await screenshot('FISH_'+id.toUpperCase());
     }
     console.log('V212_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
