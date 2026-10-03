@@ -62,6 +62,20 @@ module.exports=async function features(url,mobile){
     await walkHome('riku');await press('#action');assert.equal(await page.evaluate(()=>dogCareSelectedId),'riku');
     assert.equal(await page.evaluate(()=>s.dog),'shuu','opening care does not choose a companion');
     await page.waitForFunction(()=>dogIdleImage.complete&&dogIdleImage.naturalWidth>0);
+    const careArt=await page.evaluate(()=>['shuu','riku','grey'].map((id,row)=>{
+      const actual=document.createElement('canvas'),original=document.createElement('canvas');
+      actual.width=original.width=320;actual.height=original.height=180;
+      const ctx=actual.getContext('2d'),ref=original.getContext('2d');
+      ctx.imageSmoothingEnabled=ref.imageSmoothingEnabled=false;
+      drawDogCareCloseup(ctx,id,'idle',0,10000);
+      const size=id==='riku'?220:188,scale=size/320,paw={shuu:298,riku:232,grey:300}[id];
+      ref.setTransform(scale,0,0,scale,144-size/2,166-paw*scale);
+      ref.drawImage(dogIdleImage,0,row*320,320,320,0,0,320,320);
+      const pixels=ctx.getImageData(0,0,320,180).data,source=ref.getImageData(0,0,320,180).data;
+      let altered=0;for(let i=0;i<pixels.length;i++)if(pixels[i]!==source[i])altered++;
+      return {id,altered};
+    }));
+    for(const portrait of careArt)assert.equal(portrait.altered,0,portrait.id+' intact original portrait');
     const layout=await page.locator('#dogCare').evaluate(el=>{
       const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
         hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
@@ -92,7 +106,7 @@ module.exports=async function features(url,mobile){
       assert.equal(await page.locator('#dogCareTakeFishing').isDisabled(),true,'busy motion cannot change companion');
       await page.waitForFunction(()=>dogCareScene.mode==='pet'&&Date.now()-dogCareScene.startedAt>400);
       assert.match(await page.locator('#dogCareSceneLabel').innerText(),/目を細め/);
-      if(id==='riku')await screenshot('DOG_PET');await careIdle();
+      await screenshot(id==='riku'?'DOG_PET':'DOG_PET_'+id.toUpperCase());await careIdle();
       const before=await page.evaluate(()=>s.dogTreats.samBiscuit);await press('[data-give-dog-treat="samBiscuit"]');
       await page.waitForFunction(()=>dogCareScene.mode==='treat'&&Date.now()-dogCareScene.startedAt>1500);
       assert.match(await page.locator('#dogCareSceneLabel').innerText(),/もぐもぐ/);
@@ -147,7 +161,7 @@ module.exports=async function features(url,mobile){
       battle.biteAt=Date.now();pull();clearInterval(timer);timer=0;finishHookReveal();battle.f=fish.find(f=>f.id==='nushi');
       battle.turning={from:1,to:-1};battle.turnSpriteFrame=3;battle.x=50;battle.y=58;drawBattle();});
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
-    console.log('V209_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
-      dogs:3,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
+    console.log('V210_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+      dogs:3,careArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}
 };
