@@ -1,0 +1,12 @@
+{
+  "version": "v214",
+  "asset": "nushi-tsuri/assets/aquarium-interior-v214.webp",
+  "width": 1672,
+  "height": 941,
+  "mode": "generate",
+  "tool": "built-in image_gen",
+  "source": "/workspace/scratch/2932e728d7f6/generated_images/exec-cbbe48f7-adfe-4ee9-9953-ab87ca544373.png",
+  "format": "lossless WebP; decoded RGBA identical to the generated PNG",
+  "git_blob": "6f17859f0d97970b6b8e0b420f4b8453352c3523",
+  "prompt": "Use case: stylized-concept. Asset type: a single empty aquarium background for a Japanese 16-bit fishing game, landscape 16:9. Primary request: a much more realistic, richly detailed planted glass aquarium interior viewed straight through the front pane, with believable materials and fine pixel-art texture. A rectangular clear glass tank, clean blue-green water, faint corner glass seams, a visible complete floor of natural fine pale sand mixed with tiny rounded pebbles occupying the lower quarter, several worn mossy river stones and a low curved weathered driftwood root along the bottom, lush realistic narrow aquatic leaves and delicate fern-like aquatic plants grouped at the left and right margins. Keep the upper central 65 percent open clear water, with subtle light diffusion and restrained soft underwater caustics, so separately drawn fish remain easily visible. Detailed individual grains, rock pores, layered leaf veins, natural wood grain, convincing depth; carefully composed high quality SFC/16-bit adventure-game pixel art, not a crude vector gradient or big simple polygons, crisp detailed pixel texture. Soft natural light from the top. This is the inside of a home aquarium, not an outdoor lake, no room around it. Constraints: absolutely no fish, no animals, no eggs, no cursor, no circular markers, no text, no lettering, no UI, no logos, no watermark. No huge rocks or plants across the swimming area. Background is fully opaque and fills the whole rectangular image."
+}

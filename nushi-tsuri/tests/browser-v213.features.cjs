@@ -85,6 +85,6 @@ module.exports=async function motionAndCoast(url,mobile){
     await page.reload({waitUntil:'domcontentloaded'});await press('#start');
     assert.equal(await page.evaluate(()=>s.caught.coastNushi),1,'sea boss persists after reload');
     assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
-    console.log('V213_MOTION_AND_COAST_SMOKE_PASS '+JSON.stringify({mobile,poses:poses.length,smoothFrames,seaBoss:result,reload:true,errors}));
+    console.log('V214_MOTION_AND_COAST_SMOKE_PASS '+JSON.stringify({mobile,poses:poses.length,smoothFrames,seaBoss:result,reload:true,errors}));
   }finally{await browser.close();}
 };

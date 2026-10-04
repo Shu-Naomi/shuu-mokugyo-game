@@ -115,38 +115,40 @@
     }
     scales[id]=scale;return scale;
   }
-  const meshes=new WeakMap(),turnCache=new Map();
-  function mesh(ctx,image,id,heading){
-    const p=pose(id,7,heading),isolated=isolatedCell(ctx,image,id,p.cell);
+  const meshes=new WeakMap(),turnCache=new Map(),imageKeys=new WeakMap();let nextImageKey=0;
+  function cellMesh(ctx,image,id,cell,flip=false){
+    const isolated=isolatedCell(ctx,image,id,cell);
     let cache=meshes.get(image);if(!cache){cache=new Map();meshes.set(image,cache);}
-    const key=id+':'+heading;if(cache.has(key))return cache.get(key);
+    const key=id+':'+cell+':'+flip;if(cache.has(key))return cache.get(key);
     const box=isolated.box,tile=ctx.canvas.ownerDocument?.createElement('canvas')||new ctx.canvas.constructor(box[2],box[3]);
     tile.width=box[2];tile.height=box[3];const painter=tile.getContext('2d');
-    if(p.flip){painter.translate(tile.width,0);painter.scale(-1,1);}
+    if(flip){painter.translate(tile.width,0);painter.scale(-1,1);}
     painter.drawImage(isolated.image,...box,0,0,tile.width,tile.height);
     const data=painter.getImageData(0,0,tile.width,tile.height).data,top=[],bottom=[];
     for(let x=0;x<tile.width;x++){
       let a=tile.height,b=-1;for(let y=0;y<tile.height;y++)if(data[(y*tile.width+x)*4+3]>32){a=Math.min(a,y);b=y;}
       top[x]=a;bottom[x]=b+1;
     }
-    const result={image:tile,top,bottom,head:sourceHead(id,p.cell,p.flip),
-      width:tile.width*scaleFor(id)*projection(id,p.cell),height:tile.height*scaleFor(id)};
+    const result={image:tile,top,bottom,pixels:data,head:sourceHead(id,cell,flip),
+      width:tile.width*scaleFor(id)*projection(id,cell),height:tile.height*scaleFor(id)};
     cache.set(key,result);return result;
   }
+  function mesh(ctx,image,id,heading){const p=pose(id,7,heading);return cellMesh(ctx,image,id,p.cell,p.flip);}
   function paintTurn(ctx,image,id,p,resolveImage){
-    // Corresponding silhouette columns share one interpolated outline. This
-    // morphs the actual body instead of fading two separate fish over it.
-    const heading=Math.round(p.heading*16)/16,key=id+':'+heading;
+    // One inverse-mapped raster keeps every destination pixel tied to one
+    // original. Overlapping drawImage strips and translucent whole-fish
+    // blends duplicated eyes, fins and scales in the intermediate headings.
+    if(!imageKeys.has(image))imageKeys.set(image,++nextImageKey);
+    const heading=Math.round(p.heading*16)/16,key=imageKeys.get(image)+':'+id+':'+heading;
     let tile=turnCache.get(key);
     if(!tile){
       const q=pose(id,7,heading),aPose=pose(id,7,q.from),bPose=pose(id,7,q.to);
       const a=mesh(ctx,native[id]?resolveImage(cellAsset(id,aPose.cell)):image,id,q.from);
       const b=mesh(ctx,native[id]?resolveImage(cellAsset(id,bPose.cell)):image,id,q.to);
       tile=ctx.canvas.ownerDocument?.createElement('canvas')||new ctx.canvas.constructor(448,224);
-      tile.width=448;tile.height=224;const painter=tile.getContext('2d');
-      const t=q.mix,h=lerp(a.head[0],b.head[0],t),tx=q.target[0]*448,ty=q.target[1]*224;
+      tile.width=448;tile.height=224;const painter=tile.getContext('2d'),pixels=painter.createImageData(448,224);
+      const t=q.mix,m=t<.5?a:b,h=m.head[0],tx=q.target[0]*448,ty=q.target[1]*224;
       const width=lerp(a.width,b.width,t),angle=heading/6*Math.PI;
-      const sourceU=(u,m)=>u<h?u/Math.max(.001,h)*m.head[0]:m.head[0]+(u-h)/Math.max(.001,1-h)*(1-m.head[0]);
       const bend=u=>{
         const right=Math.pow(Math.max(0,(h-u)/Math.max(.001,h)),1.6);
         const left=Math.pow(Math.max(0,(u-h)/Math.max(.001,1-h)),1.6);
@@ -156,30 +158,30 @@
         return {x:-width*.05*Math.sin(angle)*Math.cos(angle)*rear,
           y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear};
       };
-      for(let i=0;i<128;i++){
-        const u=i/128,v=(i+1)/128,au=sourceU(u,a),av=sourceU(v,a),bu=sourceU(u,b),bv=sourceU(v,b);
-        const ai=Math.min(a.image.width-1,Math.floor((au+av)/2*a.image.width));
-        const bi=Math.min(b.image.width-1,Math.floor((bu+bv)/2*b.image.width));
-        if(a.bottom[ai]<=a.top[ai]&&b.bottom[bi]<=b.top[bi])continue;
-        const edge=(m,index,end)=>(m[end][index]/m.image.height-m.head[1])*m.height;
-        const validA=a.bottom[ai]>a.top[ai],validB=b.bottom[bi]>b.top[bi];
-        const top=validA&&validB?lerp(edge(a,ai,'top'),edge(b,bi,'top'),t):validA?edge(a,ai,'top'):edge(b,bi,'top');
-        const bottom=validA&&validB?lerp(edge(a,ai,'bottom'),edge(b,bi,'bottom'),t):validA?edge(a,ai,'bottom'):edge(b,bi,'bottom');
-        const start=bend(u),end=bend(v),x=tx+lerp((au-a.head[0])*a.width,(bu-b.head[0])*b.width,t)+start.x;
-        const nextX=tx+lerp((av-a.head[0])*a.width,(bv-b.head[0])*b.width,t)+end.x;
-        const y=ty+top+clamp((start.y+end.y)/2,8-ty-top,216-ty-bottom);
-        for(const [m,index,from,to,alpha]of [[a,ai,au,av,validB?1:1-t],[b,bi,bu,bv,t]]){
-          if(m.bottom[index]<=m.top[index]||alpha<=0)continue;
-          painter.globalAlpha=alpha;
-          painter.drawImage(m.image,from*m.image.width,m.top[index],Math.max(.01,(to-from)*m.image.width),m.bottom[index]-m.top[index],
-            x,y,Math.max(.1,nextX-x)+.3,Math.max(.1,bottom-top));
+      // Use a uniform projection around the lip. Matching a frontal mouth to
+      // a side-view outline stretched the two pixels before the lip into a
+      // long false beak. Only the rear bends; the face keeps its proportions.
+      const project=u=>tx+(u-h)*width+bend(u).x;
+      let u=0;
+      for(let x=Math.max(0,Math.ceil(project(0)));x<Math.min(448,Math.ceil(project(1)));x++){
+        let low=u,high=1;
+        for(let n=0;n<12;n++){const middle=(low+high)/2;if(project(middle)<x+.5)low=middle;else high=middle;}
+        u=(low+high)/2;
+        const index=Math.min(m.image.width-1,Math.floor(u*m.image.width));
+        if(m.bottom[index]<=m.top[index])continue;
+        // Keep the spine, scale rows and fin roots together. Stretching each
+        // column to a different outline tore the pattern across its back.
+        const vertical=lerp(a.height,b.height,t);
+        const top=(m.top[index]/m.image.height-m.head[1])*vertical;
+        const bottom=(m.bottom[index]/m.image.height-m.head[1])*vertical;
+        const sy=ty+top+clamp(bend(u).y,8-ty-top,216-ty-bottom),height=bottom-top;
+        for(let y=Math.max(0,Math.ceil(sy));y<Math.min(224,Math.ceil(sy+height));y++){
+          const sourceY=Math.min(m.image.height-1,Math.max(0,Math.floor(m.top[index]+(y+.5-sy)/Math.max(.001,height)*(m.bottom[index]-m.top[index]))));
+          const from=(sourceY*m.image.width+index)*4,to=(y*448+x)*4;
+          pixels.data[to]=m.pixels[from];pixels.data[to+1]=m.pixels[from+1];pixels.data[to+2]=m.pixels[from+2];pixels.data[to+3]=m.pixels[from+3];
         }
       }
-      // Flatten the resampled strips and release their intermediate surfaces.
-      // Mobile browsers and native Canvas otherwise retain those allocations
-      // until a later garbage collection, despite the visible frame being tiny.
-      const pixels=painter.getImageData(0,0,448,224);
-      tile.width=448;tile.height=224;tile.getContext('2d').putImageData(pixels,0,0);
+      painter.putImageData(pixels,0,0);
       if(turnCache.size>=48){
         const oldest=turnCache.keys().next().value,expired=turnCache.get(oldest);
         expired.width=1;expired.height=1;turnCache.delete(oldest);
@@ -190,21 +192,32 @@
   }
   function paint(ctx,image,id,p,alpha=1,resolveImage){
     if(native[id])image=resolveImage(cellAsset(id,p.cell));
-    const isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id);
+    const originalImage=image,isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id);
     image=isolated.image;
     const width=box[2]*scale*projection(id,p.cell),height=box[3]*scale,x=p.target[0]*448-head[0]*width,y=p.target[1]*224-head[1]*height;
     ctx.save();ctx.globalAlpha=alpha;
     if(p.flip){ctx.translate(448,0);ctx.scale(-1,1);}
     const dx=p.flip?448-x-width:x;
     if(!p.beat||p.heading!==undefined){ctx.drawImage(image,...box,dx,y,width,height);ctx.restore();return;}
-    // A lateral beat changes the tail's projection into depth. Every source
-    // row stays at the same height; the head and hook are stationary. Smooth
-    // horizontal resampling avoids the old seven hinged vertical segments.
+    // Sample each pixel once. Thin overlapping strips left vertical seams and
+    // blurred the scale pattern, particularly when enlarged on a phone.
     const warp=u=>u+.035*Math.sin(p.beat-u*1.3)*Math.pow(Math.max(0,(.7-u)/.7),2);
-    for(let i=0;i<64;i++){
-      const a=i/64,b=(i+1)/64,da=warp(a),db=warp(b);
-      ctx.drawImage(image,box[0]+a*box[2],box[1],(b-a)*box[2],box[3],dx+da*width,y,(db-da)*width+.35,height);
+    const m=cellMesh(ctx,originalImage,id,p.cell),pixels=ctx.createImageData(448,224);
+    let u=0;
+    for(let x=Math.max(0,Math.ceil(dx+warp(0)*width));x<Math.min(448,Math.ceil(dx+width));x++){
+      let low=u,high=1;
+      for(let n=0;n<12;n++){const middle=(low+high)/2;if(dx+warp(middle)*width<x+.5)low=middle;else high=middle;}
+      u=x+.5>=dx+.7*width?(x+.5-dx)/width:(low+high)/2;
+      const sourceX=Math.min(m.image.width-1,Math.floor(u*m.image.width));
+      if(m.bottom[sourceX]<=m.top[sourceX])continue;
+      const top=y+m.top[sourceX]/m.image.height*height,bottom=y+m.bottom[sourceX]/m.image.height*height;
+      for(let py=Math.max(0,Math.ceil(top));py<Math.min(224,Math.ceil(bottom));py++){
+        const sourceY=Math.min(m.image.height-1,Math.max(0,Math.floor((py+.5-y)/height*m.image.height)));
+        const from=(sourceY*m.image.width+sourceX)*4,to=(py*448+x)*4;
+        pixels.data[to]=m.pixels[from];pixels.data[to+1]=m.pixels[from+1];pixels.data[to+2]=m.pixels[from+2];pixels.data[to+3]=m.pixels[from+3];
+      }
     }
+    ctx.putImageData(pixels,0,0);
     ctx.restore();
   }
   function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
@@ -212,14 +225,13 @@
     const p=pose(id,cells,frame);
     // Wait for the requested original rather than cropping the wrong image.
     if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
-      cells===3&&p.jaw===1&&!resolveImage(native[id].asset)))return false;
-    ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=true;
+      p.heading!==undefined&&(!resolveImage(cellAsset(id,pose(id,7,p.from).cell))||!resolveImage(cellAsset(id,pose(id,7,p.to).cell)))))return false;
+    ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
     if(p.heading!==undefined){
       try{paintTurn(ctx,image,id,p,resolveImage);}catch{paint(ctx,image,id,p,1,resolveImage);}
     }else if(cells===3&&p.jaw===1){
       if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
-      const closed=pose(id,3,0);closed.beat=p.beat;
-      paint(ctx,image,id,closed,.45,resolveImage);paint(ctx,image,id,p,.55,resolveImage);
+      paint(ctx,image,id,p,1,resolveImage);
     }else{
       if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
       paint(ctx,image,id,p,1,resolveImage);

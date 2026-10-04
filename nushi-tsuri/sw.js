@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v213-continuous-turn-and-coast-nushi-213-1";
+const CACHE_NAME = "nushi-tsuri-v214-aquarium-and-intact-fish-214-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -10,7 +10,8 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./pet-life.js?v=202-1",
-  "./pet-life-ui.js?v=202-1",
+  "./pet-life-ui.js?v=214-1",
+  "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=202-1",
   "./fishing-duel.js?v=213-1",
   "./fishing-duel.css?v=200-2",
@@ -22,7 +23,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=207-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=213-1",
+  "./fish-art.js?v=214-1",
   "./assets/fish-lake-v208.png",
   "./assets/fish-stream-v208.png",
   "./assets/fish-swimmers-v208.png",
@@ -49,7 +50,7 @@ const CORE_ASSETS = [
   "./tackle-art.js?v=191-1",
   "./aquarium-life.js?v=202-1",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=200-1",
+  "./pet-life.css?v=214-1",
   "./rival-anglers.js?v=199-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",
