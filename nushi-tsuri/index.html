@@ -9,6 +9,7 @@
     <meta name="theme-color" content="#10283a" />
     <title>ぬし釣り犬小屋・星降る湖</title>
     <link rel="manifest" href="manifest.json" />
+    <link rel="stylesheet" href="item-categories.css?v=217-1" />
     <style>
       :root {
         --ink: #172a35;
@@ -6469,7 +6470,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v216</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v217</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6931,7 +6932,8 @@
                 <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false">🧤 装備・雑貨</button>
               </div>
               <div class="sam-shop-window active" id="samTackleWindow" data-sam-shop-panel="tackle" role="tabpanel">
-                <section class="shop-category" aria-labelledby="samBaitHeading">
+                <nav class="item-category-strip sam-category-strip" id="samTackleCategories" aria-label="釣具の種類"></nav>
+                <section class="shop-category" id="samCategory-bait" data-sam-category-panel="bait" aria-labelledby="samBaitHeading">
                   <div class="shop-category-heading">
                     <b id="samBaitHeading">エサ・消耗品</b><small>何度でも購入可</small>
                   </div>
@@ -6978,7 +6980,7 @@
                     </button>
                   </div>
                 </section>
-                <section class="shop-category" aria-labelledby="samRodHeading">
+                <section class="shop-category" id="samCategory-rods" data-sam-category-panel="rods" aria-labelledby="samRodHeading" hidden>
                   <div class="shop-category-heading">
                     <b id="samRodHeading">釣り竿</b><small>役割を選ぼう</small>
                   </div>
@@ -6999,9 +7001,14 @@
                   <div id="samNewTackle" class="grid shop-goods"></div>
                   <p class="sam-window-note">星見の竿は星みくじ限定。重なった竿は道具袋で保管・売却・強化を選べるよ。</p>
                 </section>
+                <section class="shop-category" id="samCategory-lures" data-sam-category-panel="lures" aria-labelledby="samLureHeading" hidden>
+                  <div class="shop-category-heading"><b id="samLureHeading">ルアー</b><small>繰り返し使える釣具</small></div>
+                  <div id="samLureGoods" class="grid shop-goods"></div>
+                </section>
               </div>
               <div class="sam-shop-window" id="samGoodsWindow" data-sam-shop-panel="goods" role="tabpanel" hidden>
-                <section class="shop-category" aria-labelledby="samHandHeading">
+                <nav class="item-category-strip sam-category-strip" id="samGoodsCategories" aria-label="装備・犬用品の種類"></nav>
+                <section class="shop-category" id="samCategory-hands" data-sam-category-panel="hands" aria-labelledby="samHandHeading">
                   <div class="shop-category-heading">
                     <b id="samHandHeading">手装備</b><small>道具袋で装備変更</small>
                   </div>
@@ -7012,12 +7019,7 @@
                     </button>
                   </div>
                 </section>
-                <section class="shop-category" aria-labelledby="samDogHeading">
-                  <div class="shop-category-heading">
-                    <b id="samDogHeading">犬用品</b><small>通常のおやつ・おもちゃ</small>
-                  </div>
-                  <div class="grid shop-goods" id="samDogGoods"></div>
-                </section>
+                <div id="samDogGoods"></div>
                 <p class="sam-window-note">特別なおやつとおもちゃは星みくじ限定。好感度が上がるのは、ワンコ一匹につきゲーム内一日「おやつ一個＋遊び一回」まで。</p>
               </div>
               <button class="shop-practice" id="practiceOffer">
@@ -7074,14 +7076,21 @@
             </nav>
             <div class="inventory-content">
               <section class="inventory-panel active" data-inventory-panel="items">
-                <h3>持ち物</h3>
-                <button class="pet-tank-link" id="openPetAquarium">🐟 持ち歩き飼育水槽</button>
+                <div class="inventory-items-toolbar">
+                <button class="pet-tank-link" id="openPetAquarium">🐟 飼育水槽</button>
                 <div class="inventory-vitals">
                   <span>❤️ 体力</span>
                   <div class="inventory-hp-meter"><i id="inventoryHpFill"></i></div>
                   <b id="inventoryHpText">100 / 100</b>
                 </div>
-                <div class="inventory-card-grid" id="inventoryItems"></div>
+                </div>
+                <div class="inventory-browser">
+                  <nav class="item-category-nav" id="inventoryCategories" aria-label="持ち物の種類"></nav>
+                  <div class="inventory-category-content">
+                    <header class="item-category-summary"><h3 id="inventoryCategoryTitle">釣り餌</h3><p id="inventoryCategoryHint"></p></header>
+                    <div id="inventoryItems"></div>
+                  </div>
+                </div>
               </section>
               <section class="inventory-panel" data-inventory-panel="equipment">
                 <h3>主人公の装備</h3>
@@ -7123,7 +7132,7 @@
               </section>
             </div>
             <div class="inventory-footer">
-              道具ボタンを押した時だけ開く。食料の使用、装備、次の釣りの仕掛け変更ができる。
+              分類を選んで品物を確認。数字は所持している種類数。装備・仕掛けの変更は上のタブから。
             </div>
           </div>
         </div>
@@ -12003,7 +12012,10 @@
         playerAnimFrame = 0,
         petSceneFrame = 0,
         inventoryTab = "items",
+        inventoryCategory = "bait",
         samShopTab = "tackle",
+        samShopCategories = { tackle: "bait", goods: "hands" },
+        locationCategory = "food",
         samBaitPurchaseCount = 1,
         locationPurchaseCount = 1,
         petUi = null,
@@ -12854,11 +12866,11 @@
             `<i>${meal.icon}</i><span><b>${meal.name}</b><small>${meal.effectLabel}</small></span>` +
             `<strong><span>食べる</span><small>所持 ×${count}</small></strong></button>`;
         }).join("");
-        return `<section class="cooking-kitchen">` +
-          `<div class="location-goods-heading"><b>簡単調理</b><span>素材2つ／無料</span></div>` +
-          `<p class="cooking-kitchen-status">${activeLabel}<br>魚種別の切り身は釣果から一切れ。普通の魚料理にも使えるよ。衣・油・塩は台所で用意するね。</p>${recipes}` +
-          `<div class="location-goods-heading"><b>作り置き</b><span>効果は同時に1つ</span></div>` +
-          `${readyMeals}</section>`;
+        return `<p class="cooking-kitchen-status">${activeLabel}</p>` +
+          `<section class="cooking-kitchen" id="locationCategory-recipes" data-location-category-panel="recipes" hidden>` +
+          `<div class="location-goods-heading"><b>料理を作る</b><span>素材2つ／無料</span></div>` +
+          `<p class="sam-window-note">魚種別の切り身は釣果から一切れ。普通の魚料理にも使えるよ。衣・油・塩は台所で用意するね。</p>${recipes}</section>` +
+          `<section class="cooking-kitchen" id="locationCategory-meals" data-location-category-panel="meals" hidden><div class="location-goods-heading"><b>作り置きを食べる</b><span>効果は同時に1つ</span></div>${readyMeals}</section>`;
       }
       const QUEST_SIZE_TIER_ORDER = [
         "tiny", "small", "normal", "medium", "large", "giant",
@@ -14977,6 +14989,7 @@
         hideStarFortuneReveal({ rerender: false });
         activeLocationId = id;
         locationPurchaseCount = 1;
+        locationCategory = interior.goods?.length ? "food" : "recipes";
         $("#locationPixels").setAttribute("aria-label", interior.alt);
         const closeButton = $("#locationInterior [data-close]");
         if (closeButton)
@@ -15009,21 +15022,20 @@
         const interior = locationInteriors[activeLocationId];
         if (!holder || !interior) return;
         let markup = "";
+        const categories = [];
         const purchaseCount = activeLocationId === "yaoya" ? locationPurchaseCount : 1;
         if (interior.goods?.length) {
-          markup = (activeLocationId === "yaoya" ? `<div class="quantity-picker" role="group" aria-label="購入個数"><button data-location-count-step="-1" ${purchaseCount===1?"disabled":""}>−</button><output aria-live="polite">${purchaseCount}個</output><button data-location-count-step="1" ${purchaseCount===100?"disabled":""}>＋</button><button data-location-count="1">1個</button><button data-location-count="10">10個</button><small>10個からは10個ずつ</small></div>` : "") + `<div class="location-goods-heading"><b>品ぞろえ</b><span>用途／合計価格</span></div>` +
-            interior.goods.map((id) => {
-              const item = fieldItemData[id];
-              if (!item) return "";
-              const count = s.items[id] || 0;
-              const purpose = item.use === "offering"
-                ? item.fortune === "lucky" ? "祠用・大吉率アップ" : "祠用・通常みくじ"
-                : `食べる・体力＋${item.heal}`;
-              const fortuneClass = item.use === "offering" ? " fortune" : "";
-              return `<button class="location-good${fortuneClass}" data-buy-location-item="${id}">` +
-                `${item.icon}<span><b>${item.name} ×${purchaseCount}</b><small>${purpose}</small></span>` +
-                `<strong><span>${item.price * purchaseCount}円</span><small>所持 ×${count}</small></strong></button>`;
-            }).join("");
+          markup = activeLocationId === "yaoya" ? `<div class="quantity-picker" role="group" aria-label="購入個数"><button data-location-count-step="-1" ${purchaseCount===1 ? "disabled" : ""}>−</button><output aria-live="polite">${purchaseCount}個</output><button data-location-count-step="1" ${purchaseCount===100 ? "disabled" : ""}>＋</button><button data-location-count="1">1個</button><button data-location-count="10">10個</button><small>10個からは10個ずつ</small></div>` : "";
+          for (const [category, label, use] of [["food", "食べ物", "recovery"], ["offerings", "奉納品", "offering"]]) {
+            const goods = interior.goods.filter(id => fieldItemData[id]?.use === use);
+            if (!goods.length) continue;
+            categories.push({id: category, label});
+            markup += `<section id="locationCategory-${category}" data-location-category-panel="${category}" hidden><div class="location-goods-heading"><b>${label}</b><span>用途／合計価格</span></div>` + goods.map(id => {
+              const item = fieldItemData[id], count = s.items[id] || 0;
+              const purpose = use === "offering" ? item.fortune === "lucky" ? "祠用・大吉率アップ" : "祠用・通常みくじ" : `食べる・体力＋${item.heal}`;
+              return `<button class="location-good${use === "offering" ? " fortune" : ""}" data-buy-location-item="${id}">${item.icon}<span><b>${item.name} ×${purchaseCount}</b><small>${purpose}</small></span><strong><span>${item.price * purchaseCount}円</span><small>所持 ×${count}</small></strong></button>`;
+            }).join("") + `</section>`;
+          }
         } else if (activeLocationId === "main-shrine") {
           const offerings = Object.entries(fieldItemData)
             .filter(([, item]) => item.use === "offering");
@@ -15043,9 +15055,14 @@
         }
         if (activeLocationId === "main-shrine")
           markup += ShuFortuneCapsules.historyMarkup(s.starFortuneLastDraw, s.starFortuneLastBatch);
-        if (interior.kitchen) markup += cookingKitchenMarkup();
-        holder.innerHTML = markup;
+        if (interior.kitchen) {
+          categories.push({id:"recipes", label:"料理を作る"}, {id:"meals", label:"作り置き"});
+          markup += cookingKitchenMarkup();
+        }
+        holder.innerHTML = (categories.length > 1 ? `<nav class="item-category-strip location-category-strip" id="locationCategories" aria-label="品物・料理の種類"></nav>` : "") + markup;
         holder.hidden = !markup;
+        if (categories.length > 1) renderItemCategories($("#locationCategories"), categories, locationCategory, null, "location", setLocationCategory);
+        setLocationCategory(locationCategory);
         document.querySelectorAll("[data-buy-location-item]").forEach((button) =>
           button.onclick = () => buyLocationItem(button.dataset.buyLocationItem),
         );
@@ -16239,10 +16256,10 @@
       function renderSamShop() {
         renderWeather();
         $("#samStoryLine").textContent = ShuLakeStory.dialogue(s,"sam");
-        $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("")+
-          `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
+        $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("");
+        $("#samLureGoods").innerHTML = `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
         $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
-        $("#samNewTackle [data-buy-lure]").onclick=()=>{
+        $("#samLureGoods [data-buy-lure]").onclick=()=>{
           if(s.money<600){setSamShopDialogue("「スプーンは600円じゃ。もう少し貯めておいで」");return;}
           s.money-=600;s.lures.silverSpoon=(s.lures.silverSpoon||0)+1;renderSamShop();render();save();
           setSamShopDialogue("「短く巻いて、止めて、また誘う。魚が食いついたらAを押し直して合わせるんじゃ」");
@@ -16320,13 +16337,18 @@
           );
         });
         renderSamDogGoods();
+        for (const tab of ["tackle", "goods"]) {
+          const holder = $(tab === "tackle" ? "#samTackleCategories" : "#samGoodsCategories");
+          const counts = Object.fromEntries(samCategories[tab].map(({id}) => [id, document.querySelectorAll(`#samCategory-${id} [data-buy-bait], #samCategory-${id} [data-buy-rod], #samCategory-${id} [data-buy-lure], #samCategory-${id} [data-buy-hand], #samCategory-${id} [data-buy-dog-good]`).length]));
+          renderItemCategories(holder, samCategories[tab], samShopCategories[tab], counts, "sam", setSamShopCategory);
+        }
         setSamShopTab(samShopTab);
       }
       function renderSamDogGoods() {
         const holder = $("#samDogGoods");
         if (!holder) return;
-        holder.innerHTML = Object.entries(dogCareData)
-          .filter(([, item]) => item.samShop)
+        const markup = (type) => Object.entries(dogCareData)
+          .filter(([, item]) => item.samShop && item.type === type)
           .map(([id, item]) => {
             const toy = item.type === "toy";
             const owned = toy && s.ownedDogToys.includes(id);
@@ -16337,6 +16359,8 @@
               `<span><b>${item.icon} ${item.name}</b><small>${item.desc}</small></span>` +
               `<strong><em>${item.price}円</em><small data-sam-stock>${stock}</small></strong></button>`;
           }).join("");
+        holder.innerHTML = [["dogTreats", "treat", "犬のおやつ"], ["dogToys", "toy", "犬のおもちゃ"]].map(([id, type, title]) =>
+          `<section class="shop-category" id="samCategory-${id}" data-sam-category-panel="${id}" hidden><div class="shop-category-heading"><b>${title}</b><small>${type === "toy" ? "何度でも遊べる" : "一匹につき一日一個"}</small></div><div class="grid shop-goods">${markup(type)}</div></section>`).join("");
         document.querySelectorAll("[data-buy-dog-good]").forEach((button) =>
           button.onclick = () => buySamDogGood(button.dataset.buyDogGood),
         );
@@ -16353,6 +16377,7 @@
           panel.classList.toggle("active", active);
           panel.hidden = !active;
         });
+        setSamShopCategory(samShopCategories[samShopTab]);
       }
       function setSamShopDialogue(message) {
         $("#shopDialogue").textContent = message;
@@ -19231,6 +19256,74 @@
           button.onclick = () => equipVehicle(button.dataset.equipVehicle),
         );
       }
+      const inventoryCategories = [
+        { id: "bait", label: "餌", icon: "🪱", title: "釣り餌", hint: "魚を誘う餌。仕掛けの変更は上の「タックル」から。" },
+        { id: "lures", label: "ルアー", icon: "🪝", title: "ルアー", hint: "繰り返し使える釣具。釣り方の変更は「タックル」から。" },
+        { id: "food", label: "食べ物", icon: "🍱", title: "食べ物・作り置き", hint: "体力を回復する食べ物と、翌朝まで効果が続く料理。" },
+        { id: "ingredients", label: "食材", icon: "🌿", title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
+        { id: "dogTreats", label: "犬のおやつ", icon: "🍪", title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
+        { id: "dogToys", label: "犬のおもちゃ", icon: "🎾", title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
+        { id: "tackle", label: "釣具・パーツ", icon: "🎣", title: "ハリ・竿のパーツ", hint: "釣り竿の確認や装備変更は上の「タックル」から。" },
+        { id: "collection", label: "コレクション", icon: "🏆", title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
+        { id: "offerings", label: "奉納品", icon: "⛩️", title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
+      ];
+      const samCategories = {
+        tackle: [{id:"bait",label:"餌"},{id:"rods",label:"釣り竿"},{id:"lures",label:"ルアー"}],
+        goods: [{id:"hands",label:"手装備"},{id:"dogTreats",label:"犬のおやつ"},{id:"dogToys",label:"犬のおもちゃ"}],
+      };
+      function renderItemCategories(holder, categories, selected, counts, scope, select, countLabel = "販売") {
+        holder.innerHTML = categories.map(({id, label, icon = ""}) => {
+          const count = counts?.[id];
+          return `<button type="button" data-${scope}-category="${id}" aria-pressed="${selected === id}" aria-controls="${scope === "sam" ? "samCategory" : scope + "Category"}-${id}" class="${selected === id ? "active" : ""}"${count == null ? "" : ` aria-label="${label}、${countLabel}${count}種類"`}>` +
+            `${icon ? `<i aria-hidden="true">${icon}</i>` : ""}<span>${label}</span>${count == null ? "" : `<small aria-hidden="true">${count}</small>`}</button>`;
+        }).join("");
+        holder.querySelectorAll("button").forEach(button => button.onclick = () => select(button.dataset[scope + "Category"]));
+      }
+      function sharedCookingIngredients() {
+        const entries = new Map();
+        for (const recipe of Object.values(cookingRecipeData)) for (const ingredient of recipe.ingredients) {
+          const {storage, id} = ingredient;
+          const item = storage === "baits" ? baitData[id] : storage === "dogTreats" ? dogCareData[id] : null;
+          if (item) entries.set(`${storage}:${id}`, {storage, id, item});
+        }
+        return [...entries.values()];
+      }
+      function setInventoryCategory(category = "bait") {
+        inventoryCategory = inventoryCategories.some(item => item.id === category) ? category : "bait";
+        $("#inventoryCategories").querySelectorAll("button").forEach(button => {
+          const active = button.dataset.inventoryCategory === inventoryCategory;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        $("#inventoryItems").querySelectorAll("[data-inventory-category-panel]").forEach(panel => panel.hidden = panel.dataset.inventoryCategoryPanel !== inventoryCategory);
+        const current = inventoryCategories.find(item => item.id === inventoryCategory);
+        $("#inventoryCategoryTitle").textContent = current.title;
+        $("#inventoryCategoryHint").textContent = current.hint;
+        $(".inventory-category-content").scrollTop = 0;
+      }
+      function setSamShopCategory(category) {
+        const categories = samCategories[samShopTab];
+        const selected = categories.some(item => item.id === category) ? category : categories[0].id;
+        samShopCategories[samShopTab] = selected;
+        const window = $(samShopTab === "tackle" ? "#samTackleWindow" : "#samGoodsWindow");
+        window.querySelectorAll("[data-sam-category]").forEach(button => {
+          const active = button.dataset.samCategory === selected;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+        window.querySelectorAll("[data-sam-category-panel]").forEach(panel => panel.hidden = panel.dataset.samCategoryPanel !== selected);
+      }
+      function setLocationCategory(category) {
+        const holder = $("#locationGoods"), panels = [...holder.querySelectorAll("[data-location-category-panel]")];
+        if (!panels.length) return;
+        locationCategory = panels.some(panel => panel.dataset.locationCategoryPanel === category) ? category : panels[0].dataset.locationCategoryPanel;
+        panels.forEach(panel => panel.hidden = panel.dataset.locationCategoryPanel !== locationCategory);
+        holder.querySelectorAll("[data-location-category]").forEach(button => {
+          const active = button.dataset.locationCategory === locationCategory;
+          button.classList.toggle("active", active);
+          button.setAttribute("aria-pressed", String(active));
+        });
+      }
       function renderInventory() {
         const baitIcons = Object.fromEntries(
           Object.entries(baitData).map(([id]) => [id, ShuTackleArt.icon(id)]),
@@ -19246,7 +19339,8 @@
             `<strong>×${s.baits[id] || 0}</strong></div>`,
           )
           .join("");
-        const itemMarkup = Object.entries(fieldItemData)
+        const fieldItemMarkup = (use) => Object.entries(fieldItemData)
+          .filter(([, item]) => item.use === use)
           .map(([id, item]) => {
             const count = s.items[id] || 0;
             const offering = item.use === "offering";
@@ -19326,19 +19420,36 @@
             `<span><b>${item.name}</b><br><small>魚図鑑の収集棚に記録済み</small></span>` +
             `<strong>×${s.fishdexCollectibles[id]}</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
-        $("#inventoryItems").innerHTML =
-          `<h4 class="inventory-section-heading">釣りエサ</h4>${baitMarkup}` +
-          `<h4 class="inventory-section-heading">ハリ（3種類を所持・消耗なし）</h4>` +
-          `${Object.entries(ShuTackle.hooks).map(([id,hook])=>`<div class="inventory-card"><i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i><span><b>${hook.name}</b><br><small>${hook.role}</small></span><strong>${s.selectedHook===id?"装備中":"所持"}</strong></div>`).join("")}` +
-          `<h4 class="inventory-section-heading">料理・調理素材</h4>` +
-          `${activeMealMarkup}${preparedMealMarkup}${cookingMaterialMarkup}` +
-          `<h4 class="inventory-section-heading">食料・奉納品</h4>${itemMarkup}` +
-          `<h4 class="inventory-section-heading">ワンコずのおやつ</h4>${dogTreatMarkup}` +
-          `<h4 class="inventory-section-heading">ワンコずのおもちゃ</h4>${ownedDogToyMarkup}` +
-          `<h4 class="inventory-section-heading">ルアー</h4>${lureMarkup}` +
-          `<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}` +
-          `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}` +
-          `<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`;
+        const hookMarkup = Object.entries(ShuTackle.hooks).map(([id, hook]) =>
+          `<div class="inventory-card"><i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i><span><b>${hook.name}</b><br><small>${hook.role}</small></span><strong>${s.selectedHook===id ? "装備中" : "所持"}</strong></div>`).join("");
+        const sharedIngredients = sharedCookingIngredients();
+        const sharedMaterialMarkup = sharedIngredients.map(({storage, id, item}) =>
+          `<div class="inventory-card"><i>${storage === "baits" ? ShuTackleArt.icon(id) : item.icon}</i>` +
+          `<span><b>${item.name}</b><br><small>${storage === "baits" ? "餌欄" : "犬のおやつ欄"}と共用／料理にも使える</small></span><strong>×${s[storage][id] || 0}</strong></div>`).join("");
+        const groups = {
+          bait: baitMarkup, lures: lureMarkup,
+          food: `<h4 class="inventory-section-heading">食事効果・作り置き</h4>${activeMealMarkup}${preparedMealMarkup}<h4 class="inventory-section-heading">体力を回復する食べ物</h4>${fieldItemMarkup("recovery")}`,
+          ingredients: `${cookingMaterialMarkup}${fieldItemMarkup("ingredient")}${sharedMaterialMarkup}`,
+          dogTreats: dogTreatMarkup, dogToys: ownedDogToyMarkup,
+          tackle: `<h4 class="inventory-section-heading">ハリ（3種類を所持・消耗なし）</h4>${hookMarkup}<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}`,
+          collection: `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`,
+          offerings: fieldItemMarkup("offering"),
+        };
+        $("#inventoryItems").innerHTML = Object.entries(groups).map(([id, markup]) =>
+          `<section id="inventoryCategory-${id}" class="inventory-card-grid" data-inventory-category-panel="${id}" aria-labelledby="inventoryCategoryTitle" hidden>${markup}</section>`).join("");
+        const ownedTypes = (table, storage, predicate = () => true) => Object.entries(table)
+          .filter(([id, item]) => predicate(item) && (storage[id] || 0) > 0).length;
+        const counts = {
+          bait: ownedTypes(baitData, s.baits), lures: ownedTypes(lureData, s.lures),
+          food: ownedTypes(preparedMealData, s.preparedMeals) + ownedTypes(fieldItemData, s.items, item => item.use === "recovery"),
+          ingredients: ownedTypes(cookingIngredientData, s.cookingIngredients) + ownedTypes(fieldItemData, s.items, item => item.use === "ingredient") + sharedIngredients.filter(({storage, id}) => (s[storage][id] || 0) > 0).length,
+          dogTreats: ownedTypes(dogCareData, s.dogTreats, item => item.type === "treat"),
+          dogToys: s.ownedDogToys.length, tackle: Object.keys(ShuTackle.hooks).length + ownedTypes(rodPartData, s.rodParts),
+          collection: ownedTypes(fishdexCollectibleData, s.fishdexCollectibles) + Object.values(ShuTournament.definitions).filter(d => (s.tournamentRecords[d.id]?.wins || 0) > 0).length,
+          offerings: ownedTypes(fieldItemData, s.items, item => item.use === "offering"),
+        };
+        renderItemCategories($("#inventoryCategories"), inventoryCategories, inventoryCategory, counts, "inventory", setInventoryCategory, "所持");
+        setInventoryCategory(inventoryCategory);
         document.querySelectorAll("[data-use-item]").forEach((button) =>
           button.onclick = () => useFieldItem(button.dataset.useItem),
         );
@@ -22845,7 +22956,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=216-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=217-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

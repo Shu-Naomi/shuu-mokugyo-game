@@ -41,7 +41,10 @@ module.exports=async function run(url,mobile=false){
   await second.evaluate(()=>{s.cookingIngredients.fishFillet=1;s.items.wildGreens=1;openLocationInterior('diner');});
   const sizeChance=()=>second.evaluate(()=>{const counts={};for(let i=0;i<10000;i++){let n=0;const p=rollFishSpecimen(fish.find(f=>f.id==='funa'),()=>n++?.5:(i+.5)/10000);counts[p.tierId]=(counts[p.tierId]||0)+1;}return counts;});
   const plain=await sizeChance();assert.equal(plain.large+plain.giant,1400);
-  await second.locator('#locationInterior [data-cook-recipe="bigFishPlate"]').click();await second.locator('#locationInterior [data-eat-prepared-meal="bigFishPlate"]').click();
+  await second.locator('#locationInterior [data-location-category="recipes"]').click();
+  await second.locator('#locationInterior [data-cook-recipe="bigFishPlate"]').click();
+  await second.locator('#locationInterior [data-location-category="meals"]').click();
+  await second.locator('#locationInterior [data-eat-prepared-meal="bigFishPlate"]').click();
   const fed=await sizeChance();assert.equal(fed.large+fed.giant,2500);assert.match(await second.locator('.cooking-kitchen-status').innerText(),/14%→25%/);
   await second.reload({waitUntil:'load'});await second.locator('#start').click();const restored=await sizeChance();assert.equal(restored.large+restored.giant,2500);
   const nativeFish=await second.evaluate(async()=>{

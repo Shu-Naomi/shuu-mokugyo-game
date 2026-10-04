@@ -108,7 +108,7 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
   }
   assert.equal(variants.size,ids.length);
   const app=boot({...seed(),fishdexCollectibles:{ancientFloat:1,glassHook:1}}),w=app.window;
-  try{w.eval('openInventory("items")');assert.equal(w.document.querySelectorAll('[data-inventory-panel="items"] .tackle-pixel-icon').length,19);
+  try{w.eval('openInventory("items")');assert.equal(w.document.querySelectorAll('[data-inventory-category-panel]:not([data-inventory-category-panel="ingredients"]) .tackle-pixel-icon').length,19);
     w.eval('renderSamShop()');assert.equal(w.document.querySelectorAll('#samTackleWindow .shop-item-art svg').length,7);
     w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .tackle-pixel-icon').length,2);
     assert.deepEqual(app.errors,[]);

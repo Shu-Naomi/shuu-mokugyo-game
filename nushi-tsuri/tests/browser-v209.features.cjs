@@ -42,6 +42,7 @@ module.exports=async function features(url,mobile){
     await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');
     // Material-specific dishes are made and eaten through the kitchen UI.
     await page.evaluate(()=>openLocationInterior('diner'));
+    await press('#locationInterior [data-location-category="recipes"]');
     for(const meal of ['shirogisuTempura','ayuShioyaki','madaiUshiojiru']){
       const selector=`#locationInterior [data-cook-recipe="${meal}"]`;assert.equal(await page.locator(selector).isDisabled(),false);
       await press(selector);assert.equal(await page.evaluate(id=>s.preparedMeals[id],meal),1);
@@ -49,6 +50,7 @@ module.exports=async function features(url,mobile){
     }
     assert.deepEqual(await page.evaluate(()=>({fish:s.cookingIngredients,greens:s.items.wildGreens,shell:s.baits.shell})),
       {fish:{fishFillet:0,shirogisuFillet:0,ayuFillet:0,madaiFillet:0},greens:0,shell:0});
+    await press('#locationInterior [data-location-category="meals"]');
     await press('#locationInterior [data-eat-prepared-meal="shirogisuTempura"]');assert.equal(await page.evaluate(()=>s.hp),100);
     await page.evaluate(()=>{s.hp=30;});await press('#locationInterior [data-eat-prepared-meal="ayuShioyaki"]');
     assert.equal(await page.evaluate(()=>s.hp),55);await press('#locationInterior [data-eat-prepared-meal="madaiUshiojiru"]');
