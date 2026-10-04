@@ -4,9 +4,9 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="((?:fish-art|save-slots|lake-story|regional-nushi|nushi-atlas|fishing-duel|ui-feedback|event-ceremony|fortune-capsules|aquarium-life|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:fish-art|save-slots|lake-(?:story|intro)|regional-nushi|nushi-atlas|fishing-duel|ui-feedback|event-ceremony|fortune-capsules|aquarium-life|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="((?:save-slots|lake-story|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+  .replace(/<link rel="stylesheet" href="((?:save-slots|lake-(?:story|intro)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({
@@ -72,7 +72,13 @@ function boot(saved = seed(), tankSizes = { homeAquarium: [101, 45], aquariumPre
       };
     },
   });
-  if (options.start !== false) dom.window.document.querySelector("#start").click();
+  if (options.start !== false) {
+    dom.window.document.querySelector("#start").click();
+    // This fixture normally starts on the playable field. Intro-specific
+    // tests keep its pages open and exercise the handoff themselves.
+    if (!options.keepIntro && dom.window.document.querySelector("#lakeIntro.open"))
+      dom.window.document.querySelector("#lakeIntroSkip").click();
+  }
   return { dom, window: dom.window, errors, dispose };
 }
 const read = (window, expression) => JSON.parse(window.eval(`JSON.stringify(${expression})`));

@@ -59,7 +59,7 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  assert.ok(sw.includes('fish-art.js?v=214-1'));
+  assert.ok(sw.includes('fish-art.js?v=215-1'));
   for(const asset of new Set(Object.keys(Art.species).flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);
   const app=boot();try{
     assert.deepEqual(read(app.window,'fish.map(f=>f.id).sort()'),Object.keys(Art.species).sort());

@@ -6433,6 +6433,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=201-1" />
     <link rel="stylesheet" href="pet-life.css?v=214-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
+    <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
@@ -6447,7 +6448,7 @@
         <small>犬小屋釣行記</small>
         <h1>ぬし釣り犬小屋</h1>
         <h2>星降る湖</h2>
-        <p>Fableリクの釣りメモを手に、湖のヌシを追え。</p>
+        <p>祖父の手帳と三匹の子犬。星降る湖で、暮らしを始めよう。</p>
         <div class="save-slots" role="group" aria-label="冒険のセーブを選ぶ">
           <button class="save-slot" data-save-slot="1" aria-pressed="true"><b>セーブ1</b><small></small></button>
           <button class="save-slot" data-save-slot="2" aria-pressed="false"><b>セーブ2</b><small></small></button>
@@ -6455,8 +6456,8 @@
         <p class="save-note">選んだ冒険だけに自動セーブするよ。</p>
         <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
         <div class="avatar-select" aria-label="主人公を選ぶ">
-          <button data-avatar="boy">🧢 男の子</button>
-          <button data-avatar="girl">🧢 女の子</button>
+          <button data-avatar="boy">🧢 男の主人公</button>
+          <button data-avatar="girl">🧢 女の主人公</button>
         </div>
         <div class="dog-select" aria-label="同行するワンコ">
           <button data-dog="shuu">🐕 シュウ</button>
@@ -6468,7 +6469,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v214</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v215</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6868,10 +6869,21 @@
             </div>
           </div>
         </div>
+        <section class="modal lake-intro-modal" id="lakeIntro" role="dialog" aria-modal="true" aria-labelledby="lakeIntroTitle" tabindex="-1">
+          <header class="lake-intro-header">
+            <div><h2 id="lakeIntroTitle">旅のはじまり</h2><p id="lakeIntroProgress" aria-live="polite">1 / 5</p></div>
+            <button id="lakeIntroSkip" type="button">物語を飛ばす</button>
+          </header>
+          <div class="lake-intro-page">
+            <div class="lake-intro-picture"><canvas id="lakeIntroPicture" width="320" height="180" role="img"></canvas></div>
+            <article class="lake-intro-paper" id="lakeIntroPaper" tabindex="0" aria-live="polite"></article>
+          </div>
+          <footer class="lake-intro-footer"><span>自分のペースで、頁をめくる。</span><div class="lake-intro-navigation"><button id="lakeIntroPrevious" type="button">前の頁</button><button id="lakeIntroNext" type="button">次の頁</button></div></footer>
+        </section>
         <section class="modal lake-story-modal" id="lakeStory" role="dialog" aria-modal="true" aria-labelledby="lakeStoryTitle" tabindex="-1">
           <header class="lake-story-header">
             <div><h2 id="lakeStoryTitle">湖の手帳</h2><p id="lakeStoryStatus"></p></div>
-            <button id="lakeStoryClose">手帳を閉じる</button>
+            <div class="lake-story-actions"><button id="lakeStoryReplayIntro" type="button">旅のはじまりを読む</button><button id="lakeStoryClose">手帳を閉じる</button></div>
           </header>
           <div class="lake-story-layout">
             <nav class="lake-story-index" id="lakeStoryIndex" aria-label="旅の思い出"></nav>
@@ -7214,10 +7226,11 @@
     <script src="coast-voyage.js?v=201-1"></script>
     <script src="mountain-region.js?v=203-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-story.js?v=206-1"></script>
+    <script src="lake-story.js?v=215-1"></script>
+    <script src="lake-intro.js?v=215-1"></script>
     <script src="save-slots.js?v=207-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=214-1"></script>
+    <script src="fish-art.js?v=215-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -8061,6 +8074,11 @@
           },
         },
         preparedMealData = {
+          bigFishPlate: {
+            name: "魚と山菜の大物定食", icon: "🍱",
+            effect: "largeFishChance", bonus: .11,
+            effectLabel: "大・巨大が出やすくなる（フナ14%→25%）",
+          },
           shellSoup: {
             name: "貝と魚の浜汁", icon: "🍲",
             effect: "tensionResistance", bonus: .08,
@@ -8093,6 +8111,15 @@
           },
         },
         cookingRecipeData = {
+          bigFishPlate: {
+            name: "魚と山菜の大物定食", icon: "🍱",
+            ingredients: [
+              { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
+              { storage: "items", id: "wildGreens", name: "山菜", amount: 1 },
+            ],
+            output: { kind: "meal", id: "bigFishPlate", amount: 1 },
+            resultLabel: "食事／大・巨大の合計確率＋11ポイント",
+          },
           nutFishJerky: {
             name: "木の実香る魚ジャーキー", icon: "🍖",
             ingredients: [
@@ -11618,10 +11645,20 @@
         const tiers = fishSizeProfiles[f?.id];
         if (!tiers?.length) return null;
         const totalWeight = tiers.reduce((sum, tier) => sum + tier.weight, 0);
+        const bigWeight = tiers.reduce((sum,tier)=>sum+(["large","giant"].includes(tier.id)?tier.weight:0),0);
+        const bonus = Math.max(0,Math.min(.2,Number(mealEffectBonus("largeFishChance"))||0));
+        // Move probability mass towards large/giant fish. Keep their relative
+        // rarity, all authored size bounds, and the two existing RNG draws.
+        const bigChance = bigWeight/totalWeight;
+        const boostedChance = Math.min(.95,bigChance+bonus);
+        const adjusted = bonus&&bigWeight>0&&bigWeight<totalWeight
+          ? tiers.map(tier=>tier.weight*(["large","giant"].includes(tier.id)
+            ? boostedChance/bigChance : (1-boostedChance)/(1-bigChance)))
+          : tiers.map(tier=>tier.weight);
         let tierRoll = boundedRandom(random) * totalWeight;
         let selected = tiers[tiers.length - 1];
-        for (const tier of tiers) {
-          tierRoll -= tier.weight;
+        for (const [index,tier] of tiers.entries()) {
+          tierRoll -= adjusted[index];
           if (tierRoll < 0) {
             selected = tier;
             break;
@@ -22054,6 +22091,7 @@
         renderPixelScenery();
       }
       function close() {
+        if ($("#lakeIntro").classList.contains("open")) return finishLakeIntro();
         if ($("#tournamentModal").classList.contains("open") &&
             (s.tournament?.pending || s.tournament?.phase === "result")) {
           if (s.tournament.phase === "result") finishTournamentResults();
@@ -22107,6 +22145,43 @@
         return Math.max(0, Number(s.caught?.[f.id]) || 0) > 0;
       }
       let lakeStoryReturn = null;
+      let lakeIntroIndex = 0, lakeIntroReplay = false, lakeIntroReturn = null;
+      function renderLakeIntro() {
+        const page=ShuLakeIntro.pages[lakeIntroIndex],e=ShuLakeStory.escape;
+        $("#lakeIntroProgress").textContent=`${lakeIntroIndex+1} / ${ShuLakeIntro.pages.length}`;
+        $("#lakeIntroPaper").innerHTML=`<small>${e(page.speaker)}</small><h3>${e(page.title)}</h3>${ShuLakeIntro.text(page,dogName()).map(p=>`<p>${e(p)}</p>`).join("")}`;
+        $("#lakeIntroPaper").scrollTop=0;
+        $("#lakeIntroPicture").setAttribute("aria-label",page.title+"のドット絵");
+        ShuLakeIntro.paint($("#lakeIntroPicture"),page.scene,()=>{
+          if($("#lakeIntro").classList.contains("open")&&ShuLakeIntro.pages[lakeIntroIndex]===page)
+            ShuLakeIntro.paint($("#lakeIntroPicture"),page.scene);
+        });
+        $("#lakeIntroPrevious").disabled=lakeIntroIndex===0;
+        $("#lakeIntroNext").textContent=lakeIntroIndex===ShuLakeIntro.pages.length-1?"村へ出かける":"次の頁";
+        if(!lakeIntroReplay){s.lakeStory.introPage=lakeIntroIndex;save();}
+      }
+      function openLakeIntro(replay=false) {
+        if(battle||playerHomeState.transitioning)return false;
+        const current=document.querySelector(".modal.open");
+        if(current&&(!replay||current.id!=="lakeStory"))return false;
+        lakeIntroReturn=current?.id||null;lakeIntroReplay=replay;
+        if(current)current.classList.remove("open");
+        lakeIntroIndex=replay?0:s.lakeStory.introPage;
+        if(!replay)s.lakeStory.introPending=true;
+        releaseHeldInputs();open("lakeIntro");renderLakeIntro();
+        $(".controls").inert=true;$(".controls").setAttribute("aria-hidden","true");
+        $("#lakeIntroNext").focus({preventScroll:true});return true;
+      }
+      function finishLakeIntro() {
+        if(!$("#lakeIntro").classList.contains("open"))return false;
+        $("#lakeIntro").classList.remove("open");releaseHeldInputs();
+        $(".controls").inert=false;$(".controls").removeAttribute("aria-hidden");
+        if(!lakeIntroReplay){s.lakeStory.introSeen=true;s.lakeStory.introPending=false;s.lakeStory.introPage=0;save();}
+        const target=lakeIntroReturn;lakeIntroReturn=null;lakeIntroReplay=false;
+        if(target){open(target);$("#lakeStoryReplayIntro").focus({preventScroll:true});}
+        else{scheduleIdleStatus(450);scheduleFieldMenu();$("#menu").focus({preventScroll:true});}
+        syncSceneSound();return true;
+      }
       function openLakeStory(id = null, from = null) {
         if (battle || playerHomeState.transitioning || $("#catchCard").classList.contains("show")) return false;
         if (document.querySelector(".modal.open") && !["record","store"].includes(from)) return false;
@@ -22453,13 +22528,14 @@
         armDogIdle();
         scheduleIdleStatus(750);
         scheduleFieldMenu();
-        log("星降る湖に着いた。Fableリクの釣りメモを開いた。");
+        log(loadedSaveSlot.exists?"星降る湖で、旅の続きを始めた。":"祖父の手帳を開いた。三匹と暮らす一日が始まる。");
         maybePresentTournament();
         if (s.tournament?.recoveredCast) {
           showRescueToast("投げた途中で再開した一投は回収済み。残り投数から続けよう。", 4200);
           s.tournament.recoveredCast = false;
           save();
         }
+        if ((!loadedSaveSlot.exists&&!s.lakeStory.introSeen)||s.lakeStory.introPending) openLakeIntro();
       };
       document.querySelectorAll("[data-dog]").forEach((b) => {
         b.classList.toggle("active", b.dataset.dog === s.dog);
@@ -22530,6 +22606,23 @@
       $("#fishdexStoryOffer").onclick = () => openLakeStory(null,"record");
       $("#samStoryOffer").onclick = () => openLakeStory(null,"store");
       $("#lakeStoryClose").onclick = closeLakeStory;
+      $("#lakeStoryReplayIntro").onclick=()=>openLakeIntro(true);
+      $("#lakeIntroSkip").onclick=finishLakeIntro;
+      $("#lakeIntroNext").onclick=()=>{
+        if(!$("#lakeIntro").classList.contains("open"))return;
+        if(lakeIntroIndex===ShuLakeIntro.pages.length-1)return finishLakeIntro();
+        lakeIntroIndex++;renderLakeIntro();$("#lakeIntroNext").focus({preventScroll:true});
+      };
+      $("#lakeIntroPrevious").onclick=()=>{
+        if(!$("#lakeIntro").classList.contains("open"))return;
+        if(!lakeIntroIndex)return;lakeIntroIndex--;renderLakeIntro();$("#lakeIntroNext").focus({preventScroll:true});
+      };
+      $("#lakeIntro").onkeydown=event=>{
+        if(event.key!=="Tab")return;
+        const controls=[...$("#lakeIntro").querySelectorAll("button:not(:disabled), article[tabindex]")],first=controls[0],last=controls[controls.length-1];
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first.focus();}
+      };
       $("#lakeStory").onkeydown = event => {
         if(event.key!=="Tab")return;
         const controls=[...$("#lakeStory").querySelectorAll("button:not(:disabled), article[tabindex]")];
@@ -22752,7 +22845,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=214-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=215-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

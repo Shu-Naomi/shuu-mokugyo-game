@@ -1,0 +1,38 @@
+{
+  "version": 215,
+  "method": "OpenAI built-in imagegen",
+  "generatedAt": "2026-10-04",
+  "grid": {
+    "columns": 5,
+    "rows": 6,
+    "turnFrames": 25,
+    "yawDegrees": 7.5,
+    "mouthCell": 25
+  },
+  "entries": [
+    {
+      "id": "moroko",
+      "asset": "assets/fish-moroko-v215.png",
+      "sourceOutput": "generated_images/exec-8c692a0b-d45d-45dd-b0d7-2a645a22ce89.png",
+      "prompt": "Use case: style-transfer. Asset type: transparent fish sprite atlas for an existing Japanese fishing game. Input image 1 is the anatomy and fish-identity reference to redraw; image 2 is ONLY the illustration style reference for the rest of the game's fish. Match the finely detailed naturalistic hand-painted 3D fish illustration in image 2: coherent scales, glossy eyes, translucent fin rays, soft natural dorsal lighting. Do not copy image 2's species or fins, noise outside silhouettes, labels, or colored fringes. Create a single atlas in a perfectly regular FIVE-COLUMN by SIX-ROW grid, isolated fish fully within each cell with wide transparent gutters; all fish centered in their cells, fixed consistent physical size and camera elevation. True transparent background, no text, no guides, no scenery, no shadow outside fish. First 25 cells row-major are ONE fish smoothly turning in yaw toward the camera then to the other side: angles 0,7.5,15,22.5,30 / 37.5,45,52.5,60,67.5 / 75,82.5,90,97.5,105 / 112.5,120,127.5,135,142.5 / 150,157.5,165,172.5,180 degrees. 0 is complete right-facing side profile; 90 is face-on with visible head thickness and paired pectoral fins; 180 is complete left-facing profile. Intermediate poses must show genuinely progressive head, flank, fin and tail perspective, not copies of the side view. Preserve rounded body thickness during the front turn. Camera never moves; fish rotates around a vertical axis without roll or pitch. Bottom row only its FIRST cell contains a right-facing side profile of the SAME fish with its mouth open slightly for breathing; the remaining four cells are completely empty transparent. Every fish must be complete, neither cut off nor touching another fish. Detailed edges with clean alpha, no ghost anatomy or duplicate eyes. Keep the species identical across all 26 drawings. SPECIES: HONMOROKO, Gnathopogon caerulescens, a slender small Japanese cyprinid. Silver-gray flanks and belly, subdued charcoal/gray-olive back, a fine dark lateral line, forked tail, small terminal mouth and gray/black eye. Exactly ONE moderately tall dorsal fin, located mid-back. NO second dorsal fin, NO adipose fin, NO yellow/gold shoulder spots, NO yellow/gold fins or iris, NO bass body shape. Preserve the anatomy of reference 1 but replace its tiny low-detail cartoon pixel appearance with reference 2's fine silver scales and realistic volumetric illustration.",
+      "preservedOriginals": true,
+      "alphaExtraction": "Largest connected silhouette; transparent low-alpha fringe omitted at runtime.",
+      "referenceAssets": [
+        "assets/fish-moroko-turn-v70.png",
+        "assets/fish-swimmers-v208.png"
+      ]
+    },
+    {
+      "id": "ayu",
+      "asset": "assets/fish-ayu-v215.png",
+      "sourceOutput": "generated_images/exec-04d17fe0-0cba-4c94-988e-a94fdfab0442.png",
+      "prompt": "Use case: style-transfer. Asset type: transparent fish sprite atlas for an existing Japanese fishing game. Input image 1 is the anatomy and fish-identity reference to redraw; image 2 is ONLY the illustration style reference for the rest of the game's fish. Match the finely detailed naturalistic hand-painted 3D fish illustration in image 2: coherent scales, glossy eyes, translucent fin rays, soft natural dorsal lighting. Do not copy image 2's species or fins, noise outside silhouettes, labels, or colored fringes. Create a single atlas in a perfectly regular FIVE-COLUMN by SIX-ROW grid, isolated fish fully within each cell with wide transparent gutters; all fish centered in their cells, fixed consistent physical size and camera elevation. True transparent background, no text, no guides, no scenery, no shadow outside fish. First 25 cells row-major are ONE fish smoothly turning in yaw toward the camera then to the other side: angles 0,7.5,15,22.5,30 / 37.5,45,52.5,60,67.5 / 75,82.5,90,97.5,105 / 112.5,120,127.5,135,142.5 / 150,157.5,165,172.5,180 degrees. 0 is complete right-facing side profile; 90 is face-on with visible head thickness and paired pectoral fins; 180 is complete left-facing profile. Intermediate poses must show genuinely progressive head, flank, fin and tail perspective, not copies of the side view. Preserve rounded body thickness during the front turn. Camera never moves; fish rotates around a vertical axis without roll or pitch. Bottom row only its FIRST cell contains a right-facing side profile of the SAME fish with its mouth open slightly for breathing; the remaining four cells are completely empty transparent. Every fish must be complete, neither cut off nor touching another fish. Detailed edges with clean alpha, no ghost anatomy or duplicate eyes. Keep the species identical across all 26 drawings. SPECIES: AYU sweetfish, Plecoglossus altivelis. Streamlined slender silver body, dark olive-blue back, a distinctive golden-yellow mark immediately behind the gill, golden yellow fin accents and detailed iris. Exactly ONE tall triangular dorsal fin plus a very SMALL low adipose nub behind it near the tail. Never draw two tall dorsal fins or a whiting/shirogisu silhouette. Forked tail, blunt small mouth. Preserve the fish identity and markings of reference 1, while matching the richer detailed scale, fin and head treatment of reference 2.",
+      "preservedOriginals": true,
+      "alphaExtraction": "Largest connected silhouette; transparent low-alpha fringe omitted at runtime.",
+      "referenceAssets": [
+        "assets/fish-ayu-turn-v95.png",
+        "assets/fish-swimmers-v208.png"
+      ]
+    }
+  ]
+}

@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v214-aquarium-and-intact-fish-214-1";
+const CACHE_NAME = "nushi-tsuri-v215-story-opening-215-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -18,12 +18,16 @@ const CORE_ASSETS = [
   "./coast-voyage.js?v=201-1",
   "./mountain-region.js?v=203-1",
   "./regional-nushi.js?v=202-1",
-  "./lake-story.js?v=206-1",
+  "./lake-story.js?v=215-1",
+  "./lake-intro.js?v=215-1",
+  "./lake-intro.css?v=215-1",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=207-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=214-1",
+  "./fish-art.js?v=215-1",
+  "./assets/fish-moroko-v215.png",
+  "./assets/fish-ayu-v215.png",
   "./assets/fish-lake-v208.png",
   "./assets/fish-stream-v208.png",
   "./assets/fish-swimmers-v208.png",
