@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v216-detailed-turns-and-story-216-1";
+const CACHE_NAME = "nushi-tsuri-v217-item-categories-217-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -9,6 +9,7 @@ const CORE_ASSETS = [
   "./fortune-capsules.css?v=185-1",
   "./",
   "./index.html",
+  "./item-categories.css?v=217-1",
   "./pet-life.js?v=202-1",
   "./pet-life-ui.js?v=214-1",
   "./assets/aquarium-interior-v214.webp",

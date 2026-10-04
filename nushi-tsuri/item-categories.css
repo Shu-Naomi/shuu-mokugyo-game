@@ -1,0 +1,113 @@
+/* Shared, touch-friendly categories for the bag and actual shop stock. */
+.item-category-nav,
+.item-category-strip { gap: 6px; }
+.item-category-nav { display: flex; flex-direction: column; }
+.item-category-strip { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.item-category-nav button,
+.item-category-strip button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-width: 0;
+  min-height: 44px;
+  padding: 7px 8px;
+  border: 1px solid #8a7858;
+  border-radius: 4px;
+  background: #1e3445;
+  color: #d8e7e7;
+  font-size: clamp(.65rem, 1.2vw, .82rem);
+  box-shadow: inset 0 1px #ffffff10;
+}
+.item-category-nav button { justify-content: flex-start; flex-shrink: 0; }
+.item-category-nav button i { font-style: normal; width: 20px; text-align: center; }
+.item-category-nav button span { flex: 1; text-align: left; }
+.item-category-nav button small,
+.item-category-strip button small {
+  padding: 2px 5px;
+  border-radius: 3px;
+  background: #081a2877;
+  font: 700 .72rem monospace;
+}
+.item-category-nav button.active,
+.item-category-strip button.active {
+  border-color: #f4d185;
+  background: #376b76;
+  color: #fff1bd;
+  box-shadow: inset 3px 0 #f4d185;
+}
+.item-category-nav button:focus-visible,
+.item-category-strip button:focus-visible { outline: 3px solid #ffdf87; outline-offset: -3px; }
+#inventory [data-inventory-panel="items"].active {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  gap: 9px;
+  height: 100%;
+  min-height: 0;
+}
+.inventory-items-toolbar {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+}
+#inventory .inventory-vitals { margin: 0; }
+#inventory .inventory-items-toolbar .pet-tank-link { margin: 0; min-height: 36px; }
+.inventory-browser {
+  display: grid;
+  grid-template-columns: 166px minmax(0, 1fr);
+  gap: 12px;
+  min-height: 0;
+  overflow: hidden;
+}
+#inventoryCategories {
+  min-height: 0;
+  overflow-y: auto;
+  padding: 0 6px 3px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #c1a566 #142738;
+}
+.inventory-category-content {
+  min-height: 0;
+  min-width: 0;
+  overflow-y: auto;
+  padding: 0 5px 6px 0;
+  scrollbar-width: thin;
+  scrollbar-color: #c1a566 #142738;
+}
+.item-category-summary { padding: 2px 1px 8px; }
+#inventory .item-category-summary h3 { margin-bottom: 4px; }
+.item-category-summary p { margin: 0; color: #b7d2d5; font-size: .7rem; line-height: 1.5; }
+#inventoryItems .inventory-card-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+#inventoryItems .inventory-card { grid-template-columns: auto minmax(0, 1fr) auto; }
+#inventoryItems .inventory-card b { overflow-wrap: anywhere; }
+#inventoryItems .inventory-use { min-height: 36px; }
+#inventoryItems .inventory-card-grid[hidden],
+.shop-category[hidden],
+#locationGoods [data-location-category-panel][hidden] { display: none; }
+#store .sam-category-strip,
+#locationGoods .location-category-strip {
+  position: sticky;
+  z-index: 3;
+  padding: 6px 0;
+  background: #172c3e;
+}
+#store .shop-tabs { top: 0; padding-top: 6px; padding-bottom: 6px; }
+#store .sam-category-strip { top: 48px; }
+#locationGoods .location-category-strip { top: 0; }
+#samDogGoods { display: contents; }
+#locationGoods [data-location-category-panel] { display: grid; gap: 6px; }
+@media (max-height: 500px), (max-width: 900px) {
+  .inventory-browser { grid-template-columns: 142px minmax(0, 1fr); gap: 9px; }
+  .inventory-items-toolbar { gap: 8px; }
+  #inventory [data-inventory-panel="items"].active { gap: 6px; }
+  #inventory .inventory-vitals { padding: 5px 7px; }
+  .item-category-nav button { font-size: .66rem; }
+  .item-category-summary p { font-size: .62rem; }
+  #inventory .inventory-footer { font-size: .58rem; }
+}
+@media (max-width: 720px) {
+  .inventory-browser { grid-template-columns: 130px minmax(0, 1fr); }
+  #inventoryItems .inventory-card-grid { grid-template-columns: minmax(0, 1fr); }
+  #inventory .inventory-items-toolbar .pet-tank-link { font-size: .64rem; padding: 5px; }
+}
