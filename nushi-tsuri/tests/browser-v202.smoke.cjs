@@ -257,6 +257,7 @@ async function saveSlotSmoke(url,mobile){
     assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
     await press('#start');await playing(2);assert.equal(await stored(saveKey),oldBytes);
+    await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
     const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
     await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
     await selection();await press('[data-save-slot="1"]');await press('#start');await playing(1);
