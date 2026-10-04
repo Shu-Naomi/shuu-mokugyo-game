@@ -41,12 +41,12 @@ module.exports=async function run(url,mobile=false){
   await second.evaluate(()=>{s.cookingIngredients.fishFillet=1;s.items.wildGreens=1;openLocationInterior('diner');});
   const sizeChance=()=>second.evaluate(()=>{const counts={};for(let i=0;i<10000;i++){let n=0;const p=rollFishSpecimen(fish.find(f=>f.id==='funa'),()=>n++?.5:(i+.5)/10000);counts[p.tierId]=(counts[p.tierId]||0)+1;}return counts;});
   const plain=await sizeChance();assert.equal(plain.large+plain.giant,1400);
-  await second.locator('[data-cook-recipe="bigFishPlate"]').click();await second.locator('[data-eat-prepared-meal="bigFishPlate"]').click();
+  await second.locator('#locationInterior [data-cook-recipe="bigFishPlate"]').click();await second.locator('#locationInterior [data-eat-prepared-meal="bigFishPlate"]').click();
   const fed=await sizeChance();assert.equal(fed.large+fed.giant,2500);assert.match(await second.locator('.cooking-kitchen-status').innerText(),/14%→25%/);
   await second.reload({waitUntil:'load'});await second.locator('#start').click();const restored=await sizeChance();assert.equal(restored.large+restored.giant,2500);
   const nativeFish=await second.evaluate(async()=>{
-   const Art=ShuFishArt,images=new Map(),ids=['moroko','ayu'],canvas=document.createElement('canvas');
-   canvas.width=448;canvas.height=224;const ctx=canvas.getContext('2d'),review=document.createElement('canvas');review.width=448*5;review.height=224*2;
+   const Art=ShuFishArt,images=new Map(),ids=['suzuki','kurodai','moroko','ayu'],canvas=document.createElement('canvas');
+   canvas.width=448;canvas.height=224;const ctx=canvas.getContext('2d'),review=document.createElement('canvas');review.width=448*5;review.height=224*ids.length;
    const painter=review.getContext('2d');painter.fillStyle='#164553';painter.fillRect(0,0,review.width,review.height);
    let poses=0;
    for(const [row,id]of ids.entries()){
