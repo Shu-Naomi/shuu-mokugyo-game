@@ -204,7 +204,7 @@ async function storySmoke(url,mobile){
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');const before=await snapshot();
     await press('#menu');await press('[data-field-menu-target="story"]');
-    assert.match(await page.locator('#lakeStoryPage').innerText(),/空白の手帳/);
+    assert.match(await page.locator('#lakeStoryPage').innerText(),/祖父の手帳/);
     assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),1,'no future boss spoilers');
     await checkLayout();await press('#lakeStoryClose');assert.equal(await snapshot(),before);
     await page.evaluate(()=>{renderSamShop();open('store');});await press('#samStoryOffer');
