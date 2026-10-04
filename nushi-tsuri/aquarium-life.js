@@ -27,8 +27,7 @@
   function orientation(yaw){
     yaw=clamp(yaw,0,Math.PI);
     const turning=yaw>0&&yaw<Math.PI;
-    // Turn art already faces right → three-quarter → front → left.
-    // Never flatten a side sprite to zero width or mirror a turn frame.
+    // The painter supplies perspective; never flatten a side sprite to zero.
     return {yaw,facing:Math.cos(yaw),flip:turning||yaw===0?1:-1,
       spriteMode:turning?'turn':'swim',turnFrame:Math.round(yaw/Math.PI*4)};
   }
@@ -39,7 +38,7 @@
     return {widthCm,rulerCm:widthCm<=240?20:widthCm<=600?50:100};
   }
   function inspection(id,seconds,reduced=false){
-    const swim=gait(id),travel=4.2/swim.speed,turn=1.4,leg=travel+turn;
+    const swim=gait(id),travel=4.2/swim.speed,turn=1.8,leg=travel+turn;
     const cycle=seconds%(leg*2),right=cycle<leg,local=cycle%leg;
     const progress=smooth(local/travel),turnProgress=smooth((local-travel)/turn);
     // Spend most of the time swimming sideways so the tail-beat atlas plays.
@@ -58,9 +57,10 @@
       const minX=w/2+width*.045,maxX=width-minX;
       const speed=(bottom(f.species)?.12:.20)*(1+i*.075)*swim.speed,phase=seconds*speed+i*2.399;
       const sin=Math.sin(phase);
-      // Slow down into a broad turn at each end; five painted headings
-      // supply the perspective instead of a scaleX squeeze.
-      let yaw=reduced?0:Math.PI*smooth(.5-Math.cos(phase)/(2*Math.sin(.19)));
+      // Every fish gets at least 1.8 seconds through the turn, including fast
+      // swimmers in a crowded tank. Keep authored frontal thickness.
+      const turnArc=Math.max(.24,speed*.9);
+      let yaw=reduced?0:Math.PI*smooth(.5-Math.cos(phase)/(2*Math.sin(turnArc)));
       let x=minX+(maxX-minX)*(.5+.5*sin);
       const band=(bottom(f.species)?.68+.018*(i%3):.25+(i%5)*.08)+swim.depth;
       let y=height*(band+Math.sin(seconds*.45+i)*.015*swim.bob);

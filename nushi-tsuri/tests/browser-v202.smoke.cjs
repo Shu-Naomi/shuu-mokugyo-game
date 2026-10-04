@@ -11,7 +11,7 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['sw.js','fish-art.js','fishing-duel.js','pet-life-ui.js','pet-life.css','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
+        for(const file of ['sw.js','fish-art.js','fishing-duel.js','pet-life-ui.js','pet-life.css','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
           ...new Set(Object.keys(require('../fish-art.js').species).flatMap(id=>require('../fish-art.js').assets(id))),
@@ -88,7 +88,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v214/);
+    assert.match(await page.locator('.hud').innerText(),/v216/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -142,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v214/);
+    assert.match(await page.locator('.hud').innerText(),/v216/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -204,7 +204,7 @@ async function storySmoke(url,mobile){
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');const before=await snapshot();
     await press('#menu');await press('[data-field-menu-target="story"]');
-    assert.match(await page.locator('#lakeStoryPage').innerText(),/空白の手帳/);
+    assert.match(await page.locator('#lakeStoryPage').innerText(),/祖父の手帳/);
     assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),1,'no future boss spoilers');
     await checkLayout();await press('#lakeStoryClose');assert.equal(await snapshot(),before);
     await page.evaluate(()=>{renderSamShop();open('store');});await press('#samStoryOffer');
@@ -257,6 +257,7 @@ async function saveSlotSmoke(url,mobile){
     assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
     await press('#start');await playing(2);assert.equal(await stored(saveKey),oldBytes);
+    await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
     const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
     await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
     await selection();await press('[data-save-slot="1"]');await press('#start');await playing(1);
@@ -409,6 +410,7 @@ async function audioSmoke(url,mobile){
     await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
+    const intro=require('./browser-v215.features.cjs');await intro(url,false);await intro(url,true);
     const aquarium=require('./browser-v214.features.cjs');await aquarium(url,false);await aquarium(url,true);
   }finally{if(server)await new Promise(resolve=>server.close(resolve));}
 })().catch(error=>{console.error(error);process.exitCode=1;});

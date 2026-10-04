@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v214-aquarium-and-intact-fish-214-1";
+const CACHE_NAME = "nushi-tsuri-v216-detailed-turns-and-story-216-1";
 const CORE_ASSETS = [
   "./ui-feedback.js?v=187-1",
   "./event-ceremony.js?v=186-1",
@@ -18,12 +18,18 @@ const CORE_ASSETS = [
   "./coast-voyage.js?v=201-1",
   "./mountain-region.js?v=203-1",
   "./regional-nushi.js?v=202-1",
-  "./lake-story.js?v=206-1",
+  "./lake-story.js?v=215-1",
+  "./lake-intro.js?v=216-1",
+  "./lake-intro.css?v=215-1",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=207-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=214-1",
+  "./fish-art.js?v=216-1",
+  "./assets/fish-suzuki-v216.png",
+  "./assets/fish-kurodai-v216.png",
+  "./assets/fish-moroko-v215.png",
+  "./assets/fish-ayu-v215.png",
   "./assets/fish-lake-v208.png",
   "./assets/fish-stream-v208.png",
   "./assets/fish-swimmers-v208.png",
@@ -48,7 +54,7 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
-  "./aquarium-life.js?v=202-1",
+  "./aquarium-life.js?v=216-1",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=214-1",
   "./rival-anglers.js?v=199-1",

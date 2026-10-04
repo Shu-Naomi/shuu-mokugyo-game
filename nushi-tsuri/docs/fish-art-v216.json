@@ -1,0 +1,27 @@
+{
+  "version": 216,
+  "method": "OpenAI built-in imagegen",
+  "date": "2026-10-04",
+  "turnFrames": 25,
+  "mouthCell": 25,
+  "entries": [
+    {
+      "id": "suzuki",
+      "asset": "assets/fish-suzuki-v216.png",
+      "sourceOutput": "generated_images/exec-b5d18a16-a7b8-4824-b985-8cfd94a1b9d9.png",
+      "referenceAsset": "assets/fish-swimmers-v208.png",
+      "prompt": "Create additional turn-animation artwork for this exact fish game. Preserve the detailed hand-painted fish design, anatomy, colors, scale texture, proportions, fin design, lighting and three-dimensional thickness of the identified reference fish. Draw ONE identified fish per cell, exactly 5 columns and 6 rows, generous transparent gutters. No text. First 25 cells in row-major order show progressively turning yaw 0 to 180 degrees in equal 7.5-degree increments. First faces right, cell 13 is face-on toward viewer, cell 25 faces left. Crucial: cells 10,11,12,14,15,16 must show genuinely progressively changing almost-frontal head perspectives, narrowing flank and moving paired eyes and pectoral fins; do not retain a side head then suddenly switch to front. Fish remains the same natural thickness and length. Rotation only around a vertical axis, camera slightly above eye level stays fixed, no roll or pitch. Bottom row ONLY first cell shows that fish side facing right with mouth slightly open; other four cells fully empty. TRUE transparent background. Clean complete single fish silhouettes, no stray pixels, colored halos, red or yellow noise, shadows, duplicates, clipped fins or overlapping cells. Reference atlas contains four species in eight rows: use ONLY the SUZUKI Japanese sea bass in rows SEVEN and EIGHT, the silver-gray fish with large head and spiny dorsal in the last two rows. Do not use green largemouth bass in first rows, aji, bora or any other species. Keep Suzuki's silver flank, dusky back, its existing head shape and its natural spiny-and-soft dorsal structure.",
+      "originalUntouched": true,
+      "extraction": "Measured full silhouette bounds; largest connected alpha silhouette isolated at runtime."
+    },
+    {
+      "id": "kurodai",
+      "asset": "assets/fish-kurodai-v216.png",
+      "sourceOutput": "generated_images/exec-c53b73b7-2692-402b-ba78-fa80f46b3c2d.png",
+      "referenceAsset": "assets/fish-reef-v208.png",
+      "prompt": "Create additional turn-animation artwork for this exact fish game. Preserve the detailed hand-painted fish design, anatomy, colors, scale texture, proportions, fin design, lighting and three-dimensional thickness of the identified reference fish. Draw ONE identified fish per cell, exactly 5 columns and 6 rows, generous transparent gutters. No text. First 25 cells in row-major order show progressively turning yaw 0 to 180 degrees in equal 7.5-degree increments. First faces right, cell 13 is face-on toward viewer, cell 25 faces left. Crucial: cells 10,11,12,14,15,16 must show genuinely progressively changing almost-frontal head perspectives, narrowing flank and moving paired eyes and pectoral fins; do not retain a side head then suddenly switch to front. Fish remains the same natural thickness and length. Rotation only around a vertical axis, camera slightly above eye level stays fixed, no roll or pitch. Bottom row ONLY first cell shows that fish side facing right with mouth slightly open; other four cells fully empty. TRUE transparent background. Clean complete single fish silhouettes, no stray pixels, colored halos, red or yellow noise, shadows, duplicates, clipped fins or overlapping cells. Reference atlas contains four species in eight rows: use ONLY the KURODAI black sea bream in rows ONE and TWO, the deep-bodied dark silvery fish with one continuous spiny dorsal. Preserve its specific body depth, gently barred charcoal-silver scales and head. Do not use kasago, mebaru or the flat hirame in lower rows.",
+      "originalUntouched": true,
+      "extraction": "Measured full silhouette bounds; largest connected alpha silhouette isolated at runtime."
+    }
+  ]
+}

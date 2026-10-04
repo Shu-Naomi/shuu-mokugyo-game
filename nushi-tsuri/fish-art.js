@@ -10,21 +10,18 @@
   const species={};
   for(const [group,definition]of Object.entries(groups))
     definition.ids.forEach((id,index)=>species[id]={group,index,asset:`assets/fish-${group}-v208.png`});
-  // The v208 lake drawing gave these two freshwater fish whiting's dorsal
-  // fins. Reuse their species-specific originals, without altering any PNG.
-  // Near-front headings project the authored three-quarter views in depth.
+  // Species-specific originals have 25 authored yaw poses and one
+  // breathing pose. Keep their true dorsal anatomy and rounded front views.
   const native={
-    moroko:{asset:'assets/fish-moroko-v125.png',mouth:'assets/fish-moroko-mouth-open-v125.png',turn:'assets/fish-moroko-turn-v70.png',
-      boxes:[[16,13,222,84],[305,2,158,105],[305,2,158,105],[595,0,89,110],[819,3,154,104],[819,3,154,104],[16,13,222,84],[16,13,222,84]],
-      heads:[[.99,.57],[.98,.76],[.98,.76],[.5,.88],[.02,.76],[.02,.76],[.99,.57],[.99,.61]]},
-    ayu:{asset:'assets/fish-ayu-turn-v95.png',mouth:'assets/fish-ayu-mouth-v95.png',turn:'assets/fish-ayu-turn-v95.png',
-      boxes:[[20,25,279,110],[382,11,195,137],[382,11,195,137],[739,12,120,137],[1023,12,194,137],[1023,12,194,137],[20,25,279,110],[662,28,280,104]],
-      heads:[[.99,.70],[.99,.80],[.99,.80],[.5,.84],[.01,.80],[.01,.80],[.99,.70],[.99,.78]]},
+    suzuki:{"asset":"assets/fish-suzuki-v216.png","dense":true,"boxes":[[20,80,288,130],[320,80,264,131],[598,83,258,130],[872,81,243,136],[1142,82,230,136],[42,240,261,147],[337,241,239,147],[625,243,211,147],[899,244,190,149],[1175,244,174,149],[73,413,187,156],[388,413,136,157],[629,409,175,165],[914,413,135,156],[1187,415,156,153],[76,589,166,154],[342,593,201,150],[600,596,226,149],[882,597,215,145],[1150,595,221,145],[27,773,266,141],[314,776,262,136],[592,775,266,137],[866,777,247,130],[1119,777,266,132],[21,942,288,136]],"heads":[[0.99,0.65],[0.99,0.68],[0.99,0.68],[0.99,0.7],[0.99,0.73],[0.98,0.75],[0.98,0.75],[0.97,0.75],[0.95,0.76],[0.92,0.78],[0.88,0.78],[0.72,0.8],[0.5,0.77],[0.24,0.77],[0.17,0.76],[0.1,0.76],[0.055,0.77],[0.025,0.76],[0.02,0.75],[0.015,0.73],[0.01,0.68],[0.01,0.68],[0.01,0.68],[0.01,0.68],[0.01,0.68],[0.99,0.69]]},
+    kurodai:{"asset":"assets/fish-kurodai-v216.png","dense":true,"boxes":[[11,86,249,152],[264,86,230,156],[502,87,210,158],[739,88,191,159],[969,90,168,157],[23,292,234,188],[284,294,202,187],[520,293,194,191],[759,291,170,195],[984,291,136,198],[76,516,138,202],[305,514,146,201],[492,517,182,199],[714,518,154,200],[949,515,143,208],[26,748,189,203],[248,754,199,195],[464,760,205,187],[681,759,219,193],[901,763,237,188],[19,990,228,175],[252,993,211,169],[466,996,214,165],[685,994,183,167],[878,998,251,163],[8,1193,254,162]],"heads":[[0.99,0.7],[0.99,0.7],[0.99,0.71],[0.99,0.72],[0.99,0.73],[0.98,0.73],[0.97,0.75],[0.96,0.77],[0.94,0.8],[0.88,0.81],[0.78,0.81],[0.66,0.8],[0.5,0.74],[0.31,0.76],[0.22,0.8],[0.13,0.77],[0.07,0.77],[0.045,0.77],[0.03,0.75],[0.015,0.74],[0.01,0.68],[0.01,0.68],[0.01,0.67],[0.01,0.65],[0.015,0.66],[0.99,0.7]]},
+    moroko:{"asset":"assets/fish-moroko-v215.png","dense":true,"boxes":[[22,53,265,121],[315,52,261,122],[606,50,242,126],[888,47,236,132],[1172,47,214,132],[44,213,241,145],[340,212,225,149],[633,212,202,151],[927,221,182,144],[1216,224,157,141],[90,396,164,150],[383,401,152,146],[646,395,146,157],[926,397,158,151],[1192,397,145,151],[51,571,190,148],[332,572,209,146],[606,574,219,145],[876,576,230,144],[1133,575,245,144],[17,752,254,138],[306,753,258,136],[589,757,258,133],[861,759,250,131],[1132,759,256,130],[22,940,264,124]],"heads":[[0.99,0.63],[0.99,0.63],[0.99,0.65],[0.99,0.68],[0.99,0.71],[0.98,0.72],[0.98,0.73],[0.97,0.75],[0.95,0.78],[0.91,0.8],[0.82,0.81],[0.76,0.82],[0.51,0.79],[0.25,0.8],[0.18,0.81],[0.1,0.78],[0.045,0.76],[0.025,0.75],[0.015,0.74],[0.01,0.73],[0.01,0.68],[0.01,0.68],[0.01,0.68],[0.01,0.68],[0.01,0.69],[0.99,0.65]]},
+    ayu:{"asset":"assets/fish-ayu-v215.png","dense":true,"boxes":[[19,58,282,124],[314,55,261,131],[595,55,246,135],[879,55,227,137],[1158,55,198,142],[53,234,229,146],[352,232,200,151],[637,233,177,148],[932,232,161,154],[1223,230,143,159],[98,417,182,162],[389,417,171,164],[631,422,175,160],[902,423,162,158],[1179,425,154,158],[69,614,188,159],[338,615,210,158],[599,613,220,159],[873,616,225,153],[1146,619,236,149],[20,803,267,147],[305,804,257,145],[577,811,259,138],[849,811,258,137],[1120,818,262,123],[18,971,287,134]],"heads":[[0.99,0.68],[0.99,0.67],[0.99,0.69],[0.99,0.7],[0.99,0.73],[0.98,0.72],[0.98,0.75],[0.96,0.77],[0.94,0.8],[0.89,0.81],[0.78,0.79],[0.69,0.8],[0.5,0.73],[0.28,0.76],[0.2,0.79],[0.12,0.77],[0.055,0.77],[0.035,0.73],[0.02,0.75],[0.015,0.74],[0.01,0.64],[0.01,0.64],[0.01,0.65],[0.01,0.62],[0.01,0.56],[0.99,0.63]]},
   };
   for(const [id,definition]of Object.entries(native))species[id].asset=definition.asset;
-  const assets=id=>native[id]?[...new Set([native[id].asset,native[id].turn,native[id].mouth])]:[species[id].asset];
-  const projection=(id,cell)=>native[id]&&(cell===2||cell===4)? .58 : 1;
-  const cellAsset=(id,cell)=>native[id]?(cell===7?native[id].mouth:cell>0&&cell<6?native[id].turn:native[id].asset):species[id].asset;
+  const assets=id=>[species[id].asset];
+  const projection=()=>1;
+  const cellAsset=id=>species[id].asset;
   const turn=[1,.72,.36,0,-.36,-.72,-1].map((xScale,i)=>({xScale,yOffset:[0,.025,.06,.08,.06,.025,0][i]}));
   const mouth=[{xScale:1,yOffset:0},{xScale:1,yOffset:.025},{xScale:1,yOffset:.05}];
   const heads=[[.985,.62],[.985,.68],[.98,.75],[.5,.75],[.02,.72],[.015,.65],[.015,.62],[.985,.72]];
@@ -37,16 +34,27 @@
     caveNushi:[[.985,.51],[.96,.52],[.95,.55],[.50,.56],[.04,.55],[.015,.51],[.015,.51],[.93,.45]],
     nushi:[[.97,.52],[.95,.57],[.87,.62],[.50,.67],[.08,.60],[.05,.58],[.03,.52],[.96,.56]],
   };
+  // One late Kurodai source accidentally faces the viewer again. Use the
+  // matching opposite-side drawing so the completed turn cannot turn back.
+  const mirroredTurns={kurodai:{23:1}};
   function pose(id,cells,frame){
     const clock=Math.max(0,Number(frame)||0),index=Math.floor(clock);
     if(cells===7||cells===5){
       const heading=cells===5?[0,2,3,4,6][Math.min(4,index)]:Math.round(clamp(clock,0,6)*16)/16;
       const from=Math.floor(heading),to=Math.min(6,from+1),mix=heading-from;
+      if(native[id]?.dense){
+        const authored=heading*4,a=Math.floor(authored),b=Math.min(24,a+1);
+        const cell=Math.round(authored),mirror=mirroredTurns[id]?.[cell];
+        return {cell:mirror??cell,heading,flip:mirror!==undefined,jaw:0,
+          target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
+            .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],
+          beat:0,from:a/4,to:b/4,mix:authored-a};
+      }
       return {cell:from===6?0:from,heading,flip:from===6,jaw:0,
         target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
           .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],beat:0,from,to,mix};
     }
-    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?7:0,jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
+    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?(native[id]?.dense?25:7):0,jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
     return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:clock%8/8*Math.PI*2};
   }
   function hookPose(id,cells,frame){
@@ -90,6 +98,9 @@
       }
       if(best<100){cache.set(key,original);return original;}
       for(let n=0;n<labels.length;n++){
+        // Ignore barely visible colored alpha fringes around generated
+        // dense atlases. The source PNG remains untouched.
+        if(native[id]?.dense&&data[n*4+3]<48){data[n*4+3]=0;continue;}
         if(labels[n]===largest||!data[n*4+3])continue;
         let keep=false;
         // Preserve soft outline pixels touching the fish, including barbels.
@@ -108,7 +119,8 @@
   function scaleFor(id){
     if(scales[id])return scales[id];
     let scale=Infinity;
-    for(const p of [...Array.from({length:7},(_,i)=>pose(id,7,i)),pose(id,3,2)]){
+    const count=native[id]?.dense?25:7,step=native[id]?.dense ? .25 : 1;
+    for(const p of [...Array.from({length:count},(_,i)=>pose(id,7,i*step)),pose(id,3,2)]){
       const raw=source(id,p.cell),box=[raw[0],raw[1],raw[2]*projection(id,p.cell),raw[3]],head=sourceHead(id,p.cell,p.flip),tx=p.target[0]*448,ty=p.target[1]*224;
       for(const [room,extent]of [[tx-22,head[0]*box[2]],[448-tx-22,(1-head[0])*box[2]],[ty-8,head[1]*box[3]],[224-ty-8,(1-head[1])*box[3]]])
         if(extent>0)scale=Math.min(scale,room/extent);

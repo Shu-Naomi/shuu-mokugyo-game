@@ -8,11 +8,11 @@
   const visited=(s,id)=>s.lakeStory?.visited?.[id]===true;
   const three=s=>["streamNushi","coastNushi","caveNushi"].every(id=>caught(s,id));
   const pages=[
-    {id:"arrival",title:"空白の手帳",place:"星降る湖",art:null,when:()=>true,speaker:"サム",
+    {id:"arrival",title:"祖父の手帳",place:"星降る湖",art:null,when:()=>true,speaker:"サム",
       quote:"道具は貸せても、君が聞く水の音までは貸せんからの。自分の一冊にしておいで。",
-      paragraphs:["釣具店の棚の奥に、背表紙のない小さな手帳があった。サムは空白の最初の頁を開き、湖の方へ目を向ける。",
-        "『星降る湖』。地図に載っているその名を、村の人は少しだけ違う調子で呼ぶ。魚の数を数える時とも、明日の天気を話す時とも違う声だ。",
-        "外では{dog}が鼻を上げ、風の匂いを追っている。今日はまず、いつもの岸から一投。その先の頁には、まだ何も書かれていない。"]},
+      paragraphs:["祖父の遺品を整理しに来たはずが、三匹の子犬と、この村で暮らすことになった。机には、祖父が伝説のヌシを追っていた手帳がある。",
+        "『星降る湖』。祖父が長く暮らしたその場所を、自分はまだよく知らない。サムは、残された頁を自分の一冊にしておいでと言った。",
+        "外では{dog}が鼻を上げ、風の匂いを追っている。今日はまず、いつもの岸から一投。祖父の記録の先には、まだ白い頁が残されている。"]},
     {id:"stream",title:"木の橋の向こう",place:"星見渓流",art:"assets/mountain-world-v201.png",when:s=>visited(s,"stream"),speaker:"釣り宿の主人",
       quote:"山から帰った人は、足音で分かるんだよ。みんな少しゆっくり歩くようになる。",
       paragraphs:["村の北口を抜けると、湖で聞いていた風が流水の音へ変わった。木の橋の下を、泡が一本の白い線になって流れていく。",
@@ -81,7 +81,9 @@
       const region=regionForSpot(record?.last?.spotId);if(region)visits[region]=true;
     }
     for(const [id,region] of [["streamNushi","stream"],["coastNushi","coast"],["caveNushi","cave"]])if(caught(state,id))visits[region]=true;
-    state.lakeStory={version:1,visited:visits,read:[],selected:"arrival"};
+    state.lakeStory={version:1,visited:visits,read:[],selected:"arrival",introSeen:old.introSeen===true,
+      introPending:old.introPending===true&&old.introSeen!==true,
+      introPage:Number.isInteger(old.introPage)?Math.max(0,Math.min(4,old.introPage)):0};
     const available=new Set(chapters(state).map(p=>p.id));
     state.lakeStory.read=[...new Set(Array.isArray(old.read)?old.read:[])].filter(id=>available.has(id));
     state.lakeStory.selected=available.has(old.selected)?old.selected:"arrival";return state.lakeStory;
