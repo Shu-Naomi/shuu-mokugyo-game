@@ -29,19 +29,29 @@ module.exports=async function motionAndCoast(url,mobile){
       for(let i=3;i<data.length;i+=4)if(data[i]>100)opaque++;return opaque>3500;
     });
     // Keep the actual animation loop running while the physics clock is held.
-    await page.evaluate(()=>{clearInterval(timer);timer=0;finishHookReveal();battle.turnHold=99;
-      updateFishTurn(-battle.facing,fishMotionProfiles[battle.f.id]);battle.artTickAt=Date.now();});
-    const smoothFrames=[];
-    for(let i=0;i<4;i++){
-      await page.waitForTimeout(32);
-      smoothFrames.push(await page.locator('#battleFish').evaluate(el=>{
+    const smoothFrames=await page.evaluate(async()=>{
+      clearInterval(timer);timer=0;finishHookReveal();
+      const desired=-battle.facing;
+      battle.turning=null;battle.turnIntent=desired;battle.turnHold=99;
+      updateFishTurn(desired,fishMotionProfiles[battle.f.id]);
+      // Warm the first original before measuring. Observe inside the page,
+      // so transport delays cannot consume the whole 120ms logical tick.
+      renderBattleFish();battle.artTickAt=Date.now();
+      const sample=()=>{
+        const el=document.querySelector('#battleFish');
         const bytes=el.querySelector('canvas').getContext('2d').getImageData(0,0,448,224).data;let hash=2166136261;
         for(let n=0;n<bytes.length;n+=61)hash=Math.imul(hash^bytes[n],16777619);
-        return {frame:Number(el.dataset.spriteFrame),hash:hash>>>0};
-      }));
-    }
-    assert.ok(new Set(smoothFrames.map(v=>v.hash)).size>=2,'RAF paints intermediate bodies between 120ms physics ticks');
-    assert.ok(smoothFrames.some(v=>!Number.isInteger(v.frame)),'turn frames are fractional');
+        return {frame:Number(el.dataset.spriteFrame),mode:el.dataset.spriteMode,hash:hash>>>0};
+      };
+      const frames=[sample()];
+      for(let i=0;i<12;i++){
+        await new Promise(resolve=>requestAnimationFrame(resolve));frames.push(sample());
+      }
+      return frames;
+    });
+    assert.ok(smoothFrames.every(v=>v.mode==='turn'),'real turn was started '+JSON.stringify(smoothFrames));
+    assert.ok(new Set(smoothFrames.map(v=>v.hash)).size>=2,'RAF paints intermediate bodies between 120ms physics ticks '+JSON.stringify(smoothFrames));
+    assert.ok(smoothFrames.some(v=>!Number.isInteger(v.frame)),'turn frames are fractional '+JSON.stringify(smoothFrames));
     // Check the full rendered body and hook at intermediate headings for all species.
     const poses=await page.evaluate(async()=>{
       stopBattleFishArt();await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(id)))].map(src=>fishAtlasImage(src).decode()));
