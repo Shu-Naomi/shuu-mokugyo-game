@@ -15,6 +15,14 @@ function setup(surface) {
   let pixels = null;
   context.clearRect = () => { pixels = null; };
   context.drawImage = (image) => { pixels = image.src; };
+  // The DOM harness has no bitmap pixels. Record a successful public draw,
+  // whether the painter used drawImage or the inverse-mapped putImageData.
+  const draw = window.ShuFishArt.draw;
+  window.ShuFishArt = { ...window.ShuFishArt, draw: (...args) => {
+    const painted = draw(...args);
+    if (painted && args[0] === context) pixels = args[1].src;
+    return painted;
+  } };
   function render(id, step = 0) {
     // Both real fight/catch entry points reuse the element and reset its class.
     if (element.dataset.testFish !== id) {
