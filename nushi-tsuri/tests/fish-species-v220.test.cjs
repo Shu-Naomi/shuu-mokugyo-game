@@ -1,6 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),Art=require('../fish-art.js'),R=require('../regional-nushi.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
+const {findRoute}=require('./water-routes-v220.cjs');
 const newFish=['wakasagi','dojo','isaki'];
 
 test('new fish have practical ungated bait odds in their own waters and do not spread to unrelated waters',()=>{
@@ -36,7 +37,10 @@ test('actual casts catch all three once, grant ingredients, render fight/catch/d
   let snapshot;const app=boot({...seed(),hp:100,mapRegion:region,x,y,direction,boatActive:region==='coast',ownedVehicles:['canoe'],equipment:{vehicle:'canoe'},
    baits:{worm:8,river:8,shrimp:8},selectedBait:bait,selectedHook:hook,selectedRod:'clearStream',soundEnabled:false}),w=app.window;
   try{
-   const ingredients=read(w,'s.cookingIngredients.fishFillet');w.eval('action();beginFishing();clearInterval(timer)');
+   const route=findRoute(w,{wakasagi:'lake',dojo:'marsh',isaki:'reef'}[id]);
+   for(const direction of route.path)w.move(direction);
+   const ingredients=read(w,'s.cookingIngredients.fishFillet');w.document.querySelector('#action').click();
+   assert.equal(read(w,'battle?.phase'),'prep',id+' reachable casting entry');w.eval('beginFishing();clearInterval(timer)');
    let roll=-1;
    for(let n=0;n<1000;n++){w.eval(`Math.random=()=>${n/1000}`);if(read(w,`pick(50,'${spotId}').id`)===id){roll=n/1000;break;}}
    assert.ok(roll>=0);w.eval(`Math.random=()=>${roll};resolveSurfaceCast(50);clearInterval(timer)`);

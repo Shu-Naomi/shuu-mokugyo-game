@@ -14,22 +14,25 @@ module.exports=async function waterAndFish(url,mobile=false){
  const state=extra=>({...seed(),hp:100,maxHp:100,gameMinutes:420,soundEnabled:false,ownedRods:['bamboo','clearStream','shoreReed'],selectedRod:'clearStream',
   ownedVehicles:['canoe'],equipment:{vehicle:'canoe'},baits:{worm:20,river:20,shrimp:20},selectedBait:'worm',selectedHook:'small',...extra});
  const screenshot=async(page,screen)=>console.log('V220_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:76})).toString('base64')}));
+ async function walkToWater(page,press,type,region){
+  const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type});
+  for(const direction of route.path){
+   // The real companion bark/dig/collection sequence owns movement until finished.
+   await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
+   const old=await page.evaluate(()=>({x:s.x,y:s.y}));
+   if(mobile)await press('[data-move="'+direction+'"]');else await page.keyboard.press({up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[direction]);
+   const next=await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction,discovery:forageDiscoveryInProgress,modal:document.querySelector('.modal.open')?.id}));
+   assert.ok(next.x!==old.x||next.y!==old.y,region+'/'+type+' blocked input '+direction+' '+JSON.stringify({old,next}));
+  }
+  await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
+  assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction})),{x:route.x,y:route.y,direction:route.direction});
+  return route;
+ }
  try{
   for(const sample of cases){
    const {context,page,press}=await create(state({mapRegion:sample.region,x:sample.start[0],y:sample.start[1],boatActive:Boolean(sample.boat)}));
    try{
-    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:sample.type});
-    for(const direction of route.path){
-     // A companion may discover forage after eight steps. Let the real
-     // bark/dig/collection sequence finish before issuing the next input.
-     await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
-     const old=await page.evaluate(()=>({x:s.x,y:s.y}));
-     if(mobile)await press('[data-move="'+direction+'"]');else await page.keyboard.press({up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[direction]);
-     const next=await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction,discovery:forageDiscoveryInProgress,modal:document.querySelector('.modal.open')?.id}));
-     assert.ok(next.x!==old.x||next.y!==old.y,sample.region+'/'+sample.type+' blocked input '+direction+' '+JSON.stringify({old,next}));
-    }
-    await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
-    assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction})),{x:route.x,y:route.y,direction:route.direction});
+    const route=await walkToWater(page,press,sample.type,sample.region);
     const before=await page.evaluate(()=>JSON.stringify({baits:s.baits,money:s.money,hp:s.hp,clock:s.gameMinutes}));
     await press('#action');const prefix=sample.region==='village'?sample.type:sample.region==='coast'?'coast-'+sample.type:'mountain-'+sample.type;
     assert.deepEqual(await page.evaluate(()=>[battle?.spot,battle?.phase]),[prefix+'-shallow','prep']);
@@ -38,17 +41,26 @@ module.exports=async function waterAndFish(url,mobile=false){
    }finally{await context.close();}
   }
   console.log('V220_WATER_ROUTES_PASS '+JSON.stringify({mobile,routes}));
+  {
   const {context,page,press}=await create(state({mapRegion:'coast',boatActive:true,x:121.5,y:52.5,direction:'right'}));
   try{
    assert.equal(await page.evaluate(()=>nearbyFishingSpot()),null);assert.match(await page.locator('#hint').innerText(),/岸や桟橋/);await press('#action');assert.equal(await page.evaluate(()=>battle),null);
    // The same saved boat can turn toward clear water and fish normally.
    await page.evaluate(()=>{s.direction='left';render();});await press('#action');assert.equal(await page.evaluate(()=>battle.waterZone),'sea');await page.evaluate(()=>endBattle());
+  }finally{await context.close();}
+  }
+  {
+  const {context,page,press}=await create(state({mapRegion:'village',boatActive:false,x:125,y:58,direction:'up'}));
+  try{
    for(const [id,region,x,y,direction,bait,hook,spot]of [
     ['wakasagi','village',125,58,'up','river','small','lake-mid'],
     ['dojo','stream',172,96,'right','worm','small','mountain-marsh-mid'],
     ['isaki','coast',95,84,'up','shrimp','medium','coast-reef-mid']]){
     await page.evaluate(({region,x,y,direction,bait,hook})=>{close();Object.assign(s,{mapRegion:region,x,y,direction,boatActive:region==='coast',selectedBait:bait,selectedHook:hook,fightMode:'nushi',fishingMethod:'bait'});render();},{region,x,y,direction,bait,hook});
-    await press('#action');assert.equal(await page.evaluate(()=>battle?.phase),'prep');
+    await walkToWater(page,press,{wakasagi:'lake',dojo:'marsh',isaki:'reef'}[id],region);
+    const entry=await page.evaluate(()=>({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction,spot:nearbyFishingSpot()?.id,forage:nearbyForagePoint()?.point?.id,modal:document.querySelector('.modal.open')?.id,home:playerHomeIsActive(),discovery:forageDiscoveryInProgress,button:document.querySelector('#action').disabled}));
+    await press('#action');const opened=await page.evaluate(()=>({phase:battle?.phase,modal:document.querySelector('.modal.open')?.id,hint:document.querySelector('#hint').textContent}));
+    assert.equal(opened.phase,'prep',id+' entry '+JSON.stringify({entry,opened}));
     await press('#wait');await page.locator('#tackle.open').waitFor({state:'visible'});await press('#beginCast');
     const before=await page.evaluate(id=>({caught:s.caught[id]||0,fillet:s.cookingIngredients.fishFillet}),id);
     await page.evaluate(({id,spot})=>{const random=Math.random;let roll=-1;
@@ -67,5 +79,6 @@ module.exports=async function waterAndFish(url,mobile=false){
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:30,saved:true,shoreBlocks:true,errors,failed}));
   }finally{await context.close();}
+  }
  }finally{await browser.close();}
 };
