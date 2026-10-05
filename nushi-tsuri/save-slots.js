@@ -31,22 +31,30 @@
       if(requested)return requested;
       try{return slot(getStorage().getItem(lastSlotKey))||1;}catch(_){return 1;}
     }
-    return {read,write,remember,initial,keyFor};
+    function capture(value){try{return {ok:true,raw:getStorage().getItem(keyFor(value))};}catch(_){return {ok:false};}}
+    function remove(value,expectedRaw){
+      if(typeof expectedRaw!=="string")return false;
+      try{const storage=getStorage(),key=keyFor(value);if(storage.getItem(key)!==expectedRaw)return false;
+        storage.removeItem(key);return storage.getItem(key)===null;
+      }catch(_){return false;}
+    }
+    return {read,write,remember,initial,keyFor,capture,remove};
   }
   function titleUrl(href,value){
     const url=new URL(href);url.searchParams.set('saveSlot',String(slot(value)||1));
-    for(const name of ['play','avatar','dog'])url.searchParams.delete(name);
+    for(const name of ['play','avatar','dog','playerName'])url.searchParams.delete(name);
     return url.href;
   }
   function launchUrl(href,value,options={}){
     const url=new URL(titleUrl(href,value));url.searchParams.set('play','1');
     if(['boy','girl'].includes(options.avatar))url.searchParams.set('avatar',options.avatar);
     if(['shuu','riku','grey'].includes(options.dog))url.searchParams.set('dog',options.dog);
+    if(typeof options.playerName==='string')url.searchParams.set('playerName',options.playerName);
     return url.href;
   }
   function launchSettings(query=''){
     const p=new URLSearchParams(query);
-    return {play:p.get('play')==='1',avatar:['boy','girl'].includes(p.get('avatar'))?p.get('avatar'):null,
+    return {play:p.get('play')==='1',playerName:p.get('playerName'),avatar:['boy','girl'].includes(p.get('avatar'))?p.get('avatar'):null,
       dog:['shuu','riku','grey'].includes(p.get('dog'))?p.get('dog'):null};
   }
   return {keys,lastSlotKey,keyFor,create,titleUrl,launchUrl,launchSettings};

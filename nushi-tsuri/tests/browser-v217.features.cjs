@@ -3,7 +3,7 @@ const {seed,saveKey}=require('./game-harness.cjs');
 module.exports=async function categories(url,mobile=false){
  const browser=await chromium.launch({headless:true}),viewport=mobile?{width:844,height:390}:{width:1280,height:720};
  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'}),page=await context.newPage(),errors=[],failed=[];
- await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},
+ await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},
   {key:saveKey,state:{...seed(),money:200000,items:{tomato:2,wildGreens:2},dogTreats:{treeNut:1},cookingIngredients:{fishFillet:2},preparedMeals:{bigFishPlate:1},soundEnabled:false}});
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/item-categories\.css/.test(r.url()))failed.push(r.url());});
  const press=selector=>page.locator(selector)[mobile?'tap':'click']();

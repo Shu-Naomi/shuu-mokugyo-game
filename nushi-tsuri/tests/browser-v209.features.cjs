@@ -5,7 +5,7 @@ module.exports=async function features(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[],failedAssets=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
     isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
-  await context.addInitScript(({key,state})=>{
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
   },{key:saveKey,state:{...seed(),x:10,y:79,direction:'left',hp:80,soundEnabled:false,
     cookingIngredients:{shirogisuFillet:1,ayuFillet:1,madaiFillet:1},items:{wildGreens:2},baits:{shell:1},
@@ -188,7 +188,7 @@ module.exports=async function features(url,mobile){
         close();
       }return results;
     });
-    assert.equal(fishResult.length,24*9*2);
+    assert.equal(fishResult.length,25*9*2);
     for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));
       if(r.tallFins!==null)assert.equal(r.tallFins,r.id==='shirogisu'?2:1,r.id+' actual dorsal silhouette');}
     await page.evaluate(()=>{s.fightMode='nushi';openPracticePond();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();
@@ -203,7 +203,7 @@ module.exports=async function features(url,mobile){
       await page.waitForFunction(()=>!document.querySelector('#fishScene').classList.contains('surface-diving'));
       await screenshot('FISH_'+id.toUpperCase());
     }
-    console.log('V214_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:24,poses:432,fightModes:2,recipes:3,
+    console.log('V214_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:25,poses:450,fightModes:2,recipes:3,
       speciesArt:fishResult.filter(r=>r.tallFins!==null).map(({mode,id,tallFins})=>({mode,id,tallFins})),
       dogs:3,careArt,handArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}

@@ -6436,6 +6436,7 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
+    <link rel="stylesheet" href="player-options.css?v=218-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=200-2" />
@@ -6456,7 +6457,9 @@
         </div>
         <p class="save-note">選んだ冒険だけに自動セーブするよ。</p>
         <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
-        <div class="avatar-select" aria-label="主人公を選ぶ">
+        <label class="player-name-choice" for="titlePlayerName">主人公の名前（12文字まで）<input id="titlePlayerName" type="text" maxlength="48" value="旅人" autocomplete="off" aria-describedby="identityNote" /></label>
+        <p class="identity-note" id="identityNote">名前はあとから何度でも変更できるよ。性別は、この冒険では変更できないよ。</p>
+        <div class="avatar-select" role="group" aria-label="主人公の性別を選ぶ">
           <button data-avatar="boy">🧢 男の主人公</button>
           <button data-avatar="girl">🧢 女の主人公</button>
         </div>
@@ -6465,12 +6468,13 @@
           <button data-dog="riku">🐕‍🦺 リク</button>
           <button data-dog="grey">🐕 Grey</button>
         </div>
-        <button id="start">湖へ行く</button>
+        <button id="start">湖へ行く</button><br />
+        <button id="titleOptions" type="button">オプション</button>
       </div>
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v217</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v218</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6646,6 +6650,7 @@
               <span class="field-menu-icon" aria-hidden="true">🐕</span>
               <span class="field-menu-label">犬と遊ぶ<small>好感度・お世話</small></span>
             </button>
+            <button type="button" data-field-menu-target="options"><span class="field-menu-icon" aria-hidden="true">⚙</span><span class="field-menu-label">オプション<small>名前・セリフ・セーブ削除</small></span></button>
             <button type="button" data-field-menu-target="saveSlots">
               <span class="field-menu-icon" aria-hidden="true">💾</span>
               <span class="field-menu-label">セーブ選択へ<small>保存して冒険を切り替える</small></span>
@@ -7221,6 +7226,26 @@
         </div>
       </main>
     </section>
+    <section class="modal game-options" id="options" role="dialog" aria-modal="true" aria-labelledby="optionsTitle">
+      <header class="options-heading"><div><small>星降る湖</small><h2 id="optionsTitle">オプション</h2></div><button id="optionsClose" type="button">閉じる</button></header>
+      <div class="options-body">
+        <p id="optionsNotice" role="status" aria-live="polite"></p>
+        <section class="options-group"><h3>主人公</h3><p id="optionsIdentity"></p>
+          <form class="options-name-form" id="optionsNameForm"><label for="optionsPlayerName">名前（12文字まで・何度でも変更できるよ）</label><input id="optionsPlayerName" type="text" maxlength="48" autocomplete="off" /><button id="optionsRename" type="submit">名前を変更</button></form>
+        </section>
+        <section class="options-group"><h3>セリフ送り速度</h3><p>会話と、冒頭の物語に反映するよ。表示途中でもう一度押すと、全文が出るよ。</p>
+          <div class="options-speeds" role="group" aria-label="セリフ送り速度"><button type="button" data-text-speed="slow">ゆっくり</button><button type="button" data-text-speed="normal">ふつう</button><button type="button" data-text-speed="fast">はやい</button><button type="button" data-text-speed="instant">一度に表示</button></div>
+          <div class="options-preview"><p id="optionsTextPreview" aria-label="星降る湖へようこそ。今日は、どの魚に会えるかな？"></p></div><button id="optionsPreviewAgain" type="button">セリフを試す</button>
+        </section>
+        <section class="options-group"><h3>セーブデータの削除</h3><p>削除する冒険を選んでね。もう一方のセーブと、セリフの設定は残るよ。</p><div class="options-save-list" id="optionsSaveList"></div>
+          <div class="delete-confirm" id="optionsDeleteConfirmation" hidden><b id="optionsDeleteTitle"></b><p id="optionsDeleteSummary"></p><p>この冒険の名前・釣果・持ち物・育てた魚などをすべて削除するよ。削除したデータは戻せないよ。</p>
+            <label><input id="optionsDeleteCheck" type="checkbox" />このセーブを削除する</label><div class="delete-actions"><button id="optionsDeleteCancel" type="button">やめる</button><button id="optionsDeleteConfirm" class="delete-save" type="button" disabled>削除する</button></div>
+          </div>
+        </section>
+        <button id="optionsDeletedReturn" type="button" hidden>セーブ選択画面へ戻る</button>
+      </div>
+    </section>
+    <script src="player-options.js?v=218-1"></script>
     <script src="fortune-capsules.js?v=187-1"></script>
     <script src="music-tracks.js?v=205-1"></script>
     <script src="soundscape.js?v=186-1"></script>
@@ -7228,18 +7253,18 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=216-1"></script>
+    <script src="aquarium-life.js?v=218-1"></script>
     <script src="pet-life-ui.js?v=214-1"></script>
-    <script src="tackle-balance.js?v=202-1"></script>
-    <script src="fishing-duel.js?v=213-1"></script>
+    <script src="tackle-balance.js?v=218-1"></script>
+    <script src="fishing-duel.js?v=218-1"></script>
     <script src="coast-voyage.js?v=201-1"></script>
-    <script src="mountain-region.js?v=203-1"></script>
+    <script src="mountain-region.js?v=218-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=215-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
-    <script src="save-slots.js?v=207-1"></script>
+    <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=216-1"></script>
+    <script src="fish-art.js?v=218-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7252,7 +7277,9 @@
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
       const loadedSaveSlot = saveSlots.read(activeSaveSlot);
-      let selectedSaveSlot = activeSaveSlot, titleAvatar = "boy", titleDog = "riku", gameStarted = false;
+      let selectedSaveSlot = activeSaveSlot, titleAvatar = "boy", titleDog = "riku", titlePlayerName = "旅人", gameStarted = false, saveSuppressed = false;
+      const titleDrafts = new Map(), playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
+      let textSpeed = playerOptions.read().textSpeed, pendingSaveDeletion = null, optionsReturnFocus = null;
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
         WORLD_HEIGHT = 135,
@@ -7419,6 +7446,10 @@
           ...ShuRegional.fish,
         ],
         fishEncyclopediaData = {
+          iwana: {number:25,scientific:"Salvelinus leucomaenis",habitats:["river"],rarity:2,rarityLabel:"渓流の住人",
+            ecology:"冷たい山の流れにすむサケ科の魚。体に淡い斑点があり、水生昆虫などを食べる。",
+            locations:"星見渓流（浅瀬〜深場）",time:"朝・夕に狙いやすい",rods:["clearStream","lureRod"],baits:["worm","river","grasshopper"],
+            tip:"星見渓流の川で釣れるよ。ミミズ＋ハリ中、またはスプーンを試そう。池や沼にはいないよ。"},
           ...ShuRegional.encyclopedia,
           moroko: {
             number: 1,
@@ -11333,6 +11364,13 @@
             {xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}],
         };
       }
+      // A genuinely new ordinary species, available immediately in the stream.
+      fish.push({id:"iwana",name:"イワナ",price:390,resistance:98,w:0,icon:"🐟",shadowRow:3});
+      fishMouthProfiles.iwana={...fishMouthProfiles.yamame};
+      fishMotionProfiles.iwana={...fishMotionProfiles.yamame,beat:.75,turnFrames:12};
+      fishLifeProfiles.iwana={...fishLifeProfiles.yamame};
+      fightProfiles.iwana={...fightProfiles.yamame,intro:"渓流のイワナだ。流れに乗る引きを、落ち着いて受け止めよう。"};
+      fishSizeProfiles.iwana=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:[8,13,19,25,32,42][i]*100,maxHundredths:[13,19,25,32,42,60][i]*100-1}));
       // Every fish uses the common renderer and seven headings. Preserve each
       // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
@@ -11957,6 +11995,7 @@
             y: 153,
             dog: "riku",
             avatar: "boy",
+            playerName: "旅人",
             direction: "up",
             rescueAtMinutes: null,
             calmBonus: 0,
@@ -12706,11 +12745,13 @@
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
       if(s.ownedRods.includes("moroko"))s.rodCopies.moroko=Math.max(1,s.rodCopies.moroko||0);
+      s.avatar = ShuPlayerOptions.gender(s.avatar);
+      s.playerName = ShuPlayerOptions.name(s.playerName);
       ShuLakeStory.normalize(s);
       function save() {
         clearTimeout(saveTimer);
         saveTimer = 0;
-        if (!gameStarted) return false;
+        if (!gameStarted || saveSuppressed || pendingSaveDeletion?.id===activeSaveSlot) return false;
         try {
           if (!saveSlots.write(activeSaveSlot, s)) throw Error("Save failed");
           $("#saveStatus").hidden = true;
@@ -12723,6 +12764,7 @@
         }
       }
       function scheduleSave() {
+        if (saveSuppressed) return;
         clearTimeout(saveTimer);
         saveTimer = setTimeout(save, 700);
       }
@@ -14997,7 +15039,7 @@
         $("#locationBrand").textContent = interior.brand;
         $("#locationTitle").textContent = interior.title;
         const storyLine = ShuLakeStory.dialogue(s,id);
-        $("#locationDialogue").textContent = interior.dialogue + (storyLine ? "\n\n" + storyLine : "");
+        setDialogue($("#locationDialogue"),interior.dialogue + (storyLine ? "\n\n" + storyLine : ""));
         $("#locationActionLabel").textContent = interior.actionLabel;
         $("#locationActionCost").textContent = interior.actionCost;
         $("#locationAction").hidden = interior.service === false ||
@@ -15008,7 +15050,7 @@
         return true;
       }
       function setLocationDialogue(message) {
-        $("#locationDialogue").textContent = message;
+        setDialogue($("#locationDialogue"),message,true);
       }
       function markPurchaseButton(button) {
         if (!button) return;
@@ -15616,7 +15658,7 @@
               { tournament: Boolean(context), after: context?.phase === "result" }, tournamentNpcLastLines.get(person.id), roll));
           }
         }
-        $("#tournamentTalkLine").textContent = dog ? tournamentNpcLastLines.get(person.id) : `「${tournamentNpcLastLines.get(person.id)}」`;
+        setDialogue($("#tournamentTalkLine"),dog ? tournamentNpcLastLines.get(person.id) : `「${tournamentNpcLastLines.get(person.id)}」`,nextLine);
         ShuRivals.drawPortrait($("#tournamentTalkPortrait"), ensureRivalAtlas(person.id), person.id);
       }
       function paintRivalGuide() {
@@ -15734,7 +15776,7 @@
           }, tournamentNpcLastLines.get(npc.id), roll);
           tournamentNpcLastLines.set(npc.id, line);
         }
-        $("#tournamentTalkLine").textContent = `「${tournamentNpcLastLines.get(npc.id)}」`;
+        setDialogue($("#tournamentTalkLine"),`「${tournamentNpcLastLines.get(npc.id)}」`,nextLine);
         ShuTournamentNpcs.drawPortrait($("#tournamentTalkPortrait"), ensureTournamentNpcAtlas(npc.id), npc.id);
       }
       function positionTournamentHud() {
@@ -16255,7 +16297,7 @@
       }
       function renderSamShop() {
         renderWeather();
-        $("#samStoryLine").textContent = ShuLakeStory.dialogue(s,"sam");
+        setDialogue($("#samStoryLine"),ShuLakeStory.dialogue(s,"sam"));
         $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("");
         $("#samLureGoods").innerHTML = `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
         $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
@@ -16380,7 +16422,7 @@
         setSamShopCategory(samShopCategories[samShopTab]);
       }
       function setSamShopDialogue(message) {
-        $("#shopDialogue").textContent = message;
+        setDialogue($("#shopDialogue"),message,true);
       }
       function setSamBaitPurchaseCount(value) {
         const parsed = Math.trunc(Number(value));
@@ -16685,9 +16727,9 @@
         const owned = s.ownedVehicles
           .map((id) => vehicleData[id]?.name)
           .filter(Boolean);
-        $("#vehicleShopDialogue").textContent = owned.length
+        setDialogue($("#vehicleShopDialogue"),owned.length
           ? `「今持っている舟は${owned.join("と")}だ。装備し直すなら道具袋を開きな」`
-          : "「港の桟橋から白砂と岩礁の小島へ行ける。相棒になる舟を選びな」";
+          : "「港の桟橋から白砂と岩礁の小島へ行ける。相棒になる舟を選びな」");
         open("vehicleShop");
       }
       function useLocationService() {
@@ -17360,9 +17402,9 @@
         $("#practiceOfferTitle").textContent = practiceComplete
           ? "🎣 サムの試し釣り"
           : "🎓 サムの試し釣り";
-        $("#shopDialogue").textContent = practiceComplete
+        setDialogue($("#shopDialogue"),practiceComplete
           ? "「道具の調子を確かめたくなったら、隣の池でまた一匹いこう」"
-          : "「買う前に一本やってみるかい？ 隣の池ならワシが教えよう」";
+          : "「買う前に一本やってみるかい？ 隣の池ならワシが教えよう」");
         const nearPracticePond = isNearPracticePond();
         const foragePoint = nearbyForagePoint();
         const landmark = nearbyWorldLandmark();
@@ -17382,7 +17424,7 @@
           : mountain
             ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "南の入口だ。Aか下へ進むと来た道へ戻る。"
               : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
-              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。距離で深さを狙い分けよう。`
+              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
               : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、南の入口から戻れる。`
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
@@ -17428,7 +17470,7 @@
                 ? "落ち着いている"
                 : "元気";
         const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
-        $("#statusAvatar").textContent = s.avatar === "girl" ? "女の子" : "男の子";
+        $("#statusAvatar").textContent = `${s.playerName} · ${s.avatar === "girl" ? "女" : "男"}`;
         $("#statusCondition").textContent = condition;
         $("#statusHp").textContent = `${s.hp} / ${s.maxHp}`;
         $("#statusHp").style.setProperty("--hp", `${hpPercent}%`);
@@ -17518,6 +17560,7 @@
         else if (target === "items") openInventory("items");
         else if (target === "quests") openQuestBoard();
         else if (target === "dog") openDogCare();
+        else if (target === "options") return openOptions();
         else if (target === "saveSlots") return returnToSaveSelection();
       }
       function move(d) {
@@ -18069,7 +18112,7 @@
               night: 0.45,
             }[period] || 1;
           }
-          if (id === "yamame") {
+          if (id === "yamame" || id === "iwana") {
             weight *= {
               morning: 1.55,
               day: 1,
@@ -22182,6 +22225,7 @@
         modal.style.transform = id === "tournamentTalk" ? "none"
           : `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
+        revealModalDialogue(modal);
         if (id === "tournamentTalk") {
           releaseHeldInputs();
           world.classList.add("talking");
@@ -22202,6 +22246,8 @@
         renderPixelScenery();
       }
       function close() {
+        if ($("#options").classList.contains("open")) return closeOptions();
+        dialogueTyper.cancelAll();
         if ($("#lakeIntro").classList.contains("open")) return finishLakeIntro();
         if ($("#tournamentModal").classList.contains("open") &&
             (s.tournament?.pending || s.tournament?.phase === "result")) {
@@ -22258,10 +22304,12 @@
       let lakeStoryReturn = null;
       let lakeIntroIndex = 0, lakeIntroReplay = false, lakeIntroReturn = null;
       function renderLakeIntro() {
+        dialogueTyper.cancel($("#lakeIntroPaper"));
         const page=ShuLakeIntro.pages[lakeIntroIndex],e=ShuLakeStory.escape;
         $("#lakeIntroProgress").textContent=`${lakeIntroIndex+1} / ${ShuLakeIntro.pages.length}`;
         $("#lakeIntroPaper").innerHTML=`<small>${e(page.speaker)}</small><h3>${e(page.title)}</h3>${ShuLakeIntro.text(page,dogName()).map(p=>`<p>${e(p)}</p>`).join("")}`;
         $("#lakeIntroPaper").scrollTop=0;
+        dialogueTyper.start($("#lakeIntroPaper"),[...$("#lakeIntroPaper").querySelectorAll("p")].map(p=>p.firstChild),textSpeed);
         $("#lakeIntroPicture").setAttribute("aria-label",page.title+"のドット絵");
         ShuLakeIntro.paint($("#lakeIntroPicture"),page.scene,()=>{
           if($("#lakeIntro").classList.contains("open")&&ShuLakeIntro.pages[lakeIntroIndex]===page)
@@ -22285,6 +22333,7 @@
       }
       function finishLakeIntro() {
         if(!$("#lakeIntro").classList.contains("open"))return false;
+        dialogueTyper.cancel($("#lakeIntroPaper"));
         $("#lakeIntro").classList.remove("open");releaseHeldInputs();
         $(".controls").inert=false;$(".controls").removeAttribute("aria-hidden");
         if(!lakeIntroReplay){s.lakeStory.introSeen=true;s.lakeStory.introPending=false;s.lakeStory.introPage=0;save();}
@@ -22577,6 +22626,125 @@
       $("#homePetAquarium").onclick=()=>petUi.open("aquarium");
       $("#aquariumZoom").onclick=()=>{const zoomed=$("#aquariumModal").classList.toggle("aquarium-zoom");$("#aquariumZoom").textContent=zoomed?"元の表示":"ズーム";$("#aquariumZoom").setAttribute("aria-pressed",String(zoomed));drawAquariumFish();};
       $("#dogCareTrain").onclick=trainDogCare;
+      function setDialogue(element,text,force=false) {
+        text=String(text||"");
+        if(!force&&element.dataset.dialogueText===text)return;
+        dialogueTyper.cancel(element);element.dataset.dialogueText=text;
+        element.textContent=text;element.setAttribute("aria-label",text);
+        element.onclick=()=>dialogueTyper.finish(element);
+        const modal=element.closest(".modal");
+        if(!modal||modal.classList.contains("open"))dialogueTyper.start(element,[element.firstChild],textSpeed);
+      }
+      function revealModalDialogue(modal) {
+        for(const line of modal.querySelectorAll("[data-dialogue-text]"))setDialogue(line,line.dataset.dialogueText,true);
+      }
+      function optionsSlotSummary(id) {
+        const saved=saveSlots.read(id);
+        if(!saved.ok)return saved.error==="invalid"?"読み込めないセーブデータ":"保存データにアクセスできない";
+        if(!saved.exists)return "空き · 新しい冒険を始められる";
+        const state=gameStarted&&id===activeSaveSlot?s:saved.data;
+        const minutes=Number.isFinite(state.gameMinutes)?state.gameMinutes:legacyTimeToGameMinutes(state.time);
+        const count=Object.values(state.caught||{}).reduce((sum,n)=>sum+Math.max(0,Math.floor(Number(n)||0)),0);
+        return `${ShuPlayerOptions.name(state.playerName)} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女":"男"} · ${gameClockAt(minutes).dayIndex+1}日目 · ${Math.max(0,Math.floor(Number(state.money)||0))}円 · 釣果${count}匹`;
+      }
+      function renderOptions() {
+        const id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
+        const state=gameStarted?s:saved.data||{};
+        const editable=gameStarted||(saved.ok&&saved.exists);
+        $("#optionsIdentity").textContent=editable?`セーブ${id} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女の主人公":"男の主人公"}（性別は固定）`:"新しい冒険の名前と性別は、最初の選択画面で決めよう。";
+        $("#optionsPlayerName").value=ShuPlayerOptions.name(state.playerName);
+        $("#optionsPlayerName").disabled=$("#optionsRename").disabled=!editable;
+        for(const button of document.querySelectorAll("[data-text-speed]"))button.setAttribute("aria-pressed",String(button.dataset.textSpeed===textSpeed));
+        $("#optionsSaveList").innerHTML=[1,2].map(id=>{
+          const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable";
+          return `<div class="options-save"><b>セーブ${id}${gameStarted&&id===activeSaveSlot?" · プレイ中":""}</b><small>${ShuLakeStory.escape(optionsSlotSummary(id))}</small><button type="button" class="delete-save" data-delete-save="${id}" ${available?"":"disabled"}>セーブ${id}を削除…</button></div>`;
+        }).join("");
+        setDialogue($("#optionsTextPreview"),"星降る湖へようこそ。今日は、どの魚に会えるかな？",true);
+      }
+      function openOptions() {
+        if(saveSuppressed||battle||rescueInProgress||forageDiscoveryInProgress||playerHomeState.transitioning||document.querySelector(".modal.open"))return false;
+        optionsReturnFocus=document.activeElement;
+        releaseHeldInputs();hideFieldMenu();hideIdleStatus();pendingSaveDeletion=null;
+        $("#optionsNotice").textContent="";$("#optionsDeleteConfirmation").hidden=true;
+        $("#options").classList.add("open");renderOptions();
+        $("#game").inert=$("#title").inert=true;
+        $("#optionsClose").focus({preventScroll:true});syncSceneSound();return true;
+      }
+      function closeOptions() {
+        if(saveSuppressed)return false;
+        pendingSaveDeletion=null;$("#optionsDeleteConfirmation").hidden=true;
+        dialogueTyper.cancel($("#optionsTextPreview"));$("#options").classList.remove("open");
+        $("#game").inert=$("#title").inert=false;
+        if(!gameStarted)renderSaveSlotSelection(true);
+        const target=gameStarted?$("#menu"):optionsReturnFocus||$("#titleOptions");target.focus({preventScroll:true});
+        syncSceneSound();if(gameStarted){scheduleIdleStatus(450);scheduleFieldMenu();}return true;
+      }
+      function beginSaveDeletion(id) {
+        if(saveSuppressed||![1,2].includes(id))return false;
+        if(gameStarted&&id===activeSaveSlot&&!save()){
+          $("#optionsNotice").textContent="今の進行を保存できなかったので、削除を止めたよ。もう一度試してね。";return false;
+        }
+        const snapshot=saveSlots.capture(id);
+        if(!snapshot.ok||snapshot.raw===null){$("#optionsNotice").textContent="このセーブを確認できないよ。";return false;}
+        pendingSaveDeletion={id,raw:snapshot.raw};
+        $("#optionsDeleteTitle").textContent=`セーブ${id}を削除する？`;
+        $("#optionsDeleteSummary").textContent=optionsSlotSummary(id);
+        $("#optionsDeleteCheck").checked=false;$("#optionsDeleteConfirm").disabled=true;
+        $("#optionsDeleteConfirmation").hidden=false;$("#optionsNotice").textContent="";
+        $("#optionsDeleteCheck").focus({preventScroll:true});$("#optionsDeleteConfirmation").scrollIntoView?.({block:"nearest"});return true;
+      }
+      $("#optionsClose").onclick=closeOptions;
+      $("#optionsNameForm").onsubmit=event=>{
+        event.preventDefault();if(saveSuppressed)return;
+        if(pendingSaveDeletion){$("#optionsNotice").textContent="先に、セーブ削除の確認を終えてね。";return;}
+        const value=$("#optionsPlayerName").value,id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
+        if(!ShuPlayerOptions.validName(value)){$("#optionsNotice").textContent="名前は1〜12文字で入れてね。";return;}
+        if(!saved.ok||(!gameStarted&&!saved.exists))return;
+        const name=ShuPlayerOptions.name(value),previous=s.playerName;
+        let ok;
+        if(gameStarted){s.playerName=name;ok=save();if(!ok)s.playerName=previous;}
+        else {ok=saveSlots.write(id,{...saved.data,playerName:name});if(ok&&id===activeSaveSlot)s.playerName=name;}
+        if(!ok){$("#optionsNotice").textContent="名前を保存できなかったよ。もう一度試してね。";return;}
+        renderOptions();renderIdleStatus();if(!gameStarted)renderSaveSlotSelection(true);
+        $("#optionsNotice").textContent=`名前を「${name}」に変更したよ。`;
+      };
+      document.querySelectorAll("[data-text-speed]").forEach(button=>button.onclick=()=>{
+        if(saveSuppressed)return;
+        if(!playerOptions.write(button.dataset.textSpeed)){$("#optionsNotice").textContent="セリフの設定を保存できなかったよ。もう一度試してね。";return;}
+        textSpeed=button.dataset.textSpeed;
+        for(const b of document.querySelectorAll("[data-text-speed]"))b.setAttribute("aria-pressed",String(b.dataset.textSpeed===textSpeed));
+        setDialogue($("#optionsTextPreview"),"星降る湖へようこそ。今日は、どの魚に会えるかな？",true);
+        $("#optionsNotice").textContent=`セリフ送りを「${ShuPlayerOptions.labels[textSpeed]}」にしたよ。`;
+      });
+      $("#optionsPreviewAgain").onclick=()=>{if(!dialogueTyper.finish($("#optionsTextPreview")))setDialogue($("#optionsTextPreview"),"星降る湖へようこそ。今日は、どの魚に会えるかな？",true);};
+      $("#optionsSaveList").onclick=event=>{const button=event.target.closest("[data-delete-save]");if(button&&!button.disabled)beginSaveDeletion(Number(button.dataset.deleteSave));};
+      $("#optionsDeleteCheck").onchange=()=>{$("#optionsDeleteConfirm").disabled=!$("#optionsDeleteCheck").checked;};
+      $("#optionsDeleteCancel").onclick=()=>{const id=pendingSaveDeletion?.id;pendingSaveDeletion=null;$("#optionsDeleteConfirmation").hidden=true;$("#optionsDeleteCheck").checked=false;$("#optionsDeleteConfirm").disabled=true;document.querySelector(`[data-delete-save="${id}"]`)?.focus({preventScroll:true});};
+      $("#optionsDeleteConfirm").onclick=()=>{
+        if(saveSuppressed||!pendingSaveDeletion||!$("#optionsDeleteCheck").checked)return;
+        const target=pendingSaveDeletion;
+        if(!saveSlots.remove(target.id,target.raw)){
+          pendingSaveDeletion=null;$("#optionsDeleteConfirmation").hidden=true;renderOptions();
+          $("#optionsNotice").textContent="削除できなかったよ。別の画面でデータが変わった可能性もあるので、内容を確認して選び直してね。";return;
+        }
+        pendingSaveDeletion=null;$("#optionsDeleteConfirmation").hidden=true;
+        if(target.id===activeSaveSlot){
+          saveSuppressed=true;clearTimeout(saveTimer);saveTimer=0;dialogueTyper.cancelAll();releaseHeldInputs();
+          $("#optionsNotice").textContent=`セーブ${target.id}を削除したよ。セーブ選択画面へ戻るね。`;
+          $("#optionsClose").disabled=true;
+          for(const element of $("#options").querySelectorAll("button,input"))element.disabled=true;
+          $("#optionsDeletedReturn").hidden=false;$("#optionsDeletedReturn").disabled=false;
+          navigateToSaveSlot(ShuSaveSlots.titleUrl(location.href,target.id));
+        }else{renderOptions();$("#optionsNotice").textContent=`セーブ${target.id}を削除したよ。`;if(!gameStarted)renderSaveSlotSelection(true);}
+      };
+      $("#optionsDeletedReturn").onclick=()=>navigateToSaveSlot(ShuSaveSlots.titleUrl(location.href,activeSaveSlot));
+      $("#options").onkeydown=event=>{
+        if(event.key!=="Tab")return;
+        const controls=[...$("#options").querySelectorAll("button:not(:disabled),input:not(:disabled)")].filter(el=>!el.hidden&&!el.closest("[hidden]"));
+        const first=controls[0],last=controls.at(-1);
+        if(event.shiftKey&&document.activeElement===first){event.preventDefault();last?.focus();}
+        else if(!event.shiftKey&&document.activeElement===last){event.preventDefault();first?.focus();}
+      };
       function navigateToSaveSlot(url) { location.assign(url); }
       function returnToSaveSelection() {
         if (!gameStarted || battle || rescueInProgress || forageDiscoveryInProgress) return false;
@@ -22590,7 +22758,9 @@
       function renderSaveSlotSelection(refreshChoices = false) {
         const selected = saveSlots.read(selectedSaveSlot);
         if (refreshChoices) {
-          const state = selectedSaveSlot === activeSaveSlot && selected.ok ? s : selected.data || {};
+          const state = selected.ok && selected.exists ? selected.data : titleDrafts.get(selectedSaveSlot) || {};
+          titlePlayerName = ShuPlayerOptions.name(state.playerName);
+          $("#titlePlayerName").value = titlePlayerName;
           titleAvatar = ["boy","girl"].includes(state.avatar) ? state.avatar : "boy";
           titleDog = dogProfileData[state.dog] ? state.dog : "riku";
         }
@@ -22605,31 +22775,41 @@
             const day = gameClockAt(minutes).dayIndex + 1;
             const money = Math.max(0, Math.floor(Number(state.money) || 0));
             const catches = Object.values(state.caught || {}).reduce((sum,count) => sum + Math.max(0,Math.floor(Number(count) || 0)),0);
-            text = `${day}日目 · ${money}円 · 釣果${catches}匹`;
+            text = `${ShuPlayerOptions.name(state.playerName)} · ${day}日目 · ${money}円 · 釣果${catches}匹`;
           }
           button.querySelector("small").textContent = text;
         }
         for (const b of document.querySelectorAll("[data-dog]")) b.classList.toggle("active", b.dataset.dog === titleDog);
-        for (const b of document.querySelectorAll("[data-avatar]")) b.classList.toggle("active", b.dataset.avatar === titleAvatar);
-        $("#start").disabled = !selected.ok;
+        for (const b of document.querySelectorAll("[data-avatar]")) {
+          b.classList.toggle("active", b.dataset.avatar === titleAvatar);
+          b.setAttribute("aria-pressed",String(b.dataset.avatar===titleAvatar));b.disabled=selected.exists||!selected.ok;
+        }
+        $("#titlePlayerName").disabled=selected.exists||!selected.ok;
+        $("#identityNote").textContent=selected.exists?"この冒険の性別は固定だよ。名前はオプションで何度でも変更できるよ。":"名前はあとから何度でも変更できるよ。性別は、この冒険では変更できないよ。";
+        $("#start").disabled = !selected.ok || (!selected.exists && !ShuPlayerOptions.validName($("#titlePlayerName").value));
         $("#start").textContent = selected.exists ? `セーブ${selectedSaveSlot}の続きへ` : `セーブ${selectedSaveSlot}で始める`;
         $("#saveSlotNotice").hidden = selected.ok;
         $("#saveSlotNotice").textContent = selected.ok ? "" : "このセーブは読み込めないので、上書きせず保護しているよ。もう一方のセーブを選んでね。";
       }
       document.querySelectorAll("[data-save-slot]").forEach(button => button.onclick = () => {
         if (gameStarted || !saveSlots.read(Number(button.dataset.saveSlot)).ok) return;
+        if(!saveSlots.read(selectedSaveSlot).exists)titleDrafts.set(selectedSaveSlot,{avatar:titleAvatar,dog:titleDog,playerName:$("#titlePlayerName").value});
         selectedSaveSlot = Number(button.dataset.saveSlot);
         renderSaveSlotSelection(true);
       });
       $("#start").onclick = () => {
-        if (gameStarted || !saveSlots.read(selectedSaveSlot).ok) return;
+        const selected=saveSlots.read(selectedSaveSlot);
+        if (gameStarted || saveSuppressed || !selected.ok) return;
+        if(!selected.exists&&!ShuPlayerOptions.validName($("#titlePlayerName").value))return;
+        titlePlayerName=ShuPlayerOptions.name(selected.exists?selected.data.playerName:$("#titlePlayerName").value);
         if (selectedSaveSlot !== activeSaveSlot) {
-          navigateToSaveSlot(ShuSaveSlots.launchUrl(location.href, selectedSaveSlot, {avatar:titleAvatar,dog:titleDog}));
+          navigateToSaveSlot(ShuSaveSlots.launchUrl(location.href, selectedSaveSlot, {avatar:titleAvatar,dog:titleDog,playerName:titlePlayerName}));
           return;
         }
         gameStarted = true;
         if(s.dog!==titleDog)s.dogFollowing=true;
-        s.avatar = titleAvatar; s.dog = titleDog;
+        s.avatar = selected.exists ? ShuPlayerOptions.gender(selected.data.avatar) : titleAvatar;
+        s.playerName=titlePlayerName;s.dog = titleDog;
         ensureAvatarImages(); ensureDogImage();
         saveSlots.remember(activeSaveSlot);
         $("#activeSaveSlot").textContent = `セーブ${activeSaveSlot}`;
@@ -22666,15 +22846,12 @@
       document.querySelectorAll("[data-avatar]").forEach((b) => {
         b.classList.toggle("active", b.dataset.avatar === s.avatar);
         b.onclick = () => {
-          if (!gameStarted) { titleAvatar = b.dataset.avatar; renderSaveSlotSelection(); return; }
-          s.avatar = b.dataset.avatar;
-          ensureAvatarImages();
-          document
-            .querySelectorAll("[data-avatar]")
-            .forEach((x) => x.classList.toggle("active", x === b));
-          save();
+          if(gameStarted||saveSlots.read(selectedSaveSlot).exists)return;
+          titleAvatar = b.dataset.avatar; renderSaveSlotSelection();
         };
       });
+      $("#titlePlayerName").oninput=()=>{titlePlayerName=$("#titlePlayerName").value;renderSaveSlotSelection();};
+      $("#titleOptions").onclick=openOptions;
       function stopMoving() {
         clearInterval(moveHoldInterval);
         moveHoldInterval = 0;
@@ -22721,6 +22898,7 @@
       $("#lakeIntroSkip").onclick=finishLakeIntro;
       $("#lakeIntroNext").onclick=()=>{
         if(!$("#lakeIntro").classList.contains("open"))return;
+        if(dialogueTyper.finish($("#lakeIntroPaper")))return;
         if(lakeIntroIndex===ShuLakeIntro.pages.length-1)return finishLakeIntro();
         lakeIntroIndex++;renderLakeIntro();$("#lakeIntroNext").focus({preventScroll:true});
       };
@@ -22764,7 +22942,7 @@
       $("#pull").onlostpointercapture = releaseBattleAction;
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
-      $("#tournamentTalkMore").onclick = () => renderTournamentTalk(true);
+      $("#tournamentTalkMore").onclick = () => {if(!dialogueTyper.finish($("#tournamentTalkLine")))renderTournamentTalk(true);};
       $("#tournamentOffer").onclick = openTournament;
       $("#rivalGuideOffer").onclick = () => { close(); renderRivalGuide(); open("rivalGuide"); };
       $("#rivalGuideBack").onclick = () => { close(); renderSamShop(); open("store"); };
@@ -22847,7 +23025,7 @@
           if ($("#tournamentTalk").classList.contains("open") && !nativeInput &&
               (e.key === "z" || (e.key === "Enter" && !e.target?.closest?.("button, a")))) {
             uiFeedback.cue("confirm", e);
-            renderTournamentTalk(true);
+            if(!dialogueTyper.finish($("#tournamentTalkLine")))renderTournamentTalk(true);
             e.preventDefault();
             return;
           }
@@ -22956,12 +23134,15 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=217-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=218-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
       if (launchSaveSlot.play) {
-        if (launchSaveSlot.avatar) titleAvatar = launchSaveSlot.avatar;
+        if (!loadedSaveSlot.exists) {
+          if(launchSaveSlot.avatar)titleAvatar=launchSaveSlot.avatar;
+          if(launchSaveSlot.playerName)$("#titlePlayerName").value=titlePlayerName=ShuPlayerOptions.name(launchSaveSlot.playerName);
+        }
         if (launchSaveSlot.dog) titleDog = launchSaveSlot.dog;
         renderSaveSlotSelection();
         history.replaceState(null, "", ShuSaveSlots.titleUrl(location.href, activeSaveSlot));

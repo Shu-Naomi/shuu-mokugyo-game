@@ -11,7 +11,7 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['sw.js','item-categories.css','fish-art.js','fishing-duel.js','pet-life-ui.js','pet-life.css','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
+        for(const file of ['sw.js','player-options.js','player-options.css','tackle-balance.js','item-categories.css','fish-art.js','fishing-duel.js','pet-life-ui.js','pet-life.css','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
           ...new Set(Object.keys(require('../fish-art.js').species).flatMap(id=>require('../fish-art.js').assets(id))),
@@ -44,7 +44,7 @@ async function smoke(url){
   const browser=await chromium.launch({headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:720},locale:'ja-JP'});
   const saved={...seed(),hp:100,mapRegion:'stream',...M.entry,soundEnabled:false};
-  await context.addInitScript(({key,state})=>{
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
   },{key:saveKey,state:saved});
   const page=await context.newPage(),errors=[],failedAssets=[];
@@ -88,7 +88,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v217/);
+    assert.match(await page.locator('.hud').innerText(),/v218/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -134,7 +134,7 @@ async function touchSmoke(url){
     const context=await browser.newContext({viewport:{width:390,height:844},
       deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'ja-JP'});
     const state={...seed(),hp:100,mapRegion:'stream',...M.entry,soundEnabled:false,...extra};
-    await context.addInitScript(({key,state})=>{
+    await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
       if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
     },{key:saveKey,state});
     const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
@@ -142,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v217/);
+    assert.match(await page.locator('.hud').innerText(),/v218/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -187,7 +187,7 @@ async function storySmoke(url,mobile){
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
     isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
   const state={...seed(),soundEnabled:false};
-  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const snapshot=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,pets:s.petLife,dog:s.dogAffinity}));
@@ -243,7 +243,7 @@ async function saveSlotSmoke(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
   const secondKey=require('../save-slots.js').keys[2],original={...seed(),money:4321,soundEnabled:false};
-  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:original});
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:original});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
@@ -281,7 +281,7 @@ async function audioSmoke(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
     isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
-  await context.addInitScript(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));localStorage.setItem(key,JSON.stringify(state));},
     {key:saveKey,state:{...seed(),money:10000,hp:100,soundEnabled:false}});
   const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
   try{
@@ -407,6 +407,7 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
