@@ -37,6 +37,7 @@ module.exports=async function waterAndFish(url,mobile=false){
     routes.push({region:sample.region,type:sample.type,boat:Boolean(sample.boat),x:route.x,y:route.y,direction:route.direction,steps:route.path.length});
    }finally{await context.close();}
   }
+  console.log('V220_WATER_ROUTES_PASS '+JSON.stringify({mobile,routes}));
   const {context,page,press}=await create(state({mapRegion:'coast',boatActive:true,x:121.5,y:52.5,direction:'right'}));
   try{
    assert.equal(await page.evaluate(()=>nearbyFishingSpot()),null);assert.match(await page.locator('#hint').innerText(),/岸や桟橋/);await press('#action');assert.equal(await page.evaluate(()=>battle),null);
@@ -47,7 +48,8 @@ module.exports=async function waterAndFish(url,mobile=false){
     ['dojo','stream',172,96,'right','worm','small','mountain-marsh-mid'],
     ['isaki','coast',95,84,'up','shrimp','medium','coast-reef-mid']]){
     await page.evaluate(({region,x,y,direction,bait,hook})=>{close();Object.assign(s,{mapRegion:region,x,y,direction,boatActive:region==='coast',selectedBait:bait,selectedHook:hook,fightMode:'nushi',fishingMethod:'bait'});render();},{region,x,y,direction,bait,hook});
-    await press('#action');await press('#beginCast');
+    await press('#action');assert.equal(await page.evaluate(()=>battle?.phase),'prep');
+    await press('#wait');await page.locator('#tackle.open').waitFor({state:'visible'});await press('#beginCast');
     const before=await page.evaluate(id=>({caught:s.caught[id]||0,fillet:s.cookingIngredients.fishFillet}),id);
     await page.evaluate(({id,spot})=>{const random=Math.random;let roll=-1;
      for(let n=0;n<1000;n++){Math.random=()=>n/1000;if(pick(50,spot)?.id===id){roll=n/1000;break;}}
