@@ -1,0 +1,39 @@
+#tackle { padding: 0; overflow: hidden; }
+#tackle.open { display: flex; flex-direction: column; }
+.cast-tackle-heading { display:flex; gap:12px; align-items:center; padding:9px 12px; flex:none; }
+.cast-tackle-heading h2 { flex:1; margin:0; font-size:1.08rem; }
+#tackle .close { position:static; float:none; min-height:44px; }
+#castTackleSummary { margin:0; padding:7px 12px; flex:none; background:#223d48; font-size:.82rem; overflow-wrap:anywhere; }
+.cast-tackle-body { display:grid; grid-template-columns:128px minmax(0,1fr); min-height:0; flex:1; overflow:hidden; }
+.cast-tackle-nav { display:flex; flex-direction:column; gap:6px; padding:9px; overflow-y:auto; overscroll-behavior:contain; border-right:1px solid #56716f; }
+.cast-tackle-nav button { flex:none; min-height:44px; text-align:left; padding:7px 10px; }
+.cast-tackle-nav button[aria-pressed="true"] { background:#496a65; color:#fff5c2; outline:2px solid #f2ce76; }
+.cast-tackle-pages { min-width:0; min-height:0; padding:10px 12px; overflow-y:auto; overscroll-behavior:contain; }
+.cast-tackle-pages section[hidden] { display:none; }
+.cast-tackle-pages h3 { margin:0 0 8px; font-size:1rem; color:#ffe69a; }
+.cast-tackle-pages p,.cast-tackle-pages small { line-height:1.5; font-size:.8rem; }
+.cast-tackle-pages button { min-height:44px; }
+.cast-method-buttons,.cast-fight-buttons { display:flex; flex-wrap:wrap; gap:8px; margin:10px 0; }
+.cast-method-buttons button[aria-pressed="true"],.cast-fight-buttons button[aria-pressed="true"] { outline:3px solid #69d8ff; }
+#tackle .hook-options { grid-template-columns:repeat(3,minmax(0,1fr)); overflow:visible; }
+#tackle .rod-option { min-height:68px; grid-template-columns:30px minmax(0,1fr); }
+#tackle .rod-display-art { width:30px; height:57px; }
+.cast-tackle-footer { flex:none; padding:8px 12px; border-top:1px solid #56716f; }
+#beginCast { position:static; min-height:44px; box-shadow:none; }
+#castBaitHint { margin:0 0 8px; color:#c5e0d6; }
+.cast-surface.art-mountain::before { content:none; }
+.art-mountain-underground .cast-stars { display:none; }
+@media(max-height:500px) {
+  #tackle { inset:3%; }
+  .cast-tackle-heading { padding:3px 9px; }
+  #castTackleSummary { padding:4px 9px; font-size:.73rem; line-height:1.35; }
+  .cast-tackle-body { grid-template-columns:108px minmax(0,1fr); }
+  .cast-tackle-nav { padding:6px; gap:5px; }
+  .cast-tackle-pages { padding:7px 9px; }
+  .cast-tackle-footer { padding:4px 8px; }
+}
+@media(max-width:600px) {
+  .cast-tackle-body { grid-template-columns:95px minmax(0,1fr); }
+  #tackle .tackle-options { grid-template-columns:1fr; }
+  #tackle .hook-options { grid-template-columns:1fr; }
+}

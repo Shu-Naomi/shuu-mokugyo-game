@@ -99,7 +99,7 @@ test('stream, pond and marsh keep their populations across preparation, start an
       w.eval('resolveSurfaceCast(85)');
       assert.equal(read(w,'battle.spot'),`mountain-${type}-deep`);
       assert.ok(read(w,'battle.f.id')!=='nushi','star-lake boss remains in the star lake');
-      assert.equal(read(w,'surfaceSceneryKind()'),type==='stream'?'river':'lake');
+      assert.equal(read(w,'surfaceSceneryKind()'),'mountain-'+type);
       assert.deepEqual(app.errors,[]);
     }finally{app.dispose();}
   }
@@ -150,5 +150,5 @@ test('decoded mountain landscape is opaque and preserves detail under night tint
   for(let i=0;i<a.length;i+=4*17){assert.equal(a[i+3],255);colors.add(`${a[i]},${a[i+1]},${a[i+2]}`);da+=a[i]+a[i+1]+a[i+2];nb+=b[i]+b[i+1]+b[i+2];}
   assert.ok(colors.size>1000);assert.ok(nb>da*.4&&nb<da*.8);
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  for(const asset of ['mountain-region.js?v=218-1',Mountain.asset,'assets/coast-rowboat-v201.png'])assert.ok(sw.includes(asset),asset);
+  for(const asset of ['mountain-region.js?v=219-1',Mountain.asset,'assets/coast-rowboat-v201.png'])assert.ok(sw.includes(asset),asset);
 });

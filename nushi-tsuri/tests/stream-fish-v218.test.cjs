@@ -25,11 +25,11 @@ test('an actual stream cast selects Iwana, records it once, paints each screen, 
   w.eval('action();beginFishing();Math.random=()=>0;resolveSurfaceCast(50);clearInterval(timer)');
   assert.equal(read(w,'battle.f.id'),'iwana');assert.equal(read(w,'battle.spot'),'mountain-stream-mid');
   w.eval('startFight();clearInterval(timer);finishHookReveal();renderBattleFish()');
-  assert.match(w.document.querySelector('#battleFish canvas').dataset.atlasKey,/fish-iwana-v218\.png.*iwana/);
+  assert.match(w.document.querySelector('#battleFish canvas').dataset.atlasKey,/fish-iwana-v219\.png.*iwana/);
   w.eval('caught();caught()');assert.equal(read(w,'s.caught.iwana'),1);
   assert.equal(read(w,'s.fishCatchRecords.iwana.last.spotId'),'mountain-stream-mid');
   w.eval("hideCatchCard();renderRecord();drawAquariumSprite($('#homeAquariumFish'),'iwana',1,{spriteMode:'swim'})");
-  assert.match(w.document.querySelector('#homeAquariumFish canvas').dataset.atlasKey,/fish-iwana-v218\.png/);
+  assert.match(w.document.querySelector('#homeAquariumFish canvas').dataset.atlasKey,/fish-iwana-v219\.png/);
   assert.ok(read(w,'petCatalog').some(f=>f.id==='iwana'));assert.equal(read(w,'fishSizeProfiles.iwana.length'),6);
   w.eval('save()');snapshot=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}

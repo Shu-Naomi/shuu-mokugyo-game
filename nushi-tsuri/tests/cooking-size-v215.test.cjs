@@ -14,12 +14,12 @@ test('cooking and eating the big-fish meal moves the real Funa draw from 14 to 2
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });
-test('the meal preserves all 25 species size ranges and pulls only twice from the player random stream',()=>{
+test('the meal preserves all 27 species size ranges and pulls only twice from the player random stream',()=>{
  const app=boot({...seed(),preparedMeals:{bigFishPlate:1}}),w=app.window;
  try{
   w.eatPreparedMeal('bigFishPlate');
   const result=read(w,`(()=>{let checked=0;for(const f of fish){for(let i=0;i<1000;i++){let calls=0;const p=rollFishSpecimen(f,()=>calls++?.37:(i+.5)/1000),tier=fishSizeTierById(f.id,p.tierId);if(calls!==2||p.hundredths<tier.minHundredths||p.hundredths>tier.maxHundredths)throw Error(f.id+' invalid specimen');checked++;}}return checked;})()`);
-  assert.equal(result,25000);assert.deepEqual(app.errors,[]);
+  assert.equal(result,27000);assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });
 test('eating again does not stack; another meal replaces the bonus; expiry and reload keep the original rules',()=>{

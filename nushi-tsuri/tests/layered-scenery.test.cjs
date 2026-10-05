@@ -113,8 +113,14 @@ test('every active location uses a present detailed master and the four seasons/
       const e={season,period},d=Data.get(id,e),image=await loadImage(path.join(root,d.source));
       // Native fidelity is tested above. Small QA canvases make this 480-scene
       // clock/asset matrix inexpensive; the game itself always uses the master.
-      const small=createCanvas(160,90);small.getContext('2d').drawImage(image,0,0,160,90);
-      const scene=originalPlacement(Art.prepare(small,null,d,e,createCanvas)),c=createCanvas(160,90);Art.compose(c,scene,{patches:false});
+      const small=createCanvas(160,90),painter=small.getContext('2d');
+      if(d.sourceRect){
+        const [x,y,w,h]=d.sourceRect,ox=Math.round(x*image.width),oy=Math.round(y*image.height);
+        painter.drawImage(image,ox,oy,Math.round((x+w)*image.width)-ox,Math.round((y+h)*image.height)-oy,0,0,160,90);
+      }else painter.drawImage(image,0,0,160,90);
+      // The QA thumbnail already contains the selected panel. Production
+      // cropping is checked with odd dimensions and the full master separately.
+      const scene=originalPlacement(Art.prepare(small,null,{...d,sourceRect:null},e,createCanvas)),c=createCanvas(160,90);Art.compose(c,scene,{patches:false});
       variants.add(hash(c));
       const colors=new Set(),sourceColors=new Set();const rgba=bytes(c),original=bytes(small);
       for(let i=0;i<rgba.length;i+=16){colors.add((rgba[i]<<16)|(rgba[i+1]<<8)|rgba[i+2]);sourceColors.add((original[i]<<16)|(original[i+1]<<8)|original[i+2]);}

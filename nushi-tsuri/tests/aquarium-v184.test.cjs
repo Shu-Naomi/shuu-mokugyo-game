@@ -48,11 +48,11 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
  }
 });
 
-test('all 25 species remain visibly thick in all seven painted headings with offline assets',async()=>{
+test('all 27 species remain visibly thick in all seven painted headings with offline assets',async()=>{
  const app=boot();let records;
  try{records=read(app.window,`fish.map(f=>({id:f.id,asset:fishTurnAssets[f.id]}))`);}
  finally{app.dispose();}
- assert.equal(records.length,25);
+ assert.equal(records.length,27);
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
  for(const fish of records){
   assert.ok(sw.includes('./'+fish.asset),fish.id+' cached turn asset');

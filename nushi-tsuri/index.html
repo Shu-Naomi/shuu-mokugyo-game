@@ -6437,6 +6437,7 @@
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="player-options.css?v=218-1" />
+    <link rel="stylesheet" href="cast-tackle.css?v=219-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=200-2" />
@@ -6474,7 +6475,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v218</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v219</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7177,14 +7178,26 @@
           <div class="rival-guide-grid" id="rivalGuideBody"></div>
           <div class="tournament-actions"><button id="rivalGuideBack">サムの店へ戻る</button></div>
         </section>
-        <div class="modal" id="tackle">
-          <button class="close" data-close>閉じる</button>
-          <h2>仕掛けを選ぶ</h2>
+        <div class="modal" id="tackle" role="dialog" aria-modal="true" aria-labelledby="castTackleTitle">
+          <header class="cast-tackle-heading"><h2 id="castTackleTitle">仕掛けを選ぶ</h2><button class="close" data-close>閉じる</button></header>
           <div class="tackle-summary" id="castTackleSummary"></div>
-          <p>エサ</p><div class="tackle-options" id="baitOptions"></div>
-          <p>ハリ <small>3種類とも所持・消耗なし</small></p><div class="tackle-options hook-options" id="hookOptions"></div>
-          <p>釣具</p><div class="tackle-options" id="rodOptions"></div>
-          <button id="beginCast">この仕掛けで釣る</button>
+          <div class="cast-tackle-body">
+            <nav class="cast-tackle-nav" aria-label="仕掛けの項目">
+              <button data-cast-tackle="method" aria-controls="castTackle-method">釣り方</button>
+              <button data-cast-tackle="bait" aria-controls="castTackle-bait">餌</button>
+              <button data-cast-tackle="hook" aria-controls="castTackle-hook">ハリ</button>
+              <button data-cast-tackle="rod" aria-controls="castTackle-rod">釣り竿</button>
+              <button data-cast-tackle="fight" aria-controls="castTackle-fight">ファイト方式</button>
+            </nav>
+            <div class="cast-tackle-pages">
+              <section id="castTackle-method" data-cast-tackle-page="method" hidden><h3>釣り方・ルアー</h3><div id="castTackleMethods"></div></section>
+              <section id="castTackle-bait" data-cast-tackle-page="bait"><h3>餌を選ぶ</h3><p id="castBaitHint"></p><div class="tackle-options" id="baitOptions"></div></section>
+              <section id="castTackle-hook" data-cast-tackle-page="hook" hidden><h3>ハリを選ぶ</h3><p>3種類とも所持・消耗なし。ハリは狙う魚種を絞り込む目安になるよ。</p><div class="tackle-options hook-options" id="hookOptions"></div></section>
+              <section id="castTackle-rod" data-cast-tackle-page="rod" hidden><h3>釣り竿を選ぶ</h3><div class="tackle-options" id="rodOptions"></div><div id="castRodDuplicates"></div></section>
+              <section id="castTackle-fight" data-cast-tackle-page="fight" hidden><h3>水中ファイト方式</h3><div id="castFightOptions"></div></section>
+            </div>
+          </div>
+          <footer class="cast-tackle-footer"><button id="beginCast">この仕掛けで釣る</button></footer>
         </div>
         <div class="modal dog-care-modal" id="dogCare" aria-label="ワンコずのお世話">
           <div class="dog-care-shell">
@@ -7253,26 +7266,26 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=218-1"></script>
+    <script src="aquarium-life.js?v=219-1"></script>
     <script src="pet-life-ui.js?v=214-1"></script>
-    <script src="tackle-balance.js?v=218-1"></script>
-    <script src="fishing-duel.js?v=218-1"></script>
+    <script src="tackle-balance.js?v=219-1"></script>
+    <script src="fishing-duel.js?v=219-1"></script>
     <script src="coast-voyage.js?v=201-1"></script>
-    <script src="mountain-region.js?v=218-1"></script>
+    <script src="mountain-region.js?v=219-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=215-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=218-1"></script>
+    <script src="fish-art.js?v=219-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=198-1"></script>
-    <script src="layered-scenery.js?v=198-1"></script>
+    <script src="scene-layers.js?v=219-1"></script>
+    <script src="layered-scenery.js?v=219-1"></script>
     <script>
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
@@ -7450,6 +7463,14 @@
             ecology:"冷たい山の流れにすむサケ科の魚。体に淡い斑点があり、水生昆虫などを食べる。",
             locations:"星見渓流（浅瀬〜深場）",time:"朝・夕に狙いやすい",rods:["clearStream","lureRod"],baits:["worm","river","grasshopper"],
             tip:"星見渓流の川で釣れるよ。ミミズ＋ハリ中、またはスプーンを試そう。池や沼にはいないよ。"},
+          amago: {number:26,scientific:"Oncorhynchus masou ishikawae",habitats:["river"],rarity:2,rarityLabel:"渓流の朱点",
+            ecology:"体側に小さな赤い斑点を持つサケ科の魚。川の上流域で水生昆虫や水面に落ちた昆虫などを食べる。",
+            locations:"星見渓流の川（浅瀬〜深場）",time:"朝・夕に狙いやすい",rods:["clearStream","lureRod"],baits:["river","grasshopper","worm"],
+            tip:"川虫＋ハリ小で浅瀬や中層を探ろう。バッタやスプーンにも反応するよ。"},
+          kajika: {number:27,scientific:"Cottus pollux",habitats:["river"],rarity:2,rarityLabel:"岩底の住人",
+            ecology:"広い頭と大きな胸びれを持ち、体に鱗のない淡水魚。石の多い川で水生昆虫や小魚などを食べる。",
+            locations:"星見渓流の川（浅瀬〜深場）",time:"いつでも",rods:["youngBamboo","clearStream"],baits:["river","worm","liveMinnow"],
+            tip:"川虫＋ハリ小で淵の深場を探ろう。ミミズでも釣れる、岩底に寄る小さな魚だよ。"},
           ...ShuRegional.encyclopedia,
           moroko: {
             number: 1,
@@ -11371,6 +11392,18 @@
       fishLifeProfiles.iwana={...fishLifeProfiles.yamame};
       fightProfiles.iwana={...fightProfiles.yamame,intro:"渓流のイワナだ。流れに乗る引きを、落ち着いて受け止めよう。"};
       fishSizeProfiles.iwana=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:[8,13,19,25,32,42][i]*100,maxHundredths:[13,19,25,32,42,60][i]*100-1}));
+      fish.push({id:"amago",name:"アマゴ",price:430,resistance:104,w:0,icon:"🐟",shadowRow:3},
+        {id:"kajika",name:"カジカ",price:240,resistance:65,w:0,icon:"🐟",shadowRow:2});
+      for(const [id,base,lengths] of [
+        ["amago","yamame",[[8,12],[12,17],[17,22],[22,28],[28,36],[36,45]]],
+        ["kajika","kasago",[[4,6],[6,9],[9,12],[12,15],[15,18],[18,22]]]
+      ]){
+        fishMouthProfiles[id]={...fishMouthProfiles[base]};
+        fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
+        fishLifeProfiles[id]={...fishLifeProfiles[base]};
+        fightProfiles[id]={...fightProfiles[base],intro:id==="amago"?"朱点のあるアマゴだ。流れを横切る引きをいなそう。":"岩底のカジカだ。小さな動きを落ち着いて追おう。"};
+        fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:lengths[i][0]*100,maxHundredths:lengths[i][1]*100-1}));
+      }
       // Every fish uses the common renderer and seven headings. Preserve each
       // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
@@ -14573,7 +14606,7 @@
         pixelSceneCache.delete(canvas); return true;
       }
       function surfaceSceneryKind() {
-        return battle?.practice ? "pond" : battle?.waterZone === "sea"
+        return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
           ? battle.coastType ? `coast-${battle.coastType}`
             : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
           : battle?.waterZone || "lake";
@@ -14581,6 +14614,7 @@
       function paintSurfaceScenery() {
         if (!battle) return;
         const canvas = $("#castBackdrop"), env = gameSceneryEnvironment(), kind = surfaceSceneryKind();
+        canvas.dataset.locale = kind;
         paintPixelScene(canvas, `${kind}:${env.key}`,
           c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
@@ -16153,7 +16187,7 @@
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi"].includes(id);
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika"].includes(id);
         const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
@@ -16798,6 +16832,18 @@
           // Open center of the oval pond, clear of the entry dock and rocks.
           return castLanePoint([[58, 58], [65, 49], [71, 39]], value);
         }
+        if (surface.classList.contains("art-mountain")) {
+          // Keep the float in the open water of each mountain painting.
+          const lanes = {
+            stream: [[55,72],[61,63],[60,50],[53,42]],
+            pond: [[54,73],[59,64],[60,52],[57,41]],
+            highPond: [[54,73],[59,64],[60,52],[57,41]],
+            marsh: [[57,72],[58,61],[57,51],[54,42]],
+            highMarsh: [[57,72],[58,61],[57,51],[54,42]],
+            underground: [[58,73],[60,63],[62,53],[64,43]],
+          };
+          return castLanePoint(lanes[battle?.mountainType] || lanes.pond, value);
+        }
         if (surface.classList.contains("art-river")) {
           // Follow the curved channel itself; the old straight diagonal put
           // deep casts on the right bank once the river narrowed upstream.
@@ -16983,6 +17029,7 @@
         scene.classList.add("surface-casting");
         const illustratedClass = battle.practice
           ? "art-sam-pond"
+          : battle.mountainType ? `art-mountain art-mountain-${battle.mountainType}`
           : zone === "sea"
             ? `art-sea art-sea-${castLocale}`
             : `art-${zone}`;
@@ -18112,7 +18159,7 @@
               night: 0.45,
             }[period] || 1;
           }
-          if (id === "yamame" || id === "iwana") {
+          if (id === "yamame" || id === "iwana" || id === "amago") {
             weight *= {
               morning: 1.55,
               day: 1,
@@ -19523,7 +19570,20 @@
         setInventoryTab(tab);
         open("inventory");
       }
+      let castTackleCategory = "bait";
+      function setCastTackleCategory(category) {
+        if (!["method","bait","hook","rod","fight"].includes(category)) return;
+        castTackleCategory = category;
+        document.querySelectorAll("[data-cast-tackle]").forEach(button => {
+          button.setAttribute("aria-pressed", String(button.dataset.castTackle === category));
+          button.onclick = () => setCastTackleCategory(button.dataset.castTackle);
+        });
+        document.querySelectorAll("[data-cast-tackle-page]").forEach(page => page.hidden = page.dataset.castTacklePage !== category);
+      }
       function renderTackle() {
+        const focused = $("#tackle").contains(document.activeElement) ? document.activeElement : null;
+        const focusAttribute = ["data-pick-bait","data-pick-hook","data-pick-rod","data-fishing-method","data-fight-mode","data-rod-duplicate"].find(key => focused?.hasAttribute(key));
+        const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
         const baitMarkup = Object.entries(baitData).map(([id, b]) =>
           `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}" aria-pressed="${s.selectedBait === id}">` +
           `<i>${ShuTackleArt.icon(id)}</i><span><b>${b.name}</b><small>${b.role}</small></span>` +
@@ -19545,7 +19605,7 @@
         const summary = `装備中：${rodData[s.selectedRod].name} ＋ ${s.fishingMethod==="lure"?"銀のスプーンルアー":`${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait]||0} ＋ ${ShuTackle.hooks[s.selectedHook].name}`} ／ ${ShuFishing.modes[s.fightMode]}`;
         for (const id of ["#inventoryTackleSummary", "#castTackleSummary"])
           $(id).textContent = summary;
-        for(const id of ["#inventoryTackleSummary","#castTackleSummary"]){
+        for(const id of ["#inventoryTackleSummary"]){
           let panel=$(id).nextElementSibling;
           if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
           panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が右へ走る時はAを離して待つ。糸がたわんだらAで引いて、左の水面へ寄せよう。強い魚には丈夫な竿が必要。":"Aを押して巻く。張力が上がったらAを離して待とう。"} Bを1回押すと糸を出して張力をすぐ逃がせる。魚との距離は少し開くので、張力が高い時に使おう。</p>
@@ -19555,6 +19615,16 @@
           panel.querySelectorAll("[data-fishing-method]").forEach(b=>b.onclick=()=>{s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save();});
           panel.querySelectorAll("[data-rod-duplicate]").forEach(b=>b.onclick=()=>{const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save();});
         }
+        const castDuel = $("#inventoryTackleSummary").nextElementSibling;
+        const groups = [...castDuel.querySelectorAll('[role="group"]')];
+        $("#castTackleMethods").innerHTML = `<div class="cast-method-buttons">${groups[1].innerHTML}</div><p>スプーンにはルアーロッドが必要。所持している銀のスプーンは繰り返し使えるよ。</p><p>スプーン：${s.lures.silverSpoon || 0}個 ／ 現在：${s.fishingMethod === "lure" ? "ルアー釣り" : "エサ釣り"}</p>`;
+        $("#castFightOptions").innerHTML = `<div class="cast-fight-buttons">${groups[0].innerHTML}</div><p>${castDuel.querySelector("p").textContent}</p>`;
+        $("#castRodDuplicates").innerHTML = castDuel.querySelector(".rod-duplicates")?.outerHTML || "";
+        $("#castBaitHint").textContent = s.fishingMethod === "lure" ? "ルアー釣りでは餌・ハリを消費しないよ。エサ釣りへ戻すときの仕掛けも選べる。" : "所持数と得意な魚を見て選ぼう。餌を消費するのは投げた時だよ。";
+        $("#tackle").querySelectorAll("[data-fight-mode]").forEach(b => b.onclick = () => { s.fightMode=b.dataset.fightMode;renderTackle();save(); });
+        $("#tackle").querySelectorAll("[data-fishing-method]").forEach(b => b.onclick = () => { s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save(); });
+        $("#tackle").querySelectorAll("[data-rod-duplicate]").forEach(b => b.onclick = () => { const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save(); });
+        setCastTackleCategory(castTackleCategory);
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
           s.selectedBait = b.dataset.pickBait;
           if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
@@ -19577,6 +19647,7 @@
           render();
           save();
         });
+        if (focusAttribute) [...$("#tackle").querySelectorAll(`[${focusAttribute}]`)].find(button => button.getAttribute(focusAttribute) === focusValue)?.focus({preventScroll:true});
       }
       function beginFishing() {
         if(s.fishingMethod==="lure"&&s.selectedRod!=="lureRod"&&!battle?.practice){$("#battleMsg").textContent="スプーンにはルアーロッドを装備しよう。Bで仕掛け変更できるよ。";return false;}
@@ -23134,7 +23205,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=218-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=219-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
