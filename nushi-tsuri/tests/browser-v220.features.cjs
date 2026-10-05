@@ -62,13 +62,27 @@ module.exports=async function waterAndFish(url,mobile=false){
     await press('#action');const opened=await page.evaluate(()=>({phase:battle?.phase,modal:document.querySelector('.modal.open')?.id,hint:document.querySelector('#hint').textContent}));
     assert.equal(opened.phase,'prep',id+' entry '+JSON.stringify({entry,opened}));
     await press('#wait');await page.locator('#tackle.open').waitFor({state:'visible'});await press('#beginCast');
-    const before=await page.evaluate(id=>({caught:s.caught[id]||0,fillet:s.cookingIngredients.fishFillet}),id);
+    const before=await page.evaluate(id=>({caught:s.caught[id]||0,fillet:s.cookingIngredients.fishFillet,bait:s.baits[s.selectedBait]}),id);
     await page.evaluate(({id,spot})=>{const random=Math.random;let roll=-1;
      for(let n=0;n<1000;n++){Math.random=()=>n/1000;if(pick(50,spot)?.id===id){roll=n/1000;break;}}
-     if(roll<0)throw Error('No catch odds for '+id);Math.random=()=>roll;resolveSurfaceCast(50);Math.random=random;clearInterval(timer);
-     startFight();clearInterval(timer);finishHookReveal();renderBattleFish();},{id,spot});
-    assert.equal(await page.evaluate(()=>battle.f.id),id);
-    await page.waitForFunction(id=>{renderBattleFish();const c=document.querySelector('#battleFish canvas');if(!c||c.dataset.artSpecies!==id)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>5000;},id);
+     if(roll<0)throw Error('No catch odds for '+id);Math.random=()=>roll;
+     window.v220OriginalRandom=random;clearInterval(timer);timer=0;battle.cast=50;
+    },{id,spot});
+    await press('#pull');assert.equal(await page.evaluate(()=>battle.f.id),id);
+    await page.evaluate(()=>{Math.random=window.v220OriginalRandom;delete window.v220OriginalRandom;});
+    await page.waitForFunction(()=>battle?.phase==='wait');
+    await page.evaluate(()=>{battle.biteAt=Date.now()+180;battle.nibbleAt=Date.now();battleTick();});
+    await page.waitForFunction(()=>battle?.phase==='bite');await press('#pull');
+    assert.equal(await page.evaluate(()=>battle.phase),'fight');
+    await page.evaluate(()=>{clearInterval(timer);timer=0;finishHookReveal();renderBattleFish();});
+    assert.equal(await page.evaluate(()=>s.baits[s.selectedBait]),before.bait-1,'a real cast uses one bait');
+    await page.waitForFunction(id=>{
+     renderBattleFish();const scene=document.querySelector('#fishScene'),fishEl=document.querySelector('#battleFish'),c=fishEl?.querySelector('canvas');
+     if(scene.classList.contains('surface-casting')||scene.classList.contains('surface-diving')||!c||c.dataset.artSpecies!==id)return false;
+     const style=getComputedStyle(fishEl),rect=c.getBoundingClientRect();
+     if(Number(style.opacity)<.95||style.visibility!=='visible'||style.display==='none'||rect.width<20||rect.height<8||rect.left<0||rect.top<0||rect.right>innerWidth+1||rect.bottom>innerHeight+1)return false;
+     const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>5000;
+    },id);
     if(!mobile||id==='dojo')await screenshot(page,'fish-'+id);
     await page.evaluate(()=>{caught();caught();hideCatchCard();save();});
     assert.deepEqual(await page.evaluate(id=>({caught:s.caught[id],fillet:s.cookingIngredients.fishFillet}),id),{caught:before.caught+1,fillet:before.fillet+1});
