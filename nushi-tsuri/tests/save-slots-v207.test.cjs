@@ -13,7 +13,7 @@ test('selecting and previewing either adventure cannot write or normalize its st
     assert.equal(w.document.querySelector('#start').textContent,'セーブ1の続きへ');
     assert.match(w.document.querySelector('[data-save-slot="2"] small').textContent,/9876円.*釣果9匹/);
     click(w,'[data-save-slot="2"]');assert.equal(w.document.querySelector('[data-dog="grey"]').classList.contains('active'),true);
-    click(w,'[data-avatar="girl"]');click(w,'[data-dog="riku"]');
+    assert.equal(w.document.querySelector('[data-avatar="girl"]').disabled,true);click(w,'[data-dog="riku"]');
     w.dispatchEvent(new w.Event('pagehide'));w.document.dispatchEvent(new w.Event('visibilitychange'));
     assert.equal(w.save(),false);assert.equal(w.localStorage.getItem(saveKey),original);assert.equal(w.localStorage.getItem(secondKey),other);
     click(w,'[data-save-slot="1"]');assert.equal(w.document.querySelector('[data-dog="shuu"]').classList.contains('active'),true);
@@ -28,7 +28,7 @@ test('a new second adventure starts fresh with chosen companions and leaves the 
     const w=first.window,original=w.localStorage.getItem(saveKey);w.navigateToSaveSlot=url=>target=url;
     click(w,'[data-save-slot="2"]');click(w,'[data-avatar="girl"]');click(w,'[data-dog="grey"]');click(w,'#start');
     assert.equal(w.localStorage.getItem(saveKey),original);assert.equal(w.localStorage.getItem(secondKey),null);
-    assert.equal(new URL(target).searchParams.get('saveSlot'),'2');assert.deepEqual(Slots.launchSettings(new URL(target).search),{play:true,avatar:'girl',dog:'grey'});
+    assert.equal(new URL(target).searchParams.get('saveSlot'),'2');assert.deepEqual(Slots.launchSettings(new URL(target).search),{play:true,playerName:'旅人',avatar:'girl',dog:'grey'});
     assert.deepEqual(first.errors,[]);
   }finally{first.dispose();}
   const app=boot(old,undefined,{url:target}),w=app.window;

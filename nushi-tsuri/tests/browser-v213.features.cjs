@@ -8,7 +8,7 @@ module.exports=async function motionAndCoast(url,mobile){
     ownedVehicles:['canoe'],equipment:{hands:null,vehicle:'canoe'},ownedRods:['shoreReed'],selectedRod:'shoreReed',
     fightMode:'nushi',baits:{shrimp:40},selectedBait:'shrimp',selectedHook:'large',
     regionalCaught:{coast:Object.fromEntries(R.ordinary.coast.map(id=>[id,1]))},regionalCatchVersion:1};
-  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&/fish-art|fishing-duel|\/assets\/fish-/.test(r.url()))failedAssets.push(r.status()+' '+r.url());});
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();

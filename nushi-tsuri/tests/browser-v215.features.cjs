@@ -2,6 +2,7 @@ const assert=require('node:assert/strict'),{chromium}=require('playwright'),{see
 module.exports=async function run(url,mobile=false){
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),errors=[],failed=[];
  const viewport=mobile?{width:844,height:390}:{width:1280,height:720},context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile}),page=await context.newPage();
+ await context.addInitScript(()=>localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'})));
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/lake-intro|player-home-interior|sam-sprites|(?:shuu|riku|grey)-walk/.test(r.url()))failed.push(r.status()+' '+r.url());});
  const resources=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,caught:s.caught,baits:s.baits,clock:s.gameMinutes,pets:s.petLife,quests:s.questCompletions,x:s.x,y:s.y}));
  async function visible(){await page.locator('#lakeIntro.open').waitFor({state:'visible'});assert.equal(await page.locator('#lakeIntroNext').evaluate(el=>document.activeElement===el),true);}

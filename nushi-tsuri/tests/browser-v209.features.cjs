@@ -5,7 +5,7 @@ module.exports=async function features(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[],failedAssets=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
     isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
-  await context.addInitScript(({key,state})=>{
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
   },{key:saveKey,state:{...seed(),x:10,y:79,direction:'left',hp:80,soundEnabled:false,
     cookingIngredients:{shirogisuFillet:1,ayuFillet:1,madaiFillet:1},items:{wildGreens:2},baits:{shell:1},

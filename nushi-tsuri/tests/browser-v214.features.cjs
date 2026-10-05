@@ -6,7 +6,7 @@ module.exports=async function run(url,mobile=false){
  page.on('pageerror',e=>errors.push(e.message));
  const saved={...seed(),caught:{...seed().caught,bass:1,moroko:1},money:9000,x:199,y:36};
  try{
-  await page.addInitScript(({saved,key})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(saved));},{saved,key:saveKey});
+  await page.addInitScript(({saved,key})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(saved));},{saved,key:saveKey});
   await page.goto(url,{waitUntil:'load'});await page.locator('#start').click();await page.locator('#action').click();
   for(let i=0;i<3;i++)await page.locator('[data-pet-buy="bass"]').click();
   await page.locator('[data-pet-action="aquarium"]').click();

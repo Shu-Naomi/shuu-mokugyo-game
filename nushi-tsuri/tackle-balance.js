@@ -54,6 +54,7 @@
         shell: 0.04, crab: 0.05,
       },
     },
+    iwana: {band:"medium",baits:{worm:1.8,river:1.7,grasshopper:1.8,liveMinnow:1.2,smallShrimp:.6,shrimp:.3,paste:.06,corn:.03,shell:.04,crab:.08}},
     yamame: {
       band: "small",
       baits: {
