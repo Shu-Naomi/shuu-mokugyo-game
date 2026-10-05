@@ -407,11 +407,11 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
     const intro=require('./browser-v215.features.cjs');await intro(url,false);await intro(url,true);
-    const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const categories=require('./browser-v217.features.cjs');await categories(url,false);await categories(url,true);
     const aquarium=require('./browser-v214.features.cjs');await aquarium(url,false);await aquarium(url,true);
   }finally{if(server)await new Promise(resolve=>server.close(resolve));}

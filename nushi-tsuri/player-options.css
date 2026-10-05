@@ -1,3 +1,7 @@
+.title .title-box{padding:18px 24px}
+.title h1{font-size:clamp(30px,5vw,46px);line-height:1.12}
+.title h2{font-size:22px;margin:8px 0}
+.title .avatar-select button,.title .dog-select button,.title #start{min-height:44px}
 .player-name-choice{display:grid;gap:5px;max-width:420px;margin:12px auto;color:#f4e7c2;text-align:left;font-size:14px}
 .player-name-choice input,.game-options input[type=text]{box-sizing:border-box;width:100%;min-height:44px;border:2px solid #96afa0;border-radius:8px;padding:8px 12px;background:#102d38;color:#fff1cc;font:inherit}
 .title .identity-note{font-size:12px;color:#d4e6d6;line-height:1.5;margin:5px 0}
@@ -20,5 +24,5 @@
 .game-options .delete-save{background:#54373a;color:#ffe3d7;border-color:#c59685;box-shadow:none}
 .delete-confirm{padding:14px;margin-top:12px;border:2px solid #dca18a;border-radius:10px;background:#402d32}.delete-confirm label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px}.delete-confirm input{width:22px;height:22px;flex:none}.delete-actions{display:flex;gap:10px;margin-top:10px}.delete-actions button{flex:1}.game-options [hidden]{display:none!important}
 #optionsNotice{font-size:14px;line-height:1.55;color:#ffe3a1;margin:0;min-height:22px}
-@media(max-height:560px){.game-options{inset:8px!important;width:min(780px,calc(100vw - 16px))!important;height:calc(100dvh - 16px)!important}.options-heading{padding:8px 14px}.options-heading h2{font-size:20px}.options-body{padding:10px 14px;gap:12px}.options-group{padding:12px}.player-name-choice{margin:6px auto}.title .avatar-select button,.title .dog-select button,.title #start{min-height:44px}.title .title-box{padding-bottom:18px}}
+@media(max-height:560px){.game-options{inset:8px!important;width:min(780px,calc(100vw - 16px))!important;height:calc(100dvh - 16px)!important}.options-heading{padding:8px 14px}.options-heading h2{font-size:20px}.options-body{padding:10px 14px;gap:12px}.options-group{padding:12px}.player-name-choice{margin:6px auto}.title h1{font-size:clamp(26px,5vw,40px)}.title h2{font-size:18px;margin:4px 0}.title .title-box{padding:10px 16px 18px}}
 @media(max-width:540px){.options-speeds{grid-template-columns:repeat(2,minmax(0,1fr))}.options-save-list{grid-template-columns:1fr}.options-name-form{grid-template-columns:1fr}.game-options{width:calc(100vw - 16px)!important;inset:8px!important;height:calc(100dvh - 16px)!important}}
