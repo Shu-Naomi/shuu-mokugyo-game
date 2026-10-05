@@ -6475,7 +6475,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v219</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v220</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7266,18 +7266,18 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=219-1"></script>
+    <script src="aquarium-life.js?v=220-1"></script>
     <script src="pet-life-ui.js?v=214-1"></script>
-    <script src="tackle-balance.js?v=219-1"></script>
-    <script src="fishing-duel.js?v=219-1"></script>
-    <script src="coast-voyage.js?v=201-1"></script>
-    <script src="mountain-region.js?v=219-1"></script>
+    <script src="tackle-balance.js?v=220-1"></script>
+    <script src="fishing-duel.js?v=220-1"></script>
+    <script src="coast-voyage.js?v=220-1"></script>
+    <script src="mountain-region.js?v=220-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=215-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=219-1"></script>
+    <script src="fish-art.js?v=220-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7471,6 +7471,18 @@
             ecology:"広い頭と大きな胸びれを持ち、体に鱗のない淡水魚。石の多い川で水生昆虫や小魚などを食べる。",
             locations:"星見渓流の川（浅瀬〜深場）",time:"いつでも",rods:["youngBamboo","clearStream"],baits:["river","worm","liveMinnow"],
             tip:"川虫＋ハリ小で淵の深場を探ろう。ミミズでも釣れる、岩底に寄る小さな魚だよ。"},
+          wakasagi: {number:28,scientific:"Hypomesus nipponensis",habitats:["lake"],rarity:1,rarityLabel:"銀色の小さな群れ",
+            ecology:"細長い銀色の体と小さな脂びれを持つキュウリウオ科の魚。湖や池で群れ、動物プランクトンなどを食べる。",
+            locations:"星降る湖／木漏れ日の池／峠の池（浅場〜深場）",time:"いつでも",rods:["moroko","youngBamboo"],baits:["river","smallShrimp","worm"],
+            tip:"川虫＋ハリ小で湖や池の中層を探ろう。小エビやミミズでも会える、小さな銀色の魚だよ。"},
+          dojo: {number:29,scientific:"Misgurnus anguillicaudatus",habitats:["river","lake"],rarity:1,rarityLabel:"泥底の住人",
+            ecology:"丸みのある細長い体と5対の口ひげを持つ魚。流れの穏やかな水路や沼の泥底で、小さな生き物などを食べる。",
+            locations:"民家川（浅瀬〜淵）／葦の沼／峠の沼（浅場〜深場）",time:"いつでも",rods:["bamboo","youngBamboo"],baits:["worm","river"],
+            tip:"ミミズ＋ハリ小で民家川の浅瀬や沼の岸際を狙おう。細かな底の動きに合わせて、ゆっくり寄せてね。"},
+          isaki: {number:30,scientific:"Parapristipoma trilineatum",habitats:["sea"],rarity:2,rarityLabel:"岩礁の群れ",
+            ecology:"潮通しのよい沿岸の岩礁に暮らす海水魚。若い魚の体側には3本の暗い縦帯があり、小さな甲殻類などを食べる。",
+            locations:"岩礁の小島（浅場〜沖）",time:"いつでも",rods:["clearStream","shoreReed"],baits:["shrimp","smallShrimp","worm"],
+            tip:"岩礁の小島の中層へ、オキアミ＋ハリ中を投げてみよう。小エビやミミズにも反応するよ。"},
           ...ShuRegional.encyclopedia,
           moroko: {
             number: 1,
@@ -7722,7 +7734,7 @@
             depth: "shallow",
             name: "星降る湖・岸際",
             role: "湖の浅場・小魚と岸際のブラックバス",
-            weights: { moroko: 0.62, funa: 0.25, bass: 0.13 },
+            weights: { wakasagi: .18, moroko: .44, funa: .25, bass: .13 },
           },
           {
             id: "lake-mid",
@@ -7730,7 +7742,7 @@
             depth: "mid",
             name: "星降る湖・中層",
             role: "湖の中層・フナとブラックバス、夜のナマズ",
-            weights: { moroko: 0.25, funa: 0.34, koi: 0.14, namazu: 0.1, bass: 0.17 },
+            weights: { wakasagi: .24, moroko: .16, funa: .25, koi: .10, namazu: .08, bass: .17 },
           },
           {
             id: "lake-deep",
@@ -7738,7 +7750,7 @@
             depth: "deep",
             name: "星降る湖・ヌシの深み",
             role: "湖の深場・コイと大型ブラックバス、ヌシの生息域",
-            weights: { moroko: 0.08, funa: 0.2, koi: 0.32, namazu: 0.14, bass: 0.18, nushi: 0.08 },
+            weights: { wakasagi: .16, moroko: .05, funa: .15, koi: .27, namazu: .13, bass: .16, nushi: .08 },
           },
           {
             id: "river-shallow",
@@ -7746,7 +7758,7 @@
             depth: "shallow",
             name: "民家川・瀬",
             role: "流れの浅い瀬・ホンモロコとアユ、朝夕のヤマメとニジマス",
-            weights: { moroko: 0.34, ayu: 0.22, yamame: 0.17, nijimasu: 0.1, funa: 0.2 },
+            weights: { dojo: .17, moroko: .28, ayu: .20, yamame: .15, nijimasu: .08, funa: .12 },
           },
           {
             id: "river-mid",
@@ -7754,7 +7766,7 @@
             depth: "mid",
             name: "民家川・流心",
             role: "川の流心・アユとヤマメ、流れへ出るニジマスと夜のウナギ",
-            weights: { moroko: 0.11, ayu: 0.19, yamame: 0.15, nijimasu: 0.12, funa: 0.17, koi: 0.07, namazu: 0.06, bass: 0.07, unagi: 0.07 },
+            weights: { dojo: .08, moroko: .07, ayu: .19, yamame: .15, nijimasu: .12, funa: .13, koi: .07, namazu: .06, bass: .07, unagi: .07 },
           },
           {
             id: "river-deep",
@@ -7762,7 +7774,7 @@
             depth: "deep",
             name: "民家川・淵",
             role: "川の淵・ナマズとブラックバス、淵尻のニジマスと夜のウナギ",
-            weights: { moroko: 0.06, ayu: 0.07, yamame: 0.04, nijimasu: 0.06, funa: 0.15, koi: 0.13, namazu: 0.13, bass: 0.1, suzuki: 0.05, unagi: 0.18, bora: 0.05 },
+            weights: { dojo: .06, moroko: .04, ayu: .07, yamame: .04, nijimasu: .06, funa: .11, koi: .13, namazu: .13, bass: .10, suzuki: .05, unagi: .18, bora: .05 },
           },
           {
             id: "sea-shallow",
@@ -7795,11 +7807,11 @@
           { id: "coast-sand-deep", zone: "sea", depth: "deep", name: "白砂の小島・沖", role: "回遊するスズキと砂底のヒラメ",
             weights: { shirogisu: .19, aji: .2, hirame: .28, suzuki: .25, bora: .08 } },
           { id: "coast-reef-shallow", zone: "sea", depth: "shallow", name: "岩礁の小島・浅場", role: "岩陰のメバルとアイナメ",
-            weights: { ainame: .38, kasago: .25, mebaru: .27, aji: .10 } },
+            weights: { isaki: .14, ainame: .32, kasago: .21, mebaru: .23, aji: .10 } },
           { id: "coast-reef-mid", zone: "sea", depth: "mid", name: "岩礁の小島・沿岸", role: "岩礁のアイナメとクロダイ",
-            weights: { ainame: .32, kasago: .2, mebaru: .16, kurodai: .18, madai: .14 } },
+            weights: { isaki: .25, ainame: .25, kasago: .15, mebaru: .12, kurodai: .13, madai: .10 } },
           { id: "coast-reef-deep", zone: "sea", depth: "deep", name: "岩礁の小島・沖", role: "沖のマダイと岩陰のアイナメ",
-            weights: { madai: .34, ainame: .23, kurodai: .21, kasago: .14, suzuki: .08 } },
+            weights: { isaki: .20, madai: .28, ainame: .18, kurodai: .16, kasago: .10, suzuki: .08 } },
           ...ShuMountain.spots,
         ],
         baitData = {
@@ -11402,6 +11414,20 @@
         fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
         fishLifeProfiles[id]={...fishLifeProfiles[base]};
         fightProfiles[id]={...fightProfiles[base],intro:id==="amago"?"朱点のあるアマゴだ。流れを横切る引きをいなそう。":"岩底のカジカだ。小さな動きを落ち着いて追おう。"};
+        fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:lengths[i][0]*100,maxHundredths:lengths[i][1]*100-1}));
+      }
+      fish.push({id:"wakasagi",name:"ワカサギ",price:150,resistance:45,w:0,icon:"🐟",shadowRow:1},
+        {id:"dojo",name:"ドジョウ",price:180,resistance:58,w:0,icon:"🐟",shadowRow:2},
+        {id:"isaki",name:"イサキ",price:460,resistance:108,w:0,icon:"🐟",shadowRow:3});
+      for(const [id,base,lengths,intro]of [
+        ["wakasagi","moroko",[[3,5],[5,7],[7,9],[9,11],[11,13],[13,16]],"銀色のワカサギだ。小さなアタリと引きを、やさしく追いかけよう。"],
+        ["dojo","funa",[[5,8],[8,12],[12,16],[16,20],[20,24],[24,28]],"泥底のドジョウだ。細かな身くねりを、ゆっくり受け止めよう。"],
+        ["isaki","aji",[[8,14],[14,20],[20,26],[26,33],[33,41],[41,50]],"岩礁のイサキだ。群れへ戻る横の引きを、落ち着いていなそう。"]
+      ]){
+        fishMouthProfiles[id]={...fishMouthProfiles[base]};
+        fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
+        fishLifeProfiles[id]={...fishLifeProfiles[base]};
+        fightProfiles[id]={...fightProfiles[base],intro};
         fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:lengths[i][0]*100,maxHundredths:lengths[i][1]*100-1}));
       }
       // Every fish uses the common renderer and seven headings. Preserve each
@@ -16187,7 +16213,7 @@
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika"].includes(id);
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo"].includes(id);
         const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
@@ -17462,7 +17488,8 @@
           ? s.boatActive
             ? activeLandingDock()
               ? `${activeLandingDock().name}の桟橋。Aで上陸。移動は${ShuCoast.costFor(s.equipment.vehicle)}体力ずつ使う。`
-              : `沿岸の海。Aで釣る。${vehicleData[s.equipment.vehicle]?.name||"舟"}は移動1回で体力${ShuCoast.costFor(s.equipment.vehicle)}消費。`
+              : spot ? `沿岸の海。Aで釣る。${vehicleData[s.equipment.vehicle]?.name||"舟"}は移動1回で体力${ShuCoast.costFor(s.equipment.vehicle)}消費。`
+                : "岸や桟橋に向いているよ。海の方へ向いてAで釣る。"
             : activeLandingDock()
               ? `${activeLandingDock().name}の桟橋。Aで舟に乗る。`
               : ShuCoast.near(s,ShuCoast.restPoint,10)
@@ -17471,7 +17498,7 @@
           : mountain
             ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "南の入口だ。Aか下へ進むと来た道へ戻る。"
               : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
-              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":"距離で深さを狙い分けよう。"}`
+              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":['marsh','highMarsh'].includes(spot.mountainType)?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
               : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、南の入口から戻れる。`
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
@@ -18729,27 +18756,34 @@
           ctx.beginPath();draw();ctx.closePath();ctx.fillStyle=color;ctx.fill();
           if(outline){ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.lineJoin="round";ctx.stroke();}
         };
-        // A relaxed right hand seen from the back. The fingers lie along the
-        // crown; the thumb curls beside the palm, instead of five claws down.
+        // Palm down on the crown: the thumb stays on the far upper side.
+        // Fingernails are on the visible upper surface; the lower palm edge
+        // rests flat on the fur, without an upturned thumb or palm crease.
         path("#d7e8ef",()=>{ctx.moveTo(13,-21);ctx.lineTo(77,-106);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
         path("#b5ccd8",()=>{ctx.moveTo(25,-18);ctx.lineTo(91,-98);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
         path(skin,()=>{ctx.moveTo(7,-14);ctx.lineTo(17,-27);ctx.lineTo(31,-17);ctx.lineTo(21,-3);});
         // Four softly bent fingers, longest in the middle, are staggered in
         // depth. Each has a rounded tip and joins the same broad palm.
-        const fingers=[[-19,-15,-34,-12],[-20,-11,-40,-7],[-19,-7,-39,-2],[-15,-3,-32,2]];
+        path(skin,()=>{ctx.moveTo(10,-13);ctx.quadraticCurveTo(1,-24,-11,-23);
+          ctx.quadraticCurveTo(-20,-23,-22,-17);ctx.quadraticCurveTo(-21,-13,-15,-14);
+          ctx.lineTo(-6,-15);ctx.lineTo(1,-7);});
+        const fingers=[[-19,-15,-33,-12],[-21,-11,-40,-8],[-21,-7,-42,-4],[-18,-3,-36,0]];
         for(const [baseX,baseY,tipX,tipY]of fingers)path(skin,()=>{
           ctx.moveTo(baseX,baseY);ctx.quadraticCurveTo(tipX+5,baseY-1,tipX,tipY-2);
           ctx.quadraticCurveTo(tipX-3,tipY,tipX,tipY+2);
           ctx.quadraticCurveTo(baseX-5,tipY+4,baseX+6,baseY+5);
         });
-        path(skin,()=>{ctx.moveTo(-18,-15);ctx.quadraticCurveTo(-6,-21,7,-15);
-          ctx.lineTo(22,-10);ctx.quadraticCurveTo(24,-3,14,2);
-          ctx.quadraticCurveTo(0,6,-17,2);ctx.quadraticCurveTo(-23,-4,-18,-15);});
-        path(skin,()=>{ctx.moveTo(12,-1);ctx.quadraticCurveTo(5,2,-3,7);
-          ctx.quadraticCurveTo(-7,10,-11,7);ctx.quadraticCurveTo(-14,4,-10,2);
-          ctx.quadraticCurveTo(-4,-1,0,-6);});
-        path("#f3c19a",()=>{ctx.moveTo(-15,-13);ctx.quadraticCurveTo(-5,-17,5,-12);
-          ctx.lineTo(16,-8);ctx.quadraticCurveTo(5,-1,-15,-3);},false);
+        path(skin,()=>{ctx.moveTo(-19,-16);ctx.quadraticCurveTo(-6,-21,8,-15);
+          ctx.lineTo(22,-10);ctx.quadraticCurveTo(25,-3,15,2);
+          ctx.lineTo(-19,2);ctx.quadraticCurveTo(-24,-5,-19,-16);});
+        path("#f3c19a",()=>{ctx.moveTo(-15,-14);ctx.quadraticCurveTo(-4,-18,6,-13);
+          ctx.lineTo(16,-9);ctx.quadraticCurveTo(1,-9,-15,-10);},false);
+        // Small dorsal nails make the contact side legible even on a phone.
+        for(const [, ,tipX,tipY]of fingers)path("#f8d4b7",()=>{
+          ctx.moveTo(tipX+1,tipY-1.5);ctx.quadraticCurveTo(tipX+4,tipY-3,tipX+7,tipY-1.5);
+          ctx.lineTo(tipX+7,tipY);ctx.lineTo(tipX+1,tipY);},false);
+        ctx.strokeStyle="#bd805e";ctx.lineWidth=1;ctx.beginPath();
+        ctx.moveTo(-18,1);ctx.lineTo(12,1);ctx.stroke();
         path("#82a9b9",()=>{ctx.moveTo(14,-26);ctx.lineTo(20,-31);ctx.lineTo(35,-20);ctx.lineTo(29,-13);},false);
         ctx.restore();
       }
@@ -23205,7 +23239,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=219-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=220-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

@@ -13,9 +13,13 @@
     definition.ids.forEach((id,index)=>species[id]={group,index,asset:`assets/fish-${group}-v208.png`});
   species.iwana.asset="assets/fish-iwana-v219.png";
   for(const id of ["amago","kajika"])species[id]={group:"char",index:0,asset:`assets/fish-${id}-v219.png`};
+  for(const id of ["wakasagi","dojo","isaki"])species[id]={group:"regional",index:0,asset:`assets/fish-${id}-v220.png`};
   // Species-specific originals have 25 authored yaw poses and one
   // breathing pose. Keep their true dorsal anatomy and rounded front views.
   const native={
+    isaki:{"asset":"assets/fish-isaki-v220.png","dense":true,"continuousBody":true,"boxes":[[36,28,302,138],[370,32,289,138],[690,32,263,139],[1001,29,225,141],[1302,25,187,147],[70,195,210,149],[394,194,207,151],[704,193,179,154],[1015,187,158,163],[1315,186,164,167],[83,356,170,171],[396,357,171,172],[688,355,188,173],[983,358,188,171],[1293,363,190,164],[47,533,242,160],[360,532,244,157],[661,534,245,152],[946,535,255,152],[1231,537,270,150],[24,706,281,150],[337,706,279,150],[640,706,278,150],[934,706,274,150],[1226,707,287,149],[33,863,301,144]],"heads":[[0.995,0.61],[0.995,0.6],[0.99,0.62],[0.99,0.65],[0.99,0.67],[0.995,0.62],[0.995,0.62],[0.99,0.66],[0.98,0.675],[0.8,0.66],[0.72,0.61],[0.63,0.65],[0.48,0.63],[0.4,0.62],[0.16,0.59],[0.012,0.54],[0.012,0.56],[0.01,0.58],[0.01,0.575],[0.01,0.567],[0.01,0.58],[0.01,0.58],[0.01,0.58],[0.01,0.58],[0.01,0.577],[0.99,0.638]]},
+    dojo:{"asset":"assets/fish-dojo-v220.png","dense":true,"continuousBody":true,"boxes":[[21,55,349,88],[392,55,284,88],[702,56,254,87],[981,56,249,94],[1253,56,254,96],[35,209,317,100],[392,209,279,105],[703,209,244,113],[983,211,239,114],[1258,210,238,118],[52,373,270,123],[405,372,229,126],[731,372,127,126],[992,370,183,128],[1266,371,216,129],[40,540,286,123],[380,542,268,121],[673,543,272,115],[955,539,264,121],[1236,539,265,125],[18,712,315,99],[341,712,312,101],[657,717,292,99],[954,718,277,95],[1236,720,287,92],[21,874,345,96]],"heads":[[0.96,0.625],[0.975,0.66],[0.98,0.63],[0.96,0.63],[0.96,0.656],[0.95,0.61],[0.946,0.657],[0.93,0.7],[0.925,0.69],[0.9,0.73],[0.915,0.77],[0.85,0.77],[0.5,0.75],[0.68,0.8],[0.22,0.73],[0.1,0.7],[0.07,0.65],[0.052,0.56],[0.04,0.55],[0.045,0.53],[0.054,0.657],[0.045,0.673],[0.045,0.646],[0.043,0.663],[0.05,0.663],[0.97,0.563]],"scales":{"0":0.9,"5":0.8,"25":0.91}},
+    wakasagi:{"asset":"assets/fish-wakasagi-v220.png","dense":true,"continuousBody":true,"boxes":[[16,52,282,78],[322,48,285,84],[632,38,281,97],[950,31,264,105],[1262,26,247,114],[33,196,251,110],[350,190,232,120],[674,187,209,123],[989,186,189,126],[1299,185,165,129],[87,347,147,132],[407,347,137,134],[705,347,133,135],[993,347,132,133],[1288,346,172,133],[58,520,208,120],[349,522,233,118],[643,523,243,116],[931,524,262,114],[1229,527,284,108],[23,698,274,103],[324,701,277,100],[623,702,279,101],[924,702,279,101],[1228,701,281,102],[19,875,280,86]],"heads":[[0.995,0.55],[0.995,0.6],[0.995,0.69],[0.995,0.695],[0.99,0.78],[0.99,0.6],[0.99,0.67],[0.99,0.71],[0.99,0.754],[0.99,0.78],[0.94,0.77],[0.78,0.78],[0.5,0.79],[0.28,0.8],[0.035,0.78],[0.01,0.55],[0.01,0.57],[0.01,0.59],[0.01,0.6],[0.01,0.61],[0.01,0.525],[0.01,0.55],[0.01,0.58],[0.01,0.63],[0.01,0.61],[0.995,0.57]]},
     iwana:{"asset":"assets/fish-iwana-v219.png","dense":true,"boxes":[[28,41,302,145],[339,40,262,149],[610,45,256,147],[875,45,258,147],[1164,46,212,149],[48,216,245,166],[350,218,222,168],[630,217,199,170],[903,221,182,167],[1176,222,169,171],[75,403,184,172],[395,404,138,171],[628,403,182,173],[924,408,132,166],[1189,407,162,168],[48,593,211,163],[333,593,230,165],[593,594,244,165],[872,594,230,165],[1142,595,241,160],[28,776,266,147],[309,774,261,149],[578,776,264,146],[851,777,265,147],[1112,780,270,145],[28,938,291,149]],"heads":[[0.995,0.72],[0.995,0.7],[0.995,0.73],[0.995,0.71],[0.995,0.73],[0.99,0.74],[0.985,0.75],[0.97,0.78],[0.95,0.8],[0.92,0.81],[0.87,0.8],[0.72,0.81],[0.5,0.79],[0.25,0.8],[0.17,0.78],[0.105,0.74],[0.055,0.74],[0.025,0.73],[0.02,0.73],[0.015,0.72],[0.01,0.68],[0.01,0.65],[0.01,0.65],[0.01,0.64],[0.01,0.64],[0.995,0.72]]},
     amago:{"asset":"assets/fish-amago-v219.png","dense":true,"boxes":[[20,60,294,133],[325,59,274,135],[606,59,262,134],[877,59,245,134],[1150,59,224,137],[35,227,263,145],[337,228,238,147],[630,231,208,146],[912,234,178,146],[1181,234,163,147],[73,406,182,152],[392,406,134,154],[635,410,170,153],[918,409,139,152],[1188,410,160,151],[57,583,201,147],[341,583,213,149],[603,587,239,146],[874,586,235,147],[1139,588,246,146],[18,761,284,142],[319,765,270,139],[599,766,264,138],[872,767,254,137],[1135,768,252,137],[21,935,284,135]],"heads":[[0.995,0.65],[0.995,0.65],[0.995,0.67],[0.995,0.68],[0.995,0.7],[0.99,0.7],[0.98,0.73],[0.97,0.75],[0.95,0.78],[0.92,0.8],[0.88,0.79],[0.73,0.8],[0.5,0.76],[0.27,0.78],[0.18,0.78],[0.1,0.74],[0.055,0.73],[0.025,0.73],[0.02,0.73],[0.015,0.72],[0.01,0.66],[0.01,0.66],[0.01,0.65],[0.01,0.64],[0.01,0.64],[0.995,0.69]]},
     kajika:{"asset":"assets/fish-kajika-v219.png","dense":true,"boxes":[[22,21,284,105],[347,20,290,109],[678,19,273,112],[1011,19,244,117],[1314,19,194,120],[48,181,225,124],[377,180,203,127],[703,180,187,129],[1039,181,166,129],[1340,182,153,131],[91,351,156,136],[408,350,160,139],[703,350,170,140],[1014,350,162,140],[1311,352,158,137],[69,529,174,132],[380,530,191,133],[676,530,222,134],[980,531,222,133],[1268,532,237,130],[21,702,262,121],[344,702,263,118],[643,703,262,116],[947,703,258,114],[1237,710,282,110],[22,874,285,115]],"heads":[[0.995,0.66],[0.995,0.69],[0.995,0.7],[0.995,0.72],[0.995,0.73],[0.99,0.74],[0.985,0.75],[0.97,0.77],[0.95,0.79],[0.92,0.8],[0.85,0.81],[0.7,0.83],[0.5,0.82],[0.29,0.83],[0.18,0.82],[0.105,0.79],[0.055,0.77],[0.025,0.74],[0.02,0.74],[0.015,0.73],[0.01,0.7],[0.01,0.69],[0.01,0.69],[0.01,0.68],[0.01,0.67],[0.995,0.8]]},
@@ -28,6 +32,9 @@
   for(const [id,definition]of Object.entries(native))species[id].asset=definition.asset;
   const assets=id=>[species[id].asset];
   const projection=()=>1;
+  // A few loach originals use a larger drawing scale. Normalize both axes
+  // together, preserving their anatomy while keeping the same individual.
+  const cellScale=(id,cell)=>native[id]?.scales?.[cell]||1;
   const cellAsset=id=>species[id].asset;
   const turn=[1,.72,.36,0,-.36,-.72,-1].map((xScale,i)=>({xScale,yOffset:[0,.025,.06,.08,.06,.025,0][i]}));
   const mouth=[{xScale:1,yOffset:0},{xScale:1,yOffset:.025},{xScale:1,yOffset:.05}];
@@ -42,9 +49,11 @@
     caveNushi:[[.985,.51],[.96,.52],[.95,.55],[.50,.56],[.04,.55],[.015,.51],[.015,.51],[.93,.45]],
     nushi:[[.97,.52],[.95,.57],[.87,.62],[.50,.67],[.08,.60],[.05,.58],[.03,.52],[.96,.56]],
   };
-  // One late Kurodai source accidentally faces the viewer again. Use the
-  // matching opposite-side drawing so the completed turn cannot turn back.
-  const mirroredTurns={kurodai:{23:1}};
+  // Select progressively frontal loach originals, then matching smelt/loach
+  // leftward poses. A late Kurodai drawing also needs its opposite-side pair.
+  // Keep the source pixels intact while preventing an accidental reverse turn.
+  const turnCells={dojo:{10:11,11:13}};
+  const mirroredTurns={kurodai:{23:1},wakasagi:Object.fromEntries(Array.from({length:12},(_,i)=>[13+i,11-i])),dojo:Object.fromEntries([13,11,9,8,7,6,5,4,3,2,1,0].map((cell,i)=>[13+i,cell]))};
   function pose(id,cells,frame){
     const clock=Math.max(0,Number(frame)||0),index=Math.floor(clock);
     if(cells===7||cells===5){
@@ -53,7 +62,7 @@
       if(native[id]?.dense){
         const authored=heading*4,a=Math.floor(authored),b=Math.min(24,a+1);
         const cell=Math.round(authored),mirror=mirroredTurns[id]?.[cell];
-        return {cell:mirror??cell,heading,flip:mirror!==undefined,jaw:0,
+        return {cell:mirror??turnCells[id]?.[cell]??cell,heading,flip:mirror!==undefined,jaw:0,
           target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
             .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],
           beat:0,from:a/4,to:b/4,mix:authored-a};
@@ -129,7 +138,7 @@
     let scale=Infinity;
     const count=native[id]?.dense?25:7,step=native[id]?.dense ? .25 : 1;
     for(const p of [...Array.from({length:count},(_,i)=>pose(id,7,i*step)),pose(id,3,2)]){
-      const raw=source(id,p.cell),box=[raw[0],raw[1],raw[2]*projection(id,p.cell),raw[3]],head=sourceHead(id,p.cell,p.flip),tx=p.target[0]*448,ty=p.target[1]*224;
+      const raw=source(id,p.cell),box=[raw[0],raw[1],raw[2]*projection(id,p.cell)*cellScale(id,p.cell),raw[3]*cellScale(id,p.cell)],head=sourceHead(id,p.cell,p.flip),tx=p.target[0]*448,ty=p.target[1]*224;
       for(const [room,extent]of [[tx-22,head[0]*box[2]],[448-tx-22,(1-head[0])*box[2]],[ty-8,head[1]*box[3]],[224-ty-8,(1-head[1])*box[3]]])
         if(extent>0)scale=Math.min(scale,room/extent);
     }
@@ -150,7 +159,7 @@
       top[x]=a;bottom[x]=b+1;
     }
     const result={image:tile,top,bottom,pixels:data,head:sourceHead(id,cell,flip),
-      width:tile.width*scaleFor(id)*projection(id,cell),height:tile.height*scaleFor(id)};
+      width:tile.width*scaleFor(id)*projection(id,cell)*cellScale(id,cell),height:tile.height*scaleFor(id)*cellScale(id,cell)};
     cache.set(key,result);return result;
   }
   function mesh(ctx,image,id,heading){const p=pose(id,7,heading);return cellMesh(ctx,image,id,p.cell,p.flip);}
@@ -221,7 +230,7 @@
   }
   function paint(ctx,image,id,p,alpha=1,resolveImage){
     if(native[id])image=resolveImage(cellAsset(id,p.cell));
-    const originalImage=image,isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id);
+    const originalImage=image,isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id)*cellScale(id,p.cell);
     image=isolated.image;
     const width=box[2]*scale*projection(id,p.cell),height=box[3]*scale,x=p.target[0]*448-head[0]*width,y=p.target[1]*224-head[1]*height;
     ctx.save();ctx.globalAlpha=alpha;

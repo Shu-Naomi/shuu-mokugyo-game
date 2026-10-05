@@ -38,13 +38,19 @@
   function stepFor(vehicle) { return vehicle==="canoe" ? 5 : 3; }
   function costFor(vehicle) { return vehicle==="canoe" ? 2 : 1; }
   function fishingWater(x,y,direction="up") {
-    if(!water(x,y) && !shore(x,y))return null;
+    const fromWater=water(x,y);
+    if(!fromWater && !shore(x,y))return null;
     const [dx,dy]={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[direction]||[0,-1];
     // Only the coastal shoreline applies here. Village buildings and its
     // bridge occupy the same coordinates in a different map.
-    for(let d=.5;d<=8;d+=.5)for(const slope of [0,-.1875,.1875,-.375,.375]) {
-      const px=x+dx*d-dy*slope*d,py=y+dy*d+dx*slope*d;
+    const rays=[0,-.1875,.1875,-.375,.375].map(slope=>({slope,blocked:false}));
+    for(let d=.5;d<=8;d+=.5)for(const ray of rays) {
+      if(ray.blocked)continue;
+      const px=x+dx*d-dy*ray.slope*d,py=y+dy*d+dx*ray.slope*d;
       if(water(px,py))return {zone:"sea",x:px,y:py};
+      // A boat cannot cast through an island tip or the harbor pier and
+      // pick water on the far side. Shore casts may cross their own dry bank.
+      if(fromWater || !shore(px,py))ray.blocked=true;
     }
     return null;
   }
