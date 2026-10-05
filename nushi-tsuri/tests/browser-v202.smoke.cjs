@@ -281,7 +281,7 @@ async function audioSmoke(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
     isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
-  await context.addInitScript(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),
+  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));localStorage.setItem(key,JSON.stringify(state));},
     {key:saveKey,state:{...seed(),money:10000,hp:100,soundEnabled:false}});
   const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
   try{
