@@ -8,6 +8,8 @@ test('all water types have an actual walking or rowing route from their entrance
    ownedVehicles:['canoe'],equipment:{vehicle:'canoe'},baits:{worm:20},selectedBait:'worm',selectedHook:'small',soundEnabled:false});
   const w=app.window;
   try{
+   // Route/collision assertions do not depend on a random dog-forage event.
+   w.eval('Math.random=()=>.5');
    const route=findRoute(w,sample.type);
    for(const direction of route.path)w.move(direction);
    assert.deepEqual(read(w,'({x:s.x,y:s.y,direction:s.direction})'),{x:route.x,y:route.y,direction:route.direction});

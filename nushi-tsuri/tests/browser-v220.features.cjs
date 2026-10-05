@@ -19,7 +19,16 @@ module.exports=async function waterAndFish(url,mobile=false){
    const {context,page,press}=await create(state({mapRegion:sample.region,x:sample.start[0],y:sample.start[1],boatActive:Boolean(sample.boat)}));
    try{
     const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:sample.type});
-    for(const direction of route.path){if(mobile)await press('[data-move="'+direction+'"]');else await page.keyboard.press({up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[direction]);}
+    for(const direction of route.path){
+     // A companion may discover forage after eight steps. Let the real
+     // bark/dig/collection sequence finish before issuing the next input.
+     await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
+     const old=await page.evaluate(()=>({x:s.x,y:s.y}));
+     if(mobile)await press('[data-move="'+direction+'"]');else await page.keyboard.press({up:'ArrowUp',down:'ArrowDown',left:'ArrowLeft',right:'ArrowRight'}[direction]);
+     const next=await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction,discovery:forageDiscoveryInProgress,modal:document.querySelector('.modal.open')?.id}));
+     assert.ok(next.x!==old.x||next.y!==old.y,sample.region+'/'+sample.type+' blocked input '+direction+' '+JSON.stringify({old,next}));
+    }
+    await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
     assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction})),{x:route.x,y:route.y,direction:route.direction});
     const before=await page.evaluate(()=>JSON.stringify({baits:s.baits,money:s.money,hp:s.hp,clock:s.gameMinutes}));
     await press('#action');const prefix=sample.region==='village'?sample.type:sample.region==='coast'?'coast-'+sample.type:'mountain-'+sample.type;
