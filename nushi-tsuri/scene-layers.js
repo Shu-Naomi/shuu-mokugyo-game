@@ -187,7 +187,13 @@
       ],
     };
   }
+  const mountainSurfaces={stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5]};
+  function mountainSurface(kind){
+    return {id:'surface-mountain-'+kind,source:'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',
+      parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,{filter:'water',effect:'ripple'}),box('near-bank','ground',0,262,640,58)]};
+  }
   function get(id,env={period:'day'}) {
+    if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));
     if(id==='world') return world;
     if(id==='home-exterior') return garden;
     if(id==='home-interior'||id==='room-player-home') return room;
@@ -201,7 +207,7 @@
         box('left-furnishings','furniture',0,24,30,68),box('right-furnishings','furniture',72,25,28,68),
         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
   }
-  const ids=['world','home-exterior','home-interior',...Object.keys(rooms).map(id=>'room-'+id),
+  const ids=['world','home-exterior','home-interior',...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
     ...['lake','river','beach','harbor','pond','coast-sand','coast-reef'].map(id=>'surface-'+id),
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
     'underwater-sea-deep-true'];

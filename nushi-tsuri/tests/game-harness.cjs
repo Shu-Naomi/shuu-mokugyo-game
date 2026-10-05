@@ -6,7 +6,7 @@ const { JSDOM, VirtualConsole } = require("jsdom");
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
   .replace(/<script src="((?:player-options|fish-art|save-slots|lake-(?:story|intro)|regional-nushi|nushi-atlas|fishing-duel|ui-feedback|event-ceremony|fortune-capsules|aquarium-life|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="((?:player-options|item-categories|save-slots|lake-(?:story|intro)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+  .replace(/<link rel="stylesheet" href="((?:cast-tackle|player-options|item-categories|save-slots|lake-(?:story|intro)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({

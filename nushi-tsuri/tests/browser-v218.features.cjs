@@ -10,7 +10,7 @@ module.exports=async function optionsAndStream(url,mobile=false){
    localStorage.setItem(settingsKey,JSON.stringify({textSpeed:'normal'}));localStorage.setItem('v218-fixture-ready','1');
   }
  },{key:saveKey,state:original,settingsKey:Options.key});
- page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/player-options|fish-iwana-v218/.test(r.url()))failed.push(r.status()+' '+r.url());});
+ page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/player-options|fish-iwana-v219/.test(r.url()))failed.push(r.status()+' '+r.url());});
  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
  const screenshot=async screen=>console.log('V218_OPTIONS_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:79})).toString('base64')}));
  async function containment(){

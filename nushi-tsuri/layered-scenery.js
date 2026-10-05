@@ -89,9 +89,14 @@
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
   function prepare(source,underlay,definition,env={season:'spring',period:'day'},canvasFactory=makeCanvas) {
-    const width=source.naturalWidth||source.width,height=source.naturalHeight||source.height;
+    const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
+    const rect=definition.sourceRect;
+    // Round shared boundaries once, including odd-sized atlas masters.
+    const left=rect?Math.round(rect[0]*sourceWidth):0,top=rect?Math.round(rect[1]*sourceHeight):0;
+    const crop=rect?[left,top,Math.round((rect[0]+rect[2])*sourceWidth)-left,Math.round((rect[1]+rect[3])*sourceHeight)-top]:null;
+    const width=crop?crop[2]:sourceWidth,height=crop?crop[3]:sourceHeight;
     const scratch=canvasFactory(width,height),context=scratch.getContext('2d',{willReadFrequently:true});
-    context.drawImage(source,0,0,width,height);
+    if(crop)context.drawImage(source,...crop,0,0,width,height);else context.drawImage(source,0,0,width,height);
     const pixels=context.getImageData(0,0,width,height),labels=partition(pixels,definition);
     const descriptors=[{id:'ground',kind:'ground'},...definition.parts];
     const bounds=descriptors.map(()=>({left:width,top:height,right:0,bottom:0}));
@@ -275,8 +280,12 @@
       if(canvas.style) {
         canvas.getContext('2d').clearRect(0,0,canvas.width,canvas.height);
         canvas.style.backgroundImage=`url("${definition.source}")`;
-        canvas.style.backgroundSize=definition.indoor&&!id.includes('home')?'contain':id.startsWith('surface-')||id.startsWith('underwater-')?'cover':'100% 100%';
-        canvas.style.backgroundPosition='center';canvas.style.backgroundRepeat='no-repeat';
+        if(definition.sourceRect){
+          canvas.style.backgroundSize='200% 200%';
+          canvas.style.backgroundPosition=definition.sourceRect[0]*200+'% '+definition.sourceRect[1]*200+'%';
+        }
+        if(!definition.sourceRect)canvas.style.backgroundSize=definition.indoor&&!id.includes('home')?'contain':id.startsWith('surface-')||id.startsWith('underwater-')?'cover':'100% 100%';
+        if(!definition.sourceRect)canvas.style.backgroundPosition='center';canvas.style.backgroundRepeat='no-repeat';
       }
       session.promise=(async()=>{
         try {
@@ -328,7 +337,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=198-1');
+            worker=new Worker('scenery-worker.js?v=219-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
