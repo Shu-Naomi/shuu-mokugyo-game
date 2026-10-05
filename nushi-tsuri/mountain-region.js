@@ -152,12 +152,12 @@
     stream:[{iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
       {iwana:.28,amago:.28,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
       {iwana:.31,amago:.15,kajika:.26,yamame:.08,nijimasu:.12,unagi:.04,namazu:.04}],
-    pond:[{moroko:.31,funa:.46,bass:.23},
-      {funa:.38,koi:.24,bass:.28,namazu:.10},
-      {koi:.43,funa:.19,bass:.20,namazu:.18}],
-    marsh:[{funa:.40,bass:.33,moroko:.27},
-      {bass:.35,namazu:.32,unagi:.19,funa:.14},
-      {namazu:.36,unagi:.37,koi:.16,bass:.11}],
+    pond:[{wakasagi:.22,moroko:.23,funa:.35,bass:.20},
+      {wakasagi:.28,funa:.28,koi:.18,bass:.18,namazu:.08},
+      {wakasagi:.16,koi:.37,funa:.16,bass:.16,namazu:.15}],
+    marsh:[{dojo:.28,funa:.29,bass:.24,moroko:.19},
+      {dojo:.22,bass:.29,namazu:.25,unagi:.14,funa:.10},
+      {dojo:.12,namazu:.32,unagi:.32,koi:.14,bass:.10}],
   };
   populations.highPond=populations.pond;populations.highMarsh=populations.marsh;
   populations.underground=[{funa:.45,koi:.2,namazu:.2,unagi:.15},{namazu:.4,unagi:.35,koi:.15,funa:.1},{namazu:.42,unagi:.38,koi:.15,funa:.05}];

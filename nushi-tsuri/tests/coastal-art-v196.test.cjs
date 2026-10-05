@@ -94,13 +94,17 @@ test("coastal species have distinct fighting patterns and ship the new sprites o
   } finally { app.dispose(); }
 });
 
-test("all twenty-seven fish retain their own swimming cadence in the aquariums", () => {
+test("all fish retain their own swimming cadence in the aquariums", () => {
   const app = boot();
   try {
     const ids = read(app.window, "fish.map(f=>f.id)");
-    assert.equal(ids.length, 27);
+    assert.equal(ids.length, 30);
     const gaits = ids.map(id => Aquarium.gait(id));
     assert.equal(new Set(gaits.map(g => JSON.stringify(g))).size, ids.length);
+    const added = ["wakasagi", "dojo", "isaki"].map(species => ({uid: species, species, length: 1200}));
+    const addedPoses = Aquarium.layout(added, [], 480, 280, 0, () => 3).poses;
+    assert.deepEqual(addedPoses.map(p => p.bottomDweller), [false, true, false]);
+    assert.ok(addedPoses[1].y > addedPoses[0].y + 70, "loach swims near the bottom below smelt");
     const fish = ids.filter(id => ["shirogisu", "ainame", "madai"].includes(id))
       .map(species => ({ uid: species, species, length: 2400 }));
     const catalog = fish.map(f => ({ id: f.species, max: 4000 }));
