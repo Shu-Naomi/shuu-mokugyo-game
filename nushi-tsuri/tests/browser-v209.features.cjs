@@ -189,7 +189,7 @@ module.exports=async function features(url,mobile){
       }return results;
     });
     const fishCount=await page.evaluate(()=>fish.length);
-    assert.equal(fishCount,30);
+    assert.equal(fishCount,33);
     assert.equal(fishResult.length,fishCount*9*2);
     for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));
       if(r.tallFins!==null)assert.equal(r.tallFins,r.id==='shirogisu'?2:1,r.id+' actual dorsal silhouette');}
