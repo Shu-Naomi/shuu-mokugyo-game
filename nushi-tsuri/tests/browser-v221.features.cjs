@@ -7,7 +7,7 @@ module.exports=async function waterAndFish(url,mobile=false){
   const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v222/);
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v223/);
   await page.locator('#start')[mobile?'tap':'click']();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();
   return {context,page,press:q=>page.locator(q)[mobile?'tap':'click']()};
  }

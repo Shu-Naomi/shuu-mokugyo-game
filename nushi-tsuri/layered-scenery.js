@@ -88,47 +88,33 @@
     graded[0]=r;graded[1]=g;graded[2]=b;return graded;
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
-  // Eight pixel phases include moving reflections from the painted water.
-  // Compile every footprint against ownership once, before the render loop.
-  function prepareWaves(part,owner,labels,width,height,pixels,env,definition,canvasFactory) {
+  // Sparse horizontal crests leave the painting's fine reflected texture fixed.
+  // Neighbouring crests share a row phase instead of wriggling independently.
+  function prepareWaves(part,owner,labels,width,height,env,definition,canvasFactory) {
     const style=part.surfaceMotion,pixel=Math.max(1,Math.round(width/560));
-    const spacing=(style==='marsh'||style==='cave')?26:20;
+    const quiet=style==='marsh'||style==='cave',spacing=quiet?40:36,rowSpacing=quiet?36:28;
     const samples=Array.from({length:8},()=>[]);
-    function pattern(step,index,depth) {
-      const phase=step*Math.PI/4+index*.7,quiet=style==='marsh'||style==='cave';
-      const drift=style==='river'?step*3:Math.round(Math.sin(phase)*(quiet?3:5));
-      const fall=style==='river'?Math.floor(step*.7):Math.round(Math.cos(phase)*(style==='sea'?4:quiet?1:2));
-      const wide=Math.round((style==='sea'?9:style==='river'?6:quiet?4:6)*(0.65+depth*.7));
-      const crest=2+Math.abs(3-step);
-      return {drift,fall,rects:[[drift,fall,2,1,0],[drift+2,fall-1,wide+crest,1,1],
-        [drift+2+wide+crest,fall,2,1,1],[drift+3,fall+1,wide,1,0],
-        [drift+wide+2,fall+2,3,1,2]]};
+    const anchors=[];let row=0;
+    for(let y=part.top+pixel*8;y<part.bottom-pixel*10;y+=pixel*rowSpacing,row++) {
+      for(let x=part.left+pixel*(4+(row%2)*spacing/2);x<part.right-pixel*24;x+=pixel*spacing) {
+        if(labels[y*width+x]===owner)anchors.push({x,y,row});
+      }
     }
-    // Distribute the bounded budget over the whole water, including the near
-    // surface. A short landscape viewport crops both ends of a tall master.
-    const anchors=[];let index=0;
-    for(let y=part.top+pixel*6;y<part.bottom-pixel*12;y+=pixel*14)for(let x=part.left+pixel*3;x<part.right-pixel*28;x+=pixel*spacing) {
-      const i=index++,xx=x+(i%3)*pixel*3;
-      if(labels[y*width+xx]!==owner)continue;
-      anchors.push({x:xx,y,index:i});
-    }
-    const budget=Math.min(200,anchors.length);
-    const alpha=definition.indoor?.6:env.weather==='rain'?.48:env.weather==='cloudy'?.54:.64;
-    const reflectionAlpha=definition.indoor?.5:.62;
+    const budget=Math.min(80,anchors.length);
+    const alpha=(quiet?.065:.09)*(env.weather==='rain'?.7:env.weather==='cloudy'?.85:1);
+    const color=grade(192,222,236,'water',env,definition).slice();
     for(let n=0;n<budget;n++) {
-      const {x:xx,y,index:i}=anchors[Math.floor(n*anchors.length/budget)],depth=(y-part.top)/(part.bottom-part.top);
-      const candidate=Array.from({length:8},(_,frame)=>{
-        const step=(frame+i*3)%8,p=pattern(step,i,depth);
-        return {rects:p.rects.map(r=>[xx+r[0]*pixel,y+r[1]*pixel,r[2]*pixel,r[3]*pixel,r[4]]),
-          reflection:[xx-pixel*2,y+p.fall*pixel,Math.round(15+depth*13)*pixel,2*pixel],
-          shift:Math.round(Math.sin(step*Math.PI/4+i*.7)*(style==='river'?5:3))*pixel,
-          opacity:style==='river'?[.25,.55,.85,1,1,.85,.55,.25][step]:.72+.28*Math.sin(step*Math.PI/4+i*.7)**2};
+      const {x,y,row}=anchors[Math.floor(n*anchors.length/budget)],depth=(y-part.top)/(part.bottom-part.top);
+      const wide=Math.round((style==='sea'?18:style==='river'?12:quiet?8:14)*(.7+depth*.65));
+      samples.forEach((frame,index)=>{
+        const step=(index+row*2)%8,phase=index*Math.PI/4+row*.55,flow=style==='river'||style==='sea';
+        // Flowing crests fade fully before looping back. Still-water crests
+        // move by only one dot and keep a fixed, straight silhouette.
+        const dx=flow?Math.round(step*.65):Math.round(Math.sin(phase));
+        const dy=style==='sea'?Math.round(step*.35):0;
+        const opacity=flow?Math.sin(step*Math.PI/7)**2:.55+.45*(1+Math.cos(phase))/2;
+        frame.push({rect:[x+dx*pixel,y+dy*pixel,wide*pixel,pixel],opacity});
       });
-      const offset=(y*width+xx)*4;
-      const rgb=grade(pixels.data[offset],pixels.data[offset+1],pixels.data[offset+2],'water',env,definition).slice();
-      const dim=definition.indoor||env.period==='night',light=dim?28:54;
-      const colors=[rgb.map(c=>Math.max(0,c-19)),rgb.map(c=>Math.min(255,c+light)),rgb.map(c=>Math.min(255,c+light*.45))];
-      candidate.forEach((sample,step)=>samples[step].push({...sample,colors}));
     }
     // Rasterize on the wave's dot grid once. Every displayed dot must be wholly
     // owned by this water part, even at an irregular shore or a one-pixel rock.
@@ -154,20 +140,16 @@
           for(let gx=Math.max(0,Math.floor(x/pixel));gx<Math.min(gridWidth,Math.ceil((x+w)/pixel));gx++)if(mask[gy*gridWidth+gx])paint(gx,gy,(gy*gridWidth+gx)*4);
       };
       for(const sample of frame){
-        raster(sample.reflection,(gx,gy,at)=>{
-          const sx=gx*pixel+Math.floor(pixel/2)+sample.shift,sy=gy*pixel+Math.floor(pixel/2);
-          if(sx<0||sx>=width||sy>=height||labels[sy*width+sx]!==owner)return;
-          const atSource=((sy-part.top)*part.canvas.width+sx-part.left)*4;
-          blend(at,part.image.data[atSource],part.image.data[atSource+1],part.image.data[atSource+2],reflectionAlpha*sample.opacity*part.image.data[atSource+3]/255);
-        });
-        for(const rect of sample.rects)raster(rect,(gx,gy,at)=>{
-          const color=sample.colors[rect[4]];blend(at,color[0],color[1],color[2],alpha*sample.opacity);
+        raster(sample.rect,(gx,gy,at)=>{
+          // A faint, graded light line keeps every detail of the original
+          // reflection fixed; no shifted or resampled source strip is drawn.
+          blend(at,color[0],color[1],color[2],alpha*sample.opacity);
         });
       }
       ctx.putImageData(image,0,0);return canvas;
     });
     // No per-frame allocation, pixel reading, image decoding or randomness.
-    return {style,pixel,frames,count:budget,interval:style==='river'?110:style==='sea'?150:style==='marsh'||style==='cave'?240:180};
+    return {style,pixel,frames,count:budget,interval:style==='river'?420:style==='sea'?580:quiet?1100:760};
   }
   function prepare(source,underlay,definition,env={season:'spring',period:'day'},canvasFactory=makeCanvas) {
     const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
@@ -212,7 +194,7 @@
     }
     for(let i=0;i<parts.length;i++) {
       const part=parts[i];if(!part)continue;
-      if(part.surfaceMotion)part.waves=prepareWaves(part,i,labels,width,height,pixels,env,definition,canvasFactory);
+      if(part.surfaceMotion)part.waves=prepareWaves(part,i,labels,width,height,env,definition,canvasFactory);
       part.ctx.putImageData(part.image,0,0);delete part.image;delete part.ctx;
     }
     let base=null;
@@ -283,9 +265,16 @@
     ctx.imageSmoothingEnabled=false;ctx.scale(canvas.width/scene.width,canvas.height/scene.height);
     for(const part of scene.parts)if(part.motion)drawPart(ctx,part,{...options,motionTime:time});
     if(time&&!options.reducedMotion)for(const part of scene.parts)if(part.waves) {
-      const wave=part.waves,frame=Math.floor(time/wave.interval)%8;
-      ctx.globalAlpha=1;
+      const wave=part.waves,position=time/wave.interval,frame=Math.floor(position)%8,mix=position-Math.floor(position);
+      // Premultiplied additive blending gives a true linear crossfade, including
+      // the last/first phase. The 12 fps clock no longer swaps entire strips.
+      ctx.save();ctx.globalCompositeOperation='lighter';
+      ctx.globalAlpha=1-mix;
       ctx.drawImage(wave.frames[frame],0,0,wave.frames[frame].width*wave.pixel,wave.frames[frame].height*wave.pixel);
+      ctx.globalAlpha=mix;
+      const next=wave.frames[(frame+1)%8];
+      ctx.drawImage(next,0,0,next.width*wave.pixel,next.height*wave.pixel);
+      ctx.restore();
       if(canvas.dataset){canvas.dataset.waterFrame=String(frame);canvas.dataset.waterStyle=wave.style;canvas.dataset.waterSamples=String(wave.count);}
     }
     if(time&&!options.reducedMotion) for(const part of scene.parts) if(part.effect&&part.effect!=='surface-wave') {
@@ -438,7 +427,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=222-1');
+            worker=new Worker('scenery-worker.js?v=223-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }

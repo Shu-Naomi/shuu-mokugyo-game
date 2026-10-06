@@ -36,27 +36,39 @@ module.exports=async function castingWater(url,mobile=false){
     },first.frame);
     const second=await read();assert.notEqual(second.hash,first.hash,'visible pixel waves change between phases');
     const firstImage=await loadImage(firstShot),pixels=image=>{const c=createCanvas(image.width,image.height),ctx=c.getContext('2d');ctx.drawImage(image,0,0);return ctx.getImageData(0,0,c.width,c.height).data;};
-    const firstPixels=pixels(firstImage),minimum=sample.type==='lake'?(clock===780?.05:.018):.004,changes=[];
+    const firstPixels=pixels(firstImage),minimum=['marsh','underground'].includes(sample.type)?.0001:.0005,changes=[];
     let images,visibleChange=0;
-    // Screenshot latency can land exactly one river cycle later. Compare actual
-    // visible pixels at up to three subsequent phases, without relaxing contrast.
+    // The calm crests occupy a sparse part of the scene. Compare several slower
+    // phases rather than rewarding widespread high-contrast texture changes.
     for(let attempt=0;attempt<3;attempt++){
      const frame=(await read()).frame;
      await page.waitForFunction(previous=>document.querySelector('.scenery-motion[data-for="castBackdrop"]').dataset.waterFrame!==previous,frame);
      await page.waitForTimeout(300);
      const secondImage=await loadImage(await surface.screenshot({animations:'disabled'})),secondPixels=pixels(secondImage);
-     let noticeable=0;for(let i=0;i<firstPixels.length;i+=4)if(Math.max(Math.abs(firstPixels[i]-secondPixels[i]),Math.abs(firstPixels[i+1]-secondPixels[i+1]),Math.abs(firstPixels[i+2]-secondPixels[i+2]))>=12)noticeable++;
+     let noticeable=0;for(let i=0;i<firstPixels.length;i+=4)if(Math.max(Math.abs(firstPixels[i]-secondPixels[i]),Math.abs(firstPixels[i+1]-secondPixels[i+1]),Math.abs(firstPixels[i+2]-secondPixels[i+2]))>=3)noticeable++;
      const changed=noticeable/(firstPixels.length/4);changes.push({frame:(await read()).frame,changed});
      if(!images||changed>visibleChange){images=[firstImage,secondImage];visibleChange=changed;}
      if(visibleChange>=minimum)break;
     }
-    console.log('V222_WATER_SAMPLE '+JSON.stringify({mobile,locale:first.locale,style:first.style,changes,visibleChange,minimum}));
+    assert.ok(visibleChange<.035,'calm crests leave most painted reflection unchanged');
+    console.log('V223_WATER_SAMPLE '+JSON.stringify({mobile,locale:first.locale,style:first.style,changes,visibleChange,minimum}));
+    if(mobile&&clock===780&&['lake','reef'].includes(sample.type)){
+     const frames=[];
+     for(let phase=0;phase<10;phase++){
+      const picture=await loadImage(await surface.screenshot({animations:'disabled'}));
+      const crop=createCanvas(Math.floor(picture.width/2),Math.floor(picture.height/2));
+      crop.getContext('2d').drawImage(picture,-Math.floor(picture.width/4),-Math.floor(picture.height/5));
+      frames.push(crop.toBuffer('image/jpeg',88).toString('base64'));
+      if(phase<9)await page.waitForTimeout(700);
+     }
+     console.log('V223_WATER_SEQUENCE '+JSON.stringify({mobile,locale:first.locale,intervalMs:700,frames}));
+    }
     assert.equal(await page.evaluate(()=>JSON.stringify({baits:s.baits,caught:s.caught,clock:s.gameMinutes,money:s.money,hp:s.hp})),before,'watching water consumes no gameplay resources');
     results.push({region:sample.region,type:sample.type,clock,style:first.style,samples:first.samples,changed:true,visibleChange});
     if((!mobile&&['lake','stream','reef'].includes(sample.type))||(mobile&&clock===780&&sample.type==='lake'))
      console.log('V221_SCREENSHOT '+JSON.stringify({mobile,screen:'water-'+first.locale+'-'+clock,base64:(await page.screenshot({type:'jpeg',quality:76})).toString('base64')}));
     if(clock===780&&['lake','river','stream','marsh','underground','reef'].includes(sample.type))
-     console.log('V222_WATER_FRAMES '+JSON.stringify({mobile,screen:first.locale,frames:images.map(image=>{
+     console.log('V223_WATER_FRAMES '+JSON.stringify({mobile,screen:first.locale,frames:images.map(image=>{
       const c=createCanvas(image.width,image.height);c.getContext('2d').drawImage(image,0,0);return c.toBuffer('image/jpeg',85).toString('base64');
      })}));
     assert.ok(visibleChange>=minimum,'final visible casting scenery changes enough to see: '+first.locale+' '+visibleChange);
