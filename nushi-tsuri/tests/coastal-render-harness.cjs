@@ -23,11 +23,11 @@ async function renderer() {
   return context.ShuCoast;
 }
 
-function viewport(coast, { x=193, y=77, direction='up', avatar='boy', frame=0, rowing=false,
+function viewport(coast, { x=193, y=77, direction='up', avatar='boy', vehicle='canoe', frame=0, rowing=false,
   period='day', width=1536, height=630 }={}) {
   const map=createCanvas(1536,864),boat=createCanvas(192,144);
   coast.paint(map,{period});
-  coast.paintBoat(boat,'canoe',direction,frame,avatar,rowing);
+  coast.paintBoat(boat,vehicle,direction,frame,avatar,rowing);
   const canvas=createCanvas(width,height),ctx=canvas.getContext('2d');
   const mapWidth=width*2.4,mapHeight=mapWidth*9/16;
   const cameraX=Math.max(0,Math.min(240-240*width/mapWidth,x-240*width/mapWidth/2));
@@ -50,6 +50,9 @@ if(require.main===module) {
       coast:{},
       reef:{x:104,y:100,direction:'left',avatar:'girl'},
       night:{x:170,y:111,direction:'right',period:'night'},
+      tarai:{vehicle:'tarai',direction:'right'},
+      'tarai-mobile':{vehicle:'tarai',direction:'right',width:844,height:354},
+      'tarai-girl':{vehicle:'tarai',direction:'down',avatar:'girl'},
     }))fs.writeFileSync(path.join(output,`${name}.png`),viewport(coast,options).toBuffer('image/png'));
     const sheet=createCanvas(768,288),ctx=sheet.getContext('2d');
     ctx.fillStyle='#145875';ctx.fillRect(0,0,768,288);
@@ -58,6 +61,13 @@ if(require.main===module) {
       ctx.drawImage(boat,col*192,row*144);
     }
     fs.writeFileSync(path.join(output,'headings.png'),sheet.toBuffer('image/png'));
+    const tubs=createCanvas(768,576),tc=tubs.getContext('2d');
+    tc.fillStyle='#145875';tc.fillRect(0,0,768,576);
+    for(const [row,avatar] of ['boy','girl'].entries())for(const [col,direction] of ['up','right','down','left'].entries())for(const frame of [0,1]){
+      const boat=createCanvas(192,144);coast.paintBoat(boat,'tarai',direction,frame,avatar,Boolean(frame));
+      tc.drawImage(boat,col*192,(row*2+frame)*144);
+    }
+    fs.writeFileSync(path.join(output,'tarai-poses.png'),tubs.toBuffer('image/png'));
     console.log(`Rendered coastal review to ${output}`);
   }).catch(error=>{console.error(error);process.exitCode=1;});
 }
