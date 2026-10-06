@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v222-visible-water-222-1";
+const CACHE_NAME = "nushi-tsuri-v223-calm-water-223-1";
 const CORE_ASSETS = [
   "./assets/fish-ugui-v221.png",
   "./assets/fish-oikawa-v221.png",
@@ -104,11 +104,11 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=168-1",
   "./pixel-scenes.css?v=201-1",
-  "./scene-layers.js?v=222-1",
+  "./scene-layers.js?v=223-1",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
-  "./layered-scenery.js?v=222-1",
-  "./scenery-worker.js?v=222-1",
+  "./layered-scenery.js?v=223-1",
+  "./scenery-worker.js?v=223-1",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",
