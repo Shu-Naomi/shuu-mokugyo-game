@@ -98,7 +98,7 @@
   const artSources = {
     coast: "assets/coast-world-v197.webp",
     rowboat: "assets/coast-rowboat-v201.png",
-    tarai: "assets/coast-boat-v196.png",
+    tarai: "assets/coast-tarai-v224.png",
   };
   const images = {};
   let pendingScene;
@@ -137,6 +137,12 @@
   const boatRows=[0,330,626,914,1254];
   const hullY=[[185,211,185,211],[478,497,478,497],
     [773,793,773,793],[1062,1088,1062,1088]];
+  // The tub's single paddle crosses a nominal quarter-width cell. Keep the
+  // measured empty gutters so it remains complete without a neighbouring cap.
+  const tubColumns=[0,344,644,934,1254];
+  const tubRows=[0,366,652,944,1254];
+  const tubHullX=[162,483,785,1086];
+  const tubHullY=[245,534,824,1109];
   function paintBoat(canvas,id="tarai",direction="up",frame=0,avatar="boy",rowing=false) {
     if(!canvas?.getContext)return;
     const ctx=canvas.getContext("2d");
@@ -160,10 +166,17 @@
     }
     const boatAtlas=imageFor("tarai");
     if(!ready(boatAtlas))return;
-    const row=(id==="canoe"?0:4)+(avatar==="girl"?2:0)+(rowing&&frame%2?1:0);
-    ctx.drawImage(boatAtlas,column*64,row*48,64,48,0,0,canvas.width,canvas.height);
+    const row=(avatar==="girl"?2:0)+(rowing&&frame%2?1:0);
+    const ratio=boatAtlas.naturalWidth/1254;
+    const sx=tubColumns[column]*ratio,sy=tubRows[row]*ratio;
+    const sw=(tubColumns[column+1]-tubColumns[column])*ratio;
+    const sh=(tubRows[row+1]-tubRows[row])*ratio;
+    const scale=Math.min(canvas.width*.93/(282*ratio),canvas.height*.89/(244*ratio));
+    ctx.drawImage(boatAtlas,sx,sy,sw,sh,
+      canvas.width/2-(tubHullX[column]*ratio-sx)*scale,
+      canvas.height*.55-(tubHullY[row]*ratio-sy)*scale,sw*scale,sh*scale);
   }
   // Load without blocking title-screen buttons or game startup.
-  if(typeof Image!=="undefined")for(const id of ["coast","rowboat"])imageFor(id);
+  if(typeof Image!=="undefined")for(const id of ["coast","rowboat","tarai"])imageFor(id);
   return {width,height,islands,docks,restPoint,inside,shore,water,near,coastName,stepFor,costFor,fishingWater,paint,paintBoat};
 });
