@@ -24,14 +24,14 @@ module.exports=async function boatCharacters(url,mobile=false){
       const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
       for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>6500;
     });
-    // Starting the adventure moves the map camera from its title-screen pose.
-    // Check the settled viewport, while still failing if the boat stays outside.
-    await page.waitForFunction(()=>{
-      const r=document.querySelector('#boatVisual').getBoundingClientRect();
-      return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;
-    },null,{timeout:3000});
     for(const vehicle of ['tarai','canoe'])for(const avatar of ['boy','girl']){
       await page.evaluate(({vehicle,avatar})=>{s.equipment.vehicle=vehicle;s.avatar=avatar;render();},{vehicle,avatar});
+      // Starting or reloading an adventure moves the map camera from the title.
+      // Check the settled viewport; a boat that remains outside must still fail.
+      await page.waitForFunction(()=>{
+        const r=document.querySelector('#boatVisual').getBoundingClientRect();
+        return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;
+      },null,{timeout:3000});
       const poses=[];
       for(const direction of ['up','right','down','left']){
         await page.evaluate(direction=>{s.direction=direction;render();},direction);
