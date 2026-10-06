@@ -43,7 +43,8 @@ module.exports=async function castingWater(url,mobile=false){
       const c=document.querySelector('.scenery-motion[data-for="castBackdrop"]'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.some((x,i)=>i%4===3&&x>0);
      });
     }
-    await press('#run');assert.equal(await page.evaluate(()=>battle),null);const frame=await read();await page.waitForTimeout(450);assert.equal((await read()).hash,frame.hash,'closed casting scenery no longer animates');
+    await press('#pull');assert.equal(await page.evaluate(()=>battle.phase),'cast');
+    await press('#wait');assert.equal(await page.evaluate(()=>battle),null);const frame=await read();await page.waitForTimeout(450);assert.equal((await read()).hash,frame.hash,'closed casting scenery no longer animates');
    }finally{await context.close();}
   }
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);

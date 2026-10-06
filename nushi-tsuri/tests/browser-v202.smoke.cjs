@@ -407,11 +407,11 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    const fishWater=require('./browser-v221.features.cjs');await fishWater(url,false);await fishWater(url,true);
+    const waterAnimation=require('./browser-v221.water.cjs');await waterAnimation(url,false);await waterAnimation(url,true);
     const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const streamUpdate=require('./browser-v219.features.cjs');await streamUpdate(url,false);await streamUpdate(url,true);
     const waterUpdate=require('./browser-v220.features.cjs');await waterUpdate(url,false);await waterUpdate(url,true);
-    const fishWater=require('./browser-v221.features.cjs');await fishWater(url,false);await fishWater(url,true);
-    const waterAnimation=require('./browser-v221.water.cjs');await waterAnimation(url,false);await waterAnimation(url,true);
     await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
