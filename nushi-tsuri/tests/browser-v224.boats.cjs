@@ -24,6 +24,12 @@ module.exports=async function boatCharacters(url,mobile=false){
       const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
       for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>6500;
     });
+    // Starting the adventure moves the map camera from its title-screen pose.
+    // Check the settled viewport, while still failing if the boat stays outside.
+    await page.waitForFunction(()=>{
+      const r=document.querySelector('#boatVisual').getBoundingClientRect();
+      return r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight;
+    },null,{timeout:3000});
     for(const vehicle of ['tarai','canoe'])for(const avatar of ['boy','girl']){
       await page.evaluate(({vehicle,avatar})=>{s.equipment.vehicle=vehicle;s.avatar=avatar;render();},{vehicle,avatar});
       const poses=[];
@@ -32,8 +38,8 @@ module.exports=async function boatCharacters(url,mobile=false){
         const idle=await signature();assert.ok(idle.painted>3500&&idle.colors>500,vehicle+'/'+avatar+'/'+direction+' detailed hero');
         const layout=await page.locator('#boatVisual').evaluate(c=>{
           const r=c.getBoundingClientRect(),style=getComputedStyle(c);
-          return {visible:style.display!=='none'&&r.width>80&&r.height>60,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,playerHidden:getComputedStyle(document.querySelector('#player')).display==='none'};
-        });assert.ok(Object.values(layout).every(Boolean),JSON.stringify(layout));
+          return {visible:style.display!=='none'&&r.width>80&&r.height>60,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,playerHidden:getComputedStyle(document.querySelector('#player')).display==='none',rect:[r.left,r.top,r.right,r.bottom].map(Math.round)};
+        });assert.ok(layout.visible&&layout.inside&&layout.playerHidden,JSON.stringify(layout));
         await page.evaluate(()=>ShuCoast.paintBoat(document.querySelector('#boatVisual'),s.equipment.vehicle,s.direction,1,s.avatar,true));
         const stroke=await signature();assert.notEqual(stroke.hash,idle.hash,'a single stroke remains visible');poses.push(idle.hash,stroke.hash);
         await page.evaluate(()=>render());
