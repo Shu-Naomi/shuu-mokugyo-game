@@ -32,4 +32,3 @@ review, alongside the existing scene screenshots.
 This change concerns water only. Naomi's complete October 6 endgame and DLC plan
 is preserved in the ongoing handover as a future plan. It is not an announcement
 that boss progression, crafting, postgame bait or DLC is implemented.
-
