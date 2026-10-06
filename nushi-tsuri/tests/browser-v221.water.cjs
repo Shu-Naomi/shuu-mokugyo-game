@@ -6,12 +6,14 @@ module.exports=async function castingWater(url,mobile=false){
  try{
   for(const [sample,clock]of [[cases[0],780],[cases[0],1020],[cases[1],780],[cases[3],780],[cases[5],780],[cases[8],780],[cases[10],780]]){
    const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'}),state={...seed(),hp:100,gameMinutes:clock,soundEnabled:false,
-    mapRegion:sample.region,x:sample.start[0],y:sample.start[1],boatActive:false,baits:{worm:20},ownedRods:['bamboo','clearStream'],selectedRod:'clearStream'};
+    mapRegion:sample.region,x:sample.start[0],y:sample.start[1],boatActive:false,baits:{worm:20},ownedRods:['bamboo','clearStream'],selectedRod:'clearStream',
+    ownedVehicles:['canoe'],equipment:{vehicle:'canoe'}};
    await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1','{"textSpeed":"instant"}');},{key:saveKey,state});
    const page=await context.newPage(),press=q=>page.locator(q)[mobile?'tap':'click']();
    page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().includes('/nushi-tsuri/'))failed.push(r.url());});
    try{
     await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+    assert.equal(await page.evaluate(()=>s.mapRegion),sample.region,'saved fishing region is ready');
     const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:sample.type});
     for(const direction of route.path){
      await page.waitForFunction(()=>!forageDiscoveryInProgress&&!rescueInProgress&&!playerHomeState.transitioning);
