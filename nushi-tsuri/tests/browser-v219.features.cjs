@@ -25,7 +25,7 @@ module.exports=async function streamAndCast(url,mobile=false){
   },type,{timeout:20000});
  }
  try{
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v221/);await press('#start');
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v222/);await press('#start');
   if(await page.locator('#lakeIntro.open').isVisible())await press('#lakeIntroSkip');
   await press('#action');assert.equal(await page.evaluate(()=>battle?.phase),'prep');assert.equal(await page.evaluate(()=>battle.mountainType),'stream');await painted('stream');
   await press('#wait');await page.locator('#tackle.open').waitFor({state:'visible'});const before=await stock();
