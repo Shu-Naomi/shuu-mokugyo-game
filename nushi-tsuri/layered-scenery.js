@@ -88,51 +88,86 @@
     graded[0]=r;graded[1]=g;graded[2]=b;return graded;
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
-  // Eight authored pixel phases. Compile every footprint against the original
-  // ownership mask once; animation never paints onto a bank, rock or pier.
-  function prepareWaves(part,owner,labels,width,height,pixels,env,definition) {
+  // Eight pixel phases include moving reflections from the painted water.
+  // Compile every footprint against ownership once, before the render loop.
+  function prepareWaves(part,owner,labels,width,height,pixels,env,definition,canvasFactory) {
     const style=part.surfaceMotion,pixel=Math.max(1,Math.round(width/560));
     const spacing=(style==='marsh'||style==='cave')?26:20;
-    const waves=[],frames=Array.from({length:8},()=>[]);
-    const clip=r=>{
-      const [x,y,w,h,tone]=r,result=[];
-      for(let yy=Math.max(0,y);yy<Math.min(height,y+h);yy++) {
-        let start=-1;
-        for(let xx=Math.max(0,x);xx<=Math.min(width,x+w);xx++) {
-          const water=xx<width&&xx<x+w&&labels[yy*width+xx]===owner;
-          if(water&&start<0)start=xx;
-          if(!water&&start>=0){result.push([start,yy,xx-start,1,tone]);start=-1;}
-        }
-      }
-      return result;
-    };
-    function pattern(step,index) {
-      const drift=style==='river'?step*2:Math.round(Math.sin(step*Math.PI/4+index)*2);
-      const fall=style==='river'?step:style==='sea'?Math.round(Math.sin(step*Math.PI/4)*2):step>3?1:0;
-      const wide=style==='sea'?5:3,crest=2+Math.abs(3-step);
-      return [[drift,fall,2,1,0],[drift+2,fall-1,wide+crest,1,1],
+    const samples=Array.from({length:8},()=>[]);
+    function pattern(step,index,depth) {
+      const phase=step*Math.PI/4+index*.7,quiet=style==='marsh'||style==='cave';
+      const drift=style==='river'?step*3:Math.round(Math.sin(phase)*(quiet?3:5));
+      const fall=style==='river'?Math.floor(step*.7):Math.round(Math.cos(phase)*(style==='sea'?4:quiet?1:2));
+      const wide=Math.round((style==='sea'?9:style==='river'?6:quiet?4:6)*(0.65+depth*.7));
+      const crest=2+Math.abs(3-step);
+      return {drift,fall,rects:[[drift,fall,2,1,0],[drift+2,fall-1,wide+crest,1,1],
         [drift+2+wide+crest,fall,2,1,1],[drift+3,fall+1,wide,1,0],
-        [drift+wide+2,fall+2,2,1,2]];
+        [drift+wide+2,fall+2,3,1,2]]};
     }
-    let index=0;
-    for(let y=part.top+pixel*6;y<part.bottom-pixel*12&&waves.length<200;y+=pixel*14)for(let x=part.left+pixel*3;x<part.right-pixel*22;x+=pixel*spacing) {
+    // Distribute the bounded budget over the whole water, including the near
+    // surface. A short landscape viewport crops both ends of a tall master.
+    const anchors=[];let index=0;
+    for(let y=part.top+pixel*6;y<part.bottom-pixel*12;y+=pixel*14)for(let x=part.left+pixel*3;x<part.right-pixel*28;x+=pixel*spacing) {
       const i=index++,xx=x+(i%3)*pixel*3;
       if(labels[y*width+xx]!==owner)continue;
-      const candidate=Array.from({length:8},(_,step)=>pattern((step+i*3)%8,i)
-        .flatMap(r=>clip([xx+r[0]*pixel,y+r[1]*pixel,r[2]*pixel,r[3]*pixel,r[4]])));
-      if(!candidate.every(rs=>rs.reduce((n,r)=>n+r[2]*r[3],0)>=pixel*10))continue;
+      anchors.push({x:xx,y,index:i});
+    }
+    const budget=Math.min(200,anchors.length);
+    const alpha=definition.indoor?.6:env.weather==='rain'?.48:env.weather==='cloudy'?.54:.64;
+    const reflectionAlpha=definition.indoor?.5:.62;
+    for(let n=0;n<budget;n++) {
+      const {x:xx,y,index:i}=anchors[Math.floor(n*anchors.length/budget)],depth=(y-part.top)/(part.bottom-part.top);
+      const candidate=Array.from({length:8},(_,frame)=>{
+        const step=(frame+i*3)%8,p=pattern(step,i,depth);
+        return {rects:p.rects.map(r=>[xx+r[0]*pixel,y+r[1]*pixel,r[2]*pixel,r[3]*pixel,r[4]]),
+          reflection:[xx-pixel*2,y+p.fall*pixel,Math.round(15+depth*13)*pixel,2*pixel],
+          shift:Math.round(Math.sin(step*Math.PI/4+i*.7)*(style==='river'?5:3))*pixel,
+          opacity:style==='river'?[.25,.55,.85,1,1,.85,.55,.25][step]:.72+.28*Math.sin(step*Math.PI/4+i*.7)**2};
+      });
       const offset=(y*width+xx)*4;
       const rgb=grade(pixels.data[offset],pixels.data[offset+1],pixels.data[offset+2],'water',env,definition).slice();
-      const dim=definition.indoor||env.period==='night',light=dim?14:32;
-      const colors=[rgb.map(c=>Math.max(0,c-12)),rgb.map(c=>Math.min(255,c+light)),rgb.map(c=>Math.min(255,c+light*.45))]
-        .map(c=>'rgb('+c.map(Math.round).join(',')+')');
-      waves.push({x:xx,y,colors});
-      candidate.forEach((rs,step)=>frames[step].push({rects:rs,colors}));
-      if(waves.length>=200)break;
+      const dim=definition.indoor||env.period==='night',light=dim?28:54;
+      const colors=[rgb.map(c=>Math.max(0,c-19)),rgb.map(c=>Math.min(255,c+light)),rgb.map(c=>Math.min(255,c+light*.45))];
+      candidate.forEach((sample,step)=>samples[step].push({...sample,colors}));
     }
+    // Rasterize on the wave's dot grid once. Every displayed dot must be wholly
+    // owned by this water part, even at an irregular shore or a one-pixel rock.
+    // Eight small bitmaps replace thousands of Canvas calls per animation tick.
+    const gridWidth=Math.ceil(width/pixel),gridHeight=Math.ceil(height/pixel),mask=new Uint8Array(gridWidth*gridHeight);
+    for(let gy=0;gy<gridHeight;gy++)for(let gx=0;gx<gridWidth;gx++){
+      let inside=true;
+      for(let y=gy*pixel;y<Math.min(height,(gy+1)*pixel)&&inside;y++)for(let x=gx*pixel;x<Math.min(width,(gx+1)*pixel);x++)if(labels[y*width+x]!==owner){inside=false;break;}
+      if(inside)mask[gy*gridWidth+gx]=1;
+    }
+    const frames=samples.map(frame=>{
+      const canvas=canvasFactory(gridWidth,gridHeight),ctx=canvas.getContext('2d'),image=ctx.createImageData(gridWidth,gridHeight),data=image.data;
+      const blend=(at,r,g,b,a)=>{
+        const previous=data[at+3]/255,total=a+previous*(1-a);
+        if(!total)return;
+        data[at]=(r*a+data[at]*previous*(1-a))/total;
+        data[at+1]=(g*a+data[at+1]*previous*(1-a))/total;
+        data[at+2]=(b*a+data[at+2]*previous*(1-a))/total;data[at+3]=total*255;
+      };
+      const raster=(rect,paint)=>{
+        const [x,y,w,h]=rect;
+        for(let gy=Math.max(0,Math.floor(y/pixel));gy<Math.min(gridHeight,Math.ceil((y+h)/pixel));gy++)
+          for(let gx=Math.max(0,Math.floor(x/pixel));gx<Math.min(gridWidth,Math.ceil((x+w)/pixel));gx++)if(mask[gy*gridWidth+gx])paint(gx,gy,(gy*gridWidth+gx)*4);
+      };
+      for(const sample of frame){
+        raster(sample.reflection,(gx,gy,at)=>{
+          const sx=gx*pixel+Math.floor(pixel/2)+sample.shift,sy=gy*pixel+Math.floor(pixel/2);
+          if(sx<0||sx>=width||sy>=height||labels[sy*width+sx]!==owner)return;
+          const atSource=((sy-part.top)*part.canvas.width+sx-part.left)*4;
+          blend(at,part.image.data[atSource],part.image.data[atSource+1],part.image.data[atSource+2],reflectionAlpha*sample.opacity*part.image.data[atSource+3]/255);
+        });
+        for(const rect of sample.rects)raster(rect,(gx,gy,at)=>{
+          const color=sample.colors[rect[4]];blend(at,color[0],color[1],color[2],alpha*sample.opacity);
+        });
+      }
+      ctx.putImageData(image,0,0);return canvas;
+    });
     // No per-frame allocation, pixel reading, image decoding or randomness.
-    return {style,pixel,frames,count:waves.length,interval:style==='river'?110:style==='sea'?160:style==='marsh'||style==='cave'?260:210,
-      alpha:definition.indoor?.34:env.weather==='rain'?.32:env.weather==='cloudy'?.36:.48};
+    return {style,pixel,frames,count:budget,interval:style==='river'?110:style==='sea'?150:style==='marsh'||style==='cave'?240:180};
   }
   function prepare(source,underlay,definition,env={season:'spring',period:'day'},canvasFactory=makeCanvas) {
     const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
@@ -177,7 +212,7 @@
     }
     for(let i=0;i<parts.length;i++) {
       const part=parts[i];if(!part)continue;
-      if(part.surfaceMotion)part.waves=prepareWaves(part,i,labels,width,height,pixels,env,definition);
+      if(part.surfaceMotion)part.waves=prepareWaves(part,i,labels,width,height,pixels,env,definition,canvasFactory);
       part.ctx.putImageData(part.image,0,0);delete part.image;delete part.ctx;
     }
     let base=null;
@@ -249,10 +284,8 @@
     for(const part of scene.parts)if(part.motion)drawPart(ctx,part,{...options,motionTime:time});
     if(time&&!options.reducedMotion)for(const part of scene.parts)if(part.waves) {
       const wave=part.waves,frame=Math.floor(time/wave.interval)%8;
-      ctx.globalAlpha=wave.alpha;
-      for(const sample of wave.frames[frame])for(const r of sample.rects) {
-        ctx.fillStyle=sample.colors[r[4]];ctx.fillRect(r[0],r[1],r[2],r[3]);
-      }
+      ctx.globalAlpha=1;
+      ctx.drawImage(wave.frames[frame],0,0,wave.frames[frame].width*wave.pixel,wave.frames[frame].height*wave.pixel);
       if(canvas.dataset){canvas.dataset.waterFrame=String(frame);canvas.dataset.waterStyle=wave.style;canvas.dataset.waterSamples=String(wave.count);}
     }
     if(time&&!options.reducedMotion) for(const part of scene.parts) if(part.effect&&part.effect!=='surface-wave') {
@@ -405,7 +438,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=221-1');
+            worker=new Worker('scenery-worker.js?v=222-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
