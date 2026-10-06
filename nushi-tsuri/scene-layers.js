@@ -13,6 +13,7 @@
   const box = (id,kind,x,y,w,h,extra) => part(id,kind,rect(x,y,w,h),extra);
   const vegetation = {filter:'foliage'};
   const water = {filter:'water',effect:'ripple'};
+  const surfaceWater = style => ({filter:'water',effect:'surface-wave',surfaceMotion:style});
   const world = {
     id:'world', source:'assets/terrain-world-v54.png',
     underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],
@@ -139,7 +140,7 @@
         box('island-base','ground',0,0,100,100),
         box('sky','sky',0,0,100,24),
         box('distant-islands','trees',0,16,100,16,vegetation),
-        box('open-water','water',0,23,100,58,water),
+        box('open-water','water',0,23,100,58,surfaceWater('sea')),
         box('shore','path',0,73,100,27,{filter:'earth'}),
         box('left-rocks','rocks',0,30,24,70,{filter:'stone'}),
         box('right-rocks','rocks',78,30,22,70,{filter:'stone'}),
@@ -154,10 +155,15 @@
       box('sky','sky',0,0,100,24,{filter:'water'}),
       box('foliage','trees',0,0,100,65,vegetation),
       box('shore','path',0,20,100,80,{filter:'earth'}),
-      box('open-water','water',0,harbor?28:24,100,100,water),
+      box('open-water','water',0,harbor?28:24,100,100,surfaceWater(kind==='river'?'river':['beach','harbor'].includes(kind)?'sea':'lake')),
       box('left-bank','rocks',0,55,26,45,{filter:'stone'}),
       box('right-bank','rocks',80,52,20,48,{filter:'stone'}),
     ];
+    // The warm sunset reflection is water even when it contains no blue.
+    // Conservative art-space polygons stay clear of all near banks.
+    if(kind==='lake'||kind==='pond')parts.push(part('reflection-water','water',
+      kind==='lake'?[[20,42],[80,42],[84,62],[75,76],[27,68],[18,55]]:[[30,36],[78,36],[75,60],[32,60]],
+      {effect:'surface-wave',surfaceMotion:'lake'}));
     if(harbor) parts.push(
       box('fishmongers','buildings',12,9,31,20),
       box('sam-shop','buildings',48,0,22,26),
@@ -190,7 +196,7 @@
   const mountainSurfaces={stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5]};
   function mountainSurface(kind){
     return {id:'surface-mountain-'+kind,source:'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',
-      parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,{filter:'water',effect:'ripple'}),box('near-bank','ground',0,262,640,58)]};
+      parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,surfaceWater(kind==='stream'?'river':kind==='underground'?'cave':['marsh','highMarsh'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
   }
   function get(id,env={period:'day'}) {
     if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));

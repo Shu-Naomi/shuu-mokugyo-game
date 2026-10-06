@@ -4019,7 +4019,7 @@
         clip-path: none;
         mix-blend-mode: screen;
         opacity: .22;
-        animation: cast-art-glimmer 4.6s steps(14, end) infinite;
+        display: none;
       }
       .fish-scene.water-river .cast-surface.art-water::after {
         content: none;
@@ -6475,7 +6475,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v220</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v221</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7266,26 +7266,26 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=220-1"></script>
+    <script src="aquarium-life.js?v=221-1"></script>
     <script src="pet-life-ui.js?v=214-1"></script>
-    <script src="tackle-balance.js?v=220-1"></script>
-    <script src="fishing-duel.js?v=220-1"></script>
+    <script src="tackle-balance.js?v=221-1"></script>
+    <script src="fishing-duel.js?v=221-1"></script>
     <script src="coast-voyage.js?v=220-1"></script>
-    <script src="mountain-region.js?v=220-1"></script>
+    <script src="mountain-region.js?v=221-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=215-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=220-1"></script>
+    <script src="fish-art.js?v=221-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=219-1"></script>
-    <script src="layered-scenery.js?v=219-1"></script>
+    <script src="scene-layers.js?v=221-1"></script>
+    <script src="layered-scenery.js?v=221-1"></script>
     <script>
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
@@ -7483,6 +7483,18 @@
             ecology:"潮通しのよい沿岸の岩礁に暮らす海水魚。若い魚の体側には3本の暗い縦帯があり、小さな甲殻類などを食べる。",
             locations:"岩礁の小島（浅場〜沖）",time:"いつでも",rods:["clearStream","shoreReed"],baits:["shrimp","smallShrimp","worm"],
             tip:"岩礁の小島の中層へ、オキアミ＋ハリ中を投げてみよう。小エビやミミズにも反応するよ。"},
+          ugui: {number:31,scientific:"Tribolodon hakonensis",habitats:["river"],rarity:1,rarityLabel:"銀の川魚",
+            ecology:"銀色の体側に暗い縦帯を持つ川魚。水生昆虫や落下昆虫などを幅広く食べ、産卵期には赤い色が現れる。",
+            locations:"民家川／星見渓流の川（浅瀬〜深場）",time:"いつでも",rods:["youngBamboo","clearStream"],baits:["worm","river","paste"],
+            tip:"ミミズ＋ハリ中で川の中層を探ろう。川虫＋ハリ小でも釣れる、流れに強い魚だよ。"},
+          oikawa: {number:32,scientific:"Opsariichthys platypus",habitats:["river","lake"],rarity:1,rarityLabel:"水辺の虹色",
+            ecology:"平瀬などにすむ小さな淡水魚。水生昆虫や藻などを食べる。雄の婚姻色は青緑と赤が鮮やかで、長い尻びれを持つ。",
+            locations:"民家川（浅瀬〜淵）／星降る湖の岸際",time:"いつでも",rods:["moroko","youngBamboo"],baits:["river","grasshopper","worm"],
+            tip:"川虫＋ハリ小で民家川の浅瀬を狙おう。星降る湖の岸際にもいるよ。原画は婚姻色の雄の姿だよ。"},
+          kawahagi: {number:33,scientific:"Stephanolepis cirrhifer",habitats:["sea"],rarity:2,rarityLabel:"小さな口の名人",
+            ecology:"横に薄い菱形の体と小さな口を持つ海水魚。岩礁と砂地の混じる浅い海で、甲殻類や貝などを食べる。",
+            locations:"河口の海・白砂の小島（浅場〜沿岸）／岩礁の小島（浅場〜沖）",time:"いつでも",rods:["youngBamboo","clearStream"],baits:["shell","smallShrimp","crab"],
+            tip:"貝＋ハリ小で岩礁の小島の浅場を探ろう。小さな口に合わせて、細かい引きを落ち着いて受け止めてね。"},
           ...ShuRegional.encyclopedia,
           moroko: {
             number: 1,
@@ -7734,7 +7746,7 @@
             depth: "shallow",
             name: "星降る湖・岸際",
             role: "湖の浅場・小魚と岸際のブラックバス",
-            weights: { wakasagi: .18, moroko: .44, funa: .25, bass: .13 },
+            weights: {oikawa:.09, wakasagi: .18, moroko: .44, funa: .25, bass: .13 },
           },
           {
             id: "lake-mid",
@@ -7758,7 +7770,7 @@
             depth: "shallow",
             name: "民家川・瀬",
             role: "流れの浅い瀬・ホンモロコとアユ、朝夕のヤマメとニジマス",
-            weights: { dojo: .17, moroko: .28, ayu: .20, yamame: .15, nijimasu: .08, funa: .12 },
+            weights: {ugui:.22,oikawa:.25, dojo: .17, moroko: .28, ayu: .20, yamame: .15, nijimasu: .08, funa: .12 },
           },
           {
             id: "river-mid",
@@ -7766,7 +7778,7 @@
             depth: "mid",
             name: "民家川・流心",
             role: "川の流心・アユとヤマメ、流れへ出るニジマスと夜のウナギ",
-            weights: { dojo: .08, moroko: .07, ayu: .19, yamame: .15, nijimasu: .12, funa: .13, koi: .07, namazu: .06, bass: .07, unagi: .07 },
+            weights: {ugui:.18,oikawa:.18, dojo: .08, moroko: .07, ayu: .19, yamame: .15, nijimasu: .12, funa: .13, koi: .07, namazu: .06, bass: .07, unagi: .07 },
           },
           {
             id: "river-deep",
@@ -7774,7 +7786,7 @@
             depth: "deep",
             name: "民家川・淵",
             role: "川の淵・ナマズとブラックバス、淵尻のニジマスと夜のウナギ",
-            weights: { dojo: .06, moroko: .04, ayu: .07, yamame: .04, nijimasu: .06, funa: .11, koi: .13, namazu: .13, bass: .10, suzuki: .05, unagi: .18, bora: .05 },
+            weights: {ugui:.16,oikawa:.06, dojo: .06, moroko: .04, ayu: .07, yamame: .04, nijimasu: .06, funa: .11, koi: .13, namazu: .13, bass: .10, suzuki: .05, unagi: .18, bora: .05 },
           },
           {
             id: "sea-shallow",
@@ -7782,7 +7794,7 @@
             depth: "shallow",
             name: "潮見浜・波打ち際",
             role: "海の浅場・マアジとボラ、岩陰のメバル、砂底のヒラメと港のクロダイ",
-            weights: { aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1, bora: 0.22, mebaru: 0.18 },
+            weights: {kawahagi:.17, aji: 0.42, kasago: 0.2, suzuki: 0.09, hirame: 0.19, kurodai: 0.1, bora: 0.22, mebaru: 0.18 },
           },
           {
             id: "sea-mid",
@@ -7790,7 +7802,7 @@
             depth: "mid",
             name: "潮見浜・沿岸",
             role: "海の中層・マアジとボラ、魚礁のメバル、砂底の大物と港のクロダイ",
-            weights: { aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15, bora: 0.16, mebaru: 0.23 },
+            weights: {kawahagi:.12, aji: 0.35, kasago: 0.2, suzuki: 0.14, hirame: 0.16, kurodai: 0.15, bora: 0.16, mebaru: 0.23 },
           },
           {
             id: "sea-deep",
@@ -7801,17 +7813,17 @@
             weights: { aji: 0.29, kasago: 0.24, suzuki: 0.21, hirame: 0.1, kurodai: 0.16, bora: 0.07, mebaru: 0.16 },
           },
           { id: "coast-sand-shallow", zone: "sea", depth: "shallow", name: "白砂の小島・砂浜", role: "砂底にシロギスと回遊魚",
-            weights: { shirogisu: .53, aji: .25, bora: .12, hirame: .10 } },
+            weights: {kawahagi:.12, shirogisu: .53, aji: .25, bora: .12, hirame: .10 } },
           { id: "coast-sand-mid", zone: "sea", depth: "mid", name: "白砂の小島・沿岸", role: "砂底のシロギスとヒラメ",
-            weights: { shirogisu: .37, aji: .24, hirame: .19, suzuki: .12, bora: .08 } },
+            weights: {kawahagi:.09, shirogisu: .37, aji: .24, hirame: .19, suzuki: .12, bora: .08 } },
           { id: "coast-sand-deep", zone: "sea", depth: "deep", name: "白砂の小島・沖", role: "回遊するスズキと砂底のヒラメ",
             weights: { shirogisu: .19, aji: .2, hirame: .28, suzuki: .25, bora: .08 } },
           { id: "coast-reef-shallow", zone: "sea", depth: "shallow", name: "岩礁の小島・浅場", role: "岩陰のメバルとアイナメ",
-            weights: { isaki: .14, ainame: .32, kasago: .21, mebaru: .23, aji: .10 } },
+            weights: {kawahagi:.24, isaki: .14, ainame: .32, kasago: .21, mebaru: .23, aji: .10 } },
           { id: "coast-reef-mid", zone: "sea", depth: "mid", name: "岩礁の小島・沿岸", role: "岩礁のアイナメとクロダイ",
-            weights: { isaki: .25, ainame: .25, kasago: .15, mebaru: .12, kurodai: .13, madai: .10 } },
+            weights: {kawahagi:.18, isaki: .25, ainame: .25, kasago: .15, mebaru: .12, kurodai: .13, madai: .10 } },
           { id: "coast-reef-deep", zone: "sea", depth: "deep", name: "岩礁の小島・沖", role: "沖のマダイと岩陰のアイナメ",
-            weights: { isaki: .20, madai: .28, ainame: .18, kurodai: .16, kasago: .10, suzuki: .08 } },
+            weights: {kawahagi:.10, isaki: .20, madai: .28, ainame: .18, kurodai: .16, kasago: .10, suzuki: .08 } },
           ...ShuMountain.spots,
         ],
         baitData = {
@@ -11423,6 +11435,20 @@
         ["wakasagi","moroko",[[3,5],[5,7],[7,9],[9,11],[11,13],[13,16]],"銀色のワカサギだ。小さなアタリと引きを、やさしく追いかけよう。"],
         ["dojo","funa",[[5,8],[8,12],[12,16],[16,20],[20,24],[24,28]],"泥底のドジョウだ。細かな身くねりを、ゆっくり受け止めよう。"],
         ["isaki","aji",[[8,14],[14,20],[20,26],[26,33],[33,41],[41,50]],"岩礁のイサキだ。群れへ戻る横の引きを、落ち着いていなそう。"]
+      ]){
+        fishMouthProfiles[id]={...fishMouthProfiles[base]};
+        fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
+        fishLifeProfiles[id]={...fishLifeProfiles[base]};
+        fightProfiles[id]={...fightProfiles[base],intro};
+        fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:lengths[i][0]*100,maxHundredths:lengths[i][1]*100-1}));
+      }
+      fish.push({id:"ugui",name:"ウグイ",price:240,resistance:92,w:0,icon:"🐟",shadowRow:3},
+        {id:"oikawa",name:"オイカワ",price:170,resistance:55,w:0,icon:"🐟",shadowRow:1},
+        {id:"kawahagi",name:"カワハギ",price:520,resistance:102,w:0,icon:"🐠",shadowRow:3});
+      for(const [id,base,lengths,intro]of [
+        ["ugui","yamame",[[6,10],[10,16],[16,23],[23,30],[30,39],[39,50]],"銀の縦帯を持つウグイだ。流れに乗る引きを受け止めよう。"],
+        ["oikawa","ayu",[[4,6],[6,9],[9,12],[12,15],[15,19],[19,23]],"虹色のオイカワだ。小さな方向転換を、やさしく追いかけよう。"],
+        ["kawahagi","kasago",[[7,10],[10,14],[14,18],[18,23],[23,29],[29,36]],"小さな口のカワハギだ。岩陰へ戻る細かな引きをいなそう。"]
       ]){
         fishMouthProfiles[id]={...fishMouthProfiles[base]};
         fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
@@ -16213,7 +16239,7 @@
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo"].includes(id);
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo", "kawahagi"].includes(id);
         const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
@@ -23239,7 +23265,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=220-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=221-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

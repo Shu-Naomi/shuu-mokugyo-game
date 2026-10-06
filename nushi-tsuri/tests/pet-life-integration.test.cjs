@@ -120,7 +120,7 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'202-1','pet-life-ui.js':'214-1','aquarium-life.js':'220-1','pet-life.css':'214-1','scene-layers.js':'219-1','layered-scenery.js':'219-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  for(const [file,version] of Object.entries({'pet-life.js':'202-1','pet-life-ui.js':'214-1','aquarium-life.js':'221-1','pet-life.css':'214-1','scene-layers.js':'221-1','layered-scenery.js':'221-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
   const version=/sw\.js\?v=(\d+)-/.exec(html);
   assert.ok(version);assert.ok(sw.includes(`nushi-tsuri-v${version[1]}-`));
 });

@@ -88,7 +88,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v220/);
+    assert.match(await page.locator('.hud').innerText(),/v221/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -142,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v220/);
+    assert.match(await page.locator('.hud').innerText(),/v221/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -407,6 +407,8 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    const fishWater=require('./browser-v221.features.cjs');await fishWater(url,false);await fishWater(url,true);
+    const waterAnimation=require('./browser-v221.water.cjs');await waterAnimation(url,false);await waterAnimation(url,true);
     const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const streamUpdate=require('./browser-v219.features.cjs');await streamUpdate(url,false);await streamUpdate(url,true);
     const waterUpdate=require('./browser-v220.features.cjs');await waterUpdate(url,false);await waterUpdate(url,true);
