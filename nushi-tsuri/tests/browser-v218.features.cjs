@@ -41,11 +41,13 @@ module.exports=async function optionsAndStream(url,mobile=false){
   await press('[data-delete-save="1"]');assert.equal(await page.locator('#optionsDeleteConfirm').isDisabled(),true);assert.match(await page.locator('#optionsDeleteSummary').innerText(),/昔の冒険/);await screenshot('delete-confirm');
   await press('#optionsDeleteCancel');assert.equal(await stored(saveKey),JSON.stringify(original));await press('#optionsClose');
   await page.reload({waitUntil:'load'});assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),true);await press('#start');assert.equal(await page.evaluate(()=>s.playerName),'直美♡');assert.equal(await page.evaluate(()=>s.avatar),'girl');
-  // Cast from the real stream bank. The seeded random roll chooses the first
-  // positive candidate, which is Iwana; no catch record unlock is supplied.
+  // Cast from the real stream bank, selecting a positive Iwana roll without
+  // relying on species ordering. No catch record unlock is supplied.
   await page.evaluate(()=>{
    Object.assign(s,{mapRegion:'stream',x:128,y:76,direction:'left',selectedBait:'worm',selectedHook:'medium'});s.baits.worm=99;render();action();beginFishing();
-   const random=Math.random;Math.random=()=>0;resolveSurfaceCast(50);Math.random=random;clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish();
+   const random=Math.random;let roll=-1;
+   for(let n=0;n<1000;n++){Math.random=()=>n/1000;if(pick(50,'mountain-stream-mid').id==='iwana'){roll=n/1000;break;}}
+   if(roll<0)throw Error('Iwana has no catch odds');Math.random=()=>roll;resolveSurfaceCast(50);Math.random=random;clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish();
   });assert.equal(await page.evaluate(()=>battle.f.id),'iwana');
   await page.waitForFunction(()=>{const canvas=document.querySelector('#battleFish canvas');if(!canvas)return false;const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;let n=0;for(let i=3;i<data.length;i+=4)if(data[i]>100)n++;return n>3500;});
   await screenshot('iwana-fight');await page.evaluate(()=>{caught();hideCatchCard();save();});assert.equal(await page.evaluate(()=>s.caught.iwana),1);

@@ -59,6 +59,9 @@
     kajika: {band:"small",baits:{river:2.5,worm:1.4,liveMinnow:1.1,smallShrimp:.8,shrimp:.5,grasshopper:.3,paste:.04,corn:.02,shell:.07,crab:.12}},
     wakasagi: {band:"small",baits:{river:2.5,smallShrimp:1.8,worm:1.1,shrimp:.55,paste:.25,corn:.03,liveMinnow:.02,grasshopper:.12,shell:.02,crab:.02}},
     dojo: {band:"small",baits:{worm:2.6,river:1.7,smallShrimp:.8,shrimp:.45,paste:.3,corn:.12,liveMinnow:.04,grasshopper:.3,shell:.05,crab:.05}},
+    ugui: {band:"medium",hooks:{small:1.6,medium:1.2,large:.2},baits:{worm:2,river:1.8,paste:1.2,grasshopper:1.2,corn:.4,smallShrimp:.5,shrimp:.15,liveMinnow:.12,shell:.06,crab:.04}},
+    oikawa: {band:"small",baits:{river:2.4,grasshopper:1.5,worm:1.2,paste:.8,corn:.2,smallShrimp:.3,shrimp:.12,liveMinnow:.02,shell:.02,crab:.02}},
+    kawahagi: {band:"small",baits:{shell:3,smallShrimp:1.4,crab:1.8,shrimp:1.1,worm:.8,river:.04,paste:.03,corn:.02,liveMinnow:.02,grasshopper:.02}},
     isaki: {band:"medium",baits:{shrimp:2.4,smallShrimp:2,worm:1.2,river:.35,liveMinnow:.55,paste:.12,corn:.03,grasshopper:.04,shell:.55,crab:.65}},
     yamame: {
       band: "small",

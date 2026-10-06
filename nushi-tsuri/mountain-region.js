@@ -149,9 +149,9 @@
   function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6)||null; }
   const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖"};
   const populations={
-    stream:[{iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
-      {iwana:.28,amago:.28,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
-      {iwana:.31,amago:.15,kajika:.26,yamame:.08,nijimasu:.12,unagi:.04,namazu:.04}],
+    stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
+      {ugui:.12,iwana:.28,amago:.28,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
+      {ugui:.08,iwana:.31,amago:.15,kajika:.26,yamame:.08,nijimasu:.12,unagi:.04,namazu:.04}],
     pond:[{wakasagi:.22,moroko:.23,funa:.35,bass:.20},
       {wakasagi:.28,funa:.28,koi:.18,bass:.18,namazu:.08},
       {wakasagi:.16,koi:.37,funa:.16,bass:.16,namazu:.15}],

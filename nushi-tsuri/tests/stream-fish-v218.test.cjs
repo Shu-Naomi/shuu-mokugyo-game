@@ -22,7 +22,9 @@ test('an actual stream cast selects Iwana, records it once, paints each screen, 
  const app=boot(saved()),w=app.window;let snapshot;
  try{
   assert.equal(read(w,'s.caught.iwana||0'),0);assert.match(w.document.querySelector('#hint').textContent,/イワナ.*ミミズ/);
-  w.eval('action();beginFishing();Math.random=()=>0;resolveSurfaceCast(50);clearInterval(timer)');
+  w.eval(`action();beginFishing();(()=>{const random=Math.random;let roll=-1;
+   for(let n=0;n<1000;n++){Math.random=()=>n/1000;if(pick(50,'mountain-stream-mid').id==='iwana'){roll=n/1000;break;}}
+   if(roll<0)throw Error('Iwana has no catch odds');Math.random=()=>roll;resolveSurfaceCast(50);Math.random=random;clearInterval(timer);})()`);
   assert.equal(read(w,'battle.f.id'),'iwana');assert.equal(read(w,'battle.spot'),'mountain-stream-mid');
   w.eval('startFight();clearInterval(timer);finishHookReveal();renderBattleFish()');
   assert.match(w.document.querySelector('#battleFish canvas').dataset.atlasKey,/fish-iwana-v219\.png.*iwana/);

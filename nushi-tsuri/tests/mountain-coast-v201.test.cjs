@@ -150,5 +150,5 @@ test('decoded mountain landscape is opaque and preserves detail under night tint
   for(let i=0;i<a.length;i+=4*17){assert.equal(a[i+3],255);colors.add(`${a[i]},${a[i+1]},${a[i+2]}`);da+=a[i]+a[i+1]+a[i+2];nb+=b[i]+b[i+1]+b[i+2];}
   assert.ok(colors.size>1000);assert.ok(nb>da*.4&&nb<da*.8);
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  for(const asset of ['mountain-region.js?v=220-1',Mountain.asset,'assets/coast-rowboat-v201.png'])assert.ok(sw.includes(asset),asset);
+  for(const asset of ['mountain-region.js?v=221-1',Mountain.asset,'assets/coast-rowboat-v201.png'])assert.ok(sw.includes(asset),asset);
 });

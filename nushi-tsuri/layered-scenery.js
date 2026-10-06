@@ -88,6 +88,52 @@
     graded[0]=r;graded[1]=g;graded[2]=b;return graded;
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
+  // Eight authored pixel phases. Compile every footprint against the original
+  // ownership mask once; animation never paints onto a bank, rock or pier.
+  function prepareWaves(part,owner,labels,width,height,pixels,env,definition) {
+    const style=part.surfaceMotion,pixel=Math.max(1,Math.round(width/560));
+    const spacing=(style==='marsh'||style==='cave')?26:20;
+    const waves=[],frames=Array.from({length:8},()=>[]);
+    const clip=r=>{
+      const [x,y,w,h,tone]=r,result=[];
+      for(let yy=Math.max(0,y);yy<Math.min(height,y+h);yy++) {
+        let start=-1;
+        for(let xx=Math.max(0,x);xx<=Math.min(width,x+w);xx++) {
+          const water=xx<width&&xx<x+w&&labels[yy*width+xx]===owner;
+          if(water&&start<0)start=xx;
+          if(!water&&start>=0){result.push([start,yy,xx-start,1,tone]);start=-1;}
+        }
+      }
+      return result;
+    };
+    function pattern(step,index) {
+      const drift=style==='river'?step*2:Math.round(Math.sin(step*Math.PI/4+index)*2);
+      const fall=style==='river'?step:style==='sea'?Math.round(Math.sin(step*Math.PI/4)*2):step>3?1:0;
+      const wide=style==='sea'?5:3,crest=2+Math.abs(3-step);
+      return [[drift,fall,2,1,0],[drift+2,fall-1,wide+crest,1,1],
+        [drift+2+wide+crest,fall,2,1,1],[drift+3,fall+1,wide,1,0],
+        [drift+wide+2,fall+2,2,1,2]];
+    }
+    let index=0;
+    for(let y=part.top+pixel*6;y<part.bottom-pixel*12&&waves.length<200;y+=pixel*14)for(let x=part.left+pixel*3;x<part.right-pixel*22;x+=pixel*spacing) {
+      const i=index++,xx=x+(i%3)*pixel*3;
+      if(labels[y*width+xx]!==owner)continue;
+      const candidate=Array.from({length:8},(_,step)=>pattern((step+i*3)%8,i)
+        .flatMap(r=>clip([xx+r[0]*pixel,y+r[1]*pixel,r[2]*pixel,r[3]*pixel,r[4]])));
+      if(!candidate.every(rs=>rs.reduce((n,r)=>n+r[2]*r[3],0)>=pixel*10))continue;
+      const offset=(y*width+xx)*4;
+      const rgb=grade(pixels.data[offset],pixels.data[offset+1],pixels.data[offset+2],'water',env,definition).slice();
+      const dim=definition.indoor||env.period==='night',light=dim?14:32;
+      const colors=[rgb.map(c=>Math.max(0,c-12)),rgb.map(c=>Math.min(255,c+light)),rgb.map(c=>Math.min(255,c+light*.45))]
+        .map(c=>'rgb('+c.map(Math.round).join(',')+')');
+      waves.push({x:xx,y,colors});
+      candidate.forEach((rs,step)=>frames[step].push({rects:rs,colors}));
+      if(waves.length>=200)break;
+    }
+    // No per-frame allocation, pixel reading, image decoding or randomness.
+    return {style,pixel,frames,count:waves.length,interval:style==='river'?110:style==='sea'?160:style==='marsh'||style==='cave'?260:210,
+      alpha:definition.indoor?.34:env.weather==='rain'?.32:env.weather==='cloudy'?.36:.48};
+  }
   function prepare(source,underlay,definition,env={season:'spring',period:'day'},canvasFactory=makeCanvas) {
     const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
     const rect=definition.sourceRect;
@@ -129,7 +175,11 @@
         if(inside)part.rainSamples.push({x:x+6,y});
       }
     }
-    for(const part of parts) if(part) {part.ctx.putImageData(part.image,0,0);delete part.image;delete part.ctx;}
+    for(let i=0;i<parts.length;i++) {
+      const part=parts[i];if(!part)continue;
+      if(part.surfaceMotion)part.waves=prepareWaves(part,i,labels,width,height,pixels,env,definition);
+      part.ctx.putImageData(part.image,0,0);delete part.image;delete part.ctx;
+    }
     let base=null;
     if(underlay) {
       base=canvasFactory(width,height);const ctx=base.getContext('2d',{willReadFrequently:true});
@@ -197,7 +247,15 @@
     const ctx=canvas.getContext('2d');ctx.save();ctx.clearRect(0,0,canvas.width,canvas.height);
     ctx.imageSmoothingEnabled=false;ctx.scale(canvas.width/scene.width,canvas.height/scene.height);
     for(const part of scene.parts)if(part.motion)drawPart(ctx,part,{...options,motionTime:time});
-    if(time&&!options.reducedMotion) for(const part of scene.parts) if(part.effect) {
+    if(time&&!options.reducedMotion)for(const part of scene.parts)if(part.waves) {
+      const wave=part.waves,frame=Math.floor(time/wave.interval)%8;
+      ctx.globalAlpha=wave.alpha;
+      for(const sample of wave.frames[frame])for(const r of sample.rects) {
+        ctx.fillStyle=sample.colors[r[4]];ctx.fillRect(r[0],r[1],r[2],r[3]);
+      }
+      if(canvas.dataset){canvas.dataset.waterFrame=String(frame);canvas.dataset.waterStyle=wave.style;canvas.dataset.waterSamples=String(wave.count);}
+    }
+    if(time&&!options.reducedMotion) for(const part of scene.parts) if(part.effect&&part.effect!=='surface-wave') {
       for(let i=0;i<part.samples.length;i++) {
         const sample=part.samples[i],phase=time/1400+i*2.399;
         const dry=scene.definition.indoor||scene.definition.underwater;
@@ -226,7 +284,13 @@
           const phase=(time/1050+i*.618)%1;
           if(phase>.7)continue;
           const point=points[i];ctx.globalAlpha=(1-phase/.7)*.7;
-          ctx.beginPath();ctx.ellipse(point.x,point.y,1.5+phase*6,.4+phase*2.4,0,0,Math.PI*2);ctx.stroke();
+          if(part.waves){
+            const radius=2+Math.floor(phase*5),high=1+Math.floor(phase*2);
+            ctx.fillStyle='rgba(192,223,231,.42)';
+            ctx.fillRect(point.x-radius+1,point.y-high,radius*2-2,1);
+            ctx.fillRect(point.x-radius+1,point.y+high,radius*2-2,1);
+            ctx.fillRect(point.x-radius,point.y,1,1);ctx.fillRect(point.x+radius-1,point.y,1,1);
+          }else{ctx.beginPath();ctx.ellipse(point.x,point.y,1.5+phase*6,.4+phase*2.4,0,0,Math.PI*2);ctx.stroke();}
         }
       }
     }
@@ -322,7 +386,11 @@
       if(session&&!session.key)return paint(canvas,session.id,session.env);
       wake();return Promise.resolve(true);
     }
-    return {paint,refresh,wake,stop,dispose,stats:()=>({sessions:sessions.size,images:images.size,prepared:prepared.size,frame})};
+    function syncMotion(){
+      if(reducedMotion()){stop();for(const s of sessions.values())if(s.scene)motion(s.overlay,s.scene,0,{reducedMotion:true});}
+      else wake();
+    }
+    return {paint,refresh,wake,stop,dispose,syncMotion,stats:()=>({sessions:sessions.size,images:images.size,prepared:prepared.size,frame})};
   }
   let browserController;
   function browserBuilder() {
@@ -337,7 +405,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=219-1');
+            worker=new Worker('scenery-worker.js?v=221-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
@@ -374,6 +442,7 @@
       onError:(error,id)=>console.warn('Detailed scenery',id,error.message),
     });
     document.addEventListener('visibilitychange',()=>document.hidden?browserController.stop():browserController.wake());
+    matchMedia('(prefers-reduced-motion: reduce)').addEventListener?.('change',()=>browserController.syncMotion());
     addEventListener('pagehide',()=>browserController.stop());addEventListener('pageshow',()=>browserController.wake());
     return browserController;
   }

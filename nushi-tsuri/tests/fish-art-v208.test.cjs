@@ -5,7 +5,7 @@ const Art=require('../fish-art.js'),{boot,read}=require('./game-harness.cjs');
 
 test('all 30 fish paint complete, unclipped silhouettes in every swim, turn and jaw pose',async()=>{
   const images=new Map(),canvas=createCanvas(448,224),ctx=canvas.getContext('2d');
-  assert.equal(Object.keys(Art.species).length,30);
+  assert.equal(Object.keys(Art.species).length,33);
   for(const [id,species]of Object.entries(Art.species)){
     for(const asset of Art.assets(id))if(!images.has(asset))images.set(asset,await loadImage(path.join(__dirname,'..',asset)));
     const image=images.get(species.asset);
@@ -59,7 +59,7 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  assert.ok(sw.includes('fish-art.js?v=220-1'));
+  assert.ok(sw.includes('fish-art.js?v=221-1'));
   for(const asset of new Set(Object.keys(Art.species).flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);
   const app=boot();try{
     assert.deepEqual(read(app.window,'fish.map(f=>f.id).sort()'),Object.keys(Art.species).sort());
