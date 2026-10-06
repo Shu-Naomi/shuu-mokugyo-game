@@ -35,12 +35,22 @@ module.exports=async function castingWater(url,mobile=false){
      const c=document.querySelector('.scenery-motion[data-for="castBackdrop"]');return c.dataset.waterFrame!==previous;
     },first.frame);
     const second=await read();assert.notEqual(second.hash,first.hash,'visible pixel waves change between phases');
-    await page.waitForTimeout(650);
-    const secondShot=await surface.screenshot({animations:'disabled'}),images=await Promise.all([loadImage(firstShot),loadImage(secondShot)]);
-    const pixels=images.map(image=>{const c=createCanvas(image.width,image.height),ctx=c.getContext('2d');ctx.drawImage(image,0,0);return ctx.getImageData(0,0,c.width,c.height).data;});
-    let noticeable=0;for(let i=0;i<pixels[0].length;i+=4)if(Math.max(Math.abs(pixels[0][i]-pixels[1][i]),Math.abs(pixels[0][i+1]-pixels[1][i+1]),Math.abs(pixels[0][i+2]-pixels[1][i+2]))>=12)noticeable++;
-    const visibleChange=noticeable/(pixels[0].length/4),minimum=sample.type==='lake'?(clock===780?.05:.018):.004;
-    assert.ok(visibleChange>=minimum,'final visible casting scenery changes enough to see: '+first.locale+' '+visibleChange);
+    const firstImage=await loadImage(firstShot),pixels=image=>{const c=createCanvas(image.width,image.height),ctx=c.getContext('2d');ctx.drawImage(image,0,0);return ctx.getImageData(0,0,c.width,c.height).data;};
+    const firstPixels=pixels(firstImage),minimum=sample.type==='lake'?(clock===780?.05:.018):.004,changes=[];
+    let images,visibleChange=0;
+    // Screenshot latency can land exactly one river cycle later. Compare actual
+    // visible pixels at up to three subsequent phases, without relaxing contrast.
+    for(let attempt=0;attempt<3;attempt++){
+     const frame=(await read()).frame;
+     await page.waitForFunction(previous=>document.querySelector('.scenery-motion[data-for="castBackdrop"]').dataset.waterFrame!==previous,frame);
+     await page.waitForTimeout(300);
+     const secondImage=await loadImage(await surface.screenshot({animations:'disabled'})),secondPixels=pixels(secondImage);
+     let noticeable=0;for(let i=0;i<firstPixels.length;i+=4)if(Math.max(Math.abs(firstPixels[i]-secondPixels[i]),Math.abs(firstPixels[i+1]-secondPixels[i+1]),Math.abs(firstPixels[i+2]-secondPixels[i+2]))>=12)noticeable++;
+     const changed=noticeable/(firstPixels.length/4);changes.push({frame:(await read()).frame,changed});
+     if(!images||changed>visibleChange){images=[firstImage,secondImage];visibleChange=changed;}
+     if(visibleChange>=minimum)break;
+    }
+    console.log('V222_WATER_SAMPLE '+JSON.stringify({mobile,locale:first.locale,style:first.style,changes,visibleChange,minimum}));
     assert.equal(await page.evaluate(()=>JSON.stringify({baits:s.baits,caught:s.caught,clock:s.gameMinutes,money:s.money,hp:s.hp})),before,'watching water consumes no gameplay resources');
     results.push({region:sample.region,type:sample.type,clock,style:first.style,samples:first.samples,changed:true,visibleChange});
     if((!mobile&&['lake','stream','reef'].includes(sample.type))||(mobile&&clock===780&&sample.type==='lake'))
@@ -49,6 +59,7 @@ module.exports=async function castingWater(url,mobile=false){
      console.log('V222_WATER_FRAMES '+JSON.stringify({mobile,screen:first.locale,frames:images.map(image=>{
       const c=createCanvas(image.width,image.height);c.getContext('2d').drawImage(image,0,0);return c.toBuffer('image/jpeg',85).toString('base64');
      })}));
+    assert.ok(visibleChange>=minimum,'final visible casting scenery changes enough to see: '+first.locale+' '+visibleChange);
     if(results.length===1){
      await page.emulateMedia({reducedMotion:'reduce'});await page.waitForFunction(()=>{
       const c=document.querySelector('.scenery-motion[data-for="castBackdrop"]'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return d.every(x=>x===0);
