@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v224-boat-character-224-1";
+const CACHE_NAME = "nushi-tsuri-v225-rowboat-oars-225-1";
 const CORE_ASSETS = [
   "./assets/fish-ugui-v221.png",
   "./assets/fish-oikawa-v221.png",
@@ -29,7 +29,7 @@ const CORE_ASSETS = [
   "./tackle-balance.js?v=221-1",
   "./fishing-duel.js?v=221-1",
   "./fishing-duel.css?v=200-2",
-  "./coast-voyage.js?v=224-1",
+  "./coast-voyage.js?v=225-1",
   "./mountain-region.js?v=221-1",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=215-1",
@@ -59,7 +59,7 @@ const CORE_ASSETS = [
   "./assets/coast-nushi-v202.png",
   "./assets/cave-nushi-v202.png",
   "./assets/star-nushi-v202.png",
-  "./assets/coast-rowboat-v201.png",
+  "./assets/coast-rowboat-v225.png",
   "./assets/coast-tarai-v224.png",
   "./assets/coast-world-v197.webp",
   "./assets/fish-shirogisu-v198.webp",
