@@ -97,7 +97,7 @@
   }
   const artSources = {
     coast: "assets/coast-world-v197.webp",
-    rowboat: "assets/coast-rowboat-v225.png",
+    rowboat: "assets/coast-rowboat-v226.png",
     tarai: "assets/coast-tarai-v224.png",
   };
   const images = {};
@@ -132,17 +132,91 @@
     if(tint) {ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}
     ctx.restore();
   }
-  // The two-oar atlas is 1434x1097. Each heading has its own empty gutters:
-  // a nominal equal grid would cut the vertical boat's extended blades.
-  const boatCrops=[
-    [[0,0,407,286],[407,0,330,309],[737,0,349,307],[1086,0,348,309]],
-    [[0,286,407,262],[407,309,330,260],[737,307,353,262],[1090,309,344,260]],
-    [[0,548,407,267],[407,569,330,266],[737,569,346,264],[1083,569,351,266]],
-    [[0,815,407,282],[407,835,330,262],[737,833,362,264],[1091,835,343,262]],
+  // Eight static hull/torso bases and one reusable oar. The measured source
+  // coordinates below are kept separate from the animated, fixed rowlocks.
+  const rigAtlasWidth=1434;
+  const boatBases=[
+    [[78,46,241,369,199,230],[360,140,385,252,552,312],[778,75,226,359,890,253],[1043,137,370,256,1228,311]],
+    [[77,477,241,356,199,659],[361,563,381,259,552,737],[778,496,226,348,890,673],[1044,560,369,261,1228,736]],
   ];
-  const hullX=[212,578,915,1244];
-  const hullY=[[149,192,174,192],[417,458,438,458],
-    [682,725,704,725],[943,990,956,990]];
+  const rigPoints=[
+    [ [[95,251],[303,251],[156,235],[244,235]], [[506,219],[506,343],[600,260],[600,279]],
+      [[794,262],[987,262],[847,257],[939,257]], [[1292,219],[1287,343],[1191,268],[1191,282]] ],
+    [ [[95,677],[303,677],[155,661],[244,661]], [[506,649],[506,771],[600,682],[600,704]],
+      [[794,682],[987,682],[847,676],[939,676]], [[1292,649],[1287,771],[1191,690],[1191,709]] ],
+  ];
+  const oarCrop=[79,895,1286,143];
+  const strokeProgress=[0,.22,.68,1,1,.68,.22,0];
+  const boatRig={
+    up:{angles:[215,-35],sweep:[-70,70],reach:[21,21],outboard:[43,43]},
+    right:{angles:[-105,105],sweep:[-60,60],reach:[18,20],outboard:[38,43]},
+    down:{angles:[145,35],sweep:[70,-70],reach:[21,21],outboard:[43,43]},
+    left:{angles:[-75,75],sweep:[60,-60],reach:[18,20],outboard:[38,43]},
+  };
+  function armElbow(shoulder,hand,direction,side){
+    const [sx,sy]=shoulder,[hx,hy]=hand,dx=hx-sx,dy=hy-sy,d=Math.max(.5,Math.hypot(dx,dy));
+    const upper=16,lower=16,along=(upper*upper-lower*lower+d*d)/(2*d);
+    const across=Math.sqrt(Math.max(0,upper*upper-along*along));
+    const mx=sx+dx*along/d,my=sy+dy*along/d;
+    const candidates=[[mx-dy*across/d,my+dx*across/d],[mx+dy*across/d,my-dx*across/d]];
+    const preference=direction==='right'?-1:direction==='left'?1:side===0?-1:1;
+    // Prefer the elbow outside the torso and below the face.
+    const score=([x,y])=>preference*x+Math.min(y-sy+3,0)*4;
+    return score(candidates[0])>score(candidates[1])?candidates[0]:candidates[1];
+  }
+  function drawArm(ctx,shoulder,hand,direction,side,avatar){
+    const elbow=armElbow(shoulder,hand,direction,side);
+    const line=(from,to,width,color)=>{ctx.lineWidth=width;ctx.strokeStyle=color;ctx.beginPath();ctx.moveTo(...from);ctx.lineTo(...to);ctx.stroke();};
+    ctx.lineCap='round';ctx.lineJoin='round';
+    line(shoulder,elbow,5.5,'#463428');
+    line(shoulder,elbow,3.8,avatar==='girl'?'#b73931':'#267b88');
+    line([shoulder[0],shoulder[1]-1],[elbow[0],elbow[1]-1],1.1,avatar==='girl'?'#e5644e':'#66b5b7');
+    line(elbow,hand,4.8,'#6e4229');line(elbow,hand,3.2,'#dfa669');
+    line([elbow[0],elbow[1]-1],[hand[0],hand[1]-1],1,'#f4c88a');
+  }
+  function drawGrip(ctx,hand,angle){
+    ctx.save();ctx.translate(...hand);ctx.rotate(angle);
+    ctx.fillStyle='#6e4229';ctx.fillRect(-2.6,-2.5,5.2,5);
+    ctx.fillStyle='#edb879';ctx.fillRect(-2,-2,3.8,3.8);
+    ctx.fillStyle='#ffd394';ctx.fillRect(-1.7,-1.7,1.5,1.4);
+    ctx.restore();
+  }
+  function articulatedBoat(ctx,canvas,image,column,direction,frame,avatar,rowing){
+    const [x,y,w,h,cx,cy]=boatBases[avatar==='girl'?1:0][column];
+    const ratio=image.naturalWidth/rigAtlasWidth;
+    const vertical=column===0||column===2;
+    const scale=vertical?118/h:135/w;
+    const dx=96-(cx-x)*scale,dy=79.2-(cy-y)*scale;
+    const points=rigPoints[avatar==='girl'?1:0][column].map(([px,py])=>[96+(px-cx)*scale,79.2+(py-cy)*scale]);
+    const rig={...(boatRig[direction]||boatRig.up),pivots:points.slice(0,2),shoulders:points.slice(2)};
+    const progress=rowing?strokeProgress[((frame%8)+8)%8]:0;
+    const oars=rig.pivots.map((pivot,side)=>{
+      const angle=(rig.angles[side]+rig.sweep[side]*progress)*Math.PI/180;
+      const hand=[pivot[0]-Math.cos(angle)*rig.reach[side],pivot[1]-Math.sin(angle)*rig.reach[side]];
+      return {pivot,angle,hand,side};
+    });
+    ctx.save();ctx.scale(canvas.width/192,canvas.height/144);
+    const oar=(part,handleOnly=false)=>{
+      const {pivot,angle,side}=part,[ox,oy,ow,oh]=oarCrop;
+      const handle=rig.reach[side]+3,total=handle+rig.outboard[side],fraction=handle/total;
+      ctx.save();ctx.translate(...pivot);ctx.rotate(angle);
+      ctx.drawImage(image,ox*ratio,oy*ratio,ow*ratio*(handleOnly?fraction:1),oh*ratio,-handle,-(side===0?4.5:5.5),handleOnly?handle:total,side===0?9:11);
+      ctx.restore();
+    };
+    // Perspective layering: far blade behind the hull, inner handles and
+    // near blade above the rim; each hand follows its own continuous shaft.
+    if(!vertical)oar(oars[0]);
+    ctx.drawImage(image,x*ratio,y*ratio,w*ratio,h*ratio,dx,dy,w*scale,h*scale);
+    for(const part of oars)drawArm(ctx,rig.shoulders[part.side],part.hand,direction,part.side,avatar);
+    if(vertical){oar(oars[0]);oar(oars[1]);}else{oar(oars[0],true);oar(oars[1]);}
+    for(const part of oars){
+      drawGrip(ctx,part.hand,part.angle);
+      ctx.fillStyle='#24353c';ctx.beginPath();ctx.ellipse(...part.pivot,3.6,3,0,0,Math.PI*2);ctx.fill();
+      ctx.strokeStyle='#8f9a98';ctx.lineWidth=1.1;ctx.stroke();
+      ctx.fillStyle='#c4b98e';ctx.fillRect(part.pivot[0]-2,part.pivot[1]-.8,4,1.6);
+    }
+    ctx.restore();
+  }
   // The tub's single paddle crosses a nominal quarter-width cell. Keep the
   // measured empty gutters so it remains complete without a neighbouring cap.
   const tubColumns=[0,344,644,934,1254];
@@ -158,31 +232,7 @@
     ctx.imageSmoothingEnabled=false;
     if(id==="canoe") {
       const image=imageFor("rowboat");
-      if(ready(image)) {
-        const row=(avatar==="girl"?2:0)+(rowing&&frame%2?1:0);
-        const ratio=image.naturalWidth/1434;
-        const [x,y,w,h]=boatCrops[row][column],sx=x*ratio,sy=y*ratio,sw=w*ratio,sh=h*ratio;
-        const scale=Math.min(canvas.width*.92/(390*ratio),canvas.height*.86/(290*ratio));
-        const dx=canvas.width/2-(hullX[column]*ratio-sx)*scale;
-        const dy=canvas.height*.55-(hullY[row][column]*ratio-sy)*scale;
-        ctx.save();
-        // These last two sprites have a staggered empty gutter. Following it
-        // retains both complete blades without a fragment of the next boat.
-        if(row===3 && column>=2) {
-          const polygon=column===2
-            ? [[x,y],[1090,y],[1090,1000],[1100,1000],[1100,y+h],[x,y+h]]
-            : [[1090,y],[x+w,y],[x+w,y+h],[1100,y+h],[1100,1000],[1090,1000]];
-          ctx.beginPath();
-          polygon.forEach(([px,py],i)=>{
-            const point=[dx+(px*ratio-sx)*scale,dy+(py*ratio-sy)*scale];
-            if(i)ctx.lineTo(...point);else ctx.moveTo(...point);
-          });
-          ctx.closePath();ctx.clip();
-        }
-        ctx.drawImage(image,sx,sy,sw,sh,dx,dy,sw*scale,sh*scale);
-        ctx.restore();
-        return;
-      }
+      if(ready(image))articulatedBoat(ctx,canvas,image,column,direction,frame,avatar,rowing);
       return;
     }
     const boatAtlas=imageFor("tarai");

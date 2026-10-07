@@ -54,7 +54,7 @@ if(require.main===module) {
       'tarai-mobile':{vehicle:'tarai',direction:'right',width:844,height:354},
       'tarai-girl':{vehicle:'tarai',direction:'down',avatar:'girl'},
       'boat-mobile':{direction:'right',width:844,height:354},
-      'boat-mobile-stroke':{direction:'right',frame:1,rowing:true,width:844,height:354},
+      'boat-mobile-stroke':{direction:'right',frame:2,rowing:true,width:844,height:354},
       'boat-girl-mobile':{direction:'left',avatar:'girl',width:844,height:354},
     }))fs.writeFileSync(path.join(output,`${name}.png`),viewport(coast,options).toBuffer('image/png'));
     const sheet=createCanvas(768,288),ctx=sheet.getContext('2d');
@@ -74,7 +74,7 @@ if(require.main===module) {
     const boats=createCanvas(768,576),bc=boats.getContext('2d');
     bc.fillStyle='#145875';bc.fillRect(0,0,768,576);
     for(const [row,avatar] of ['boy','girl'].entries())for(const [col,direction] of ['up','right','down','left'].entries())for(const frame of [0,1]){
-      const boat=createCanvas(192,144);coast.paintBoat(boat,'canoe',direction,frame,avatar,Boolean(frame));
+      const boat=createCanvas(192,144);coast.paintBoat(boat,'canoe',direction,frame?2:0,avatar,Boolean(frame));
       bc.drawImage(boat,col*192,(row*2+frame)*144);
     }
     fs.writeFileSync(path.join(output,'boat-poses.png'),boats.toBuffer('image/png'));
