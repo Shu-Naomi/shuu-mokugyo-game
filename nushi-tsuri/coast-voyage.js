@@ -97,7 +97,7 @@
   }
   const artSources = {
     coast: "assets/coast-world-v197.webp",
-    rowboat: "assets/coast-rowboat-v201.png",
+    rowboat: "assets/coast-rowboat-v225.png",
     tarai: "assets/coast-tarai-v224.png",
   };
   const images = {};
@@ -132,11 +132,17 @@
     if(tint) {ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}
     ctx.restore();
   }
-  // Measured gutters and hull centres in the 1254px production atlas. Rows
-  // have different padding: use their real bounds, not equal-height cells.
-  const boatRows=[0,330,626,914,1254];
-  const hullY=[[185,211,185,211],[478,497,478,497],
-    [773,793,773,793],[1062,1088,1062,1088]];
+  // The two-oar atlas is 1434x1097. Each heading has its own empty gutters:
+  // a nominal equal grid would cut the vertical boat's extended blades.
+  const boatCrops=[
+    [[0,0,407,286],[407,0,330,309],[737,0,349,307],[1086,0,348,309]],
+    [[0,286,407,262],[407,309,330,260],[737,307,353,262],[1090,309,344,260]],
+    [[0,548,407,267],[407,569,330,266],[737,569,346,264],[1083,569,351,266]],
+    [[0,815,407,282],[407,835,330,262],[737,833,362,264],[1091,835,343,262]],
+  ];
+  const hullX=[212,578,915,1244];
+  const hullY=[[149,192,174,192],[417,458,438,458],
+    [682,725,704,725],[943,990,956,990]];
   // The tub's single paddle crosses a nominal quarter-width cell. Keep the
   // measured empty gutters so it remains complete without a neighbouring cap.
   const tubColumns=[0,344,644,934,1254];
@@ -154,12 +160,27 @@
       const image=imageFor("rowboat");
       if(ready(image)) {
         const row=(avatar==="girl"?2:0)+(rowing&&frame%2?1:0);
-        const ratio=image.naturalWidth/1254,cell=image.naturalWidth/4;
-        const sy=boatRows[row]*ratio,sh=(boatRows[row+1]-boatRows[row])*ratio;
-        const scale=Math.min(canvas.width*.92/cell,canvas.height*.86/(340*ratio));
-        ctx.drawImage(image,column*cell,sy,cell,sh,
-          canvas.width/2-cell*scale/2,
-          canvas.height*.55-(hullY[row][column]*ratio-sy)*scale,cell*scale,sh*scale);
+        const ratio=image.naturalWidth/1434;
+        const [x,y,w,h]=boatCrops[row][column],sx=x*ratio,sy=y*ratio,sw=w*ratio,sh=h*ratio;
+        const scale=Math.min(canvas.width*.92/(390*ratio),canvas.height*.86/(290*ratio));
+        const dx=canvas.width/2-(hullX[column]*ratio-sx)*scale;
+        const dy=canvas.height*.55-(hullY[row][column]*ratio-sy)*scale;
+        ctx.save();
+        // These last two sprites have a staggered empty gutter. Following it
+        // retains both complete blades without a fragment of the next boat.
+        if(row===3 && column>=2) {
+          const polygon=column===2
+            ? [[x,y],[1090,y],[1090,1000],[1100,1000],[1100,y+h],[x,y+h]]
+            : [[1090,y],[x+w,y],[x+w,y+h],[1100,y+h],[1100,1000],[1090,1000]];
+          ctx.beginPath();
+          polygon.forEach(([px,py],i)=>{
+            const point=[dx+(px*ratio-sx)*scale,dy+(py*ratio-sy)*scale];
+            if(i)ctx.lineTo(...point);else ctx.moveTo(...point);
+          });
+          ctx.closePath();ctx.clip();
+        }
+        ctx.drawImage(image,sx,sy,sw,sh,dx,dy,sw*scale,sh*scale);
+        ctx.restore();
         return;
       }
       return;

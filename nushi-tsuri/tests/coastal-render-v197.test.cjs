@@ -9,23 +9,23 @@ const {renderer,viewport}=require('./coastal-render-harness.cjs');
 test('decoded canoe sprites render all headings without clipped paddle tips or neighbour sprites',async()=>{
   const coast=await renderer();
   const signatures=new Set();
-  for(const avatar of ['boy','girl'])for(const direction of ['up','right','down','left']) {
+  for(const avatar of ['boy','girl'])for(const direction of ['up','right','down','left'])for(const frame of [0,1]) {
     const resting=createCanvas(192,144),stroke=createCanvas(192,144);
     coast.paintBoat(resting,'canoe',direction,0,avatar,false);
     coast.paintBoat(stroke,'canoe',direction,1,avatar,true);
-    const data=resting.getContext('2d').getImageData(0,0,192,144).data;
+    const data=(frame?stroke:resting).getContext('2d').getImageData(0,0,192,144).data;
     let occupied=0;
     for(let y=0;y<144;y++)for(let x=0;x<192;x++) {
       const alpha=data[(y*192+x)*4+3];
       if(alpha>100)occupied++;
-      if(x===0||x===191||y===0||y===143)assert.ok(alpha<20,`${avatar}/${direction}: clipped at ${x},${y}`);
+      if(x===0||x===191||y===0||y===143)assert.ok(alpha<20,`${avatar}/${direction}/${frame}: clipped at ${x},${y}`);
     }
     assert.ok(occupied>3500,`${avatar}/${direction}: empty or incomplete sprite`);
     const a=resting.toBuffer('image/png'),b=stroke.toBuffer('image/png');
     assert.notDeepEqual(a,b,`${avatar}/${direction}: paddle stroke must be visible`);
-    signatures.add(a.toString('base64'));
+    signatures.add((frame?b:a).toString('base64'));
   }
-  assert.equal(signatures.size,8,'each avatar and view has separate, unflipped art');
+  assert.equal(signatures.size,16,'both avatars, four headings and both strokes have separate, unflipped art');
 });
 
 test('finished coast painting and night tint render at the actual camera scale',async()=>{
@@ -48,7 +48,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
   class DelayedImage {
     constructor(){images.push(this);this.complete=false;this.naturalWidth=0;}
     set src(src){this.url=src;}
-    finish(){this.complete=true;this.naturalWidth=1254;this.onload();}
+    finish(){this.complete=true;this.naturalWidth=1434;this.onload();}
   }
   const context={Image:DelayedImage};
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
@@ -58,10 +58,10 @@ test('late image loads repaint the latest heading, avatar and environment withou
   coast.paintBoat(canvas,'canoe','up',0,'boy');
   coast.paintBoat(canvas,'canoe','left',1,'girl',true);
   coast.paint(canvas,{period:'day'});coast.paint(canvas,{period:'night'});
-  const atlas=images.find(i=>i.url.includes('coast-rowboat-v201'));
+  const atlas=images.find(i=>i.url.includes('coast-rowboat-v225'));
   atlas.finish();
-  assert.equal(calls.at(-1)[1],940.5,'load must not restore the obsolete upward view');
-  assert.equal(calls.at(-1)[2],914,'load must keep the selected girl stroke');
+  assert.equal(calls.at(-1)[1],1091,'load must not restore the obsolete upward view');
+  assert.equal(calls.at(-1)[2],835,'load must keep the selected girl stroke');
   assert.equal(calls.at(-1)[0],atlas,'latest pose is taken from the two-oar atlas');
   images.find(i=>i.url.includes('coast-world')).finish();
   assert.equal(tints.at(-1),'rgba(9,20,48,.49)','late map load keeps the latest night palette');

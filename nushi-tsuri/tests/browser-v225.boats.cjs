@@ -19,7 +19,7 @@ module.exports=async function boatCharacters(url,mobile=false){
   }
   const signature=()=>page.locator('#boatVisual').evaluate(art);
   try{
-    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v224/);await press('#start');
+    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v225/);await press('#start');
     await page.waitForFunction(()=>{
       const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
       for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>6500;
@@ -40,22 +40,24 @@ module.exports=async function boatCharacters(url,mobile=false){
           const r=c.getBoundingClientRect(),style=getComputedStyle(c);
           return {visible:style.display!=='none'&&r.width>80&&r.height>60,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight,playerHidden:getComputedStyle(document.querySelector('#player')).display==='none',rect:[r.left,r.top,r.right,r.bottom].map(Math.round)};
         });assert.ok(layout.visible&&layout.inside&&layout.playerHidden,JSON.stringify(layout));
+        if(vehicle==='canoe')console.log('V225_BOAT_POSE '+JSON.stringify({mobile,avatar,direction,frame:0,base64:(await page.locator('#boatVisual').screenshot({type:'png'})).toString('base64')}));
         await page.evaluate(()=>ShuCoast.paintBoat(document.querySelector('#boatVisual'),s.equipment.vehicle,s.direction,1,s.avatar,true));
         const stroke=await signature();assert.notEqual(stroke.hash,idle.hash,'a single stroke remains visible');poses.push(idle.hash,stroke.hash);
+        if(vehicle==='canoe')console.log('V225_BOAT_POSE '+JSON.stringify({mobile,avatar,direction,frame:1,base64:(await page.locator('#boatVisual').screenshot({type:'png'})).toString('base64')}));
         await page.evaluate(()=>render());
       }
       assert.equal(new Set(poses).size,8,vehicle+'/'+avatar+' distinct views');
       await page.evaluate(()=>{s.direction='right';render();});
-      console.log('V224_BOAT_SCREENSHOT '+JSON.stringify({mobile,vehicle,avatar,base64:(await page.screenshot({type:'jpeg',quality:82})).toString('base64')}));
+      console.log('V225_BOAT_SCREENSHOT '+JSON.stringify({mobile,vehicle,avatar,base64:(await page.screenshot({type:'jpeg',quality:82})).toString('base64')}));
       const before=await page.evaluate(()=>({x:s.x,y:s.y,hp:s.hp,minutes:s.gameMinutes}));
-      await page.evaluate(()=>{window.v224BoatCalls=[];window.v224OriginalPaint=ShuCoast.paintBoat;
-        ShuCoast.paintBoat=function(...args){window.v224BoatCalls.push({vehicle:args[1],direction:args[2],frame:args[3],avatar:args[4],rowing:args[5]});return window.v224OriginalPaint(...args);};});
+      await page.evaluate(()=>{window.v225BoatCalls=[];window.v225OriginalPaint=ShuCoast.paintBoat;
+        ShuCoast.paintBoat=function(...args){window.v225BoatCalls.push({vehicle:args[1],direction:args[2],frame:args[3],avatar:args[4],rowing:args[5]});return window.v225OriginalPaint(...args);};});
       if(mobile)await press('[data-move="right"]');else await page.keyboard.press('ArrowRight');
-      await page.waitForFunction(()=>window.v224BoatCalls.some(p=>p.rowing&&p.frame%2===1));
+      await page.waitForFunction(()=>window.v225BoatCalls.some(p=>p.rowing&&p.frame%2===1));
       await page.waitForFunction(()=>!playerWalking);
       const after=await page.evaluate(()=>({x:s.x,y:s.y,hp:s.hp,minutes:s.gameMinutes})),step=vehicle==='canoe'?5:3,cost=vehicle==='canoe'?2:1;
       assert.deepEqual(after,{x:before.x+step,y:before.y,hp:before.hp-cost,minutes:before.minutes+2});
-      const calls=await page.evaluate(()=>{const calls=window.v224BoatCalls;ShuCoast.paintBoat=window.v224OriginalPaint;delete window.v224OriginalPaint;delete window.v224BoatCalls;return calls;});
+      const calls=await page.evaluate(()=>{const calls=window.v225BoatCalls;ShuCoast.paintBoat=window.v225OriginalPaint;delete window.v225OriginalPaint;delete window.v225BoatCalls;return calls;});
       assert.ok(calls.some(p=>p.rowing&&p.frame%2===1&&p.avatar===avatar&&p.vehicle===vehicle));assert.equal(calls.at(-1).rowing,false);
       await page.evaluate(()=>save());const saved=await page.evaluate(()=>({x:s.x,y:s.y,hp:s.hp,minutes:s.gameMinutes,avatar:s.avatar,vehicle:s.equipment.vehicle}));
       await page.reload({waitUntil:'load'});await press('#start');
@@ -65,6 +67,6 @@ module.exports=async function boatCharacters(url,mobile=false){
       await page.evaluate(()=>{s.x=193;s.y=77;render();});checked.push({vehicle,avatar,headings:4,stroke:true,movement:true,saveReload:true});
     }
     assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-    console.log('V224_BOAT_CHARACTERS_PASS '+JSON.stringify({mobile,checked,errors,failed}));
+    console.log('V225_BOAT_CHARACTERS_PASS '+JSON.stringify({mobile,checked,errors,failed}));
   }finally{await context.close();await browser.close();}
 };
