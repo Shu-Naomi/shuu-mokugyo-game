@@ -6475,7 +6475,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v225</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v226</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7270,7 +7270,7 @@
     <script src="pet-life-ui.js?v=214-1"></script>
     <script src="tackle-balance.js?v=221-1"></script>
     <script src="fishing-duel.js?v=221-1"></script>
-    <script src="coast-voyage.js?v=225-1"></script>
+    <script src="coast-voyage.js?v=226-1"></script>
     <script src="mountain-region.js?v=221-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=215-1"></script>
@@ -17688,7 +17688,10 @@
           clearInterval(playerWalkInterval);
           playerWalkInterval = setInterval(() => {
             if (!playerWalking) return;
-            playerAnimFrame = (playerAnimFrame + 1) % 4;
+            // A boat stroke takes eight ticks, with time to pull and recover.
+            // Keep the four-tick walking/tub animation for the other vehicles.
+            const rowingBoat = s.mapRegion==="coast" && s.boatActive && s.equipment.vehicle==="canoe";
+            playerAnimFrame = (playerAnimFrame + 1) % (rowingBoat ? 8 : 4);
             drawPlayer();
             if (s.mapRegion==="coast" && s.boatActive)
               ShuCoast.paintBoat($("#boatVisual"),s.equipment.vehicle,s.direction,playerAnimFrame,s.avatar,true);
@@ -17750,7 +17753,7 @@
             ShuCoast.paintBoat($("#boatVisual"),s.equipment.vehicle,s.direction,0,s.avatar,false);
           scheduleIdleStatus();
           scheduleFieldMenu();
-        }, 365);
+        }, s.mapRegion==="coast" && s.boatActive && s.equipment.vehicle==="canoe" ? 745 : 365);
         // The player reaches the next step before the trailing dog finishes
         // its longer CSS catch-up. Keep the paws moving for the whole chase.
         dogWalkTimer = setTimeout(() => {
@@ -23265,7 +23268,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=225-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=226-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

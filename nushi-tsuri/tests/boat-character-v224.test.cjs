@@ -34,7 +34,7 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
   const canvas={width:192,height:144,getContext:()=>ctx},coast=context.ShuCoast;
   coast.paintBoat(canvas,'canoe','up',0,'boy',false);
   coast.paintBoat(canvas,'tarai','left',1,'girl',true);
-  const tub=images.find(i=>i.url.includes('coast-tarai-v224')),boat=images.find(i=>i.url.includes('coast-rowboat-v225'));
+  const tub=images.find(i=>i.url.includes('coast-tarai-v224')),boat=images.find(i=>i.url.includes('coast-rowboat-v226'));
   tub.finish();const latest=calls.at(-1);
   assert.equal(latest[0],tub);assert.equal(latest[1],934);assert.equal(latest[2],944);
   boat.finish();assert.deepEqual(calls.at(-1),latest,'late rowboat must not restore the old boy/up selection');
@@ -45,6 +45,6 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
 test('the detailed tub is supplied by the released renderer and its offline cache',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   assert.ok(sw.includes('./assets/coast-tarai-v224.png'));
-  assert.ok(sw.includes('./coast-voyage.js?v=225-1'));
+  assert.ok(sw.includes('./coast-voyage.js?v=226-1'));
   assert.ok(fs.existsSync(path.join(root,'assets/coast-tarai-v224.png')));
 });
