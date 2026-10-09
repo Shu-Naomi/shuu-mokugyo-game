@@ -1,0 +1,61 @@
+.fishdex-memories {
+  grid-column: 1 / -1;
+  min-width: 0;
+  border: 1px solid #d7bd7180;
+  border-radius: 9px;
+  background: #07182b99;
+}
+.fishdex-memories > summary {
+  min-height: 42px;
+  padding: 10px 12px;
+  color: #ffe2a2;
+  cursor: pointer;
+  font-weight: bold;
+}
+.fishdex-memories > summary small {
+  margin-left: 10px;
+  color: #aac6d4;
+  font-weight: normal;
+}
+.fishdex-memories > summary:focus-visible {
+  outline: 2px solid #ffe083;
+  outline-offset: -3px;
+}
+.fishdex-memory-pages {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  padding: 0 9px 9px;
+}
+.fishdex-memory-page {
+  min-width: 0;
+  padding: 10px;
+  border: 1px solid #bea57070;
+  border-radius: 6px;
+  background: linear-gradient(145deg, #253c50, #16283c);
+  overflow-wrap: anywhere;
+}
+.fishdex-memory-page h3 {
+  margin: 0 0 5px;
+  font-size: .82rem;
+  color: #eacf8d;
+}
+.fishdex-memory-size { display: block; color: #fff1c7; font-size: 1.12rem; }
+.fishdex-memory-place { margin: 4px 0; color: #d2ecf4; }
+.fishdex-memory-date { margin: 4px 0 8px; color: #b8cfda; font-size: .76rem; }
+.fishdex-memory-facts { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 4px 8px; margin: 0; font-size: .76rem; }
+.fishdex-memory-facts dt { color: #a9c8d9; }
+.fishdex-memory-facts dd { margin: 0; color: #e7edf3; }
+.fishdex-memory-empty { margin: 8px 0; color: #b8cfda; font-size: .78rem; line-height: 1.6; }
+@media (max-height: 500px) and (orientation: landscape) {
+  .fishdex-memory-pages { gap: 6px; padding: 0 6px 6px; }
+  .fishdex-memory-page { padding: 7px; }
+  .fishdex-memories > summary { padding: 10px 8px; font-size: .78rem; }
+  .fishdex-memories > summary small { font-size: .65rem; }
+  .fishdex-memory-page h3, .fishdex-memory-date, .fishdex-memory-facts, .fishdex-memory-empty { font-size: .7rem; }
+  .fishdex-memory-size { font-size: 1rem; }
+}
+@media (max-width: 600px) {
+  .fishdex-memory-pages { grid-template-columns: minmax(0, 1fr); }
+  .fishdex-memories > summary small { display: block; margin: 3px 0 0; }
+}

@@ -6441,6 +6441,7 @@
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=228-1" />
+    <link rel="stylesheet" href="catch-memories.css?v=229-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6475,7 +6476,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v228</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v229</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7270,6 +7271,7 @@
     <script src="pet-life-ui.js?v=214-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=228-1"></script>
+    <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="mountain-region.js?v=227-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
@@ -12112,6 +12114,7 @@
             sizeRecords: {},
             fishCrowns: {},
             fishCatchRecords: {},
+            catchMemories: {},
             forageCycle: null,
             cookingIngredients: null,
             preparedMeals: null,
@@ -12710,6 +12713,12 @@
         if (record.tierId === "giant") s.fishCrowns[fishId].giant = true;
       }
       s.gameMinutes = normalizeGameMinutes(s.gameMinutes);
+      const catchMemoryCatalog = {
+        sizes: fishSizeProfiles, rods: rodData, baits: {...baitData,...lureData},
+        hooks: ShuTackle.hooks, dogs: dogProfileData, weather: ShuWeather.types,
+        spots: Object.fromEntries(fishingSpots.map(spot=>[spot.id,spot])),
+      };
+      s.catchMemories = ShuCatchMemories.normalize(s.catchMemories,s,catchMemoryCatalog);
       ShuRegional.normalize(s);
       const petCatalog = fish.map(f=>{
         const tiers=fishSizeProfiles[f.id],normal=fishSizeTierById(f.id,"normal"),small=fishSizeTierById(f.id,"small");
@@ -19951,6 +19960,11 @@
         advanceGameTime(s);
         applyCastTimeTheme($("#castSurface"), sceneGameMinutes());
         battle.baitCommitted = true;
+        battle.catchContext = {
+          gameMinutes: sceneGameMinutes(),
+          weatherId: ShuWeather.forecast(sceneGameMinutes()).id,
+          dogId: s.dog,
+        };
         render();
         save();
         return true;
@@ -22363,6 +22377,20 @@
             ? "👑 巨大金冠！"
             : "";
         const newSizeRecord = updateFishSizeRecord(s, specimen);
+        if (specimen) {
+          const context = battle.catchContext || {
+            gameMinutes: sceneGameMinutes(), weatherId: ShuWeather.forecast(sceneGameMinutes()).id, dogId: s.dog,
+          };
+          ShuCatchMemories.record(s,f.id,{
+            ...context, hundredths: specimen.hundredths,
+            spotId: battle.spot, castLocale: battle.castLocale || battle.waterZone,
+            rodId: battle.rod || s.selectedRod,
+            baitId: battle.method === "lure" ? battle.lure : battle.bait || s.selectedBait,
+            hookId: battle.hook || s.selectedHook,
+            method: battle.method === "lure" ? "lure" : "bait",
+            fightMode: battle.fightMode || s.fightMode,
+          },{first,best:newSizeRecord},catchMemoryCatalog);
+        }
         s.money += salePrice;
         const filletReward = grantCookingFishFillet(f.id);
         const questProgress = recordDailyQuestCatch(f, specimen);
@@ -22642,6 +22670,31 @@
           <div class="fishdex-crown ${crowns.giant ? "earned" : ""}"><b>👑</b> 巨大金冠<br>${crowns.giant ? "獲得済み" : "未獲得"}</div>
         </div>`;
       }
+      function fishdexMemoriesMarkup(f) {
+        const e = ShuLakeStory.escape;
+        const memories = s.catchMemories?.[f.id];
+        const page = (kind,title) => {
+          const memory = memories?.[kind];
+          const empty = kind === "first"
+            ? "この魚の初釣果の日時は記録されていないよ。"
+            : "次に最大記録を更新したら、その一匹の思い出をここに残すよ。";
+          if (!memory) return `<article class="fishdex-memory-page" data-catch-memory="${kind}"><h3>${title}</h3><p class="fishdex-memory-empty">${empty}</p></article>`;
+          const weather = ShuWeather.types[memory.weatherId];
+          const bait = (baitData[memory.baitId] || lureData[memory.baitId]).name;
+          const rig = memory.method === "lure" ? bait : `${bait} ＋ ${ShuTackle.hooks[memory.hookId].name}`;
+          const tier = fishSizeTierById(f.id,memory.tierId);
+          return `<article class="fishdex-memory-page" data-catch-memory="${kind}">
+            <h3>${title}</h3><strong class="fishdex-memory-size">${(memory.hundredths/100).toFixed(2)}cm <small>（${e(tier?.label || "")}）</small></strong>
+            <p class="fishdex-memory-place">${e(fishdexCatchLocation(memory))}</p>
+            <p class="fishdex-memory-date">${e(gameClockLabel(memory.gameMinutes))}<br>${weather ? `${weather.icon} ${e(weather.label)}` : "天気の記録なし"}</p>
+            <dl class="fishdex-memory-facts"><dt>竿</dt><dd>${e(rodData[memory.rodId].name)}</dd>
+              <dt>仕掛け</dt><dd>${e(rig)}</dd><dt>釣り方</dt><dd>${e(ShuFishing.modes[memory.fightMode])}</dd>
+              <dt>相棒</dt><dd>${e(dogProfileData[memory.dogId]?.name || "記録なし")}</dd></dl>
+          </article>`;
+        };
+        return `<details class="fishdex-memories"><summary>釣りの思い出<small>初釣果・自己最大</small></summary>
+          <div class="fishdex-memory-pages">${page("first","はじめての一匹")}${page("best","自己最大の一匹")}</div></details>`;
+      }
       function fishdexKnownDetail(f) {
         const data = fishEncyclopediaData[f.id];
         const count = Math.max(0, Math.floor(Number(s.caught?.[f.id]) || 0));
@@ -22669,6 +22722,7 @@
           </div>
         </div>
         <div class="fishdex-sections">
+          ${fishdexMemoriesMarkup(f)}
           <section class="fishdex-panel wide">
             <h3>現実の生態</h3>
             <p>${data.ecology}</p>
@@ -23355,7 +23409,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=228-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=229-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

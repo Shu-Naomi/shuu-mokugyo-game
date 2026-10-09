@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v228-readable-nushi-228-1";
+const CACHE_NAME = "nushi-tsuri-v229-catch-memories-229-1";
 const CORE_ASSETS = [
+  "./catch-memories.js?v=229-1",
+  "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
   "./assets/wetland-world-v227.png",
   "./assets/fish-tanago-v227.png",

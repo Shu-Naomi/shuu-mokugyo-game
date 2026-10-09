@@ -26,7 +26,7 @@ module.exports=async function fightControls(url,mobile=false){
   }
   try{
    await page.clock.install({time:new Date('2026-10-09T06:00:00Z')});await page.clock.pauseAt('2026-10-09T06:00:01Z');
-   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v228/);await press('#start');
+   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v229/);await press('#start');
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
    async function fieldReady(){
@@ -75,13 +75,21 @@ module.exports=async function fightControls(url,mobile=false){
     oldPhase=ui.phase;await page.clock.runFor(120);seconds=(tick+1)*.12;
    }
    assert.equal(await page.evaluate(()=>battle?.phase),'landing',id+' natural landing');await setHeld(false);await page.clock.runFor(2000);
-   const outcome=await page.evaluate(({id,bait,key})=>({caught:s.caught[id],bait:s.baits[bait],saved:JSON.parse(localStorage.getItem(key)).caught[id],giant:s.fishCrowns[id]?.giant}),{id,bait,key:saveKey});
+   const outcome=await page.evaluate(({id,bait,key})=>({caught:s.caught[id],bait:s.baits[bait],saved:JSON.parse(localStorage.getItem(key)).caught[id],giant:s.fishCrowns[id]?.giant,
+    memories:s.catchMemories[id],savedMemories:JSON.parse(localStorage.getItem(key)).catchMemories[id]}),{id,bait,key:saveKey});
    assert.equal(outcome.caught,1);assert.equal(outcome.saved,1);assert.equal(outcome.bait,19);
    assert.equal(outcome.giant,true);
+   assert.ok(outcome.memories.first);assert.deepEqual(outcome.memories.first,outcome.memories.best);
+   assert.equal(outcome.memories.first.hundredths,Math.round(Number(size)*100));
+   assert.equal(outcome.memories.first.baitId,bait);assert.equal(outcome.memories.first.hookId,'large');
+   assert.equal(outcome.memories.first.rodId,'tideMaster');assert.equal(outcome.memories.first.fightMode,mode);
+   assert.deepEqual(outcome.savedMemories,outcome.memories);
    if(mode==='nushi')assert.ok(warningCount>0);if(id==='namazu'&&mode==='nushi')assert.deepEqual([...observed].sort(),['pulling','slack','warning']);
    assert.equal(await page.locator('#catchCard').evaluate(e=>e.classList.contains('show')),true);
    await shot('caught');await page.reload({waitUntil:'load'});await press('#start');await page.clock.runFor(240);
-   assert.equal(await page.evaluate(id=>s.caught[id],id),1);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+   assert.equal(await page.evaluate(id=>s.caught[id],id),1);
+   assert.deepEqual(await page.evaluate(id=>s.catchMemories[id],id),outcome.memories);
+   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V228_BROWSER_FIGHT_PASS '+JSON.stringify({mobile,id,mode,size,inputDelay,seconds,warningCount,...outcome,savedAfterReload:true,errors,failed}));
   }finally{await context.close();}
  }}finally{await browser.close();}
