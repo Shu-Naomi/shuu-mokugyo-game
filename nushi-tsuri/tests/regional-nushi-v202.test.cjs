@@ -99,11 +99,16 @@ test('the final giant requires all three new bosses and night; secret bait prese
     assert.equal(w.pick(50,'lake-mid'),null);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });
-test('starter rods cannot land any new boss in either mode while the top sea rod retrieves every boss',()=>{
+test('starter rods cap retrieval while the top sea rod reaches the water during a valid pull in both modes',()=>{
   const app=boot({...seed(),hp:100,baits:{worm:50},ownedRods:['bamboo','tideMaster'],selectedRod:'tideMaster'}),w=app.window;
   try{
     for(const mode of ['gauge','nushi'])for(const id of Object.keys(R.bosses)){
-      w.eval(`s.fightMode='${mode}';cast();beginFishing();battle.cast=90;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==='${id}');battle.specimen=rollFishSpecimen(battle.f,()=>.5);startFight();battle.awaitFightRelease=false;battle.reeling=true`);
+      w.eval(`s.fightMode='${mode}';cast();beginFishing();battle.cast=90;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==='${id}');battle.specimen=rollFishSpecimen(battle.f,()=>.5);startFight();clearInterval(timer);timer=0;var gearNow=10000;Date.now=()=>gearNow;battle.gillWash=null;var gearCalm=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.mood=gearCalm;battle.calm=true;battle.nextMood=ShuFishing.beginWindow(battle,gearCalm,1800,gearNow);battle.awaitFightRelease=false;releaseBattleAction();pressBattleAction()`);
+      // Freeze the clock to isolate rod physics within a valid calm pull.
+      // Native press/release must accept it; setting reeling alone skips that.
+      // Natural timed fights have their own v228 controller tests.
+      assert.equal(read(w,'battle.reeling'),true,`${mode}/${id} held input`);
+      if(mode==='nushi')assert.equal(read(w,'battle.nushiWindow.accepted'),true,`${mode}/${id} accepted pull`);
       w.eval('battle.equipment=ShuFishing.rod(s,"bamboo",rodData);battle.retrieval=.9995;updateRetrieval(fightProfiles[battle.f.id].moods.find(m=>m.calm))');
       assert.ok(read(w,'battle.retrieval')<=.6,`${mode}/${id} weak gear`);
       const result=read(w,'(()=>{battle.equipment=ShuFishing.rod(s,"tideMaster",rodData);battle.specimen.pullMultiplier=1;const calm=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.mood=calm;battle.calm=true;for(let i=0;i<1500;i++){updateRetrieval(calm);moveBattleFish(calm);}return [battle.retrieval,Math.hypot(battle.x-battle.surfaceX,battle.y-battle.surfaceY)];})()');
