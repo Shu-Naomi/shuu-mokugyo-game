@@ -20,7 +20,7 @@ module.exports=async function boatCharacters(url,mobile=false){
   }
   const signature=()=>page.locator('#boatVisual').evaluate(art);
   try{
-    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v226/);await press('#start');
+    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v227/);await press('#start');
     await page.waitForFunction(()=>{
       const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
       for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>6500;

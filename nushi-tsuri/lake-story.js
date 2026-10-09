@@ -3,7 +3,7 @@
   if(root)root.ShuLakeStory=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
   "use strict";
-  const regions=["stream","mountainPond","mountainMarsh","coast","cave"];
+  const regions=["stream","mountainPond","mountainMarsh","coast","cave","wetland"];
   const caught=(s,id)=>Number.isFinite(Number(s.caught?.[id]))&&Number(s.caught[id])>0;
   const visited=(s,id)=>s.lakeStory?.visited?.[id]===true;
   const three=s=>["streamNushi","coastNushi","caveNushi"].every(id=>caught(s,id));
@@ -65,6 +65,7 @@
   const object=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
   function chapters(state){return pages.filter(p=>p.when(state));}
   function regionForSpot(id=""){
+    if(/^mountain-(wetPond|wetCreek|wetMarsh)-/.test(id))return "wetland";
     if(/^mountain-highPond-/.test(id))return "mountainPond";
     if(/^mountain-highMarsh-/.test(id))return "mountainMarsh";
     if(/^mountain-underground-/.test(id))return "cave";

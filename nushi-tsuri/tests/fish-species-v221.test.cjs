@@ -8,7 +8,7 @@ test('new fish are ungated and catchable with ordinary bait, with distinct habit
  const app=boot(),w=app.window;
  try{
   for(const [id,spots,bait,hook]of [
-   ['ugui',['river-shallow','river-mid','river-deep','mountain-stream-shallow','mountain-stream-mid','mountain-stream-deep'],'worm','medium'],
+   ['ugui',['river-shallow','river-mid','river-deep','mountain-stream-shallow','mountain-stream-mid','mountain-stream-deep','mountain-wetCreek-shallow','mountain-wetCreek-mid','mountain-wetCreek-deep'],'worm','medium'],
    ['oikawa',['river-shallow','river-mid','river-deep','lake-shallow'],'river','small'],
    ['kawahagi',['sea-shallow','sea-mid','coast-sand-shallow','coast-sand-mid','coast-reef-shallow','coast-reef-mid','coast-reef-deep'],'shell','small']]){
    w.eval(`let rng_${id}=221;Math.random=()=>((rng_${id}=Math.imul(rng_${id},1664525)+1013904223>>>0)/4294967296);battle={method:'bait',bait:'${bait}',hook:'${hook}',practice:false}`);

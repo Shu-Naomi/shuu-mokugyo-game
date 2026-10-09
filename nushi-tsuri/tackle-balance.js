@@ -12,6 +12,12 @@
   // Add a species here with its basic band, bait multipliers, and optional hook overrides.
   // Spot, weather, time and casting distance multiply the result in the fishing scene.
   const species = {
+    tanago:{band:"small",baits:{paste:2.8,river:1.2,worm:1,corn:.9,smallShrimp:.25,shrimp:.08,grasshopper:.1,liveMinnow:.01,shell:.02,crab:.02}},
+    motsugo:{band:"small",baits:{river:2.6,worm:1.4,paste:1.1,corn:.18,smallShrimp:.45,shrimp:.15,grasshopper:.25,liveMinnow:.02,shell:.03,crab:.03}},
+    medaka:{band:"small",hooks:{small:2.8,medium:.05,large:.005},baits:{river:2.2,paste:1,worm:.65,corn:.04,smallShrimp:.12,shrimp:.03,grasshopper:.08,liveMinnow:.005,shell:.01,crab:.01}},
+    kamatsuka:{band:"small",hooks:{small:2.2,medium:.9,large:.12},baits:{worm:2.5,river:2,smallShrimp:.7,shrimp:.3,paste:.1,corn:.06,grasshopper:.08,liveMinnow:.1,shell:.03,crab:.08}},
+    nigoi:{band:"large",hooks:{small:.15,medium:1.8,large:1.3},baits:{worm:2.1,river:1.8,corn:1.1,paste:.7,liveMinnow:.8,smallShrimp:1,shrimp:.3,grasshopper:.4,shell:.15,crab:.3}},
+    raigyo:{band:"large",hooks:{small:.03,medium:.7,large:2.4},baits:{liveMinnow:3.5,grasshopper:1.8,worm:.5,river:.1,smallShrimp:.6,shrimp:.2,paste:.02,corn:.01,shell:.02,crab:.7}},
     moroko: {
       band: "small",
       baits: {

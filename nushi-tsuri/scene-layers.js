@@ -193,10 +193,10 @@
       ],
     };
   }
-  const mountainSurfaces={stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5]};
+  const mountainSurfaces={stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5],wetPond:[0,0,.5,.5],wetCreek:[.5,0,.5,.5],wetMarsh:[0,.5,.5,.5]};
   function mountainSurface(kind){
-    return {id:'surface-mountain-'+kind,source:'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',
-      parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,surfaceWater(kind==='stream'?'river':kind==='underground'?'cave':['marsh','highMarsh'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
+    return {id:'surface-mountain-'+kind,source:kind.startsWith('wet')?'assets/wetland-cast-v227.png':'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',
+      parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,surfaceWater(['stream','wetCreek'].includes(kind)?'river':kind==='underground'?'cave':['marsh','highMarsh','wetMarsh'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
   }
   function get(id,env={period:'day'}) {
     if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));

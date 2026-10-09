@@ -64,7 +64,22 @@
     mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:43,y:128,direction:"up"},
       returnGate:{left:35,right:51,top:122,bottom:133},bridges:[],
       waters:{highMarsh:[[73,26],[95,28],[114,23],[139,24],[157,28],[169,34],[173,44],[185,53],[198,63],[207,74],[198,86],[180,99],[158,102],[142,102],[125,107],[111,103],[93,98],[73,96],[60,90],[55,79],[44,65],[43,50],[55,38],[65,32]]},
-      trails:[[[43,133],[41,118],[45,107],[51,99],[44,86],[37,72],[29,58],[34,45],[44,34],[59,26],[71,21],[84,20],[97,23],[113,18],[133,16],[151,19],[166,24],[177,37],[180,47],[195,54],[211,61],[225,73],[225,86],[217,95],[202,103],[183,109],[160,108],[143,112],[130,110],[115,114],[96,107],[80,103],[64,104],[51,99]]],landmarks:[]},
+      trails:[[[43,133],[41,118],[45,107],[51,99],[44,86],[37,72],[29,58],[34,45],[44,34],[59,26],[71,21],[84,20],[97,23],[113,18],[133,16],[151,19],[166,24],[177,37],[180,47],[195,54],[211,61],[225,73],[225,86],[217,95],[202,103],[183,109],[160,108],[143,112],[130,110],[115,114],[96,107],[80,103],[64,104],[51,99]]],
+      landmarks:[{id:"wetland",x:225,y:86,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+    wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:224,y:6,direction:"down"},
+      returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
+      // Shores and paths traced from the final 1672 x 941 background.
+      bridges:[{left:99,right:126,top:55,bottom:60}],
+      waters:{
+        wetPond:[[26,27],[34,20],[49,18],[67,20],[79,26],[88,37],[87,47],[80,57],[66,62],[50,63],[35,58],[24,51],[21,39]],
+        wetCreek:[[113,2],[130,2],[130,13],[123,28],[121,41],[117,50],[119,62],[117,72],[111,91],[104,111],[99,133],[81,133],[87,111],[93,93],[101,73],[105,62],[107,49],[108,37],[109,25],[113,12]],
+        wetMarsh:[[183,38],[199,36],[220,37],[233,43],[233,57],[230,72],[224,83],[222,96],[217,105],[204,112],[185,114],[164,110],[151,104],[140,94],[131,81],[127,70],[130,56],[143,47],[162,41]],
+      },
+      trails:[
+        [[224,2],[218,16],[207,29],[189,32],[167,34],[145,40],[133,47],[128,55],[124,58]],
+        [[100,58],[96,60],[89,66],[74,70],[57,71],[39,67],[24,62],[16,52],[15,36],[23,21],[37,13],[52,11],[70,12],[83,19],[92,31],[96,45],[96,60]],
+        [[128,55],[128,70],[133,85],[144,102],[159,115],[185,120],[207,119],[224,111],[231,98],[235,80],[238,61],[238,43],[231,34],[213,30],[189,32]],
+      ],landmarks:[]},
     cave:{asset:"assets/cave-lake-v202.png",name:"岩窟の地下湖",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       waters:{underground:[[90,18],[112,17],[136,19],[157,23],[176,27],[192,33],[207,42],[217,55],[219,71],[210,86],[192,98],[169,102],[146,105],[126,106],[104,103],[88,99],[69,94],[53,88],[37,77],[28,63],[31,47],[42,37],[58,29],[74,24]]},
@@ -74,7 +89,8 @@
   const regionData=id=>regions[id]||regions.stream;
   function exitAt(x,y,region="stream"){
     const data=regionData(region);
-    if(inRect(x,y,data.returnGate))return region==="stream"
+    if(inRect(x,y,data.returnGate))return region==="wetland"
+      ?{region:"mountainMarsh",x:225,y:78,direction:"up"}:region==="stream"
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
         ?{region:"mountainPond",x:224,y:12,direction:"down"}:region==="cave"
           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
@@ -82,6 +98,7 @@
     if(landmark?.id==="pass")return {region:"mountainPond",...regions.mountainPond.entry};
     if(landmark?.id==="cave")return {region:"cave",...regions.cave.entry};
     if(landmark?.id==="marsh")return {region:"mountainMarsh",...regions.mountainMarsh.entry};
+    if(landmark?.id==="wetland")return {region:"wetland",...regions.wetland.entry};
     return null;
   }
   function inRect(x,y,r) { return x>=r.left && x<=r.right && y>=r.top && y<=r.bottom; }
@@ -141,13 +158,13 @@
       const px=x+dx*d-dy*ray.slope*d,py=y+dy*d+dx*ray.slope*d;
       if(onBridge(px,py,region)){ray.blocked=true;continue;}
       const type=waterType(px,py,region);
-      if(type)return {zone:type==="stream"?"river":"lake",type,x:px,y:py};
+      if(type)return {zone:["stream","wetCreek"].includes(type)?"river":"lake",type,x:px,y:py};
       if(!walkable(px,py,region))ray.blocked=true;
     }
     return null;
   }
   function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6)||null; }
-  const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖"};
+  const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖",wetPond:"睡蓮の池",wetCreek:"砂底の小川",wetMarsh:"水郷の葦の沼"};
   const populations={
     stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
       {ugui:.12,iwana:.28,amago:.28,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
@@ -161,8 +178,17 @@
   };
   populations.highPond=populations.pond;populations.highMarsh=populations.marsh;
   populations.underground=[{funa:.45,koi:.2,namazu:.2,unagi:.15},{namazu:.4,unagi:.35,koi:.15,funa:.1},{namazu:.42,unagi:.38,koi:.15,funa:.05}];
+  populations.wetPond=[{tanago:.28,motsugo:.25,medaka:.26,funa:.13,moroko:.08},
+    {tanago:.30,motsugo:.28,medaka:.12,funa:.18,koi:.12},
+    {tanago:.18,motsugo:.22,funa:.26,koi:.24,namazu:.10}];
+  populations.wetCreek=[{kamatsuka:.34,motsugo:.23,medaka:.14,nigoi:.10,ugui:.10,dojo:.09},
+    {kamatsuka:.35,nigoi:.28,motsugo:.14,ugui:.15,dojo:.08},
+    {kamatsuka:.22,nigoi:.42,ugui:.14,dojo:.08,unagi:.14}];
+  populations.wetMarsh=[{raigyo:.15,tanago:.18,motsugo:.22,medaka:.14,dojo:.18,funa:.13},
+    {raigyo:.32,nigoi:.12,namazu:.22,funa:.16,dojo:.18},
+    {raigyo:.39,nigoi:.18,namazu:.23,unagi:.12,koi:.08}];
   const spots=Object.keys(names).flatMap(type=>["shallow","mid","deep"].map((depth,i)=>({
-    id:`mountain-${type}-${depth}`,zone:type==="stream"?"river":"lake",depth,
+    id:`mountain-${type}-${depth}`,zone:["stream","wetCreek"].includes(type)?"river":"lake",depth,
     name:`${names[type]}・${["岸際","流心・中層","淵・深場"][i]}`,
     role:`${names[type]}の${["浅場","中層","深場"][i]}`,weights:populations[type][i],
   })));

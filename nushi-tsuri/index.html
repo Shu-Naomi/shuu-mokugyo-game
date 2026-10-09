@@ -6475,7 +6475,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v226</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v227</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7266,26 +7266,26 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=221-1"></script>
+    <script src="aquarium-life.js?v=227-1"></script>
     <script src="pet-life-ui.js?v=214-1"></script>
-    <script src="tackle-balance.js?v=221-1"></script>
-    <script src="fishing-duel.js?v=221-1"></script>
+    <script src="tackle-balance.js?v=227-1"></script>
+    <script src="fishing-duel.js?v=227-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="mountain-region.js?v=221-1"></script>
+    <script src="mountain-region.js?v=227-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-story.js?v=215-1"></script>
+    <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=221-1"></script>
+    <script src="fish-art.js?v=227-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=223-1"></script>
-    <script src="layered-scenery.js?v=223-1"></script>
+    <script src="scene-layers.js?v=227-1"></script>
+    <script src="layered-scenery.js?v=227-1"></script>
     <script>
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
@@ -11456,6 +11456,53 @@
         fightProfiles[id]={...fightProfiles[base],intro};
         fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:lengths[i][0]*100,maxHundredths:lengths[i][1]*100-1}));
       }
+      // v227: ordinary wetland fish join the same catch, dex, cooking and tank paths.
+      fish.push(
+        {id:"tanago",name:"タナゴ",price:180,resistance:38,w:0,icon:"🐠",shadowRow:1},
+        {id:"motsugo",name:"モツゴ",price:100,resistance:34,w:0,icon:"🐟",shadowRow:0},
+        {id:"medaka",name:"メダカ",price:70,resistance:22,w:0,icon:"🐟",shadowRow:0},
+        {id:"kamatsuka",name:"カマツカ",price:280,resistance:68,w:0,icon:"🐟",shadowRow:2},
+        {id:"nigoi",name:"ニゴイ",price:650,resistance:139,w:0,icon:"🐟",shadowRow:3},
+        {id:"raigyo",name:"ライギョ",price:1100,resistance:158,w:0,icon:"🐟",shadowRow:3}
+      );
+      for(const [id,base,lengths,intro]of [
+        ["tanago","funa",[[2,3],[3,4],[4,5],[5,6],[6,8],[8,10]],"睡蓮の池のタナゴだ。小さな横向きの引きを、やさしく追おう。"],
+        ["motsugo","moroko",[[2,3],[3,4],[4,6],[6,8],[8,10],[10,14]],"細い縦帯のモツゴだ。短い走りが止まる瞬間を待とう。"],
+        ["medaka","moroko",[[.8,1.3],[1.3,1.8],[1.8,2.5],[2.5,3.2],[3.2,3.8],[3.8,4.5]],"小さなメダカだ。軽い引きを、細い仕掛けでゆっくり寄せよう。"],
+        ["kamatsuka","kajika",[[5,8],[8,11],[11,14],[14,18],[18,23],[23,30]],"砂底のカマツカだ。底を伝う細かな動きに合わせよう。"],
+        ["nigoi","koi",[[12,20],[20,28],[28,38],[38,48],[48,62],[62,80]],"ニゴイが砂底で粘る。重さが抜けるまで糸を送ろう。"],
+        ["raigyo","bass",[[15,25],[25,38],[38,52],[52,68],[68,88],[88,115]],"葦の沼のライギョだ。水草へ戻る力強い突進をいなそう。"]
+      ]){
+        fishMouthProfiles[id]={...fishMouthProfiles[base]};
+        fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
+        fishLifeProfiles[id]={...fishLifeProfiles[base]};
+        const oldName=fish.find(f=>f.id===base).name,newName=fish.find(f=>f.id===id).name;
+        fightProfiles[id]={...fightProfiles[base],intro,moods:fightProfiles[base].moods.map(m=>({...m,
+          hold:m.hold?.replaceAll(oldName,newName),loose:m.loose?.replaceAll(oldName,newName)}))};
+        fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:Math.round(lengths[i][0]*100),maxHundredths:Math.round(lengths[i][1]*100)-1}));
+      }
+      Object.assign(fightProfiles.raigyo.moods[0],{id:"reed-run",name:"水草へ突進",motion:"rush",speedX:5.4,speedY:1.1,
+        tension:8.8,release:6.4,weight:.38,danger:true,hold:"ライギョが水草へ突進！Aを離して走りを受け流そう！",loose:"力強い走りだ。止まるまで糸を送ろう。"});
+      Object.assign(fishEncyclopediaData,{
+        tanago:{number:34,scientific:"Acheilognathus melanogaster",habitats:["lake"],rarity:2,rarityLabel:"水草の小さな住人",
+          ecology:"平たい銀色の体を持つ小さな淡水魚。水草のある穏やかな水辺で暮らす。",locations:"水郷の湿地・睡蓮の池／葦の沼の岸際",time:"いつでも",
+          rods:["moroko","youngBamboo"],baits:["paste","worm","river"],tip:"睡蓮の池へ練りエサ＋ハリ小を。岸際から中層をこまめに探ろう。"},
+        motsugo:{number:35,scientific:"Pseudorasbora parva",habitats:["lake","river"],rarity:1,rarityLabel:"細い縦帯の小魚",
+          ecology:"体側に暗い縦帯を持ち、口が少し上を向いた小さな淡水魚。",locations:"水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"いつでも",
+          rods:["bamboo","moroko"],baits:["river","worm","paste"],tip:"川虫＋ハリ小で池や小川の浅場を探ろう。ミミズにも反応するよ。"},
+        medaka:{number:36,scientific:"Oryzias spp.",habitats:["lake","river"],rarity:1,rarityLabel:"水面の小さな群れ",
+          ecology:"大きな目と小さな体を持つ淡水魚。背びれが体の後方にある。",locations:"水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"朝〜昼に多い",
+          rods:["moroko","bamboo"],baits:["river","paste","worm"],tip:"川虫＋ハリ小で岸際を狙おう。大きなハリでは出会いにくいよ。"},
+        kamatsuka:{number:37,scientific:"Pseudogobio esocinus",habitats:["river"],rarity:2,rarityLabel:"砂底の住人",
+          ecology:"砂色の斑点と下向きの口、短い口ひげを持つ川魚。",locations:"水郷の湿地・砂底の小川（浅場〜深場）",time:"いつでも",
+          rods:["youngBamboo","clearStream"],baits:["worm","river"],tip:"小川の砂底へミミズ＋ハリ小。中層から深場へ距離を変えて探ろう。"},
+        nigoi:{number:38,scientific:"Hemibarbus barbus",habitats:["river","lake"],rarity:2,rarityLabel:"砂底の大物",
+          ecology:"細長い体ととがった鼻先、下向きの口を持つ大きな川魚。",locations:"水郷の湿地・砂底の小川／葦の沼の中層〜深場",time:"いつでも",
+          rods:["clearStream","starGazer"],baits:["worm","river","corn"],tip:"ミミズ＋ハリ中で小川の深場へ。大きな個体は重く粘るので、隙を待とう。"},
+        raigyo:{number:39,scientific:"Channa argus（カムルチー）",habitats:["lake"],rarity:3,rarityLabel:"葦の沼の大物",
+          ecology:"本作のライギョはカムルチー。細長い体と大きな口、長い背びれを持つ肉食魚。",locations:"水郷の湿地・葦の沼（浅場〜深場）",time:"昼〜夕方に多い",
+          rods:["starGazer","shoreReed"],baits:["liveMinnow","grasshopper","worm"],tip:"葦の沼の中層へ活き小魚＋ハリ大。スプーンにも反応するよ。丈夫な竿で突進を受け止めよう。"}
+      });
       // Every fish uses the common renderer and seven headings. Preserve each
       // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
@@ -14301,7 +14348,7 @@
         if(landmark)log(landmark.message);
         else showRescueToast(ShuMountain.onBridge(s.x,s.y,s.mapRegion)
           ?"木の橋だ。釣りは川岸へ降りてから。"
-          :`${ShuMountain.regionData(s.mapRegion).name}。水辺へ向いてAで釣る。南の入口から戻れる。`);
+          :`${ShuMountain.regionData(s.mapRegion).name}。水辺へ向いてAで釣る。来た道の入口から戻れる。`);
         return true;
       }
       function worldToMapX(x) {
@@ -16239,7 +16286,7 @@
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo", "kawahagi"].includes(id);
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo", "kawahagi", "kamatsuka", "nigoi"].includes(id);
         const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
@@ -16893,6 +16940,9 @@
             marsh: [[57,72],[58,61],[57,51],[54,42]],
             highMarsh: [[57,72],[58,61],[57,51],[54,42]],
             underground: [[58,73],[60,63],[62,53],[64,43]],
+            wetPond: [[54,73],[59,64],[60,52],[57,41]],
+            wetCreek: [[55,72],[61,63],[60,50],[53,42]],
+            wetMarsh: [[57,72],[58,61],[57,51],[54,42]],
           };
           return castLanePoint(lanes[battle?.mountainType] || lanes.pond, value);
         }
@@ -17522,11 +17572,11 @@
                 ? "焚き火だ。Aで30分休んで体力を30回復。"
                 : "小島の水辺へ向いてAで釣る。桟橋へ戻れば乗船できる。"
           : mountain
-            ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "南の入口だ。Aか下へ進むと来た道へ戻る。"
+            ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "来た道の入口だ。Aで戻れる。"
               : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
               : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":['marsh','highMarsh'].includes(spot.mountainType)?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
-              : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、南の入口から戻れる。`
+              : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、来た道の入口から戻れる。`
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
           : !s.equipment.vehicle && activeLandingDock()
             ? "舟屋でタライかボートを購入・装備すると、この桟橋から小島へ行ける。"
@@ -18199,6 +18249,8 @@
             ? fish.find((candidate) => candidate.id === (ShuRegional.candidates(s,spot.id,period).starNushi?"starNushi":"nushi")) : null;
         const weighted = Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
           let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
+          if (id === "medaka") weight *= {morning:1.6,day:1.5,evening:.8,night:.12}[period] || 1;
+          if (id === "raigyo") weight *= {morning:1.1,day:1.3,evening:1.4,night:.6}[period] || 1;
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -19763,7 +19815,7 @@
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
         const coastType = battle?.coastType || /^coast-(sand|reef)-/.exec(spot.id)?.[1] || null;
-        const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh|highPond|highMarsh|underground)-/.exec(spot.id)?.[1] || null;
+        const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh|highPond|highMarsh|underground|wetPond|wetCreek|wetMarsh)-/.exec(spot.id)?.[1] || null;
         close();
         battle = {
           phase: "cast",
@@ -23268,7 +23320,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=226-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=227-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

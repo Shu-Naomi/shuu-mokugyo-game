@@ -13,7 +13,7 @@ async function waitForPublication(){
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
         for(const file of ['sw.js','cast-tackle.css','scene-layers.js','layered-scenery.js','scenery-worker.js','assets/mountain-cast-v219.png','player-options.js','player-options.css','tackle-balance.js','item-categories.css','fish-art.js','fishing-duel.js','pet-life-ui.js','pet-life.css','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','coast-voyage.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
           'assets/coast-tarai-v224.png','assets/coast-rowboat-v226.png',
-          'assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
+          'assets/wetland-world-v227.png','assets/wetland-cast-v227.png','assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
           ...new Set(Object.keys(require('../fish-art.js').species).flatMap(id=>require('../fish-art.js').assets(id))),
           ...Object.values(require('../music-tracks.js')).map(track=>track.src)]){
@@ -89,7 +89,7 @@ async function smoke(url){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v226/);
+    assert.match(await page.locator('.hud').innerText(),/v227/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -143,7 +143,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v226/);
+    assert.match(await page.locator('.hud').innerText(),/v227/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -408,6 +408,7 @@ async function audioSmoke(url,mobile){
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    const wetland=require('./browser-v227.features.cjs');await wetland(url,false);await wetland(url,true);
     const boatCharacters=require('./browser-v226.boats.cjs');await boatCharacters(url,false);await boatCharacters(url,true);
     const fishWater=require('./browser-v221.features.cjs');await fishWater(url,false);await fishWater(url,true);
     const waterAnimation=require('./browser-v221.water.cjs');await waterAnimation(url,false);await waterAnimation(url,true);

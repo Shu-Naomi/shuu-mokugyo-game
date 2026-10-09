@@ -19,7 +19,7 @@ test('new fish have practical ungated bait odds in their own waters and do not s
    }
   }
   for(const spot of read(w,'fishingSpots')){
-   for(const id of newFish){const allowed=id==='wakasagi'?/^(lake|mountain-(pond|highPond))-/.test(spot.id):id==='dojo'?/^(river|mountain-(marsh|highMarsh))-/.test(spot.id):/^coast-reef-/.test(spot.id);
+   for(const id of newFish){const allowed=id==='wakasagi'?/^(lake|mountain-(pond|highPond))-/.test(spot.id):id==='dojo'?(/^(river|mountain-(marsh|highMarsh|wetCreek))-/.test(spot.id)||/^mountain-wetMarsh-(shallow|mid)$/.test(spot.id)):/^coast-reef-/.test(spot.id);
     assert.equal(Boolean(spot.weights[id]),allowed,id+' habitat '+spot.id);
    }
   }
