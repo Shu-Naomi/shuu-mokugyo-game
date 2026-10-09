@@ -29,7 +29,19 @@ module.exports=async function fightControls(url,mobile=false){
    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v228/);await press('#start');
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
-   for(const direction of route.path){await press('[data-move="'+direction+'"]');await page.clock.runFor(120);}
+   async function fieldReady(){
+    // A real dog discovery temporarily blocks field inputs. Let its normal
+    // timers finish instead of dropping route steps or disabling the event.
+    for(let i=0;i<80&&await page.evaluate(()=>forageDiscoveryInProgress||rescueInProgress||playerHomeState.transitioning);i++)await page.clock.runFor(120);
+    assert.equal(await page.evaluate(()=>forageDiscoveryInProgress||rescueInProgress||playerHomeState.transitioning),false);
+   }
+   for(const direction of route.path){
+    await fieldReady();const old=await page.evaluate(()=>({x:s.x,y:s.y}));
+    await press('[data-move="'+direction+'"]');await page.clock.runFor(120);
+    const next=await page.evaluate(()=>({x:s.x,y:s.y}));
+    assert.ok(old.x!==next.x||old.y!==next.y,'native field input '+direction+' '+JSON.stringify({old,next}));
+   }
+   await fieldReady();assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction})),{x:route.x,y:route.y,direction:route.direction});
    assert.equal(await page.evaluate(()=>Boolean(fishingWaterNearPlayer())),true);await press('#action');
    assert.equal(await page.evaluate(()=>battle?.phase),'prep');await press('#wait');await press('#beginCast');
    const spot=wet?'mountain-wetMarsh-mid':'lake-deep',distance=wet?50:95;
