@@ -4,12 +4,13 @@
 
 ## 現在の状態
 
-ゲーム本体の調整はPR229で公開済み。既存の竿性能検査の準備とCIの実行時間をPR230で補修中。この記録は技術的な進捗を残すためのもの。元の引き継ぎにある将来計画の本文は移していない。
+ゲーム本体の調整はPR229で公開済み。既存の竿性能検査の準備とCIの実行時間をPR230で補修し、398/398の成功後にマージ済み。最終公開CIを確認中。この記録は技術的な進捗を残すためのもの。元の引き継ぎにある将来計画の本文は移していない。
 
 - 実装PR：https://github.com/Shu-Naomi/shuu-mokugyo-game/pull/229
 - ゲーム本体の公開コミット：`67b5f1a37c2849158075137c57e2630d8344946f`
 - 本体のtree：`682996738741e33a7bdae5cc4679ba0cc95ee99b`
-- 検査補修PR：https://github.com/Shu-Naomi/shuu-mokugyo-game/pull/230 （確認中）
+- 検査補修PR：https://github.com/Shu-Naomi/shuu-mokugyo-game/pull/230 （マージ済み）
+- 補修後main：`e0e97b69d00b9a1b1174509ff7b483aa9c92f760`。変更は検査とCI、ゲーム本体のblobは公開済み67b5f1aと同一。
 
 ## 操作の調整
 
@@ -65,7 +66,7 @@ Pages [37899338877](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/
 
 PR230では、竿の計算を切り出す固定時計とcalm窓を用意し、実ゲームのreleaseBattleAction／pressBattleActionを通してreelingとacceptedを確認する。自然な時間進行の釣り上げは別のv228モデル／ブラウザ検査で確認する。browser jobの実行時間上限は30分とし、全検査と後処理まで完了させる。
 
-残りはPR230のソースCI成功、マージ、最終mainのunit／公開browser成功の確認。完了後はこの状態欄を更新する。元の引き継ぎファイルは直前の作業内容を保存済みだが、接続が戻るまでは最終追記ができない。
+補修ソースCI [37902036729](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37902036729) のunitは398/398、fail0。問題だった竿検査も成功。ソースのbrowserはゲーム本体が同一で、複製検査の完了を確認中。PR230は期待HEADを指定してマージ済み。残りは最終mainのunit／公開browser成功の確認。完了後はこの状態欄を更新する。元の引き継ぎファイルは直前の作業内容を保存済みだが、接続が戻るまでは最終追記ができない。
 
 ## 再現するコード
 
