@@ -98,7 +98,7 @@ test("all fish retain their own swimming cadence in the aquariums", () => {
   const app = boot();
   try {
     const ids = read(app.window, "fish.map(f=>f.id)");
-    assert.equal(ids.length, 33);
+    assert.equal(ids.length, 39);
     const gaits = ids.map(id => Aquarium.gait(id));
     assert.equal(new Set(gaits.map(g => JSON.stringify(g))).size, ids.length);
     const added = ["wakasagi", "dojo", "isaki"].map(species => ({uid: species, species, length: 1200}));

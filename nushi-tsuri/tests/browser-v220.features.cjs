@@ -7,7 +7,7 @@ module.exports=async function waterAndFish(url,mobile=false){
   const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/v220|fish-art|coast-voyage|mountain-region/.test(r.url()))failed.push(r.status()+' '+r.url());});
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v226/);
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v227/);
   await page.locator('#start')[mobile?'tap':'click']();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();
   return {context,page,press:q=>page.locator(q)[mobile?'tap':'click']()};
  }
@@ -89,9 +89,9 @@ module.exports=async function waterAndFish(url,mobile=false){
     assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),spot);
    }
    await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await page.evaluate(()=>['wakasagi','dojo','isaki'].map(id=>s.caught[id])),[1,1,1]);
-   assert.equal(await page.evaluate(()=>fish.length),33);
+   assert.equal(await page.evaluate(()=>fish.length),39);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-   console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:33,saved:true,shoreBlocks:true,errors,failed}));
+   console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:39,saved:true,shoreBlocks:true,errors,failed}));
   }finally{await context.close();}
   }
  }finally{await browser.close();}
