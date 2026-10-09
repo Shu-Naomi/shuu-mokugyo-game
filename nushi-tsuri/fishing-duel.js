@@ -1,4 +1,4 @@
-/* v200: persistent tackle choices and the movement-led underwater fight. */
+/* v228: tackle choices and readable slack / pull / brace windows. */
 (function(root,factory){const api=factory();if(typeof module==="object"&&module.exports)module.exports=api;
   if(root)root.ShuFishing=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
@@ -56,18 +56,66 @@
     return {...base,power:base.power+level*2,control:base.control+level*.08,
       strength:(strengths[id]||1)+level*.25,level,role:roles[id]||roles.bamboo};
   }
+  const nushiTiming=Object.freeze({slack:1800,pull:1200,warning:900});
+  function beginWindow(b,mood,duration,now){
+    b.nushiWindow=null;
+    if(b.fightMode!=="nushi"||!mood.calm)return now+duration;
+    const warnAt=now+Math.max(nushiTiming.slack,duration);
+    b.nushiWindow={moodId:mood.id,openedAt:now,warnAt,endsAt:warnAt+nushiTiming.warning,
+      accepted:false,warning:false};
+    return b.nushiWindow.endsAt;
+  }
+  function acceptPull(b,now){
+    if(b.fightMode==="nushi")b.nushiYielded=false;
+    const window=b.nushiWindow;
+    if(b.fightMode!=="nushi"||!b.mood?.calm||!window||
+      window.moodId!==b.mood.id||now>=window.warnAt)return false;
+    // Only the first correct press can secure a pull. Repeated presses never
+    // refill its deadline, and a hold carried over from a run is not a press.
+    if(!window.accepted){
+      window.accepted=true;window.pullStartedAt=now;
+      window.warnAt=Math.max(window.warnAt,now+nushiTiming.pull);
+      window.endsAt=window.warnAt+nushiTiming.warning;
+      b.nextMood=window.endsAt;
+    }
+    return true;
+  }
+  function releasePull(b,now){
+    const window=b.nushiWindow;
+    if(b.fightMode!=="nushi"||!b.reeling||!b.mood?.calm||!window?.accepted||now>=window.endsAt)return false;
+    b.nushiYielded=true;
+    return true;
+  }
+  function windowPhase(b,now){
+    if(b.fightMode!=="nushi")return null;
+    if(b.gillWash)return "leap";
+    if(!b.mood?.calm)return "running";
+    const window=b.nushiWindow;
+    if(window&&window.moodId===b.mood.id){
+      window.warning=now>=window.warnAt;
+      if(window.warning)return "warning";
+    }
+    return b.reeling&&(!window||window.accepted)?"pulling":"slack";
+  }
+  function shiftWindow(b,duration){
+    if(!b?.nushiWindow)return;
+    for(const key of ["openedAt","warnAt","endsAt","pullStartedAt"])
+      if(Number.isFinite(b.nushiWindow[key]))b.nushiWindow[key]+=duration;
+  }
   function step(b,mood,equipment,pullMultiplier=1){
     const before=b.retrieval||0;
     const force=(fishStrength[b.f.id]||1.5)*clamp(pullMultiplier,.65,1.8);
     const ratio=force/equipment.strength;
     const running=!mood.calm;
+    const window=b.nushiWindow?.moodId===mood.id?b.nushiWindow:null;
+    const canPull=!window||window.accepted&&!window.warning;
     // The body and line are the primary cue. Pulling a running fish cannot
     // shortcut a stronger rod; slack periods are the actual retrieval window.
     if(b.reeling){
       if(running){
         b.ten+= (mood.danger?8.5:4.4)*ratio/equipment.control;
         b.retrieval=before-.0018*ratio;
-      }else{
+      }else if(canPull){
         b.ten+=1.4*ratio/equipment.control;
         const strengthGate=clamp((equipment.strength/force-.25)/.8,0,1.5);
         const sand=b.f.id==="hirame"&&!b.sandLifted?.45:1;
@@ -75,15 +123,16 @@
       }
     }else{
       b.ten=Math.max(3,b.ten-(running?2.8:4.2)*equipment.control);
-      // Correctly yielding to a run must preserve enough of the short slack
-      // window's gain. The old loss erased every gain with a suitable sea rod.
-      b.retrieval=before-(running?.00045*ratio:0);
+      // Releasing a successful pull before the run preserves its gain.
+      // Late releases and pulling a running fish still surrender distance.
+      b.retrieval=before-(running&&!b.nushiYielded?.00045*ratio:0);
     }
     // Starter gear is never sufficient for the nushi, even at the best timing.
     if(!b.practice&&equipment.strength<(minStrength[b.f.id]||0))b.retrieval=Math.min(.6,b.retrieval);
     b.retrieval=clamp(b.retrieval,0,1);b.retrievalDelta=b.retrieval-before;
-    b.ten=clamp(b.ten,3,b.practice?88:110);b.lineSlack=!running&&!b.reeling;
+    b.ten=clamp(b.ten,3,b.practice?88:110);b.lineSlack=!running&&!window?.warning&&!b.reeling;
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
-  return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,step});
+  return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
+    nushiTiming,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step});
 });

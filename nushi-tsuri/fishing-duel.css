@@ -15,4 +15,7 @@
 .bait-silverSpoon .hook-spoon{display:block}
 .bait-silverSpoon .bait-shape{display:none!important}
 .duel-nushi #ten{background:linear-gradient(90deg,#75bdb0,#c8b86b,#c15b46)}
+.duel-nushi.nushi-pulling #battleFish{filter:drop-shadow(0 0 2px #94d8c1)}
+.duel-nushi.nushi-bracing #battleFish{filter:drop-shadow(0 0 3px #e9b65d)}
+.duel-nushi.nushi-bracing #linePath{stroke:#e9b65d;stroke-width:3}
 @media(max-height:500px){.duel-options{padding:6px}.duel-options p{margin:6px 0}.duel-options button{min-height:38px}}
