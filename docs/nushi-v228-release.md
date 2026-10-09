@@ -66,7 +66,7 @@ Pages [37899338877](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/
 
 PR230では、竿の計算を切り出す固定時計とcalm窓を用意し、実ゲームのreleaseBattleAction／pressBattleActionを通してreelingとacceptedを確認する。自然な時間進行の釣り上げは別のv228モデル／ブラウザ検査で確認する。browser jobの実行時間上限は30分とし、全検査と後処理まで完了させる。
 
-補修ソースCI [37902036729](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37902036729) のunitは398/398、fail0。問題だった竿検査も成功。ソースのbrowserはゲーム本体が同一で、複製検査の完了を確認中。PR230は期待HEADを指定してマージ済み。残りは最終mainのunit／公開browser成功の確認。完了後はこの状態欄を更新する。元の引き継ぎファイルは直前の作業内容を保存済みだが、接続が戻るまでは最終追記ができない。
+補修ソースCI [37902036729](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37902036729) のunitは398/398、fail0。問題だった竿検査も成功。ソースのbrowserも44 PASS（新規8件を含む）、エラー0で成功。artifact `11604060928` は24171069 bytes、GitHub提供digest `5b00985180a325986e94bfd5e9d6d15b425963c9a1aeb2efba96d4c8e8dc5623`。環境切断後のためローカル取得・追加画像表示は行っていない。PR230は期待HEADを指定してマージ済み。補修後のPages [37903436031](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37903436031) も成功。残りは最終main CI [37903436043](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37903436043) のunit／公開browser成功の確認。完了後はこの状態欄を更新する。元の引き継ぎファイルは直前の作業内容を保存済みだが、接続が戻るまでは最終追記ができない。
 
 ## 再現するコード
 
