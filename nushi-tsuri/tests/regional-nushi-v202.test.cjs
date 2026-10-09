@@ -103,7 +103,7 @@ test('starter rods cap retrieval while the top sea rod reaches the water during 
   const app=boot({...seed(),hp:100,baits:{worm:50},ownedRods:['bamboo','tideMaster'],selectedRod:'tideMaster'}),w=app.window;
   try{
     for(const mode of ['gauge','nushi'])for(const id of Object.keys(R.bosses)){
-      w.eval(`s.fightMode='${mode}';cast();beginFishing();battle.cast=90;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==='${id}');battle.specimen=rollFishSpecimen(battle.f,()=>.5);startFight();clearInterval(timer);timer=0;var gearNow=10000;Date.now=()=>gearNow;battle.gillWash=null;var gearCalm=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.mood=gearCalm;battle.calm=true;battle.nextMood=ShuFishing.beginWindow(battle,gearCalm,1800,gearNow);battle.awaitFightRelease=false;releaseBattleAction();pressBattleAction()`);
+      w.eval(`s.fightMode='${mode}';cast();beginFishing();battle.cast=90;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==='${id}');battle.specimen=rollFishSpecimen(battle.f,()=>.5);var gearNow=Date.now();Date.now=()=>gearNow;startFight();clearInterval(timer);timer=0;battle.gillWash=null;var gearCalm=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.mood=gearCalm;battle.calm=true;battle.nextMood=ShuFishing.beginWindow(battle,gearCalm,1800,gearNow);battle.awaitFightRelease=false;releaseBattleAction();pressBattleAction()`);
       // Freeze the clock to isolate rod physics within a valid calm pull.
       // Native press/release must accept it; setting reeling alone skips that.
       // Natural timed fights have their own v228 controller tests.
