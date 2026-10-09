@@ -38,11 +38,17 @@ test('all six ordinary fish can be cast, hooked, caught once, rendered in the ta
    for(let n=0;n<1000;n++){w.eval('Math.random=()=>'+n/1000);if(read(w,`pick(50,'${spot}').id`)===id){roll=n/1000;break;}}
    assert.ok(roll>=0,id+' has nonzero odds');w.eval(`Math.random=()=>${roll};commitCastResources();resolveSurfaceCast(50);clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish()`);
    assert.equal(read(w,'battle.f.id'),id);assert.equal(read(w,'battle.spot'),spot);assert.equal(w.document.querySelector('#battleFish canvas').dataset.artSpecies,id);
+   const ownName=read(w,`fish.find(f=>f.id==='${id}').name`),moods=read(w,`fightProfiles.${id}.moods`);
+   for(const other of read(w,'fish').filter(f=>f.id!==id))assert.ok(!moods.some(m=>[m.hold,m.loose].some(text=>text?.includes(other.name))),ownName+' instructions name the hooked fish');
    assert.equal(read(w,`s.baits.${bait}`),9);w.eval('caught();caught()');assert.equal(read(w,`s.caught.${id}`),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillets+1);
    assert.equal(w.document.querySelector('#catchFish canvas').dataset.artSpecies,id);assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);
    w.eval(`hideCatchCard();renderRecord();drawAquariumSprite($('#homeAquariumFish'),'${id}',4,{spriteMode:'turn',yaw:Math.PI/2,turnFrame:2});save()`);
    assert.equal(w.document.querySelector('#homeAquariumFish canvas').dataset.artSpecies,id);assert.ok(read(w,'petCatalog').some(f=>f.id===id));
-   assert.equal(read(w,`fishSizeProfiles.${id}.length`),6);snapshot=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
+   assert.equal(read(w,`fishSizeProfiles.${id}.length`),6);
+   const dex=w.document.createElement('div');dex.innerHTML=read(w,`fishdexKnownDetail(fish.find(f=>f.id==='${id}'))`);
+   assert.ok([...dex.querySelectorAll('.fishdex-chip')].some(el=>el.textContent.trim().endsWith(w.ShuTackle.hooks[hook].name)),ownName+' recommends the preferred hook');
+   if(id==='nigoi'){assert.equal(w.ShuTackle.species.nigoi.band,'large');assert.ok(w.ShuTackle.weight(id,bait,hook)>w.ShuTackle.weight(id,bait,'large'));}
+   snapshot=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
   const restored=boot(snapshot);try{assert.equal(read(restored.window,`s.caught.${id}`),1);assert.equal(read(restored.window,`s.fishCatchRecords.${id}.last.spotId`),spotName(type));assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
  }

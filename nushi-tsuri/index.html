@@ -11476,7 +11476,8 @@
         fishMouthProfiles[id]={...fishMouthProfiles[base]};
         fishMotionProfiles[id]={...fishMotionProfiles[base],turnFrames:14};
         fishLifeProfiles[id]={...fishLifeProfiles[base]};
-        const oldName=fish.find(f=>f.id===base).name,newName=fish.find(f=>f.id===id).name;
+        // Kajika's mood text was inherited from Kasago before this species was added.
+        const oldName=fish.find(f=>f.id===(base==="kajika"?"kasago":base)).name,newName=fish.find(f=>f.id===id).name;
         fightProfiles[id]={...fightProfiles[base],intro,moods:fightProfiles[base].moods.map(m=>({...m,
           hold:m.hold?.replaceAll(oldName,newName),loose:m.loose?.replaceAll(oldName,newName)}))};
         fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:Math.round(lengths[i][0]*100),maxHundredths:Math.round(lengths[i][1]*100)-1}));
@@ -22622,7 +22623,7 @@
           .map((id) => `<span class="fishdex-chip">${ShuTackleArt.icon(id)} ${baitData[id].name}</span>`)
           .join("");
         const band=ShuTackle.species[f.id]?.band||"medium";
-        const recommendedHook=f.id==="funa"?"small":band;
+        const recommendedHook=ShuTackle.species[f.id]?.recommendedHook||band;
         const hookName=ShuTackle.hooks[recommendedHook].name;
         return `<div class="fishdex-hero">
           <div class="fishdex-art-card"><div class="fishdex-art" id="fishdexArt"></div></div>

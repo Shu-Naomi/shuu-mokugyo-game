@@ -46,6 +46,14 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: npx playwright install --with-deps chromium
-      - run: node browser-v202.smoke.cjs
+      - run: node browser-evidence.cjs
         env:
           NUSHI_PUBLIC_SMOKE: ${{ github.event_name == 'push' && github.ref == 'refs/heads/main' && '1' || '' }}
+      - name: Upload browser evidence
+        if: always() && hashFiles('nushi-tsuri/tests/browser-evidence/full.log') != ''
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: nushi-browser-evidence
+          path: nushi-tsuri/tests/browser-evidence/full.log
+          retention-days: 14
+          if-no-files-found: error
