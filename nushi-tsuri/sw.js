@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v227-wetland-fish-227-1";
+const CACHE_NAME = "nushi-tsuri-v228-readable-nushi-228-1";
 const CORE_ASSETS = [
   "./assets/wetland-cast-v227.png",
   "./assets/wetland-world-v227.png",
@@ -36,8 +36,8 @@ const CORE_ASSETS = [
   "./pet-life-ui.js?v=214-1",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
-  "./fishing-duel.js?v=227-1",
-  "./fishing-duel.css?v=200-2",
+  "./fishing-duel.js?v=228-1",
+  "./fishing-duel.css?v=228-1",
   "./coast-voyage.js?v=226-1",
   "./mountain-region.js?v=227-1",
   "./regional-nushi.js?v=202-1",
