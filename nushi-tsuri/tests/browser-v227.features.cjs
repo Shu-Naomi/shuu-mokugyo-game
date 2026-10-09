@@ -22,7 +22,7 @@ module.exports=async function wetland(url,mobile=false){
   assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),type);return r;
  }
  try{
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v228/);await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v229/);await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
   const entryRoute=await page.evaluate(fn=>(0,eval)('('+fn+')')(window,'mountainMarsh',(x,y)=>ShuMountain.landmarkAt(x,y,'mountainMarsh')?.id==='wetland'),routeTo.toString());
   await walk(entryRoute);await press('#action');assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>s.lakeStory.visited.wetland),true);
   await page.waitForFunction(()=>document.querySelector('#mountainPixels')?.getAttribute('aria-label')==='水郷の湿地');await screenshot('arrival');
