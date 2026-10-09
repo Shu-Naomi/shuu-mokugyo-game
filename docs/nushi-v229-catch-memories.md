@@ -29,7 +29,7 @@ PR232（source `6343858247455b614507cc0241b70349d5beefe8`）のCI [37925205737](
 
 PR232をsquashマージしたruntime mainは `03662c0a341e1f7dbebe78fc34aeed68ebf95e0d`。SOURCEと同じtree `698693960b5113edb374dd268e09a2b10f8df1b6` を確認した。Pages [37927844977](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37927844977) は成功済み。
 
-公開URLを対象とするCI [37927845328](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37927845328) もユニット406/406・ブラウザ46ケースが全成功した。新規の思い出2ケースと自然な釣り上げ8ケースは、思い出の保存・再読み込みまで成功。エラーと失敗の配列は全46ケースで空だった。
+公開URLを対象とするCI [37927845328](https://github.com/Shu-Naomi/shuu-mokugyo-game/actions/runs/37927845328) もユニット406/406・ブラウザ46ケースが全成功した。新規の思い出2ケースと自然な釣り上げ8ケースは、思い出の保存・再読み込みまで成功。各結果に含まれるエラーと失敗の配列はすべて空だった。
 
 ログで `PUBLIC_RELEASE_VERIFIED 03662c0a341e1f7dbebe78fc34aeed68ebf95e0d` を確認し、公開ファイルと対象commitの一致を検証した。公開版の証拠ZIP artifact11615133884（24,203,448bytes）を取得し、SHA256 `6a2b7d34775f67fc25e42fd62a4d6a280de863712918de52f8eafad4a97e326e` を提供側digestと独立照合した。PCと844×390タッチの詳細画像2枚を実際に見て、仕掛け・同行犬・閉じる操作・横幅を確認した。
 
