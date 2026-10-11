@@ -376,6 +376,6 @@
     return advanceContest(state);
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,isLegend,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });

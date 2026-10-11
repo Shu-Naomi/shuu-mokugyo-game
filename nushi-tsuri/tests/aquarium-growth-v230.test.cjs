@@ -29,13 +29,23 @@ test('each earned legendary uses its own water pool without displacing thirty or
  const saved=copy(s);P.normalize(s,catalog,dogs,0);assert.deepEqual(s,saved);assert.deepEqual(s.caught,caught);
 });
 
-test('uncaught legendary names stay hidden and cannot unlock or purchase a pool',()=>{
+test('legend shop hides uncaught names and offers earned fish only in their matching free pools',()=>{
  const s=state();assert.deepEqual(P.tankIds(s),[0,1,2,3,4,5]);
  const before=copy(s);assert.equal(P.acquire(s,'starNushi',catalog,0).ok,false);assert.deepEqual(s,before);
  s.caught.coastNushi=1;P.sync(s,catalog,0);assert.deepEqual(s.petLife.legendTanks,{fresh:false,salt:true});
  assert.equal(P.selectTank(s,6),false);assert.equal(P.selectTank(s,7),true);
  const app=boot({...seed(),caught:{moroko:1}}),w=app.window;
  try{w.eval('petUi.open("shop")');click(w,'[data-pet-tab="legends"]');assert.equal(w.document.querySelector('[data-pet-nushi]'),null);assert.doesNotMatch(w.document.querySelector('.pet-content').textContent,/星湖のぬし|地底湖のぬし/);assert.deepEqual(app.errors,[]);}finally{app.dispose();}
+ const earned=boot({...seed(),money:1000,caught:{nushi:1,coastNushi:1}}),ew=earned.window;
+ try{
+  ew.eval('petUi.open("shop")');click(ew,'[data-pet-tab="legends"]');
+  assert.equal(ew.document.querySelectorAll('[data-pet-nushi]').length,2);
+  click(ew,'[data-pet-nushi="nushi"]');click(ew,'[data-pet-nushi="coastNushi"]');
+  assert.equal(read(ew,'s.money'),1000);assert.deepEqual(read(ew,'s.petLife.fish.map(f=>f.tank)'),[6,7]);
+  assert.equal(ew.document.querySelector('[data-pet-nushi="nushi"]').disabled,true);
+  assert.equal(ew.document.querySelector('[data-pet-nushi="coastNushi"]').disabled,true);
+  assert.deepEqual(earned.errors,[]);
+ }finally{earned.dispose();}
 });
 
 test('old owned nushi migrates with its uid, size, care and contest history; repeat loading is stable',()=>{
