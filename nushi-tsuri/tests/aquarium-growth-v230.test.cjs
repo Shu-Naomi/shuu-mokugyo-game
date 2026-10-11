@@ -61,9 +61,9 @@ test('old owned nushi migrates with its uid, size, care and contest history; rep
 
 test('breeding alone creates below-extreme-tiny fry, then feeding changes the stage without changing wild tiers or catches',()=>{
  const s=state(),mother=P.acquire(s,'moroko',catalog,0,0).fish;P.acquire(s,'moroko',catalog,0,0);s.petLife.food=100;
- for(let d=0;d<3;d++){P.care(s,mother.uid,'feed',d,catalog);P.sync(s,catalog,d+1);}
+ for(let d=0;d<3;d++){P.care(s,mother.uid,'feed',d,catalog);if(d===2)P.care(s,mother.uid,'water',d,catalog);P.sync(s,catalog,d+1);}
  P.sync(s,catalog,5);const fry=s.petLife.fish.find(f=>f.generation===1);
- assert.ok(fry.length>0&&fry.length<catalog[0].min);assert.equal(P.lifeStage(fry,catalog),'fry');assert.equal(fry.origin,'bred');
+ assert.ok(fry.length>0&&fry.length<catalog[0].min);assert.equal(P.lifeStage(fry,catalog),'fry');assert.equal(fry.origin,'bred');assert.equal(fry.changedDay,2);
  const born=copy(s);P.normalize(s,catalog,dogs,5);assert.deepEqual(s,born);
  assert.equal(P.buyBackQuote(fry,catalog).eligible,false);
  P.care(s,fry.uid,'feed',5,catalog);P.sync(s,catalog,6);const grown=s.petLife.fish.find(f=>f.uid===fry.uid);

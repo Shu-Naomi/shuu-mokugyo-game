@@ -159,7 +159,7 @@
       const spec=catalog.find(s=>s.id===egg.species),uid=`pet-${p.nextId++}`;
       const initial=frySize(spec);
       const child={uid,species:egg.species,tank:egg.tank,bornSize:initial,length:initial,origin:"bred",acquiredDay:day,lastDay:day,
-        fedDay:-1,changedDay:-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
+        fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
         health:90,careDays:0,generation:egg.generation,sex:sexOf({uid}),stars:1,xp:0,level:1};
       p.eggs=p.eggs.filter(e=>e.uid!==egg.uid);p.fish.push(child);
       p.lastBirth={uid,species:egg.species,tank:egg.tank,day};changed=true;
