@@ -45,7 +45,7 @@ test('three consecutive healthy fed days produce eggs, then fry hatch without du
   }
   assert.equal(s.petLife.eggs.length,1);P.sync(s,catalog,5);
   const child=s.petLife.fish[2];assert.equal(child.generation,1);assert.equal(child.sex,'male');
-  assert.equal(child.length,600);assert.deepEqual(s.caught,{moroko:1});
+  assert.equal(child.length,25);assert.equal(child.origin,'bred');assert.ok(child.length<catalog[0].min);assert.deepEqual(s.caught,{moroko:1});
   assert.deepEqual(s.petLife.lastBirth,{uid:child.uid,species:'moroko',tank:0,day:5});
   assert.equal(P.sync(s,catalog,5),false);
   const saved=copy(s);P.normalize(s,catalog,ids,5);assert.deepEqual(s,saved);
@@ -83,16 +83,16 @@ test('raised descendants earn stars faster, mature for sale and pay only once th
   for(let day=0;day<3;day++){P.care(s,first.uid,'feed',day,catalog);P.sync(s,catalog,day+1);}
   P.sync(s,catalog,5);const child=s.petLife.fish[2];P.rehome(s,first.uid,catalog,5);P.rehome(s,s.petLife.fish.find(f=>f.generation===0).uid,catalog,5);
   assert.equal(P.buyBackQuote(child,catalog).eligible,false);
-  for(let day=5;day<10;day++){
+  for(let day=5;day<13;day++){
     if(child.water<72)P.care(s,child.uid,'water',day,catalog);
     P.care(s,child.uid,'feed',day,catalog);P.sync(s,catalog,day+1);
   }
-  assert.equal(child.length,1100);assert.equal(child.stars,2);
+  assert.equal(child.length,825);assert.equal(child.stars,2);
   assert.equal(P.buyBackQuote(child,catalog).eligible,true);
   const price=P.buyBackQuote(child,catalog).price,money=s.money;
-  assert.equal(P.buyBack(s,child.uid,catalog,10).price,price);assert.equal(s.money,money+price);
-  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,10).ok,false);assert.deepEqual(s,paid);
-  P.normalize(s,catalog,ids,10);assert.equal(P.buyBack(s,child.uid,catalog,10).ok,false);
+  assert.equal(P.buyBack(s,child.uid,catalog,13).price,price);assert.equal(s.money,money+price);
+  const paid=copy(s);assert.equal(P.buyBack(s,child.uid,catalog,13).ok,false);assert.deepEqual(s,paid);
+  P.normalize(s,catalog,ids,13);assert.equal(P.buyBack(s,child.uid,catalog,13).ok,false);
   assert.equal(s.money,money+price);assert.deepEqual(s.caught,{moroko:1});
 });
 
@@ -110,7 +110,7 @@ test('real shop hides unseen species, buys a tank, shows sex and confirms a sing
     click(w,'[data-pet-action="aquarium"]');assert.equal(w.document.querySelectorAll('#petTankSelect option').length,2);
     click(w,'[data-pet-action="close"]');w.eval('petUi.open("shop")');
     w.eval('s.petLife.fish[0].careDays=3;s.petLife.fish[0].health=85;save()');click(w,'[data-pet-tab="buyback"]');
-    click(w,'[data-pet-buyback="pet-1"]');const money=read(w,'s.money');
+    click(w,'[data-pet-buyback-tank="0"]');click(w,'[data-pet-buyback="pet-1"]');const money=read(w,'s.money');
     const confirm=click(w,'[data-pet-action="buyback-confirm"]');confirm.click();
     assert.equal(read(w,'s.petLife.fish.length'),0);assert.ok(read(w,'s.money')>money);
     saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);

@@ -34,12 +34,12 @@ test('five fish share one tank, a sixth costs nothing, six tanks can hold thirty
  const saved=copy(s);P.normalize(saved,catalog,ids,0);assert.deepEqual(saved,s);
 });
 
-test('a full aquarium can rehome one ordinary fish and adopt the unique nushi without resetting other specimens',()=>{
+test('a full aquarium can rehome one ordinary fish and adopt the unique nushi into its dedicated pool without resetting other specimens',()=>{
  const s=state();for(let t=0;t<6;t++)for(let i=0;i<5;i++)P.acquire(s,'moroko',catalog,0,t);
  const saved=copy(s),uid=s.petLife.selected;assert.equal(P.acquire(s,'nushi',catalog,0,5).ok,false);
  assert.equal(P.rehome(s,uid,catalog,0).ok,true);assert.equal(s.money,saved.money);
  assert.deepEqual(s.petLife.fish,saved.petLife.fish.filter(f=>f.uid!==uid));assert.equal(P.rehome(s,uid,catalog,0).ok,false);
- const nushi=P.acquire(s,'nushi',catalog,0,5).fish;assert.ok(nushi);
+ const nushi=P.acquire(s,'nushi',catalog,0).fish;assert.ok(nushi);assert.equal(nushi.tank,6);assert.equal(P.residents(s,5).length,4);
  const before=copy(s);assert.equal(P.rehome(s,nushi.uid,catalog,0).ok,false);assert.deepEqual(s,before);
  P.normalize(s,catalog,ids,0);assert.equal(s.petLife.fish.length,30);assert.equal(s.petLife.nushiClaimed,true);
 });
@@ -143,6 +143,6 @@ test('four new seasonal loops and pet sounds decode, avoid clipping and ship wit
   assert.ok(peak>5000&&peak<24000);assert.equal(data.readInt16LE(44),0);assert.equal(data.readInt16LE(data.length-2),0);
   assert.ok(sw.includes(file));assert.ok(html.includes(file));
  }
- assert.ok(sw.includes('./aquarium-life.js?v=227-1'));assert.ok(html.includes('aquarium-life.js?v=227-1'));
+ assert.ok(sw.includes('./aquarium-life.js?v=230-1'));assert.ok(html.includes('aquarium-life.js?v=230-1'));
  assert.ok(html.includes('sample.preservesPitch = true'));
 });
