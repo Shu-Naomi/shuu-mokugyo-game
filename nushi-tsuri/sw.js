@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v229-catch-memories-229-1";
+const CACHE_NAME = "nushi-tsuri-v230-aquarium-growth-230-1";
 const CORE_ASSETS = [
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
@@ -18,6 +18,7 @@ const CORE_ASSETS = [
   "./assets/fish-wakasagi-v220.png",
   "./assets/fish-dojo-v220.png",
   "./assets/fish-isaki-v220.png",
+  "./assets/aquarium-isaki-adult-v230.png",
   "./player-options.js?v=218-1",
   "./player-options.css?v=218-1",
   "./cast-tackle.css?v=219-1",
@@ -34,8 +35,8 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./item-categories.css?v=217-1",
-  "./pet-life.js?v=202-1",
-  "./pet-life-ui.js?v=214-1",
+  "./pet-life.js?v=230-1",
+  "./pet-life-ui.js?v=230-1",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
   "./fishing-duel.js?v=228-1",
@@ -80,9 +81,9 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
-  "./aquarium-life.js?v=227-1",
+  "./aquarium-life.js?v=230-1",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=214-1",
+  "./pet-life.css?v=230-1",
   "./rival-anglers.js?v=199-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",

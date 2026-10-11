@@ -107,7 +107,8 @@ test('portable tank renders continuous turns through all seven headings without 
   for(let tick=0;tick<330;tick++){
    step();const el=w.document.querySelector('[data-pet-fish]');
    assert.match(el.style.transform,/scaleX\((-?1)\)/);
-   if(el.dataset.aquariumFrame.includes(':turn:'))frames.add(Number(el.dataset.aquariumFrame.split(':').at(-1)));
+   const turning=/:turn:([^:]+)/.exec(el.dataset.aquariumFrame);
+   if(turning)frames.add(Number(turning[1]));
   }
   assert.ok(frames.size>14,'intermediate body shapes join the authored headings');
   assert.ok([...frames].every(frame=>Number.isFinite(frame)&&frame>=0&&frame<=6));

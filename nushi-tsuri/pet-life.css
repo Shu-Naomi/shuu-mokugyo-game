@@ -72,3 +72,25 @@
 @media(max-height:500px){.pet-live-stage{height:210px}.pet-stage-audience{height:75px}.pet-stage-reaction{top:75px}.pet-contest-rivals{margin:7px 0}.pet-stage-heading{font-size:12px}.pet-trick-commands button{min-width:105px}}
 @media(max-width:540px){.pet-contest-rivals{grid-template-columns:1fr}.pet-contest-rivals span{width:auto;flex:1}.pet-live-stage{height:220px}}
 @media(prefers-reduced-motion:reduce){.is-entrance .pet-stage-dog,.is-cheering .pet-stage-audience canvas{animation:none}}
+/* Aquarium v230: choose a tank, then a specimen, then confirm its sale. */
+.pet-buyback-steps{display:flex;flex-wrap:wrap;gap:8px;padding:0;margin:12px 0;list-style:none;font-size:12px;color:#bad0cf}
+.pet-buyback-steps li{padding:7px 12px;background:#203947;border:1px solid #527477;border-radius:6px}
+.pet-buyback-steps li[aria-current=step]{color:#ffecae;border-color:#d7bd7a;background:#375257}
+.pet-asual-comment{margin:10px 0;padding:10px 12px;border:1px solid #6c9690;border-left:4px solid #d6bd7e;border-radius:6px;background:#25434c;color:#e6e9cd;font-size:13px;line-height:1.7;overflow-wrap:anywhere}
+.pet-buyback-tanks,.pet-buyback-fish{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+#petLifeModal .pet-buyback-tanks button,#petLifeModal .pet-buyback-fish button{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;min-height:100px;text-align:left;background:#203c4c;color:#dbe9e5;border:1px solid #7e9d91;border-radius:9px;padding:12px}
+.pet-buyback-tanks b,.pet-buyback-fish b{font-size:16px;color:#ffe4a6}.pet-buyback-tanks span,.pet-buyback-fish span{font-size:13px}.pet-buyback-tanks small,.pet-buyback-fish small{font-size:12px;line-height:1.5;color:#c0d5cf}
+.pet-buyback-fish .pet-card-comment{padding-top:7px;margin-top:auto;border-top:1px solid #5c797a;color:#d8e1c7;font-size:12px;line-height:1.6}
+.pet-buyback-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:12px 0}.pet-buyback-heading h3,.pet-buyback-detail h3{margin:0;color:#ffe4a6}
+.pet-specimen-window{display:block;position:relative;flex-shrink:0;width:100%;height:104px;overflow:hidden;border:1px solid #507f89;border-radius:7px;background:linear-gradient(180deg,#286779 0%,#184552 74%,#3e6664 75%,#273e42 100%)}
+.pet-specimen-window:before{content:"";position:absolute;inset:0;background:linear-gradient(105deg,transparent 10%,#8ed2cf19 12%,transparent 24%,#8ed2cf0d 58%,transparent 75%);pointer-events:none}
+.pet-specimen-body{position:absolute;left:50%;top:48%;transform:translate(-50%,-50%);pointer-events:none}.pet-specimen-body canvas{width:100%;height:100%;image-rendering:pixelated;object-fit:contain}
+.pet-buyback-detail{display:grid;grid-template-columns:minmax(160px,1fr) minmax(0,1.65fr);gap:18px;padding:15px;background:#203b4a;border:1px solid #7b9690;border-radius:10px;min-width:0}
+.pet-buyback-detail>*{min-width:0}.pet-specimen-window.is-large{height:205px}.pet-buyback-detail p{font-size:13px;line-height:1.6;margin:8px 0}.pet-buyback-detail small{color:#bed4d0;font-size:12px}
+.pet-buyback-detail .pet-buyback-price{color:#ffdfa0;font-size:17px;font-weight:bold}.pet-buyback-actions{display:flex;flex-wrap:wrap;gap:8px}
+#petLifeModal .pet-buyback-actions button,#petLifeModal .pet-buyback-heading button,#petLifeModal .pet-tabs button{min-height:44px}
+.pet-legend-pools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}.pet-legend-pools article{padding:12px;border:1px solid #709289;background:#203b4a;border-radius:8px}.pet-legend-pools b{color:#ffe4a6;font-size:14px}.pet-legend-pools p{font-size:13px;margin:6px 0}
+.pet-tank-info .pet-stats span{min-width:0;flex-wrap:wrap}.pet-tank-info .pet-stats b{overflow-wrap:anywhere}
+@media(max-width:850px){.pet-buyback-tanks,.pet-buyback-fish{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.pet-buyback-detail{grid-template-columns:1fr}.pet-buyback-tanks,.pet-buyback-fish,.pet-legend-pools{grid-template-columns:1fr}.pet-specimen-window.is-large{height:180px}}
+@media(max-height:480px){.pet-buyback-steps{margin:7px 0;gap:5px}.pet-buyback-steps li{padding:5px 9px}.pet-buyback-detail{padding:10px;gap:12px}.pet-specimen-window.is-large{height:175px}.pet-asual-comment{font-size:12px;padding:7px 10px}.pet-buyback-heading{margin:8px 0}}

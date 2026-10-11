@@ -6432,7 +6432,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=201-1" />
-    <link rel="stylesheet" href="pet-life.css?v=214-1" />
+    <link rel="stylesheet" href="pet-life.css?v=230-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
@@ -6476,7 +6476,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v229</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v230</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7266,9 +7266,9 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=202-1"></script>
-    <script src="aquarium-life.js?v=227-1"></script>
-    <script src="pet-life-ui.js?v=214-1"></script>
+    <script src="pet-life.js?v=230-1"></script>
+    <script src="aquarium-life.js?v=230-1"></script>
+    <script src="pet-life-ui.js?v=230-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=228-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -11687,23 +11687,28 @@
         spriteCells,
         spriteFrame,
         fishId = "",
+        aquariumLook = null,
+        aquariumPose = null,
       ) {
         const canvas = fishAtlasCanvas(element);
         if(ShuFishArt.species[fishId]?.asset===spriteAsset){
           clearStandaloneFishFrame(element);
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):undefined;
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${fishId}`;
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${fishId}${aquariumLook?`|${aquariumLook.key}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.width!==448)canvas.width=448;
           if(canvas.height!==224)canvas.height=224;
           if(changed)canvas.getContext('2d').clearRect(0,0,448,224);
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
-          const image=fishAtlasImage(spriteAsset);
-          const sources=ShuFishArt.assets(fishId).map(fishAtlasImage);
+          const resolveImage=asset=>fishAtlasImage(aquariumLook?.adultIsaki&&asset===ShuFishArt.species.isaki.asset?'assets/aquarium-isaki-adult-v230.png':asset);
+          const image=resolveImage(spriteAsset);
+          const sources=ShuFishArt.assets(fishId).map(resolveImage);
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
-            ShuFishArt.draw(canvas.getContext('2d'),image,fishId,spriteCells,spriteFrame,fishAtlasImage,{swimFrame});
+            const context=canvas.getContext('2d');
+            ShuFishArt.draw(context,image,fishId,spriteCells,spriteFrame,resolveImage,{swimFrame});
+            ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
             source.addEventListener('load',paint,{once:true});if(source.decode)source.decode().then(paint).catch(()=>{});
@@ -16329,19 +16334,23 @@
       }
       function prepareAquariumFish(id) {
         fishAtlasImage(fishAssets[id]);
+        if(id==='isaki')fishAtlasImage('assets/aquarium-isaki-adult-v230.png');
         for (let frame = 0; frame < 5; frame += 1)
           fishAtlasImage(standaloneFishFrameAsset(id, fishTurnAssets[id], frame) || fishTurnAssets[id]);
       }
-      function drawAquariumSprite(element, id, swimFrame, pose = null) {
+      function drawAquariumSprite(element, id, swimFrame, pose = null, specimen = null) {
+        const look=specimen?ShuAquariumLife.appearance(specimen,petCatalog):null;
+        if(look){element.dataset.specimenAppearance=look.label;element.dataset.specimenLength=String(specimen.length);}
+        else{delete element.dataset.specimenAppearance;delete element.dataset.specimenLength;}
         const turning = pose?.spriteMode === "turn";
         const cells = turning ? (ShuFishArt.species[id]?7:5) : fishSwimFrameCounts[id] || 8;
         const frame = turning ? (cells===7
           ? Number.isFinite(pose.yaw)?pose.yaw/Math.PI*6:[0,2,3,4,6][pose.turnFrame||0]
           : pose.turnFrame) : swimFrame % cells;
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
-        const key = `${id}:${turning ? "turn" : "swim"}:${frame}`;
+        const key = `${id}:${turning ? "turn" : "swim"}:${frame}${look?`:${look.key}`:''}`;
         if (element.dataset.aquariumFrame !== key) {
-          drawFishAtlasFrame(element, asset, cells, frame, id);
+          drawFishAtlasFrame(element, asset, cells, frame, id,look,pose);
           element.dataset.aquariumFrame = key;
         }
       }
@@ -23409,7 +23418,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=229-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=230-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

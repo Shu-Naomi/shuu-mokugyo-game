@@ -51,6 +51,42 @@
       y:reduced?43:43+Math.sin(seconds*.8)*1.4*swim.bob,
       swimFrame:reduced?0:Math.floor(seconds*swim.speed/(bottom(id)?.24:.18))};
   }
+  // A common reference for a species, rather than fitting every specimen to
+  // the same box. Small fish retain a readable minimum; the whole tank keeps
+  // its physical centimetre scale.
+  function specimenDimensions(fish,spec,width,height,ratio=2){
+    ratio=Math.max(.6,Number(ratio)||2);
+    const bound=Math.max(1,Math.min(width*.76,height*.60*ratio,420));
+    const fraction=clamp(fish.length/Math.max(1,spec.max),0,1);
+    const w=Math.min(bound,Math.max(Math.min(14,bound*.3),bound*Math.sqrt(fraction)));
+    return {width:w,height:w/ratio,referenceCm:spec.max/100};
+  }
+  function appearance(fish,catalog){
+    const spec=catalog.find(s=>s.id===fish?.species);
+    const fry=!!spec&&fish.origin==='bred'&&fish.generation>0&&fish.length<spec.min;
+    const kind=fish?.species==='nijimasu'?'parr':fish?.species==='isaki'?'stripes':'base';
+    // Qualitative growth changes follow aquarium observations. These fade
+    // intervals are an art choice for the game's accelerated growth.
+    const adultIsaki=kind==='stripes'&&fish.length>=2400;
+    const strength=kind==='parr'?clamp((2200-fish.length)/1000,0,1)*clamp(fish.length/200,0,1):kind==='stripes'?(adultIsaki?0:1):0;
+    const label=kind==='parr'?(strength>.1?'パーマークの残る幼魚の姿':'幼魚斑が薄れた赤い帯の姿'):kind==='stripes'?(strength>.1?'三本の縞が目立つ幼魚の姿':'縞が目立たなくなった姿'):fry?'水槽で生まれた稚魚の姿':fish?.length<spec?.start?'育ち途中の幼魚の姿':'育った魚の姿';
+    return {kind,strength,fry,adultIsaki,label,key:`${kind}:${strength.toFixed(3)}:${fry?1:0}`};
+  }
+  function decorate(context,look,pose=null){
+    if(!look)return;
+    const w=context.canvas.width,h=context.canvas.height;
+    context.save();context.globalCompositeOperation='source-atop';
+    if(look.fry){context.globalAlpha=.13;context.fillStyle='#d2f0df';context.fillRect(0,0,w,h);}
+    const sideways=pose?.yaw===undefined?1:Math.abs(Math.cos(pose.yaw));
+    context.globalAlpha=look.strength*.64*sideways;context.fillStyle='#283943';
+    if(look.kind==='parr')for(let i=0;i<8;i++){
+      const x=Math.round(w*(.25+i*.058)),y=Math.round(h*.43),bw=Math.max(2,Math.round(w*.025)),bh=Math.round(h*.19);
+      context.fillRect(x,y+bh*.15,bw,bh*.7);context.fillRect(x+bw*.2,y,bw*.6,bh);
+    }
+    // Isaki stripes are painted in its juvenile atlas; the adult atlas
+    // removes them. Do not add stripes on top of the existing artwork.
+    context.restore();
+  }
   function layout(fish,catalog,width,height,seconds,ratioFor,feeding=null,reduced=false){
     const scale=dimensions(fish,catalog),floor=height*.78;
     const poses=fish.map((f,i)=>{
@@ -97,5 +133,5 @@
     }
     return {...scale,poses};
   }
-  return Object.freeze({dimensions,layout,orientation,gait,inspection});
+  return Object.freeze({dimensions,layout,orientation,gait,inspection,specimenDimensions,appearance,decorate});
 });

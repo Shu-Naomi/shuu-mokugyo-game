@@ -26,7 +26,7 @@ module.exports=async function fightControls(url,mobile=false){
   }
   try{
    await page.clock.install({time:new Date('2026-10-09T06:00:00Z')});await page.clock.pauseAt('2026-10-09T06:00:01Z');
-   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v229/);await press('#start');
+   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v230/);await press('#start');
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
    async function fieldReady(){
@@ -42,7 +42,10 @@ module.exports=async function fightControls(url,mobile=false){
     assert.ok(old.x!==next.x||old.y!==next.y,'native field input '+direction+' '+JSON.stringify({old,next}));
    }
    await fieldReady();assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction})),{x:route.x,y:route.y,direction:route.direction});
-   assert.equal(await page.evaluate(()=>Boolean(fishingWaterNearPlayer())),true);await press('#action');
+   assert.equal(await page.evaluate(()=>Boolean(fishingWaterNearPlayer())),true);
+   // Walking can legitimately add bait through the dog's discovery. Check
+   // that this cast spends exactly one from the inventory at the water.
+   const baitBeforeCast=await page.evaluate(bait=>s.baits[bait],bait);await press('#action');
    assert.equal(await page.evaluate(()=>battle?.phase),'prep');await press('#wait');await press('#beginCast');
    const spot=wet?'mountain-wetMarsh-mid':'lake-deep',distance=wet?50:95;
    await page.evaluate(({id,spot,distance})=>{let roll=null;for(let n=0;n<10000;n++){Math.random=()=>(n+.5)/10000;if(pick(distance,spot)?.id===id){roll=(n+.5)/10000;break;}}
@@ -77,7 +80,7 @@ module.exports=async function fightControls(url,mobile=false){
    assert.equal(await page.evaluate(()=>battle?.phase),'landing',id+' natural landing');await setHeld(false);await page.clock.runFor(2000);
    const outcome=await page.evaluate(({id,bait,key})=>({caught:s.caught[id],bait:s.baits[bait],saved:JSON.parse(localStorage.getItem(key)).caught[id],giant:s.fishCrowns[id]?.giant,
     memories:s.catchMemories[id],savedMemories:JSON.parse(localStorage.getItem(key)).catchMemories[id]}),{id,bait,key:saveKey});
-   assert.equal(outcome.caught,1);assert.equal(outcome.saved,1);assert.equal(outcome.bait,19);
+   assert.equal(outcome.caught,1);assert.equal(outcome.saved,1);assert.equal(outcome.bait,baitBeforeCast-1);
    assert.equal(outcome.giant,true);
    assert.ok(outcome.memories.first);assert.deepEqual(outcome.memories.first,outcome.memories.best);
    assert.equal(outcome.memories.first.hundredths,Math.round(Number(size)*100));
@@ -90,7 +93,7 @@ module.exports=async function fightControls(url,mobile=false){
    assert.equal(await page.evaluate(id=>s.caught[id],id),1);
    assert.deepEqual(await page.evaluate(id=>s.catchMemories[id],id),outcome.memories);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-   console.log('V228_BROWSER_FIGHT_PASS '+JSON.stringify({mobile,id,mode,size,inputDelay,seconds,warningCount,...outcome,savedAfterReload:true,errors,failed}));
+   console.log('V228_BROWSER_FIGHT_PASS '+JSON.stringify({mobile,id,mode,size,inputDelay,seconds,warningCount,baitBeforeCast,baitSpent:baitBeforeCast-outcome.bait,...outcome,savedAfterReload:true,errors,failed}));
   }finally{await context.close();}
  }}finally{await browser.close();}
 };

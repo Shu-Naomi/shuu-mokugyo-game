@@ -10,16 +10,16 @@ function frameClock(w){
   return {step(ms=100){now+=ms;const frames=[...callbacks.values()];callbacks.clear();frames.forEach(fn=>fn(now));},pending(){return callbacks.size;}};
 }
 
-test('tap a tiny Moroko beside a nushi to inspect it at a readable size, then return to the physical scale',()=>{
-  const app=boot({...seed(),caught:{...seed().caught,moroko:1,nushi:1},money:5000},{petTankStage:[360,205],petInspectStage:[360,205]}),w=app.window;
+test('tap a tiny Moroko beside a koi to inspect it at a readable size, then return to the physical scale',()=>{
+  const app=boot({...seed(),caught:{...seed().caught,moroko:1,koi:1},money:5000},{petTankStage:[360,205],petInspectStage:[360,205]}),w=app.window;
   const clock=frameClock(w);let saved;
   try{
     assert.equal(w.eval('petUi.open("shop")'),true);
-    click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');click(w,'[data-pet-action="nushi"]');
+    click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-buy="koi"]');click(w,'[data-pet-action="aquarium"]');
     clock.step();const uid=read(w,'s.petLife.fish.find(f=>f.species==="moroko").uid');
-    const normal=w.document.querySelector(`[data-pet-fish="${uid}"]`),nushi=w.document.querySelectorAll('[data-pet-fish]')[1];
-    assert.ok(parseFloat(normal.style.width)<parseFloat(nushi.style.width),'whole tank keeps real size contrast');
-    assert.ok(parseFloat(normal.style.width)<=12,'Moroko is tiny beside the nushi');
+    const normal=w.document.querySelector(`[data-pet-fish="${uid}"]`),koi=w.document.querySelectorAll('[data-pet-fish]')[1];
+    assert.ok(parseFloat(normal.style.width)<parseFloat(koi.style.width),'whole tank keeps real size contrast');
+    assert.ok(parseFloat(normal.style.width)<=12,'Moroko is tiny beside the koi');
     const target=w.document.querySelector(`#petTankStage [data-pet-inspect="${uid}"]`);
     assert.ok(parseFloat(target.style.width)>=44,'tiny fish still has a finger-size touch target');
     assert.ok(parseFloat(target.style.getPropertyValue('--marker-width'))<=36,'visible marker remains smaller than the finger-size target');
@@ -28,7 +28,7 @@ test('tap a tiny Moroko beside a nushi to inspect it at a readable size, then re
     target.click();clock.step();
     assert.ok(w.document.querySelector('#petInspectStage'));
     const inspected=w.document.querySelector('#petInspectFish');
-    assert.ok(parseFloat(inspected.style.width)>170,'individual view does not inherit the nushi tank scale');
+    assert.ok(parseFloat(inspected.style.width)>120,'individual view does not inherit the koi tank scale');
     assert.match(inspected.dataset.aquariumFrame,/^moroko:/);
     assert.match(w.document.querySelector('.pet-inspect-caption').textContent,/モロコ.*7\.50cm/);
     assert.equal(w.document.querySelector('#petTankStage'),null);
@@ -50,19 +50,19 @@ test('tap a tiny Moroko beside a nushi to inspect it at a readable size, then re
 });
 
 test('fish list and picker switch specimens inside the large view without changing care or payments',()=>{
-  const app=boot({...seed(),caught:{...seed().caught,moroko:1,nushi:1},money:5000},{petTankStage:[360,205],petInspectStage:[360,205]}),w=app.window;
+  const app=boot({...seed(),caught:{...seed().caught,moroko:1,koi:1},money:5000},{petTankStage:[360,205],petInspectStage:[360,205]}),w=app.window;
   const clock=frameClock(w);
   try{
-    w.eval('petUi.open("shop")');click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');click(w,'[data-pet-action="nushi"]');
+    w.eval('petUi.open("shop")');click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-buy="koi"]');click(w,'[data-pet-action="aquarium"]');
     const before=read(w,'({money:s.money,food:s.petLife.food,fish:s.petLife.fish})');
     const moroko=read(w,'s.petLife.fish.find(f=>f.species==="moroko").uid');
     click(w,`.pet-fish-roster [data-pet-inspect="${moroko}"]`);clock.step();
     assert.match(w.document.querySelector('#petInspectFish').dataset.aquariumFrame,/^moroko:/);
-    const picker=w.document.querySelector('#petFishSelect');picker.value=read(w,'s.petLife.fish.find(f=>f.species==="nushi").uid');
+    const picker=w.document.querySelector('#petFishSelect');picker.value=read(w,'s.petLife.fish.find(f=>f.species==="koi").uid');
     picker.dispatchEvent(new w.Event('change',{bubbles:true}));clock.step();
-    assert.match(w.document.querySelector('#petInspectFish').dataset.aquariumFrame,/^nushi:/);
-    assert.ok(parseFloat(w.document.querySelector('#petInspectFish').style.width)>170);
-    assert.match(w.document.querySelector('#petInspectStage').getAttribute('aria-label'),/ヌシ/);
+    assert.match(w.document.querySelector('#petInspectFish').dataset.aquariumFrame,/^koi:/);
+    assert.ok(parseFloat(w.document.querySelector('#petInspectFish').style.width)>120);
+    assert.match(w.document.querySelector('#petInspectStage').getAttribute('aria-label'),/コイ/);
     click(w,'[data-pet-action="focus-close"]');click(w,'[data-pet-action="zoom"]');
     assert.equal(w.document.querySelector('#petLifeModal').classList.contains('pet-zoomed'),true);
     clock.step();click(w,`#petTankStage [data-pet-inspect="${moroko}"]`);clock.step();

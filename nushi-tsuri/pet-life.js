@@ -23,6 +23,19 @@
   const starLevel=f=>Math.min(5,1+Math.floor(int(f.careDays,0)/starInterval(f.generation)));
   // Larger species gain more length per cared-for day; lengths are 0.01 cm units.
   const dailyGrowth=spec=>Math.min(500,Math.max(100,Math.ceil(int(spec?.max)/5000)*100));
+  const LEGEND_CAPACITY=8;
+  const LEGEND_TANKS=Object.freeze([{id:6,key:"fresh",water:"淡水",name:"淡水ぬし総合水槽"},{id:7,key:"salt",water:"海水",name:"海水ぬし総合水槽"}]);
+  const isLegend=spec=>!!spec&&(spec.id==="nushi"||spec.legendary===true);
+  const legendTank=spec=>spec.waterLabel==="海水"?7:6;
+  const tankLabel=tank=>LEGEND_TANKS.find(t=>t.id===tank)?.name||`水槽${tank+1}`;
+  const tankCapacity=tank=>tank>=6?LEGEND_CAPACITY:TANK_CAPACITY;
+  const tankIds=state=>[...Array.from({length:state.petLife.unlockedTanks},(_,i)=>i),...LEGEND_TANKS.filter(t=>state.petLife.legendTanks?.[t.key]).map(t=>t.id)];
+  const totalCapacity=state=>tankIds(state).reduce((n,t)=>n+tankCapacity(t),0);
+  const frySize=spec=>Math.min(Math.max(10,Math.floor((spec.min||100)*.25)),150,(spec.min||100)-1);
+  function lifeStage(f,catalog){
+    const spec=catalog.find(a=>a.id===f?.species);
+    return f&&spec&&f.origin==="bred"&&f.generation>0&&f.length<(spec.min||100)?"fry":f&&spec&&f.length<spec.start?"juvenile":"adult";
+  }
   function normalize(state,catalog,dogIds,day,{legacy=true}={}){
     const old=record(state.petLife),migrated=!(old.version>=1);
     state.dogAffinity=record(state.dogAffinity);state.dogTricks=record(state.dogTricks);
@@ -30,16 +43,19 @@
       state.dogAffinity[id]=migrated?int(state.dogAffinity[id],0,100)*20:int(state.dogAffinity[id],0,DOG_MAX);
       state.dogTricks[id]=int(state.dogTricks[id],0,TRICK_MAX);
     }
-    const used=new Set();
-    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY*TANK_CAPACITY).flatMap((f,index)=>{
+    const used=new Set(),legendUsed=new Set();
+    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY*TANK_CAPACITY+LEGEND_CAPACITY*2).flatMap((f,index)=>{
       const spec=catalog.find(s=>s.id===f?.species);
-      if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(spec.legendary&&spec.id!=="nushi")||(spec.id==="nushi"&&!(state.caught?.nushi>0)))return [];
-      used.add(f.uid);const bornSize=int(f.bornSize,spec.min||spec.start,spec.max);
-      const fish={uid:f.uid,species:spec.id,tank:old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),
+      if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(isLegend(spec)&&(!(state.caught?.[spec.id]>0)||legendUsed.has(spec.id))))return [];
+      used.add(f.uid);if(isLegend(spec))legendUsed.add(spec.id);
+      const generation=int(f.generation,0,20),bred=generation>0&&(f.origin==="bred"||old.version<5);
+      const minimum=bred&&old.version>=5?frySize(spec):spec.min||spec.start;
+      const bornSize=int(f.bornSize,minimum,spec.max);
+      const fish={uid:f.uid,species:spec.id,tank:isLegend(spec)?legendTank(spec):old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),origin:bred?"bred":isLegend(spec)?"legend":"shop",
         acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
         fedDay:int(f.fedDay,-1,day),changedDay:int(f.changedDay,-1,day),
         water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,day+1),
-        generation:int(f.generation,0,20),sex:sexOf(f)};
+        generation,sex:sexOf(f)};
       fish.stars=int(f.stars??starLevel(fish),1,5);
       fish.xp=int(f.xp??fish.careDays*10,0,1083);fish.level=fishLevel(fish.xp);
       return [fish];
@@ -62,11 +78,12 @@
     // Repair invalid assignments into compatible empty space without duplicating fish.
     const placed=[];
     for(const f of specimens){
-      const fits=t=>placed.filter(a=>a.tank===t).length<TANK_CAPACITY&&placed.filter(a=>a.tank===t).every(a=>waterKind(catalog,a.species)===waterKind(catalog,f.species));
-      if(!fits(f.tank))f.tank=Array.from({length:CAPACITY},(_,i)=>i).find(fits);
+      const legend=isLegend(catalog.find(s=>s.id===f.species));
+      const fits=t=>placed.filter(a=>a.tank===t).length<tankCapacity(t)&&placed.filter(a=>a.tank===t).every(a=>waterKind(catalog,a.species)===waterKind(catalog,f.species));
+      if(!fits(f.tank))f.tank=(legend?[legendTank(catalog.find(s=>s.id===f.species))]:Array.from({length:CAPACITY},(_,i)=>i)).find(fits);
       if(f.tank!==undefined)placed.push(f);
     }
-    const tankSlots=Math.max(placed.reduce((total,f)=>Math.max(total,f.tank+1),1),
+    const tankSlots=Math.max(placed.filter(f=>f.tank<CAPACITY).reduce((total,f)=>Math.max(total,f.tank+1),1),
       old.version>=3?int(old.unlockedTanks,1,CAPACITY):(old.version>=1||legacy?CAPACITY:1));
     const breeding=Object.fromEntries(Object.entries(record(old.breeding)).filter(([key])=>{
       const match=/^([0-5]):([a-zA-Z]+)$/.exec(key);
@@ -84,18 +101,23 @@
       eggIds.add(e.uid);const laidDay=int(e.laidDay,0,day);
       eggs.push({uid:e.uid,species:e.species,tank,laidDay,hatchDay:int(e.hatchDay,laidDay+1,laidDay+7),generation:int(e.generation,1,20),water:int(e.water??100,0,100)});
     }
-    state.petLife={version:4,fish:placed,food:int(old.food??10,0,99999),unlockedTanks:tankSlots,breeding,lastBirth,eggs,
+    const legendTanks=Object.fromEntries(LEGEND_TANKS.map(t=>[t.key,catalog.some(f=>isLegend(f)&&legendTank(f)===t.id&&state.caught?.[f.id]>0)]));
+    const legendClaims=Object.fromEntries(catalog.filter(isLegend).filter(f=>state.caught?.[f.id]>0).map(f=>[f.id,record(old.legendClaims)[f.id]===true||(f.id==="nushi"&&old.nushiClaimed===true)||placed.some(a=>a.species===f.id)]));
+    const selectedFish=placed.find(f=>f.uid===old.selected);
+    state.petLife={version:5,fish:placed,food:int(old.food??10,0,99999),unlockedTanks:tankSlots,breeding,lastBirth,eggs,legendTanks,legendClaims,
       nextEggId:Math.max(int(old.nextEggId,1),...eggs.map(e=>Number(e.uid.slice(4))+1)),contest:normalizeContest(old.contest,dogIds,placed,catalog,day),
       nextId:Math.max(int(old.nextId,1),...specimens.map(f=>Number(f.uid.slice(4))+1)),
       selected:placed.some(f=>f.uid===old.selected)?old.selected:placed[0]?.uid||null,
-      selectedTank:int(old.selectedTank??placed.find(f=>f.uid===old.selected)?.tank??placed[0]?.tank??0,0,CAPACITY-1),
+      selectedTank:selectedFish?.tank??int(old.selectedTank??placed[0]?.tank??0,0,7),
       nushiClaimed:old.nushiClaimed===true||specimens.some(f=>f.species==="nushi"),dogDaily,entries,best,lastResult};
-    sync(state,catalog,day);for(let t=0;t<CAPACITY;t++)shareWater(state,t);
-    selectTank(state,state.petLife.selectedTank);return state.petLife;
+    sync(state,catalog,day);for(const t of tankIds(state))shareWater(state,t);
+    if(!selectTank(state,state.petLife.selectedTank))selectTank(state,0);return state.petLife;
   }
   function sync(state,catalog,day){
     if(!state.petLife)return false;let changed=false;
     const p=state.petLife,laid=[];
+    p.legendTanks||={fresh:false,salt:false};p.legendClaims||={};
+    for(const t of LEGEND_TANKS)if(!p.legendTanks[t.key]&&catalog.some(f=>isLegend(f)&&legendTank(f)===t.id&&state.caught?.[f.id]>0)){p.legendTanks[t.key]=true;changed=true;}
     p.eggs||=[];
     for(let tank=0;tank<p.unlockedTanks;tank++){
       const group=residents(state,tank),species=[...new Set(group.map(f=>f.species))];
@@ -135,9 +157,9 @@
       const group=residents(state,egg.tank);
       if(group.length>=TANK_CAPACITY)continue;
       const spec=catalog.find(s=>s.id===egg.species),uid=`pet-${p.nextId++}`;
-      const initial=Math.max(spec.min||100,Math.floor(spec.start*.8));
-      const child={uid,species:egg.species,tank:egg.tank,bornSize:initial,length:initial,acquiredDay:day,lastDay:day,
-        fedDay:-1,changedDay:-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
+      const initial=frySize(spec);
+      const child={uid,species:egg.species,tank:egg.tank,bornSize:initial,length:initial,origin:"bred",acquiredDay:day,lastDay:day,
+        fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
         health:90,careDays:0,generation:egg.generation,sex:sexOf({uid}),stars:1,xp:0,level:1};
       p.eggs=p.eggs.filter(e=>e.uid!==egg.uid);p.fish.push(child);
       p.lastBirth={uid,species:egg.species,tank:egg.tank,day};changed=true;
@@ -148,7 +170,10 @@
   const residents=(state,tank=state.petLife.selectedTank)=>state.petLife.fish.filter(f=>f.tank===tank);
   const eggsIn=(state,tank=state.petLife.selectedTank)=>(state.petLife.eggs||[]).filter(e=>e.tank===tank);
   const waterKind=(catalog,species)=>catalog.find(s=>s.id===species)?.waterLabel||"淡水";
-  const canHouse=(state,species,catalog,tank)=>Number.isInteger(tank)&&tank>=0&&tank<state.petLife.unlockedTanks&&residents(state,tank).length+eggsIn(state,tank).length<TANK_CAPACITY&&[...residents(state,tank),...eggsIn(state,tank)].every(f=>waterKind(catalog,f.species)===waterKind(catalog,species));
+  const canHouse=(state,species,catalog,tank)=>{
+    const spec=catalog.find(f=>f.id===species);
+    return !!spec&&Number.isInteger(tank)&&tankIds(state).includes(tank)&&(isLegend(spec)?tank===legendTank(spec):tank<CAPACITY)&&residents(state,tank).length+eggsIn(state,tank).length<tankCapacity(tank)&&[...residents(state,tank),...eggsIn(state,tank)].every(f=>waterKind(catalog,f.species)===waterKind(catalog,species));
+  };
   function clearBreeding(p,tank,species){delete p.breeding[`${tank}:${species}`];}
   function shareWater(state,tank){
     const group=residents(state,tank);if(!group.length)return;
@@ -156,7 +181,7 @@
     for(const f of group){f.water=water;f.changedDay=changedDay;}
   }
   function selectTank(state,tank){
-    if(!Number.isInteger(tank)||tank<0||tank>=state.petLife.unlockedTanks)return false;
+    if(!Number.isInteger(tank)||!tankIds(state).includes(tank))return false;
     state.petLife.selectedTank=tank;
     if(!residents(state,tank).some(f=>f.uid===state.petLife.selected))state.petLife.selected=residents(state,tank)[0]?.uid||null;
     return true;
@@ -166,29 +191,28 @@
     if(!f||f.tank===tank||!canHouse(state,f.species,catalog,tank))return {ok:false,message:"同じ水の種類で、空きのある水槽を選ぼう（1槽5匹まで）。"};
     const oldTank=f.tank;f.tank=tank;clearBreeding(state.petLife,oldTank,f.species);clearBreeding(state.petLife,tank,f.species);
     shareWater(state,tank);selectTank(state,tank);state.petLife.selected=uid;
-    return {ok:true,message:`水槽${tank+1}へお引っ越しした。エサや成長の記録もそのままだよ。`};
+    return {ok:true,message:`${tankLabel(tank)}へお引っ越しした。エサや成長の記録もそのままだよ。`};
   }
   function acquire(state,species,catalog,day,tank=null){
     const p=state.petLife,spec=catalog.find(f=>f.id===species);
     if(!spec)return {ok:false,message:"この魚は迎えられない。"};
-    if(spec.legendary&&species!=="nushi")return {ok:false,message:"地域のヌシは水辺へ戻す。釣果と姿は図鑑に残るよ。"};
-    if(species!=="nushi"&&!(state.caught?.[species]>0))return {ok:false,message:"まず自分で釣って図鑑に登録すると、この魚を迎えられるよ。"};
+    if(!(state.caught?.[species]>0))return {ok:false,message:"まず自分で釣って図鑑に登録すると、この魚を迎えられるよ。"};
+    if(isLegend(spec)&&(p.legendClaims?.[species]||(species==="nushi"&&p.nushiClaimed)))return {ok:false,message:"このぬしは一匹を迎え済みだよ。大切に育てよう。"};
     sync(state,catalog,day);
-    if(tank===null)tank=[p.selectedTank,...Array.from({length:p.unlockedTanks},(_,i)=>i)].find(t=>canHouse(state,species,catalog,t));
-    if(!canHouse(state,species,catalog,tank))return {ok:false,message:"この水槽は満員か、水の種類が違うよ。1槽5匹まで迎えられる。"};
-    if(species==="nushi"&&(!(state.caught?.nushi>0)||p.nushiClaimed))return {ok:false,message:"ヌシを釣った記録があると、一匹を飼育水槽へ迎えられる。"};
+    if(tank===null)tank=[p.selectedTank,...tankIds(state)].find(t=>canHouse(state,species,catalog,t));
+    if(!canHouse(state,species,catalog,tank))return {ok:false,message:isLegend(spec)?"このぬしは、同じ水のぬし専用総合水槽へ迎えよう。":"この水槽は満員か、水の種類が違うよ。通常水槽は1槽5匹まで迎えられる。"};
     if(!Number.isFinite(state.money)||state.money<spec.price)return {ok:false,message:`${spec.price}円が必要だよ。`};
     state.money-=spec.price;
-    const initial=species==="nushi"?int(state.sizeRecords?.nushi?.hundredths??spec.start,spec.min||spec.start,spec.max):spec.start;
-    const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,acquiredDay:day,lastDay:day,
+    const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):spec.start;
+    const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,origin:isLegend(spec)?"legend":"shop",acquiredDay:day,lastDay:day,
       fedDay:-1,changedDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1};
     f.sex=sexOf(f);p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);
-    clearBreeding(p,tank,species);if(species==="nushi")p.nushiClaimed=true;
+    clearBreeding(p,tank,species);if(isLegend(spec))p.legendClaims[species]=true;if(species==="nushi")p.nushiClaimed=true;
     return {ok:true,message:`${spec.name}（${cm(f.length)}cm）を飼育水槽へ迎えた。`,fish:f};
   }
   function rehome(state,uid,catalog,day){
     const p=state.petLife,index=p.fish.findIndex(f=>f.uid===uid),f=p.fish[index];
-    if(!f||f.species==="nushi")return {ok:false,message:"この魚は託せないよ。ヌシは一度だけ迎えられる一匹だよ。"};
+    if(!f||isLegend(catalog.find(s=>s.id===f.species)))return {ok:false,message:"ぬしは一度だけ迎えられる大切な一匹だよ。総合水槽で育てよう。"};
     sync(state,catalog,day);p.fish.splice(index,1);clearBreeding(p,f.tank,f.species);selectTank(state,p.selectedTank);
     return {ok:true,message:`${catalog.find(a=>a.id===f.species)?.name||"魚"} #${f.uid.slice(4)}をアスアルに託した。水槽に空きができたよ。`};
   }
@@ -202,7 +226,7 @@
   }
   function buyBackQuote(f,catalog){
     const spec=catalog.find(a=>a.id===f?.species);
-    if(!f||!spec||f.species==="nushi")return {eligible:false,price:0,reason:"この魚は買い取れないよ。"};
+    if(!f||!spec||isLegend(spec))return {eligible:false,price:0,reason:"ぬしは買い取れないよ。専用総合水槽で大切に育てよう。"};
     if(f.length<spec.start)return {eligible:false,price:0,reason:`まだ稚魚だよ。${cm(spec.start)}cmまで育てよう。`};
     if(f.careDays<3)return {eligible:false,price:0,reason:`あと${3-f.careDays}日、エサと水を大切にして育てよう。`};
     if(f.health<60)return {eligible:false,price:0,reason:"元気が60%以上になるまでお世話しよう。"};
@@ -352,6 +376,6 @@
     return advanceContest(state);
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });

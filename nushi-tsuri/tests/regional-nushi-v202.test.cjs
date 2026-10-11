@@ -122,7 +122,12 @@ test('new bosses have separate unknown and known encyclopedia entries and cannot
     w.open('record');w.document.querySelector('[data-fishdex-id="starNushi"]').click();
     assert.match(w.document.querySelector('#fishdexDetail').textContent,/架空/);
     assert.equal(w.document.querySelector('[data-fishdex-id="caveNushi"]').classList.contains('unknown'),true);
-    const before=read(w,'({money:s.money,pets:s.petLife.fish.length})');assert.equal(w.eval('ShuPetLife.acquire(s,"starNushi",petCatalog,0).ok'),false);
-    assert.deepEqual(read(w,'({money:s.money,pets:s.petLife.fish.length})'),before);assert.deepEqual(app.errors,[]);
+    const before=read(w,'({money:s.money,pets:s.petLife.fish.length})');assert.equal(w.eval('ShuPetLife.acquire(s,"starNushi",petCatalog,0,0).ok'),false);
+    assert.deepEqual(read(w,'({money:s.money,pets:s.petLife.fish.length})'),before);
+    w.eval('petUi.open("shop")');assert.equal(w.document.querySelector('[data-pet-buy="starNushi"]'),null);
+    assert.equal(w.eval('ShuPetLife.acquire(s,"caveNushi",petCatalog,0).ok'),false);
+    assert.equal(w.eval('ShuPetLife.acquire(s,"starNushi",petCatalog,0).ok'),true);
+    assert.equal(read(w,'s.petLife.fish[0].tank'),6);assert.equal(read(w,'s.money'),before.money);
+    assert.equal(w.eval('ShuPetLife.acquire(s,"starNushi",petCatalog,0).ok'),false);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });
