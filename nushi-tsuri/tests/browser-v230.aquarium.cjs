@@ -25,7 +25,13 @@ module.exports=async function aquariumGrowth(url,mobile=false){
     specimen('pet-3','aji',1,2100),specimen('pet-4','isaki',2,1500),specimen('pet-5','isaki',2,2500,1500),
     specimen('pet-6','nijimasu',3,1500),specimen('pet-7','nijimasu',3,2500,1500)]}};
  const snap=page=>page.evaluate(()=>({money:s.money,hp:s.hp,time:s.gameMinutes,food:s.petLife.food,fish:s.petLife.fish,caught:s.caught,records:s.sizeRecords}));
- const screenshot=async(page,screen)=>console.log('V230_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:85})).toString('base64')}));
+ const screenshot=async(page,screen)=>{
+  if(mobile){
+   const subject={'tank-selection':'.pet-buyback-tanks','specimen-confirmation':'.pet-buyback-detail','juvenile-and-adult-isaki':'.pet-buyback-fish','young-nijimasu':'#petInspectStage','freshwater-legend-tank':'#petTankStage','bred-eggs':'.pet-eggs','bred-fry':'#petInspectStage'}[screen];
+   await page.locator(subject).scrollIntoViewIfNeeded();
+  }
+  console.log('V230_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:85})).toString('base64')}));
+ };
  try{
   const {context,page,press}=await open(initial);
   try{
