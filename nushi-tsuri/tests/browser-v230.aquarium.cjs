@@ -72,7 +72,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
   try{
    const {page,press}=bred;await press('[data-pet-buy="moroko"]');await press('[data-pet-buy="moroko"]');
    await press('[data-pet-tab="supplies"]');await press('[data-pet-action="food-10"]');await press('[data-pet-action="aquarium"]');
-   async function day(){await press('[data-pet-action="feed"]');if(await page.locator('[data-pet-action="water"]').isEnabled())await press('[data-pet-action="water"]');await page.evaluate(()=>{advanceGameMinutes(1440);save();petUi.render();});}
+   async function day(){await press('[data-pet-action="feed"]');if(await page.locator('[data-pet-action="water"]').isEnabled())await press('[data-pet-action="water"]');await page.evaluate(()=>{advanceGameTime(s,1440);save();petUi.render();});}
    for(let i=0;i<3;i++)await day();assert.equal(await page.locator('.pet-eggs').count(),1);await screenshot(page,'bred-eggs');
    for(let i=0;i<2;i++)await day();
    const fry=await page.evaluate(()=>s.petLife.fish.find(f=>f.origin==='bred'));
