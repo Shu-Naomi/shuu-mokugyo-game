@@ -58,8 +58,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
   try{
     w.eval('openInventory("tackle")');
     const doc=w.document;
-    assert.equal(doc.querySelectorAll('#inventoryHookOptions button').length,3);
-    assert.equal(doc.querySelectorAll('#inventoryBaitOptions button').length,11);
+    assert.equal(doc.querySelectorAll('#inventoryHookOptions button[data-pick-hook]').length,3);
+    assert.equal(doc.querySelectorAll('#inventoryBaitOptions button[data-pick-bait]').length,11);
     assert.match(doc.querySelector('#inventoryTackleSummary').textContent,/ミミズ.*ハリ小/);
     doc.querySelector('#inventoryBaitOptions [data-pick-bait="corn"]').click();
     assert.equal(read(w,'s.selectedHook'),'small');
