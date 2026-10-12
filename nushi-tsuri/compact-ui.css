@@ -86,6 +86,7 @@
 .compact-inventory #inventoryCategories button i{font-size:14px;grid-column:1;grid-row:1}
 .compact-inventory #inventoryCategories button span{grid-column:1/-1;grid-row:2;font-size:10px;white-space:nowrap}
 .compact-inventory #inventoryCategories button small{grid-column:2;grid-row:1;font-size:10px;min-width:14px}
+.compact-inventory #inventoryCategories button:active{transform:none}
 .compact-inventory .inventory-category-content{flex:1;min-height:0;overflow:hidden;padding:0;margin:0;display:flex;flex-direction:column}
 .compact-equipment-summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:5px;flex:0 0 40px;overflow:hidden}
 .compact-equipment-summary>div{display:flex;align-items:center;flex-wrap:wrap;gap:3px 5px;min-width:0;padding:3px 7px;border:1px solid #698e81;border-radius:5px;background:#24414c;color:#ffe1a3;font-size:12px}

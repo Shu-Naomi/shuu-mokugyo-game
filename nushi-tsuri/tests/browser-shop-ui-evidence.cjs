@@ -9,13 +9,13 @@ const server=http.createServer((req,res)=>{try{const u=new URL(req.url,'http://l
   for(const [mobile,options] of [[false,{}],[true,{}],[true,{viewport:{width:820,height:366},dpr:1.875}]]){
    try{await run(url,mobile,options);}catch(e){failures.push(e.stack);console.error(e);}
   }
-  // The remaining legacy scenarios exercise recipes and guide links that now
-  // live on catalogue pages. Keep every original assertion and use real controls.
+  // Existing category integration keeps its recipe, guide and payment assertions.
+  // The full browser workflow also runs all the legacy scenarios.
   const directory=path.join(__dirname,'browser-evidence-v232');fs.mkdirSync(directory,{recursive:true});
   const originalLog=console.log,logPath=path.join(directory,'legacy-tail.log');
   console.log=(...args)=>{const line=args.map(String).join(' ');fs.appendFileSync(logPath,line+'\n');originalLog(/_SCREENSHOT\s/.test(line)?line.split(/\s/)[0]+' [saved in legacy-tail.log]':line);};
   try{
-   for(const file of ['browser-v209.features.cjs','browser-v213.features.cjs','browser-v215.features.cjs','browser-v217.features.cjs','browser-v214.features.cjs'])for(const mobile of [false,true]){
+   for(const file of ['browser-v217.features.cjs'])for(const mobile of [false,true]){
     try{await require('./'+file)(url,mobile);}catch(e){failures.push(file+' '+mobile+'\n'+e.stack);console.error(file,mobile,e);}
    }
   }finally{console.log=originalLog;}
