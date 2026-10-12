@@ -119,6 +119,7 @@
 .pet-aquarium .pet-inspect-caption strong,.pet-aquarium .pet-inspect-caption small{font-size:10px;line-height:1.3;margin:0}
 .pet-aquarium .pet-tank-info{display:flex;flex-direction:column;gap:9px;min-height:0;min-width:0;padding:10px;border:1px solid #6a9994;border-radius:9px;background:linear-gradient(160deg,#244653,#18313f);overflow:auto;scrollbar-width:thin}
 .pet-aquarium .pet-fish-roster{flex-shrink:0;min-height:46px;padding:0;margin:0;gap:5px;scrollbar-width:thin}
+.pet-aquarium .pet-fish-roster:empty{display:none}
 .pet-aquarium .pet-fish-roster button{flex:0 0 64px;width:64px;min-width:64px;height:44px;min-height:44px;padding:1px 4px;position:relative;flex-direction:column;gap:0;background:#1b3846;color:#e2eddf;border:1px solid #6e9392;box-shadow:inset 0 -2px #122d36}
 .pet-aquarium .pet-fish-roster button[aria-pressed=true]{background:#395a58;color:#fff0b6;border-color:#ecd68d;box-shadow:inset 0 0 0 1px #f0dea2}
 .pet-fish-roster small{font-size:10px!important;line-height:12px;margin:0!important}.pet-fish-roster em{font-size:9px;font-style:normal;color:#ffe0a2}
