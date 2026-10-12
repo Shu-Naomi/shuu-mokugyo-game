@@ -214,9 +214,9 @@
 .compact-window .compact-product-grid{position:static!important;display:grid;grid-template-columns:minmax(0,1fr)!important;grid-auto-rows:44px;grid-template-rows:none!important;align-content:start;gap:4px;width:49%;flex:1;min-height:0;overflow:hidden}
 .compact-window .compact-product{display:contents!important;position:static!important;border:0!important;padding:0!important;background:none!important}
 .compact-window .compact-product[hidden]{display:none!important}
-.compact-window .compact-product-select{display:flex;align-items:center;gap:4px;width:100%;height:44px;min-height:44px;min-width:0;margin:0;padding:2px 5px;border:1px solid transparent;border-radius:0;background:#163a29;box-shadow:none;color:#e5ebcd;text-align:left;font-size:12px;box-sizing:border-box;overflow:hidden;transform:none}
+.compact-window .compact-product-select{display:flex!important;flex-direction:row!important;align-items:center!important;gap:4px!important;width:100%;height:44px!important;min-height:44px!important;max-height:44px!important;min-width:0;margin:0!important;padding:2px 5px!important;border:1px solid transparent!important;border-radius:0!important;background:#163a29!important;box-shadow:none!important;color:#e5ebcd!important;text-align:left;font-size:12px;box-sizing:border-box;overflow:hidden;transform:none}
 .compact-product-select::before{content:'▶';width:10px;flex:0 0 10px;visibility:hidden;color:#fff2af;font-size:11px}
-.compact-window .compact-product-select[aria-selected=true]{border-color:#b9c398;background:#355538;box-shadow:inset 0 0 0 1px #5d784a}
+.compact-window .compact-product-select[aria-selected=true]{border-color:#b9c398!important;background:#355538!important;box-shadow:inset 0 0 0 1px #5d784a!important}
 .compact-product-select[aria-selected=true]::before{visibility:visible}
 .compact-window .compact-product-select:focus-visible{outline:2px solid #fff4bd;outline-offset:-2px}
 .compact-unavailable .compact-product-select{color:#acbba0}
@@ -250,6 +250,9 @@
 .compact-quantity-dock{border-top:2px solid #899d74}
 .compact-vehicle-shop #vehicleShopDialogue{flex:0 0 auto;max-height:42px;margin:0;padding:5px 8px;font-size:12px;line-height:1.4;border:3px double #a9b88c;background:#163728;overflow:hidden}
 .compact-pet-shop .pet-content{background:#183e30}
+#petLifeModal.compact-pet-shop .pet-heading{background:#1c3e2c}
+#petLifeModal.compact-pet-shop .compact-selection-panel .compact-action{background:#765432;border:1px solid #d2ba80;border-radius:2px;box-shadow:inset 0 0 0 1px #947049;color:#fff0be}
+#petLifeModal.compact-pet-shop .compact-selection-panel .compact-action:disabled{background:#3d4a35;border-color:#7c8666;color:#bfc6a9;box-shadow:none}
 .compact-pet-shop .pet-shop-host{border-bottom:2px solid #91a679;padding-bottom:3px;flex-basis:48px}
 .compact-pet-shop .pet-shop-host>canvas:first-child{width:31px;height:41px}
 .compact-pet-shop .pet-shop-host b{display:block;color:#efdca0;font-size:11px}
@@ -261,12 +264,12 @@
  .compact-window .compact-catalog{padding:3px!important;border-width:1px!important}
  .compact-window .compact-selection-panel{inset:3px 3px 3px 51%;padding:4px 5px;gap:4px}
  .compact-selection-heading{gap:5px}
- .compact-selection-heading>.compact-art{flex-basis:35px;width:35px!important;height:40px;max-height:40px!important}
+ .compact-selection-heading>.compact-art{flex-basis:30px;width:30px!important;height:30px;max-height:30px!important}
  .compact-selection-heading .pixel-item-icon,.compact-selection-heading .tackle-pixel-icon,.compact-selection-heading .compact-icon{width:29px!important;height:29px!important}
  .compact-selection-heading .rod-display-art{width:20px!important;height:35px!important;flex-basis:20px!important}
- .compact-window .compact-selection-name{font-size:12px;line-height:15px;margin:0 0 2px!important}
- .compact-selection-status{font-size:10px;line-height:12px}
- .compact-window .compact-selection-description{font-size:11px;line-height:15px;padding-top:3px}
+ .compact-window .compact-selection-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;max-height:28px;overflow:hidden;font-size:12px;line-height:14px;margin:0!important}
+ .compact-selection-status{display:none}
+ .compact-window .compact-selection-description{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;min-height:28px;font-size:11px;line-height:14px;padding-top:3px;box-sizing:border-box}
  .compact-window .compact-product-name{font-size:11px!important;line-height:14px!important}
  .compact-row-art{flex-basis:24px;width:24px}
  .compact-row-art>.compact-art{width:24px!important}

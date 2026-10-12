@@ -41,7 +41,7 @@
     if(a.petNushi!=null)return b.disabled?'迎え済み':'無料で迎える';
     if(a.cookRecipe!=null)return '作る';if(a.eatPreparedMeal!=null||a.useItem!=null)return '食べる';
     if([...b.attributes].some(x=>/^data-(pick|equip)-/.test(x.name)))return b.classList.contains('selected')?'選択中':'選ぶ';
-    if(a.petBuybackTank!=null||a.petBuyback!=null)return 'この子を見る';
+    if(a.petBuybackTank!=null)return '水槽を開く';if(a.petBuyback!=null)return 'この子を見る';
     return clean(b);
   }
   function sourceArt(n){return n.querySelector(':scope > i,.shop-item-art,.rod-display-art,.pet-fish-thumb,.pet-specimen-window,svg.pixel-item-icon,svg.tackle-pixel-icon');}
@@ -70,7 +70,7 @@
     const groupNodes=[...grid.querySelectorAll('.grid,.shop-goods,.equipment-options,.tackle-options,.compact-source-group')];groupNodes.forEach(n=>n.classList.add('compact-grid-source'));
     const id=opts.key||node.id,c={root:node,grid,pager,items,page:pages.get(id)||0,selected:selections.get(id)||0,size:3,observer:null};
     c.update=()=>{
-      items.forEach((item,i)=>{const n=item.original;item.title.textContent=nameOf(n,opts);item.name.textContent=item.title.textContent;const stock=opts.stock?.(n)||clean(n.querySelector('[data-sam-stock]'))||clean(n.querySelector('.inventory-card-actions strong,:scope > strong,.inventory-purpose')),price=clean(n.querySelector('[data-sam-total],[data-sam-price],:scope > strong,button[data-pet-buy]')).match(/[\d,]+円/);item.stock.textContent=[price?.[0],stock].filter(Boolean).join(' · ');item.status.textContent=stock;
+      items.forEach((item,i)=>{const n=item.original;item.title.textContent=nameOf(n,opts);item.name.textContent=item.title.textContent;const stock=(opts.stock?.(n)||clean(n.querySelector('[data-sam-stock]'))||clean(n.querySelector('.inventory-card-actions strong,:scope > strong,.inventory-purpose'))).replace(/[\d,]+円/g,'').trim(),price=clean(n.querySelector('[data-sam-total],[data-sam-price],strong,button[data-pet-buy]')).match(/[\d,]+円/);item.stock.textContent=[price?.[0],stock].filter(Boolean).join(' · ');item.status.textContent=stock;
         item.description.textContent=detailsOf(n,opts).filter(t=>t!==stock).join(' · ')||'この品物の説明と操作を確認できるよ。';item.pick.setAttribute('aria-label',item.title.textContent+' · '+item.stock.textContent);item.pick.setAttribute('aria-selected',String(i===c.selected));item.wrap.classList.toggle('compact-selected',i===c.selected);item.detail.hidden=i!==c.selected;
         item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
       });};
@@ -129,7 +129,7 @@
     move(content.querySelector('.pet-tank-picker'),host,d);move(content.querySelector('.pet-buyback-heading'),host,d);suppress(content.querySelector('.pet-buyback-steps'),d);
     content.querySelectorAll('.pet-stock').forEach((n,i)=>catalog(n,{selector:':scope > article',key:'pet:'+ctx.tab+':'+i,onLayout:ctx.onLayout}));
     const supplies=content.querySelector('.pet-supplies');if(supplies)catalog(supplies,{selector:'button',key:'pet:supplies',icon:'feed',name:n=>n.dataset.petAction?.startsWith('food-')?'魚のエサ · '+clean(n).split(' · ')[0]:clean(n),stock:n=>n.dataset.petAction?.startsWith('food-')?ctx.food+'食所持':''});
-    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,onLayout:ctx.onLayout}));
+    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,stock:n=>clean(n.querySelector(':scope > span')),onLayout:ctx.onLayout}));
     const registration=content.querySelector('.pet-contest-selectors');if(registration){content.querySelectorAll(':scope > p,:scope > .pet-contest-result').forEach(n=>suppress(n,d));}
     restoreFocus(scope);
   }
