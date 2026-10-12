@@ -58,8 +58,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
   try{
     w.eval('openInventory("tackle")');
     const doc=w.document;
-    assert.equal(doc.querySelectorAll('#inventoryHookOptions button').length,3);
-    assert.equal(doc.querySelectorAll('#inventoryBaitOptions button').length,11);
+    assert.equal(doc.querySelectorAll('#inventoryHookOptions button[data-pick-hook]').length,3);
+    assert.equal(doc.querySelectorAll('#inventoryBaitOptions button[data-pick-bait]').length,11);
     assert.match(doc.querySelector('#inventoryTackleSummary').textContent,/ミミズ.*ハリ小/);
     doc.querySelector('#inventoryBaitOptions [data-pick-bait="corn"]').click();
     assert.equal(read(w,'s.selectedHook'),'small');
@@ -82,8 +82,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
     assert.match(doc.querySelector('#battleMsg').textContent,/ハリ大/);
     w.eval('battle=null;save()');saved=JSON.parse(w.localStorage.getItem(saveKey));
     assert.equal(saved.selectedHook,'large');assert.equal(saved.baits.nushiSecret,2);
-    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"] svg'));
-    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"] svg'));
+    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"]').closest('.compact-product').querySelector('.compact-art svg'));
+    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"]').closest('.compact-product').querySelector('.compact-art svg'));
     assert.match(w.fishdexKnownDetail(w.eval('fish.find(f=>f.id==="funa")')),/ハリ小.*基本サイズ帯は標準/s);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

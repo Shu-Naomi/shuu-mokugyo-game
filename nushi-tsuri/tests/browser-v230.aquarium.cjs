@@ -1,5 +1,6 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 
 // Real Chromium pixels and clicks/touches; pre-existing specimen records are
 // fixtures. Breeding below uses the real shop, care and game-clock routes.
@@ -11,7 +12,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
   await context.addInitScript(({state,key})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{state,key:saveKey});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
-  const press=q=>page.locator(q)[mobile?'tap':'click']();
+  const press=q=>pressProduct(page,q,mobile);
   await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
   await press('#action');assert.equal(await page.locator('#petLifeModal.open').count(),1);
   return {context,page,press};
@@ -40,7 +41,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    await press('[data-pet-buyback-tank="0"]');assert.equal(await page.locator('[data-pet-buyback]').count(),2);
    const widths=await page.locator('[data-pet-specimen]').evaluateAll(els=>els.map(el=>parseFloat(el.style.width)));
    assert.ok(widths[1]>widths[0]*1.3,'portraits reflect different lengths');
-   assert.match(await page.locator('.pet-card-comment').first().innerText(),/アスアル/);
+   await press('.compact-product:has([data-pet-buyback="pet-1"]) [data-compact-info]');assert.match(await page.locator('.compact-sheet-body').innerText(),/アスアル/);await press('[data-compact-sheet-close]');
    const before=await snap(page);
    await press('[data-pet-buyback="pet-2"]');await press('[data-pet-action="buyback-cancel"]');assert.deepEqual(await snap(page),before);
    await press('[data-pet-buyback="pet-2"]');assert.match(await page.locator('.pet-buyback-detail').innerText(),/#2.*16\.00cm/s);
