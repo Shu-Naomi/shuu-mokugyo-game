@@ -184,4 +184,9 @@
  .compact-inventory .compact-sheet-body .compact-equipment-summary{display:grid;min-height:40px;margin-bottom:10px}
  .compact-inventory #inventoryTackleSummary{display:none}
  .compact-inventory .compact-sheet-body #inventoryTackleSummary{display:block;max-height:none;white-space:normal}
+ .compact-store .compact-product,.compact-location-shop .compact-product{display:grid;grid-template-columns:44px minmax(0,1fr);grid-template-rows:14px 10px 44px;gap:2px 4px;padding:4px;align-content:start}
+ .compact-store .compact-product>.compact-art,.compact-location-shop .compact-product>.compact-art{grid-column:1;grid-row:1/3;min-height:0;max-height:none;width:44px;height:100%}
+ .compact-store .compact-product>.compact-product-name,.compact-location-shop .compact-product>.compact-product-name{grid-column:2;grid-row:1}
+ .compact-store .compact-product>.compact-product-stock,.compact-location-shop .compact-product>.compact-product-stock{grid-column:2;grid-row:2}
+ .compact-store .compact-product>.compact-product-actions,.compact-location-shop .compact-product>.compact-product-actions{grid-column:1/-1;grid-row:3}
 }
