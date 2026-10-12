@@ -10,7 +10,7 @@
   function key(n){if(n.id)return ['id',n.id];return [...n.attributes].filter(a=>a.name.startsWith('data-')&&!a.name.startsWith('data-compact-')).map(a=>[a.name,a.value])[0]||null;}
   function rememberFocus(scope){const n=document.activeElement;if(scope.contains(n)&&n.tagName==='BUTTON'){const k=key(n);if(k)focusAfter.set(scope.id,k);}}
   function restoreFocus(scope){const k=focusAfter.get(scope.id);if(!k)return;focusAfter.delete(scope.id);const n=[...scope.querySelectorAll('button')].find(n=>n.getAttribute(k[0])===k[1]);if(!n)return;
-    const c=[...controllers].find(c=>c.root.contains(n));if(c)c.reveal(n);(n.disabled?n.closest('.compact-product')?.querySelector('[data-compact-info]'):n)?.focus({preventScroll:true});}
+    const c=[...controllers].find(c=>c.root.contains(n));if(c)c.reveal(n);(n.disabled?n.closest('.compact-product')?.querySelector(n.closest('.compact-sam-list')?'[data-compact-select]':'[data-compact-info]'):n)?.focus({preventScroll:true});}
   function move(n,to,d){if(!n)return;const mark=document.createComment('compact-position');n.before(mark);d.moves.push({n,mark,hidden:n.hidden,onclick:n.onclick});to.append(n);}
   function suppress(n,d){if(n&&!n.classList.contains('compact-suppressed')){n.classList.add('compact-suppressed');d.suppressed.push(n);}}
   function decorate(scope){const d={scope,moves:[],nodes:[],suppressed:[],cleanup:[]};decorations.set(scope,d);scope.classList.add('compact-window');return d;}
