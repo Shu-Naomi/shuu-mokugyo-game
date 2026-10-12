@@ -75,7 +75,7 @@
         item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
       });};
     c.apply=()=>{const style=getComputedStyle(node),height=node.clientHeight?node.clientHeight-parseFloat(style.paddingTop||0)-parseFloat(style.paddingBottom||0):(innerHeight>500?350:150),all=Math.max(1,Math.floor((height+4)/48));c.size=items.length<=all?all:Math.max(1,Math.floor((height-44-4+4)/48));
-      const total=Math.max(1,Math.ceil(items.length/c.size));c.page=Math.max(0,Math.min(c.page,total-1));c.selected=Math.max(0,Math.min(c.selected,items.length-1));if(Math.floor(c.selected/c.size)!==c.page)c.selected=c.page*c.size;
+      const total=Math.max(1,Math.ceil(items.length/c.size));c.selected=Math.max(0,Math.min(c.selected,items.length-1));c.page=Math.floor(c.selected/c.size);
       items.forEach((it,i)=>it.wrap.hidden=Math.floor(i/c.size)!==c.page);pager.hidden=total===1;previous.disabled=c.page===0;next.disabled=c.page===total-1;label.textContent=(c.page+1)+' / '+total+' · '+items.length+'品';pages.set(id,c.page);selections.set(id,c.selected);c.update();opts.onLayout?.();
       items.forEach(it=>{const copy=cloneArt(it.art);[copy,...copy.querySelectorAll('*')].forEach(n=>{for(const a of [...n.attributes])if(a.name.startsWith('data-'))n.removeAttribute(a.name);});it.thumb.replaceChildren(copy);});
     };
