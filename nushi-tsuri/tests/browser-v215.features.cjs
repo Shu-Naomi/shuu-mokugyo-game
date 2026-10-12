@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function run(url,mobile=false){
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),errors=[],failed=[];
  const viewport=mobile?{width:844,height:390}:{width:1280,height:720},context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile}),page=await context.newPage();
@@ -43,10 +44,10 @@ module.exports=async function run(url,mobile=false){
   const sizeChance=()=>second.evaluate(()=>{const counts={};for(let i=0;i<10000;i++){let n=0;const p=rollFishSpecimen(fish.find(f=>f.id==='funa'),()=>n++?.5:(i+.5)/10000);counts[p.tierId]=(counts[p.tierId]||0)+1;}return counts;});
   const plain=await sizeChance();assert.equal(plain.large+plain.giant,1400);
   await second.locator('#locationInterior [data-location-category="recipes"]').click();
-  await second.locator('#locationInterior [data-cook-recipe="bigFishPlate"]').click();
+  await pressProduct(second,'#locationInterior [data-cook-recipe="bigFishPlate"]',mobile);
   await second.locator('#locationInterior [data-location-category="meals"]').click();
-  await second.locator('#locationInterior [data-eat-prepared-meal="bigFishPlate"]').click();
-  const fed=await sizeChance();assert.equal(fed.large+fed.giant,2500);assert.match(await second.locator('.cooking-kitchen-status').innerText(),/14%→25%/);
+  await pressProduct(second,'#locationInterior [data-eat-prepared-meal="bigFishPlate"]',mobile);
+  const fed=await sizeChance();assert.equal(fed.large+fed.giant,2500);await pressProduct(second,'#locationInterior [data-compact-guide]',mobile);assert.equal(await second.locator('.compact-sheet .cooking-kitchen-status').isVisible(),true);assert.match(await second.locator('.compact-sheet .cooking-kitchen-status').innerText(),/14%→25%/);await pressProduct(second,'[data-compact-sheet-close]',mobile);
   await second.reload({waitUntil:'load'});await second.locator('#start').click();const restored=await sizeChance();assert.equal(restored.large+restored.giant,2500);
   const nativeFish=await second.evaluate(async()=>{
    const Art=ShuFishArt,images=new Map(),ids=['suzuki','kurodai','moroko','ayu'],canvas=document.createElement('canvas');

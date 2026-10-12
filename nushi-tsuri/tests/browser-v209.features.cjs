@@ -1,6 +1,7 @@
 // Exercise the new artwork and care/recipe controls in the real browser.
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function features(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[],failedAssets=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
@@ -12,7 +13,7 @@ module.exports=async function features(url,mobile){
     dogTreats:{samBiscuit:3},ownedDogToys:['rubberBall']}});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&/\/assets\/fish-.*\.(png|webp)|fish-art\.js/.test(r.url()))failedAssets.push(r.url());});
-  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
+  const press=selector=>pressProduct(page,selector,mobile);
   const settle=()=>page.waitForFunction(()=>!playerHomeState.transitioning);
   const careIdle=()=>page.waitForFunction(()=>!dogCareIsBusy());
   async function enterHome(){
