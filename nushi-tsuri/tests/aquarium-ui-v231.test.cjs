@@ -68,3 +68,30 @@ test('management moves exactly the chosen fish and requires a separate confirmat
   assert.deepEqual(read(w,'s.petLife.fish.find(f=>f.uid==="pet-28")'),{...before.fish[0],tank:4});assert.equal(read(w,'s.money'),before.money);assert.equal(w.document.querySelector('.pet-sheet'),null);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
+
+for(const [species,water,other] of [['moroko','淡水','madai'],['madai','海水','moroko']])test('eggs retain '+water+' tank labels and shop compatibility after the last parent is entrusted and the save reloads',()=>{
+ const initial=fixture();initial.caught={moroko:1,madai:1};
+ initial.petLife.fish=[{...fish('pet-28',species==='madai'?4360:750),species}];
+ initial.petLife.eggs=[{uid:'egg-1',species,tank:1,laidDay:day-1,hatchDay:day+2,generation:1,water:100}];
+ const a=boot(initial),w=a.window;let saved;try{
+  w.eval('petUi.open("aquarium")');click(w,'[data-pet-action="records"]');click(w,'[data-pet-panel-tab="manage"]');
+  click(w,'[data-pet-action="rehome"]');click(w,'[data-pet-action="rehome-confirm"]');
+  assert.equal(read(w,'s.petLife.fish.length'),0);assert.equal(read(w,'s.petLife.eggs.length'),1);
+  assert.match(w.document.querySelector('.pet-tank-current').textContent,new RegExp(water+' · 0/5'));
+  assert.match(w.document.querySelector('.pet-tank-caption').textContent,new RegExp(water));
+  assert.equal(w.document.querySelector('.pet-empty-profile b').textContent,water);assert.equal(w.document.querySelector('.pet-empty'),null);
+  const before=read(w,'({money:s.money,time:s.gameMinutes,eggs:s.petLife.eggs})');
+  click(w,'[data-pet-action="tanks"]');assert.match(w.document.querySelector('[data-pet-tank="1"]').textContent,new RegExp(water+'.*卵1'));
+  click(w,'[data-pet-action="close"]');w.eval('petUi.open("shop")');
+  assert.match(w.document.querySelector('#petTankSelect option[value="1"]').textContent,new RegExp(water));
+  assert.equal(w.document.querySelector('[data-pet-buy="'+species+'"]').disabled,false);
+  assert.equal(w.document.querySelector('[data-pet-buy="'+other+'"]').disabled,true);
+  assert.deepEqual(read(w,'({money:s.money,time:s.gameMinutes,eggs:s.petLife.eggs})'),before);
+  saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+ const reload=boot(saved);try{
+  reload.window.eval('petUi.open("aquarium")');
+  assert.match(reload.window.document.querySelector('.pet-tank-current').textContent,new RegExp(water));
+  assert.deepEqual(read(reload.window,'s.petLife.eggs'),saved.petLife.eggs);assert.deepEqual(reload.errors,[]);
+ }finally{reload.dispose();}
+});

@@ -5,7 +5,8 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
  const fish=(uid,species,tank,length,generation=0)=>({uid,species,tank,length,bornSize:generation?150:species==='isaki'?1400:750,origin:generation?'bred':'shop',generation,sex:uid==='pet-29'?'male':'female',acquiredDay:day-4,lastDay:day,fedDay:day-1,changedDay:day-1,water:options.low?30:55,health:options.low?55:90,careDays:4,stars:1,xp:generation?0:106});
  const initial={...seed(),gameMinutes:day*1440+360,money:596209,soundEnabled:false,x:199,y:36,
   caught:{moroko:1,isaki:2,madai:2,nushi:1,coastNushi:1},petLife:{version:5,unlockedTanks:6,food:1165,selected:'pet-28',selectedTank:1,nextId:64,
-   fish:[fish('pet-1','moroko',0,750),fish('pet-28','isaki',1,2400),fish('pet-29','isaki',1,2400),fish('pet-30','isaki',1,650,1),fish('pet-31','isaki',1,150,1),fish('pet-20','madai',2,6160),fish('pet-22','madai',2,4960),fish('pet-23','madai',2,4360),fish('pet-32','madai',2,150,1)]}};
+   fish:[fish('pet-1','moroko',0,750),fish('pet-28','isaki',1,2400),fish('pet-29','isaki',1,2400),fish('pet-30','isaki',1,650,1),fish('pet-31','isaki',1,150,1),fish('pet-20','madai',2,6160),fish('pet-22','madai',2,4960),fish('pet-23','madai',2,4360),fish('pet-32','madai',2,150,1)],
+   eggs:[{uid:'egg-1',species:'moroko',tank:3,laidDay:day-1,hatchDay:day+2,generation:1,water:100},{uid:'egg-2',species:'madai',tank:5,laidDay:day-1,hatchDay:day+2,generation:1,water:100}]}};
  const browser=await chromium.launch({headless:true}),errors=[],failed=[];
  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',deviceScaleFactor:options.dpr||1,serviceWorkers:'block'});
  try{
@@ -43,6 +44,15 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
   await press('[data-pet-move-target="4"]');await press('[data-pet-action="move"]');assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);
   const moved=await snapshot();assert.deepEqual(moved.fish,beforeMove.fish.map(f=>f.uid==='pet-32'?{...f,tank:4}:f));assert.equal(moved.money,beforeMove.money);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);await fit();
   const saved=await snapshot();await page.reload({waitUntil:'load'});await press('#start');await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snapshot(),saved);assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);await fit();
-  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V231_AQUARIUM_UI_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,overview,fry,readOnlyPanels:true,keyboard:!mobile,exactMove:true,careOnce:true,reload:true,errors,failed}));
+  const eggs=await page.evaluate(()=>s.petLife.eggs);await press('[data-pet-action="tanks"]');
+  assert.match(await page.locator('[data-pet-tank="3"]').innerText(),/淡水.*卵1/s);assert.match(await page.locator('[data-pet-tank="5"]').innerText(),/海水.*卵1/s);await shot('egg-cards');
+  for(const [tank,water,label] of [[3,'淡水','fresh'],[5,'海水','salt']]){
+   await press('[data-pet-tank="'+tank+'"]');assert.match(await page.locator('.pet-tank-current').innerText(),new RegExp(water+'.*0/5'));
+   assert.equal(await page.locator('.pet-empty-profile b').innerText(),water);assert.match(await page.locator('.pet-tank-caption').innerText(),new RegExp(water));
+   assert.equal(await page.locator('.pet-eggs').count(),1);assert.equal(await page.locator('.pet-empty').count(),0);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);
+   await fit();await shot('egg-only-'+label);await press('[data-pet-action="tanks"]');
+  }
+  await press('.pet-sheet [data-pet-action="panel-close"]');assert.deepEqual(await page.evaluate(()=>s.petLife.eggs),eggs);
+  assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V231_AQUARIUM_UI_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,overview,fry,readOnlyPanels:true,keyboard:!mobile,exactMove:true,careOnce:true,reload:true,eggWater:true,errors,failed}));
  }finally{await context.close();await browser.close();}
 };

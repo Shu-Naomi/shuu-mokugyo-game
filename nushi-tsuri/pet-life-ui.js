@@ -69,9 +69,13 @@
       const quote=P.buyBackQuote(f,ctx.catalog);
       return `${trail}${back}<article class="pet-buyback-detail">${thumbnail(f,true)}<div><h3>${esc(fishName(f))}</h3><p>${P.cm(f.length)}cm · ${esc(sizeLabel(f))} · ${f.sex==="female"?"♀":"♂"}</p><p>第${f.generation+1}世代 ${"★".repeat(f.stars)} · お世話${f.careDays}日 · 元気${f.health}%</p><small>${esc(appearance(f).label)}</small><blockquote class="pet-asual-comment">アスアル「${esc(asualComment(f))}」</blockquote><p class="pet-buyback-price">${quote.eligible?`買い取り価格 ${quote.price.toLocaleString("ja-JP")}円`:esc(quote.reason)}</p><p class="pet-note">確定すると、この一匹が水槽からいなくなるよ。元には戻せないので、体長と個体番号を確認してね。</p><div class="pet-buyback-actions">${btn("buyback-confirm",quote.eligible?`この一匹を${quote.price.toLocaleString("ja-JP")}円で売る`:"まだ買い取りできない",!quote.eligible)}${btn("buyback-cancel","個体一覧に戻る")}</div></div></article>`;
     }
+    function tankWater(tank=s.petLife.selectedTank){
+      const species=P.residents(s,tank)[0]?.species||P.eggsIn(s,tank)[0]?.species;
+      return P.LEGEND_TANKS.find(t=>t.id===tank)?.water||(species?spec(species).waterLabel:"空き");
+    }
     function tankPicker(label="水槽"){
       return `<label class="pet-tank-picker">${label}<select id="petTankSelect">${P.tankIds(s).map(i=>{
-        const group=P.residents(s,i),water=P.LEGEND_TANKS.find(t=>t.id===i)?.water||(group.length?spec(group[0].species).waterLabel:"空き");
+        const group=P.residents(s,i),water=tankWater(i);
         return `<option value="${i}" ${s.petLife.selectedTank===i?"selected":""}>${P.tankLabel(i)} · ${group.length}/${P.tankCapacity(i)}匹 · ${water}</option>`;
       }).join("")}</select></label>`;
     }
@@ -87,7 +91,7 @@
     }
     function tank(){
       const p=s.petLife,group=P.residents(s),eggs=P.eggsIn(s),f=P.selected(s),today=ctx.day(),hungry=group.filter(a=>a.fedDay!==today);
-      const dims=root.ShuAquariumLife.dimensions(group,ctx.catalog),water=P.LEGEND_TANKS.find(t=>t.id===p.selectedTank)?.water||(group.length?spec(group[0].species).waterLabel:"空き");
+      const dims=root.ShuAquariumLife.dimensions(group,ctx.catalog),water=tankWater();
       const levelStart=f?P.xpForLevel(f.level):0,nextXP=f?P.xpForLevel(f.level+1):1,xp=f?.level>=20?100:f?Math.max(0,Math.min(100,(f.xp-levelStart)/(nextXP-levelStart)*100)):0;
       const eggText=eggs.length?`卵${eggs.length}組 · あと${Math.min(...eggs.map(e=>Math.max(0,e.hatchDay-today)))}日`:"";
       return `<div class="pet-aquarium-view" ${panel?"inert":""}>
@@ -124,7 +128,7 @@
       </div>${panel?panelView(f,today):""}`;
     }
     function tankCard(tank,move=false){
-      const group=P.residents(s,tank),eggCount=P.eggsIn(s,tank).length,water=P.LEGEND_TANKS.find(t=>t.id===tank)?.water||(group.length?spec(group[0].species).waterLabel:"空き");
+      const group=P.residents(s,tank),eggCount=P.eggsIn(s,tank).length,water=tankWater(tank);
       return `<button class="pet-tank-card" ${move?`data-pet-move-target="${tank}" aria-pressed="${moveTank===tank}"`:`data-pet-tank="${tank}" aria-pressed="${s.petLife.selectedTank===tank}"`}><span class="pet-mini-tank">${group[0]?`<span data-pet-card-art="${group[0].uid}"></span>`:icon("tank")}</span><b>${P.tankLabel(tank)}</b><small>${water} · ${group.length}/${P.tankCapacity(tank)}匹${eggCount?` · 卵${eggCount}`:""}</small></button>`;
     }
     function panelView(f,today){
