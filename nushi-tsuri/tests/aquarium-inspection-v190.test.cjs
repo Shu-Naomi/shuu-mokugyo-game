@@ -30,7 +30,7 @@ test('tap a tiny Moroko beside a koi to inspect it at a readable size, then retu
     const inspected=w.document.querySelector('#petInspectFish');
     assert.ok(parseFloat(inspected.style.width)>120,'individual view does not inherit the koi tank scale');
     assert.match(inspected.dataset.aquariumFrame,/^moroko:/);
-    assert.match(w.document.querySelector('.pet-inspect-caption').textContent,/モロコ.*7\.50cm/);
+    assert.match(w.document.querySelector('.pet-tank-info h3').textContent,/モロコ/);assert.match(w.document.querySelector('.pet-inspect-caption').textContent,/7\.50cm/);
     assert.equal(w.document.querySelector('#petTankStage'),null);
     assert.equal(read(w,'s.petLife.selected'),uid);
     const frames=new Set();for(let i=0;i<100;i++){clock.step();frames.add(inspected.dataset.aquariumFrame);}
@@ -58,8 +58,7 @@ test('fish list and picker switch specimens inside the large view without changi
     const moroko=read(w,'s.petLife.fish.find(f=>f.species==="moroko").uid');
     click(w,`.pet-fish-roster [data-pet-inspect="${moroko}"]`);clock.step();
     assert.match(w.document.querySelector('#petInspectFish').dataset.aquariumFrame,/^moroko:/);
-    const picker=w.document.querySelector('#petFishSelect');picker.value=read(w,'s.petLife.fish.find(f=>f.species==="koi").uid');
-    picker.dispatchEvent(new w.Event('change',{bubbles:true}));clock.step();
+    const koi=read(w,'s.petLife.fish.find(f=>f.species==="koi").uid');click(w,`.pet-fish-roster [data-pet-inspect="${koi}"]`);clock.step();
     assert.match(w.document.querySelector('#petInspectFish').dataset.aquariumFrame,/^koi:/);
     assert.ok(parseFloat(w.document.querySelector('#petInspectFish').style.width)>120);
     assert.match(w.document.querySelector('#petInspectStage').getAttribute('aria-label'),/コイ/);
@@ -82,12 +81,12 @@ test('reduced motion shows one stable large frame; switching tanks or rehoming e
     click(w,'.pet-fish-roster [data-pet-inspect]');clock.step();
     const inspected=w.document.querySelector('#petInspectFish');assert.match(inspected.dataset.aquariumFrame,/moroko:swim:0/);
     assert.equal(clock.pending(),0);
-    const tank=w.document.querySelector('#petTankSelect');tank.value='1';tank.dispatchEvent(new w.Event('change',{bubbles:true}));
+    click(w,'[data-pet-action="tanks"]');click(w,'[data-pet-tank="1"]');
     assert.equal(w.document.querySelector('#petInspectStage'),null);
     assert.ok(w.document.querySelector('.pet-empty'));
-    const back=w.document.querySelector('#petTankSelect');back.value='0';back.dispatchEvent(new w.Event('change',{bubbles:true}));
+    click(w,'[data-pet-action="tanks"]');click(w,'[data-pet-tank="0"]');
     click(w,'.pet-fish-roster [data-pet-inspect]');clock.step();
-    click(w,'[data-pet-action="rehome"]');click(w,'[data-pet-action="rehome-confirm"]');
+    click(w,'[data-pet-action="records"]');click(w,'[data-pet-panel-tab="manage"]');click(w,'[data-pet-action="rehome"]');click(w,'[data-pet-action="rehome-confirm"]');
     assert.equal(w.document.querySelector('#petInspectStage'),null);
     assert.ok(w.document.querySelector('.pet-empty'));
     assert.equal(read(w,'s.petLife.fish.length'),0);

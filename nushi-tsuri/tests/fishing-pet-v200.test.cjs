@@ -137,7 +137,7 @@ test('bond contest includes ±5 audience judgment and distinct village entrants;
 test('real pet UI shows individual level, eggs, staged dog tricks with success/failure and a final standings table',()=>{
   const app=boot({...seed(),dogTricks:{shuu:1000},money:10000}),w=app.window;
   try{w.eval('petUi.open("shop")');click(w,'[data-pet-buy="funa"]');click(w,'[data-pet-action="aquarium"]');
-    assert.match(w.document.querySelector('.pet-stats').textContent,/レベル.*Lv\.1.*経験値/s);click(w,'[data-pet-action="close"]');
+    click(w,'[data-pet-action="records"]');assert.match(w.document.querySelector('.pet-stats').textContent,/レベル.*Lv\.1.*経験値/s);click(w,'[data-pet-action="close"]');
     w.eval('petUi.open("shop")');click(w,'[data-pet-tab="contests"]');const select=w.document.querySelector('#petContestKind');select.value='tricks';select.dispatchEvent(new w.Event('change',{bubbles:true}));
     w.Math.random=()=>.1;click(w,'[data-pet-action="enter"]');assert.ok(w.document.querySelector('.pet-stage-dog'));assert.equal(w.document.querySelector('[data-pet-action="enter"]'),null);
     click(w,'[data-pet-action="contest-next"]');assert.equal(w.document.querySelectorAll('[data-pet-trick]').length,5);

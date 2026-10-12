@@ -56,21 +56,21 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    const actual=await page.locator('[data-pet-specimen="pet-5"] canvas').evaluate(c=>{const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let count=0;for(let n=3;n<a.length;n+=4)if(a[n]>100)count++;return {count,corner:a[3]};});
    assert.ok(actual.count>3000);assert.equal(actual.corner,0);
    await screenshot(page,'juvenile-and-adult-isaki');
-   await press('[data-pet-action="aquarium"]');await page.locator('#petTankSelect').selectOption('3');
+   await press('[data-pet-action="aquarium"]');await press('[data-pet-action="tanks"]');await press('[data-pet-tank="3"]');
    await press('.pet-fish-roster [data-pet-inspect="pet-6"]');await page.waitForFunction(()=>document.querySelector('#petInspectFish')?.dataset.specimenLength==='1500');
    const youngWidth=await page.locator('#petInspectFish').evaluate(el=>parseFloat(el.style.width));assert.match(await page.locator('#petInspectFish').getAttribute('data-specimen-appearance'),/パーマーク/);await screenshot(page,'young-nijimasu');
    await press('.pet-fish-roster [data-pet-inspect="pet-7"]');await page.waitForFunction(()=>document.querySelector('#petInspectFish')?.dataset.specimenLength==='2500');
    assert.ok(await page.locator('#petInspectFish').evaluate(el=>parseFloat(el.style.width))>youngWidth*1.25);assert.match(await page.locator('#petInspectFish').getAttribute('data-specimen-appearance'),/幼魚斑が薄れ/);
-   await press('[data-pet-action="legend-shop"]');
+   await press('[data-pet-action="help"]');await press('[data-pet-action="legend-shop"]');
    await press('[data-pet-tab="legends"]');const money=await page.evaluate(()=>s.money);
    for(const id of ['nushi','streamNushi','coastNushi','caveNushi','starNushi'])await press(`[data-pet-nushi="${id}"]`);
    assert.equal(await page.evaluate(()=>s.money),money);assert.equal(await page.evaluate(()=>ShuPetLife.residents(s,6).length),4);assert.equal(await page.evaluate(()=>ShuPetLife.residents(s,7).length),1);
    assert.equal(await page.locator('[data-pet-nushi="starNushi"]').isDisabled(),true);
-   await press('[data-pet-action="aquarium"]');await page.locator('#petTankSelect').selectOption('6');
+   await press('[data-pet-action="aquarium"]');await press('[data-pet-action="tanks"]');await press('[data-pet-tank="6"]');
    await page.waitForFunction(()=>document.querySelectorAll('#petTankStage [data-pet-fish] canvas').length===4);
-   assert.match(await page.locator('.pet-tank-summary').innerText(),/淡水ぬし総合水槽.*4\/8/s);
+   assert.match(await page.locator('.pet-tank-current').innerText(),/淡水ぬし総合水槽.*4\/8/s);
    assert.equal(await page.locator('[data-pet-action="rehome"]').count(),0);await screenshot(page,'freshwater-legend-tank');
-   await page.locator('#petTankSelect').selectOption('7');assert.match(await page.locator('.pet-tank-summary').innerText(),/海水ぬし総合水槽.*1\/8/s);
+   await press('[data-pet-action="tanks"]');await press('[data-pet-tank="7"]');assert.match(await page.locator('.pet-tank-current').innerText(),/海水ぬし総合水槽.*1\/8/s);
    const saved=await snap(page);await page.reload({waitUntil:'load'});await press('#start');await press('#action');assert.deepEqual(await snap(page),saved);
    console.log('V230_SHOP_AND_LEGENDS_PASS '+JSON.stringify({mobile,oldSave:true,exactUid:true,cancel:true,portraits:widths,adultPixels:actual,waterPools:true,reload:true,errors,failed}));
   }finally{await context.close();}

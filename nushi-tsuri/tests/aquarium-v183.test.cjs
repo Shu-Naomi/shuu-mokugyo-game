@@ -48,11 +48,11 @@ test('rehome requires confirming the selected specimen; cancel, fish changes, do
  const app=boot({...seed(),caught:{...seed().caught,moroko:1},money:20000,x:199,y:36}),w=app.window;let saved;
  try{
   click(w,'#action');for(let i=0;i<5;i++)click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');
-  click(w,'[data-pet-action="rehome"]');assert.equal(read(w,'s.petLife.fish.length'),5);
+  click(w,'[data-pet-action="records"]');click(w,'[data-pet-panel-tab="manage"]');click(w,'[data-pet-action="rehome"]');assert.equal(read(w,'s.petLife.fish.length'),5);
   click(w,'[data-pet-action="rehome-cancel"]');assert.equal(read(w,'s.petLife.fish.length'),5);
-  click(w,'[data-pet-action="rehome"]');const select=w.document.querySelector('#petFishSelect');select.value=select.options[0].value;select.dispatchEvent(new w.Event('change',{bubbles:true}));
+  click(w,'[data-pet-action="rehome"]');click(w,'[data-pet-action="panel-close"]');click(w,'.pet-fish-roster [data-pet-inspect]');
   assert.equal(w.document.querySelector('[data-pet-action="rehome-confirm"]'),null);
-  const selected=read(w,'s.petLife.selected');click(w,'[data-pet-action="rehome"]');const confirm=w.document.querySelector('[data-pet-action="rehome-confirm"]');confirm.click();confirm.click();
+  const selected=read(w,'s.petLife.selected');click(w,'[data-pet-action="records"]');click(w,'[data-pet-panel-tab="manage"]');click(w,'[data-pet-action="rehome"]');const confirm=w.document.querySelector('[data-pet-action="rehome-confirm"]');confirm.click();confirm.click();
   assert.equal(read(w,'s.petLife.fish.length'),4);assert.equal(read(w,`s.petLife.fish.some(f=>f.uid===${JSON.stringify(selected)})`),false);
   saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
@@ -108,7 +108,7 @@ test('UI buys five residents, feeds once with five synchronized bites, moves a f
   click(w,'[data-pet-action="feed"]');for(let i=0;i<42;i++)step(100);
   assert.equal(bites,5);assert.equal(read(w,'s.petLife.food'),5);assert.equal(w.document.querySelector('[data-pet-action="feed"]').disabled,true);
   click(w,'[data-pet-action="zoom"]');assert.equal(w.document.querySelectorAll('[data-pet-fish]').length,5);click(w,'[data-pet-action="zoom"]');
-  const move=w.document.querySelector('#petMoveTank');move.value='1';click(w,'[data-pet-action="move"]');assert.equal(w.document.querySelectorAll('[data-pet-fish]').length,1);
+  click(w,'[data-pet-action="records"]');click(w,'[data-pet-panel-tab="manage"]');click(w,'[data-pet-move-target="1"]');click(w,'[data-pet-action="move"]');assert.equal(w.document.querySelectorAll('[data-pet-fish]').length,1);
   assert.equal(read(w,'s.petLife.fish.length'),5);assert.equal(read(w,'s.petLife.selectedTank'),1);
   saved=JSON.parse(w.localStorage.getItem(saveKey));click(w,'[data-pet-action="close"]');assert.equal(w.gameAudioSampleIsPlaying('fishFeed'),false);
   assert.deepEqual(app.errors,[]);

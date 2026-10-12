@@ -104,10 +104,10 @@ test('real shop hides unseen species, buys a tank, shows sex and confirms a sing
     assert.equal(w.document.querySelector('[data-pet-buy="moroko"]'),null);
     w.eval('s.caught.moroko=1;save();petUi.render()');
     click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-action="aquarium"]');
-    assert.match(w.document.querySelector('.pet-stats').textContent,/性別.*世代・星/s);
+    click(w,'[data-pet-action="records"]');assert.match(w.document.querySelector('.pet-stats').textContent,/性別.*世代・星/s);
     click(w,'[data-pet-action="close"]');w.eval('petUi.open("shop")');click(w,'[data-pet-tab="supplies"]');
     click(w,'[data-pet-action="tank"]');assert.equal(read(w,'s.petLife.unlockedTanks'),2);
-    click(w,'[data-pet-action="aquarium"]');assert.equal(w.document.querySelectorAll('#petTankSelect option').length,2);
+    click(w,'[data-pet-action="aquarium"]');click(w,'[data-pet-action="tanks"]');assert.equal(w.document.querySelectorAll('[data-pet-tank]').length,2);
     click(w,'[data-pet-action="close"]');w.eval('petUi.open("shop")');
     w.eval('s.petLife.fish[0].careDays=3;s.petLife.fish[0].health=85;save()');click(w,'[data-pet-tab="buyback"]');
     click(w,'[data-pet-buyback-tank="0"]');click(w,'[data-pet-buyback="pet-1"]');const money=read(w,'s.money');
@@ -128,7 +128,7 @@ test('five real home sleeps reveal eggs and announce the fry and save the new fa
   const app=boot({...seed(),caught:{...seed().caught,moroko:1},money:5000}),w=app.window;let saved;
   try{
     w.eval('petUi.open("shop")');click(w,'[data-pet-buy="moroko"]');click(w,'[data-pet-buy="moroko"]');
-    click(w,'[data-pet-action="aquarium"]');assert.match(w.document.querySelector('#petFishSelect').textContent,/モロコ/);
+    click(w,'[data-pet-action="aquarium"]');assert.match(w.document.querySelector('.pet-fish-roster button').getAttribute('aria-label'),/モロコ/);
     for(let day=0;day<5;day++){
       click(w,'[data-pet-action="feed"]');click(w,'[data-pet-action="close"]');
       assert.equal(w.eval('sleepAtPlayerHome()'),true);

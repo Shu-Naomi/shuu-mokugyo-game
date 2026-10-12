@@ -79,7 +79,7 @@ test('A enters Asual’s shop; buying, portable feeding, sleep, water change, zo
     click(w,'[data-pet-action="zoom"]');assert.equal(w.document.querySelector('#petLifeModal').classList.contains('pet-zoomed'),true);
     click(w,'[data-pet-action="close"]');w.eval('sleepUntilNextMorning(s);save();render();openInventory()');
     click(w,'#openPetAquarium');assert.match(w.document.querySelector('.pet-tank-caption').textContent,/8.50cm/);
-    assert.match(w.document.querySelector('.pet-stats').textContent,/1日の成長\s*1\.00cm/);
+    click(w,'[data-pet-action="records"]');assert.match(w.document.querySelector('.pet-stats').textContent,/1日の成長\s*1\.00cm/);click(w,'[data-pet-action="panel-close"]');
     assert.equal(read(w,'s.petLife.fish[0].water'),92);click(w,'[data-pet-action="water"]');assert.equal(read(w,'s.petLife.fish[0].water'),100);
     assert.deepEqual(read(w,'({caught:s.caught,records:s.sizeRecords,display:s.homeAquariumFishId})'),old);
     saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
@@ -120,7 +120,7 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'230-1','pet-life-ui.js':'230-1','aquarium-life.js':'230-1','pet-life.css':'230-1','scene-layers.js':'227-1','layered-scenery.js':'227-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  for(const [file,version] of Object.entries({'pet-life.js':'230-1','pet-life-ui.js':'231-1','aquarium-life.js':'230-1','pet-life.css':'231-1','scene-layers.js':'227-1','layered-scenery.js':'227-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
   const version=/sw\.js\?v=(\d+)-/.exec(html);
   assert.ok(version);assert.ok(sw.includes(`nushi-tsuri-v${version[1]}-`));
 });
