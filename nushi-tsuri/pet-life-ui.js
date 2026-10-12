@@ -193,17 +193,17 @@
       root.ShuCompactUI?.release(modal);
       if(focus&&!P.residents(s).some(a=>a.uid===s.petLife.selected))focus=false;
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",mode==="aquarium"&&zoom);modal.classList.toggle("pet-aquarium",mode==="aquarium");
-      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message" role="status" ${mode==="aquarium"&&!message?"hidden":""}>${esc(message||(mode==="aquarium"?"":"毎日、少しずつ仲良くなろう。"))}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
+      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
       ctx.paintRivals();ctx.paintVillagers?.();
       paintContest();
       if(mode==="aquarium")for(const f of P.residents(s))ctx.prepareFish?.(f.species);
-      for(const el of modal.querySelectorAll("[data-pet-preview]"))ctx.drawFish(el,el.dataset.petPreview,0);
+      for(const el of modal.querySelectorAll("[data-pet-preview]")){ctx.prepareFish?.(el.dataset.petPreview);ctx.drawFish(el,el.dataset.petPreview,0);}
       for(const el of modal.querySelectorAll("[data-pet-card-art]")){
         const f=s.petLife.fish.find(a=>a.uid===el.dataset.petCardArt);if(f){ctx.prepareFish?.(f.species);ctx.drawFish(el,f.species,0,null,f);}
       }
       paintSpecimens();
       root.ShuCompactUI?.pet(modal,{enabled:mode==="shop"&&!s.petLife.contest,tab,buybackTank,food:s.petLife.food,onLayout:paintSpecimens});
-      clearTimeout(toastTimer);if(mode==="aquarium"&&message)toastTimer=setTimeout(()=>{message="";modal.querySelector(".pet-message")?.setAttribute("hidden","");},4500);
+      clearTimeout(toastTimer);if(message)toastTimer=setTimeout(()=>{message="";modal.querySelector(".pet-message")?.setAttribute("hidden","");},4500);
       if(panel)modal.querySelector('.pet-sheet [data-pet-action="panel-close"]')?.focus({preventScroll:true});
       else if(restoreFocus){restoreFocus=false;(modal.querySelector(`[data-pet-action="${panelReturn}"]`)||modal.querySelector('[data-pet-action="tanks"]'))?.focus({preventScroll:true});}
       if(live())start();

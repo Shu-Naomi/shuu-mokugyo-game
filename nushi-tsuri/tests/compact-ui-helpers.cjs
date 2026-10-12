@@ -5,7 +5,7 @@ async function revealProduct(page,selector,mobile=false){
  if(/data-sam-shop-tab=["']tackle/.test(selector))selector='#store [data-sam-category="bait"]';
  const target=page.locator(selector).first();
  const where=await target.evaluate(n=>({
-  scope:n.closest('.modal')?.id,
+  scope:n.closest('.compact-window,.modal')?.id,
   sam:n.closest('[data-sam-category-panel]')?.dataset.samCategoryPanel,
   bag:n.closest('[data-inventory-category-panel]')?.dataset.inventoryCategoryPanel,
   tab:n.closest('[data-inventory-panel]')?.dataset.inventoryPanel,
@@ -24,6 +24,10 @@ async function revealProduct(page,selector,mobile=false){
   const previous=catalog.locator('[data-compact-page="previous"]'),next=catalog.locator('[data-compact-page="next"]');
   if(!await target.isVisible())while(!await previous.isDisabled())await press(previous);
   for(let i=0;i<60&&!await target.isVisible();i++){if(await next.isDisabled())break;await press(next);}
+ }
+ if(!await target.isVisible()&&!await catalog.count()&&where.scope){
+  const guide=page.locator('#'+where.scope+' [data-compact-guide]');
+  if(await guide.isVisible())await press(guide);
  }
  return target;
 }
