@@ -1,7 +1,7 @@
 name: Shop and bag UI
 on:
   push:
-    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui]
+    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui, codex/v234-sam-shop-list]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life*.js'

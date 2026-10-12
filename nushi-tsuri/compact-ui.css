@@ -287,3 +287,31 @@
  .compact-store .compact-wallet{display:none}
  .compact-row-art{display:none}
 }
+
+/* v234: one shelf of choices; Sam explains the selection in his conversation. */
+.compact-store .sam-shop-window{padding:0;border:0;background:none;box-shadow:none}
+.compact-store #samDogGoods{display:contents}
+#store.compact-store .shop-interior>.scenery-motion,#store.compact-store .shop-interior>.scenery-foreground{inset:0 0 66px;width:100%;height:calc(100% - 66px);object-fit:cover}
+.compact-store .compact-sam-list{border:0!important;padding:0!important;background:none;gap:4px!important;box-shadow:none}
+.compact-store .compact-sam-list .compact-product-grid{width:100%;grid-template-columns:repeat(var(--compact-list-columns,1),minmax(0,1fr))!important;gap:2px;grid-auto-rows:44px;flex:0 0 var(--compact-list-height);height:var(--compact-list-height)}
+.compact-store .compact-sam-list .compact-product-select{border-bottom:1px solid #557552!important;background:#163a29a8!important}
+.compact-store .compact-sam-list .compact-product-select[aria-selected=true]{background:#355538!important;border-color:#c4cca0!important}
+.compact-store .compact-operation-space{flex:0 0 44px;height:44px;min-height:44px;border-top:1px solid #8fa37a;box-sizing:border-box}
+.compact-store .compact-sam-list .compact-selection-panel{inset:var(--compact-operation-top) 0 auto;display:flex;flex-direction:row;align-items:center;gap:6px;height:44px;min-height:44px;padding:0;border:0;background:none;overflow:visible}
+.compact-store .compact-sam-list .compact-selection-heading,.compact-store .compact-sam-list .compact-selection-description,.compact-store .compact-sam-list .compact-product-actions>[data-compact-info]{display:none!important}
+.compact-store .compact-sam-list .compact-product-actions{flex:1!important;min-width:0;min-height:44px;max-width:260px}
+.compact-store .compact-sam-list .compact-selection-panel:has(.bait-quantity-picker) .compact-product-actions{flex:0 0 106px!important}
+.compact-store .compact-sam-list .bait-quantity-picker{display:flex;flex:1;flex-wrap:nowrap;align-items:center;gap:3px;width:auto;min-width:0;margin:0;padding:0;background:none;border:0}
+.compact-store .compact-sam-list .bait-quantity-label{display:none}
+.compact-store .compact-sam-list .bait-quantity-stepper,.compact-store .compact-sam-list .bait-quantity-presets{display:flex;gap:3px;align-items:center}
+.compact-store .compact-sam-list .bait-quantity-picker button{display:flex!important;align-items:center;justify-content:center;flex:0 0 44px;min-width:44px!important;width:44px!important;min-height:44px!important;height:44px!important;max-height:44px!important;margin:0!important;padding:3px!important;font-size:12px;white-space:nowrap;text-align:center;box-sizing:border-box;border-radius:2px}
+.compact-store .compact-sam-list .bait-purchase-count{min-width:56px;width:56px;box-sizing:border-box;padding:0;font-size:13px;text-align:center}
+.compact-store .compact-sam-list .compact-pager{width:100%;box-shadow:none}
+.compact-store .compact-scene-dialogue{max-height:86px;min-height:48px;z-index:8}
+.compact-store .compact-scene-dialogue .shop-dialogue{-webkit-line-clamp:3}
+@media(max-height:500px){
+ .compact-store .compact-sam-list .bait-purchase-count{font-size:11px;min-width:56px;width:56px}
+ .compact-store .compact-sam-list .compact-selection-panel:has(.bait-quantity-picker) .compact-product-actions{flex-basis:98px!important}
+ .compact-store .compact-scene-dialogue{min-height:48px;max-height:86px}
+ .compact-store .compact-scene-dialogue .shop-dialogue{-webkit-line-clamp:4}
+}
