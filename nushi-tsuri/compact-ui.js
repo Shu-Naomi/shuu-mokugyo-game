@@ -121,7 +121,7 @@
     move(content.querySelector('.pet-tank-picker'),host,d);move(content.querySelector('.pet-buyback-heading'),host,d);suppress(content.querySelector('.pet-buyback-steps'),d);
     content.querySelectorAll('.pet-stock').forEach((n,i)=>catalog(n,{selector:':scope > article',key:'pet:'+ctx.tab+':'+i,onLayout:ctx.onLayout}));
     const supplies=content.querySelector('.pet-supplies');if(supplies)catalog(supplies,{selector:'button',key:'pet:supplies',icon:'feed',name:n=>n.dataset.petAction?.startsWith('food-')?'魚のエサ · '+clean(n).split(' · ')[0]:clean(n),stock:n=>n.dataset.petAction?.startsWith('food-')?ctx.food+'食所持':''});
-    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach((n,i)=>catalog(n,{selector:':scope > button',key:'pet:buyback:'+i,onLayout:ctx.onLayout}));
+    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,onLayout:ctx.onLayout}));
     const registration=content.querySelector('.pet-contest-selectors');if(registration){content.querySelectorAll(':scope > p,:scope > .pet-contest-result').forEach(n=>suppress(n,d));}
     restoreFocus(scope);
   }
