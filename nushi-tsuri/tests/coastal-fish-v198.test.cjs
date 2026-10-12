@@ -66,8 +66,7 @@ test('every coastal size rank stays visible in the roster, details and enlarged 
         const length=Math.floor((tier.minHundredths+tier.maxHundredths)/2);
         w.eval(`s.petLife.fish[0].length=${length};petUi.render()`);
         assert.equal(w.document.querySelector('[data-pet-size-rank]').textContent,tier.label);
-        assert.ok(w.document.querySelector('.pet-fish-roster').textContent.includes(tier.label));
-        assert.ok(w.document.querySelector('#petFishSelect').textContent.includes(tier.label));
+        assert.ok(w.document.querySelector('.pet-fish-roster button').getAttribute('aria-label').includes(tier.label));
         w.document.querySelector('.pet-fish-roster button').click();
         assert.ok(w.document.querySelector('.pet-inspect-caption').textContent.includes(tier.label));
         w.document.querySelector('[data-pet-action="focus-close"]').click();
