@@ -2,6 +2,7 @@
 const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 const {createHash}=require('node:crypto'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 const root=path.resolve(__dirname,'..'),publicUrl='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
 const delay=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -190,7 +191,7 @@ async function storySmoke(url,mobile){
   const state={...seed(),soundEnabled:false};
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
+  const press=selector=>pressProduct(page,selector,mobile);
   const snapshot=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,pets:s.petLife,dog:s.dogAffinity}));
   async function checkLayout(){
     const result=await page.evaluate(()=>{

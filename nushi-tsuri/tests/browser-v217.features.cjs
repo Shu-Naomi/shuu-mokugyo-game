@@ -1,12 +1,13 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function categories(url,mobile=false){
  const browser=await chromium.launch({headless:true}),viewport=mobile?{width:844,height:390}:{width:1280,height:720};
  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'}),page=await context.newPage(),errors=[],failed=[];
  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},
   {key:saveKey,state:{...seed(),money:200000,items:{tomato:2,wildGreens:2},dogTreats:{treeNut:1},cookingIngredients:{fishFillet:2},preparedMeals:{bigFishPlate:1},soundEnabled:false}});
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/item-categories\.css/.test(r.url()))failed.push(r.url());});
- const press=selector=>page.locator(selector)[mobile?'tap':'click']();
+ const press=selector=>pressProduct(page,selector,mobile);
  const stock=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,items:s.items,baits:s.baits,dogTreats:s.dogTreats,lures:s.lures,fish:s.caught,ingredients:s.cookingIngredients,toys:s.ownedDogToys}));
  const screenshot=async screen=>console.log('V217_CATEGORY_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:80})).toString('base64')}));
  async function bag(){await press('#menu');await press('[data-field-menu-target="items"]');await page.locator('#inventory.open').waitFor({state:'visible'});}
@@ -27,12 +28,12 @@ module.exports=async function categories(url,mobile=false){
   const bagLayout=await page.locator('#inventory').evaluate(el=>{
    const r=el.getBoundingClientRect(),nav=el.querySelector('#inventoryCategories'),content=el.querySelector('.inventory-category-content'),n=nav.getBoundingClientRect(),c=content.getBoundingClientRect(),close=el.querySelector('[data-close]').getBoundingClientRect();
    return {inside:r.top>=0&&r.bottom<=innerHeight+1,horizontal:el.scrollWidth<=el.clientWidth+1,
-    independent:n.bottom<=r.bottom&&c.bottom<=r.bottom&&getComputedStyle(nav).overflowY==='auto'&&getComputedStyle(content).overflowY==='auto',
-    sideBySide:n.right<=c.left+1,closeVisible:close.bottom<=r.bottom&&close.right<=r.right};
+    oneScreen:n.bottom<=r.bottom&&c.bottom<=r.bottom&&nav.scrollHeight<=nav.clientHeight+1&&content.scrollHeight<=content.clientHeight+1,
+    categoriesAboveCards:n.bottom<=c.top+1,closeVisible:close.bottom<=r.bottom&&close.right<=r.right};
   });assert.ok(Object.values(bagLayout).every(Boolean),'bag layout '+JSON.stringify(bagLayout));
   await press('#inventoryCategory-food [data-use-item="tomato"]');assert.equal(await page.evaluate(()=>s.items.tomato),1);assert.equal(await page.evaluate(()=>s.hp),52);await selected('inventory','food');
   await press('#inventoryCategory-food [data-eat-prepared-meal="bigFishPlate"]');assert.equal(await page.evaluate(()=>s.activeMeal.id),'bigFishPlate');await screenshot('bag-food');
-  await press('[data-inventory-category="ingredients"]');assert.match(await page.locator('#inventoryCategory-ingredients').innerText(),/餌欄と共用|犬のおやつ欄と共用/);
+  await press('[data-inventory-category="ingredients"]');await press('#inventoryCategory-ingredients .compact-product:has(.compact-original small:text-matches("欄と共用")) [data-compact-info]');assert.match(await page.locator('.compact-sheet-body').innerText(),/餌欄と共用|犬のおやつ欄と共用/);await press('[data-compact-sheet-close]');
   await press('#inventory [data-close]');await bag();await selected('inventory','ingredients');await press('#inventory [data-close]');
   // Scene setup is independent of the category UI: buy through actual buttons.
   await page.evaluate(()=>{renderSamShop();open('store');});

@@ -33,7 +33,7 @@
     if(!body.children.length)body.append(el('p','','品物の「詳細」から用途や使い方を確認できるよ。'));
   });}
   function nameOf(n,opts){return opts.name?.(n)||clean(n.querySelector('b'))||clean(n.querySelector('span'))||clean(n)||'品物';}
-  function detailsOf(n,opts){const lines=[...n.querySelectorAll('small,p')].map(clean).filter(Boolean);if(opts.description)lines.push(opts.description(n));return [...new Set(lines)].filter(Boolean);}
+  function detailsOf(n,opts){const lines=[...n.querySelectorAll('small,p,.pet-card-comment')].map(clean).filter(Boolean);if(opts.description)lines.push(opts.description(n));return [...new Set(lines)].filter(Boolean);}
   function actionText(b){const a=b.dataset,price=(clean(b.querySelector('[data-sam-total],[data-sam-price],strong'))||clean(b)).match(/[\d,]+円/);
     if(b.disabled&&b.classList.contains('owned'))return '購入済み';
     if([...b.attributes].some(x=>/^data-buy-/.test(x.name))||a.petBuy!=null)return '購入'+(price?' · '+price[0]:'');
@@ -106,7 +106,7 @@
       if(entry.node){move(entry.node,section,d);entry.node.classList.add('compact-source-group');d.cleanup.push(()=>entry.node.classList.remove('compact-source-group'));catalog(section,{selector:'button',key:id+':'+entry.id,art,description:entry.description});}else catalog(section,{cards:[],key:id+':'+entry.id,empty:entry.empty});
     });choose(entries.some(e=>e.id===current)?current:entries[0]?.id);
   }
-  function inventory(scope,ctx){release(scope);scope.classList.add('compact-inventory');const shell=scope.querySelector('.inventory-shell'),d=frame(scope,shell,ctx.money,()=>[scope.querySelector('.compact-equipment-summary'),scope.querySelector('#inventoryCategoryHint'),scope.querySelector('.inventory-footer'),...scope.querySelectorAll('.equipment-row small,.duel-options > p,.duel-options > small')]);
+  function inventory(scope,ctx){release(scope);scope.classList.add('compact-inventory');const shell=scope.querySelector('.inventory-shell'),d=frame(scope,shell,ctx.money,()=>[scope.querySelector('.compact-equipment-summary'),scope.querySelector('#inventoryTackleSummary'),scope.querySelector('#inventoryCategoryHint'),scope.querySelector('.inventory-footer'),...scope.querySelectorAll('.equipment-row small,.duel-options > p,.duel-options > small')]);
     suppress(scope.querySelector('.inventory-heading'),d);suppress(scope.querySelector('.inventory-footer'),d);suppress(scope.querySelector('.item-category-summary'),d);const head=scope.querySelector('.compact-window-heading');move(scope.querySelector('.inventory-vitals'),head,d);move(scope.querySelector('.inventory-items-toolbar .pet-tank-link'),head,d);suppress(scope.querySelector('.inventory-items-toolbar'),d);
     scope.querySelectorAll('[data-inventory-category-panel]').forEach(n=>catalog(n,{selector:'.inventory-card',key:'bag:'+n.id}));
     const equip=scope.querySelector('[data-inventory-panel="equipment"]'),summary=add(equip,el('div','compact-equipment-summary'),d);suppress(equip.querySelector('h3'),d);suppress(equip.querySelector('.equipment-list'),d);

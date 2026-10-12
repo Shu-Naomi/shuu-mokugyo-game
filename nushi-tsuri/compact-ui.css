@@ -182,4 +182,6 @@
  .compact-window .compact-product-stock{min-height:10px;max-height:10px;line-height:10px;font-size:9px}
  .compact-inventory .compact-equipment-summary{display:none}
  .compact-inventory .compact-sheet-body .compact-equipment-summary{display:grid;min-height:40px;margin-bottom:10px}
+ .compact-inventory #inventoryTackleSummary{display:none}
+ .compact-inventory .compact-sheet-body #inventoryTackleSummary{display:block;max-height:none;white-space:normal}
 }

@@ -1,4 +1,5 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
+const {pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function run(url,mobile=false){
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),errors=[];
  const viewport=mobile?{width:844,height:390}:{width:1280,height:720};
@@ -8,7 +9,7 @@ module.exports=async function run(url,mobile=false){
  try{
   await page.addInitScript(({saved,key})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(saved));},{saved,key:saveKey});
   await page.goto(url,{waitUntil:'load'});await page.locator('#start').click();await page.locator('#action').click();
-  for(let i=0;i<3;i++)await page.locator('[data-pet-buy="bass"]').click();
+  for(let i=0;i<3;i++)await pressProduct(page,'[data-pet-buy="bass"]',mobile);
   await page.locator('[data-pet-action="aquarium"]').click();
   await page.locator('#petTankStage').scrollIntoViewIfNeeded();
   await page.waitForFunction(()=>document.querySelectorAll('#petTankStage [data-pet-fish] canvas').length===3);
