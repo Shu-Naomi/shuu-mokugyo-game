@@ -47,6 +47,6 @@ test('owned boat cards display equip and reuse the native free equip branch rath
 test('tackle groups preserve duplicate-rod rules and cast settings while browsing remains free',()=>{
  const a=boot(fixture()),w=a.window;try{w.openInventory('tackle');const before=snapshot(w);assert.equal(w.document.querySelector('#inventory [data-pick-rod="starGazer"]').closest('.compact-product').querySelector('.compact-product-name').textContent,'星見の竿');for(const id of ['bait','hook','rod','method','fight','copies']){click(w,'[data-compact-group="'+id+'"]');assert.deepEqual(snapshot(w),before);}
   click(w,'#inventory [data-rod-duplicate="upgrade"]');assert.equal(read(w,'s.rodCopies.starGazer'),2);assert.equal(read(w,'s.rodLevels.starGazer'),1);assert.equal(read(w,'s.money'),before.money);
-  click(w,'[data-compact-group="fight"]');click(w,'#inventory [data-fight-mode="nushi"]');assert.equal(read(w,'s.fightMode'),'nushi');assert.deepEqual(a.errors,[]);
+  click(w,'[data-compact-group="fight"]');click(w,'#inventory [data-fight-mode="nushi"]');assert.equal(read(w,'s.fightMode'),'nushi');assert.equal(w.document.querySelector('#inventory [data-fight-mode="nushi"]').getAttribute('data-compact-action-label'),'選択中');assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });

@@ -35,6 +35,7 @@
   function nameOf(n,opts){const named=opts.name?.(n)||clean(n.querySelector('b'));if(named)return named;const span=n.querySelector('span'),label=span?[...span.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').trim():'';return label||clean(span)||clean(n)||'品物';}
   function detailsOf(n,opts){const lines=[...n.querySelectorAll('small,p,.pet-card-comment')].map(clean).filter(Boolean);if(opts.description)lines.push(opts.description(n));return [...new Set(lines)].filter(Boolean);}
   function actionText(b){const a=b.dataset,price=(clean(b.querySelector('[data-sam-total],[data-sam-price],strong'))||clean(b)).match(/[\d,]+円/);
+    if(a.fishingMethod!=null||a.fightMode!=null)return b.getAttribute('aria-pressed')==='true'?'選択中':clean(b);
     if(b.disabled&&b.classList.contains('owned'))return '購入済み';
     if([...b.attributes].some(x=>/^data-buy-/.test(x.name))||a.petBuy!=null)return '購入'+(price?' · '+price[0]:'');
     if(a.petNushi!=null)return b.disabled?'迎え済み':'無料で迎える';
