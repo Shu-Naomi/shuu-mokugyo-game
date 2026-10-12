@@ -123,6 +123,7 @@
 .pet-aquarium .pet-fish-roster button[aria-pressed=true]{background:#395a58;color:#fff0b6;border-color:#ecd68d;box-shadow:inset 0 0 0 1px #f0dea2}
 .pet-fish-roster small{font-size:10px!important;line-height:12px;margin:0!important}.pet-fish-roster em{font-size:9px;font-style:normal;color:#ffe0a2}
 .pet-roster-art{display:block;width:52px;height:25px;position:relative}
+[data-pet-card-art]{position:relative;overflow:hidden}
 [data-pet-card-art] canvas{display:block;width:100%;height:100%;object-fit:contain;image-rendering:pixelated}
 .pet-profile-portrait{display:flex;flex:1;min-height:70px;max-height:190px;align-items:center;justify-content:center;background:linear-gradient(#327287,#174659 75%,#46695e);border:1px solid #668d8e;border-radius:6px}
 .pet-profile-portrait>span{display:block;width:85%;height:75%;max-height:140px}

@@ -12,8 +12,12 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
   await context.addInitScript(({state,key})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{state:initial,key:saveKey});
   const page=await context.newPage(),press=q=>page.locator(q)[mobile?'tap':'click']();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
   const directory=path.join(__dirname,'browser-evidence-v231');fs.mkdirSync(directory,{recursive:true});
-  const shot=async screen=>{const name=(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+screen+'.png';await page.screenshot({path:path.join(directory,name)});console.log('V231_UI_IMAGE '+name);};
+  const shot=async screen=>{const name=(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+screen+'.png';await page.screenshot({path:path.join(directory,name)});await artFits();console.log('V231_UI_IMAGE '+name);};
   const snapshot=()=>page.evaluate(()=>({money:s.money,time:s.gameMinutes,food:s.petLife.food,fish:s.petLife.fish,caught:s.caught,records:s.sizeRecords}));
+  async function artFits(){
+   const images=await page.locator('[data-pet-card-art] canvas').evaluateAll(els=>els.map(c=>{const p=c.parentElement.getBoundingClientRect(),r=c.getBoundingClientRect();return {uid:c.parentElement.dataset.petCardArt,parent:{x:p.x,y:p.y,w:p.width,h:p.height},image:{x:r.x,y:r.y,w:r.width,h:r.height}};}).filter(a=>a.image.w>0&&a.image.h>0));
+   for(const a of images){const p=a.parent,r=a.image;assert.ok(p.w>0&&p.h>0&&r.x>=p.x-1&&r.y>=p.y-1&&r.x+r.w<=p.x+p.w+1&&r.y+r.h<=p.y+p.h+1,'fish artwork stays inside its own frame: '+JSON.stringify(a));}
+  }
   async function fit(){
    const layout=await page.evaluate(()=>{const c=document.querySelector('.pet-content'),p=document.querySelector('.pet-tank-info'),stage=document.querySelector('#petTankStage,#petInspectStage'),r=stage.getBoundingClientRect();return {scroll:c.scrollHeight-c.clientHeight,sideScroll:p.scrollHeight-p.clientHeight,tank:{x:r.x,y:r.y,width:r.width,height:r.height},viewport:{w:innerWidth,h:innerHeight},buttons:[...document.querySelectorAll('.pet-care-dock button')].map(b=>{const r=b.getBoundingClientRect();return {action:b.dataset.petAction,x:r.x,y:r.y,width:r.width,height:r.height,visible:r.width>0&&r.height>0};})};});
    assert.ok(layout.scroll<=1,'the main aquarium must not scroll: '+JSON.stringify(layout));assert.ok(layout.sideScroll<=1,'all vital gauges must fit: '+JSON.stringify(layout));
