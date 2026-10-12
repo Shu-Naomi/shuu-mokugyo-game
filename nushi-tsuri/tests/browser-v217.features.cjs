@@ -29,8 +29,8 @@ module.exports=async function categories(url,mobile=false){
    const r=el.getBoundingClientRect(),nav=el.querySelector('#inventoryCategories'),content=el.querySelector('.inventory-category-content'),n=nav.getBoundingClientRect(),c=content.getBoundingClientRect(),close=el.querySelector('[data-close]').getBoundingClientRect();
    return {inside:r.top>=0&&r.bottom<=innerHeight+1,horizontal:el.scrollWidth<=el.clientWidth+1,
     oneScreen:n.bottom<=r.bottom&&c.bottom<=r.bottom&&nav.scrollHeight<=nav.clientHeight+1&&content.scrollHeight<=content.clientHeight+1,
-    categoriesAboveCards:n.bottom<=c.top+1,closeVisible:close.bottom<=r.bottom&&close.right<=r.right};
-  });assert.ok(Object.values(bagLayout).every(Boolean),'bag layout '+JSON.stringify(bagLayout));
+    categoriesAboveCards:n.bottom<=c.top+1,closeVisible:close.bottom<=r.bottom&&close.right<=r.right,navScroll:nav.scrollHeight-nav.clientHeight,contentScroll:content.scrollHeight-content.clientHeight};
+  });assert.ok(['inside','horizontal','oneScreen','categoriesAboveCards','closeVisible'].every(key=>bagLayout[key]),'bag layout '+JSON.stringify(bagLayout));
   await press('#inventoryCategory-food [data-use-item="tomato"]');assert.equal(await page.evaluate(()=>s.items.tomato),1);assert.equal(await page.evaluate(()=>s.hp),52);await selected('inventory','food');
   await press('#inventoryCategory-food [data-eat-prepared-meal="bigFishPlate"]');assert.equal(await page.evaluate(()=>s.activeMeal.id),'bigFishPlate');await screenshot('bag-food');
   await press('[data-inventory-category="ingredients"]');await press('#inventoryCategory-ingredients .compact-product:has(.compact-original small:text-matches("欄と共用")) [data-compact-info]');assert.match(await page.locator('.compact-sheet-body').innerText(),/餌欄と共用|犬のおやつ欄と共用/);await press('[data-compact-sheet-close]');
