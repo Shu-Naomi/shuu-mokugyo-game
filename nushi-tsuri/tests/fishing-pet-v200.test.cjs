@@ -20,9 +20,9 @@ test('ten rod jackpots remain ten physical copies; deferred sale/upgrade consume
   const app=boot(),w=app.window;let saved;
   try{for(let i=0;i<10;i++)w.grantStarFortunePrize('starGazer');assert.equal(read(w,'s.rodCopies.starGazer'),10);
     assert.equal(read(w,'s.rodParts.expeditionJoint'),0);assert.equal(read(w,'s.ownedRods.filter(r=>r==="starGazer").length'),1);
-    w.eval('openInventory("tackle")');click(w,'#inventoryTackleSummary + .duel-options [data-rod-duplicate="upgrade"]');
+    w.eval('openInventory("tackle")');click(w,'#inventory [data-rod-duplicate="upgrade"]');
     assert.equal(read(w,'s.rodCopies.starGazer'),9);assert.equal(read(w,'s.rodLevels.starGazer'),1);
-    const money=read(w,'s.money');click(w,'#inventoryTackleSummary + .duel-options [data-rod-duplicate="sell"]');assert.equal(read(w,'s.money'),money+12000);
+    const money=read(w,'s.money');click(w,'#inventory [data-rod-duplicate="sell"]');assert.equal(read(w,'s.money'),money+12000);
     w.eval('while(s.rodCopies.starGazer>1)ShuFishing.duplicate(s,"sell");save()');saved=JSON.parse(w.localStorage.getItem(saveKey));
     assert.equal(w.eval('ShuFishing.duplicate(s,"sell").ok'),false);assert.equal(w.eval('ShuFishing.duplicate(s,"upgrade").ok'),false);
     assert.equal(read(w,'s.rodCopies.starGazer'),1);assert.deepEqual(app.errors,[]);
@@ -32,7 +32,7 @@ test('ten rod jackpots remain ten physical copies; deferred sale/upgrade consume
 
 test('fight setting is saved and latched per cast while both modes share bait selection and one cast charge',()=>{
   const app=boot({...seed(),money:150000}),w=app.window;
-  try{w.eval('openInventory("tackle")');click(w,'#inventoryTackleSummary + .duel-options [data-fight-mode="nushi"]');w.close();
+  try{w.eval('openInventory("tackle")');click(w,'#inventory [data-fight-mode="nushi"]');w.close();
     const before=read(w,'[s.baits.worm,s.gameMinutes]');w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();commitCastResources();settleSurfaceCast()');
     const after=read(w,'[s.baits.worm,s.gameMinutes]');assert.equal(after[0],before[0]-1);assert.ok(after[1]>before[1]);
     assert.equal(read(w,'battle.fightMode'),'nushi');w.eval('s.fightMode="gauge";battle.biteAt=Date.now();pull()');assert.equal(read(w,'battle.fightMode'),'nushi');

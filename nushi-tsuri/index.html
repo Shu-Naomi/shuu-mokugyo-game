@@ -6442,6 +6442,7 @@
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=228-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
+    <link rel="stylesheet" href="compact-ui.css?v=232-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6476,7 +6477,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v231</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v232</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7268,7 +7269,8 @@
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
     <script src="aquarium-life.js?v=230-1"></script>
-    <script src="pet-life-ui.js?v=231-1"></script>
+    <script src="compact-ui.js?v=232-1"></script>
+    <script src="pet-life-ui.js?v=232-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=228-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -12191,6 +12193,7 @@
         playerWalking = false,
         playerAnimFrame = 0,
         petSceneFrame = 0,
+        compactInventoryRendering = false,
         inventoryTab = "items",
         inventoryCategory = "bait",
         samShopTab = "tackle",
@@ -14267,6 +14270,7 @@
         return true;
       }
       function log(t) {
+        ShuCompactUI.toast(document.querySelector(".compact-window.open"),t);
         s.log.unshift(t);
         s.log = s.log.slice(0, 12);
         save();
@@ -15202,6 +15206,7 @@
         return true;
       }
       function setLocationDialogue(message) {
+        ShuCompactUI.toast($("#locationInterior"),message);
         setDialogue($("#locationDialogue"),message,true);
       }
       function markPurchaseButton(button) {
@@ -15212,6 +15217,7 @@
         setTimeout(() => button.classList.remove("just-bought"), 900);
       }
       function renderLocationGoods() {
+        ShuCompactUI.release($("#locationInterior"));
         const holder = $("#locationGoods");
         const interior = locationInteriors[activeLocationId];
         if (!holder || !interior) return;
@@ -15275,6 +15281,10 @@
         document.querySelectorAll("[data-eat-prepared-meal]").forEach((button) =>
           button.onclick = () => eatPreparedMeal(button.dataset.eatPreparedMeal),
         );
+        ShuCompactUI.location($("#locationInterior"),{
+          money:s.money,id:activeLocationId,
+          enabled:activeLocationId!=="main-shrine",
+        });
       }
       function playerHomeIsActive() {
         return Boolean(playerHomeState.area && playerHomeAreaData[playerHomeState.area]);
@@ -16452,6 +16462,7 @@
         log(`${item.source}で${item.name}を${amount}個（${price}円）買った。`);save();return true;
       }
       function renderSamShop() {
+        ShuCompactUI.release($("#store"));
         renderWeather();
         setDialogue($("#samStoryLine"),ShuLakeStory.dialogue(s,"sam"));
         $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("");
@@ -16541,6 +16552,10 @@
           renderItemCategories(holder, samCategories[tab], samShopCategories[tab], counts, "sam", setSamShopCategory);
         }
         setSamShopTab(samShopTab);
+        ShuCompactUI.sam($("#store"),{
+          money:s.money,categories:samCategories,tab:samShopTab,selected:samShopCategories,
+          select:(tab,id)=>{setSamShopTab(tab);setSamShopCategory(id);},art:compactItemArt,
+        });
       }
       function renderSamDogGoods() {
         const holder = $("#samDogGoods");
@@ -16578,6 +16593,7 @@
         setSamShopCategory(samShopCategories[samShopTab]);
       }
       function setSamShopDialogue(message) {
+        ShuCompactUI.toast($("#store"),message);
         setDialogue($("#shopDialogue"),message,true);
       }
       function setSamBaitPurchaseCount(value) {
@@ -16886,6 +16902,7 @@
         setDialogue($("#vehicleShopDialogue"),owned.length
           ? `「今持っている舟は${owned.join("と")}だ。装備し直すなら道具袋を開きな」`
           : "「港の桟橋から白砂と岩礁の小島へ行ける。相棒になる舟を選びな」");
+        ShuCompactUI.vehicle($("#vehicleShop"),{money:s.money,owned:()=>s.ownedVehicles,equipped:()=>s.equipment.vehicle,art:compactItemArt});
         open("vehicleShop");
       }
       function useLocationService() {
@@ -17630,6 +17647,7 @@
                       : "湖・川・海の水辺のすぐそばで、水へ向いてAで釣れる。";
         renderPlayerHome();
         renderPixelScenery();
+        ShuCompactUI.refresh(s.money);
         scheduleSave();
       }
       function renderIdleStatus() {
@@ -19454,7 +19472,23 @@
       function rodDisplayMarkup(rodId) {
         return `<i class="rod-display-art" style="--rod-display-column:${rodDisplayColumn(rodId)}" aria-hidden="true"></i>`;
       }
+      function compactItemArt(button) {
+        const d=button.dataset,id=d.buyRod||d.pickRod;
+        if(id)return rodDisplayMarkup(id);
+        if(d.buyVehicle!=null||d.equipVehicle!=null)return vehicleData[d.buyVehicle||d.equipVehicle]?.icon||"";
+        if(d.buyHand!=null||d.equipHand!=null)return handEquipmentData[d.buyHand||d.equipHand]?.icon||"";
+        if(d.pickBait)return ShuTackleArt.icon(d.pickBait);
+        if(d.pickHook)return ShuTackleArt.icon("hook"+d.pickHook[0].toUpperCase()+d.pickHook.slice(1));
+        if(d.fishingMethod)return ShuTackleArt.icon(d.fishingMethod==="lure"?"silverSpoon":"worm");
+        if(d.fightMode)return ShuTackleArt.icon("liveMinnow");
+        if(d.rodDuplicate)return rodDisplayMarkup("starGazer");
+        return "";
+      }
+      function renderCompactInventory() {
+        ShuCompactUI.inventory($("#inventory"),{money:s.money,art:compactItemArt});
+      }
       function renderEquipment() {
+        ShuCompactUI.release($("#inventory"));
         const handName = s.equipment.hands
           ? handEquipmentData[s.equipment.hands]?.name
           : "素手";
@@ -19483,6 +19517,7 @@
         document.querySelectorAll("[data-equip-vehicle]").forEach((button) =>
           button.onclick = () => equipVehicle(button.dataset.equipVehicle),
         );
+        if(!compactInventoryRendering)renderCompactInventory();
       }
       const inventoryCategories = [
         { id: "bait", label: "餌", icon: "🪱", title: "釣り餌", hint: "魚を誘う餌。仕掛けの変更は上の「タックル」から。" },
@@ -19540,6 +19575,7 @@
           button.setAttribute("aria-pressed", String(active));
         });
         window.querySelectorAll("[data-sam-category-panel]").forEach(panel => panel.hidden = panel.dataset.samCategoryPanel !== selected);
+        ShuCompactUI.samCategory($("#store"),samShopTab,selected);
       }
       function setLocationCategory(category) {
         const holder = $("#locationGoods"), panels = [...holder.querySelectorAll("[data-location-category-panel]")];
@@ -19553,6 +19589,7 @@
         });
       }
       function renderInventory() {
+        ShuCompactUI.release($("#inventory"));compactInventoryRendering=true;
         const baitIcons = Object.fromEntries(
           Object.entries(baitData).map(([id]) => [id, ShuTackleArt.icon(id)]),
         );
@@ -19686,6 +19723,7 @@
         );
         renderEquipment();
         renderTackle();
+        compactInventoryRendering=false;renderCompactInventory();
       }
       function setInventoryTab(tab = "items") {
         inventoryTab = ["items", "equipment", "tackle"].includes(tab)
@@ -19719,6 +19757,7 @@
         document.querySelectorAll("[data-cast-tackle-page]").forEach(page => page.hidden = page.dataset.castTacklePage !== category);
       }
       function renderTackle() {
+        ShuCompactUI.release($("#inventory"));
         const focused = $("#tackle").contains(document.activeElement) ? document.activeElement : null;
         const focusAttribute = ["data-pick-bait","data-pick-hook","data-pick-rod","data-fishing-method","data-fight-mode","data-rod-duplicate"].find(key => focused?.hasAttribute(key));
         const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
@@ -19785,6 +19824,7 @@
           render();
           save();
         });
+        if(!compactInventoryRendering)renderCompactInventory();
         if (focusAttribute) [...$("#tackle").querySelectorAll(`[${focusAttribute}]`)].find(button => button.getAttribute(focusAttribute) === focusValue)?.focus({preventScroll:true});
       }
       function beginFishing() {
@@ -22503,6 +22543,7 @@
         renderPixelScenery();
       }
       function close() {
+        ShuCompactUI.closeSheet(false);
         if ($("#options").classList.contains("open")) return closeOptions();
         dialogueTyper.cancelAll();
         if ($("#lakeIntro").classList.contains("open")) return finishLakeIntro();
@@ -22512,6 +22553,7 @@
           return;
         }
         const openModals = [...document.querySelectorAll(".modal.open")];
+        openModals.forEach(modal=>ShuCompactUI.release(modal,false));
         const closingStory = $("#lakeStory").classList.contains("open");
         const storyTarget = closingStory ? lakeStoryReturn : null;
         if(closingStory)lakeStoryReturn=null;
@@ -22552,6 +22594,7 @@
         }
       }
       function backAction() {
+        if(ShuCompactUI.hasSheet()){ShuCompactUI.closeSheet();return;}
         if (fieldMenuIsOpen()) hideFieldMenu();
         else close();
       }
@@ -23418,7 +23461,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=231-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=232-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

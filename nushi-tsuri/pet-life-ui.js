@@ -190,6 +190,7 @@
         ${a.phase==="performance"&&trick?`<p>${a.commands.length}/5の芸を披露したよ。</p>`:btn("contest-next",a.phase==="entrance"?"舞台に立つ":a.phase==="performance"?fish?"泳ぎと成長を披露する":"相棒を呼んで応える": "審査結果を発表する")}`;
     }
     function render(){
+      root.ShuCompactUI?.release(modal);
       if(focus&&!P.residents(s).some(a=>a.uid===s.petLife.selected))focus=false;
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",mode==="aquarium"&&zoom);modal.classList.toggle("pet-aquarium",mode==="aquarium");
       modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message" role="status" ${mode==="aquarium"&&!message?"hidden":""}>${esc(message||(mode==="aquarium"?"":"毎日、少しずつ仲良くなろう。"))}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
@@ -201,6 +202,7 @@
         const f=s.petLife.fish.find(a=>a.uid===el.dataset.petCardArt);if(f){ctx.prepareFish?.(f.species);ctx.drawFish(el,f.species,0,null,f);}
       }
       paintSpecimens();
+      root.ShuCompactUI?.pet(modal,{enabled:mode==="shop"&&!s.petLife.contest,tab,food:s.petLife.food,onLayout:paintSpecimens});
       clearTimeout(toastTimer);if(mode==="aquarium"&&message)toastTimer=setTimeout(()=>{message="";modal.querySelector(".pet-message")?.setAttribute("hidden","");},4500);
       if(panel)modal.querySelector('.pet-sheet [data-pet-action="panel-close"]')?.focus({preventScroll:true});
       else if(restoreFocus){restoreFocus=false;(modal.querySelector(`[data-pet-action="${panelReturn}"]`)||modal.querySelector('[data-pet-action="tanks"]'))?.focus({preventScroll:true});}
