@@ -289,6 +289,8 @@
 }
 
 /* v234: one shelf of choices; Sam explains the selection in his conversation. */
+.compact-store .sam-shop-window{padding:0;border:0;background:none;box-shadow:none}
+.compact-store #samDogGoods{display:contents}
 .compact-store .compact-sam-list{border:0!important;padding:0!important;background:none;gap:4px!important;box-shadow:none}
 .compact-store .compact-sam-list .compact-product-grid{width:100%;grid-template-columns:repeat(var(--compact-list-columns,1),minmax(0,1fr))!important;gap:2px;grid-auto-rows:44px;flex:0 0 var(--compact-list-height);height:var(--compact-list-height)}
 .compact-store .compact-sam-list .compact-product-select{border-bottom:1px solid #557552!important;background:#163a29a8!important}
