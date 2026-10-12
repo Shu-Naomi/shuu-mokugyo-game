@@ -1,7 +1,7 @@
 /* Compact shop and bag views keep the game's original transaction controls. */
 (function(root){
   'use strict';
-  const controllers=new Set(),decorations=new Map(),pages=new Map(),groups=new Map(),focusAfter=new Map();
+  const controllers=new Set(),decorations=new Map(),pages=new Map(),selections=new Map(),groups=new Map(),focusAfter=new Map();
   let sheet=null;
   const el=(tag,cls,text)=>{const n=document.createElement(tag);if(cls)n.className=cls;if(text!=null)n.textContent=text;return n;};
   const clean=n=>(n?.textContent||'').replace(/\s+/g,' ').trim();
@@ -41,22 +41,24 @@
     if(a.petNushi!=null)return b.disabled?'迎え済み':'無料で迎える';
     if(a.cookRecipe!=null)return '作る';if(a.eatPreparedMeal!=null||a.useItem!=null)return '食べる';
     if([...b.attributes].some(x=>/^data-(pick|equip)-/.test(x.name)))return b.classList.contains('selected')?'選択中':'選ぶ';
-    if(a.petBuybackTank!=null||a.petBuyback!=null)return 'この子を見る';
+    if(a.petBuybackTank!=null)return '水槽を開く';if(a.petBuyback!=null)return 'この子を見る';
     return clean(b);
   }
   function sourceArt(n){return n.querySelector(':scope > i,.shop-item-art,.rod-display-art,.pet-fish-thumb,.pet-specimen-window,svg.pixel-item-icon,svg.tackle-pixel-icon');}
   function catalog(node,opts={}){
     const scope=node.closest('.compact-window');if(!scope)return;
     const cards=opts.cards||[...node.querySelectorAll(opts.selector||'.inventory-card')];
-    const grid=el('div','compact-product-grid'),pager=el('nav','compact-pager'),previous=button('前へ','left'),next=button('次へ','right'),label=el('span','compact-page-label');pager.setAttribute('aria-label','品物のページ');previous.dataset.compactPage='previous';next.dataset.compactPage='next';label.setAttribute('aria-live','polite');pager.append(previous,label,next);
+    const grid=el('div','compact-product-grid'),pager=el('nav','compact-pager'),previous=button('前へ','left'),next=button('次へ','right'),label=el('span','compact-page-label');pager.setAttribute('aria-label','品物のページ');previous.dataset.compactPage='previous';next.dataset.compactPage='next';label.setAttribute('aria-live','polite');pager.append(previous,label,next);grid.setAttribute('role','listbox');grid.setAttribute('aria-label','品物を選ぶ');
     const children=[...node.childNodes];children.forEach(n=>grid.append(n));node.append(grid,pager);node.classList.add('compact-catalog');
     const items=cards.map((original,i)=>{
-      const wrap=el('article','compact-product'),art=el('div','compact-art'),title=el('h3','compact-product-name'),stock=el('small','compact-product-stock'),actions=el('div','compact-product-actions'),info=button('詳細','info');info.dataset.compactInfo='';
-      original.before(wrap);original.classList.add('compact-original');wrap.append(art,title,stock,actions);actions.append(original,info);
+      const wrap=el('article','compact-product'),pick=button(''),thumb=el('span','compact-row-art'),caption=el('span','compact-row-caption'),art=el('div','compact-art'),title=el('span','compact-product-name'),stock=el('small','compact-product-stock'),detail=el('section','compact-selection-panel'),head=el('div','compact-selection-heading'),words=el('div','compact-selection-caption'),name=el('h3','compact-selection-name'),status=el('small','compact-selection-status'),description=el('p','compact-selection-description'),actions=el('div','compact-product-actions'),info=button('詳しく','info');info.dataset.compactInfo='';thumb.setAttribute('aria-hidden','true');pick.className='compact-product-select';pick.dataset.compactSelect=String(i);pick.setAttribute('role','option');pick.setAttribute('aria-selected','false');
+      original.before(wrap);original.classList.add('compact-original');caption.append(title,stock);pick.append(thumb,caption);words.append(name,status);head.append(art,words);detail.append(head,description,actions);wrap.append(pick,detail);actions.append(original,info);
       let picture=sourceArt(original),artMark=null;if(picture){artMark=document.createComment('compact-art');picture.before(artMark);art.append(picture);}else{const html=opts.art?.(original);if(html)art.innerHTML=html;else art.innerHTML=icon(opts.icon||'box');}
       const controls=original.tagName==='BUTTON'?[original]:[...original.querySelectorAll('button')],paths=new Set(),aria=new Map();
       controls.forEach(b=>{aria.set(b,b.getAttribute('aria-label'));b.classList.add('compact-action');for(let p=b.parentElement;p&&p!==original&&original.contains(p);p=p.parentElement){p.classList.add('compact-action-path');paths.add(p);}});
-      const item={original,wrap,art,title,stock,info,controls,picture,artMark,paths,aria};
+      const item={original,wrap,pick,thumb,art,title,stock,detail,name,status,description,info,controls,picture,artMark,paths,aria};
+      pick.onclick=e=>{e.stopPropagation();c.choose(i);};
+      pick.onkeydown=e=>{const step={ArrowDown:1,ArrowRight:1,ArrowUp:-1,ArrowLeft:-1,PageDown:c.size,PageUp:-c.size}[e.key];let index=e.key==='Home'?0:e.key==='End'?items.length-1:step==null?null:i+step;if(index==null)return;e.preventDefault();index=Math.max(0,Math.min(items.length-1,index));c.choose(index);items[index].pick.focus({preventScroll:true});};
       info.onclick=e=>{e.stopPropagation();openSheet(scope,nameOf(original,opts),info,body=>{
         const hero=el('div','compact-detail-art');hero.append(cloneArt(art));body.append(hero);
         for(const text of detailsOf(original,opts))body.append(el('p','',text));
@@ -66,16 +68,19 @@
     });
     if(!items.length){const empty=el('div','compact-catalog-empty');empty.innerHTML=icon(opts.icon||'box');empty.append(el('p','',opts.empty||clean(grid)||'この分類の品物はまだないよ。'));grid.replaceChildren(empty);}
     const groupNodes=[...grid.querySelectorAll('.grid,.shop-goods,.equipment-options,.tackle-options,.compact-source-group')];groupNodes.forEach(n=>n.classList.add('compact-grid-source'));
-    const c={root:node,grid,pager,items,columns:0,rows:0,page:pages.get(opts.key||node.id)||0,size:3,observer:null};c.update=()=>{
-      items.forEach(item=>{const n=item.original;item.title.textContent=nameOf(n,opts);item.stock.textContent=opts.stock?.(n)||clean(n.querySelector('[data-sam-stock]'))||clean(n.querySelector('.inventory-card-actions strong,:scope > strong,.inventory-purpose'));
-        if(item.stock.textContent.length>28)item.stock.textContent=item.stock.textContent.slice(0,27)+'…';item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
+    const id=opts.key||node.id,c={root:node,grid,pager,items,page:pages.get(id)||0,selected:selections.get(id)||0,size:3,observer:null};
+    c.update=()=>{
+      items.forEach((item,i)=>{const n=item.original;item.title.textContent=nameOf(n,opts);item.name.textContent=item.title.textContent;const stock=(opts.stock?.(n)||clean(n.querySelector('[data-sam-stock]'))||clean(n.querySelector('.inventory-card-actions strong,:scope > strong,.inventory-purpose'))).replace(/[\d,]+円/g,'').trim(),price=clean(n.querySelector('[data-sam-total],[data-sam-price],strong,button[data-pet-buy]')).match(/[\d,]+円/);item.stock.textContent=[price?.[0],stock].filter(Boolean).join(' · ');item.status.textContent=stock;
+        item.description.textContent=detailsOf(n,opts).filter(t=>t!==stock).join(' · ')||'この品物の説明と操作を確認できるよ。';item.pick.setAttribute('aria-label',item.title.textContent+' · '+item.stock.textContent);item.pick.setAttribute('aria-selected',String(i===c.selected));item.wrap.classList.toggle('compact-selected',i===c.selected);item.detail.hidden=i!==c.selected;
+        item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
       });};
-    c.apply=()=>{const box=grid.getBoundingClientRect(),columns=box.width?Math.max(1,Math.min(3,Math.floor(box.width/150))):3,rows=box.height?box.height>=302?2:1:innerHeight>500?2:1;c.columns=columns;c.rows=rows;c.size=columns*rows;
-      const total=Math.max(1,Math.ceil(items.length/c.size));c.page=Math.max(0,Math.min(c.page,total-1));grid.style.setProperty('--compact-columns',String(columns));grid.style.setProperty('--compact-rows',String(rows));items.forEach((it,i)=>it.wrap.hidden=Math.floor(i/c.size)!==c.page);
-      previous.disabled=c.page===0;next.disabled=c.page===total-1;label.textContent=(c.page+1)+' / '+total+' · '+items.length+'品';pages.set(opts.key||node.id,c.page);c.update();opts.onLayout?.();
+    c.apply=()=>{const boxHeight=node.clientHeight,style=boxHeight?getComputedStyle(node):null,height=boxHeight?boxHeight-parseFloat(style.paddingTop||0)-parseFloat(style.paddingBottom||0):(innerHeight>500?350:150),all=Math.max(1,Math.floor((height+4)/48));c.size=items.length<=all?all:Math.max(1,Math.floor((height-44-4+4)/48));
+      const total=Math.max(1,Math.ceil(items.length/c.size));c.selected=Math.max(0,Math.min(c.selected,items.length-1));c.page=Math.floor(c.selected/c.size);
+      items.forEach((it,i)=>it.wrap.hidden=Math.floor(i/c.size)!==c.page);pager.hidden=total===1;previous.disabled=c.page===0;next.disabled=c.page===total-1;label.textContent=(c.page+1)+' / '+total+' · '+items.length+'品';pages.set(id,c.page);selections.set(id,c.selected);c.update();opts.onLayout?.();
+      items.forEach(it=>{const copy=cloneArt(it.art);[copy,...copy.querySelectorAll('*')].forEach(n=>{for(const a of [...n.attributes])if(a.name.startsWith('data-'))n.removeAttribute(a.name);});it.thumb.replaceChildren(copy);});
     };
-    c.reveal=n=>{const i=items.findIndex(it=>it.wrap.contains(n));if(i>=0){c.page=Math.floor(i/c.size);c.apply();}};
-    previous.onclick=()=>{c.page--;c.apply();};next.onclick=()=>{c.page++;c.apply();};
+    c.choose=i=>{c.selected=i;c.page=Math.floor(i/c.size);c.apply();};c.reveal=n=>{const i=items.findIndex(it=>it.wrap.contains(n));if(i>=0)c.choose(i);};
+    previous.onclick=()=>{c.page--;c.selected=c.page*c.size;c.apply();};next.onclick=()=>{c.page++;c.selected=c.page*c.size;c.apply();};
     c.release=()=>{c.observer?.disconnect();items.forEach(it=>{if(it.artMark?.parentNode)it.artMark.replaceWith(it.picture);it.controls.forEach(b=>{b.classList.remove('compact-action');b.removeAttribute('data-compact-action-label');if(it.aria.get(b)==null)b.removeAttribute('aria-label');else b.setAttribute('aria-label',it.aria.get(b));});it.paths.forEach(n=>n.classList.remove('compact-action-path'));it.original.classList.remove('compact-original');it.wrap.replaceWith(it.original);});groupNodes.forEach(n=>n.classList.remove('compact-grid-source'));children.forEach(n=>node.insertBefore(n,grid));grid.remove();pager.remove();node.classList.remove('compact-catalog');controllers.delete(c);};
     controllers.add(c);c.apply();if(typeof ResizeObserver==='function'){c.observer=new ResizeObserver(()=>c.apply());c.observer.observe(grid);}return c;
   }
@@ -84,21 +89,23 @@
   }
   function frame(scope,panel,money,nodes){const d=decorate(scope);d.panel=panel;panel.classList.add('compact-panel');const heading=el('header','compact-window-heading'),title=panel.querySelector('h2'),close=scope.querySelector('[data-close]');panel.prepend(heading);d.nodes.push(heading);move(title,heading,d);if(title&&!title.id)title.id='compactTitle-'+scope.id;scope.setAttribute('role','dialog');scope.setAttribute('aria-modal','true');if(title)scope.setAttribute('aria-labelledby',title.id);
     const wallet=el('span','compact-wallet',Number(money||0).toLocaleString('ja-JP')+'円'),help=button('案内','info');help.dataset.compactGuide='';heading.append(wallet,help);move(close,heading,d);help.onclick=e=>{e.stopPropagation();guide(scope,'案内・使い方',help,nodes);};return d;}
-  function sam(scope,ctx){release(scope);scope.classList.add('compact-store');const panel=scope.querySelector('.shop-panel'),d=frame(scope,panel,ctx.money,()=>[...panel.querySelectorAll('#shopDialogue,#samWeatherHint,#samStoryLine,#samStoryOffer,.rival-shop-actions,#tournamentOffer,#practiceOffer,.sam-window-note')]);
-    ['.shop-brand','#shopDialogue','#samWeatherHint','#samStoryLine','#samStoryOffer','.rival-shop-actions','#tournamentOffer','#practiceOffer','.shop-tabs','#samTackleCategories','#samGoodsCategories'].forEach(q=>suppress(panel.querySelector(q),d));
+  function sceneConversation(scope,scene,dialogue,d){if(!scene||!dialogue)return;const box=add(scene,el('div','compact-scene-dialogue'),d);move(dialogue,box,d);const actors=scene.querySelector('.shop-actors');if(actors){const fit=actors.getAttribute('preserveAspectRatio');actors.setAttribute('preserveAspectRatio','xMidYMid slice');d.cleanup.push(()=>actors.setAttribute('preserveAspectRatio',fit));}}
+  function sam(scope,ctx){release(scope);scope.classList.add('compact-store');const panel=scope.querySelector('.shop-panel'),d=frame(scope,panel,ctx.money,()=>[...scope.querySelectorAll('#shopDialogue,#samWeatherHint,#samStoryLine,#samStoryOffer,.rival-shop-actions,#tournamentOffer,#practiceOffer,.sam-window-note')]);
+    sceneConversation(scope,scope.querySelector('.shop-interior'),panel.querySelector('#shopDialogue'),d);
+    ['.shop-brand','#samWeatherHint','#samStoryLine','#samStoryOffer','.rival-shop-actions','#tournamentOffer','#practiceOffer','.shop-tabs','#samTackleCategories','#samGoodsCategories'].forEach(q=>suppress(panel.querySelector(q),d));
     const nav=el('nav','compact-kind-nav');nav.setAttribute('aria-label','サムの売り場');d.nodes.push(nav);panel.querySelector('.compact-window-heading').after(nav);
     for(const [tab,entries] of Object.entries(ctx.categories))for(const entry of entries){const holder=scope.querySelector(tab==='tackle'?'#samTackleCategories':'#samGoodsCategories'),b=holder.querySelector('[data-sam-category="'+entry.id+'"]');move(b,nav,d);b.dataset.compactSamTab=tab;d.cleanup.push(()=>b.removeAttribute('data-compact-sam-tab'));b.setAttribute('aria-pressed',String(ctx.tab===tab&&ctx.selected[tab]===entry.id));b.onclick=()=>ctx.select(tab,entry.id);}
     const dock=add(panel,el('footer','compact-quantity-dock'),d);move(panel.querySelector('.bait-quantity-picker'),dock,d);
     panel.querySelectorAll('[data-sam-category-panel]').forEach(n=>catalog(n,{selector:'.shop-goods > button',key:'sam:'+n.id,art:ctx.art}));samCategory(scope,ctx.tab,ctx.selected[ctx.tab]);restoreFocus(scope);
   }
   function samCategory(scope,tab,id){if(!scope.classList.contains('compact-window'))return;scope.querySelectorAll('[data-compact-sam-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.compactSamTab===tab&&b.dataset.samCategory===id)));const dock=scope.querySelector('.compact-quantity-dock');if(dock)dock.hidden=!(tab==='tackle'&&id==='bait');}
-  function location(scope,ctx){release(scope);if(!ctx.enabled)return;scope.classList.add('compact-location-shop');const panel=scope.querySelector('.location-panel'),d=frame(scope,panel,ctx.money,()=>[...panel.querySelectorAll('#locationDialogue,#locationNote,.cooking-kitchen-status,.sam-window-note')]);
+  function location(scope,ctx){release(scope);if(!ctx.enabled)return;scope.classList.add('compact-location-shop');const panel=scope.querySelector('.location-panel'),d=frame(scope,panel,ctx.money,()=>[...scope.querySelectorAll('#locationDialogue,#locationNote,.cooking-kitchen-status,.sam-window-note')]);
     ['.location-brand','#locationNote','.cooking-kitchen-status'].forEach(q=>suppress(panel.querySelector(q),d));const stock=scope.querySelector('#locationGoods');
-    if(stock.hidden){scope.classList.add('compact-service');const hero=add(panel,el('div','compact-service-card'),d);move(panel.querySelector('#locationDialogue'),hero,d);}else suppress(panel.querySelector('#locationDialogue'),d);
+    if(stock.hidden){scope.classList.add('compact-service');const hero=add(panel,el('div','compact-service-card'),d);move(panel.querySelector('#locationDialogue'),hero,d);}else sceneConversation(scope,scope.querySelector('.location-visual'),panel.querySelector('#locationDialogue'),d);
     const dock=add(panel,el('footer','compact-quantity-dock'),d);move(stock.querySelector('.quantity-picker'),dock,d);move(panel.querySelector('#locationAction'),dock,d);dock.hidden=!dock.querySelector('.quantity-picker')&&scope.querySelector('#locationAction')?.hidden;
     stock.querySelectorAll('[data-location-category-panel]').forEach(n=>catalog(n,{selector:'button.location-good',key:'location:'+ctx.id+':'+n.id}));restoreFocus(scope);
   }
-  function vehicle(scope,ctx){release(scope);scope.classList.add('compact-vehicle-shop');const panel=scope.querySelector('.vehicle-shop-shell'),d=frame(scope,panel,ctx.money,()=>[panel.querySelector('#vehicleShopDialogue')]);['.shop-brand','#vehicleShopDialogue'].forEach(q=>suppress(panel.querySelector(q),d));
+  function vehicle(scope,ctx){release(scope);scope.classList.add('compact-vehicle-shop');const panel=scope.querySelector('.vehicle-shop-shell'),d=frame(scope,panel,ctx.money,()=>[panel.querySelector('#vehicleShopDialogue')]);suppress(panel.querySelector('.shop-brand'),d);
     const stock=panel.querySelector('.shop-goods');catalog(stock,{selector:'button[data-buy-vehicle]',key:'vehicles',art:ctx.art,stock:n=>ctx.owned().includes(n.dataset.buyVehicle)?'購入済み':'未購入',action:n=>ctx.owned().includes(n.dataset.buyVehicle)?ctx.equipped?.()===n.dataset.buyVehicle?'装備中':'装備する':null});restoreFocus(scope);
   }
   function groupBrowser(scope,panel,entries,id,art){const d=decorations.get(scope),nav=add(panel,el('nav','compact-kind-nav'),d),body=add(panel,el('div','compact-group-body'),d);nav.setAttribute('aria-label','道具の種類');const current=groups.get(id)||entries[0]?.id;
@@ -122,11 +129,11 @@
     move(content.querySelector('.pet-tank-picker'),host,d);move(content.querySelector('.pet-buyback-heading'),host,d);suppress(content.querySelector('.pet-buyback-steps'),d);
     content.querySelectorAll('.pet-stock').forEach((n,i)=>catalog(n,{selector:':scope > article',key:'pet:'+ctx.tab+':'+i,onLayout:ctx.onLayout}));
     const supplies=content.querySelector('.pet-supplies');if(supplies)catalog(supplies,{selector:'button',key:'pet:supplies',icon:'feed',name:n=>n.dataset.petAction?.startsWith('food-')?'魚のエサ · '+clean(n).split(' · ')[0]:clean(n),stock:n=>n.dataset.petAction?.startsWith('food-')?ctx.food+'食所持':''});
-    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,onLayout:ctx.onLayout}));
+    content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,stock:n=>clean(n.querySelector(':scope > span')),onLayout:ctx.onLayout}));
     const registration=content.querySelector('.pet-contest-selectors');if(registration){content.querySelectorAll(':scope > p,:scope > .pet-contest-result').forEach(n=>suppress(n,d));}
     restoreFocus(scope);
   }
   function refresh(money){document.querySelectorAll('.compact-window.open .compact-wallet').forEach(n=>n.textContent=Number(money||0).toLocaleString('ja-JP')+'円');controllers.forEach(c=>{if(c.root.closest('.compact-window.open'))c.update();});}
-  function toast(scope,message){if(!scope?.classList.contains('compact-window')||!scope.classList.contains('open'))return;scope.querySelector('.compact-toast')?.remove();const n=el('p','compact-toast',String(message).replace(/[「」]/g,''));n.setAttribute('role','status');scope.append(n);setTimeout(()=>n.remove(),4500);}
+  function toast(scope,message){if(!scope?.classList.contains('compact-window')||!scope.classList.contains('open'))return;if(scope.querySelector('.compact-scene-dialogue'))return;scope.querySelector('.compact-toast')?.remove();const n=el('p','compact-toast',String(message).replace(/[「」]/g,''));n.setAttribute('role','status');scope.append(n);setTimeout(()=>n.remove(),4500);}
   root.ShuCompactUI=Object.freeze({catalog,release,closeSheet,hasSheet:()=>!!sheet,sam,samCategory,location,vehicle,inventory,pet,refresh,toast});
 })(typeof window==='undefined'?globalThis:window);

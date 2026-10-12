@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v232-shops-bag-232-1";
+const CACHE_NAME = "nushi-tsuri-v233-nushi64-windows-233-1";
 const CORE_ASSETS = [
-  "./compact-ui.js?v=232-1",
-  "./compact-ui.css?v=232-1",
+  "./compact-ui.js?v=233-1",
+  "./compact-ui.css?v=233-1",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
@@ -38,7 +38,7 @@ const CORE_ASSETS = [
   "./index.html",
   "./item-categories.css?v=217-1",
   "./pet-life.js?v=230-1",
-  "./pet-life-ui.js?v=232-1",
+  "./pet-life-ui.js?v=233-1",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
   "./fishing-duel.js?v=228-1",
