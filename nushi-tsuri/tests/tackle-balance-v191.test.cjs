@@ -82,8 +82,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
     assert.match(doc.querySelector('#battleMsg').textContent,/ハリ大/);
     w.eval('battle=null;save()');saved=JSON.parse(w.localStorage.getItem(saveKey));
     assert.equal(saved.selectedHook,'large');assert.equal(saved.baits.nushiSecret,2);
-    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"] svg'));
-    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"] svg'));
+    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"]').closest('.compact-product').querySelector('.compact-art svg'));
+    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"]').closest('.compact-product').querySelector('.compact-art svg'));
     assert.match(w.fishdexKnownDetail(w.eval('fish.find(f=>f.id==="funa")')),/ハリ小.*基本サイズ帯は標準/s);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

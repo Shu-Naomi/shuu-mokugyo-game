@@ -189,4 +189,7 @@
  .compact-store .compact-product>.compact-product-name,.compact-location-shop .compact-product>.compact-product-name{grid-column:2;grid-row:1}
  .compact-store .compact-product>.compact-product-stock,.compact-location-shop .compact-product>.compact-product-stock{grid-column:2;grid-row:2}
  .compact-store .compact-product>.compact-product-actions,.compact-location-shop .compact-product>.compact-product-actions{grid-column:1/-1;grid-row:3}
+ .compact-pet-shop .pet-buyback-detail{padding:6px}
+ .compact-pet-shop .pet-buyback-detail h3{margin-bottom:2px}
+ .compact-pet-shop .pet-buyback-detail p{margin:2px 0}
 }

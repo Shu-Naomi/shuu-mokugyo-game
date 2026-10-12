@@ -32,7 +32,7 @@
     for(const n of (typeof nodes==='function'?nodes():nodes)){if(!n)continue;const mark=document.createComment('compact-guide');n.before(mark);s.moves.push({n,mark});body.append(n);}
     if(!body.children.length)body.append(el('p','','品物の「詳細」から用途や使い方を確認できるよ。'));
   });}
-  function nameOf(n,opts){return opts.name?.(n)||clean(n.querySelector('b'))||clean(n.querySelector('span'))||clean(n)||'品物';}
+  function nameOf(n,opts){const named=opts.name?.(n)||clean(n.querySelector('b'));if(named)return named;const span=n.querySelector('span'),label=span?[...span.childNodes].filter(n=>n.nodeType===3).map(n=>n.textContent).join(' ').trim():'';return label||clean(span)||clean(n)||'品物';}
   function detailsOf(n,opts){const lines=[...n.querySelectorAll('small,p,.pet-card-comment')].map(clean).filter(Boolean);if(opts.description)lines.push(opts.description(n));return [...new Set(lines)].filter(Boolean);}
   function actionText(b){const a=b.dataset,price=(clean(b.querySelector('[data-sam-total],[data-sam-price],strong'))||clean(b)).match(/[\d,]+円/);
     if(b.disabled&&b.classList.contains('owned'))return '購入済み';
