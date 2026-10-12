@@ -1,4 +1,4 @@
-// Reveal a product through real category/page buttons before clicking or tapping it.
+// Choose a product through real category, page and cursor buttons, then operate it.
 async function revealProduct(page,selector,mobile=false){
  const press=n=>n[mobile?'tap':'click']();
  if(/data-sam-shop-tab=["']goods/.test(selector))selector='#store [data-sam-category="hands"]';
@@ -21,9 +21,13 @@ async function revealProduct(page,selector,mobile=false){
  }
  const catalog=target.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " compact-catalog ")][1]');
  if(await catalog.count()){
+  const row=target.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " compact-product ")][1]').locator('[data-compact-select]');
   const previous=catalog.locator('[data-compact-page="previous"]'),next=catalog.locator('[data-compact-page="next"]');
-  if(!await target.isVisible())while(!await previous.isDisabled())await press(previous);
-  for(let i=0;i<60&&!await target.isVisible();i++){if(await next.isDisabled())break;await press(next);}
+  if(await row.count()){
+   if(!await row.isVisible())while(!await previous.isDisabled())await press(previous);
+   for(let i=0;i<60&&!await row.isVisible();i++){if(await next.isDisabled())break;await press(next);}
+   await press(row);
+  }
  }
  if(!await target.isVisible()&&!await catalog.count()&&where.scope){
   const guide=page.locator('#'+where.scope+' [data-compact-guide]');
