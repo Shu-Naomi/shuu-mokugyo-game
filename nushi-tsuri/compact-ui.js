@@ -80,7 +80,7 @@
       const total=Math.max(1,Math.ceil(items.length/c.size));c.selected=Math.max(0,Math.min(c.selected,items.length-1));c.page=Math.floor(c.selected/c.size);
       items.forEach((it,i)=>it.wrap.hidden=Math.floor(i/c.size)!==c.page);pager.hidden=total===1;previous.disabled=c.page===0;next.disabled=c.page===total-1;label.textContent=(c.page+1)+' / '+total+' · '+items.length+'品';pages.set(id,c.page);selections.set(id,c.selected);c.update();opts.onLayout?.();
       if(opts.list){const listHeight=Math.max(1,Math.ceil(Math.min(c.size,items.length-c.page*c.size)/c.columns))*46-2;node.style.setProperty('--compact-list-height',listHeight+'px');node.style.setProperty('--compact-operation-top',(listHeight+4+(pager.hidden?0:48))+'px');}
-      if(opts.quantity&&items[c.selected])items[c.selected].detail.append(opts.quantity);
+      if(opts.quantity&&items[c.selected]&&opts.quantity.parentElement!==items[c.selected].detail)items[c.selected].detail.append(opts.quantity);
       items.forEach(it=>{const copy=cloneArt(it.art);[copy,...copy.querySelectorAll('*')].forEach(n=>{for(const a of [...n.attributes])if(a.name.startsWith('data-'))n.removeAttribute(a.name);});it.thumb.replaceChildren(copy);});
     };
     c.announce=()=>{const it=items[c.selected];if(it)opts.describe?.(it.name.textContent,it.description.textContent);};

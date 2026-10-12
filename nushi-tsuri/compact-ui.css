@@ -303,15 +303,14 @@
 .compact-store .compact-sam-list .bait-quantity-picker{display:flex;flex:1;flex-wrap:nowrap;align-items:center;gap:3px;width:auto;min-width:0;margin:0;padding:0;background:none;border:0}
 .compact-store .compact-sam-list .bait-quantity-label{display:none}
 .compact-store .compact-sam-list .bait-quantity-stepper,.compact-store .compact-sam-list .bait-quantity-presets{display:flex;gap:3px;align-items:center}
-.compact-store .compact-sam-list .bait-quantity-picker button{min-width:44px!important;width:44px!important;min-height:44px!important;height:44px!important;max-height:44px!important;margin:0!important;padding:3px!important;font-size:12px;box-sizing:border-box;border-radius:2px}
+.compact-store .compact-sam-list .bait-quantity-picker button{display:flex!important;align-items:center;justify-content:center;flex:0 0 44px;min-width:44px!important;width:44px!important;min-height:44px!important;height:44px!important;max-height:44px!important;margin:0!important;padding:3px!important;font-size:12px;white-space:nowrap;text-align:center;box-sizing:border-box;border-radius:2px}
 .compact-store .compact-sam-list .bait-purchase-count{min-width:56px;width:56px;box-sizing:border-box;padding:0;font-size:13px;text-align:center}
 .compact-store .compact-sam-list .compact-pager{width:100%;box-shadow:none}
-.compact-store .compact-scene-dialogue{max-height:86px;min-height:76px}
+.compact-store .compact-scene-dialogue{max-height:86px;min-height:48px}
 .compact-store .compact-scene-dialogue .shop-dialogue{-webkit-line-clamp:3}
-#store.compact-store #shopPixels,.compact-store .shop-actors{inset:0 0 94px;height:calc(100% - 94px)}
 @media(max-height:500px){
- .compact-store .compact-sam-list .bait-purchase-count{font-size:11px;min-width:50px;width:50px}
+ .compact-store .compact-sam-list .bait-purchase-count{font-size:11px;min-width:56px;width:56px}
  .compact-store .compact-sam-list .compact-selection-panel:has(.bait-quantity-picker) .compact-product-actions{flex-basis:98px!important}
- .compact-store .compact-scene-dialogue{min-height:76px;max-height:86px}
+ .compact-store .compact-scene-dialogue{min-height:48px;max-height:86px}
  .compact-store .compact-scene-dialogue .shop-dialogue{-webkit-line-clamp:4}
 }
