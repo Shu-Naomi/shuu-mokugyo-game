@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v234-sam-choice-dialogue-234-1";
+const CACHE_NAME = "nushi-tsuri-v235-sam-warm-counter-235-1";
 const CORE_ASSETS = [
-  "./compact-ui.js?v=234-1",
-  "./compact-ui.css?v=234-1",
+  "./compact-ui.js?v=235-1",
+  "./compact-ui.css?v=235-1",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
