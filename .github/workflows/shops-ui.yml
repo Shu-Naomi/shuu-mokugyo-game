@@ -1,13 +1,14 @@
 name: Shop and bag UI
 on:
   push:
-    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui, codex/v234-sam-shop-list, codex/v235-sam-warm-counter]
+    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui, codex/v234-sam-shop-list, codex/v235-sam-warm-counter, codex/v236-soft-windows-mountain-gate]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life*.js'
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/compact-ui.*'
       - 'nushi-tsuri/tests/browser*v232*.cjs'
+      - 'nushi-tsuri/tests/browser*v236*.cjs'
       - 'nushi-tsuri/tests/browser-shop-ui-evidence.cjs'
       - 'nushi-tsuri/tests/compact-ui-helpers.cjs'
       - 'nushi-tsuri/aquarium-life.js'
@@ -21,6 +22,7 @@ on:
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/compact-ui.*'
       - 'nushi-tsuri/tests/browser*v232*.cjs'
+      - 'nushi-tsuri/tests/browser*v236*.cjs'
       - 'nushi-tsuri/tests/browser-shop-ui-evidence.cjs'
       - 'nushi-tsuri/tests/compact-ui-helpers.cjs'
       - 'nushi-tsuri/aquarium-life.js'

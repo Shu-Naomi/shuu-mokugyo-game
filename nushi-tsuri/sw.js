@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v235-sam-warm-counter-235-1";
+const CACHE_NAME = "nushi-tsuri-v236-soft-windows-mountain-gate-236-1";
 const CORE_ASSETS = [
   "./compact-ui.js?v=235-1",
-  "./compact-ui.css?v=235-1",
+  "./compact-ui.css?v=236-1",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
@@ -44,7 +44,7 @@ const CORE_ASSETS = [
   "./fishing-duel.js?v=228-1",
   "./fishing-duel.css?v=228-1",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=227-1",
+  "./mountain-region.js?v=236-1",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=227-1",
   "./lake-intro.js?v=216-1",

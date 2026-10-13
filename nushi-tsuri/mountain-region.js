@@ -59,8 +59,11 @@
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       waters:{highPond:[[89,32],[104,29],[126,29],[145,34],[166,39],[187,48],[199,62],[194,78],[179,90],[157,97],[137,100],[113,98],[91,94],[69,87],[50,76],[44,60],[52,46],[69,39]]},
       trails:[[[120,133],[123,119],[120,109],[101,110],[78,107],[56,98],[42,87],[31,73],[30,56],[40,42],[57,33],[75,25],[97,23],[120,22],[145,24],[170,30],[194,39],[210,51],[216,68],[210,83],[196,95],[176,103],[153,108],[134,109],[120,109]],
-        [[210,51],[214,41],[222,32],[225,23],[224,12],[224,2]]],
-      landmarks:[{id:"marsh",x:224,y:8,name:"沼へ続く尾根",message:"尾根の先に、葦の揺れる水辺が見える。"}]},
+        // Follow the painted switchbacks; the former straight route ran up the cliff.
+        [[190,40],[195,38],[198,36],[197,34],[190,32],[184,30],[184,28],[191,26],[201,25],
+          [210,23],[212,21],[207,20],[198,18],[193,16],[193,14],[196,11],[205,10],
+          [214,9],[219,7],[220,4],[218,2]]],trailRadii:[4,2.8],
+      landmarks:[{id:"marsh",x:219,y:8,name:"沼へ続く尾根",message:"尾根の先に、葦の揺れる水辺が見える。"}]},
     mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:43,y:128,direction:"up"},
       returnGate:{left:35,right:51,top:122,bottom:133},bridges:[],
       waters:{highMarsh:[[73,26],[95,28],[114,23],[139,24],[157,28],[169,34],[173,44],[185,53],[198,63],[207,74],[198,86],[180,99],[158,102],[142,102],[125,107],[111,103],[93,98],[73,96],[60,90],[55,79],[44,65],[43,50],[55,38],[65,32]]},
@@ -92,7 +95,7 @@
     if(inRect(x,y,data.returnGate))return region==="wetland"
       ?{region:"mountainMarsh",x:225,y:78,direction:"up"}:region==="stream"
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
-        ?{region:"mountainPond",x:224,y:12,direction:"down"}:region==="cave"
+        ?{region:"mountainPond",x:212,y:10,direction:"left"}:region==="cave"
           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
     const landmark=data.landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6);
     if(landmark?.id==="pass")return {region:"mountainPond",...regions.mountainPond.entry};
@@ -130,7 +133,7 @@
     if(onBridge(x,y,region))return true;
     if(waterType(x,y,region))return false;
     if(inRect(x,y,data.returnGate))return true;
-    if(data.trails.some(path=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadius||4))))return true;
+    if(data.trails.some((path,trail)=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadii?.[trail]??data.trailRadius??4))))return true;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
     return Object.entries(data.waters).some(([id,poly])=>(id!=="stream"||y>=26) && edgeDistance(x,y,poly)<=6);
   }
