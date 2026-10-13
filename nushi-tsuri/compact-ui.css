@@ -318,13 +318,13 @@
 /* v235: Sam's wooden shop signs and paper sales slips. No new card panes. */
 #store.compact-store{border-color:#bba16c!important;background:#493b28!important}
 #store.compact-store .shop-panel{isolation:isolate;background:repeating-linear-gradient(0deg,#906e2708 0 1px,transparent 1px 4px),linear-gradient(110deg,#f4e9cd,#e6d4ad 74%,#eddfbd)!important;color:#3d3424}
-#store.compact-store .shop-panel::after{content:"SAM'S\A FISHING TACKLE";white-space:pre;position:absolute;right:18px;bottom:16px;z-index:-1;pointer-events:none;padding:5px 9px;border:3px double #7458311a;transform:rotate(-6deg);font:700 clamp(20px,3vw,36px)/1.2 monospace;letter-spacing:2px;color:#7458311a}
+#store.compact-store .shop-panel::after{content:"SAM'S\A FISHING TACKLE";white-space:pre;position:absolute;right:24px;bottom:28px;z-index:-1;pointer-events:none;padding:5px 9px;border:3px double #7458311a;transform:rotate(-6deg);font:700 clamp(20px,3vw,36px)/1.2 monospace;letter-spacing:2px;color:#7458311a}
 #store.compact-store .compact-window-heading{padding:0 6px;border:1px solid #927345;box-shadow:inset 0 1px #d7b782,inset 0 -2px #362c20;background:repeating-linear-gradient(0deg,#c39a5910 0 1px,transparent 1px 5px),linear-gradient(90deg,#5f4931,#795b3a);color:#f6e2b2}
 #store.compact-store .compact-window-heading h2{font-size:16px!important;color:#ffedc1!important}
 #store.compact-store .compact-wallet{padding:2px 5px;color:#f7e7bd;font-weight:700}
 #store.compact-store .compact-window-heading button{border:1px solid #b08c52;border-radius:2px;background:linear-gradient(#e5c388,#c49b61);color:#49321f;box-shadow:inset 0 1px #f9e3b5,inset 0 -2px #876541}
 #store.compact-store .compact-kind-nav{gap:3px}
-#store.compact-store .compact-kind-nav button{border:1px solid #9f8050;border-radius:1px;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 5px),linear-gradient(#b09360,#8c724c);color:#fff3d5;box-shadow:inset 0 1px #e1c998,inset 0 -2px #705837;font-size:12px}
+#store.compact-store .compact-kind-nav button{padding:3px 4px;border:1px solid #9f8050;border-radius:1px;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 5px),linear-gradient(#b09360,#8c724c);color:#fff3d5;box-shadow:inset 0 1px #e1c998,inset 0 -2px #705837;font-size:12px}
 #store.compact-store .compact-kind-nav button[aria-pressed=true]{background:linear-gradient(#f4db9e,#d7b87b);border-color:#785632;color:#49301e;box-shadow:inset 0 0 0 1px #fff0c2,inset 0 -3px #a87842}
 #store.compact-store .sam-category-icon{display:flex;align-items:center;justify-content:center;flex:0 0 18px;width:18px;height:22px;margin:0;font-style:normal}
 #store.compact-store .sam-category-icon svg{width:18px!important;height:18px!important;image-rendering:pixelated}
@@ -365,3 +365,5 @@
 @media(max-width:1100px){#store.compact-store .sam-category-icon{width:14px;flex-basis:14px}#store.compact-store .sam-category-icon svg{width:14px!important;height:14px!important}#store.compact-store [data-sam-category="dogTreats"] .sam-category-icon,#store.compact-store [data-sam-category="dogToys"] .sam-category-icon{display:none}}
 @media(max-width:720px){.compact-store .shop-layout,.compact-location-shop .location-layout{grid-template-columns:minmax(100px,19%) minmax(0,1fr)}.compact-window-heading .compact-icon{display:none}.compact-inventory .inventory-vitals{display:none}.compact-inventory #inventoryCategories button span{font-size:9px}.compact-inventory #inventoryCategories button i{font-size:12px}.compact-pet-shop .pet-tabs button{font-size:9px;padding:4px}.compact-sheet{width:92%}}
 @media(max-width:1100px){#store.compact-store .compact-kind-nav button>small{display:none}}
+
+#store.compact-store .shop-panel:has([data-sam-category="bait"][aria-pressed="true"],[data-sam-category="rods"][aria-pressed="true"])::after{display:none}
