@@ -156,7 +156,6 @@
 @media(max-height:500px){
  .compact-window{inset:6px 2% 7px!important}.compact-window .compact-panel{padding:5px 7px;gap:4px}.compact-window-heading{padding-bottom:3px;gap:5px}.compact-window-heading h2{font-size:14px!important}.compact-wallet{font-size:11px}.compact-button,.compact-window .compact-kind-nav button{font-size:11px;padding:4px 6px}.compact-product{padding:5px;gap:2px}.compact-art{max-height:54px;min-height:27px}.compact-product-name{font-size:12px!important;line-height:14px!important;max-height:28px;min-height:14px}.compact-product-stock{font-size:9px;min-height:10px;max-height:10px;line-height:10px}.compact-product-grid{gap:5px}.compact-window .compact-action::after{font-size:11px}.compact-product-actions [data-compact-info]{flex-basis:44px;min-width:44px;font-size:10px}.compact-catalog{gap:4px!important}.compact-pager{padding-top:0}.compact-page-label{font-size:11px}.compact-pager button{min-width:68px}.compact-inventory .inventory-shell{padding:5px 7px;gap:3px}.compact-inventory .compact-window-heading>.pet-tank-link{max-width:85px;font-size:10px;padding:4px 5px}.compact-inventory .inventory-vitals{flex-basis:115px;max-width:115px}.compact-inventory .inventory-tabs button{font-size:12px}.compact-pet-shop .pet-content{padding:5px 7px;gap:4px}.compact-pet-shop .pet-shop-host small{font-size:10px}.compact-pet-shop .pet-tabs button{font-size:10px}.compact-sheet-body{font-size:12px;padding:10px}.compact-sheet-body p{font-size:12px}.compact-quantity-dock{padding-top:1px}
 }
-@media(max-width:720px){.compact-store .shop-layout,.compact-location-shop .location-layout{grid-template-columns:minmax(100px,19%) minmax(0,1fr)}.compact-window-heading .compact-icon{display:none}.compact-inventory .inventory-vitals{display:none}.compact-inventory #inventoryCategories button span{font-size:9px}.compact-inventory #inventoryCategories button i{font-size:12px}.compact-pet-shop .pet-tabs button{font-size:9px;padding:4px}.compact-sheet{width:92%}}
 
 /* Exact-height rows leave the full 44px action visible in short landscape views. */
 .compact-window-heading{padding-bottom:0;box-sizing:border-box;border-bottom:0;box-shadow:inset 0 -1px #78958b}
@@ -315,3 +314,56 @@
  .compact-store .compact-scene-dialogue{min-height:48px;max-height:86px}
  .compact-store .compact-scene-dialogue .shop-dialogue{-webkit-line-clamp:4}
 }
+
+/* v235: Sam's wooden shop signs and paper sales slips. No new card panes. */
+#store.compact-store{border-color:#bba16c!important;background:#493b28!important}
+#store.compact-store .shop-panel{isolation:isolate;background:repeating-linear-gradient(0deg,#906e2708 0 1px,transparent 1px 4px),linear-gradient(110deg,#f4e9cd,#e6d4ad 74%,#eddfbd)!important;color:#3d3424}
+#store.compact-store .shop-panel::after{content:"SAM'S\A FISHING TACKLE";white-space:pre;position:absolute;right:24px;bottom:28px;z-index:-1;pointer-events:none;padding:5px 9px;border:3px double #7458311a;transform:rotate(-6deg);font:700 clamp(20px,3vw,36px)/1.2 monospace;letter-spacing:2px;color:#7458311a}
+#store.compact-store .compact-window-heading{padding:0 6px;border:1px solid #927345;box-shadow:inset 0 1px #d7b782,inset 0 -2px #362c20;background:repeating-linear-gradient(0deg,#c39a5910 0 1px,transparent 1px 5px),linear-gradient(90deg,#5f4931,#795b3a);color:#f6e2b2}
+#store.compact-store .compact-window-heading h2{font-size:16px!important;color:#ffedc1!important}
+#store.compact-store .compact-wallet{padding:2px 5px;color:#f7e7bd;font-weight:700}
+#store.compact-store .compact-window-heading button{border:1px solid #b08c52;border-radius:2px;background:linear-gradient(#e5c388,#c49b61);color:#49321f;box-shadow:inset 0 1px #f9e3b5,inset 0 -2px #876541}
+#store.compact-store .compact-kind-nav{gap:3px}
+#store.compact-store .compact-kind-nav button{padding:3px 4px;border:1px solid #9f8050;border-radius:1px;background:repeating-linear-gradient(90deg,#ffffff08 0 1px,transparent 1px 5px),linear-gradient(#b09360,#8c724c);color:#fff3d5;box-shadow:inset 0 1px #e1c998,inset 0 -2px #705837;font-size:12px}
+#store.compact-store .compact-kind-nav button[aria-pressed=true]{background:linear-gradient(#f4db9e,#d7b87b);border-color:#785632;color:#49301e;box-shadow:inset 0 0 0 1px #fff0c2,inset 0 -3px #a87842}
+#store.compact-store .sam-category-icon{display:flex;align-items:center;justify-content:center;flex:0 0 18px;width:18px;height:22px;margin:0;font-style:normal}
+#store.compact-store .sam-category-icon svg{width:18px!important;height:18px!important;image-rendering:pixelated}
+#store.compact-store .compact-sam-list .compact-product-select{border:1px solid #b59865!important;border-bottom-color:#ad8a56!important;padding:2px 6px!important;background:repeating-linear-gradient(90deg,#a6773408 0 1px,transparent 1px 6px),linear-gradient(110deg,#f4e6c5,#e6d0a0)!important;color:#3d3020!important;box-shadow:inset 0 1px #fff1d5!important}
+#store.compact-store .compact-sam-list .compact-product-select[aria-selected=true]{background:linear-gradient(110deg,#fff0bb,#edc987)!important;border-color:#94623b!important;box-shadow:inset 0 0 0 1px #a67c48,inset 3px 0 #8b3b25!important;color:#38291b!important}
+#store.compact-store .compact-product-select::before{color:#8b3b25}
+#store.compact-store .compact-product-select:focus-visible{outline:2px solid #873a26;outline-offset:-3px}
+#store.compact-store .compact-product-name{font-size:13px!important;line-height:16px!important;font-weight:800}
+#store.compact-store .compact-product-stock{font-size:11px;line-height:13px;max-height:14px;color:#5b503b}
+#store.compact-store .sam-price{display:inline!important;font-size:12px;color:#7d3521;font-weight:800}
+#store.compact-store .sam-owned{color:#554d3b;font-weight:600}
+#store.compact-store .compact-row-art{background:#fff5d43d;border-radius:1px}
+#store.compact-store .compact-row-art svg.sam-pixel-icon{width:25px!important;height:25px!important}
+#store.compact-store .compact-operation-space{border-top:1px solid #a88a56}
+#store.compact-store .compact-selection-panel .compact-action{border:1px solid #79351e;border-radius:2px;background:repeating-linear-gradient(90deg,#ffdf9a0c 0 1px,transparent 1px 6px),linear-gradient(#b6683a,#8b4428);color:#fff0ce;box-shadow:inset 0 1px #e7ad71,inset 0 -2px #69301e}
+#store.compact-store .compact-selection-panel .compact-action::after{white-space:pre-line;line-height:15px;font-size:12px;font-weight:800}
+#store.compact-store .compact-selection-panel .compact-action:disabled{background:#b0a27f;border-color:#887b5b;color:#4c4432;box-shadow:none}
+#store.compact-store .bait-quantity-picker{box-shadow:none}
+#store.compact-store .bait-quantity-stepper,#store.compact-store .bait-quantity-presets{position:relative}
+#store.compact-store .compact-sam-list .bait-quantity-label{display:block;position:absolute;top:calc(100% + 2px);left:0;right:0;min-width:0;color:#605037;font-size:10px;line-height:11px;text-align:center;white-space:nowrap}
+#store.compact-store .bait-quantity-label small{display:none}
+#store.compact-store .bait-quantity-presets::after{content:"まとめ買い";position:absolute;top:calc(100% + 2px);left:0;right:0;pointer-events:none;font-size:10px;line-height:11px;text-align:center;color:#605037}
+#store.compact-store .compact-sam-list .bait-quantity-picker button{background:linear-gradient(#dfc594,#bea16e);color:#463422;box-shadow:inset 0 1px #f7e3b8,inset 0 -2px #947448;border-color:#9c794a}
+#store.compact-store .compact-sam-list .bait-quantity-presets button.active{background:linear-gradient(#537557,#35583c);color:#fff1c4;border:2px solid #ad863f;box-shadow:inset 0 0 0 1px #d8be79}
+#store.compact-store .bait-purchase-count{background:#f6ebce;color:#473a26;border-color:#b39865}
+#store.compact-store .compact-pager button{background:linear-gradient(#dcc394,#c0a472);border-color:#a18758;color:#493a28}
+#store.compact-store .compact-page-label{color:#594b32}
+#store.compact-store .compact-scene-dialogue{display:grid;grid-template-columns:minmax(0,1fr) 44px;gap:2px 7px;min-height:66px;max-height:94px;padding:5px 7px;border-color:#c5a567;background:repeating-linear-gradient(0deg,#aa823108 0 1px,transparent 1px 4px),#f1e4c1;box-shadow:inset 0 0 0 1px #917244,0 2px #241c12;color:#3e3424}
+#store.compact-store .sam-speaker{grid-column:1;grid-row:1;font-size:11px;font-weight:800;line-height:12px;color:#814126;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#store.compact-store .compact-scene-dialogue .shop-dialogue{grid-column:1;grid-row:2;font-size:12px;line-height:17px;-webkit-line-clamp:3;color:#3e3424}
+#store.compact-store .sam-talk-more{grid-column:2;grid-row:1/3;align-self:center;display:flex;align-items:center;justify-content:center;width:44px;height:44px;min-height:44px;margin:0;padding:2px;border:1px solid #977144;border-radius:1px;background:linear-gradient(#e7d0a0,#c8aa73);box-shadow:inset 0 1px #fff0c7;color:#563b24;font-size:11px}
+#store.compact-store .compact-sheet{background:#efe2c0;border-color:#ae8b52;color:#403525}
+#store.compact-store .compact-sheet-heading{background:linear-gradient(#806440,#604c34);color:#ffedc5}
+#store.compact-store .compact-sheet-heading button,#store.compact-store .compact-detail-actions button{background:linear-gradient(#d2ab70,#ae7849);color:#38291b;border:1px solid #92673e;box-shadow:inset 0 1px #f2d49b}
+#store.compact-store .compact-detail-art{background:linear-gradient(#eedfbb,#d6bd8e);border-color:#b4935d}
+#store.compact-store .compact-detail-status{background:#ded0a7;color:#593b22}
+@media(max-height:500px){#store.compact-store .compact-window-heading h2{font-size:14px!important}#store.compact-store .compact-kind-nav button{font-size:10px}#store.compact-store .compact-product-name{font-size:12px!important;line-height:15px!important}}
+@media(max-width:1100px){#store.compact-store .sam-category-icon{width:14px;flex-basis:14px}#store.compact-store .sam-category-icon svg{width:14px!important;height:14px!important}#store.compact-store [data-sam-category="dogTreats"] .sam-category-icon,#store.compact-store [data-sam-category="dogToys"] .sam-category-icon{display:none}}
+@media(max-width:720px){.compact-store .shop-layout,.compact-location-shop .location-layout{grid-template-columns:minmax(100px,19%) minmax(0,1fr)}.compact-window-heading .compact-icon{display:none}.compact-inventory .inventory-vitals{display:none}.compact-inventory #inventoryCategories button span{font-size:9px}.compact-inventory #inventoryCategories button i{font-size:12px}.compact-pet-shop .pet-tabs button{font-size:9px;padding:4px}.compact-sheet{width:92%}}
+@media(max-width:1100px){#store.compact-store .compact-kind-nav button>small{display:none}}
+
+#store.compact-store .shop-panel:has([data-sam-category="bait"][aria-pressed="true"],[data-sam-category="rods"][aria-pressed="true"])::after{display:none}

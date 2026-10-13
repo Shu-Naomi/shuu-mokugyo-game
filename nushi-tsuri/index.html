@@ -6442,7 +6442,7 @@
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=228-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=234-1" />
+    <link rel="stylesheet" href="compact-ui.css?v=235-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6477,7 +6477,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v234</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v235</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7269,7 +7269,7 @@
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
     <script src="aquarium-life.js?v=230-1"></script>
-    <script src="compact-ui.js?v=234-1"></script>
+    <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=228-1"></script>
@@ -16461,6 +16461,16 @@
         markPurchaseButton(document.querySelector(`[data-buy-location-item="${id}"]`));
         log(`${item.source}で${item.name}を${amount}個（${price}円）買った。`);save();return true;
       }
+      function describeSamShopItem(name, description, button) {
+        const feature = (button.querySelector("small")?.textContent || description).replace(/\s+/g," ").replace(/ · 所持.*$/,"").trim();
+        const comments = {
+          worm:"迷ったら、まずはこいつじゃ。", river:"川釣りのお供にしておくれ。",
+          paste:"今日はどの魚と出会えるか、楽しみじゃな。", corn:"黄色い一粒も、立派な釣りの相棒じゃ。",
+          shrimp:"海へ行くなら、忘れずにな。", liveMinnow:"活きのいい小魚を揃えておいたぞ。",
+        };
+        const comment = comments[button.dataset.buyBait] || (button.dataset.buyRod ? "竿選びも、釣りの楽しみじゃな。" : button.dataset.buyLure ? "釣りの帰りに、また話を聞かせておくれ。" : button.dataset.buyHand ? "手をいたわって、長く釣りを楽しもうぞ。" : "相棒にも、よい一日をな。");
+        setSamShopDialogue(`「${feature}。${comment}」`);
+      }
       function renderSamShop() {
         ShuCompactUI.release($("#store"));
         renderWeather();
@@ -16555,7 +16565,8 @@
         ShuCompactUI.sam($("#store"),{
           money:s.money,categories:samCategories,tab:samShopTab,selected:samShopCategories,
           select:(tab,id)=>{setSamShopTab(tab);setSamShopCategory(id);},art:compactItemArt,
-          describe:(name,description)=>setSamShopDialogue(`「${name}じゃ。${description.replace(/ · /g,"。")}」`),
+          describe:describeSamShopItem,
+          greet:()=>setSamShopDialogue("「いらっしゃい。釣具は未来を引き寄せるんじゃよ」"),
         });
       }
       function renderSamDogGoods() {
@@ -23462,7 +23473,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=234-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=235-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
