@@ -8,6 +8,7 @@ const server=http.createServer((req,res)=>{try{const u=new URL(req.url,'http://l
   const failures=[];
   for(const [mobile,options] of [[false,{}],[true,{}],[true,{viewport:{width:820,height:366},dpr:1.875}]]){
    try{await run(url,mobile,options);}catch(e){failures.push(e.stack);console.error(e);}
+   try{await require('./browser-v236.routes.cjs')(url,mobile,options);}catch(e){failures.push(e.stack);console.error(e);}
   }
   // Existing category integration keeps its recipe, guide and payment assertions.
   // The full browser workflow also runs all the legacy scenarios.
