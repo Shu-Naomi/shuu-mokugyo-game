@@ -26,7 +26,7 @@ module.exports=async function fightControls(url,mobile=false){
   }
   try{
    await page.clock.install({time:new Date('2026-10-09T06:00:00Z')});await page.clock.pauseAt('2026-10-09T06:00:01Z');
-   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v236/);await press('#start');
+   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v237/);await press('#start');
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
    async function fieldReady(){
