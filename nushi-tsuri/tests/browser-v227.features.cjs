@@ -3,7 +3,7 @@ const {seed,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-
 module.exports=async function wetland(url,mobile=false){
  const browser=await chromium.launch({headless:true}),errors=[],failed=[];
  const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
- const state={...seed(),hp:100,maxHp:100,gameMinutes:600,soundEnabled:false,mapRegion:'mountainMarsh',x:43,y:128,direction:'up',boatActive:false,
+ const state={...seed(),hp:100,maxHp:100,gameMinutes:600,soundEnabled:false,mapRegion:'mountainMarsh',x:48,y:128,direction:'up',boatActive:false,
   ownedRods:['bamboo','starGazer'],selectedRod:'starGazer',baits:{worm:20,river:20,paste:20,liveMinnow:20},selectedBait:'worm',selectedHook:'small'};
  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
@@ -22,7 +22,7 @@ module.exports=async function wetland(url,mobile=false){
   assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),type);return r;
  }
  try{
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v236/);await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v237/);await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
   const entryRoute=await page.evaluate(fn=>(0,eval)('('+fn+')')(window,'mountainMarsh',(x,y)=>ShuMountain.landmarkAt(x,y,'mountainMarsh')?.id==='wetland'),routeTo.toString());
   await walk(entryRoute);await press('#action');assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>s.lakeStory.visited.wetland),true);
   await page.waitForFunction(()=>document.querySelector('#mountainPixels')?.getAttribute('aria-label')==='水郷の湿地');await screenshot('arrival');

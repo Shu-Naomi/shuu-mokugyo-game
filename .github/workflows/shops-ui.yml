@@ -1,9 +1,11 @@
 name: Shop and bag UI
 on:
   push:
-    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui, codex/v234-sam-shop-list, codex/v235-sam-warm-counter, codex/v236-soft-windows-mountain-gate]
+    branches: [main, codex/v232-shops-bag-ui, codex/v233-nushi64-shop-ui, codex/v234-sam-shop-list, codex/v235-sam-warm-counter, codex/v236-soft-windows-mountain-gate, codex/v237-marsh-paths-fish]
     paths:
       - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/mountain-region.js'
+      - 'nushi-tsuri/tests/marsh-v237.cjs'
       - 'nushi-tsuri/pet-life*.js'
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/compact-ui.*'
@@ -18,6 +20,8 @@ on:
     branches: [main]
     paths:
       - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/mountain-region.js'
+      - 'nushi-tsuri/tests/marsh-v237.cjs'
       - 'nushi-tsuri/pet-life*.js'
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/compact-ui.*'

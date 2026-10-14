@@ -6477,7 +6477,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v236</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v237</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7275,7 +7275,7 @@
     <script src="fishing-duel.js?v=228-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="mountain-region.js?v=236-1"></script>
+    <script src="mountain-region.js?v=237-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
@@ -11490,13 +11490,13 @@
         tension:8.8,release:6.4,weight:.38,danger:true,hold:"ライギョが水草へ突進！Aを離して走りを受け流そう！",loose:"力強い走りだ。止まるまで糸を送ろう。"});
       Object.assign(fishEncyclopediaData,{
         tanago:{number:34,scientific:"Acheilognathus melanogaster",habitats:["lake"],rarity:2,rarityLabel:"水草の小さな住人",
-          ecology:"平たい銀色の体を持つ小さな淡水魚。水草のある穏やかな水辺で暮らす。",locations:"水郷の湿地・睡蓮の池／葦の沼の岸際",time:"いつでも",
-          rods:["moroko","youngBamboo"],baits:["paste","worm","river"],tip:"睡蓮の池へ練りエサ＋ハリ小を。岸際から中層をこまめに探ろう。"},
+          ecology:"平たい銀色の体を持つ小さな淡水魚。水草のある穏やかな水辺で暮らす。",locations:"峠の沼（岸際〜中層）／水郷の湿地・睡蓮の池／葦の沼の岸際",time:"いつでも",
+          rods:["moroko","youngBamboo"],baits:["paste","worm","river"],tip:"峠の沼や睡蓮の池へ練りエサ＋ハリ小を。岸際から中層をこまめに探ろう。"},
         motsugo:{number:35,scientific:"Pseudorasbora parva",habitats:["lake","river"],rarity:1,rarityLabel:"細い縦帯の小魚",
-          ecology:"体側に暗い縦帯を持ち、口が少し上を向いた小さな淡水魚。",locations:"水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"いつでも",
+          ecology:"体側に暗い縦帯を持ち、口が少し上を向いた小さな淡水魚。",locations:"峠の沼（岸際〜中層）／水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"いつでも",
           rods:["bamboo","moroko"],baits:["river","worm","paste"],tip:"川虫＋ハリ小で池や小川の浅場を探ろう。ミミズにも反応するよ。"},
         medaka:{number:36,scientific:"Oryzias spp.",habitats:["lake","river"],rarity:1,rarityLabel:"水面の小さな群れ",
-          ecology:"大きな目と小さな体を持つ淡水魚。背びれが体の後方にある。",locations:"水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"朝〜昼に多い",
+          ecology:"大きな目と小さな体を持つ淡水魚。背びれが体の後方にある。",locations:"峠の沼（岸際）／水郷の湿地・睡蓮の池／砂底の小川／葦の沼の岸際",time:"朝〜昼に多い",
           rods:["moroko","bamboo"],baits:["river","paste","worm"],tip:"川虫＋ハリ小で岸際を狙おう。大きなハリでは出会いにくいよ。"},
         kamatsuka:{number:37,scientific:"Pseudogobio esocinus",habitats:["river"],rarity:2,rarityLabel:"砂底の住人",
           ecology:"砂色の斑点と下向きの口、短い口ひげを持つ川魚。",locations:"水郷の湿地・砂底の小川（浅場〜深場）",time:"いつでも",
@@ -11505,7 +11505,7 @@
           ecology:"細長い体ととがった鼻先、下向きの口を持つ大きな川魚。",locations:"水郷の湿地・砂底の小川／葦の沼の中層〜深場",time:"いつでも",
           rods:["clearStream","starGazer"],baits:["worm","river","corn"],tip:"ミミズ＋ハリ中で小川の深場へ。大きな個体は重く粘るので、隙を待とう。"},
         raigyo:{number:39,scientific:"Channa argus（カムルチー）",habitats:["lake"],rarity:3,rarityLabel:"葦の沼の大物",
-          ecology:"本作のライギョはカムルチー。細長い体と大きな口、長い背びれを持つ肉食魚。",locations:"水郷の湿地・葦の沼（浅場〜深場）",time:"昼〜夕方に多い",
+          ecology:"本作のライギョはカムルチー。細長い体と大きな口、長い背びれを持つ肉食魚。",locations:"峠の沼（中層〜深場）／水郷の湿地・葦の沼（浅場〜深場）",time:"昼〜夕方に多い",
           rods:["starGazer","shoreReed"],baits:["liveMinnow","grasshopper","worm"],tip:"葦の沼の中層へ活き小魚＋ハリ大。スプーンにも反応するよ。丈夫な竿で突進を受け止めよう。"}
       });
       // Every fish uses the common renderer and seven headings. Preserve each
@@ -17625,8 +17625,8 @@
                 : "小島の水辺へ向いてAで釣る。桟橋へ戻れば乗船できる。"
           : mountain
             ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "来た道の入口だ。Aで戻れる。"
-              : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "渓流の木の橋だ。釣りは川岸へ降りてから。"
-              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":['marsh','highMarsh'].includes(spot.mountainType)?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
+              : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "木の橋だ。釣りは岸へ降りてから。"
+              : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":spot.mountainType==="highMarsh"?"岸際はハリ小で小魚、中層は活き小魚＋ハリ大でライギョを。":spot.mountainType==="marsh"?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
               : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、来た道の入口から戻れる。`
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
@@ -23473,7 +23473,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=236-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=237-1").catch(() => {});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

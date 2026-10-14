@@ -12,7 +12,7 @@ test('the painted pond switchbacks are walkable while the former route through t
     assert.equal(M.walkable(...p,'mountainPond'),true,'painted dirt '+p);
   for(const p of [[224,12],[225,23],[224,31],[120,60]])
     assert.equal(M.walkable(...p,'mountainPond'),false,'cliff or water '+p);
-  const exit=M.exitAt(43,128,'mountainMarsh');
+  const exit=M.exitAt(M.regions.mountainMarsh.entry.x,M.regions.mountainMarsh.entry.y,'mountainMarsh');
   assert.ok(M.walkable(exit.x,exit.y,exit.region));assert.equal(M.waterType(exit.x,exit.y,exit.region),null);
 });
 

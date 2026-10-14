@@ -64,11 +64,31 @@
           [210,23],[212,21],[207,20],[198,18],[193,16],[193,14],[196,11],[205,10],
           [214,9],[219,7],[220,4],[218,2]]],trailRadii:[4,2.8],
       landmarks:[{id:"marsh",x:219,y:8,name:"沼へ続く尾根",message:"尾根の先に、葦の揺れる水辺が見える。"}]},
-    mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:43,y:128,direction:"up"},
-      returnGate:{left:35,right:51,top:122,bottom:133},bridges:[],
-      waters:{highMarsh:[[73,26],[95,28],[114,23],[139,24],[157,28],[169,34],[173,44],[185,53],[198,63],[207,74],[198,86],[180,99],[158,102],[142,102],[125,107],[111,103],[93,98],[73,96],[60,90],[55,79],[44,65],[43,50],[55,38],[65,32]]},
-      trails:[[[43,133],[41,118],[45,107],[51,99],[44,86],[37,72],[29,58],[34,45],[44,34],[59,26],[71,21],[84,20],[97,23],[113,18],[133,16],[151,19],[166,24],[177,37],[180,47],[195,54],[211,61],[225,73],[225,86],[217,95],[202,103],[183,109],[160,108],[143,112],[130,110],[115,114],[96,107],[80,103],[64,104],[51,99]]],
-      landmarks:[{id:"wetland",x:225,y:86,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+    mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:48,y:128,direction:"up"},
+      returnGate:{left:45,right:54,top:126,bottom:133},trailRadius:3.1,bankRadius:2.5,
+      // Trace the dirt, shore and timber decks in the finished 1672 x 941 art.
+      // The old outline covered the northern road and missed several bends.
+      bridges:[{left:48,right:56,top:32,bottom:35.5},{left:113,right:123,top:19.5,bottom:22.5},
+        {left:168,right:178,top:24,bottom:27.5},{left:192,right:203,top:51,bottom:55.5},
+        {left:48,right:53,top:76.5,bottom:83},{left:53,right:61,top:76,bottom:79},
+        {left:106,right:114,top:104,bottom:108.5},{left:150,right:161,top:104,bottom:108}],
+      waters:{highMarsh:[[43,40],[54,37],[61,36],[64,30],[71,29],[82,29],[89,31],[101,29],
+        [110,25],[123,24],[128,19],[144,19],[153,22],[163,26],[176,29],[175,35],[175,40],
+        [185,45],[193,51],[200,59],[210,63],[218,68],[221,77],[216,81],[208,85],[207,93],
+        [202,96],[192,99],[182,100],[170,101],[158,102],[150,100],[138,101],[127,99],
+        [119,100],[113,103],[108,107],[103,109],[97,106],[89,102],[80,99],[67,100],[54,99],
+        [56,92],[57,84],[55,76],[47,72],[40,65],[32,62],[31,55],[33,48],[37,44]]},
+      trails:[[[50,133],[46,124],[43,119],[42,113],[41,108],[42,104]],
+        [[42,104],[48,96],[52,90],[53,85],[50,80],[48,73],[42,68],[34,64],[28,60],[27,55],
+          [28,50],[32,43],[39,39],[46,36],[52,34],[60,33],[64,29],[67,25],[76,23],[83,25],
+          [92,27],[98,25],[107,21],[116,21],[123,19],[129,15],[139,14],[147,15],[158,20],
+          [168,24],[174,26],[178,29],[178,35],[178,39],[184,42],[191,47],[196,51],[198,54],
+          [203,59],[214,63],[221,67],[226,71],[228,77],[224,83],[219,87],[214,90],[213,94],
+          [209,98],[202,101],[193,104],[185,104],[177,105],[167,106],[154,106],[146,105],
+          [140,104],[131,102],[123,102],[118,105],[113,109],[106,112],[100,113],[94,110],
+          [85,106],[77,103],[67,104],[59,103],[52,102],[46,102],[42,104]],
+        [[50,78],[60,78]],[[113,109],[110,107]]],trailRadii:[3.1,3.1,1.4,1.4],
+      landmarks:[{id:"wetland",x:221,y:86,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
     wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:224,y:6,direction:"down"},
       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
       // Shores and paths traced from the final 1672 x 941 background.
@@ -93,7 +113,7 @@
   function exitAt(x,y,region="stream"){
     const data=regionData(region);
     if(inRect(x,y,data.returnGate))return region==="wetland"
-      ?{region:"mountainMarsh",x:225,y:78,direction:"up"}:region==="stream"
+      ?{region:"mountainMarsh",x:227,y:78,direction:"up"}:region==="stream"
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
         ?{region:"mountainPond",x:212,y:10,direction:"left"}:region==="cave"
           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
@@ -135,7 +155,7 @@
     if(inRect(x,y,data.returnGate))return true;
     if(data.trails.some((path,trail)=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadii?.[trail]??data.trailRadius??4))))return true;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
-    return Object.entries(data.waters).some(([id,poly])=>(id!=="stream"||y>=26) && edgeDistance(x,y,poly)<=6);
+    return Object.entries(data.waters).some(([id,poly])=>(id!=="stream"||y>=26) && edgeDistance(x,y,poly)<=(data.bankRadius??6));
   }
   function moveTarget(x,y,direction="up",stride=4,region="stream") {
     const delta={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[direction];
@@ -179,7 +199,12 @@
       {dojo:.22,bass:.29,namazu:.25,unagi:.14,funa:.10},
       {dojo:.12,namazu:.32,unagi:.32,koi:.14,bass:.10}],
   };
-  populations.highPond=populations.pond;populations.highMarsh=populations.marsh;
+  populations.highPond=populations.pond;
+  // Give the upper reed marsh its own small-fish and predator population.
+  // These species already use the shared tackle, art and catch-record systems.
+  populations.highMarsh=[{dojo:.20,tanago:.20,motsugo:.19,medaka:.17,funa:.12,moroko:.08,bass:.04},
+    {dojo:.16,tanago:.14,motsugo:.12,raigyo:.18,namazu:.14,funa:.12,bass:.08,unagi:.06},
+    {dojo:.12,raigyo:.24,namazu:.24,unagi:.20,koi:.12,bass:.08}];
   populations.underground=[{funa:.45,koi:.2,namazu:.2,unagi:.15},{namazu:.4,unagi:.35,koi:.15,funa:.1},{namazu:.42,unagi:.38,koi:.15,funa:.05}];
   populations.wetPond=[{tanago:.28,motsugo:.25,medaka:.26,funa:.13,moroko:.08},
     {tanago:.30,motsugo:.28,medaka:.12,funa:.18,koi:.12},

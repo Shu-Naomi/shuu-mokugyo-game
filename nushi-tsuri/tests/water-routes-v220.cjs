@@ -8,7 +8,7 @@ const cases=[
  {region:'stream',start:[152,128],type:'pond'},
  {region:'stream',start:[152,128],type:'marsh'},
  {region:'mountainPond',start:[120,128],type:'highPond'},
- {region:'mountainMarsh',start:[43,128],type:'highMarsh'},
+ {region:'mountainMarsh',start:[48,128],type:'highMarsh'},
  {region:'cave',start:[120,128],type:'underground'},
  {region:'coast',start:[115,77],type:'sand'},
  {region:'coast',start:[88,92],type:'reef'},
