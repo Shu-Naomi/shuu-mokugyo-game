@@ -39,7 +39,8 @@ test('actual fishing selection follows bait, hook, fishing spot and still rolls 
   const app=boot(),w=app.window;
   try{
     const small=fixedCatches(w),large=fixedCatches(w,'lake-mid','corn','large');
-    assert.ok(small.funa>750,JSON.stringify(small));
+    assert.ok(small.funa+small.herabuna>750,JSON.stringify(small));
+    assert.ok(small.funa>small.herabuna*2,'the common crucian remains more frequent than the added white crucian');
     assert.ok(small.koi>0 && small.moroko>0,'unwanted fish remain possible');
     assert.ok(large.koi>large.funa*2,JSON.stringify(large));
     const river=fixedCatches(w,'river-shallow','river','small');
