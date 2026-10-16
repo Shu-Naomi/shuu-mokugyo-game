@@ -10,9 +10,9 @@ module.exports=async function guide(page,mobile,viewport){
   assert.ok(result.visible&&result.controls&&result.note&&result.overlap&&result.scroll<=1,JSON.stringify(result));assert.ok(Math.abs(result.ratio-16/9)<.04,JSON.stringify(result));
  }
  for(const region of ['village','stream','mountainPond','mountainMarsh','wetland','cave','coast']){
-  await page.evaluate(region=>{close();Object.assign(s,{mapRegion:region,boatActive:false,...(ShuMountain.regions[region]?.entry||(region==='coast'?{x:146,y:70,direction:'down'}:{x:10,y:79,direction:'left'}))});render();},region);
+  await page.evaluate(region=>{close();Object.assign(s,{mapRegion:region,boatActive:false,...(ShuMountain.regions[region]?.entry||(region==='coast'?{x:146,y:70,direction:'down'}:{x:10,y:79,direction:'left'}))});render();save();},region);
   const before=await snapshot(),stored=await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2'));
-  await press('#menu');await press('[data-field-menu-target="record"]');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
+  if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
   assert.equal(await page.locator('#record.open').count(),0);await fit();
   const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind})));
   let seen=0;
