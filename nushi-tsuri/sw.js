@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v238-living-waters-238-1";
+const CACHE_NAME = "nushi-tsuri-v239-field-guide-239-1";
 const CORE_ASSETS = [
+  "./field-guide.js?v=239-1",
+  "./field-guide.css?v=239-1",
   "./world-life.js?v=238-1",
   "./fish-additions.js?v=238-1",
   "./assets/fish-kawamutsu-v238.png",

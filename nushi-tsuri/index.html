@@ -6432,6 +6432,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=238-1" />
+    <link rel="stylesheet" href="field-guide.css?v=239-1" />
     <link rel="stylesheet" href="pet-life.css?v=231-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
@@ -6477,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v238</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v239</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6631,7 +6632,7 @@
           <nav aria-label="冒険メニュー">
             <button type="button" data-field-menu-target="record">
               <span class="field-menu-icon" aria-hidden="true">📖</span>
-              <span class="field-menu-label">図鑑</span>
+              <span class="field-menu-label">図鑑<small>魚の記録・水辺の案内</small></span>
             </button>
             <button type="button" data-field-menu-target="story">
               <span class="field-menu-icon" aria-hidden="true">✦</span>
@@ -6855,12 +6856,12 @@
               </div>
               <button class="fishdex-close" data-close>閉じる</button>
             </header>
-            <button id="fishdexStoryOffer" class="lake-story-return">湖の手帳を読む</button>
             <nav class="fishdex-filters" id="fishdexFilters" aria-label="生息地で絞り込む">
               <button class="active" data-fishdex-filter="all">すべて</button>
               <button data-fishdex-filter="lake">湖</button>
               <button data-fishdex-filter="river">川</button>
               <button data-fishdex-filter="sea">海</button>
+            <div class="fishdex-guide-actions"><button id="fishdexStoryOffer" class="lake-story-return">湖の手帳を読む</button><button id="fishdexFieldGuide" class="lake-story-return" type="button">水辺の案内</button></div>
             </nav>
             <div class="fishdex-body">
               <aside class="fishdex-index" id="book" aria-label="魚種一覧"></aside>
@@ -6878,6 +6879,14 @@
             </div>
           </div>
         </div>
+        <section class="modal field-guide-modal" id="fieldGuide" role="dialog" aria-modal="true" aria-labelledby="fieldGuideTitle">
+          <header class="field-guide-heading"><div><h2 id="fieldGuideTitle">水辺の案内</h2><span id="fieldGuideRegion"></span></div><button id="fieldGuideClose" type="button" data-close>図鑑へ戻る</button></header>
+          <div class="field-guide-body">
+            <div id="fieldGuideMap" role="img"><div id="fieldGuideMapArt"><div id="fieldGuideBuildings"></div><svg id="fieldGuideOverlay" viewBox="0 0 240 135" aria-hidden="true"></svg><span id="fieldGuideLegend"></span></div></div>
+            <nav class="field-guide-catalog" aria-label="水辺と暮らしの場所"><div id="fieldGuidePlaces"></div><div class="field-guide-pagination"><button id="fieldGuidePrevious" type="button" aria-label="前の案内へ">‹ 前</button><span id="fieldGuidePage" aria-live="polite"></span><button id="fieldGuideNext" type="button" aria-label="次の案内へ">次 ›</button></div></nav>
+          </div>
+          <footer class="field-guide-footer"><span id="fieldGuideNoteLabel"></span><p id="fieldGuideNote" aria-live="polite"></p></footer>
+        </section>
         <section class="modal lake-intro-modal" id="lakeIntro" role="dialog" aria-modal="true" aria-labelledby="lakeIntroTitle" tabindex="-1">
           <header class="lake-intro-header">
             <div><h2 id="lakeIntroTitle">旅のはじまり</h2><p id="lakeIntroProgress" aria-live="polite">1 / 5</p></div>
@@ -7281,6 +7290,7 @@
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=238-1"></script>
+    <script src="field-guide.js?v=239-1"></script>
     <script src="mountain-region.js?v=238-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
@@ -11998,6 +12008,7 @@
       let activeTournamentNpcId = null, tournamentNpcAtlas = null, tournamentTalkCursor = 0;
       const tournamentNpcLastLines = new Map();
       let worldLife = null;
+      let fieldGuideView = null;
       let activeRivalId = null, rivalTalkReturn = null;
       let rivalDogReaction = null, rivalDogAnimation = 0, rivalDogLastSound = -Infinity;
       const rivalDogGreetingTurns = new Map();
@@ -22597,6 +22608,7 @@
         }
         const openModals = [...document.querySelectorAll(".modal.open")];
         openModals.forEach(modal=>ShuCompactUI.release(modal,false));
+        const closingFieldGuide = $("#fieldGuide").classList.contains("open");
         const closingStory = $("#lakeStory").classList.contains("open");
         const storyTarget = closingStory ? lakeStoryReturn : null;
         if(closingStory)lakeStoryReturn=null;
@@ -22620,6 +22632,7 @@
         renderRivals();
         syncSceneSound();
         hideStarFortuneReveal({ rerender: false });
+        if(closingFieldGuide){open("record");$("#fishdexFieldGuide").focus({preventScroll:true});return;}
         if(storyTarget){
           if(storyTarget==="store")renderSamShop();
           open(storyTarget);$(storyTarget==="store"?"#samStoryOffer":"#fishdexStoryOffer").focus({preventScroll:true});
@@ -22872,6 +22885,12 @@
             `<small>${known ? `${stars}　${item.lore}` : "星みくじから見つかる収集品"}</small></span>` +
             `<strong>${known ? `×${count}` : "未発見"}</strong></div>`;
         }).join("");
+      }
+      function openFieldGuide() {
+        close();releaseHeldInputs();
+        fieldGuideView ||= ShuFieldGuide.create({element:$("#fieldGuide"),life:ShuWorldLife});
+        fieldGuideView.show(ShuFieldGuide.model({...s,home:playerHomeIsActive()},{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}));
+        open("fieldGuide");$("#fieldGuideClose").focus({preventScroll:true});
       }
       function renderRecord() {
         const filteredFish = fish.filter((f) => fishdexFilter === "all" ||
@@ -23299,6 +23318,7 @@
       $("#back").onclick = backAction;
       $("#menu").onclick = toggleFieldMenu;
       $("#fieldMenuClose").onclick = hideFieldMenu;
+      $("#fishdexFieldGuide").onclick = openFieldGuide;
       document.querySelectorAll("[data-field-menu-target]").forEach((button) =>
         button.onclick = () => openFieldMenuTarget(button.dataset.fieldMenuTarget),
       );
@@ -23505,7 +23525,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=238-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=239-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
