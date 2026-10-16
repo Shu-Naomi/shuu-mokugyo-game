@@ -1,0 +1,50 @@
+/* A folded waterside map, using the same finished scenery and building art. */
+.fishdex-guide-actions{display:flex;gap:8px;margin:0 12px 6px;}
+.fishdex-guide-actions>.lake-story-return{flex:1;width:auto;margin:0;min-height:44px;}
+#fieldGuide{inset:6px;max-width:1100px;max-height:520px;margin:auto;padding:0;border:3px double #cdb575;border-radius:16px;background:#173c30;color:#f8edc8;overflow:hidden;}
+#fieldGuide.open{display:flex;flex-direction:column;}
+#fieldGuide .field-guide-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:5px 12px;border-bottom:2px solid #b29b66;background:linear-gradient(90deg,#315743,#173c30);}
+#fieldGuide h2{font-size:19px;line-height:1.15;margin:0;color:#ffe7a3;}
+#fieldGuideRegion{display:block;font-size:14px;line-height:1.3;margin-top:2px;color:#e4dec6;}
+#fieldGuide button{min-height:44px;min-width:44px;border-radius:9px;font-size:16px;touch-action:manipulation;}
+#fieldGuideClose{padding:4px 15px;white-space:nowrap;}
+#fieldGuide .field-guide-body{display:grid;grid-template-columns:minmax(0,1.35fr) minmax(245px,1fr);flex:1;min-height:176px;overflow:hidden;}
+#fieldGuideMap{display:grid;place-items:center;container-type:size;min-width:0;min-height:0;padding:5px 8px;background:repeating-linear-gradient(0deg,#332a20 0 3px,#382e22 3px 5px);}
+#fieldGuideMapArt{position:relative;width:min(100%,calc(100cqh * 16 / 9));aspect-ratio:16/9;background-size:100% 100%;border:1px solid #a59163;border-radius:8px;overflow:hidden;}
+#fieldGuideBuildings,#fieldGuideOverlay{position:absolute;inset:0;width:100%;height:100%;pointer-events:none;}
+#fieldGuideBuildings canvas{position:absolute;transform:translate(-50%,-100%);image-rendering:pixelated;}
+#fieldGuideOverlay{filter:drop-shadow(0 1px 1px #172319);}
+.guide-water-outline{fill:#ffe9a422;stroke:#ffe4a0;stroke-width:1.2;stroke-dasharray:3 1.8;}
+.guide-place-ring{fill:#fff2be55;stroke:#ffe29a;stroke-width:1.3;}
+.guide-player-dot{fill:#b63b29;stroke:#fff5cf;stroke-width:1;}
+#fieldGuideLegend{position:absolute;left:4px;bottom:3px;padding:2px 5px;border-radius:4px;background:#16362cde;color:#fff0c7;font-size:12px;line-height:1.3;}
+#fieldGuide .field-guide-catalog{display:flex;flex-direction:column;min-width:0;min-height:0;padding:0 8px;border-left:2px solid #a28e61;background:repeating-linear-gradient(0deg,#eadcbc 0 3px,#eddfc1 3px 5px);color:#3b3022;}
+#fieldGuidePlaces{display:flex;flex-direction:column;gap:0;}
+#fieldGuidePlaces button{display:flex;align-items:center;gap:8px;width:100%;height:44px;flex:none;text-align:left;padding:3px 10px;margin:0;border:0;border-bottom:1px solid #b9a682;border-radius:0;background:transparent;box-shadow:none;color:#3d3020;line-height:1.2;}
+#fieldGuidePlaces button>span{font-size:23px;width:24px;flex:none;text-align:center;color:#436249;}
+#fieldGuidePlaces button[aria-pressed=true]{background:#365b42;color:#fff0bd;box-shadow:inset 4px 0 #d3a254;}
+#fieldGuidePlaces button[aria-pressed=true]>span{color:#f4d491;}
+#fieldGuide .field-guide-pagination{display:flex;justify-content:space-between;align-items:center;gap:6px;min-height:44px;flex:none;margin-top:auto;}
+#fieldGuide .field-guide-pagination button{min-width:66px;height:44px;padding:3px 8px;background:#82613b;border:1px solid #b09260;box-shadow:none;color:#fff0c5;}
+#fieldGuide .field-guide-pagination button:disabled{opacity:.4;}
+#fieldGuidePage{font-size:15px;font-variant-numeric:tabular-nums;}
+#fieldGuide .field-guide-footer{flex:none;padding:5px 12px 7px;border-top:2px solid #ad965f;background:#e7d9b7;color:#3a2b1b;}
+#fieldGuideNoteLabel{display:block;font-size:12px;line-height:1.2;color:#675336;}
+#fieldGuideNote{display:flex;gap:12px;align-items:center;font-size:15px;line-height:1.4;margin:2px 0 0;}
+#fieldGuideNote>span{flex:1;min-width:0;}
+#fieldGuide button:focus-visible{outline:3px solid #c66c38;outline-offset:-3px;}
+@media(max-height:420px) and (orientation:landscape){
+ #fieldGuide{inset:4px;max-height:none;}
+ #fieldGuide .field-guide-heading{padding:2px 10px;}
+ #fieldGuide h2{font-size:17px;}
+ #fieldGuideRegion{font-size:13px;}
+ #fieldGuide .field-guide-body{grid-template-columns:minmax(0,1.25fr) minmax(245px,1fr);}
+ #fieldGuide .field-guide-footer{padding:3px 10px 5px;}
+ #fieldGuideNote{font-size:14px;line-height:1.35;gap:8px;}
+}
+@media(max-width:600px) and (orientation:portrait){
+ #fieldGuide .field-guide-body{grid-template-columns:1fr;grid-template-rows:minmax(100px,1fr) 176px;}
+ #fieldGuide .field-guide-catalog{border-left:0;border-top:1px solid #a28e61;}
+ #fieldGuideMapArt{height:100%;width:auto;max-width:100%;}
+ #fieldGuideNote{flex-direction:column;align-items:stretch;gap:3px;}
+}

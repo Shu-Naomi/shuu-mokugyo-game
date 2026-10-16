@@ -42,7 +42,7 @@ function route(region,start,goal){
     }
   }throw Error('No walking route in '+region);
 }
-async function smoke(url){
+async function smoke(url,screenshots=true){
   const browser=await chromium.launch({headless:true});
   const context=await browser.newContext({viewport:{width:1280,height:720},locale:'ja-JP'});
   const saved={...seed(),hp:100,mapRegion:'stream',...M.entry,soundEnabled:false};
@@ -55,9 +55,9 @@ async function smoke(url){
     if(response.status()>=400&&/v202\.png|(?:regional-nushi|nushi-atlas|mountain-region|aquarium-life)\.js/.test(response.url()))
       failedAssets.push(response.status()+' '+response.url());
   });
-  const position=()=>page.locator('#player').evaluate(el=>({
-    x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
-  }));
+  // Route from game coordinates: CSS percentages round on serialization,
+  // which can make a wall-edge point appear walkable to the planner.
+  const position=()=>page.evaluate(()=>({x:s.x,y:s.y}));
   const hashes=new Map();
   async function checkRegion(region,screenshot=false){
     assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),M.regions[region].name);
@@ -85,12 +85,12 @@ async function smoke(url){
       return hash>>>0;
     });
     if(!hashes.has(region))hashes.set(region,signature);
-    if(screenshot)console.log('NUSHI_SCREENSHOT '+region+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:72})).toString('base64'));
+    if(screenshot&&screenshots)console.log('NUSHI_SCREENSHOT '+region+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:72})).toString('base64'));
   }
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v238/);
+    assert.match(await page.locator('.hud').innerText(),/v239/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -144,7 +144,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v238/);
+    assert.match(await page.locator('.hud').innerText(),/v239/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -387,7 +387,8 @@ async function audioSmoke(url,mobile){
     console.log('AUDIO_SMOKE_PASS '+JSON.stringify({mobile,tracks:checked.length,mastersPlayback:true,muteResume:true,loop:checked.find(r=>r.loop)?.loop,errors}));
   }finally{await browser.close();}
 }
-(async()=>{
+module.exports={smoke};
+if(require.main===module)(async()=>{
   let server;
   try{
     let url;
