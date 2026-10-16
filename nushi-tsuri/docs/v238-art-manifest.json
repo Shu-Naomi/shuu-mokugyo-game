@@ -1,0 +1,92 @@
+{
+  "assets": {
+    "fish-herabuna-v238.png": {
+      "bytes": 2118932,
+      "sha256": "ee8cae7e676833428f089096017a749af5895475d2862a246d8d7904fbf6135e",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.634209950764974
+    },
+    "fish-himemasu-v238.png": {
+      "bytes": 1799117,
+      "sha256": "028f672e861722b8a18c091c28fd43701275309a8144707d7df201b2dae273fc",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.7565415700276693
+    },
+    "fish-kawamutsu-v238.png": {
+      "bytes": 1880281,
+      "sha256": "0b2330b3b7db7706d29ba1cb3ad5af25f41d01ba396cf867af6cdd27a0ce9bd4",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.7525685628255209
+    },
+    "fish-mahaze-v238.png": {
+      "bytes": 1962238,
+      "sha256": "fcb3428e9d52bbcf562f742ed97e7ecddc4a4d098dbdede7bb188068b1a927cb",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.7178014119466146
+    },
+    "fish-masaba-v238.png": {
+      "bytes": 1899625,
+      "sha256": "43b9f8fc29be1708b9d30ea34de34c8b40051b95491226a45506cab66b675dea",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.7485408782958984
+    },
+    "fish-sayori-v238.png": {
+      "bytes": 1584583,
+      "sha256": "7e22f908683a953398cf002dfd5f8e659ffed5223dbda409c7a365506de95f7b",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.8271840413411459
+    },
+    "settlement-buildings-v238.png": {
+      "bytes": 2608560,
+      "sha256": "8e6fd677143016b45b2f9aeb69d5f1d67b47d3d78ffb9e2dc0e8ae7a4633e6a9",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.4357859293619792
+    },
+    "village-residents-v238.png": {
+      "bytes": 1920723,
+      "sha256": "1ed393a5702a241319d553012fc74f0a3dc11cb5d097fe770407f8fcf0932931",
+      "width": 1536,
+      "height": 1024,
+      "transparent_fraction": 0.6976095835367838
+    }
+  },
+  "buildingBoxes": [
+    [
+      117,
+      9,
+      548,
+      455
+    ],
+    [
+      849,
+      72,
+      631,
+      397
+    ],
+    [
+      54,
+      503,
+      767,
+      464
+    ],
+    [
+      920,
+      513,
+      579,
+      474
+    ]
+  ],
+  "doorX": [
+    0.51,
+    0.71,
+    0.52,
+    0.48
+  ]
+}

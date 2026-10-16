@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const Slots=require('../save-slots.js');
 async function settle(w){for(let n=0;n<90;n++){if(!w.eval('playerHomeState.transitioning'))return;await new Promise(r=>w.setTimeout(r,10));}throw Error('home transition');}
-async function enter(w){w.eval('move("left")');await settle(w);w.eval('for(let i=0;i<9;i++)move("right");for(let i=0;i<3;i++)move("up")');w.document.querySelector('#action').click();await settle(w);assert.equal(read(w,'playerHomeState.area'),'interior');}
+async function enter(w){w.eval('move("left")');await settle(w);w.eval('for(let i=0;i<9;i++)move("left");for(let i=0;i<3;i++)move("up")');w.document.querySelector('#action').click();await settle(w);assert.equal(read(w,'playerHomeState.area'),'interior');}
 function walk(w,condition){assert.equal(w.eval(`(()=>{
  const queue=[{x:playerHomeState.x,y:playerHomeState.y,path:[]}],seen=new Set();
  for(let n=0;n<queue.length;n++){const point=queue[n],key=point.x+','+point.y;if(seen.has(key))continue;seen.add(key);

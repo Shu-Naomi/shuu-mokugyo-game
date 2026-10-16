@@ -98,9 +98,12 @@ test("all fish retain their own swimming cadence in the aquariums", () => {
   const app = boot();
   try {
     const ids = read(app.window, "fish.map(f=>f.id)");
-    assert.equal(ids.length, 39);
+    assert.equal(ids.length, 45);
     const gaits = ids.map(id => Aquarium.gait(id));
     assert.equal(new Set(gaits.map(g => JSON.stringify(g))).size, ids.length);
+    const residents = Aquarium.layout(['mahaze','sayori','herabuna'].map(species=>({uid:species,species,length:1200})),[],480,280,0,()=>3,null,true).poses;
+    assert.equal(residents[0].bottomDweller,true,'goby stays near the bottom');
+    assert.ok(residents[1].y<residents[2].y&&residents[2].y<residents[0].y,'halfbeak, crucian and goby use distinct water levels');
     const added = ["wakasagi", "dojo", "isaki"].map(species => ({uid: species, species, length: 1200}));
     const addedPoses = Aquarium.layout(added, [], 480, 280, 0, () => 3).poses;
     assert.deepEqual(addedPoses.map(p => p.bottomDweller), [false, true, false]);

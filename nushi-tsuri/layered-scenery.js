@@ -52,13 +52,13 @@
   function grade(r,g,b,kind,env,definition) {
     const season=env.season||'spring',period=env.period||'day';
     if(!definition.indoor) {
-      const green=matches('foliage',r,g,b);
+      const green=matches('foliage',r,g,b)&&(!definition.coherentGrade||kind!=='water');
       if(green&&season==='autumn') { const old=g;r=Math.min(255,r*.85+old*.57);g=old*.79;b=b*.82; }
       else if(green&&season==='winter') { const light=(r+g+b)/3;r=light*.89+48;g=light*.98+52;b=light*1.09+58; }
       else if(green&&season==='summer') { r*=.91;g=Math.min(255,g*1.035);b*=.95; }
-      if(kind==='water'&&season==='winter') {r=r*.9+8;g=g*.96+6;b=Math.min(255,b*1.06+8);}
-      if(kind==='water'&&season==='autumn') {r+=4;g*=.97;b*=.96;}
-      if(kind==='water'&&season==='summer') {g=Math.min(255,g*1.02);b=Math.min(255,b*1.035);}
+      if(kind==='water'&&!definition.coherentGrade&&season==='winter') {r=r*.9+8;g=g*.96+6;b=Math.min(255,b*1.06+8);}
+      if(kind==='water'&&!definition.coherentGrade&&season==='autumn') {r+=4;g*=.97;b*=.96;}
+      if(kind==='water'&&!definition.coherentGrade&&season==='summer') {g=Math.min(255,g*1.02);b=Math.min(255,b*1.035);}
     }
     // Surface masters already contain hand-painted morning/evening/night light.
     // Do not apply the clock twice or turn a detailed night painting into black.
@@ -161,6 +161,8 @@
     const scratch=canvasFactory(width,height),context=scratch.getContext('2d',{willReadFrequently:true});
     if(crop)context.drawImage(source,...crop,0,0,width,height);else context.drawImage(source,0,0,width,height);
     const pixels=context.getImageData(0,0,width,height),labels=partition(pixels,definition);
+    // The same painted pixel receives the same seasonal grade across prop/terrain masks.
+    const gradeRegions=definition.coherentGrade?partition(pixels,{...definition,parts:definition.parts.filter(p=>p.kind==='water').map(p=>({...p,filter:null})).concat((definition.waterColorMasks||[]).map(polygon=>({polygons:[polygon]})))}):null;
     const descriptors=[{id:'ground',kind:'ground'},...definition.parts];
     const bounds=descriptors.map(()=>({left:width,top:height,right:0,bottom:0}));
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
@@ -176,7 +178,7 @@
     });
     for(let y=0;y<height;y++) for(let x=0;x<width;x++) {
       const n=y*width+x,part=parts[labels[n]],offset=n*4;
-      const color=grade(pixels.data[offset],pixels.data[offset+1],pixels.data[offset+2],part.kind,env,definition);
+      const color=grade(pixels.data[offset],pixels.data[offset+1],pixels.data[offset+2],gradeRegions?(gradeRegions[n]?'water':'ground'):part.kind,env,definition);
       const target=((y-part.top)*part.canvas.width+x-part.left)*4;
       part.image.data[target]=color[0];part.image.data[target+1]=color[1];part.image.data[target+2]=color[2];part.image.data[target+3]=pixels.data[offset+3];
       // Stable sparse samples lie wholly inside the water mask. No sparkle can
@@ -202,7 +204,7 @@
       base=canvasFactory(width,height);const ctx=base.getContext('2d',{willReadFrequently:true});
       ctx.drawImage(underlay,0,0,width,height);const image=ctx.getImageData(0,0,width,height);
       for(let n=0;n<image.data.length;n+=4) {
-        const color=grade(image.data[n],image.data[n+1],image.data[n+2],'ground',env,definition);
+        const color=grade(image.data[n],image.data[n+1],image.data[n+2],gradeRegions&&gradeRegions[n/4]?'water':'ground',env,definition);
         image.data[n]=color[0];image.data[n+1]=color[1];image.data[n+2]=color[2];
       }
       ctx.putImageData(image,0,0);
@@ -371,7 +373,7 @@
           canvas.style.backgroundPosition=definition.sourceRect[0]*200+'% '+definition.sourceRect[1]*200+'%';
         }
         if(!definition.sourceRect)canvas.style.backgroundSize=definition.indoor&&!id.includes('home')?'contain':id.startsWith('surface-')||id.startsWith('underwater-')?'cover':'100% 100%';
-        if(!definition.sourceRect)canvas.style.backgroundPosition='center';canvas.style.backgroundRepeat='no-repeat';
+        if(!definition.sourceRect)canvas.style.backgroundPosition=definition.objectPosition||'center';canvas.style.backgroundRepeat='no-repeat';
       }
       session.promise=(async()=>{
         try {
@@ -427,7 +429,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=227-1');
+            worker=new Worker('scenery-worker.js?v=238-1');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }

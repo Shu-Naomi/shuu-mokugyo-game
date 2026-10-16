@@ -133,7 +133,7 @@ async function enterHome(window) {
   window.eval('move("left")');
   await finishTransition(window);
   assert.equal(window.eval("playerHomeState.area"), "exterior");
-  window.eval('for (let i = 0; i < 9; i++) move("right"); for (let i = 0; i < 3; i++) move("up");');
+  window.eval('for (let i = 0; i < 9; i++) move("left"); for (let i = 0; i < 3; i++) move("up");');
   assert.equal(window.eval("nearbyPlayerHomeEvent()?.id"), "front-door");
   window.document.querySelector("#action").click();
   await finishTransition(window);

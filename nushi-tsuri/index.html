@@ -1772,7 +1772,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#boatVisual) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#boatVisual):not(#worldLifeLayer) {
         display: none !important;
       }
       .map.v54-map.coast > :not(#player):not(#dog):not(#coastPixels):not(#boatVisual) { display: none !important; }
@@ -1787,7 +1787,7 @@
       .map.region-arrival > #player,
       .map.region-arrival > #dog { transition: none !important; }
       .map.v54-map #mountainPixels { display: none; }
-      .map.v54-map.mountain > :not(#player):not(#dog):not(#mountainPixels) { display: none !important; }
+      .map.v54-map.mountain > :not(#player):not(#dog):not(#mountainPixels):not(#worldLifeLayer) { display: none !important; }
       .map.v54-map.mountain #worldPixels { display: none !important; }
       .map.v54-map.mountain #mountainPixels {
         display: block !important; position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1;
@@ -6431,7 +6431,7 @@
         .tournament-choices button { min-height: 44px; padding: 7px 10px; }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=201-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=238-1" />
     <link rel="stylesheet" href="pet-life.css?v=231-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
@@ -6477,7 +6477,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v237</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v238</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7241,6 +7241,11 @@
         </div>
       </main>
     </section>
+    <section class="modal world-house" id="worldHouse" role="dialog" aria-modal="true" aria-labelledby="worldHouseTitle">
+      <header><h2 id="worldHouseTitle">水辺の民家</h2><button data-close>外へ出る</button></header>
+      <div class="world-house-scene"><canvas id="worldHousePixels" width="1536" height="864" aria-label="灯りのともる民家の居間"></canvas></div>
+      <p id="worldHouseDialogue" class="world-house-dialogue"></p>
+    </section>
     <section class="modal game-options" id="options" role="dialog" aria-modal="true" aria-labelledby="optionsTitle">
       <header class="options-heading"><div><small>星降る湖</small><h2 id="optionsTitle">オプション</h2></div><button id="optionsClose" type="button">閉じる</button></header>
       <div class="options-body">
@@ -7268,28 +7273,30 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
-    <script src="aquarium-life.js?v=230-1"></script>
+    <script src="aquarium-life.js?v=238-1"></script>
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=228-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="mountain-region.js?v=237-1"></script>
+    <script src="world-life.js?v=238-1"></script>
+    <script src="mountain-region.js?v=238-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-art.js?v=227-1"></script>
+    <script src="fish-additions.js?v=238-1"></script>
+    <script src="fish-art.js?v=238-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
-    <script src="pixel-cast.js?v=168-1"></script>
-    <script src="scene-layers.js?v=227-1"></script>
-    <script src="layered-scenery.js?v=227-1"></script>
+    <script src="pixel-cast.js?v=238-1"></script>
+    <script src="scene-layers.js?v=238-1"></script>
+    <script src="layered-scenery.js?v=238-1"></script>
     <script>
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
@@ -11508,6 +11515,8 @@
           ecology:"本作のライギョはカムルチー。細長い体と大きな口、長い背びれを持つ肉食魚。",locations:"峠の沼（中層〜深場）／水郷の湿地・葦の沼（浅場〜深場）",time:"昼〜夕方に多い",
           rods:["starGazer","shoreReed"],baits:["liveMinnow","grasshopper","worm"],tip:"葦の沼の中層へ活き小魚＋ハリ大。スプーンにも反応するよ。丈夫な竿で突進を受け止めよう。"}
       });
+      ShuFishAdditions.install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,
+        fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle:ShuTackle});
       // Every fish uses the common renderer and seven headings. Preserve each
       // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
@@ -11988,6 +11997,7 @@
       let tournamentPresentationTimer = 0, tournamentView = "entry", tournamentEntryId = "lakeFuna";
       let activeTournamentNpcId = null, tournamentNpcAtlas = null, tournamentTalkCursor = 0;
       const tournamentNpcLastLines = new Map();
+      let worldLife = null;
       let activeRivalId = null, rivalTalkReturn = null;
       let rivalDogReaction = null, rivalDogAnimation = 0, rivalDogLastSound = -Infinity;
       const rivalDogGreetingTurns = new Map();
@@ -12733,7 +12743,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -14365,6 +14375,8 @@
       function mountainAction() {
         const exit=ShuMountain.exitAt(s.x,s.y,s.mapRegion);
         if(exit)return travelMountain(exit.region!=="village",exit);
+        const building=ShuWorldLife.nearby(s);
+        if(building)return openWorldBuilding(building);
         const spot=nearbyFishingSpot();
         if(spot){cast(spot);return true;}
         const landmark=ShuMountain.landmarkAt(s.x,s.y,s.mapRegion);
@@ -14372,6 +14384,14 @@
         else showRescueToast(ShuMountain.onBridge(s.x,s.y,s.mapRegion)
           ?"木の橋だ。釣りは川岸へ降りてから。"
           :`${ShuMountain.regionData(s.mapRegion).name}。水辺へ向いてAで釣る。来た道の入口から戻れる。`);
+        return true;
+      }
+      function openWorldBuilding(building) {
+        if(building.kind==='shop'){renderSamShop();open('store');return true;}
+        $('#worldHouseTitle').textContent=building.name;
+        setDialogue($('#worldHouseDialogue'),ShuWorldLife.greeting(building,gameSceneryEnvironment()));
+        open('worldHouse');
+        ShuScenery.paint($('#worldHousePixels'),'room-farmhouse',gameSceneryEnvironment());
         return true;
       }
       function worldToMapX(x) {
@@ -14558,7 +14578,7 @@
           exterior: {
             label: "主人公宅・庭先",
             spawns: {
-              map: { x: 12, y: 80, direction: "right" },
+              map: { x: 90, y: 80, direction: "left" },
               interior: { x: 52, y: 72, direction: "down" },
             },
             walkable: [
@@ -14737,6 +14757,7 @@
         if (!battle) return;
         const canvas = $("#castBackdrop"), env = gameSceneryEnvironment(), kind = surfaceSceneryKind();
         canvas.dataset.locale = kind;
+        $("#castSurface").dataset.locale = kind;
         paintPixelScene(canvas, `${kind}:${env.key}`,
           c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
@@ -14751,6 +14772,7 @@
           c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
+        worldLife?.render(performance.now(),true);
         const env = gameSceneryEnvironment();
         if (s.mapRegion === "coast" && !battle) {
           if (pixelSceneCache.get($("#coastPixels")) !== env.key) {
@@ -14783,10 +14805,11 @@
         const flying = battle?.phase === "cast-flight";
         const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
         const env = gameSceneryEnvironment(), rod = activeSurfaceCastRodKey();
-        const key = `${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
+        const kind = surfaceSceneryKind();
+        const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,
+        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind),
           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
         pixelCastKey = key;
         return true;
@@ -14900,7 +14923,7 @@
         if (s.mapRegion === "coast") return s.boatActive
           ? ShuCoast.water(x,y) : ShuCoast.shore(x,y);
         if (ShuMountain.isRegion(s.mapRegion)) return ShuMountain.walkable(x,y,s.mapRegion);
-        if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y)) return false;
+        if (isBlockedStructure(x, y) || ShuSceneLayers.propSolid(x, y) || ShuWorldLife.solid(x,y,s.mapRegion)) return false;
         return !isLakeWater(x, y) &&
           !isRiverWater(x, y) &&
           !isSeaWater(x, y) &&
@@ -17004,8 +17027,13 @@
           return castLanePoint([[58, 67], [58, 55], [55, 43], [52, 34]], value);
         }
         if (surface.classList.contains("art-sea-harbor")) {
-          // Clear harbor basin, kept left of the large right-hand pier.
-          return castLanePoint([[60, 75], [62, 66], [63, 57], [61, 48]], value);
+          // Cast away from the upper quay into the clear basin below it.
+          // Project the boat-free waterline through the same cover crop as
+          // the background, including short landscape phone viewports.
+          const rect=surface.getBoundingClientRect(),width=rect.width||640,height=rect.height||320;
+          const cover=Math.max(width/(16/9),height);
+          const near=Math.min(87,Math.max(45,((height-cover)*.2+cover*.43)/height*100));
+          return castLanePoint([[60,near],[62,near+(94-near)/3],[63,near+(94-near)*2/3],[61,94]],value);
         }
         if (surface.classList.contains("art-sea-coast-reef")) {
           return castLanePoint([[52, 72], [57, 61], [60, 51], [57, 40]], value);
@@ -17626,6 +17654,7 @@
           : mountain
             ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "来た道の入口だ。Aで戻れる。"
               : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "木の橋だ。釣りは岸へ降りてから。"
+              : ShuWorldLife.nearby(s) ? `${ShuWorldLife.nearby(s).name}だ。Aで中へ入る。`
               : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":spot.mountainType==="highMarsh"?"岸際はハリ小で小魚、中層は活き小魚＋ハリ大でライギョを。":spot.mountainType==="marsh"?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
               : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、来た道の入口から戻れる。`
@@ -17808,6 +17837,8 @@
           ? ShuCoast.stepFor(s.equipment.vehicle) : 4;
         if (ShuMountain.isRegion(s.mapRegion)) {
           Object.assign(s, ShuMountain.moveTarget(previousX, previousY, d, n, s.mapRegion));
+        } else if(s.mapRegion==='village'||s.mapRegion==='coast'&&!s.boatActive){
+          Object.assign(s,ShuWorldLife.moveTarget(previousX,previousY,d,n,isWalkableWorld));
         } else {
           ({
             left: () => (s.x -= n),
@@ -23463,6 +23494,7 @@
         renderHomeDogs();
       });
       setInterval(() => {
+        worldLife?.render();
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
@@ -23473,7 +23505,9 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=237-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=238-1").catch(() => {});
+      worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
+        visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
       renderSaveSlotSelection(true);
       const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);

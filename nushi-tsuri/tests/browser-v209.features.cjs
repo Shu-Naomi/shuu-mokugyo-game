@@ -18,7 +18,7 @@ module.exports=async function features(url,mobile){
   const careIdle=()=>page.waitForFunction(()=>!dogCareIsBusy());
   async function enterHome(){
     await press('[data-move="left"]');await settle();
-    await page.evaluate(()=>{for(let i=0;i<9;i++)move('right');for(let i=0;i<3;i++)move('up');});
+    await page.evaluate(()=>{for(let i=0;i<9;i++)move('left');for(let i=0;i<3;i++)move('up');});
     await press('#action');await settle();assert.equal(await page.evaluate(()=>playerHomeState.area),'interior');
   }
   const screenshot=async name=>console.log(name+'_SCREENSHOT '+(mobile?'mobile':'desktop')+

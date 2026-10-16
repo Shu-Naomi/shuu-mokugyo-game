@@ -17,11 +17,11 @@ test('the painted west boat-shop path reaches its front with real movement and A
   }finally{app.dispose();}
 });
 
-test('home arrival remains on the left; walking the home road to the right returns to the village',async()=>{
+test('home arrival uses the village road on the right and returns through that same road',async()=>{
   const app=boot({...seed(),soundEnabled:false}),w=app.window;
   try{
     w.move('left');await transition(w);assert.equal(w.eval('playerHomeState.area'),'exterior');
-    assert.equal(w.eval('playerHomeState.x'),12);
+    assert.equal(w.eval('playerHomeState.x'),90);
     assert.equal(w.eval("nearbyPlayerHomeEvent('exterior',6,80)?.id || null"),null);
     assert.match(w.eval("playerHomeHint()"),/./);
     for(let i=0;i<28&&w.eval('playerHomeState.area')==='exterior';i++){
@@ -120,7 +120,7 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
-  for(const [file,version] of Object.entries({'pet-life.js':'230-1','pet-life-ui.js':'234-1','compact-ui.js':'235-1','compact-ui.css':'236-1','aquarium-life.js':'230-1','pet-life.css':'231-1','scene-layers.js':'227-1','layered-scenery.js':'227-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
+  for(const [file,version] of Object.entries({'pet-life.js':'230-1','pet-life-ui.js':'234-1','compact-ui.js':'235-1','compact-ui.css':'236-1','aquarium-life.js':'238-1','pet-life.css':'231-1','scene-layers.js':'238-1','layered-scenery.js':'238-1'})){assert.ok(fs.existsSync(path.join(root,file)));assert.ok(sw.includes(`./${file}?v=${version}`));assert.ok(html.includes(`${file}?v=${version}`));}
   const version=/sw\.js\?v=(\d+)-/.exec(html);
   assert.ok(version);assert.ok(sw.includes(`nushi-tsuri-v${version[1]}-`));
 });

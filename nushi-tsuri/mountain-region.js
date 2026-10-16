@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.ShuMountain = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Life) {
   "use strict";
   const width = 240, height = 135;
   const asset = "assets/mountain-world-v201.png";
@@ -57,12 +57,19 @@
     stream:{asset,name:"星見渓流",waters,trails,trailRadius:4.5,treeBases,bridges:[bridge],entry,returnGate,landmarks},
     mountainPond:{asset:"assets/pass-pond-v202.png",name:"峠の池",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
-      waters:{highPond:[[89,32],[104,29],[126,29],[145,34],[166,39],[187,48],[199,62],[194,78],[179,90],[157,97],[137,100],[113,98],[91,94],[69,87],[50,76],[44,60],[52,46],[69,39]]},
-      trails:[[[120,133],[123,119],[120,109],[101,110],[78,107],[56,98],[42,87],[31,73],[30,56],[40,42],[57,33],[75,25],[97,23],[120,22],[145,24],[170,30],[194,39],[210,51],[216,68],[210,83],[196,95],[176,103],[153,108],[134,109],[120,109]],
+      waters:{highPond:[[87,22],[99,20],[117,19],[132,20],[148,22],[160,27],[174,31],[185,35],
+        [194,42],[202,48],[206,54],[209,61],[206,69],[202,75],[195,83],[182,88],[169,94],
+        [153,99],[135,104],[120,105],[106,102],[94,100],[80,95],[70,92],[58,85],[49,78],
+        [43,72],[38,64],[35,57],[36,52],[42,46],[49,42],[57,37],[66,33],[76,29],[84,27]]},
+      trails:[[[120,133],[120,126],[120,119],[120,113],[120,109],[111,110],[96,109],[81,107],
+        [69,104],[58,98],[49,91],[41,84],[33,77],[26,69],[22,59],[23,52],[27,44],[34,36],
+        [42,30],[52,25],[62,21],[73,17],[85,14],[100,13],[115,12],[130,12],[145,14],
+        [158,18],[169,22],[179,27],[187,33],[199,38],[209,43],[216,51],[219,59],[219,68],
+        [215,76],[209,83],[202,89],[193,95],[180,100],[165,105],[151,108],[136,110],[120,109]],
         // Follow the painted switchbacks; the former straight route ran up the cliff.
         [[190,40],[195,38],[198,36],[197,34],[190,32],[184,30],[184,28],[191,26],[201,25],
           [210,23],[212,21],[207,20],[198,18],[193,16],[193,14],[196,11],[205,10],
-          [214,9],[219,7],[220,4],[218,2]]],trailRadii:[4,2.8],
+          [214,9],[219,7],[220,4],[218,2]]],trailRadii:[3.4,2.8],bankRadius:3,
       landmarks:[{id:"marsh",x:219,y:8,name:"沼へ続く尾根",message:"尾根の先に、葦の揺れる水辺が見える。"}]},
     mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:48,y:128,direction:"up"},
       returnGate:{left:45,right:54,top:126,bottom:133},trailRadius:3.1,bankRadius:2.5,
@@ -149,9 +156,11 @@
   function walkable(x,y,region="stream") {
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<2||x>238||y<2||y>133)return false;
     const data=regionData(region);
+    if(Life?.solid(x,y,region))return false;
     if(data.treeBases?.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<=1))return false;
     if(onBridge(x,y,region))return true;
     if(waterType(x,y,region))return false;
+    if(Life?.access(x,y,region))return true;
     if(inRect(x,y,data.returnGate))return true;
     if(data.trails.some((path,trail)=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadii?.[trail]??data.trailRadius??4))))return true;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
