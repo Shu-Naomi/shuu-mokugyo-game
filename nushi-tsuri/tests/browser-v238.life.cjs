@@ -26,7 +26,7 @@ module.exports=async function livingWaters(url,mobile=false,options={}){
  async function groundShot(name){
   await page.waitForFunction(()=>{renderPixelCast();const c=document.querySelector('#castBackdrop'),p=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<p.length;i+=4108)colors.add(p[i]+','+p[i+1]+','+p[i+2]);return pixelCastModel?.detailed&&colors.size>100;});
   const fit=await page.evaluate(()=>{const m=pixelCastModel,c=document.querySelector('#castActor'),r=c.getBoundingClientRect();return {inside:r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1,feet:m.leftFoot.y>30&&m.rightFoot.y<c.height,locale:surfaceSceneryKind(),position:getComputedStyle(document.querySelector('#castBackdrop')).objectPosition};});
-  assert.ok(fit.inside&&fit.feet,JSON.stringify(fit));assert.equal(fit.position,fit.locale==='harbor'?'50% 0%':'50% 100%');await shot(name);
+  assert.ok(fit.inside&&fit.feet,JSON.stringify(fit));assert.equal(fit.position,fit.locale==='harbor'?'50% 20%':'50% 100%');await shot(name);
  }
  async function catchNewFish(id,type,bait,hook,distance){
     await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');

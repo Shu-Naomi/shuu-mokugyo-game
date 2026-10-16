@@ -72,7 +72,7 @@
       leftFoot:point([f.feet[0],f.floor]),rightFoot:point([f.feet[1],f.floor])};
   }
   function groundFor(kind='lake'){
-    if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:0};
+    if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:.2};
     if(kind.startsWith('mountain-'))return {kind,x:.42,y:.967,aspect:kind.startsWith('mountain-wet')?1.5:2,alignY:1};
     if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
     return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
@@ -82,7 +82,7 @@
     if(ground){
       const cover=Math.max(width/ground.aspect,height),imageWidth=cover*ground.aspect;
       const footX=width/2+(ground.x-.5)*imageWidth,footY=(height-cover)*ground.alignY+ground.y*cover;
-      const fitted=Math.max(resolution*.35,Math.min(scale,(footY-resolution*7)/86));
+      const fitted=Math.max(resolution*.35,Math.min(scale,(footY-resolution*7)/136));
       return {scale:fitted,x:Math.round(footX-62*fitted),y:Math.round(footY-102*fitted),ground:{x:footX,y:footY}};
     }
     return {scale,x:Math.round(width*.415-64*scale),y:Math.round(height*.935-102*scale)};

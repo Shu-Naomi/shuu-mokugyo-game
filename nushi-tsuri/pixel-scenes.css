@@ -44,7 +44,7 @@
 #castBackdrop, .scenery-motion[data-for="castBackdrop"], .scenery-foreground[data-for="castBackdrop"] { object-position:center bottom; }
 .cast-surface[data-locale="harbor"] #castBackdrop,
 .cast-surface[data-locale="harbor"] .scenery-motion,
-.cast-surface[data-locale="harbor"] .scenery-foreground { object-position:center top; }
+.cast-surface[data-locale="harbor"] .scenery-foreground { object-position:center 20%; }
 #castActor { z-index: 7; }
 .cast-line-flight { z-index: 6; }
 .cast-surface .cast-line-flight path,

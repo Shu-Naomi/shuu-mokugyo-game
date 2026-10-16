@@ -56,6 +56,18 @@ test('shared pixels keep identical seasonal color across prop boundaries and gre
 });
 test('all casting poses keep feet at fixed painted ground points, including the upper harbor quay',()=>{
  for(const kind of ['lake','river','beach','harbor','pond','coast-sand','coast-reef','mountain-stream','mountain-highPond','mountain-highMarsh','mountain-underground','mountain-wetPond','mountain-wetCreek','mountain-wetMarsh']){
-  const ground=Cast.groundFor(kind);for(const [width,height]of [[1280,650],[844,326],[820,302]])for(const avatar of ['boy','girl']){const ys=[];for(let i=0;i<12;i++){const m=Cast.model(width,height,Cast.timeline[i]/Cast.DURATION,undefined,false,avatar,false,ground);ys.push(m.leftFoot.y,m.rightFoot.y);assert.ok(m.leftFoot.x>=0&&m.rightFoot.x<width);assert.ok(m.leftFoot.y>70&&m.leftFoot.y<height);}assert.ok(Math.max(...ys)-Math.min(...ys)<1e-8,kind);if(kind==='harbor')assert.ok(ys[0]<height*.5);}
- }for(const d of F.definitions)assert.ok(fs.readFileSync(path.join(root,'sw.js'),'utf8').includes(d.id+'-v238.png'));
+  const ground=Cast.groundFor(kind);for(const [width,height]of [[1280,650],[844,326],[820,302]])for(const avatar of ['boy','girl']){const ys=[];for(let i=0;i<12;i++){const m=Cast.model(width,height,Cast.timeline[i]/Cast.DURATION,undefined,false,avatar,false,ground);ys.push(m.leftFoot.y,m.rightFoot.y);assert.ok(m.leftFoot.x>=0&&m.rightFoot.x<width);assert.ok(m.leftFoot.y>70&&m.leftFoot.y<height);assert.ok(m.tip.y>=0,kind+" complete rod pose "+i);}assert.ok(Math.max(...ys)-Math.min(...ys)<1e-8,kind);if(kind==='harbor')assert.ok(ys[0]<height*.5);}
+ }
+ // Independent painted-water bounds: the quay and moored boats end above
+ // y=.42; the clear middle basin is left of the right-hand pier.
+ for(const [width,height]of [[1280,650],[844,326],[820,244]]){
+  const app=boot({...seed(),soundEnabled:false},{castSurface:[width,height]}),w=app.window;
+  try{w.eval('Object.assign(s,{x:210,y:104});cast({zone:"sea",waterZone:"sea",waterX:210,waterY:110})');let previous=-Infinity;
+   const cover=Math.max(width/(16/9),height);
+   for(let distance=0;distance<=100;distance+=5){const p=read(w,'castSurfacePoint('+distance+')');const y=(p.y*height/100-(height-cover)*.2)/cover;
+    assert.ok(y>=.42&&y<=.97,'float stays in the open harbor basin');assert.ok(p.x>=57&&p.x<=66,'float avoids piers');assert.ok(y>previous,'longer casts travel away from the quay');previous=y;
+   }assert.deepEqual(app.errors,[]);
+  }finally{app.dispose();}
+ }
+ for(const d of F.definitions)assert.ok(fs.readFileSync(path.join(root,'sw.js'),'utf8').includes(d.id+'-v238.png'));
 });

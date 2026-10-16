@@ -17027,8 +17027,13 @@
           return castLanePoint([[58, 67], [58, 55], [55, 43], [52, 34]], value);
         }
         if (surface.classList.contains("art-sea-harbor")) {
-          // Clear harbor basin, kept left of the large right-hand pier.
-          return castLanePoint([[60, 75], [62, 66], [63, 57], [61, 48]], value);
+          // Cast away from the upper quay into the clear basin below it.
+          // Project the boat-free waterline through the same cover crop as
+          // the background, including short landscape phone viewports.
+          const rect=surface.getBoundingClientRect(),width=rect.width||640,height=rect.height||320;
+          const cover=Math.max(width/(16/9),height);
+          const near=Math.min(87,Math.max(45,((height-cover)*.2+cover*.43)/height*100));
+          return castLanePoint([[60,near],[62,near+(94-near)/3],[63,near+(94-near)*2/3],[61,94]],value);
         }
         if (surface.classList.contains("art-sea-coast-reef")) {
           return castLanePoint([[52, 72], [57, 61], [60, 51], [57, 40]], value);

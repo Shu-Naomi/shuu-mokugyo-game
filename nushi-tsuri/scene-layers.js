@@ -175,7 +175,7 @@
       box('middle-boat','props',36,31,14,8),
       box('east-boat','props',58,31,10,7),
     );
-    return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,objectPosition:harbor?'center top':'center bottom',parts};
+    return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,objectPosition:harbor?'center 20%':'center bottom',parts};
   }
   function underwater(zone,depth,flatfish) {
     zone=['lake','river','sea'].includes(zone)?zone:'lake';
