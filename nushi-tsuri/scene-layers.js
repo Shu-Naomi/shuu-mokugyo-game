@@ -16,7 +16,8 @@
   const surfaceWater = style => ({filter:'water',effect:'surface-wave',surfaceMotion:style});
   const world = {
     id:'world', source:'assets/terrain-world-v54.png',
-    underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],
+    underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],coherentGrade:true,
+    waterColorMasks:[[[0,680],[145,680],[294,700],[461,735],[584,775],[663,790],[740,790],[740,864],[0,864]]],
     parts:[
       box('meadow','grass',0,0,1536,864,vegetation),
       box('paths','path',0,0,1536,864,{filter:'earth'}),
@@ -136,7 +137,7 @@
   function surface(kind,period) {
     if (kind === 'coast-sand' || kind === 'coast-reef') {
       const source = `assets/cast-${kind}-v198.webp`;
-      return {id:'surface-'+kind,source,units:[100,100],parts:[
+      return {id:'surface-'+kind,source,units:[100,100],objectPosition:'center bottom',parts:[
         box('island-base','ground',0,0,100,100),
         box('sky','sky',0,0,100,24),
         box('distant-islands','trees',0,16,100,16,vegetation),
@@ -174,7 +175,7 @@
       box('middle-boat','props',36,31,14,8),
       box('east-boat','props',58,31,10,7),
     );
-    return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,parts};
+    return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,objectPosition:harbor?'center top':'center bottom',parts};
   }
   function underwater(zone,depth,flatfish) {
     zone=['lake','river','sea'].includes(zone)?zone:'lake';
@@ -195,7 +196,7 @@
   }
   const mountainSurfaces={stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5],wetPond:[0,0,.5,.5],wetCreek:[.5,0,.5,.5],wetMarsh:[0,.5,.5,.5]};
   function mountainSurface(kind){
-    return {id:'surface-mountain-'+kind,source:kind.startsWith('wet')?'assets/wetland-cast-v227.png':'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',
+    return {id:'surface-mountain-'+kind,source:kind.startsWith('wet')?'assets/wetland-cast-v227.png':'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',objectPosition:'center bottom',
       parts:[box('far-bank','trees',0,0,640,95),box('open-water','water',0,95,640,167,surfaceWater(['stream','wetCreek'].includes(kind)?'river':kind==='underground'?'cave':['marsh','highMarsh','wetMarsh'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
   }
   function get(id,env={period:'day'}) {

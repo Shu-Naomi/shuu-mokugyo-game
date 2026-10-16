@@ -17,11 +17,11 @@ test('the painted west boat-shop path reaches its front with real movement and A
   }finally{app.dispose();}
 });
 
-test('home arrival remains on the left; walking the home road to the right returns to the village',async()=>{
+test('home arrival uses the village road on the right and returns through that same road',async()=>{
   const app=boot({...seed(),soundEnabled:false}),w=app.window;
   try{
     w.move('left');await transition(w);assert.equal(w.eval('playerHomeState.area'),'exterior');
-    assert.equal(w.eval('playerHomeState.x'),12);
+    assert.equal(w.eval('playerHomeState.x'),90);
     assert.equal(w.eval("nearbyPlayerHomeEvent('exterior',6,80)?.id || null"),null);
     assert.match(w.eval("playerHomeHint()"),/./);
     for(let i=0;i<28&&w.eval('playerHomeState.area')==='exterior';i++){

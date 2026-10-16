@@ -12,7 +12,7 @@ async function finishTransition(window) {
 async function enterHome(window) {
   window.eval('move("left")');
   await finishTransition(window);
-  window.eval('for (let i=0;i<9;i++) move("right"); for (let i=0;i<3;i++) move("up")');
+  window.eval('for (let i=0;i<9;i++) move("left"); for (let i=0;i<3;i++) move("up")');
   window.document.querySelector("#action").click();
   await finishTransition(window);
   assert.equal(window.eval("playerHomeState.area"), "interior");

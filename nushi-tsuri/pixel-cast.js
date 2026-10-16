@@ -71,8 +71,20 @@
       butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},
       leftFoot:point([f.feet[0],f.floor]),rightFoot:point([f.feet[1],f.floor])};
   }
-  function layout(width,height){
+  function groundFor(kind='lake'){
+    if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:0};
+    if(kind.startsWith('mountain-'))return {kind,x:.42,y:.967,aspect:kind.startsWith('mountain-wet')?1.5:2,alignY:1};
+    if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
+    return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
+  }
+  function layout(width,height,ground){
     const resolution=width/640,scale=Math.max(1,Math.floor(Math.min(height/resolution/240,640/175)))*resolution;
+    if(ground){
+      const cover=Math.max(width/ground.aspect,height),imageWidth=cover*ground.aspect;
+      const footX=width/2+(ground.x-.5)*imageWidth,footY=(height-cover)*ground.alignY+ground.y*cover;
+      const fitted=Math.max(resolution*.35,Math.min(scale,(footY-resolution*7)/86));
+      return {scale:fitted,x:Math.round(footX-62*fitted),y:Math.round(footY-102*fitted),ground:{x:footX,y:footY}};
+    }
     return {scale,x:Math.round(width*.415-64*scale),y:Math.round(height*.935-102*scale)};
   }
   function worldPoint(point,box){return {x:box.x+point.x*box.scale,y:box.y+point.y*box.scale};}
@@ -82,8 +94,8 @@
     const dx=hand.x-p.hand.x,dy=hand.y-p.hand.y;
     return {...p,t:progress,hand,tip:{x:p.tip.x+dx,y:p.tip.y+dy},butt:{x:p.butt.x+dx,y:p.butt.y+dy}};
   }
-  function model(width,height,progress,target={x:width*.7,y:height*.5},flying=false,avatar="boy",standby=false){
-    const sample=standby?standbyPose:pose,p=sample(progress,avatar),box=layout(width,height),tip=worldPoint(p.tip,box),resolution=width/640;
+  function model(width,height,progress,target={x:width*.7,y:height*.5},flying=false,avatar="boy",standby=false,ground){
+    const sample=standby?standbyPose:pose,p=sample(progress,avatar),box=layout(width,height,ground),tip=worldPoint(p.tip,box),resolution=width/640;
     let bobber={x:tip.x+2*resolution,y:tip.y+9*resolution};
     if(flying&&progress>=RELEASE){
       const releaseTip=worldPoint(sample(RELEASE,avatar).tip,box),start={x:releaseTip.x+2*resolution,y:releaseTip.y+9*resolution};
@@ -119,10 +131,10 @@
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.5,3.1,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.7;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.7);
   }
-  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite}={}){
+  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,ground}={}){
     avatar=avatar==="girl"?"girl":"boy";
     const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,c=Pixel.palette(env);
-    const img=sprite||sprites[avatar],m=model(w,h,progress,target,flying,avatar,!img&&!!fallbacks[avatar]),p=m.pose,art=artwork[avatar],f=art.frames[p.frame];
+    const img=sprite||sprites[avatar],m=model(w,h,progress,target,flying,avatar,!img&&!!fallbacks[avatar],ground),p=m.pose,art=artwork[avatar],f=art.frames[p.frame];
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
     ctx.fillStyle="rgba(20,28,19,.25)";ctx.beginPath();ctx.ellipse(62,103,21,2.5,0,0,Math.PI*2);ctx.fill();
@@ -147,5 +159,5 @@
     if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,layout,model,draw,preload,artwork,prepareAtlas});
+  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,groundFor,layout,model,draw,preload,artwork,prepareAtlas});
 });

@@ -41,6 +41,10 @@
 #castBackdrop, .scenery-motion[data-for="castBackdrop"],
 #underwaterPixels, .scenery-motion[data-for="underwaterPixels"],
 .scenery-foreground[data-for="castBackdrop"], .scenery-foreground[data-for="underwaterPixels"] { object-fit: cover; }
+#castBackdrop, .scenery-motion[data-for="castBackdrop"], .scenery-foreground[data-for="castBackdrop"] { object-position:center bottom; }
+.cast-surface[data-locale="harbor"] #castBackdrop,
+.cast-surface[data-locale="harbor"] .scenery-motion,
+.cast-surface[data-locale="harbor"] .scenery-foreground { object-position:center top; }
 #castActor { z-index: 7; }
 .cast-line-flight { z-index: 6; }
 .cast-surface .cast-line-flight path,
@@ -91,3 +95,18 @@
 #store .shop-goods button b { white-space: normal; overflow-wrap: anywhere; }
 .shop-category-heading { flex-wrap: wrap; }
 .shop-goods button small { font-weight: 600; }
+
+.world-life-layer { position:absolute; inset:0; pointer-events:none; }
+.world-life-layer[hidden], .world-life-resident[hidden] { display:none; }
+.world-life-roads { position:absolute; inset:0; width:100%; height:100%; z-index:1; image-rendering:pixelated; }
+.world-life-building, .world-life-resident { position:absolute; transform:translate(-50%,-100%); pointer-events:none; }
+.world-life-building canvas, .world-life-resident canvas { display:block; width:100%; height:100%; image-rendering:pixelated; }
+.world-life-resident { width:2.5%; aspect-ratio:3/4; }
+.modal.world-house { display:none; padding:10px; border-radius:16px; grid-template-rows:auto minmax(0,1fr) auto; height:90dvh; max-height:90dvh; gap:8px; overflow:hidden; }
+.modal.world-house.open { display:grid; }
+.world-house header { display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.world-house header h2 { margin:0; font-size:clamp(16px,2vw,24px); }
+.world-house header button { min-height:44px; min-width:100px; }
+.world-house-scene { min-height:0; position:relative; overflow:hidden; border-radius:12px; }
+.world-house-scene canvas { width:100%; height:100%; object-fit:contain; display:block; image-rendering:pixelated; }
+.world-house-dialogue { margin:0; padding:10px 14px; border:2px solid #b8ad76; border-radius:12px; background:#183a30; color:#fff1c8; font-size:clamp(14px,1.6vw,20px); }
