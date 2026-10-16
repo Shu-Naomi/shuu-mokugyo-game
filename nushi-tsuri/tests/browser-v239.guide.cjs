@@ -12,7 +12,7 @@ module.exports=async function guide(page,mobile,viewport){
  for(const region of ['village','stream','mountainPond','mountainMarsh','wetland','cave','coast']){
   await page.evaluate(region=>{close();Object.assign(s,{mapRegion:region,boatActive:false,...(ShuMountain.regions[region]?.entry||(region==='coast'?{x:146,y:70,direction:'down'}:{x:10,y:79,direction:'left'}))});render();save();},region);
   const before=await snapshot(),stored=await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2'));
-  if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
+  if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');assert.ok(await page.locator('#fishdexFilters').evaluate(n=>[...n.querySelectorAll('button')].every(b=>{const r=b.getBoundingClientRect();return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&r.width>=44;})),'all habitat filters and guide actions stay visible');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
   assert.equal(await page.locator('#record.open').count(),0);await fit();
   const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind})));
   let seen=0;

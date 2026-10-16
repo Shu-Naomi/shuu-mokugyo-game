@@ -1,6 +1,7 @@
 /* A folded waterside map, using the same finished scenery and building art. */
-.fishdex-guide-actions{display:flex;gap:8px;margin:0 12px 6px;}
-.fishdex-guide-actions>.lake-story-return{flex:1;width:auto;margin:0;min-height:44px;}
+.fishdex-guide-actions{display:flex;gap:6px;margin-left:auto;}
+#record .fishdex-filters button{min-height:44px;font-size:14px;}
+.fishdex-guide-actions>.lake-story-return{width:auto;margin:0;min-height:44px;padding:4px 10px;font-size:14px;}
 #fieldGuide{inset:6px;max-width:1100px;max-height:520px;margin:auto;padding:0;border:3px double #cdb575;border-radius:16px;background:#173c30;color:#f8edc8;overflow:hidden;}
 #fieldGuide.open{display:flex;flex-direction:column;}
 #fieldGuide .field-guide-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex:none;padding:5px 12px;border-bottom:2px solid #b29b66;background:linear-gradient(90deg,#315743,#173c30);}
