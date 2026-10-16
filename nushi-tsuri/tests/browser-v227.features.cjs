@@ -48,7 +48,7 @@ module.exports=async function wetland(url,mobile=false){
    assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),'mountain-'+type+'-mid');
   }
   await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await page.evaluate(()=>['tanago','motsugo','medaka','kamatsuka','nigoi','raigyo'].map(id=>s.caught[id])),[1,1,1,1,1,1]);
-  assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>fish.length),39);await screenshot('saved');
+  assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>fish.length),45);await screenshot('saved');
   const back=await page.evaluate(fn=>(0,eval)('('+fn+')')(window,'wetland',(x,y)=>ShuMountain.atReturnGate(x,y,'wetland')),routeTo.toString());await walk(back);await press('#action');assert.equal(await page.evaluate(()=>s.mapRegion),'mountainMarsh');
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V227_WETLAND_PASS '+JSON.stringify({mobile,enteredOnFoot:true,routeSteps:entryRoute.length,newFish:6,totalFish:45,twoFightModes:true,saved:true,returned:true,errors,failed}));
  }finally{await context.close();await browser.close();}
