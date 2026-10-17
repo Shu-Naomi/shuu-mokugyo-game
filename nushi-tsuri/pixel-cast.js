@@ -72,7 +72,7 @@
       leftFoot:point([f.feet[0],f.floor]),rightFoot:point([f.feet[1],f.floor])};
   }
   function groundFor(kind='lake'){
-    if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:.2};
+    if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:.2,facing:'down'};
     if(kind.startsWith('mountain-'))return {kind,x:.42,y:.967,aspect:kind.startsWith('mountain-wet')?1.5:2,alignY:1};
     if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
     return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
@@ -95,7 +95,15 @@
     return {...p,t:progress,hand,tip:{x:p.tip.x+dx,y:p.tip.y+dy},butt:{x:p.butt.x+dx,y:p.butt.y+dy}};
   }
   function model(width,height,progress,target={x:width*.7,y:height*.5},flying=false,avatar="boy",standby=false,ground){
-    const sample=standby?standbyPose:pose,p=sample(progress,avatar),box=layout(width,height,ground),tip=worldPoint(p.tip,box),resolution=width/640;
+    const source=standby?standbyPose:pose;
+    const sample=(t,a)=>{
+      const original=source(t,a);if(ground?.facing!=='down')return original;
+      const hand={x:75,y:76},angle=-original.angle,rad=angle*Math.PI/180,unit={x:Math.cos(rad),y:Math.sin(rad)};
+      return {...original,hand,support:{x:55,y:76},angle,unit,bend:-original.bend,
+        tip:{x:hand.x+unit.x*64+unit.y*original.bend,y:hand.y+unit.y*64-unit.x*original.bend},
+        butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},leftFoot:{x:49,y:102},rightFoot:{x:75,y:102}};
+    };
+    const p=sample(progress,avatar),box=layout(width,height,ground),tip=worldPoint(p.tip,box),resolution=width/640;
     let bobber={x:tip.x+2*resolution,y:tip.y+9*resolution};
     if(flying&&progress>=RELEASE){
       const releaseTip=worldPoint(sample(RELEASE,avatar).tip,box),start={x:releaseTip.x+2*resolution,y:releaseTip.y+9*resolution};
@@ -131,14 +139,22 @@
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.5,3.1,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.7;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.7);
   }
-  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,ground}={}){
+  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,frontSprite,ground}={}){
     avatar=avatar==="girl"?"girl":"boy";
     const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,c=Pixel.palette(env);
     const img=sprite||sprites[avatar],m=model(w,h,progress,target,flying,avatar,!img&&!!fallbacks[avatar],ground),p=m.pose,art=artwork[avatar],f=art.frames[p.frame];
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
     ctx.fillStyle="rgba(20,28,19,.25)";ctx.beginPath();ctx.ellipse(62,103,21,2.5,0,0,Math.PI*2);ctx.fill();
-    if(img){
+    if(ground?.facing==='down' && frontSprite?.complete && frontSprite.naturalWidth){
+      // The upper quay faces the viewer and the water below it. Reuse the
+      // original complete front-view avatar, never a rear-facing cast body.
+      paintRod(ctx,p,c,rod);
+      const a=avatar==='girl'?{x:38,y:81,w:128,h:318}:{x:47,y:60,w:133,h:338};
+      const scale=80/a.h;
+      ctx.drawImage(frontSprite,a.x,a.y,a.w,a.h,62-a.w*scale/2,22,a.w*scale,80);
+      m.detailed=true;m.facing='down';
+    }else if(img){
       const atlas=prepareAtlas(img,canvas);
       // One complete drawing per frame. The hand's opaque pixels close over
       // the handle naturally, without another generated palm or rotating arm.
