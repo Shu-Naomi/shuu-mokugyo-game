@@ -131,7 +131,7 @@ const CORE_ASSETS = [
   "./weather.js?v=169-1",
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=240-1",
-  "./pixel-scenes.css?v=238-1",
+  "./pixel-scenes.css?v=240-1",
   "./scene-layers.js?v=238-1",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",

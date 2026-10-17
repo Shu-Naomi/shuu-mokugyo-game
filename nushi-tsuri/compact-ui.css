@@ -382,7 +382,7 @@
 #petLifeModal.compact-pet-shop{background:#4b3c29;border-color:#bca16e}
 #petLifeModal.compact-pet-shop .pet-content{background:repeating-linear-gradient(0deg,#8c653008 0 1px,transparent 1px 5px),linear-gradient(110deg,#f3e7ca,#e3d1a8);color:#453723}
 #petLifeModal.compact-pet-shop .pet-heading{background:linear-gradient(90deg,#594630,#796044);color:#ffebbb;border-radius:10px 10px 0 0}
-#petLifeModal.compact-pet-shop .pet-shop-host{border-color:#b69a66;color:#53442b}
+#petLifeModal.compact-pet-shop .pet-shop-host{border-color:#b69a66;color:#53442b;background:#e4d7b8}
 #petLifeModal.compact-pet-shop .pet-shop-host b,#petLifeModal.compact-pet-shop .pet-shop-host small{color:#58472e}
 #petLifeModal.compact-pet-shop .pet-tabs button{background:linear-gradient(#b39665,#8c744e);border-color:#937449;color:#fff0cc}
 #petLifeModal.compact-pet-shop .pet-tabs button[aria-pressed=true]{background:linear-gradient(#f5dfa5,#d8bb7f);color:#4a321f;border-color:#81613d}
