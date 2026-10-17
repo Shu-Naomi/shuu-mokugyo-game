@@ -98,8 +98,8 @@
     const source=standby?standbyPose:pose;
     const sample=(t,a)=>{
       const original=source(t,a);if(ground?.facing!=='down')return original;
-      const hand={x:75,y:64},angle=-original.angle,rad=angle*Math.PI/180,unit={x:Math.cos(rad),y:Math.sin(rad)};
-      return {...original,hand,support:{x:55,y:64},angle,unit,bend:-original.bend,
+      const hand={x:75,y:76},angle=-original.angle,rad=angle*Math.PI/180,unit={x:Math.cos(rad),y:Math.sin(rad)};
+      return {...original,hand,support:{x:55,y:76},angle,unit,bend:-original.bend,
         tip:{x:hand.x+unit.x*64+unit.y*original.bend,y:hand.y+unit.y*64-unit.x*original.bend},
         butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},leftFoot:{x:49,y:102},rightFoot:{x:75,y:102}};
     };
@@ -150,8 +150,9 @@
       // The upper quay faces the viewer and the water below it. Reuse the
       // original complete front-view avatar, never a rear-facing cast body.
       paintRod(ctx,p,c,rod);
-      const cw=frontSprite.naturalWidth/3,ch=frontSprite.naturalHeight;
-      ctx.drawImage(frontSprite,0,0,cw,ch,40,22,44,80);
+      const a=avatar==='girl'?{x:38,y:81,w:128,h:318}:{x:47,y:60,w:133,h:338};
+      const scale=80/a.h;
+      ctx.drawImage(frontSprite,a.x,a.y,a.w,a.h,62-a.w*scale/2,22,a.w*scale,80);
       m.detailed=true;m.facing='down';
     }else if(img){
       const atlas=prepareAtlas(img,canvas);
