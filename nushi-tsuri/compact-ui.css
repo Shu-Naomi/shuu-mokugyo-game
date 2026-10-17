@@ -404,6 +404,6 @@
 }
 #petLifeModal.compact-pet-shop .pet-buyback-heading h3{color:#6c3821}
 #petLifeModal.compact-pet-shop .pet-buyback-detail,#petLifeModal.compact-pet-shop .pet-contest-result,#petLifeModal.compact-pet-shop .pet-contest-rivals article{background:#eee0bf;color:#493b28;border-color:#b49a6d}
-#petLifeModal.compact-pet-shop .pet-buyback-detail h3,#petLifeModal.compact-pet-shop .pet-contest-result h3,#petLifeModal.compact-pet-shop .pet-buyback-detail .pet-buyback-price{color:#793c24}
+#petLifeModal.compact-pet-shop .pet-buyback-detail h3,#petLifeModal.compact-pet-shop .pet-contest-result h3,#petLifeModal.compact-pet-shop .pet-result-rank b,#petLifeModal.compact-pet-shop .pet-buyback-detail .pet-buyback-price{color:#793c24}
 #petLifeModal.compact-pet-shop .pet-buyback-detail small,#petLifeModal.compact-pet-shop .pet-contest-rivals small{color:#655236}
 #petLifeModal.compact-pet-shop .pet-trick-results li{background:#dfceaa}
