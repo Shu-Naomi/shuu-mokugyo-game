@@ -4,12 +4,12 @@
  'use strict';
  const art = {"buildings":[[117,9,548,455],[849,72,631,397],[54,503,767,464],[920,513,579,474]],"doorX":[.51,.71,.52,.48],"residents":[[[155,16,150,312],[506,16,166,312],[872,16,173,312],[1234,16,148,311]],[[154,353,135,320],[512,353,179,320],[857,353,183,320],[1243,353,128,320]],[[140,693,151,315],[508,693,184,315],[863,693,186,315],[1231,693,153,313]]]};
  const buildings=[
-  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:160,y:66,w:26,h:20,sprite:1,route:[[160,68],[160,66]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
-  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:44,w:20,h:16,sprite:0,route:[[194,44],[190,44]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
-  {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:229,y:66,w:18,h:16,sprite:3,route:[[219,66],[229,66]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
-  {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:20,h:16,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
-  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:24,h:19,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
-  {id:'wetland-house',region:'wetland',kind:'house',name:'水郷の民家',x:64,y:83,w:22,h:18,sprite:2,route:[[80,70],[80,83],[64,83]],line:'洗濯物を干してから、睡蓮の池をひと回りしてきたところさ。'}
+  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:160,y:66,w:16,h:12,sprite:1,route:[[160,68],[160,66]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
+  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:44,w:13,h:10,sprite:0,route:[[194,44],[190,44]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
+  {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:229,y:66,w:11,h:10,sprite:3,route:[[219,66],[229,66]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
+  {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
+  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
+  {id:'wetland-house',region:'wetland',kind:'house',name:'水郷の民家',x:64,y:83,w:14,h:11,sprite:2,route:[[80,70],[80,83],[64,83]],line:'洗濯物を干してから、睡蓮の池をひと回りしてきたところさ。'}
  ];
  const residents=[
   {id:'village-fisher',region:'village',name:'散歩中の釣り人',sprite:0,route:[[51,39],[64,39]],speed:1.4},
@@ -38,7 +38,7 @@
  function residentPose(person,elapsed=0,reduced=false){
   const a=person.route[0],b=person.route[1],length=Math.hypot(b[0]-a[0],b[1]-a[1]),travel=length/Math.max(.1,person.speed),phase=reduced?0:Math.max(0,elapsed)/1000%(travel*2+6);
   const outward=phase<3+travel,amount=phase<3?0:phase<3+travel?(phase-3)/travel:phase<6+travel?1:1-(phase-6-travel)/travel;
-  return {x:a[0]+(b[0]-a[0])*amount,y:a[1]+(b[1]-a[1])*amount,facing:outward?(b[0]>=a[0]?'right':'left'):(b[0]>=a[0]?'left':'right'),frame:reduced||phase<3||phase>=3+travel&&phase<6+travel?0:1+Math.floor(elapsed/230)%2};
+  return {x:a[0]+(b[0]-a[0])*amount,y:a[1]+(b[1]-a[1])*amount,facing:outward?(b[0]>=a[0]?'right':'left'):(b[0]>=a[0]?'left':'right'),frame:reduced||phase<3||phase>=3+travel&&phase<6+travel?0:[0,1,0,2][Math.floor(elapsed/170)%4]};
  }
  function greeting(b,env){
   if(env.weather==='rain')return b.id==='wetland-house'?'今日は洗濯物をしまって、家で雨音を聞いているよ。少し雨宿りしていきな。':'雨の山道は静かだね。ここでひと息ついていきな。';
@@ -65,9 +65,9 @@
   function paintBuilding(record,env){const b=record.definition,im=image('settlement-buildings');if(!im.complete||!im.naturalWidth)return;drawBuilding(record.canvas,im,b.sprite);record.node.style.width=b.w/240*100+'%';record.node.style.height=b.h/135*100+'%';record.node.style.left=centerX(b)/240*100+'%';record.node.style.top=b.y/135*100+'%';record.node.style.filter=env.period==='night'?'brightness(.64) saturate(.85)':env.period==='evening'?'sepia(.12) brightness(.9)':'';}
   function paintResident(record,pose){const im=image('village-residents');if(im.complete&&im.naturalWidth)drawResident(record.canvas,im,record.definition.sprite,pose);}
   function roads(){
-   const canvas=document.createElement('canvas');canvas.className='world-life-roads';canvas.width=1536;canvas.height=864;layer.prepend(canvas);const ctx=canvas.getContext('2d');ctx.scale(6.4,6.4);ctx.lineJoin='round';ctx.strokeStyle='#4b4030';ctx.lineWidth=3.3;
-   for(const b of buildings.filter(b=>b.region===region)){ctx.beginPath();b.route.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();ctx.strokeStyle='#b19360';ctx.lineWidth=2.5;ctx.stroke();ctx.strokeStyle='#4b4030';ctx.lineWidth=3.3;
-    for(let i=1;i<b.route.length;i++){const a=b.route[i-1],z=b.route[i],length=Math.hypot(z[0]-a[0],z[1]-a[1]);for(let n=0;n<length;n+=.85){const t=n/length,x=a[0]+(z[0]-a[0])*t,y=a[1]+(z[1]-a[1])*t;ctx.fillStyle='#715637';ctx.save();ctx.translate(x,y);ctx.rotate(Math.atan2(z[1]-a[1],z[0]-a[0]));ctx.fillRect(-.12,-1.25,.24,2.5);ctx.restore();}}}
+   const canvas=document.createElement('canvas');canvas.className='world-life-roads';canvas.width=1536;canvas.height=864;layer.prepend(canvas);const ctx=canvas.getContext('2d');ctx.scale(6.4,6.4);ctx.lineJoin='round';ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
+   for(const b of buildings.filter(b=>b.region===region)){ctx.beginPath();b.route.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();ctx.strokeStyle='#b1936066';ctx.lineWidth=2.2;ctx.stroke();ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
+   }
   }
   function render(now=performance.now(),force=false){
    if(!force&&now-last<150)return;last=now;const s=state(),env=environment();layer.hidden=!visible();if(layer.hidden)return;

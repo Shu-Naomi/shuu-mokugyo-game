@@ -6443,7 +6443,7 @@
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=228-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=236-1" />
+    <link rel="stylesheet" href="compact-ui.css?v=240-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v239</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v240</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7289,9 +7289,9 @@
     <script src="fishing-duel.js?v=228-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="world-life.js?v=238-1"></script>
+    <script src="world-life.js?v=240-1"></script>
     <script src="field-guide.js?v=239-1"></script>
-    <script src="mountain-region.js?v=238-1"></script>
+    <script src="mountain-region.js?v=240-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
@@ -7304,7 +7304,7 @@
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
-    <script src="pixel-cast.js?v=238-1"></script>
+    <script src="pixel-cast.js?v=240-1"></script>
     <script src="scene-layers.js?v=238-1"></script>
     <script src="layered-scenery.js?v=238-1"></script>
     <script>
@@ -14820,7 +14820,7 @@
         const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind),
+        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
         pixelCastKey = key;
         return true;
@@ -14960,7 +14960,8 @@
             const angle = index / samples * Math.PI * 2;
             const candidateX = x + Math.cos(angle) * radius;
             const candidateY = y + Math.sin(angle) * radius;
-            if (isWalkableWorld(candidateX, candidateY))
+            if (isWalkableWorld(candidateX, candidateY) &&
+                [[1,0],[-1,0],[0,1],[0,-1]].filter(([dx,dy])=>isWalkableWorldSegment(candidateX,candidateY,candidateX+dx,candidateY+dy)).length>=2)
               return { x: candidateX, y: candidateY };
           }
         }
@@ -17820,6 +17821,7 @@
         if(ShuMountain.isRegion(s.mapRegion) && d==="up" && s.y<=6){
           const exit=ShuMountain.exitAt(s.x,s.y,s.mapRegion);if(exit)return travelMountain(true,exit);
         }
+        if (!isWalkableWorld(s.x,s.y)) Object.assign(s,nearestWalkableWorld(s.x,s.y));
         hideIdleStatus();
         hideFieldMenu();
         if (s.mapRegion!=="coast") wakeDog();
@@ -18516,9 +18518,7 @@
         hideCatchCard();
         resetBattleFeedback();
         const zone = spot.waterZone || spot.zone || "lake";
-        const minimumDepth = zone === "sea" && isCapeDeepWater(spot.waterX, spot.waterY)
-          ? "mid"
-          : "shallow";
+        const minimumDepth = "shallow";
         const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null);
         const mountainType=spot.mountainType || (ShuMountain.isRegion(s.mapRegion)?ShuMountain.waterType(spot.waterX,spot.waterY,s.mapRegion):null);
         const profile = fishingSpotById(mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
@@ -23525,7 +23525,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=239-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=240-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

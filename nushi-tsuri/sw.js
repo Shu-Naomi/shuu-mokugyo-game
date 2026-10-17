@@ -1,9 +1,9 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v239-field-guide-239-1";
+const CACHE_NAME = "nushi-tsuri-v240-trails-shops-240-1";
 const CORE_ASSETS = [
   "./field-guide.js?v=239-1",
   "./field-guide.css?v=239-1",
-  "./world-life.js?v=238-1",
+  "./world-life.js?v=240-1",
   "./fish-additions.js?v=238-1",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -15,7 +15,7 @@ const CORE_ASSETS = [
   "./assets/village-residents-v238.png",
 
   "./compact-ui.js?v=235-1",
-  "./compact-ui.css?v=236-1",
+  "./compact-ui.css?v=240-1",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
@@ -57,7 +57,7 @@ const CORE_ASSETS = [
   "./fishing-duel.js?v=228-1",
   "./fishing-duel.css?v=228-1",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=238-1",
+  "./mountain-region.js?v=240-1",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=227-1",
   "./lake-intro.js?v=216-1",
@@ -130,7 +130,7 @@ const CORE_ASSETS = [
   "./assets/audio/music-v170/lake-birds.mp3",
   "./weather.js?v=169-1",
   "./pixel-world.js?v=165-1",
-  "./pixel-cast.js?v=238-1",
+  "./pixel-cast.js?v=240-1",
   "./pixel-scenes.css?v=238-1",
   "./scene-layers.js?v=238-1",
   "./assets/cast-coast-sand-v198.webp",
