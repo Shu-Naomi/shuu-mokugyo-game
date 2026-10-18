@@ -35,7 +35,7 @@ test('fight setting is saved and latched per cast while both modes share bait se
   try{w.eval('openInventory("tackle")');click(w,'#inventory [data-fight-mode="nushi"]');w.close();
     const before=read(w,'[s.baits.worm,s.gameMinutes]');w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();commitCastResources();settleSurfaceCast()');
     const after=read(w,'[s.baits.worm,s.gameMinutes]');assert.equal(after[0],before[0]-1);assert.ok(after[1]>before[1]);
-    assert.equal(read(w,'battle.fightMode'),'nushi');w.eval('s.fightMode="gauge";battle.biteAt=Date.now();pull()');assert.equal(read(w,'battle.fightMode'),'nushi');
+    assert.equal(read(w,'battle.fightMode'),'nushi');w.eval('s.fightMode="gauge";battle.biteAt=Date.now();syncBitePhase();pull()');assert.equal(read(w,'battle.fightMode'),'nushi');
     assert.equal(w.document.querySelector('#fishScene').classList.contains('duel-nushi'),true);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

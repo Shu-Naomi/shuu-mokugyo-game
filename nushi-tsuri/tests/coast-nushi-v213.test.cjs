@@ -27,7 +27,7 @@ test('actual sea boss bites, hook sets and seeded changing moods reach landing w
       assert.equal(read(w,'battle.spot'),'coast-reef-deep');assert.equal(read(w,'battle.f.id'),'coastNushi');
       w.eval(`battle.specimen=rollFishSpecimen(battle.f,()=>${tier});var testNow=200000,testRng=${rngSeed};Date.now=()=>testNow;
         Math.random=()=>((testRng=Math.imul(testRng,1664525)+1013904223>>>0)/4294967296);
-        battle.biteAt=testNow;pull();releaseBattleAction();stopBattleFishArt();
+        battle.biteAt=testNow;syncBitePhase();pull();releaseBattleAction();stopBattleFishArt();
         var fightTick;setInterval=callback=>(fightTick=callback,9001);battleTick();
         renderBattleFish=()=>{};drawBattle=()=>{};updateWaterFx=()=>{}`);
       assert.equal(read(w,'battle.phase'),'fight');
