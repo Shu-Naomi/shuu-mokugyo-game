@@ -10,7 +10,7 @@ test('new fish have practical ungated bait odds in their own waters and do not s
   w.eval('let addedFishRng=220;Math.random=()=>((addedFishRng=Math.imul(addedFishRng,1664525)+1013904223>>>0)/4294967296)');
   for(const [id,prefixes,bait,hook]of [
    ['wakasagi',['lake','mountain-pond','mountain-highPond'],'river','small'],
-   ['dojo',['river','mountain-marsh','mountain-highMarsh'],'worm','small'],
+   ['dojo',['river','mountain-marsh','mountain-highMarsh','mountain-underground'],'worm','small'],
    ['isaki',['coast-reef'],'shrimp','medium']]){
    for(const prefix of prefixes)for(const depth of ['shallow','mid','deep']){
     w.eval(`battle={method:'bait',bait:'${bait}',hook:'${hook}',practice:false}`);
@@ -19,7 +19,7 @@ test('new fish have practical ungated bait odds in their own waters and do not s
    }
   }
   for(const spot of read(w,'fishingSpots')){
-   for(const id of newFish){const allowed=id==='wakasagi'?/^(lake|mountain-(pond|highPond))-/.test(spot.id):id==='dojo'?(/^(river|mountain-(marsh|highMarsh|wetCreek))-/.test(spot.id)||/^mountain-wetMarsh-(shallow|mid)$/.test(spot.id)):/^coast-reef-/.test(spot.id);
+   for(const id of newFish){const allowed=id==='wakasagi'?/^(lake|mountain-(pond|highPond))-/.test(spot.id):id==='dojo'?(/^(river|mountain-(marsh|highMarsh|wetCreek|underground))-/.test(spot.id)||/^mountain-wetMarsh-(shallow|mid)$/.test(spot.id)):/^coast-reef-/.test(spot.id);
     assert.equal(Boolean(spot.weights[id]),allowed,id+' habitat '+spot.id);
    }
   }

@@ -18,6 +18,28 @@
   const spoon={tanago:.05,motsugo:.10,medaka:.01,kamatsuka:.08,nigoi:1.4,raigyo:3.8,moroko:.2,funa:.35,wakasagi:.12,dojo:.08,isaki:1.15,ugui:1.3,oikawa:.25,kawahagi:.06,koi:.45,ayu:.35,yamame:2.3,iwana:2.4,amago:2.25,kajika:.15,nijimasu:2.5,bass:4.8,
     namazu:1.5,unagi:.55,aji:1.8,mebaru:1.6,kasago:1.4,suzuki:3.1,hirame:2.2,
     kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
+  // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
+  // suspended phone, and presentation randomness never changes the specimen.
+  function newLure(distance=50){return {speed:0,depth:.42,travel:0,attraction:0,approach:0,chase:0,
+    distance:clamp(distance,10,100),ticks:0,x:68,y:41};}
+  function stepLure(lure,held,interested=false){
+    lure.ticks++;
+    lure.speed=clamp(lure.speed+(held?.16:-.24),0,1);
+    lure.travel=clamp(lure.travel+lure.speed*.004*50/lure.distance,0,1);
+    lure.depth=clamp(lure.depth+(held?-.006*lure.speed:.009),.18,.82);
+    lure.x=68-lure.travel*46+Math.sin(lure.ticks*.55)*lure.speed*.65;
+    lure.y=20+lure.depth*50+Math.sin(lure.ticks*.7)*lure.speed*.45;
+    lure.attraction=clamp(lure.attraction+(held?.11:-.018),0,1);
+    lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
+    if(interested){
+      lure.chase++;
+      lure.approach=clamp(lure.approach+(lure.speed>.8?.012:held?.075:.16),0,1);
+    }
+    return {recovered:lure.travel>=1,reveal:!interested&&lure.attraction>=1,
+      bite:interested&&lure.approach>=1,depart:interested&&lure.chase>=36&&lure.approach<1};
+  }
+  Object.assign(fishStrength,{kawamutsu:.75,herabuna:1.4,himemasu:1.7,mahaze:.6,sayori:.8,masaba:1.9,gigi:1.5});
+  Object.assign(spoon,{kawamutsu:.8,herabuna:.08,himemasu:2.6,mahaze:.25,sayori:.2,masaba:2.2,gigi:.7});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -134,5 +156,5 @@
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
   return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
-    nushiTiming,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step});
+    nushiTiming,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
 });

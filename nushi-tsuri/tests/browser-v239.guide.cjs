@@ -20,7 +20,7 @@ module.exports=async function guide(page,mobile,viewport){
    const ids=await page.locator('[data-guide-place]').evaluateAll(bs=>bs.map(b=>b.dataset.guidePlace));assert.ok(ids.length>0&&ids.length<=3);
    for(const id of ids){await press('[data-guide-place="'+id+'"]');const e=entries.find(e=>e.id===id);assert.equal(await page.locator('[data-guide-place="'+id+'"]').getAttribute('aria-pressed'),'true');assert.ok((await page.locator('#fieldGuideMap').getAttribute('aria-label')).includes(e.name));await fit();seen++;places++;
     if(region==='mountainPond'&&e.kind==='water'||id==='wetland-shop'||region==='coast'&&e.id==='water-sand'){
-     await page.waitForFunction(()=>{const art=document.querySelector('#fieldGuideMapArt'),url=getComputedStyle(art).backgroundImage.slice(5,-2),im=new Image();im.src=url;return im.complete&&im.naturalWidth>0;});
+     await page.locator('#fieldGuideMapArt').evaluate(async art=>{const im=new Image();im.src=getComputedStyle(art).backgroundImage.slice(5,-2);await im.decode();if(!im.naturalWidth)throw Error('guide background did not decode');});
      if(e.kind==='shop')await page.waitForFunction(()=>[...document.querySelectorAll('#fieldGuideBuildings canvas')].every(c=>{const p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return p.some((x,i)=>i%4===3&&x>100);}));
      await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-guide-'+(e.kind==='water'?region:e.id)+'.png')});
     }

@@ -4,9 +4,9 @@ module.exports=async function fixes(page,mobile,viewport){
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  const shot=async name=>{await page.evaluate(()=>hideFieldMenu());await page.waitForTimeout(250);await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-v240-'+name+'.png')});};
  try{
-  await page.evaluate(()=>{close();Object.assign(s,{mapRegion:'mountainPond',x:120,y:113,direction:'up',boatActive:false});render();});
+  await page.evaluate(()=>{close();Object.assign(s,{mapRegion:'mountainPond',...ShuMountain.regions.mountainPond.entry,boatActive:false});render();});
   for(const d of ['left','right','up','down']){
-   await page.evaluate(()=>{s.x=120;s.y=113;render();});const before=await page.evaluate(()=>[s.x,s.y]);
+   await page.evaluate(()=>{Object.assign(s,ShuMountain.regions.mountainPond.entry);render();});const before=await page.evaluate(()=>[s.x,s.y]);
    await press('[data-move="'+d+'"]');assert.notDeepEqual(await page.evaluate(()=>[s.x,s.y]),before,'pond entrance '+d);
   }
   await shot('pond-path');

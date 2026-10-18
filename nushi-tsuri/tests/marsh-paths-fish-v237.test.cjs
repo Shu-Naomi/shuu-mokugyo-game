@@ -51,7 +51,7 @@ test('five marsh species have normal tackle odds and catch records that survive 
       w.eval('caught();caught()');assert.equal(read(w,`s.caught.${id}`),1);
       assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);
       if(id!=='dojo')assert.match(read(w,`fishEncyclopediaData.${id}.locations`),/峠の沼/);
-      assert.equal(read(w,'fish.length'),45);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
+      assert.equal(read(w,'fish.length'),46);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
     }finally{app.dispose();}
     const restored=boot(saved);try{assert.equal(read(restored.window,`s.caught.${id}`),1);assert.match(read(restored.window,`s.fishCatchRecords.${id}.last.spotId`),/^mountain-highMarsh-/);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
   }
