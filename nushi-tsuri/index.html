@@ -22155,10 +22155,16 @@
       function startFight() {
         stopCastingWaterSound(.24);
         playGameAudioSample("reelHookSet", { restart: true });
-        beginUnderwaterFromSurface();
+        const lureFight=battle.method==="lure"&&Boolean(battle.lureMotion);
+        if(lureFight){
+          // The chasing fish is already visible underwater. Keep that view
+          // through the hook set instead of replaying the shore-to-water reveal.
+          clearTimeout(surfaceTransitionTimer);surfaceTransitionTimer=0;
+          $("#fishScene").classList.remove("surface-casting","surface-diving");
+        }else beginUnderwaterFromSurface();
         battle.phase = "fight";
         battle.reeling=false;battle.awaitFightRelease=true;
-        if(battle.method==="lure"&&battle.lureMotion){
+        if(lureFight){
           battle.startX=battle.x;battle.startY=battle.y;
           battle.startMeters=Math.max(0,battle.lureMotion.distance*(1-battle.lureMotion.travel));
           battle.distanceFactor=clampBattle(battle.startMeters/18,.75,1.55);
@@ -22217,7 +22223,8 @@
         battle.turnArcY = 0;
         battle.turnRoll = 0;
         const scene = $("#fishScene");
-        scene.classList.add("fighting", "hook-reveal");
+        scene.classList.add("fighting");
+        scene.classList.toggle("hook-reveal",!lureFight);
         scene.classList.toggle("duel-nushi",battle.fightMode==="nushi");
         scene.classList.toggle("nushi-fight", ShuRegional.legendary(f.id));
         const fishElement = $("#battleFish");
@@ -22236,7 +22243,7 @@
           `${(fishSwimFrameCounts[f.id] || 8) * 100}% 100%`;
         fishElement.style.backgroundPositionY = "0";
         fishElement.style.transition = "none";
-        fishElement.style.opacity = "0";
+        fishElement.style.opacity = lureFight?"1":"0";
         $("#fishTackleBack").className =
           `fish-tackle fish-tackle-back bait-${battle.bait || s.selectedBait}`;
         $("#fishTackleFront").className =
@@ -22254,12 +22261,15 @@
         $("#wait").innerHTML = "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
         chooseFishMood(true);
         startBattleFishArt();
-        fishElement.classList.add("hooked");
         clearTimeout(hookRevealTimer);
-        hookRevealTimer = setTimeout(
-          finishHookReveal,
-          ShuRegional.legendary(f.id) ? 1090 : 820,
-        );
+        hookRevealTimer=0;
+        if(!lureFight){
+          fishElement.classList.add("hooked");
+          hookRevealTimer = setTimeout(
+            finishHookReveal,
+            ShuRegional.legendary(f.id) ? 1090 : 820,
+          );
+        }
         fishElement.style.opacity = "1";
         $("#phaseLabel").textContent = battle.practice
           ? " ④ 巻く／送る"
@@ -22268,6 +22278,8 @@
           ? "サム「Aを押して巻く、離して待つ。張力が高い時はBを1回。糸が出て張力が下がるが、魚は少し遠ざかるぞ」"
           : f.id === "hirame" && !battle.sandLifted
             ? "ヒラメが砂底にぺったり張り付いている！まずAで引き剥がし、左上の水面へ寄せよう。"
+            : lureFight
+            ? `${f.name}がスプーンに掛かった！糸と魚を見て水面へ寄せよう。${fightProfiles[f.id].intro}`
             : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(battle.practice

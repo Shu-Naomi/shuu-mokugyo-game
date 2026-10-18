@@ -84,6 +84,9 @@ test('spoon distance uses cast meters and its remaining distance and position ca
    assert.equal(read(w,'battle.phase'),'bite');
    const before=read(w,'({x:battle.x,y:battle.y,meters:battle.lureMotion.distance*(1-battle.lureMotion.travel),id:battle.f.id,specimen:battle.specimen})');
    w.pressBattleAction();assert.equal(read(w,'battle.phase'),'fight');
+   assert.equal(w.document.querySelector('#fishScene').classList.contains('surface-diving'),false,'a visible lure fish stays underwater through the hook set');
+   assert.equal(w.document.querySelector('#battleFish').classList.contains('hooked'),false,'do not fade an already visible fish out again');
+   assert.equal(w.document.querySelector('#battleFish').style.opacity,'1');
    assert.equal(read(w,'battle.startMeters'),before.meters);assert.deepEqual(read(w,'[battle.startX,battle.startY]'),[before.x,before.y]);
    assert.equal(read(w,'battle.f.id'),before.id);assert.deepEqual(read(w,'battle.specimen'),before.specimen);
    const bounds=read(w,'fishSwimBounds()');assert.ok(before.x>=bounds.minX&&before.x<=bounds.maxX,'no snap back to the original cast');

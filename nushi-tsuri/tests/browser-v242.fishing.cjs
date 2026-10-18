@@ -56,6 +56,8 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    await page.clock.fastForward(60000);await page.evaluate(()=>window.dispatchEvent(new Event('focus')));
    assert.equal(await value('Date.now()-battle.biteShownAt'),shownAge);assert.equal(await value('battle.phase'),'bite');
    await press('#pull');assert.equal(await value('battle.phase'),'fight');assert.equal(await value('battle.reeling'),false);
+   assert.equal(await page.locator('#castSurface').isVisible(),false,'hooking a lure fish never brings the shore view back');
+   assert.ok(await page.locator('#battleFish').evaluate(el=>Number(getComputedStyle(el).opacity)>.9),'the fish remains visible through the hook set');
    assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);
    assert.equal(Number((await page.locator('#distanceLabel').innerText()).match(/\d+/)[0]),remaining);
    const boxes=await page.locator('#pull,#wait').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {inside:r.left>=0&&r.right<=innerWidth+1&&r.top>=0&&r.bottom<=innerHeight+1,w:r.width,h:r.height};}));
