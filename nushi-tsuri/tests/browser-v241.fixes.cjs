@@ -16,7 +16,10 @@ module.exports=async function fixes(page,mobile,viewport){
    const before=await page.evaluate(()=>JSON.parse(JSON.stringify([s.baits,s.lures,s.gameMinutes])));
    await press('#action');await press('#wait');await page.locator('#beginCast').waitFor({state:'visible'});await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');
    await page.waitForFunction(()=>battle?.phase==='lure');assert.equal(await page.locator('#distanceLabel').isVisible(),true);assert.equal(await page.locator('#distanceMeter').isVisible(),true);
-   const startDistance=await page.locator('#distanceLabel').innerText();await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);assert.notEqual(await page.locator('#distanceLabel').innerText(),startDistance);
+   const startMeters=await page.evaluate(()=>battle.lureMotion.distance);await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
+   const remaining=await page.evaluate(()=>battle.lureMotion.distance*(1-battle.lureMotion.travel));assert.ok(remaining<startMeters);
+   assert.equal(await page.locator('#distanceLabel').innerText(),'スプーンまで '+Math.ceil(remaining)+'m');
+   assert.ok(await page.locator('#distanceMeter').evaluate(el=>parseFloat(el.style.width)<100));
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);

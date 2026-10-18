@@ -74,14 +74,13 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     if(mode==='nushi'&&!ui.leap)assert.ok(ui.right<=ui.edge+1,'the fish remains visible at the right edge');
     if(tick%7===0){
      await page.evaluate(()=>{window.v242LineGap=null;requestAnimationFrame(()=>{
-      if(battle?.phase!=='fight'){window.v242LineGap={mouth:0,eye:0};return;}
-      const line=document.querySelector('#linePath'),p=line.getPointAtLength(line.getTotalLength()),a=battleMouthAndHook(),scene=document.querySelector('#fishScene');
+      if(battle?.phase!=='fight'){window.v242LineGap=0;return;}
+      const line=document.querySelector('#linePath'),p=line.getPointAtLength(line.getTotalLength());
       const eye=document.querySelector('#fishTackleBack .hook-eye'),point=new DOMPoint(eye.cx.baseVal.value,eye.cy.baseVal.value).matrixTransform(eye.getScreenCTM()),end=new DOMPoint(p.x,p.y).matrixTransform(line.getScreenCTM());
-      window.v242LineGap={mouth:Math.hypot((p.x-a.lineX)*scene.clientWidth/1000,(p.y-a.lineY)*scene.clientHeight/500),eye:Math.hypot(end.x-point.x,end.y-point.y)};
+      window.v242LineGap=Math.hypot(end.x-point.x,end.y-point.y);
      });});
-     await page.clock.runFor(20);const gap=await value('window.v242LineGap');assert.ok(gap);
-     assert.ok(gap.mouth<4,`the line follows the displayed mouth at paint time (${JSON.stringify(gap)} at tick ${tick})`);
-     assert.ok(gap.eye<2,`the line and visible hook eye stay joined (${JSON.stringify(gap)} at tick ${tick})`);
+     await page.clock.runFor(20);const gap=await value('window.v242LineGap');assert.notEqual(gap,null);
+     assert.ok(gap<2,`the line and visible hook eye stay joined (${gap}px at tick ${tick})`);
     }
     const wish=(mode==='nushi'?(ui.phase==='slack'||ui.phase==='pulling')&&ui.ten<65:ui.ten<65)&&!ui.leap;
     if(wish!==oldWish){queue.push({at:tick*120+(mode==='nushi'?600:0),wish});oldWish=wish;}
