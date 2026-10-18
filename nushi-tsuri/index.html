@@ -21909,7 +21909,7 @@
         let centerY=battle.y*sceneHeight/100+visual.offsetY;
         if(rendered){
           const box=fishElement.getBoundingClientRect(),view=scene.getBoundingClientRect();
-          const transform=getComputedStyle(fishElement).transform;
+          const transform=box.width&&view.width?getComputedStyle(fishElement).transform:"";
           if(box.width&&view.width&&/^matrix/.test(transform))try{
             const matrix=new DOMMatrix(transform);
             if([matrix.a,matrix.b,matrix.c,matrix.d].every(Number.isFinite)){
