@@ -4519,6 +4519,9 @@
       .fish-scene.fighting .fish-tackle {
         display: block;
       }
+      .fish-scene.lure-search .battle-actions button {
+        min-height: 64px;
+      }
       .fish-tackle svg {
         display: block;
         width: 100%;
@@ -20258,7 +20261,13 @@
           else if(result.bite){battle.biteAt=Date.now();battle.biteScheduledAt=battle.biteAt;}
         }
         const mood=fightProfiles[battle.f.id].moods.find(m=>m.calm)||fightProfiles[battle.f.id].moods[0];
-        const x=motion.x,y=motion.y;
+        const x=motion.x;
+        let y=motion.y;
+        const clearY=battleFishClearMaxY();
+        if(clearY!==null){
+          const mouth=battleMouthAndHook(false);
+          y=Math.min(y,clearY+mouth.rootY/5-battle.y);
+        }
         if(battle.phase!=="lure"){
           animateFishBody(mood,.65,.7);
           renderBattleFish();
@@ -20668,6 +20677,11 @@
             Math.max(.1,Number(battle.specimenVisualScale)||1);
           const recoil=lateral?0:(profile.recoil||0)*2;
           bounds.maxX=Math.min(bounds.maxX,Math.max(bounds.minX,100-(width/2+recoil+4)*100/scene.clientWidth));
+        }
+        const clearY=battleFishClearMaxY();
+        if(clearY!==null){
+          bounds.minY=Math.min(bounds.minY,Math.max(8,clearY-8));
+          bounds.maxY=Math.min(bounds.maxY,Math.max(bounds.minY,clearY));
         }
         return bounds;
       }
@@ -21703,6 +21717,20 @@
         });
         return true;
       }
+      function battleFishViewport() {
+        if(!battle||(battle.fightMode!=="nushi"&&battle.method!=="lure"))return null;
+        const scene=$("#fishScene"),view=scene.getBoundingClientRect(),actions=$("#pull").parentElement.getBoundingClientRect();
+        if(!view.width||!actions.width||!scene.clientHeight)return null;
+        return {height:scene.clientHeight,bottom:Math.max(32,actions.top-view.top-16)};
+      }
+      function battleFishClearMaxY() {
+        const view=battleFishViewport();if(!view)return null;
+        const element=$("#battleFish"),pose=battleFishVisualPose(),radians=pose.rotation*Math.PI/180;
+        const height=Math.max(element.getBoundingClientRect().height,
+          (Math.abs(Math.sin(radians))*element.offsetWidth*Math.abs(pose.stretch)+
+          Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash))*pose.displayScale);
+        return Math.max(8,(view.bottom-height/2-Math.abs(pose.offsetY))*100/view.height);
+      }
       function battleFishVisualPose() {
         // The sprite and its hook must use the same effective transform,
         // including authored fixed-head frames and the grounded flatfish.
@@ -21710,7 +21738,7 @@
         const fixedHead = fixedFaceFishIds.has(battle.f.id);
         const showingTurn = Boolean(battle.turning && !sandGrounded);
         const specimenScale = Math.max(.1, Number(battle.specimenVisualScale) || 1);
-        return {
+        const pose = {
           offsetX: Number(Number(battle.visualOffsetX || 0).toFixed(2)),
           offsetY: Number(Number(sandGrounded ? 0 :
             (fixedHead ? 0 : battle.visualOffsetY || 0) +
@@ -21722,6 +21750,14 @@
           specimenScale,
           displayScale: (battle.renderScale || 1) * specimenScale,
         };
+        const view=battleFishViewport();
+        if(view){
+          const element=$("#battleFish"),radians=pose.rotation*Math.PI/180;
+          const height=Math.abs(Math.sin(radians))*element.offsetWidth*Math.abs(pose.stretch)+
+            Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash);
+          if(height)pose.displayScale=Math.min(pose.displayScale,Math.max(.1,(view.bottom-16)/height));
+        }
+        return pose;
       }
       function stopBattleFishArt() {
         cancelAnimationFrame(battleArtAnimationFrame);

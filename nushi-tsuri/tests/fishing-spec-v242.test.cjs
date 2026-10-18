@@ -162,3 +162,25 @@ test('nushi right bounds reserve room for the whole displayed fish, including gi
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });
+
+test('short viewports keep fish above the action buttons and fit oversized turning specimens',()=>{
+ for(const mode of ['gauge','nushi']){
+  const app=fishing(mode,'lure'),w=app.window;
+  try{
+   const scene=w.document.querySelector('#fishScene'),actions=w.document.querySelector('.battle-actions');
+   scene.getBoundingClientRect=()=>({left:0,top:36,width:844,height:326});
+   actions.getBoundingClientRect=()=>({left:580,top:280,width:202,height:64});
+   w.eval('battle.f=fish.find(f=>f.id==="himemasu");revealLureFish();battle.lureMotion.depth=.82;updateLurePresentation()');
+   assert.ok(read(w,'battle.y<=battleFishClearMaxY()+.001'),'approaching fish avoids the buttons too');
+   w.startFight();w.eval('clearInterval(timer)');
+   for(const scale of [1,1.8,3])for(const angle of [0,16,-30]){
+    w.eval(`Object.assign(battle,{sandLifted:true,retrieval:.4,renderScale:1,specimenVisualScale:${scale},bodyStretch:1,bodySquash:1,renderAngle:${angle},turnRoll:0,visualOffsetX:0,visualOffsetY:0})`);
+    const data=read(w,'({bounds:fishSwimBounds(),pose:battleFishVisualPose()})'),p=data.pose,rad=p.rotation*Math.PI/180;
+    const height=(Math.abs(Math.sin(rad))*150+Math.abs(Math.cos(rad))*75)*p.displayScale;
+    assert.ok(data.bounds.maxY*326/100+height/2+36<=264.0001,'fish stays clear of the button strip');
+    assert.ok(height<=212.0001,'an oversized body still fits the available water height');
+   }
+   assert.deepEqual(app.errors,[]);
+  }finally{app.dispose();}
+ }
+});

@@ -70,10 +70,12 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    for(let tick=0;tick<3000;tick++){
     const ui=await page.evaluate(()=>({fight:battle?.phase,phase:document.querySelector('#fishScene').dataset.nushiPhase,
      leap:document.querySelector('#fishScene').classList.contains('gill-wash'),ten:parseFloat(document.querySelector('#ten').style.width),x:parseFloat(document.querySelector('#battleFish').style.left),
-     right:document.querySelector('#battleFish').getBoundingClientRect().right,edge:document.querySelector('#fishScene').getBoundingClientRect().right}));
+     right:document.querySelector('#battleFish').getBoundingClientRect().right,edge:document.querySelector('#fishScene').getBoundingClientRect().right,
+     bottom:document.querySelector('#battleFish').getBoundingClientRect().bottom,controls:document.querySelector('.battle-actions').getBoundingClientRect().top}));
     if(ui.fight!=='fight')break;
     if(mode==='nushi'&&ui.phase==='running'&&last?.phase==='running'&&!ui.leap&&!last.leap){assert.ok(ui.x>=last.x-.02,'escape must move right');rightwardTicks++;}
     if(mode==='nushi'&&!ui.leap)assert.ok(ui.right<=ui.edge+1,'the fish remains visible at the right edge');
+    if(!ui.leap)assert.ok(ui.bottom<=ui.controls+1,'the fish remains above the action buttons');
     if(tick%7===0){
      await page.evaluate(()=>{window.v242LineGap=null;requestAnimationFrame(()=>{
       if(battle?.phase!=='fight'){window.v242LineGap=0;return;}
