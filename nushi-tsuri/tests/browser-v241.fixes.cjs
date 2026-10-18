@@ -15,7 +15,8 @@ module.exports=async function fixes(page,mobile,viewport){
    await end();await page.evaluate(mode=>{Object.assign(s,{mapRegion:'mountainPond',x:120,y:109,direction:'up',hp:100,boatActive:false,fightMode:mode,fishingMethod:'lure',selectedRod:'lureRod',ownedRods:['bamboo','lureRod'],lures:{silverSpoon:1}});render();},mode);
    const before=await page.evaluate(()=>JSON.parse(JSON.stringify([s.baits,s.lures,s.gameMinutes])));
    await press('#action');await press('#wait');await page.locator('#beginCast').waitFor({state:'visible'});await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');
-   await page.waitForFunction(()=>battle?.phase==='lure');await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
+   await page.waitForFunction(()=>battle?.phase==='lure');assert.equal(await page.locator('#distanceLabel').isVisible(),true);assert.equal(await page.locator('#distanceMeter').isVisible(),true);
+   const startDistance=await page.locator('#distanceLabel').innerText();await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);assert.notEqual(await page.locator('#distanceLabel').innerText(),startDistance);
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);

@@ -64,6 +64,9 @@ for(const mode of ['gauge','nushi'])test('native lure input keeps one specimen a
     Object.defineProperties(w.document.querySelector('#fishScene'),{clientWidth:{value:844},clientHeight:{value:326}});
     Object.defineProperties(w.document.querySelector('#battleFish'),{offsetWidth:{value:150},offsetHeight:{value:75}});
     const before=read(w,'[s.baits,s.lures,s.gameMinutes]');w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');
+    assert.equal(w.document.querySelector('#distanceLabel').style.display,'block');
+    assert.equal(w.document.querySelector('#distanceMeter').parentElement.style.display,'block');
+    assert.match(w.document.querySelector('#distanceLabel').textContent,/スプーンまで/);
     w.pressBattleAction();w.eval('for(let i=0;i<12;i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'interest');
     const specimen=read(w,'[battle.f.id,battle.specimen]'),position=read(w,'battle.lureMotion');w.pauseBattle();w.eval('for(let i=0;i<100;i++)updateLurePresentation()');assert.deepEqual(read(w,'battle.lureMotion'),position);w.resumeBattle();
     w.eval('for(let i=0;i<16&&battle.phase!=="bite";i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'bite');

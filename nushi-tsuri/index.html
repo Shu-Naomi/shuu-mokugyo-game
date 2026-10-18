@@ -20225,6 +20225,8 @@
         let lure=$("#lurePreview");if(!lure){lure=document.createElement("div");lure.id="lurePreview";$("#fishScene").append(lure);}
         lure.innerHTML=ShuTackleArt.icon("silverSpoon");lure.hidden=false;
         $("#fishName").textContent="スプーンで誘う";$("#phaseLabel").textContent=" 誘い中";
+        $("#distanceLabel").style.display="block";
+        $("#distanceMeter").parentElement.style.display="block";
         $("#battleMsg").textContent="Aで短く巻く、離して止める。興味を示す魚を待とう。";
         $("#pull").innerHTML="A<br><small>誘う</small>";$("#wait").innerHTML="B<br><small>回収する</small>";
         updateLurePresentation();return true;
