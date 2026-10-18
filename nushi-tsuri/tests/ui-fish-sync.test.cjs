@@ -83,15 +83,19 @@ test("tackle changes refresh preparation text, HUD and the bait used by the next
   } finally { app.dispose(); }
 });
 
-test("a delayed tick cannot leave fishing stuck in wait after the bite window", () => {
+test("a stalled callback first shows the bite and only expires the displayed window", () => {
   for (const practice of [false, true]) {
     const app = boot(), { window } = app;
     try {
       prepareCast(window, practice);
       const tick = manualBattleTick(window);
       const before = read(window, "({ baits:s.baits, time:s.gameMinutes, caught:s.caught })");
-      const late = window.eval("battle.biteAt + 40000");
+      let late = window.eval("battle.biteAt + 40000");
       window.Date.now = () => late;
+      tick();
+      assert.equal(window.eval("battle.phase"), "bite", "the player gets to see the bite first");
+      assert.equal(window.eval("battle.biteShownAt"), late);
+      late += practice ? 2801 : 1501;
       tick();
       if (practice) {
         assert.equal(window.eval("battle.phase"), "wait");
@@ -103,13 +107,13 @@ test("a delayed tick cannot leave fishing stuck in wait after the bite window", 
   }
 });
 
-test("A uses the actual bite deadline even when the timer has not refreshed the phase", () => {
-  for (const [phase, offset, succeeds] of [["wait", 0, true], ["wait", 1500, true], ["wait", 1501, false], ["bite", 1501, false], ["wait", -1, false]]) {
+test("only a press after the bite is shown can hook within its visible deadline", () => {
+  for (const [phase, offset, succeeds] of [["wait", 0, false], ["wait", 1500, false], ["wait", 1501, false], ["bite", 0, true], ["bite", 1500, true], ["bite", 1501, false], ["wait", -1, false]]) {
     const app = boot(), { window } = app;
     try {
       prepareCast(window);
       const now = window.eval("battle.biteAt") + offset;
-      window.eval(`battle.phase=${JSON.stringify(phase)}`);
+      window.eval(`battle.phase=${JSON.stringify(phase)};battle.biteShownAt=battle.phase==='bite'?battle.biteAt:null`);
       window.Date.now = () => now;
       window.eval("pull()");
       assert.equal(window.eval('battle?.phase === "fight"'), succeeds, `${phase} at ${offset}ms`);

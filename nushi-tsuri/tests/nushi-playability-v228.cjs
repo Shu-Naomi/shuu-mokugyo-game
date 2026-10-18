@@ -17,7 +17,7 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
   w.eval(`cast();beginFishing();clearInterval(timer);Math.random=()=>${encounter};battle.cast=${distance};launchSurfaceCast();settleSurfaceCast();
    battle.specimen=rollFishSpecimen(battle.f,()=>${tier});battle.specimenVisualScale=fishVisualScale(battle.specimen);var testNow=200000,testRng=${rngSeed};Date.now=()=>testNow;
    Math.random=()=>((testRng=Math.imul(testRng,1664525)+1013904223>>>0)/4294967296);
-   battle.biteAt=testNow;pressBattleAction();releaseBattleAction();stopBattleFishArt();
+   battle.biteAt=testNow;syncBitePhase();pressBattleAction();releaseBattleAction();stopBattleFishArt();
    var fightTick;setInterval=fn=>(fightTick=fn,9001);battleTick();
    // Skip painting only: real mood selection, cue text, line/rod physics,
    // movement, warning clocks, input edges and landing are still executed.

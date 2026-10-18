@@ -20,20 +20,22 @@
     kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
   // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
   // suspended phone, and presentation randomness never changes the specimen.
-  function newLure(distance=50){return {speed:0,depth:.42,travel:0,attraction:0,approach:0,chase:0,
-    distance:clamp(distance,10,100),ticks:0,x:68,y:41};}
-  function stepLure(lure,held,interested=false){
+  function newLure(distance=20){return {speed:0,depth:.42,travel:0,attraction:0,approach:0,chase:0,
+    distance:clamp(distance,1,100),ticks:0,x:68,y:41};}
+  function stepLure(lure,held,interested=false,tapped=false){
     lure.ticks++;
-    lure.speed=clamp(lure.speed+(held?.16:-.24),0,1);
-    lure.travel=clamp(lure.travel+lure.speed*.004*50/lure.distance,0,1);
-    lure.depth=clamp(lure.depth+(held?-.006*lure.speed:.009),.18,.82);
+    const active=held||tapped;
+    lure.speed=clamp(lure.speed+(active?(tapped?.28:.16):-.24),0,1);
+    // Distance is measured in the same meters as the cast and hooked fight.
+    lure.travel=clamp(lure.travel+lure.speed*.08/lure.distance,0,1);
+    lure.depth=clamp(lure.depth+(active?-.006*lure.speed:.009),.18,.82);
     lure.x=68-lure.travel*46+Math.sin(lure.ticks*.55)*lure.speed*.65;
     lure.y=20+lure.depth*50+Math.sin(lure.ticks*.7)*lure.speed*.45;
-    lure.attraction=clamp(lure.attraction+(held?.11:-.018),0,1);
+    lure.attraction=clamp(lure.attraction+(tapped?.24:held?.11:-.018),0,1);
     lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
     if(interested){
       lure.chase++;
-      lure.approach=clamp(lure.approach+(lure.speed>.8?.012:held?.075:.16),0,1);
+      lure.approach=clamp(lure.approach+(lure.speed>.8?.012:active?.075:.16),0,1);
     }
     return {recovered:lure.travel>=1,reveal:!interested&&lure.attraction>=1,
       bite:interested&&lure.approach>=1,depart:interested&&lure.chase>=36&&lure.approach<1};

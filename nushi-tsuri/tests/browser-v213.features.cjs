@@ -73,7 +73,7 @@ module.exports=async function motionAndCoast(url,mobile){
     // Restart the same real sea cast and use its normal DOM A events. Only
     // elapsed time is accelerated; moods, retrieval, landing and rewards run normally.
     await page.evaluate(()=>{endBattle();action();beginFishing();Math.random=()=>.999999;battle.cast=85;launchSurfaceCast();settleSurfaceCast();
-      battle.specimen=rollFishSpecimen(battle.f,()=>.5);battle.biteAt=Date.now();pull();releaseBattleAction();clearInterval(timer);stopBattleFishArt();});
+      battle.specimen=rollFishSpecimen(battle.f,()=>.5);battle.biteAt=Date.now();syncBitePhase();pull();releaseBattleAction();clearInterval(timer);stopBattleFishArt();});
     const result=await page.evaluate(()=>{
       const originalInterval=window.setInterval,originalNow=Date.now;let now=originalNow(),rng=301,tick;
       window.setInterval=(callback,ms)=>ms===120?(tick=callback,9001):originalInterval(callback,ms);

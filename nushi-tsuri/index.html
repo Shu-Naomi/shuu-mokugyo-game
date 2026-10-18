@@ -4479,7 +4479,7 @@
         opacity: 0.58;
         vector-effect: non-scaling-stroke;
         filter: drop-shadow(1px 1px 0 #06304c88);
-        transition: 0.22s;
+        transition: stroke .18s, opacity .18s;
       }
       .line-svg path.slack {
         stroke-dasharray: 7 8;
@@ -4505,10 +4505,7 @@
         transform-origin: 0 50%;
         pointer-events: none;
         opacity: 0.86;
-        transition:
-          left 0.12s linear,
-          top 0.12s linear,
-          transform 0.12s linear;
+        transition: none;
         will-change: left, top, transform;
       }
       .fish-tackle-back {
@@ -4521,6 +4518,9 @@
       }
       .fish-scene.fighting .fish-tackle {
         display: block;
+      }
+      .fish-scene.lure-search .battle-actions button {
+        min-height: 64px;
       }
       .fish-tackle svg {
         display: block;
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v241</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v242</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7286,7 +7286,7 @@
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=241-1"></script>
+    <script src="fishing-duel.js?v=242-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
@@ -20218,8 +20218,8 @@
         return true;
       }
       function startLurePresentation(){
-        beginUnderwaterFromSurface();battle.phase="lure";battle.attraction=0;battle.lureHeld=false;
-        battle.lureMotion=ShuFishing.newLure(battle.castDistance??battle.cast??50);
+        beginUnderwaterFromSurface();battle.phase="lure";battle.attraction=0;battle.lureHeld=false;battle.lurePulse=false;
+        battle.lureMotion=ShuFishing.newLure(battle.startMeters);
         $("#castSurface").classList.remove("cast-throwing");
         $("#fishScene").classList.add("lure-search");
         let lure=$("#lurePreview");if(!lure){lure=document.createElement("div");lure.id="lurePreview";$("#fishScene").append(lure);}
@@ -20233,6 +20233,7 @@
       }
       function revealLureFish(){
         battle.phase="interest";battle.biteScheduledAt=Date.now();battle.biteAt=Infinity;
+        battle.biteShownAt=null;battle.sandLifted=true;
         battle.lureMotion.approach=0;battle.lureMotion.chase=0;
         const el=$("#battleFish");el.className=`battle-fish fish-${battle.f.id}`;
         el.style.backgroundImage=`url("${fishAssets[battle.f.id]}")`;
@@ -20248,7 +20249,8 @@
         const lure=$("#lurePreview");if(!lure)return;
         const motion=battle.lureMotion;
         if(battle.phase!=="bite"){
-          const result=ShuFishing.stepLure(motion,battle.lureHeld,battle.phase==="interest");
+          const tapped=battle.lurePulse;battle.lurePulse=false;
+          const result=ShuFishing.stepLure(motion,battle.lureHeld,battle.phase==="interest",tapped);
           battle.attraction=motion.attraction;
           if(result.recovered){log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");return endBattle();}
           if(result.depart){
@@ -20259,11 +20261,17 @@
           else if(result.bite){battle.biteAt=Date.now();battle.biteScheduledAt=battle.biteAt;}
         }
         const mood=fightProfiles[battle.f.id].moods.find(m=>m.calm)||fightProfiles[battle.f.id].moods[0];
-        const x=motion.x,y=motion.y;
+        const x=motion.x;
+        let y=motion.y;
+        const clearY=battleFishClearMaxY();
+        if(clearY!==null){
+          const mouth=battleMouthAndHook(false);
+          y=Math.min(y,clearY+mouth.rootY/5-battle.y);
+        }
         if(battle.phase!=="lure"){
           animateFishBody(mood,.65,.7);
           renderBattleFish();
-          const mouth=battleMouthAndHook(),gap=battle.phase==="bite"?0:(1-motion.approach)*7;
+          const mouth=battleMouthAndHook(false),gap=battle.phase==="bite"?0:(1-motion.approach)*7;
           if($("#fishScene").clientWidth&&$("#fishScene").clientHeight){
             battle.x+=x+gap-mouth.rootX/10;battle.y+=y-mouth.rootY/5;
           }else{battle.x=x+gap;battle.y=y;}
@@ -20643,13 +20651,39 @@
           ayu: { minX: 40, maxX: 96, minY: 24, maxY: 72 },
           nijimasu: { minX: 40, maxX: 96, minY: 22, maxY: 74 },
         }[battle.f.id] || { minX: 42, maxX: 96, minY: 28, maxY: 84 };
+        if(battle.method==="lure"){
+          // A fish that chased the spoon starts where its mouth touched it,
+          // including a near-shore strike or a flatfish already off the sand.
+          base.minX=Math.min(base.minX,Math.max(7,battle.startX-3));
+          base.maxX=Math.max(base.maxX,Math.min(96,battle.startX+3));
+          base.minY=Math.min(base.minY,Math.max(8,battle.startY-3));
+          base.maxY=Math.max(base.maxY,Math.min(84,battle.startY+3));
+        }
         const progress = battle.retrieval || 0;
-        return {
+        const bounds = {
           minX: base.minX + (7 - base.minX) * progress,
           maxX: base.maxX + ((ShuRegional.legendary(battle.f.id) ? Math.min(base.maxX,88) : 92) - base.maxX) * progress,
           minY: base.minY + (8 - base.minY) * progress,
           maxY: base.maxY + (74 - base.maxY) * progress,
         };
+        const scene=$("#fishScene"),element=$("#battleFish");
+        if(battle.fightMode==="nushi"&&scene.clientWidth&&element.offsetWidth){
+          // Use one envelope for every swim/turn pose. A changing per-frame
+          // edge would itself push a right-running fish back to the left.
+          const lateral=Boolean(ShuFishArt.species[battle.f.id]),profile=fishMotionProfiles[battle.f.id];
+          const scale=Math.max(1.19,...fightProfiles[battle.f.id].moods.map(m=>m.scale||1))*1.006;
+          const stretch=lateral?1:1+(profile.stretch||0)*2;
+          const width=Math.hypot(element.offsetWidth*stretch,element.offsetHeight)*scale*
+            Math.max(.1,Number(battle.specimenVisualScale)||1);
+          const recoil=lateral?0:(profile.recoil||0)*2;
+          bounds.maxX=Math.min(bounds.maxX,Math.max(bounds.minX,100-(width/2+recoil+4)*100/scene.clientWidth));
+        }
+        const clearY=battleFishClearMaxY();
+        if(clearY!==null){
+          bounds.minY=Math.min(bounds.minY,Math.max(8,clearY-8));
+          bounds.maxY=Math.min(bounds.maxY,Math.max(bounds.minY,clearY));
+        }
+        return bounds;
       }
       function releaseHirameFromSand() {
         if (!battle || battle.f.id !== "hirame" || battle.sandLifted) return false;
@@ -21022,12 +21056,16 @@
           battle.startX + (battle.surfaceX - battle.startX) * progress;
         const baseY =
           battle.startY + (battle.surfaceY - battle.startY) * progress;
-        const lineSpring = battle.fightMode==="nushi"&&!mood.calm ? .025 : battle.reeling
+        const nushiRunning=battle.fightMode==="nushi"&&!mood.calm;
+        const lineSpring = nushiRunning ? .025 : battle.reeling
           ? 0.24 + progress * 0.08
           : mood.calm
             ? 0.14
             : 0.08;
-        battle.vx += (baseX - battle.x) * lineSpring;
+        // During a run the fish takes line to the right. The retrieval anchor
+        // must not drag a slow swimmer left against the visible escape cue.
+        if(nushiRunning)battle.vx=Math.max(0,battle.vx);
+        else battle.vx += (baseX - battle.x) * lineSpring;
         battle.vy += (baseY - battle.y) * lineSpring;
         battle.vx = clampBattle(battle.vx, -6.5, 6.5);
         battle.vy = clampBattle(battle.vy, -5.5, 5.5);
@@ -21679,6 +21717,20 @@
         });
         return true;
       }
+      function battleFishViewport() {
+        if(!battle||(battle.fightMode!=="nushi"&&battle.method!=="lure"))return null;
+        const scene=$("#fishScene"),view=scene.getBoundingClientRect(),actions=$("#pull").parentElement.getBoundingClientRect();
+        if(!view.width||!actions.width||!scene.clientHeight)return null;
+        return {height:scene.clientHeight,bottom:Math.max(32,actions.top-view.top-16)};
+      }
+      function battleFishClearMaxY() {
+        const view=battleFishViewport();if(!view)return null;
+        const element=$("#battleFish"),pose=battleFishVisualPose(),radians=pose.rotation*Math.PI/180;
+        const height=Math.max(element.getBoundingClientRect().height,
+          (Math.abs(Math.sin(radians))*element.offsetWidth*Math.abs(pose.stretch)+
+          Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash))*pose.displayScale);
+        return Math.max(8,(view.bottom-height/2-Math.abs(pose.offsetY))*100/view.height);
+      }
       function battleFishVisualPose() {
         // The sprite and its hook must use the same effective transform,
         // including authored fixed-head frames and the grounded flatfish.
@@ -21686,7 +21738,7 @@
         const fixedHead = fixedFaceFishIds.has(battle.f.id);
         const showingTurn = Boolean(battle.turning && !sandGrounded);
         const specimenScale = Math.max(.1, Number(battle.specimenVisualScale) || 1);
-        return {
+        const pose = {
           offsetX: Number(Number(battle.visualOffsetX || 0).toFixed(2)),
           offsetY: Number(Number(sandGrounded ? 0 :
             (fixedHead ? 0 : battle.visualOffsetY || 0) +
@@ -21698,6 +21750,14 @@
           specimenScale,
           displayScale: (battle.renderScale || 1) * specimenScale,
         };
+        const view=battleFishViewport();
+        if(view){
+          const element=$("#battleFish"),radians=pose.rotation*Math.PI/180;
+          const height=Math.abs(Math.sin(radians))*element.offsetWidth*Math.abs(pose.stretch)+
+            Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash);
+          if(height)pose.displayScale=Math.min(pose.displayScale,Math.max(.1,(view.bottom-16)/height));
+        }
+        return pose;
       }
       function stopBattleFishArt() {
         cancelAnimationFrame(battleArtAnimationFrame);
@@ -21708,8 +21768,9 @@
         const paint=now=>{
           battleArtAnimationFrame=0;
           if(!battle||battle.phase!=="fight")return;
-          if(!document.hidden&&!battle.pausedAt&&now-battleArtLastPaintAt>=32){
-            battleArtLastPaintAt=now;renderBattleFish();syncBattleFishLine();
+          if(!document.hidden&&!battle.pausedAt){
+            if(now-battleArtLastPaintAt>=32){battleArtLastPaintAt=now;renderBattleFish();}
+            syncBattleFishLine();
           }
           battleArtAnimationFrame=requestAnimationFrame(paint);
         };
@@ -21841,7 +21902,7 @@
           depthContrast.toFixed(2),
         );
       }
-      function battleMouthAndHook() {
+      function battleMouthAndHook(rendered = true) {
         const scene = $("#fishScene");
         const fishElement = $("#battleFish");
         const profile = fishMouthProfiles[battle.f.id];
@@ -21857,19 +21918,16 @@
           ? ShuFishArt.hookPose(battle.f.id,spriteMode==='turn'?7:3,hookPoseFrame)
           : fishHookPoseOverrides[battle.f.id]?.[spriteMode]?.[hookPoseFrame] ||
           fishHookPoseFrames[spriteMode]?.[hookPoseFrame];
-        const mouthProjection = spriteMode === "turn" && pose
+        let mouthProjection = spriteMode === "turn" && pose
           ? pose.xScale
           : facing * (pose?.xScale || 1);
         const mouthYOffset = pose?.yOffset || 0;
-        const tackleFacing = Math.abs(mouthProjection) > 0.06
-          ? Math.sign(mouthProjection)
-          : battle.turning?.to || facing;
         const visual = battleFishVisualPose();
         const scale = visual.displayScale;
-        const angle = visual.rotation;
+        let angle = visual.rotation;
         const radians = angle * Math.PI / 180;
-        const cos = Math.cos(radians);
-        const sin = Math.sin(radians);
+        let cos = Math.cos(radians);
+        let sin = Math.sin(radians);
 
         // Work in physical CSS pixels while rotating so the anchor follows
         // the exact responsive sprite size, then convert to the line SVG's
@@ -21881,19 +21939,39 @@
         const localMouthY =
           (profile.y + mouthYOffset) * fishElement.offsetHeight * scale *
           visual.squash;
-        const rotatedMouthX = localMouthX * cos - localMouthY * sin;
-        const rotatedMouthY = localMouthX * sin + localMouthY * cos;
+        let rotatedMouthX = localMouthX * cos - localMouthY * sin;
+        let rotatedMouthY = localMouthX * sin + localMouthY * cos;
+        let centerX=battle.x*sceneWidth/100+visual.offsetX;
+        let centerY=battle.y*sceneHeight/100+visual.offsetY;
+        if(rendered){
+          const box=fishElement.getBoundingClientRect(),view=scene.getBoundingClientRect();
+          const transform=box.width&&view.width?getComputedStyle(fishElement).transform:"";
+          if(box.width&&view.width&&/^matrix/.test(transform))try{
+            const matrix=new DOMMatrix(transform);
+            if([matrix.a,matrix.b,matrix.c,matrix.d].every(Number.isFinite)){
+              // CSS is still moving/turning the sprite between battle ticks.
+              // Attach to that displayed pose, rather than its future target.
+              const projection=mouthProjection/visual.displayFacing;
+              const x=profile.x*fishElement.offsetWidth*projection;
+              const y=(profile.y+mouthYOffset)*fishElement.offsetHeight;
+              rotatedMouthX=matrix.a*x+matrix.c*y;rotatedMouthY=matrix.b*x+matrix.d*y;
+              const down=Math.hypot(matrix.c,matrix.d)||1;
+              cos=matrix.d/down;sin=-matrix.c/down;angle=Math.atan2(sin,cos)*180/Math.PI;
+              mouthProjection=projection*(Math.sign(matrix.a*matrix.d-matrix.b*matrix.c)||visual.displayFacing);
+              centerX=box.left+box.width/2-view.left;centerY=box.top+box.height/2-view.top;
+            }
+          }catch{}
+        }
+        const tackleFacing = Math.abs(mouthProjection) > 0.06
+          ? Math.sign(mouthProjection)
+          : battle.turning?.to || facing;
         const lipX = clampBattle(
-          battle.x * 10 +
-            (rotatedMouthX + visual.offsetX) *
-              1000 / sceneWidth,
+          (centerX+rotatedMouthX)*1000/sceneWidth,
           20,
           990,
         );
         const lipY = clampBattle(
-          battle.y * 5 +
-            (rotatedMouthY + visual.offsetY) *
-              500 / sceneHeight,
+          (centerY+rotatedMouthY)*500/sceneHeight,
           48,
           490,
         );
@@ -21918,7 +21996,7 @@
         // The shank lives behind the fish and begins just inside the lower
         // lip.  The long line ends at its tiny eye; the front layer shows only
         // the small bend and bait below the jaw.
-        const hookEyeX = 8 * profile.tackleScale * mouthProjection;
+        const hookEyeX = 8 * profile.tackleScale * tackleFacing;
         const hookEyeY = -4 * profile.tackleScale;
         const rotatedEyeX = hookEyeX * cos - hookEyeY * sin;
         const rotatedEyeY = hookEyeX * sin + hookEyeY * cos;
@@ -21964,6 +22042,7 @@
         battle.reeling = false;
         const delay = 850 + Math.random() * 650;
         battle.biteAt = Date.now() + delay;
+        battle.biteShownAt = null;
         battle.nibbleAt = battle.biteAt - Math.min(520, delay * .4);
         battle.nibbleShown = false;
         $("#castSurface").classList.remove("nibbling", "bite");
@@ -21979,9 +22058,10 @@
         if (!battle || !["wait", "bite"].includes(battle.phase)) return false;
         if(document.hidden||battle.pausedAt)return false;
         const biteWindow = battle.practice ? 2800 : 1500;
-        // A timer callback can arrive after the entire window (phone stall or
-        // background throttling). Resolve that case even if "bite" was skipped.
-        if (now > battle.biteAt + biteWindow) {
+        // Start the grace period when the bite is first shown. A delayed phone
+        // callback cannot consume a window the player has never seen.
+        const shownAt=Number.isFinite(battle.biteShownAt)?battle.biteShownAt:battle.biteAt;
+        if (battle.phase === "bite" && now > shownAt + biteWindow) {
           if (battle.practice)
             queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
           else lose(battle.method==="lure"?"アワセが間に合わず、魚がスプーンから離れた。":"合わせが遅れた……魚はエサだけ持っていった。");
@@ -21989,14 +22069,15 @@
         }
         if (battle.phase === "wait" && now >= battle.biteAt) {
           battle.phase = "bite";
+          battle.biteShownAt = now;
           $("#castSurface").classList.remove("nibbling");
           $("#castSurface").classList.add("bite");
           vibrate([90, 55, 170]);
-          $("#phaseLabel").textContent = battle.practice ? " ③ 合わせる！" : " アタリ！";
+          $("#phaseLabel").textContent = battle.practice ? " ③ 合わせる！" : battle.method==="lure"?" 食いつき・Aでアワセ":" アタリ！";
           $("#battleMsg").textContent = battle.practice
             ? "サム「ウキが消えた！今だ、Aで合わせる！」"
             : battle.method==="lure"?"食いついた！Aを離して押し直し、一度引いて合わせる！":"消し込んだ！！今だ、Aで合わせる！";
-          $("#pull").innerHTML = "A<br><small>合わせる！</small>";
+          $("#pull").innerHTML = battle.method==="lure"?"A<br><small>アワセ！</small>":"A<br><small>合わせる！</small>";
         } else if (battle.phase === "wait" && !battle.nibbleShown && now >= battle.nibbleAt) {
           battle.nibbleShown = true;
           $("#castSurface").classList.add("nibbling");
@@ -22089,12 +22170,14 @@
         }, 120);
       }
       function pull() {
-        if (!battle || document.querySelector(".modal.open")) return;
+        if (!battle || document.hidden || battle.pausedAt || document.querySelector(".modal.open")) return;
         if (battle.phase === "prep") return beginFishing();
         if (battle.phase === "cast") return launchSurfaceCast();
         if (battle.phase === "cast-flight") return;
-        if(["lure","interest"].includes(battle.phase)){battle.lureHeld=true;return;}
+        if(["lure","interest"].includes(battle.phase)){battle.lureHeld=true;battle.lurePulse=true;return;}
+        const beforeBiteSync=battle.phase;
         if (["wait", "bite"].includes(battle.phase) && !syncBitePhase()) return;
+        if(beforeBiteSync==="wait"&&battle.phase==="bite")return;
         if (battle.phase === "wait") {
           if (battle.practice)
             return queuePracticeBite(
@@ -22108,9 +22191,21 @@
       function startFight() {
         stopCastingWaterSound(.24);
         playGameAudioSample("reelHookSet", { restart: true });
-        beginUnderwaterFromSurface();
+        const lureFight=battle.method==="lure"&&Boolean(battle.lureMotion);
+        if(lureFight){
+          // The chasing fish is already visible underwater. Keep that view
+          // through the hook set instead of replaying the shore-to-water reveal.
+          clearTimeout(surfaceTransitionTimer);surfaceTransitionTimer=0;
+          $("#fishScene").classList.remove("surface-casting","surface-diving");
+        }else beginUnderwaterFromSurface();
         battle.phase = "fight";
         battle.reeling=false;battle.awaitFightRelease=true;
+        if(lureFight){
+          battle.startX=battle.x;battle.startY=battle.y;
+          battle.startMeters=Math.max(0,battle.lureMotion.distance*(1-battle.lureMotion.travel));
+          battle.distanceFactor=clampBattle(battle.startMeters/18,.75,1.55);
+          battle.lureHeld=false;battle.lurePulse=false;
+        }
         $("#fishScene").classList.remove("lure-search");
         if($("#lurePreview"))$("#lurePreview").hidden=true;
         const f = battle.f;
@@ -22164,7 +22259,8 @@
         battle.turnArcY = 0;
         battle.turnRoll = 0;
         const scene = $("#fishScene");
-        scene.classList.add("fighting", "hook-reveal");
+        scene.classList.add("fighting");
+        scene.classList.toggle("hook-reveal",!lureFight);
         scene.classList.toggle("duel-nushi",battle.fightMode==="nushi");
         scene.classList.toggle("nushi-fight", ShuRegional.legendary(f.id));
         const fishElement = $("#battleFish");
@@ -22183,7 +22279,7 @@
           `${(fishSwimFrameCounts[f.id] || 8) * 100}% 100%`;
         fishElement.style.backgroundPositionY = "0";
         fishElement.style.transition = "none";
-        fishElement.style.opacity = "0";
+        fishElement.style.opacity = lureFight?"1":"0";
         $("#fishTackleBack").className =
           `fish-tackle fish-tackle-back bait-${battle.bait || s.selectedBait}`;
         $("#fishTackleFront").className =
@@ -22201,12 +22297,15 @@
         $("#wait").innerHTML = "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
         chooseFishMood(true);
         startBattleFishArt();
-        fishElement.classList.add("hooked");
         clearTimeout(hookRevealTimer);
-        hookRevealTimer = setTimeout(
-          finishHookReveal,
-          ShuRegional.legendary(f.id) ? 1090 : 820,
-        );
+        hookRevealTimer=0;
+        if(!lureFight){
+          fishElement.classList.add("hooked");
+          hookRevealTimer = setTimeout(
+            finishHookReveal,
+            ShuRegional.legendary(f.id) ? 1090 : 820,
+          );
+        }
         fishElement.style.opacity = "1";
         $("#phaseLabel").textContent = battle.practice
           ? " ④ 巻く／送る"
@@ -22215,6 +22314,8 @@
           ? "サム「Aを押して巻く、離して待つ。張力が高い時はBを1回。糸が出て張力が下がるが、魚は少し遠ざかるぞ」"
           : f.id === "hirame" && !battle.sandLifted
             ? "ヒラメが砂底にぺったり張り付いている！まずAで引き剥がし、左上の水面へ寄せよう。"
+            : lureFight
+            ? `${f.name}がスプーンに掛かった！糸と魚を見て水面へ寄せよう。${fightProfiles[f.id].intro}`
             : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(battle.practice
@@ -22290,6 +22391,7 @@
         scene.classList.toggle("nushi-bracing",phase==="warning");
         scene.classList.toggle("nushi-pulling",phase==="pulling");
         if(!phase){delete scene.dataset.nushiPhase;return;}
+        battle.lineSlack=phase==="slack"&&!battle.reeling;
         scene.dataset.nushiPhase=phase;
         if(phase==="leap")return;
         const stage=ShuRegional.legendary(battle.f.id)?` 第${["壱","弐","参"][(battle.nushiStage||1)-1]}相・`:" ";
@@ -23278,7 +23380,7 @@
         setBattleReeling(false);
       }
       function pressBattleAction(){
-        if(battleActionHeld||document.hidden)return;
+        if(battleActionHeld||document.hidden||battle?.pausedAt)return;
         battleActionHeld=true;pull();
       }
       function pauseBattle(){if(battle&&!battle.pausedAt)battle.pausedAt=Date.now();releaseHeldInputs();}
@@ -23286,13 +23388,14 @@
         if(battle?.pausedAt){
           const now=Date.now(),paused=battle.pausedAt;
           for(const key of ["biteAt","nibbleAt"])if(Number.isFinite(battle[key]))battle[key]+=now-Math.max(paused,battle.biteScheduledAt||paused);
+          if(Number.isFinite(battle.biteShownAt))battle.biteShownAt+=now-paused;
           if(battle.nextMood)battle.nextMood+=now-paused;
           ShuFishing.shiftWindow(battle,now-paused);
           battle.pausedAt=0;
         }
         releaseHeldInputs();
       }
-      function releaseHeldInputs() {stopMoving();releaseBattleAction();}
+      function releaseHeldInputs() {stopMoving();releaseBattleAction();if(battle)battle.lurePulse=false;}
       document.querySelectorAll("[data-move]").forEach((b) => {
         b.onpointerdown = (e) => {
           e.preventDefault();
@@ -23552,7 +23655,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=241-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=242-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

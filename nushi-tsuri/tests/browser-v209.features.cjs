@@ -161,7 +161,7 @@ module.exports=async function features(url,mobile){
       const results=[];
       for(const mode of ['gauge','nushi']){
         s.fightMode=mode;openPracticePond();beginFishing();battle.cast=50;
-        launchSurfaceCast();settleSurfaceCast();battle.biteAt=Date.now();pull();clearInterval(timer);timer=0;finishHookReveal();
+        launchSurfaceCast();settleSurfaceCast();battle.biteAt=Date.now();syncBitePhase();pull();clearInterval(timer);timer=0;finishHookReveal();
         for(const id of Object.keys(ShuFishArt.species))for(const heading of [null,0,1,2,3,4,5,6,'mouth']){
           Object.assign(battle,{f:fish.find(f=>f.id===id),specimen:null,mouthState:heading==='mouth'?'open':'closed',
             turning:typeof heading==='number'?{from:1,to:-1}:null,turnSpriteFrame:typeof heading==='number'?heading:0,
@@ -195,7 +195,7 @@ module.exports=async function features(url,mobile){
     for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));
       if(r.tallFins!==null)assert.equal(r.tallFins,r.id==='shirogisu'?2:1,r.id+' actual dorsal silhouette');}
     await page.evaluate(()=>{s.fightMode='nushi';openPracticePond();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();
-      battle.biteAt=Date.now();pull();clearInterval(timer);timer=0;finishHookReveal();battle.f=fish.find(f=>f.id==='nushi');
+      battle.biteAt=Date.now();syncBitePhase();pull();clearInterval(timer);timer=0;finishHookReveal();battle.f=fish.find(f=>f.id==='nushi');
       battle.turning={from:1,to:-1};battle.turnSpriteFrame=3;battle.x=50;battle.y=58;drawBattle();});
     await screenshot('FISH_TURN');assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
     for(const id of ['moroko','ayu','shirogisu']){
