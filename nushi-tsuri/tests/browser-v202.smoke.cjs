@@ -34,11 +34,9 @@ function route(region,start,goal){
   const queue=[{...start,keys:[]}],seen=new Set([start.x+','+start.y]);
   for(let i=0;i<queue.length;i++){
     const point=queue[i];if(goal(point.x,point.y))return point.keys;
-    for(const [key,dx,dy]of [['ArrowUp',0,-4],['ArrowRight',4,0],['ArrowDown',0,4],['ArrowLeft',-4,0]]){
-      const x=point.x+dx,y=point.y+dy,id=x+','+y;if(seen.has(id))continue;
-      if(Array.from({length:9},(_,j)=>M.walkable(point.x+dx*j/8,point.y+dy*j/8,region)).every(Boolean)){
-        seen.add(id);queue.push({x,y,keys:[...point.keys,key]});
-      }
+    for(const [key,direction]of [['ArrowUp','up'],['ArrowRight','right'],['ArrowDown','down'],['ArrowLeft','left']]){
+      const {x,y}=M.moveTarget(point.x,point.y,direction,4,region),id=x+','+y;if(seen.has(id))continue;
+      seen.add(id);queue.push({x,y,keys:[...point.keys,key]});
     }
   }throw Error('No walking route in '+region);
 }
@@ -90,15 +88,15 @@ async function smoke(url,screenshots=true){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v240/);
+    assert.match(await page.locator('.hud').innerText(),/v241/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
     for(const key of keys){
       const old=await position();await page.keyboard.press(key);
-      const delta={ArrowUp:[0,-4],ArrowRight:[4,0],ArrowDown:[0,4],ArrowLeft:[-4,0]}[key];
+      const direction={ArrowUp:'up',ArrowRight:'right',ArrowDown:'down',ArrowLeft:'left'}[key],expected=M.moveTarget(old.x,old.y,direction,4,region);
       const next=await position();
-      assert.ok(Math.abs(next.x-old.x-delta[0])<.001&&Math.abs(next.y-old.y-delta[1])<.001,region+' blocked '+key+' at '+JSON.stringify(old));
+      assert.deepEqual(next,expected,region+' blocked '+key+' at '+JSON.stringify(old));
     }return keys.length;
   }
   const exitTo=target=>(x,y)=>M.exitAt(x,y,currentRegion)?.region===target;
@@ -144,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v240/);
+    assert.match(await page.locator('.hud').innerText(),/v241/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,

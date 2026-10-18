@@ -61,7 +61,10 @@ test('ordinary Amago and Kajika are reachable without boss records and bait/dept
   for(const id of ['amago','kajika']){
    assert.ok(w.ShuTackle.weight(id,'river','small')>w.ShuTackle.weight(id,'corn','small')*10);
    assert.ok(w.ShuTackle.weight(id,'river','small')>w.ShuTackle.weight(id,'river','large'));
-   for(const spot of ['lake-mid','river-mid','mountain-pond-mid','mountain-marsh-mid','mountain-underground-mid'])assert.equal(read(w,`fishingSpotById('${spot}').weights.${id}||0`),0,id+' '+spot);
+   for(const spot of ['lake-mid','river-mid','mountain-pond-mid','mountain-marsh-mid','mountain-underground-mid']){
+    if(id==='kajika'&&spot==='mountain-underground-mid')assert.ok(read(w,`fishingSpotById('${spot}').weights.${id}`)>0);
+    else assert.equal(read(w,`fishingSpotById('${spot}').weights.${id}||0`),0,id+' '+spot);
+   }
   }
   assert.equal(w.ShuRegional.ordinary.stream.length,9,'new ordinary fish do not reset old boss completion');assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}

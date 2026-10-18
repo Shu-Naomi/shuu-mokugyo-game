@@ -6,7 +6,7 @@
  const buildings=[
   {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:160,y:66,w:16,h:12,sprite:1,route:[[160,68],[160,66]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
   {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:44,w:13,h:10,sprite:0,route:[[194,44],[190,44]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
-  {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:229,y:66,w:11,h:10,sprite:3,route:[[219,66],[229,66]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
+  {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
   {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
   {id:'wetland-house',region:'wetland',kind:'house',name:'水郷の民家',x:64,y:83,w:14,h:11,sprite:2,route:[[80,70],[80,83],[64,83]],line:'洗濯物を干してから、睡蓮の池をひと回りしてきたところさ。'}
@@ -17,8 +17,8 @@
   {id:'village-worker',region:'village',name:'仕事帰りの住人',sprite:2,route:[[164,82],[177,82]],speed:1.1},
   {id:'stream-fisher',region:'stream',name:'渓流の常連',sprite:0,route:[[153,68],[168,67]],speed:1.2},
   {id:'stream-worker',region:'stream',name:'橋を見回る住人',sprite:2,route:[[145,72],[153,72]],speed:1},
-  {id:'pond-angler',region:'mountainPond',name:'池を眺める釣り人',sprite:0,route:[[110,111],[129,111]],speed:1.2},
-  {id:'pond-resident',region:'mountainPond',name:'小屋の住人',sprite:2,route:[[220,66],[228,66]],speed:.9},
+  {id:'pond-angler',region:'mountainPond',name:'池を眺める釣り人',sprite:0,route:[[116,108],[129,108]],speed:1.2},
+  {id:'pond-resident',region:'mountainPond',name:'小屋の住人',sprite:2,route:[[214,75],[226,75]],speed:.9},
   {id:'marsh-resident',region:'mountainMarsh',name:'葦守りの住人',sprite:1,route:[[68,24],[82,24]],speed:1.1},
   {id:'marsh-fisher',region:'mountainMarsh',name:'沼の釣り人',sprite:0,route:[[136,104],[146,105]],speed:.9},
   {id:'wetland-resident',region:'wetland',name:'水郷の住人',sprite:1,route:[[46,70],[68,71]],speed:1.1},
@@ -30,7 +30,7 @@
  const solid=(x,y,region)=>buildings.some(b=>b.region===region&&rect(x,y,footprint(b)));
  function distance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/length)):0;return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
  const access=(x,y,region)=>buildings.some(b=>b.region===region&&b.route.slice(1).some((p,i)=>distance(x,y,b.route[i],p)<=1.8));
- function nearby(state){if(state.direction!=='up')return null;return buildings.filter(b=>b.region===state.mapRegion&&Math.abs(state.x-b.x)<=3.8&&state.y>=b.y-1&&state.y<=b.y+4.5).sort((a,b)=>Math.hypot(state.x-a.x,state.y-a.y)-Math.hypot(state.x-b.x,state.y-b.y))[0]||null;}
+ function nearby(state){if(state.direction!=='up')return null;return buildings.filter(b=>b.region===state.mapRegion&&Math.abs(state.x-b.x)<=3.8&&state.y>footprint(b).bottom&&state.y<=b.y+4.5).sort((a,b)=>Math.hypot(state.x-a.x,state.y-a.y)-Math.hypot(state.x-b.x,state.y-b.y))[0]||null;}
  function moveTarget(x,y,direction,stride,walkable){
   const delta={left:[-1,0],right:[1,0],up:[0,-1],down:[0,1]}[direction];if(!delta||!Number.isFinite(stride)||stride<=0||!walkable(x,y))return {x,y};
   for(let i=0;i<stride;i++){const step=Math.min(1,stride-i),[dx,dy]=delta;if(![.25,.5,.75,1].every(t=>walkable(x+dx*step*t,y+dy*step*t)))break;x+=dx*step;y+=dy*step;}return {x,y};

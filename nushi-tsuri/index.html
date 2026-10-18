@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v240</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v241</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7282,22 +7282,22 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
-    <script src="aquarium-life.js?v=238-1"></script>
+    <script src="aquarium-life.js?v=241-1"></script>
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=228-1"></script>
+    <script src="fishing-duel.js?v=241-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="world-life.js?v=240-1"></script>
+    <script src="world-life.js?v=241-1"></script>
     <script src="field-guide.js?v=239-1"></script>
-    <script src="mountain-region.js?v=240-1"></script>
+    <script src="mountain-region.js?v=241-1"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=238-1"></script>
+    <script src="fish-additions.js?v=241-1"></script>
     <script src="fish-art.js?v=238-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
@@ -11527,6 +11527,10 @@
       });
       ShuFishAdditions.install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,
         fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle:ShuTackle});
+      for(const [id,depth]of Object.entries({dojo:"岸際〜深場",kajika:"岸際〜深場",kamatsuka:"岸際〜中層",ugui:"岸際〜中層"})){
+        fishEncyclopediaData[id].locations+=`／岩窟の地下湖（${depth}）`;
+        if(!fishEncyclopediaData[id].habitats.includes("lake"))fishEncyclopediaData[id].habitats.push("lake");
+      }
       // Every fish uses the common renderer and seven headings. Preserve each
       // species' gameplay, size and movement profile.
       for(const [id,art]of Object.entries(ShuFishArt.species)){
@@ -18380,7 +18384,7 @@
               night: 0.3,
             }[period] || 1;
           }
-          if (id === "namazu") {
+          if (id === "namazu" || id === "gigi") {
             weight *= {
               morning: 0.75,
               day: 0.55,
@@ -20215,6 +20219,7 @@
       }
       function startLurePresentation(){
         beginUnderwaterFromSurface();battle.phase="lure";battle.attraction=0;battle.lureHeld=false;
+        battle.lureMotion=ShuFishing.newLure(battle.castDistance??battle.cast??50);
         $("#castSurface").classList.remove("cast-throwing");
         $("#fishScene").classList.add("lure-search");
         let lure=$("#lurePreview");if(!lure){lure=document.createElement("div");lure.id="lurePreview";$("#fishScene").append(lure);}
@@ -20225,7 +20230,8 @@
         updateLurePresentation();return true;
       }
       function revealLureFish(){
-        battle.phase="interest";battle.biteScheduledAt=Date.now();battle.biteAt=Date.now()+1600;
+        battle.phase="interest";battle.biteScheduledAt=Date.now();battle.biteAt=Infinity;
+        battle.lureMotion.approach=0;battle.lureMotion.chase=0;
         const el=$("#battleFish");el.className=`battle-fish fish-${battle.f.id}`;
         el.style.backgroundImage=`url("${fishAssets[battle.f.id]}")`;
         el.style.backgroundSize=`${(fishSwimFrameCounts[battle.f.id]||8)*100}% 100%`;el.style.opacity="1";
@@ -20236,18 +20242,37 @@
       }
       function updateLurePresentation(){
         if(!battle||!["lure","interest","bite"].includes(battle.phase)||battle.method!=="lure")return;
+        if(document.hidden||battle.pausedAt)return;
         const lure=$("#lurePreview");if(!lure)return;
-        if(battle.phase==="lure"){
-          battle.attraction=Math.max(0,(battle.attraction||0)+(battle.lureHeld?.1:-.018));
-          if(battle.attraction>=1)revealLureFish();
+        const motion=battle.lureMotion;
+        if(battle.phase!=="bite"){
+          const result=ShuFishing.stepLure(motion,battle.lureHeld,battle.phase==="interest");
+          battle.attraction=motion.attraction;
+          if(result.recovered){log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");return endBattle();}
+          if(result.depart){
+            battle.phase="lure";motion.attraction=.25;motion.approach=0;motion.chase=0;
+            $("#battleFish").style.opacity="0";$("#fishName").textContent="スプーンで誘う";
+            $("#battleMsg").textContent="魚が追うのをやめた。Aを短く押す・離して沈めるを試そう。";
+          }else if(result.reveal)revealLureFish();
+          else if(result.bite){battle.biteAt=Date.now();battle.biteScheduledAt=battle.biteAt;}
         }
         const mood=fightProfiles[battle.f.id].moods.find(m=>m.calm)||fightProfiles[battle.f.id].moods[0];
-        if(battle.phase!=="lure"){animateFishBody(mood,.65,.7);renderBattleFish();}
-        let x=battle.x-9,y=battle.y;
+        const x=motion.x,y=motion.y;
         if(battle.phase!=="lure"){
-          const mouth=battleMouthAndHook();x=mouth.rootX/10;y=mouth.rootY/5;
-          if(battle.phase==="interest")x-=Math.max(0,(battle.biteAt-Date.now())/1600)*10;
-        }else{x-=Math.sin((battle.attraction||0)*18)*3;y+=Math.cos((battle.attraction||0)*14)*2;}
+          animateFishBody(mood,.65,.7);
+          renderBattleFish();
+          const mouth=battleMouthAndHook(),gap=battle.phase==="bite"?0:(1-motion.approach)*7;
+          if($("#fishScene").clientWidth&&$("#fishScene").clientHeight){
+            battle.x+=x+gap-mouth.rootX/10;battle.y+=y-mouth.rootY/5;
+          }else{battle.x=x+gap;battle.y=y;}
+          renderBattleFish();
+        }
+        if(battle.phase!=="bite"){
+          const label={fast:"速く巻く",slow:"ゆっくり巻く",sink:"止めて沈める"}[motion.motion];
+          $("#phaseLabel").textContent=` ${battle.phase==="interest"?"魚が接近・":""}${label}`;
+          $("#distanceLabel").textContent=`スプーンまで ${Math.max(0,Math.ceil(motion.distance*(1-motion.travel)))}m`;
+          $("#distanceMeter").style.width=`${(1-motion.travel)*100}%`;
+        }
         lure.style.left=`${x}%`;lure.style.top=`${y}%`;
         $("#linePath").setAttribute("d",`M 150 48 Q 285 160 ${x*10} ${y*5}`);
         if(battle.phase==="interest"&&Date.now()>=battle.biteAt){battle.phase="wait";syncBitePhase();}
@@ -21957,7 +21982,7 @@
         if (now > battle.biteAt + biteWindow) {
           if (battle.practice)
             queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
-          else lose("合わせが遅れた……魚はエサだけ持っていった。");
+          else lose(battle.method==="lure"?"アワセが間に合わず、魚がスプーンから離れた。":"合わせが遅れた……魚はエサだけ持っていった。");
           return false;
         }
         if (battle.phase === "wait" && now >= battle.biteAt) {
@@ -23525,7 +23550,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=240-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=241-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
