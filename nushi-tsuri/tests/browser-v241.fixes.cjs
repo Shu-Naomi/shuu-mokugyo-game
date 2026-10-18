@@ -15,11 +15,10 @@ module.exports=async function fixes(page,mobile,viewport){
    await end();await page.evaluate(mode=>{Object.assign(s,{mapRegion:'mountainPond',x:120,y:109,direction:'up',hp:100,boatActive:false,fightMode:mode,fishingMethod:'lure',selectedRod:'lureRod',ownedRods:['bamboo','lureRod'],lures:{silverSpoon:1}});render();},mode);
    const before=await page.evaluate(()=>JSON.parse(JSON.stringify([s.baits,s.lures,s.gameMinutes])));
    await press('#action');await press('#wait');await page.locator('#beginCast').waitFor({state:'visible'});await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');
-   await page.waitForFunction(()=>battle?.phase==='lure');assert.equal(await page.locator('#distanceLabel').isVisible(),true);assert.equal(await page.locator('#distanceMeter').isVisible(),true);
+   await page.waitForFunction(()=>battle?.phase==='lure');await page.locator('#distanceLabel').waitFor({state:'visible'});await page.locator('#distanceMeter').waitFor({state:'visible'});
    const startMeters=await page.evaluate(()=>battle.lureMotion.distance);await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
-   const remaining=await page.evaluate(()=>battle.lureMotion.distance*(1-battle.lureMotion.travel));assert.ok(remaining<startMeters);
-   assert.equal(await page.locator('#distanceLabel').innerText(),'スプーンまで '+Math.ceil(remaining)+'m');
-   assert.ok(await page.locator('#distanceMeter').evaluate(el=>parseFloat(el.style.width)<100));
+   const display=await page.evaluate(()=>({remaining:battle.lureMotion.distance*(1-battle.lureMotion.travel),label:document.querySelector('#distanceLabel').innerText,meter:parseFloat(document.querySelector('#distanceMeter').style.width)}));assert.ok(display.remaining<startMeters);
+   assert.equal(display.label,'スプーンまで '+Math.ceil(display.remaining)+'m');assert.ok(display.meter<100);
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);
