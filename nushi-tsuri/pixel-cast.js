@@ -45,15 +45,49 @@
   };
   const stills={boy:{src:"assets/player-boy-cast-v73.png",width:146,height:339,center:73,floor:330,top:9,hand:[130,224]},
     girl:{src:"assets/player-girl-cast-v73.png",width:138,height:326,center:69,floor:318,top:10,hand:[123,212]}};
-  const sprites={},fallbacks={},prepared=new WeakMap();let loading;
+  // Front-facing quay casts have their own complete painted poses. Anchors
+  // are measured in the original image; no limbs are cut out or rotated.
+  const frontArtwork={
+    boy:{src:'assets/player-boy-cast-front-v247.png',size:80/390,frames:[
+      {box:[98,22,173,392],pivot:186,floor:413,hand:[165,217]},
+      {box:[395,24,196,391],pivot:497,floor:414,hand:[421,137]},
+      {box:[706,25,192,390],pivot:812,floor:414,hand:[731,123]},
+      {box:[1017,18,195,397],pivot:1112,floor:414,hand:[1044,51]},
+      {box:[80,439,221,390],pivot:175,floor:828,hand:[131,463]},
+      {box:[387,443,212,386],pivot:487,floor:828,hand:[570,655]},
+      {box:[685,452,215,377],pivot:784,floor:828,hand:[875,671]},
+      {box:[984,460,252,369],pivot:1088,floor:828,hand:[1215,628]},
+      {box:[55,874,243,362],pivot:157,floor:1235,hand:[276,1090]},
+      {box:[388,853,195,383],pivot:487,floor:1235,hand:[472,1034]},
+      {box:[699,853,183,383],pivot:797,floor:1235,hand:[786,1035]},
+      {box:[1011,853,177,383],pivot:1106,floor:1235,hand:[1100,1030]}
+    ]},
+    girl:{src:'assets/player-girl-cast-front-v247.png',size:80/384,frames:[
+      {box:[98,29,176,384],pivot:184,floor:412,hand:[182,204]},
+      {box:[402,32,177,382],pivot:493,floor:413,hand:[435,185]},
+      {box:[699,32,188,382],pivot:803,floor:413,hand:[718,148]},
+      {box:[1029,9,176,404],pivot:1115,floor:412,hand:[1087,32]},
+      {box:[88,435,198,391],pivot:181,floor:825,hand:[132,454]},
+      {box:[398,450,205,376],pivot:486,floor:825,hand:[534,653]},
+      {box:[708,454,192,373],pivot:802,floor:826,hand:[845,664]},
+      {box:[1017,454,198,372],pivot:1110,floor:825,hand:[1157,635]},
+      {box:[82,869,220,369],pivot:178,floor:1237,hand:[276,1090]},
+      {box:[408,860,175,377],pivot:491,floor:1236,hand:[509,1025]},
+      {box:[714,860,174,378],pivot:799,floor:1237,hand:[815,1027]},
+      {box:[1025,860,174,378],pivot:1111,floor:1237,hand:[1122,1025]}
+    ]}
+  };
+  const frontAngles=[35,-20,-65,-105,-120,-30,0,30,50,40,35,35];
+  const sprites={},frontSprites={},fallbacks={},prepared=new WeakMap();let loading;
   function preload(){
     if(loading)return loading;
     if(typeof Image==="undefined")return Promise.resolve(false);
     const load=(avatar,art,bank)=>new Promise(resolve=>{const img=new Image();
       img.onload=()=>{bank[avatar]=img;resolve(true);};img.onerror=()=>resolve(false);img.src=art.src;});
     loading=Promise.all(Object.entries(artwork).map(([avatar,art])=>load(avatar,art,sprites))
+      .concat(Object.entries(frontArtwork).map(([avatar,art])=>load(avatar,art,frontSprites)))
       .concat(Object.entries(stills).map(([avatar,art])=>load(avatar,art,fallbacks))))
-      .then(results=>results.slice(0,2).every(Boolean));return loading;
+      .then(results=>results.slice(0,4).every(Boolean));return loading;
   }
   function frameAt(progress=0){
     const ms=Math.max(0,Math.min(1,Number(progress)||0))*DURATION;
@@ -77,6 +111,14 @@
     if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
     return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
   }
+  function frontPose(progress=0,avatar='boy'){
+    avatar=avatar==='girl'?'girl':'boy';
+    const t=Math.max(0,Math.min(1,Number(progress)||0)),frame=frameAt(t),art=frontArtwork[avatar],f=art.frames[frame];
+    const hand={x:62+(f.hand[0]-f.pivot)*art.size,y:102+(f.hand[1]-f.floor)*art.size},angle=frontAngles[frame],rad=angle*Math.PI/180,unit={x:Math.cos(rad),y:Math.sin(rad)},bend=[0,-1,-2,-3,-3,4,5,4,1,0,0,0][frame];
+    return {t,frame,hand,support:{x:hand.x-unit.x*10,y:hand.y-unit.y*10},angle,unit,bend,
+      tip:{x:hand.x+unit.x*64-unit.y*bend,y:hand.y+unit.y*64+unit.x*bend},
+      butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},leftFoot:{x:49,y:102},rightFoot:{x:75,y:102}};
+  }
   function layout(width,height,ground){
     const resolution=width/640,scale=Math.max(1,Math.floor(Math.min(height/resolution/240,640/175)))*resolution;
     if(ground){
@@ -96,13 +138,7 @@
   }
   function model(width,height,progress,target={x:width*.7,y:height*.5},flying=false,avatar="boy",standby=false,ground){
     const source=standby?standbyPose:pose;
-    const sample=(t,a)=>{
-      const original=source(t,a);if(ground?.facing!=='down')return original;
-      const hand={x:75,y:76},angle=-original.angle,rad=angle*Math.PI/180,unit={x:Math.cos(rad),y:Math.sin(rad)};
-      return {...original,hand,support:{x:55,y:76},angle,unit,bend:-original.bend,
-        tip:{x:hand.x+unit.x*64+unit.y*original.bend,y:hand.y+unit.y*64-unit.x*original.bend},
-        butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},leftFoot:{x:49,y:102},rightFoot:{x:75,y:102}};
-    };
+    const sample=(t,a)=>ground?.facing==='down'?frontPose(t,a):source(t,a);
     const p=sample(progress,avatar),box=layout(width,height,ground),tip=worldPoint(p.tip,box),resolution=width/640;
     let bobber={x:tip.x+2*resolution,y:tip.y+9*resolution};
     if(flying&&progress>=RELEASE){
@@ -139,14 +175,20 @@
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.5,3.1,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.7;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.7);
   }
-  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,frontSprite,ground}={}){
+  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,frontSprite,frontCastSprite,ground}={}){
     avatar=avatar==="girl"?"girl":"boy";
     const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,c=Pixel.palette(env);
     const img=sprite||sprites[avatar],m=model(w,h,progress,target,flying,avatar,!img&&!!fallbacks[avatar],ground),p=m.pose,art=artwork[avatar],f=art.frames[p.frame];
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
     ctx.fillStyle="rgba(20,28,19,.25)";ctx.beginPath();ctx.ellipse(62,103,21,2.5,0,0,Math.PI*2);ctx.fill();
-    if(ground?.facing==='down' && frontSprite?.complete && frontSprite.naturalWidth){
+    const front=frontCastSprite||frontSprites[avatar];
+    if(ground?.facing==='down'&&front){
+      const a=frontArtwork[avatar],f=a.frames[p.frame],[x,y,width,height]=f.box;
+      paintRod(ctx,p,c,rod);
+      ctx.drawImage(front,x,y,width,height,62+(x-f.pivot)*a.size,102+(y-f.floor)*a.size,width*a.size,height*a.size);
+      m.detailed=true;m.facing='down';
+    }else if(ground?.facing==='down' && frontSprite?.complete && frontSprite.naturalWidth){
       // The upper quay faces the viewer and the water below it. Reuse the
       // original complete front-view avatar, never a rear-facing cast body.
       paintRod(ctx,p,c,rod);
@@ -175,5 +217,5 @@
     if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,groundFor,layout,model,draw,preload,artwork,prepareAtlas});
+  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,frontPose,groundFor,layout,model,draw,preload,artwork,frontArtwork,prepareAtlas});
 });

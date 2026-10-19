@@ -1,0 +1,79 @@
+{
+  "generation": [
+    {
+      "id": "front-boy",
+      "prompt": "Create a production sprite atlas for a Japanese fishing RPG, matching the exact boy, navy cap, teal short-sleeve shirt, beige fishing vest, navy shorts, white socks and brown boots protagonist in the reference. Reference is character identity only; draw ONLY FRONT VIEW of that same child in every cell, facing the viewer and slightly toward lower right, never back view. Fine hand-painted pixel art, same proportions, face, cap, clothing, bag and boots. Transparent RGBA, all empty space alpha 0, NO background or floor shadow, no grid or text. Square canvas 1536x1536, EXACTLY FOUR columns by THREE rows; 12 uniform cells each384x512. One COMPLETE whole-body character centered in every cell, 360px tall, boots on common cell y465, hands and head fully within cell. Feet planted in the same stance in all twelve drawings; animate torso, shoulders and BOTH arms naturally, keep character scale identical. NO FISHING ROD, NO LINE, no held objects: hands curled to grip an invisible rod, renderer draws it. Right hand means character's own right (viewer's left), but casting grip may be on viewer's right for clear silhouette. Animate an overhead cast toward the viewer/lower-right: pose1 ready, gripping hand at chest on viewer's right; 2 torso begins winding and elbow rising; 3 hand at shoulder; 4 hand above head; 5 maximum overhead backswing and body lean; 6 drive shoulder forward; 7 gripping hand sweeps forward down to shoulder; 8 hand reaches forward toward viewer at chest height for RELEASE; 9 full low follow-through toward lower right; 10 recover arm to chest; 11 settle shoulders; 12 almost ready. Other hand supports the motion, not a fixed hanging arm. Each pose is a distinct authored whole-body drawing, smooth coherent sequence. Do not draw twelve idle poses. Leave generous transparent margins. BOOTS never change ground height.",
+      "references": [
+        "player-boy.png"
+      ],
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "front-girl",
+      "prompt": "Create a production sprite atlas for a Japanese fishing RPG, matching the exact girl, red backwards cap, brown bob hair, red shirt and red vest, khaki shorts, navy socks and brown boots protagonist in the reference. Reference is character identity only; draw ONLY FRONT VIEW of that same child in every cell, facing the viewer and slightly toward lower right, never back view. Fine hand-painted pixel art, same proportions, face, cap, clothing, bag and boots. Transparent RGBA, all empty space alpha 0, NO background or floor shadow, no grid or text. Square canvas 1536x1536, EXACTLY FOUR columns by THREE rows; 12 uniform cells each384x512. One COMPLETE whole-body character centered in every cell, 360px tall, boots on common cell y465, hands and head fully within cell. Feet planted in the same stance in all twelve drawings; animate torso, shoulders and BOTH arms naturally, keep character scale identical. NO FISHING ROD, NO LINE, no held objects: hands curled to grip an invisible rod, renderer draws it. Right hand means character's own right (viewer's left), but casting grip may be on viewer's right for clear silhouette. Animate an overhead cast toward the viewer/lower-right: pose1 ready, gripping hand at chest on viewer's right; 2 torso begins winding and elbow rising; 3 hand at shoulder; 4 hand above head; 5 maximum overhead backswing and body lean; 6 drive shoulder forward; 7 gripping hand sweeps forward down to shoulder; 8 hand reaches forward toward viewer at chest height for RELEASE; 9 full low follow-through toward lower right; 10 recover arm to chest; 11 settle shoulders; 12 almost ready. Other hand supports the motion, not a fixed hanging arm. Each pose is a distinct authored whole-body drawing, smooth coherent sequence. Do not draw twelve idle poses. Leave generous transparent margins. BOOTS never change ground height.",
+      "references": [
+        "player-girl.png"
+      ],
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "oyanirami",
+      "prompt": "Create a production-ready original fish sprite atlas for a Japanese nostalgic fishing RPG. Use reference ONLY for fine hand-painted pixel-art style, NOT its species. ONLY OYANIRAMI / Coreoperca kawamebari, a small Japanese freshwater perch. Moderately deep oval elongated body, large mouth, large eye, olive and warm brown mottled bars, turquoise green and red-edged conspicuous eyespot on upper gill cover, jagged connected spiny dorsal, rounded soft dorsal and anal fins, rounded fan tail, NOT bluegill anatomy, NO black sunfish ear flap. Transparent RGBA background, all space outside fish has alpha=0, NO brown glow/matte/haze, no cast shadow, no ground or water, no labels/text/grid. Landscape1536x1024. Exactly FOUR columns and TWO rows, eight complete separated fish with generous clear margins, all fins inside their cells. All depict the same individual, consistent anatomy, colors and scale. Reading order:1 RIGHT side profile;2 RIGHT three-quarter30deg toward viewer;3 RIGHT near-front60deg;4 symmetrical FRONT;5 LEFT near-front60deg;6 LEFT three-quarter30deg;7 LEFT side profile;8 RIGHT side profile mouth OPEN. Natural fish, no character face or accessories. Independent complete paintings of all eight views, transparent cutouts.",
+      "references": [
+        "fish-bluegill-v246.png"
+      ],
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "akakamasu",
+      "prompt": "Create a production-ready original fish sprite atlas for a Japanese nostalgic fishing RPG. Use reference ONLY for fine hand-painted pixel-art style, NOT its species. ONLY AKAKAMASU / Sphyraena pinguis, Japanese red barracuda. Very slim elongated cylindrical silver body, olive golden back, subtle dark lateral line, pointed long snout and predatory mouth with tiny sharp teeth, lower jaw slightly protruding, two widely separated small dorsal fins, yellow-gray translucent fins, forked caudal fin. Slender needle-like profile, not deep-bodied mackerel or halfbeak. Transparent RGBA background, all space outside fish has alpha=0, NO brown glow/matte/haze, no cast shadow, no ground or water, no labels/text/grid. Landscape1536x1024. Exactly FOUR columns and TWO rows, eight complete separated fish with generous clear margins, all fins inside their cells. All depict the same individual, consistent anatomy, colors and scale. Reading order:1 RIGHT side profile;2 RIGHT three-quarter30deg toward viewer;3 RIGHT near-front60deg;4 symmetrical FRONT;5 LEFT near-front60deg;6 LEFT three-quarter30deg;7 LEFT side profile;8 RIGHT side profile mouth OPEN. Natural fish, no character face or accessories. Independent complete paintings of all eight views, transparent cutouts.",
+      "references": [
+        "fish-bluegill-v246.png"
+      ],
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "ishidai",
+      "prompt": "Create a production-ready original fish sprite atlas for a Japanese nostalgic fishing RPG. Use reference ONLY for fine hand-painted pixel-art style, NOT its species. ONLY ISHIDAI / Oplegnathus fasciatus, Japanese striped beakfish/knifejaw. Deep laterally compressed oval body, silver-gray to creamy white with SEVEN bold black vertical bars across head/body, small blunt beak-like dark mouth, continuous spiny/soft dorsal, rounded pectoral fins, short robust forked tail. Attractive striped juvenile/subadult coloring across all views, natural reef fish anatomy. Transparent RGBA background, all space outside fish has alpha=0, NO brown glow/matte/haze, no cast shadow, no ground or water, no labels/text/grid. Landscape1536x1024. Exactly FOUR columns and TWO rows, eight complete separated fish with generous clear margins, all fins inside their cells. All depict the same individual, consistent anatomy, colors and scale. Reading order:1 RIGHT side profile;2 RIGHT three-quarter30deg toward viewer;3 RIGHT near-front60deg;4 symmetrical FRONT;5 LEFT near-front60deg;6 LEFT three-quarter30deg;7 LEFT side profile;8 RIGHT side profile mouth OPEN. Natural fish, no character face or accessories. Independent complete paintings of all eight views, transparent cutouts.",
+      "references": [
+        "fish-bluegill-v246.png"
+      ],
+      "mode": "built-in",
+      "transparent_background": true
+    }
+  ],
+  "edits": [
+    {
+      "id": "front-boy",
+      "source": "exec-494f6263-24c0-4728-882e-62c4ac9443db.png",
+      "prompt": "Clean this exact 12-frame whole-body boy casting atlas. Preserve all twelve poses, character identity, pixel positions, scale, body, feet, clothing and empty hands EXACTLY. REMOVE ALL bright RED/YELLOW/BLUE chromatic fringes and specks OUTSIDE the actual ink outline around hands, boots and body. Keep actual teal shirt, beige vest and navy cap colors unchanged. Transparent RGBA with zero-alpha empty space, no glow or matte, no background. Do not repaint the poses or add anything. Keep1254x1254.",
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "front-girl",
+      "source": "exec-39370fee-70dc-4886-a756-0fd077415eed.png",
+      "prompt": "Clean this exact 12-frame whole-body girl casting atlas. Preserve all twelve poses, character identity, pixel positions, scale, feet, red cap and red clothes and empty hands EXACTLY. REMOVE ALL bright RED/YELLOW chromatic fringes and specks OUTSIDE the actual dark ink silhouette, especially halo by elbows and boots. Actual red hat and red vest must remain intact. Transparent RGBA zero-alpha empty space, no glow or matte, no background. Do not repaint the poses or add anything. Keep1254x1254.",
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "oyanirami",
+      "source": "exec-b335d7f0-1337-4f02-9f00-0cf09aacd911.png",
+      "prompt": "Correct the fish anatomy in this8-view atlas to true Coreoperca kawamebari / Japanese freshwater Oyanirami perch, NOT round bluegill. REPAINT all8 fish with a noticeably LONGER, lower-bodied perch shape, length-to-body-height about3:1 ignoring fins, large wide predatory mouth reaching behind eye, rounded FAN-shaped tail with NO fork, fine small scales, mottled olive-brown and muted red bars; keep the conspicuous red/turquoise edged gill eyespot. More like a small rockfish/perch than a sunfish. Keep8 headings/order/arrangement and same fine painterly pixel-art style. Actual transparent RGBA, no glow/matte/background whatsoever. All complete fins fit with padding,1536x1024. This is species anatomy correction, do not merely recolor sunfish.",
+      "mode": "built-in",
+      "transparent_background": true
+    },
+    {
+      "id": "ishidai",
+      "source": "exec-9d3af50d-e0af-42f6-bc63-ba2d03ee5e5c.png",
+      "prompt": "Correct all EIGHT fish in this atlas to true Oplegnathus fasciatus / ISHIDAI striped beakfish. REMOVE the erroneous round BLACK SUNFISH EAR FLAP/eyespot from EVERY gill cover; gill cover should just be silver with the black vertical body stripes continuing across it. Mouth should be a SMALL BLUNT fused BEAK/knifejaw, not puckered bluegill lips. More robust oblong silver sea bream-like body, seven bold dark vertical bands, firm spiny dorsal, short strong forked tail. No blue or orange gill colors, no ear spot. Preserve8headings/order/layout, fine painted pixel-art style, complete fins with clear padding. True transparent RGBA alpha0 outside fish, NO glow/matte/shadow/background.1536x1024.",
+      "mode": "built-in",
+      "transparent_background": true
+    }
+  ]
+}
