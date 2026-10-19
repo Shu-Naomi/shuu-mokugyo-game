@@ -6,13 +6,13 @@ test('a late correct pull gets time to retrieve, then a readable warning; repeat
  const b={fightMode:'nushi',mood:{id:'rest',calm:true},f:{id:'namazu'},retrieval:.2,ten:18,reeling:false};
  b.nextMood=F.beginWindow(b,b.mood,520,10000);
  assert.equal(F.acceptPull(b,11600),true);const deadline=b.nextMood;
- assert.ok(b.nushiWindow.warnAt-11600>=1200);
- for(let now=11600;now<12800;now+=120){b.reeling=true;assert.equal(F.acceptPull(b,now),true);assert.equal(b.nextMood,deadline);b.reeling=false;}
- b.reeling=true;assert.equal(F.windowPhase(b,12800),'warning');
- assert.ok(b.nextMood-12800>=900);const before=b.retrieval;
+ assert.ok(b.nushiWindow.warnAt-11600>=3600);
+ for(let now=11600;now<15200;now+=120){b.reeling=true;assert.equal(F.acceptPull(b,now),true);assert.equal(b.nextMood,deadline);b.reeling=false;}
+ b.reeling=true;assert.equal(F.windowPhase(b,15200),'warning');
+ assert.ok(b.nextMood-15200>=1200);const before=b.retrieval;
  F.step(b,b.mood,{power:38,strength:4.8,control:1.95});assert.equal(b.retrieval,before);
  b.reeling=false;F.step(b,b.mood,{power:38,strength:4.8,control:1.95});assert.equal(b.lineSlack,false);
- assert.equal(F.acceptPull(b,12800),false);
+ assert.equal(F.acceptPull(b,15200),false);
  const gauge={fightMode:'gauge'};assert.equal(F.beginWindow(gauge,b.mood,520,10000),10520);assert.equal(gauge.nushiWindow,null);
 });
 

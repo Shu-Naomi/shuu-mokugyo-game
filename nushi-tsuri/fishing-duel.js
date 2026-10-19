@@ -35,10 +35,12 @@
     lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
     if(interested){
       lure.chase++;
-      lure.approach=clamp(lure.approach+(lure.speed>.8?.012:active?.075:.16),0,1);
+      // Let the player see the chase and decide to slow/stop the spoon.
+      // A full-speed retrieve can outrun the fish; a pause lets it catch up.
+      lure.approach=clamp(lure.approach+(lure.speed>.8?.009:active?.045:.065),0,1);
     }
     return {recovered:lure.travel>=1,reveal:!interested&&lure.attraction>=1,
-      bite:interested&&lure.approach>=1,depart:interested&&lure.chase>=36&&lure.approach<1};
+      bite:interested&&lure.approach>=1,depart:interested&&lure.chase>=60&&lure.approach<1};
   }
   Object.assign(fishStrength,{kawamutsu:.75,herabuna:1.4,himemasu:1.7,mahaze:.6,sayori:.8,masaba:1.9,gigi:1.5});
   Object.assign(spoon,{kawamutsu:.8,herabuna:.08,himemasu:2.6,mahaze:.25,sayori:.2,masaba:2.2,gigi:.7});
@@ -80,13 +82,16 @@
     return {...base,power:base.power+level*2,control:base.control+level*.08,
       strength:(strengths[id]||1)+level*.25,level,role:roles[id]||roles.bamboo};
   }
-  const nushiTiming=Object.freeze({slack:1800,pull:1200,warning:900});
+  // Player-facing rhythm, tuned here rather than claimed as the original's
+  // timings. A late, correct press still gets a complete sustained pull.
+  const nushiTiming=Object.freeze({slack:3000,pull:3600,warning:1200,run:2100});
   function beginWindow(b,mood,duration,now){
     b.nushiWindow=null;
-    if(b.fightMode!=="nushi"||!mood.calm)return now+duration;
+    if(b.fightMode!=="nushi")return now+duration;
+    if(!mood.calm)return now+Math.max(nushiTiming.run,Math.min(4200,duration*2.4));
     const warnAt=now+Math.max(nushiTiming.slack,duration);
     b.nushiWindow={moodId:mood.id,openedAt:now,warnAt,endsAt:warnAt+nushiTiming.warning,
-      accepted:false,warning:false};
+      accepted:false,warning:false,warningShownAt:null};
     return b.nushiWindow.endsAt;
   }
   function acceptPull(b,now){
@@ -117,13 +122,21 @@
     const window=b.nushiWindow;
     if(window&&window.moodId===b.mood.id){
       window.warning=now>=window.warnAt;
-      if(window.warning)return "warning";
+      if(window.warning){
+        // Even a delayed first paint must show the release cue before a run.
+        if(window.warningShownAt===null){
+          window.warningShownAt=now;
+          window.endsAt=Math.max(window.endsAt,now+nushiTiming.warning);
+          b.nextMood=window.endsAt;
+        }
+        return "warning";
+      }
     }
     return b.reeling&&(!window||window.accepted)?"pulling":"slack";
   }
   function shiftWindow(b,duration){
     if(!b?.nushiWindow)return;
-    for(const key of ["openedAt","warnAt","endsAt","pullStartedAt"])
+    for(const key of ["openedAt","warnAt","endsAt","pullStartedAt","warningShownAt"])
       if(Number.isFinite(b.nushiWindow[key]))b.nushiWindow[key]+=duration;
   }
   function step(b,mood,equipment,pullMultiplier=1){
