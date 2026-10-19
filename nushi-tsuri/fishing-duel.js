@@ -173,7 +173,7 @@
     const unsafe=running||(resisting&&window.warningShownAt!==null&&now-window.warningShownAt>=nushiTiming.reaction);
     if(b.reeling){
       if(unsafe){
-        b.nushiStrain=(b.nushiStrain||0)+120*clamp(ratio,.85,1.5);
+        b.nushiStrain=(b.nushiStrain||0)+120*(resisting?1.8:clamp(ratio,.85,1.5));
         b.ten+=Math.max(10,14*ratio/equipment.control);
         if(b.nushiStrain>=nushiTiming.breakHold&&!b.practice)b.ten=110;
         b.retrieval=before-(running?.0018*ratio:0);

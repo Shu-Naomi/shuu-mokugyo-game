@@ -25,7 +25,7 @@ for(const id of ['moroko','namazu','raigyo','starNushi']){
   const warn=b.nushiWindow.warnAt;F.windowPhase(b,warn);const tension=b.ten;
   for(let dt=0;dt<=600;dt+=120)F.step(b,b.mood,gear,1,warn+dt);
   assert.equal(b.ten,tension,'600 ms to see and release is safe');
-  for(let dt=720;dt<2300;dt+=120)F.step(b,b.mood,gear,1,warn+dt);
+  for(let dt=720;dt<F.nushiTiming.warning;dt+=120)F.step(b,b.mood,gear,1,warn+dt);
   assert.ok(b.ten>=100);
  });
 }

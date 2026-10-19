@@ -152,8 +152,17 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     for(let i=0;i<18&&await value('battle.phase')==='lure';i++){await press('#pull');await page.clock.runFor(480);}
     for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
     assert.equal(await value('battle.phase'),'bite');await press('#pull');assert.equal(await value('battle.phase'),'fight');
-    await hold(true);for(let i=0;i<120&&await value('battle?.phase')==='fight';i++)await page.clock.runFor(120);await hold(false);
-    assert.equal(await value('battle'),null,'holding through escape breaks the line');
+    const resistOnly=mobile&&viewport.width===844;
+    if(resistOnly){
+     for(let i=0;i<100&&await page.locator('#fishScene').getAttribute('data-nushi-phase')!=='slack';i++)await page.clock.runFor(120);
+     assert.equal(await page.locator('#fishScene').getAttribute('data-nushi-phase'),'slack');
+    }
+    await hold(true);let lastUnsafePhase=null;
+    for(let i=0;i<120&&await value('battle?.phase')==='fight';i++){
+     lastUnsafePhase=await page.locator('#fishScene').getAttribute('data-nushi-phase');await page.clock.runFor(120);
+    }
+    await hold(false);assert.equal(await value('battle'),null,'holding through resistance or escape breaks the line');
+    assert.equal(lastUnsafePhase,resistOnly?'warning':'running','the line breaks during the visible unsafe action');
     assert.match(await value('s.log[0]'),/糸が切れた/);
     const lost=await snapshot();assert.deepEqual(lost.caught,beforeLoss.caught);assert.deepEqual(lost.baits,beforeLoss.baits);assert.deepEqual(lost.lures,beforeLoss.lures);assert.equal(lost.time-beforeLoss.time,10);
     assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
