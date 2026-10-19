@@ -1,4 +1,5 @@
 #tackle { padding: 0; overflow: hidden; }
+.world:has(#fishScene.active.surface-casting) .field-notices>.hint{visibility:hidden}
 #tackle.open { display: flex; flex-direction: column; }
 .cast-tackle-heading { display:flex; gap:12px; align-items:center; padding:9px 12px; flex:none; }
 .cast-tackle-heading h2 { flex:1; margin:0; font-size:1.08rem; }

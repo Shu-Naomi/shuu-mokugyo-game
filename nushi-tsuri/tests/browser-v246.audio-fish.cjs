@@ -10,7 +10,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=exp=>page.evaluate(exp),shot=name=>page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  const settings=()=>value('JSON.parse(localStorage.getItem("nushi-inugoya-options-v1"))');
- async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v246/);}
+ async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v247/);}
  async function optionsOpen(){await press('#menu');await press('[data-field-menu-target="options"]');await page.locator('#options.open').waitFor();}
  async function slider(id,from,to){
   const r=await page.locator(id).boundingBox(),a={x:r.x+8+(r.width-16)*from,y:r.y+r.height/2},b={x:r.x+8+(r.width-16)*to,y:a.y};
@@ -28,7 +28,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
   await slider('#optionsSeVolume',1,0);assert.equal((await settings()).seVolume,0);await page.waitForTimeout(80);assert.equal(await value('gameAudio.effects.gain.value'),0);assert.ok(Math.abs(await value('gameAudio.music.gain.value')-bgm/100)<.001);
   await slider('#optionsSeVolume',0,.8);const se=(await settings()).seVolume;assert.ok(se>=75&&se<=85);
   await press('#optionsAudioPreview');await page.waitForTimeout(100);assert.ok(await value('fishEscapeJingle.stats().voices')>0);assert.equal(await value('gameAudio.jingleFocus'),true);assert.ok(await value('gameAudio.music.gain.value')<.12);await shot('jingle-preview');
-  await page.waitForTimeout(2900);assert.equal(await value('fishEscapeJingle.stats().voices'),0);assert.equal(await value('gameAudio.jingleFocus'),false);assert.ok(Math.abs(await value('gameAudio.music.gain.value')-bgm/100)<.001);
+  await page.waitForFunction(()=>fishEscapeJingle.stats().voices===0&&!gameAudio.jingleFocus&&Math.abs(gameAudio.music.gain.value-audioOptions.bgmVolume/100)<.001,null,{timeout:15000});assert.equal(await value('fishEscapeJingle.stats().voices'),0);assert.equal(await value('gameAudio.jingleFocus'),false);assert.ok(Math.abs(await value('gameAudio.music.gain.value')-bgm/100)<.001);
   const beforeReload=await settings();await press('#optionsClose');await page.reload({waitUntil:'domcontentloaded'});await press('#titleOptions');assert.deepEqual(await settings(),beforeReload);assert.equal(await page.locator('#optionsBgmVolume').inputValue(),String(bgm));await press('#optionsClose');await start();
   const levels=await page.evaluate(async()=>{
    const ctx=new OfflineAudioContext(1,48000*3,48000),gain=ctx.createGain();gain.gain.value=.48*.8;gain.connect(ctx.destination);
@@ -44,14 +44,14 @@ module.exports=async function audioFish(url,mobile=false,options={}){
   for(const mode of ['gauge','nushi'])for(const [id,zone,bait,hook,distance]of cases){
    await page.evaluate(({mode,zone,bait,hook})=>{hideCatchCard();Object.assign(s,{fightMode:mode,fishingMethod:'bait',selectedRod:'tideMaster',selectedBait:bait,selectedHook:hook,x:zone==='sea'?210:123,y:zone==='sea'?104:92});cast({zone,waterZone:zone,waterX:s.x,waterY:s.y+6});}, {mode,zone,bait,hook});
    await press('#wait');await page.locator('#tackle.open').waitFor();await press('#beginCast');const old=await value('JSON.parse(JSON.stringify({baits:s.baits,caught:s.caught,money:s.money}))');
-   await page.evaluate(({id,zone,distance})=>{battle.cast=distance;const spot=zone+'-'+(distance<34?'shallow':distance<67?'mid':'deep');window.v246Random=Math.random;for(let i=0;i<10000;i++){Math.random=()=>(i+.5)/10000;if(pick(distance,spot)?.id===id)return;}throw Error('no natural '+id);},{id,zone,distance});
-   await press('#pull');await page.waitForFunction(()=>battle?.phase==='wait');await page.evaluate(()=>{Math.random=window.v246Random;startFight();finishHookReveal();});
+   await page.evaluate(({id,zone,distance})=>{battle.cast=distance;clearInterval(timer);timer=0;const spot=zone+'-'+(distance<34?'shallow':distance<67?'mid':'deep');window.v246Random=Math.random;for(let i=0;i<10000;i++){Math.random=()=>(i+.5)/10000;if(pick(distance,spot)?.id===id)return;}throw Error('no natural '+id);},{id,zone,distance});
+   await press('#pull');await page.evaluate(()=>battleTick());await page.waitForFunction(()=>battle?.phase==='wait');await page.evaluate(()=>{Math.random=window.v246Random;startFight();finishHookReveal();});
    await page.waitForFunction(id=>document.querySelector('#battleFish canvas')?.dataset.artSpecies===id,id);assert.equal(await value('battle.f.id'),id);assert.equal(await value('battle.fightMode'),mode);
    await page.waitForFunction(()=>{const c=document.querySelector('#battleFish canvas');return c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>100);});await shot(id+'-'+mode);
    await page.evaluate(()=>{battle.retrieval=1;surfaceCatch();});await page.waitForFunction(({id,count})=>s.caught[id]===count,{id,count:(old.caught[id]||0)+1});
    assert.equal(await value('s.baits.'+bait),old.baits[bait]-1);const count=await value('s.caught.'+id);await page.evaluate(()=>caught());assert.equal(await value('s.caught.'+id),count);assert.equal(await value('s.catchMemories.'+id+'.best.method'),'bait');
   }
-  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),49);
+  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),52);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V246_PASS '+JSON.stringify({viewport,mobile,dpr:options.dpr||1,levels,species:3,modes:2,errors:errors.length,httpErrors:failed.length}));
  }finally{await context.close();if(!options.browser)await browser.close();}
 };

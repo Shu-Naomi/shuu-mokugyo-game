@@ -46,6 +46,8 @@
   Object.assign(spoon,{kawamutsu:.8,herabuna:.08,himemasu:2.6,mahaze:.25,sayori:.2,masaba:2.2,gigi:.7});
   Object.assign(fishStrength,{bluegill:1.05,aburahaya:.62,magochi:2.1});
   Object.assign(spoon,{bluegill:1.6,aburahaya:.65,magochi:2.4});
+  Object.assign(fishStrength,{oyanirami:1.12,akakamasu:2.05,ishidai:2.8});
+  Object.assign(spoon,{oyanirami:1.8,akakamasu:3.2,ishidai:.4});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -98,9 +100,9 @@
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
     gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya',
-    heavy:'koi nigoi namazu bora kurodai madai',
-    ambush:'raigyo bass suzuki unagi',
+    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu',
+    heavy:'koi nigoi namazu bora kurodai madai ishidai',
+    ambush:'raigyo bass suzuki unagi oyanirami',
     bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;

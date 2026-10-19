@@ -69,7 +69,7 @@ test('six native atlases preserve a visible continuous silhouette through 97 tur
 test('39 stable catalogue entries, distinct wetland surfaces and offline art work with an existing save',()=>{
  const app=boot(),w=app.window;
  try{
-  assert.equal(read(w,'fish.length'),49);assert.equal(read(w,'fishEncyclopediaData.ugui.number'),31);
+  assert.equal(read(w,'fish.length'),52);assert.equal(read(w,'fishEncyclopediaData.ugui.number'),31);
   assert.deepEqual(read(w,'[fishEncyclopediaData.tanago.number,fishEncyclopediaData.motsugo.number,fishEncyclopediaData.medaka.number,fishEncyclopediaData.kamatsuka.number,fishEncyclopediaData.nigoi.number,fishEncyclopediaData.raigyo.number]'),[34,35,36,37,38,39]);
    for(const spot of read(w,'fishingSpots'))for(const [id]of cases)if(spot.weights[id])assert.match(spot.id,['tanago','motsugo','medaka','raigyo'].includes(id)?/^mountain-(wet|highMarsh-)/:/^mountain-(wet|underground-)/);
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');for(const f of ['wetland-world','wetland-cast',...cases.map(([id])=>'fish-'+id)])assert.ok(sw.includes('assets/'+f+'-v227.png'));

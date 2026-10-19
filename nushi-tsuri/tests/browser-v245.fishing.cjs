@@ -21,7 +21,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    await page.clock.install({time:new Date('2026-10-19T00:00:00Z')});await page.clock.pauseAt('2026-10-19T00:00:01Z');
    await page.goto(url,{waitUntil:'load'});await press('#start');await page.clock.runFor(240);
    if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
-   assert.match(await page.locator('.hud').innerText(),/v246/);
+   assert.match(await page.locator('.hud').innerText(),/v247/);
    if(mode==='gauge'){
     // A stalled real timer must first show the bite, then give its full window.
     const old=await snapshot();await openTackle();await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');await finishCast();
