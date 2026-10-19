@@ -8,16 +8,18 @@ function equipped() {
   Object.defineProperty(w.performance, 'now', { configurable: true, value: () => milliseconds });
   const param = () => ({ value: .48, setValueAtTime(v) { this.value = v; },
     exponentialRampToValueAtTime() {}, linearRampToValueAtTime() {}, cancelScheduledValues() {} });
-  const context = { state: 'running', currentTime: 2,
+  const context = { state: 'running', currentTime: 2, destination: {},
     createOscillator() {
       const source = { frequency: param(), connect() {}, disconnect() {}, start() {},
         stop(time) { this.stops ||= []; this.stops.push(time); } };
       voices.push(source); return source;
     }, createGain() { return { gain: param(), connect() {}, disconnect() {} }; },
   };
-  w.__uiContext = context;
-  w.__uiDestination = { gain: param() };
-  w.eval('gameAudio.context=window.__uiContext;gameAudio.master=window.__uiDestination;gameAudio.unlocked=true;gameAudio.readyCuePlayed=true;gameAudio.primed=true');
+  // Build the production master/music/effects graph, so cues exercise the
+  // SE bus instead of injecting the pre-v246 master-only destination.
+  w.AudioContext = function () { return context; };
+  w.ensureAudioContext(false);
+  w.eval('gameAudio.unlocked=true;gameAudio.readyCuePlayed=true;gameAudio.primed=true');
   return { app, w, voices, advance() { milliseconds += 100; } };
 }
 

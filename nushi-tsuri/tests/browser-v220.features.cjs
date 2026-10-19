@@ -91,7 +91,7 @@ module.exports=async function waterAndFish(url,mobile=false){
    await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await page.evaluate(()=>['wakasagi','dojo','isaki'].map(id=>s.caught[id])),[1,1,1]);
    assert.equal(await page.evaluate(()=>fish.length),49);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-   console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:46,saved:true,shoreBlocks:true,errors,failed}));
+   console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:await page.evaluate(()=>fish.length),saved:true,shoreBlocks:true,errors,failed}));
   }finally{await context.close();}
   }
  }finally{await browser.close();}
