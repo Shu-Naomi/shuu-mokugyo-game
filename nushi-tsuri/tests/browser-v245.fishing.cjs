@@ -168,6 +168,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     assert.equal(await page.locator('#linePath').getAttribute('d'),'');
     assert.equal(await page.locator('#fishTackleFront').isVisible(),false);
     assert.equal(await page.locator('#pull').isVisible(),false);
+    assert.equal(await page.locator('#hint').isVisible(),false,'the field fishing instructions stay out of the escape scene');
     const atBreak=await value('battle.underwaterCamera.offset');
     await page.clock.runFor(720);assert.equal(await value('battle?.phase'),'escape');
     assert.equal(await page.locator('#fishEscapeCaption').innerText(),'魚は元気よく泳いで行った');

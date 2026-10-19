@@ -31,6 +31,7 @@
 .fish-escape-caption{position:absolute;z-index:12;left:5%;right:5%;bottom:13%;padding:12px 8px;color:#fff5d6;text-align:center;font-size:clamp(15px,2.1vw,23px);font-weight:700;line-height:1.65;text-shadow:0 2px 3px #031a26,1px 0 2px #031a26;background:linear-gradient(90deg,transparent,#062d3eb3 20%,#062d3eb3 80%,transparent);pointer-events:none}
 .fish-escape-caption[hidden]{display:none}
 .line-broken .line-svg,.line-broken .fish-tackle,.line-broken .battle-actions,.line-broken .nushi-cue,.line-broken #surfaceSplash{visibility:hidden}
+.world:has(#fishScene.line-broken) .field-notices>.hint{visibility:hidden}
 .line-broken #battleFish{filter:hue-rotate(var(--fish-hue,0deg)) brightness(var(--fish-light,1)) saturate(var(--fish-color,1)) contrast(var(--fish-contrast,1)) drop-shadow(3px 4px 2px #02192d66)}
 @media(prefers-reduced-motion:reduce){
  .underwater-travel #underwaterTravel{display:none}
