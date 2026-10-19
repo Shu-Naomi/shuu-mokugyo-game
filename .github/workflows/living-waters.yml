@@ -35,6 +35,6 @@ jobs:
           name: living-waters-screens
           path: |
             nushi-tsuri/tests/browser-evidence-v238/
-            nushi-tsuri/tests/browser-evidence-v244/
+            nushi-tsuri/tests/browser-evidence-v245/
           retention-days: 14
           if-no-files-found: warn

@@ -13,8 +13,8 @@
     camera.velocity=camera.velocity*.35+clamp(travel,-.025,.025)*.65;
     if(Math.abs(camera.velocity)<.00001)camera.velocity=0;
     camera.offset+=camera.velocity;camera.tickAt=now;
-    // Keep arithmetic bounded without changing the mirrored tile phase.
-    if(Math.abs(camera.offset)>1000){const cycles=Math.trunc(camera.offset/2)*2;camera.offset-=cycles;camera.previous-=cycles;}
+    // Each painter wraps its own layers. Resetting to the old two-tile phase
+    // here would jump parallax layers after a long continuous swim.
     return camera.offset;
   }
   function position(camera,now){return camera.previous+(camera.offset-camera.previous)*clamp((now-camera.tickAt)/120,0,1);}

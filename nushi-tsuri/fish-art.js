@@ -173,12 +173,13 @@
     cache.set(key,result);return result;
   }
   function mesh(ctx,image,id,heading){const p=pose(id,7,heading);return cellMesh(ctx,image,id,p.cell,p.flip);}
-  function paintTurn(ctx,image,id,p,resolveImage){
+  function paintTurn(ctx,image,id,p,resolveImage,resistanceBend=0){
     // One inverse-mapped raster keeps every destination pixel tied to one
     // original. Overlapping drawImage strips and translucent whole-fish
     // blends duplicated eyes, fins and scales in the intermediate headings.
     if(!imageKeys.has(image))imageKeys.set(image,++nextImageKey);
-    const heading=Math.round(p.heading*16)/16,key=imageKeys.get(image)+':'+id+':'+heading;
+    const heading=Math.round(p.heading*16)/16,bendAmount=Math.round(clamp(resistanceBend,-1.6,1.6)*8)/8;
+    const key=imageKeys.get(image)+':'+id+':'+heading+':'+bendAmount;
     let tile=turnCache.get(key);
     if(!tile){
       const q=pose(id,7,heading),aPose=pose(id,7,q.from),bPose=pose(id,7,q.to);
@@ -204,7 +205,8 @@
         // A yaw bend is projected through the slightly elevated camera only
         // during a turn. Normal tail beats never shift any row vertically.
         return {x:-width*.05*Math.sin(angle)*Math.cos(angle)*rear,
-          y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear};
+          y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear+
+            bendAmount*Math.min(18,width*.06)*rear*rear};
       };
       // Use a uniform projection around the lip. Matching a frontal mouth to
       // a side-view outline stretched the two pixels before the lip into a
@@ -276,7 +278,7 @@
       p.heading!==undefined&&(!resolveImage(cellAsset(id,pose(id,7,p.from).cell))||!resolveImage(cellAsset(id,pose(id,7,p.to).cell)))))return false;
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
     if(p.heading!==undefined){
-      try{paintTurn(ctx,image,id,p,resolveImage);}catch{paint(ctx,image,id,p,1,resolveImage);}
+      try{paintTurn(ctx,image,id,p,resolveImage,motion?.resistanceBend||0);}catch{paint(ctx,image,id,p,1,resolveImage);}
     }else if(cells===3&&p.jaw===1){
       if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
       paint(ctx,image,id,p,1,resolveImage);

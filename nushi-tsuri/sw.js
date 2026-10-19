@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v244-fish-resistance-244-1";
+const CACHE_NAME = "nushi-tsuri-v245-nushi-escape-245-1";
 const CORE_ASSETS = [
   "./assets/fish-gigi-v241.png",
   "./field-guide.js?v=239-1",
@@ -55,9 +55,11 @@ const CORE_ASSETS = [
   "./pet-life-ui.js?v=234-1",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
-  "./fishing-duel.js?v=244-1",
-  "./fishing-duel.css?v=244-1",
-  "./underwater-camera.js?v=244-1",
+  "./fishing-duel.js?v=245-1",
+  "./fishing-duel.css?v=245-1",
+  "./underwater-camera.js?v=245-1",
+  "./nushi-presentation.js?v=245-1",
+  "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
   "./mountain-region.js?v=241-1",
   "./regional-nushi.js?v=202-1",
@@ -68,7 +70,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=218-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=238-1",
+  "./fish-art.js?v=245-1",
   "./assets/fish-suzuki-v216.png",
   "./assets/fish-kurodai-v216.png",
   "./assets/fish-moroko-v215.png",
