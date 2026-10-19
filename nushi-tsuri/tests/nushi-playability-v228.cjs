@@ -25,19 +25,20 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
   const start=read(w,'({id:battle.f.id,size:battle.specimen.cmText,mode:battle.fightMode,gear:battle.equipment})');
   const result=read(w,`(()=>{
    const scene=document.querySelector('#fishScene'),ten=document.querySelector('#ten'),queue=[];
-   let observed=null,ticks=0,maxProgress=0,maxTension=0,warningCount=0,lastPhase=null,wrongRunTicks=0;
+   let observed=null,ticks=0,maxProgress=0,maxTension=0,warningCount=0,pullOpenings=0,lastPhase=null,wrongRunTicks=0;
    for(;ticks<7500&&battle?.phase==='fight';ticks++){
     const phase=scene.dataset.nushiPhase;
     const wish=${holdAlways}||(${JSON.stringify(mode)}==='gauge'?parseFloat(ten.style.width)<65:
-      (phase==='slack'||phase==='pulling')&&parseFloat(ten.style.width)<65)&&!scene.classList.contains('gill-wash');
+      (phase==='slack'||phase==='pulling'))&&!scene.classList.contains('gill-wash');
     if(wish!==observed){queue.push({at:testNow+${delayMs},wish});observed=wish;}
     while(queue.length&&queue[0].at<=testNow){const action=queue.shift();if(action.wish)pressBattleAction();else releaseBattleAction();}
     testNow+=120;fightTick();if(!battle)break;
     if(scene.dataset.nushiPhase==='warning'&&lastPhase!=='warning')warningCount++;
+    if(scene.dataset.nushiPhase==='slack'&&lastPhase!=='slack'&&lastPhase!=='pulling')pullOpenings++;
     if(battle.reeling&&!battle.mood.calm&&!battle.gillWash)wrongRunTicks++;
     maxProgress=Math.max(maxProgress,battle.retrieval);maxTension=Math.max(maxTension,battle.ten);lastPhase=scene.dataset.nushiPhase;
    }
-   return {phase:battle?.phase||'lost',seconds:ticks*.12,maxProgress,maxTension,warningCount,wrongRunTicks};
+   return {phase:battle?.phase||'lost',seconds:ticks*.12,maxProgress,maxTension,warningCount,pullOpenings,wrongRunTicks};
   })()`);
   return {id,delayMs,tier,rngSeed,mode,holdAlways,start,...result,errors:app.errors};
  }finally{app.dispose();}

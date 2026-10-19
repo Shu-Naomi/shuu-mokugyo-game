@@ -29,11 +29,11 @@ test('actual sea boss bites, hook sets and seeded changing moods reach landing w
         Math.random=()=>((testRng=Math.imul(testRng,1664525)+1013904223>>>0)/4294967296);
         battle.biteAt=testNow;syncBitePhase();pull();releaseBattleAction();stopBattleFishArt();
         var fightTick;setInterval=callback=>(fightTick=callback,9001);battleTick();
-        renderBattleFish=()=>{};drawBattle=()=>{};updateWaterFx=()=>{}`);
+        renderBattleFish=()=>{};syncBattleFishLine=()=>{};updateTensionFeedback=()=>{};updateWaterFx=()=>{}`);
       assert.equal(read(w,'battle.phase'),'fight');
       const result=read(w,`(()=>{let ticks=0;for(;ticks<6000&&battle?.phase==="fight";ticks++){testNow+=120;
-        if(!battle.mood||testNow>battle.nextMood)chooseFishMood();
-        if(!battle.gillWash&&battle.mood.calm&&battle.ten<75)pull();else releaseBattleAction();fightTick();}
+        const scene=document.querySelector('#fishScene'),phase=scene.dataset.nushiPhase;
+        if(!scene.classList.contains('gill-wash')&&(phase==='slack'||phase==='pulling'))pull();else releaseBattleAction();fightTick();}
         return {ticks,phase:battle?.phase,retrieval:battle?.retrieval,ten:battle?.ten};})()`);
       assert.equal(result.phase,'landing',`${rod}/${tier}/${rngSeed}: ${JSON.stringify(result)}`);
       assert.ok(result.retrieval>=.999);assert.ok(result.ten<100);

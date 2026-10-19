@@ -6441,7 +6441,7 @@
     <link rel="stylesheet" href="cast-tackle.css?v=219-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=243-1" />
+      <link rel="stylesheet" href="fishing-duel.css?v=244-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=240-1" />
   </head>
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v243</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v244</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6798,6 +6798,7 @@
               />
             </svg>
           </div>
+          <div class="nushi-cue" id="nushiCue" role="status"></div>
           <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
             <div class="cast-meter" id="castMeter"><div class="cast-range-fill" id="castRangeFill"></div><div class="cast-marker" id="castMarker"></div></div>
@@ -7286,8 +7287,8 @@
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=243-1"></script>
-    <script src="underwater-camera.js?v=243-1"></script>
+    <script src="fishing-duel.js?v=244-1"></script>
+    <script src="underwater-camera.js?v=244-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
@@ -20594,7 +20595,9 @@
         const nushiStage = ShuRegional.legendary(battle.f.id)
           ? battle.nushiStage || nushiFightStage()
           : 1;
-        const weighted = moods.map((mood) => {
+        const turnMoods = battle.fightMode==="nushi" && !force && battle.mood
+          ? moods.filter(m=>Boolean(m.calm)!==Boolean(battle.mood.calm)) : moods;
+        const weighted = (turnMoods.length?turnMoods:moods).map((mood) => {
           let weight = mood.weight;
           if (mood.stageWeights) weight *= mood.stageWeights[nushiStage - 1] ?? 1;
           if (boosted && mood.calm) weight *= 3.4;
@@ -20612,7 +20615,9 @@
             break;
           }
         }
-        selected = signatureMoodForFight(moods, force, boosted) || selected;
+        const signature=battle.fightMode==="nushi"&&!force&&battle.mood&&!battle.mood.calm
+          ? null : signatureMoodForFight(moods, force, boosted);
+        if(signature&&(battle.fightMode!=="nushi"||force||!battle.mood||Boolean(signature.calm)!==Boolean(battle.mood.calm)))selected=signature;
         if (boosted) battle.calmBoost--;
         battle.mood = selected;
         battle.calm = Boolean(selected.calm);
@@ -20691,7 +20696,7 @@
           const stretch=lateral?1:1+(profile.stretch||0)*2;
           const width=Math.hypot(element.offsetWidth*stretch,element.offsetHeight)*scale*
             Math.max(.1,Number(battle.specimenVisualScale)||1);
-          const recoil=lateral?0:(profile.recoil||0)*2;
+          const recoil=lateral?6:(profile.recoil||0)*2+6;
           bounds.maxX=Math.min(bounds.maxX,Math.max(bounds.minX,100-(width/2+recoil+4)*100/scene.clientWidth));
         }
         const clearY=battleFishClearMaxY();
@@ -21047,7 +21052,15 @@
           heavy: 0.13,
           root: 0.34,
         }[mood.motion] || 0.18;
-        if(battle.fightMode==="nushi"&&!mood.calm){battle.targetVx=Math.abs(battle.targetVx);battle.motionX=1;}
+        const escape=battle.fightMode==="nushi"&&!mood.calm&&!battle.gillWash;
+        const rhythm=ShuFishing.rhythm(battle.f.id);
+        if(escape){
+          // A pulsed swimming effort also drives the camera at the screen edge.
+          const surge=.72+.56*Math.sin(battle.moodTick*.64*rhythm.tempo)**2;
+          battle.escapeSpeed=clampBattle((1.4+(mood.speedX||.6)*.48)*rhythm.speed,2.25,6.2)*surge;
+          battle.targetVx=battle.escapeSpeed;battle.motionX=1;
+          battle.targetVy+=Math.sin(battle.moodTick*1.05*rhythm.tempo)*rhythm.shake*.85;
+        }else battle.escapeSpeed=0;
         battle.vx += (battle.targetVx - battle.vx) * acceleration;
         battle.vy += (battle.targetVy - battle.vy) * acceleration;
         const motionProfile = fishMotionProfiles[battle.f.id];
@@ -21060,7 +21073,8 @@
         updateFishTurn(desiredFacing, motionProfile);
         const bodyMotion = animateFishBody(
           mood,
-          Math.hypot(battle.vx, battle.vy),
+          Math.max(Math.hypot(battle.vx, battle.vy),escape?battle.escapeSpeed*.7:0),
+          escape?1.4+rhythm.shake*.25:1,
         );
         const courseLength = Math.hypot(battle.targetVx, battle.targetVy);
         if (courseLength > 0.04) {
@@ -21118,7 +21132,7 @@
           (1 + Math.cos(
             (battle.swimPhase / swimFrameCount) * Math.PI * 4,
           ) * 0.006));
-        battle.speed = speed;
+        battle.speed = Math.max(speed,escape?battle.escapeSpeed:0);
       }
       function resetWaterFx() {
         waterFxState = {
@@ -21338,6 +21352,8 @@
           "duel-nushi",
           "lure-search",
           "underwater-travel",
+          "nushi-bracing",
+          "nushi-pulling",
           "water-rush",
           "fighting",
           "landing",
@@ -21348,6 +21364,8 @@
           "surface-diving",
           "sand-flatfish",
         );
+        delete scene.dataset.nushiPhase;
+        $("#nushiCue").textContent="";
         if($("#lurePreview"))$("#lurePreview").hidden=true;
         const castSurface = $("#castSurface");
         castSurface.className = "cast-surface";
@@ -21379,6 +21397,7 @@
         delete fishElement.dataset.turnState;
         delete fishElement.dataset.turnPhase;
         delete fishElement.dataset.turnFrom;
+        delete fishElement.dataset.resisting;
         delete fishElement.dataset.mouthState;
         delete fishElement.dataset.spriteMode;
         delete fishElement.dataset.spriteFrame;
@@ -21748,22 +21767,32 @@
           Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash))*pose.displayScale);
         return Math.max(8,(view.bottom-height/2-Math.abs(pose.offsetY))*100/view.height);
       }
+      function nushiResistancePose() {
+        if(battle?.fightMode!=="nushi"||battle.phase!=="fight"||battle.gillWash||!battle.nushiWindow?.warning)return null;
+        const profile=ShuFishing.rhythm(battle.f.id);
+        const at=battle.pausedAt||Date.now(),start=battle.nushiWindow.warningShownAt??at;
+        const wave=Math.sin((at-start)/1000*Math.PI*2*(4.2+profile.tempo));
+        const yaw=.2+(wave+1)*.8;
+        return {frame:(battle.facing||1)>0?yaw:6-yaw,
+          angle:wave*4.5*profile.shake,x:wave*3.2,y:Math.cos((at-start)/60)*1.6};
+      }
       function battleFishVisualPose() {
         // The sprite and its hook must use the same effective transform,
         // including authored fixed-head frames and the grounded flatfish.
-        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted;
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && !nushiResistancePose();
         const fixedHead = fixedFaceFishIds.has(battle.f.id);
-        const showingTurn = Boolean(battle.turning && !sandGrounded);
+        const resistance=nushiResistancePose();
+        const showingTurn = Boolean((battle.turning||resistance) && !sandGrounded);
         const specimenScale = Math.max(.1, Number(battle.specimenVisualScale) || 1);
         const pose = {
-          offsetX: Number(Number(battle.visualOffsetX || 0).toFixed(2)),
+          offsetX: Number(Number((battle.visualOffsetX || 0)+(resistance?.x||0)).toFixed(2)),
           offsetY: Number(Number(sandGrounded ? 0 :
             (fixedHead ? 0 : battle.visualOffsetY || 0) +
-              (battle.turnArcY || 0)).toFixed(2)),
+              (battle.turnArcY || 0)+(resistance?.y||0)).toFixed(2)),
           displayFacing: showingTurn ? 1 : battle.facing || 1,
           stretch: sandGrounded || fixedHead ? 1 : battle.bodyStretch || 1,
           squash: sandGrounded || fixedHead ? 1 : battle.bodySquash || 1,
-          rotation: sandGrounded ? 0 : (battle.renderAngle || 0) + (battle.turnRoll || 0),
+          rotation: sandGrounded ? 0 : (battle.renderAngle || 0) + (battle.turnRoll || 0)+(resistance?.angle||0),
           specimenScale,
           displayScale: (battle.renderScale || 1) * specimenScale,
         };
@@ -21808,7 +21837,7 @@
           camera.lureTravel=lure.travel;
         }else if(battle.phase==="fight"){
           travel=battle.fightMode==="nushi"&&!battle.mood.calm&&!battle.gillWash
-            ? Math.min(.009,Math.max(.0015,Math.abs(battle.vx||0)*.003))
+            ? Math.min(.024,Math.max(.003,(battle.escapeSpeed||Math.abs(battle.vx)||1)*.003))
             : -(battle.retrievalDelta||0)*(battle.startMeters||20)*.025;
         }
         ShuUnderwaterCamera.advance(camera,travel,Date.now());
@@ -21834,7 +21863,7 @@
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
         element.style.top = battle.y + "%";
-        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted;
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && !nushiResistancePose();
         element.classList.toggle("sand-grounded", sandGrounded);
         element.dataset.sandState = sandGrounded ? "grounded" : "lifted";
         const mouthState = battle.mouthState ||
@@ -21852,8 +21881,13 @@
         let spriteFrame = ShuFishArt.species[battle.f.id]?artSwimFrame%spriteCells:(battle.frame || 0) % spriteCells;
         let spriteMode = "swim";
         let hookPoseFrame = null;
-        const showingTurn = Boolean(battle.turning && !sandGrounded);
-        if (sandGrounded) {
+        const resistance=nushiResistancePose();
+        const showingTurn = Boolean((battle.turning||resistance) && !sandGrounded);
+        element.dataset.resisting=String(Boolean(resistance));
+        if (resistance && !sandGrounded) {
+          spriteAsset=fishTurnAssets[battle.f.id];spriteCells=7;
+          spriteFrame=resistance.frame;spriteMode="turn";
+        } else if (sandGrounded) {
           spriteAsset = fishGroundAssets.hirame;
           spriteMode = "ground";
         } else if (battle.turning) {
@@ -21906,7 +21940,7 @@
           element.dataset.hookPoseFrame = String(hookPoseFrame);
         }
         if (showingTurn) {
-          element.dataset.turnFrom = battle.turning.from > 0 ? "right" : "left";
+          element.dataset.turnFrom = (resistance?battle.facing:battle.turning.from) > 0 ? "right" : "left";
         } else {
           delete element.dataset.turnFrom;
         }
@@ -22221,9 +22255,9 @@
             battle.y - battle.surfaceY,
           );
           const landingRadius = ShuRegional.legendary(battle.f.id) ? 11 : 7;
+          if (battle.ten >= 100) return lose("糸が切れた……");
           if (battle.retrieval >= 0.999 && arrival <= landingRadius)
             return surfaceCatch();
-          if (battle.ten >= 100) return lose("糸が切れた……");
         }, 120);
       }
       function pull() {
@@ -22264,6 +22298,8 @@
           battle.lureHeld=false;battle.lurePulse=false;
         }
         $("#fishScene").classList.remove("lure-search");
+        delete $("#fishScene").dataset.nushiPhase;
+        $("#nushiCue").textContent="";
         if($("#lurePreview"))$("#lurePreview").hidden=true;
         const f = battle.f;
         battle.waterAudioWeight = fishWaterWeight(
@@ -22286,6 +22322,8 @@
         battle.mood = null;
         battle.nushiWindow = null;
         battle.nushiYielded = false;
+        battle.nushiStrain = 0;
+        battle.escapeSpeed = 0;
         battle.nextMood = 0;
         battle.signatureCycle = 0;
         battle.hirameBreakoutQueued = false;
@@ -22349,9 +22387,11 @@
         $("#ten").parentElement.style.display = "block";
         $("#fishName").textContent = f.name;
         $("#pull").innerHTML = battle.fightMode==="nushi"
-          ? "A<br><small>押して引く<br>予兆で離す</small>"
+          ? "A<br><small>押して引く<br>顔を振ったら離す</small>"
           : "A<br><small>押して巻く<br>離して待つ</small>";
-        $("#wait").innerHTML = "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
+        $("#wait").innerHTML = battle.fightMode==="nushi"
+          ? "B<br><small>糸を送る<br>魚をいなす</small>"
+          : "B<br><small>1回で糸を出す<br>張力↓ 距離↑</small>";
         chooseFishMood(true);
         startBattleFishArt();
         clearTimeout(hookRevealTimer);
@@ -22437,6 +22477,12 @@
         $("#distanceMeter").style.width = remaining * 100 + "%";
         const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
         $("#distanceLabel").textContent = `左の水面まで ${meters}m`;
+        if(battle.fightMode==="nushi"){
+          const phase=$("#fishScene").dataset.nushiPhase;
+          const cue={slack:"糸が緩んだ · Aで引く",pulling:"引けている · 顔を振ったら離す",warning:"顔を振って抵抗！ Aを離す",running:"逃走中 · Aを離して待つ",leap:"エラ洗い！ Aを離す"}[phase]||"魚の動きを見よう";
+          const text=`${battle.f.name} · 水面まで ${meters}m\n${cue}`;
+          if($("#nushiCue").textContent!==text)$("#nushiCue").textContent=text;
+        }
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
         syncBattleFishLine();
         updateTensionFeedback();
@@ -22452,12 +22498,12 @@
         scene.dataset.nushiPhase=phase;
         if(phase==="leap")return;
         const stage=ShuRegional.legendary(battle.f.id)?` 第${["壱","弐","参"][(battle.nushiStage||1)-1]}相・`:" ";
-        const labels={slack:"◎ 糸の緩み",pulling:"↖ 引けている",warning:"⚠ 力をためている",running:`➜ ${battle.mood.name}`};
+        const labels={slack:"◎ 糸の緩み",pulling:"↖ 引けている",warning:"⚠ 顔を振って抵抗",running:`➜ ${battle.mood.name}`};
         $("#phaseLabel").textContent=stage+labels[phase];
         const messages={
           slack:battle.reeling?"Aをいったん離し、糸の緩みを見て引き直そう。":"糸が緩んだ。Aを押して魚を引こう。",
-          pulling:"魚を引けている。尾に力が入ったらAを離そう。",
-          warning:"尾に力が入ってきた！Aを離して、次の走りを待とう。",
+          pulling:"魚を引けている。顔を振り始めたらAを離そう。",
+          warning:"顔を激しく振って抵抗！無理に引くと糸が切れる。Aを離そう。",
           running:"魚が走っている。Aを離していなし、糸が緩むのを待とう。"};
         const tension=battle.ten>=85?"⚠ 糸が切れそう！ ":battle.ten>=65?"！テンション高め。 ":"";
         const recovery=phase!=="warning"&&battle.gillRecovery>0?battle.recoveryMessage+" ":"";
@@ -23713,7 +23759,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=243-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=244-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

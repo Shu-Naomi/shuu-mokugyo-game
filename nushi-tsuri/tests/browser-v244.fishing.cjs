@@ -3,7 +3,7 @@ const {seed,saveKey}=require('./game-harness.cjs');
 
 module.exports=async function fishingSpec(url,mobile=false,options={}){
  const viewport=options.viewport||(mobile?{width:844,height:390}:{width:1280,height:720});
- const directory=path.join(__dirname,'browser-evidence-v243');fs.mkdirSync(directory,{recursive:true});
+ const directory=path.join(__dirname,'browser-evidence-v244');fs.mkdirSync(directory,{recursive:true});
  const browser=await chromium.launch({headless:true});
  try{for(const mode of ['gauge','nushi']){
   const context=await browser.newContext({viewport,deviceScaleFactor:options.dpr||1,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'});
@@ -21,7 +21,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    await page.clock.install({time:new Date('2026-10-19T00:00:00Z')});await page.clock.pauseAt('2026-10-19T00:00:01Z');
    await page.goto(url,{waitUntil:'load'});await press('#start');await page.clock.runFor(240);
    if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
-   assert.match(await page.locator('.hud').innerText(),/v243/);
+   assert.match(await page.locator('.hud').innerText(),/v244/);
    if(mode==='gauge'){
     // A stalled real timer must first show the bite, then give its full window.
     const old=await snapshot();await openTackle();await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');await finishCast();
@@ -84,11 +84,16 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    let held=false;
    async function hold(next){if(next===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:next?'touchStart':'touchEnd',touchPoints:next?[{...button,id:1}]:[]});
     else if(next){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=next;}
+   if(mode==='nushi'){
+    assert.equal(await page.locator('#battleUi').isVisible(),false);
+    assert.equal(await page.locator('#nushiCue').isVisible(),true);
+    assert.equal(await page.locator('#ten').isVisible(),false);
+   }else assert.equal(await page.locator('#battleUi').isVisible(),true);
    const seen=new Set(),queue=[];let oldWish=null,last=null,seconds=0,rightwardTicks=0;
    let runTravel=0,pullTravel=0,pullOpened=null,longestPullMs=0;
    for(let tick=0;tick<3000;tick++){
     const ui=await page.evaluate(()=>({fight:battle?.phase,phase:document.querySelector('#fishScene').dataset.nushiPhase,
-     leap:document.querySelector('#fishScene').classList.contains('gill-wash'),ten:parseFloat(document.querySelector('#ten').style.width),x:parseFloat(document.querySelector('#battleFish').style.left),
+     leap:document.querySelector('#fishScene').classList.contains('gill-wash'),ten:document.querySelector('#fishScene').classList.contains('duel-nushi')?null:parseFloat(document.querySelector('#ten').style.width),x:parseFloat(document.querySelector('#battleFish').style.left),
      right:document.querySelector('#battleFish').getBoundingClientRect().right,edge:document.querySelector('#fishScene').getBoundingClientRect().right,
      bottom:document.querySelector('#battleFish').getBoundingClientRect().bottom,controls:document.querySelector('.battle-actions').getBoundingClientRect().top,
      now:Date.now(),camera:battle?.underwaterCamera?.offset||0}));
@@ -113,11 +118,17 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
      await page.clock.runFor(20);const gap=await value('window.v242LineGap');assert.notEqual(gap,null);
      assert.ok(gap<2,`the line and visible hook eye stay joined (${gap}px at tick ${tick})`);
     }
-    const wish=(mode==='nushi'?(ui.phase==='slack'||ui.phase==='pulling')&&ui.ten<65:ui.ten<65)&&!ui.leap;
+    const wish=(mode==='nushi'?(ui.phase==='slack'||ui.phase==='pulling'):ui.ten<65)&&!ui.leap;
     if(wish!==oldWish){queue.push({at:tick*120+(mode==='nushi'?600:0),wish});oldWish=wish;}
     while(queue.length&&queue[0].at<=tick*120)await hold(queue.shift().wish);
     if(mode==='nushi'&&!seen.has(ui.phase)&&['slack','pulling','warning'].includes(ui.phase)){
-     seen.add(ui.phase);await shot(ui.phase);assert.equal(await page.locator('#linePath').evaluate(n=>n.classList.contains('slack')),ui.phase==='slack');
+     seen.add(ui.phase);await shot(ui.phase);
+     if(ui.phase==='warning'){
+      const first=await page.locator('#battleFish').getAttribute('data-sprite-frame');
+      await page.clock.runFor(64);assert.equal(await page.locator('#battleFish').getAttribute('data-resisting'),'true');
+      assert.notEqual(await page.locator('#battleFish').getAttribute('data-sprite-frame'),first,'authored head-shake frames move visibly');
+     }
+     assert.equal(await page.locator('#linePath').evaluate(n=>n.classList.contains('slack')),ui.phase==='slack');
     }
     last=ui;await page.clock.runFor(120);seconds=(tick+1)*.12;
    }
@@ -128,11 +139,34 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    if(mode==='nushi'){
     assert.deepEqual([...seen].sort(),['pulling','slack','warning']);assert.ok(rightwardTicks>0);
     assert.ok(runTravel>.01,'escaping fish scroll the water in the opposite direction');
-    assert.ok(longestPullMs>=3300,'a successful pull remains usable for a sustained interval');
+    assert.ok(longestPullMs>=1400,'the randomized opening provides a useful pull after a 600 ms response');
    }
    await page.reload({waitUntil:'load'});await press('#start');await page.clock.runFor(240);assert.deepEqual(await snapshot(),after);
    assert.equal(await value('s.fightMode'),mode);assert.equal(await value('s.fishingMethod'),'lure');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-   console.log('V243_FISHING_SPEC_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,mode,seconds,shortTaps:true,visibleBiteWindow:true,pausedBite:true,sameIndividual:true,rightwardTicks,runTravel,pullTravel,longestPullMs,scrolling:true,oneCast:true,reload:true,errors,failed}));
+   // A second natural hook: ignoring the running fish must actually break.
+   if(mode==='nushi'){
+    await page.evaluate(()=>hideFieldMenu());const beforeLoss=await snapshot();await openTackle();await press('#beginCast');
+    await page.evaluate(()=>{battle.cast=50;const spot='mountain-'+battle.mountainType+'-mid';for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;if(pick(50,spot)?.id==='himemasu')return;}throw Error('encounter');});
+    await press('#pull');await finishCast();
+    await page.evaluate(()=>{window.v244Rng=907;Math.random=()=>((window.v244Rng=Math.imul(window.v244Rng,1664525)+1013904223>>>0)/4294967296);});
+    for(let i=0;i<18&&await value('battle.phase')==='lure';i++){await press('#pull');await page.clock.runFor(480);}
+    for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
+    assert.equal(await value('battle.phase'),'bite');await press('#pull');assert.equal(await value('battle.phase'),'fight');
+    const resistOnly=mobile&&viewport.width===844;
+    const unsafeStart=resistOnly?'slack':'running';
+    for(let i=0;i<100&&await page.locator('#fishScene').getAttribute('data-nushi-phase')!==unsafeStart;i++)await page.clock.runFor(120);
+    assert.equal(await page.locator('#fishScene').getAttribute('data-nushi-phase'),unsafeStart);
+    await hold(true);let lastUnsafePhase=null;
+    for(let i=0;i<120&&await value('battle?.phase')==='fight';i++){
+     lastUnsafePhase=await page.locator('#fishScene').getAttribute('data-nushi-phase');await page.clock.runFor(120);
+    }
+    await hold(false);assert.equal(await value('battle'),null,'holding through resistance or escape breaks the line');
+    assert.equal(lastUnsafePhase,resistOnly?'warning':'running','the line breaks during the visible unsafe action');
+    assert.match(await value('s.log[0]'),/糸が切れた/);
+    const lost=await snapshot();assert.deepEqual(lost.caught,beforeLoss.caught);assert.deepEqual(lost.baits,beforeLoss.baits);assert.deepEqual(lost.lures,beforeLoss.lures);assert.equal(lost.time-beforeLoss.time,10);
+    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+   }
+   console.log('V244_FISHING_SPEC_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,mode,seconds,shortTaps:true,visibleBiteWindow:true,pausedBite:true,sameIndividual:true,rightwardTicks,runTravel,pullTravel,longestPullMs,scrolling:true,noTensionWindow:mode==='nushi',visibleHeadShake:mode==='nushi',unsafePullBreaks:mode==='nushi',oneCast:true,reload:true,errors,failed}));
   }catch(e){await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+mode+'-failure.png')}).catch(()=>{});throw e;}
   finally{await context.close();}
  }}finally{await browser.close();}

@@ -26,7 +26,7 @@ module.exports=async function mountainPaths(url,mobile=false,options={}){
   const directory=path.join(__dirname,'browser-evidence-v232');fs.mkdirSync(directory,{recursive:true});
   const state=()=>page.evaluate(()=>({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction}));
   const resources=()=>page.evaluate(()=>JSON.parse(JSON.stringify({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,equipment:s.equipment,time:s.gameMinutes})));
-  async function start(){await page.locator('#start').click();await page.locator('#game.active').waitFor();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').click();assert.match(await page.locator('.hud').innerText(),/v243/);}
+  async function start(){await page.locator('#start').click();await page.locator('#game.active').waitFor();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').click();assert.match(await page.locator('.hud').innerText(),/v244/);}
   async function shot(name){
     await page.waitForFunction(()=>{const c=document.querySelector('#mountainPixels'),a=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<a.length;i+=4*307)colors.add(a[i]+','+a[i+1]+','+a[i+2]);return colors.size>1000;});
     await page.evaluate(()=>hideFieldMenu());await page.waitForTimeout(400);

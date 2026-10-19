@@ -2,17 +2,17 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const F=require('../fishing-duel.js'),{boot,seed,read}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
 
-test('a late correct pull gets time to retrieve, then a readable warning; repeated presses cannot refill it',()=>{
+test('a late correct pull gets its species budget once, then a readable head-shake warning',()=>{
  const b={fightMode:'nushi',mood:{id:'rest',calm:true},f:{id:'namazu'},retrieval:.2,ten:18,reeling:false};
- b.nextMood=F.beginWindow(b,b.mood,520,10000);
- assert.equal(F.acceptPull(b,11600),true);const deadline=b.nextMood;
- assert.ok(b.nushiWindow.warnAt-11600>=3600);
- for(let now=11600;now<15200;now+=120){b.reeling=true;assert.equal(F.acceptPull(b,now),true);assert.equal(b.nextMood,deadline);b.reeling=false;}
- b.reeling=true;assert.equal(F.windowPhase(b,15200),'warning');
- assert.ok(b.nextMood-15200>=1200);const before=b.retrieval;
- F.step(b,b.mood,{power:38,strength:4.8,control:1.95});assert.equal(b.retrieval,before);
- b.reeling=false;F.step(b,b.mood,{power:38,strength:4.8,control:1.95});assert.equal(b.lineSlack,false);
- assert.equal(F.acceptPull(b,15200),false);
+ b.nextMood=F.beginWindow(b,b.mood,520,10000,()=>0);
+ assert.equal(F.acceptPull(b,11600),true);const deadline=b.nextMood,warn=b.nushiWindow.warnAt;
+ assert.equal(warn-11600,2200);
+ for(let now=11600;now<warn;now+=120){b.reeling=true;assert.equal(F.acceptPull(b,now),true);assert.equal(b.nextMood,deadline);b.reeling=false;}
+ b.reeling=true;assert.equal(F.windowPhase(b,warn),'warning');
+ assert.equal(b.nextMood-warn,F.nushiTiming.warning);const before=b.retrieval;
+ F.step(b,b.mood,{power:38,strength:4.8,control:1.95},1,warn);assert.equal(b.retrieval,before);
+ b.reeling=false;F.step(b,b.mood,{power:38,strength:4.8,control:1.95},1,warn);assert.equal(b.lineSlack,false);
+ assert.equal(F.acceptPull(b,warn),false);
  const gauge={fightMode:'gauge'};assert.equal(F.beginWindow(gauge,b.mood,520,10000),10520);assert.equal(gauge.nushiWindow,null);
 });
 
@@ -65,7 +65,7 @@ for(const id of ['namazu','koi','raigyo','nushi','starNushi'])for(const tier of 
 for(const condition of conditions)test(`visible cues with ${condition.delayMs}ms input delay land ${condition.id} tier ${condition.tier} seed ${condition.rngSeed}`,()=>{
  const r=runFight(condition);console.log('V228_FIGHT '+JSON.stringify(r));
  assert.deepEqual(r.errors,[]);assert.equal(r.start.id,condition.id);assert.equal(r.phase,'landing');
- assert.ok(r.warningCount>0,'observed the release cue before runs');
+ assert.ok(r.warningCount>0||r.pullOpenings===1,'a pull either lands within the first opening or shows the resistance cue');
 });
 
 test('holding A throughout a natural heavyweight fight still loses instead of automatically landing it',()=>{
