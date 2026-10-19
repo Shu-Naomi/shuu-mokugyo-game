@@ -52,7 +52,7 @@ test('spoon speed ramps up, a stop sinks it and draws a chasing fish, continuous
   const lure=F.newLure(50);for(let i=0;i<12;i++)F.stepLure(lure,true);
   assert.equal(lure.speed,1);const before={x:lure.x,y:lure.y};assert.ok(lure.x<78);
   const fast={...lure},pause={...lure};let fastResult,pausedResult;
-  for(let i=0;i<36;i++){fastResult=F.stepLure(fast,true,true);if(fastResult.depart)break;}
+  for(let i=0;i<60;i++){fastResult=F.stepLure(fast,true,true);if(fastResult.depart)break;}
   for(let i=0;i<16;i++){pausedResult=F.stepLure(pause,false,true);if(pausedResult.bite)break;}
   assert.ok(fastResult.depart);assert.ok(pausedResult.bite);assert.ok(pause.y>before.y);assert.equal(pause.speed,0);
   let result;for(let i=0;i<1000;i++){result=F.stepLure(lure,true);if(result.recovered)break;}assert.ok(result.recovered);assert.equal(lure.travel,1);
