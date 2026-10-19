@@ -82,8 +82,9 @@ module.exports=async function motionAndCoast(url,mobile){
       const event=type=>document.querySelector('#pull').dispatchEvent(new PointerEvent(type,{bubbles:true,cancelable:true,pointerId:1,pointerType:'touch'}));
       try{
         for(;ticks<6000&&battle?.phase==='fight';ticks++){
-          now+=120;if(!battle.mood||now>battle.nextMood)chooseFishMood();
-          if(!battle.gillWash&&battle.mood.calm&&battle.ten<75){if(!battleActionHeld)event('pointerdown');}
+          now+=120;
+          const scene=document.querySelector('#fishScene'),phase=scene.dataset.nushiPhase;
+          if(!scene.classList.contains('gill-wash')&&(phase==='slack'||phase==='pulling')){if(!battleActionHeld)event('pointerdown');}
           else if(battleActionHeld)event('pointerup');tick();
         }
         return {ticks,phase:battle?.phase,retrieval:battle?.retrieval,ten:battle?.ten};

@@ -153,10 +153,9 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
     assert.equal(await value('battle.phase'),'bite');await press('#pull');assert.equal(await value('battle.phase'),'fight');
     const resistOnly=mobile&&viewport.width===844;
-    if(resistOnly){
-     for(let i=0;i<100&&await page.locator('#fishScene').getAttribute('data-nushi-phase')!=='slack';i++)await page.clock.runFor(120);
-     assert.equal(await page.locator('#fishScene').getAttribute('data-nushi-phase'),'slack');
-    }
+    const unsafeStart=resistOnly?'slack':'running';
+    for(let i=0;i<100&&await page.locator('#fishScene').getAttribute('data-nushi-phase')!==unsafeStart;i++)await page.clock.runFor(120);
+    assert.equal(await page.locator('#fishScene').getAttribute('data-nushi-phase'),unsafeStart);
     await hold(true);let lastUnsafePhase=null;
     for(let i=0;i<120&&await value('battle?.phase')==='fight';i++){
      lastUnsafePhase=await page.locator('#fishScene').getAttribute('data-nushi-phase');await page.clock.runFor(120);
