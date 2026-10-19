@@ -6437,11 +6437,11 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
-    <link rel="stylesheet" href="player-options.css?v=218-1" />
+    <link rel="stylesheet" href="player-options.css?v=246-1" />
     <link rel="stylesheet" href="cast-tackle.css?v=219-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=245-1" />
+      <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=240-1" />
   </head>
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v245</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v246</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7261,6 +7261,12 @@
       <header class="options-heading"><div><small>星降る湖</small><h2 id="optionsTitle">オプション</h2></div><button id="optionsClose" type="button">閉じる</button></header>
       <div class="options-body">
         <p id="optionsNotice" role="status" aria-live="polite"></p>
+        <section class="options-group"><h3>音量</h3>
+          <div class="options-volume"><label for="optionsBgmVolume">BGM</label><input id="optionsBgmVolume" type="range" min="0" max="100" step="1" aria-describedby="optionsAudioHelp" /><output id="optionsBgmValue" for="optionsBgmVolume"></output></div>
+          <div class="options-volume"><label for="optionsSeVolume">SE・環境音</label><input id="optionsSeVolume" type="range" min="0" max="100" step="1" aria-describedby="optionsAudioHelp" /><output id="optionsSeValue" for="optionsSeVolume"></output></div>
+          <p id="optionsAudioHelp">SEにはジングル・水音・犬の声も含むよ。0%で消音。この端末の、両方の冒険に共通する設定だよ。</p>
+          <div class="options-audio-actions"><button id="optionsSoundToggle" type="button"></button><button id="optionsAudioPreview" type="button">ジングルを試す</button></div>
+        </section>
         <section class="options-group"><h3>主人公</h3><p id="optionsIdentity"></p>
           <form class="options-name-form" id="optionsNameForm"><label for="optionsPlayerName">名前（12文字まで・何度でも変更できるよ）</label><input id="optionsPlayerName" type="text" maxlength="48" autocomplete="off" /><button id="optionsRename" type="submit">名前を変更</button></form>
         </section>
@@ -7268,7 +7274,7 @@
           <div class="options-speeds" role="group" aria-label="セリフ送り速度"><button type="button" data-text-speed="slow">ゆっくり</button><button type="button" data-text-speed="normal">ふつう</button><button type="button" data-text-speed="fast">はやい</button><button type="button" data-text-speed="instant">一度に表示</button></div>
           <div class="options-preview"><p id="optionsTextPreview" aria-label="星降る湖へようこそ。今日は、どの魚に会えるかな？"></p></div><button id="optionsPreviewAgain" type="button">セリフを試す</button>
         </section>
-        <section class="options-group"><h3>セーブデータの削除</h3><p>削除する冒険を選んでね。もう一方のセーブと、セリフの設定は残るよ。</p><div class="options-save-list" id="optionsSaveList"></div>
+        <section class="options-group"><h3>セーブデータの削除</h3><p>削除する冒険を選んでね。もう一方のセーブと、音量・セリフの設定は残るよ。</p><div class="options-save-list" id="optionsSaveList"></div>
           <div class="delete-confirm" id="optionsDeleteConfirmation" hidden><b id="optionsDeleteTitle"></b><p id="optionsDeleteSummary"></p><p>この冒険の名前・釣果・持ち物・育てた魚などをすべて削除するよ。削除したデータは戻せないよ。</p>
             <label><input id="optionsDeleteCheck" type="checkbox" />このセーブを削除する</label><div class="delete-actions"><button id="optionsDeleteCancel" type="button">やめる</button><button id="optionsDeleteConfirm" class="delete-save" type="button" disabled>削除する</button></div>
           </div>
@@ -7276,7 +7282,7 @@
         <button id="optionsDeletedReturn" type="button" hidden>セーブ選択画面へ戻る</button>
       </div>
     </section>
-    <script src="player-options.js?v=218-1"></script>
+    <script src="player-options.js?v=246-1"></script>
     <script src="fortune-capsules.js?v=187-1"></script>
     <script src="music-tracks.js?v=205-1"></script>
     <script src="soundscape.js?v=186-1"></script>
@@ -7284,13 +7290,13 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
-    <script src="aquarium-life.js?v=241-1"></script>
+    <script src="aquarium-life.js?v=246-1"></script>
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=245-1"></script>
-    <script src="underwater-camera.js?v=245-1"></script>
-    <script src="nushi-presentation.js?v=245-1"></script>
+    <script src="fishing-duel.js?v=246-1"></script>
+    <script src="underwater-camera.js?v=246-1"></script>
+    <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
@@ -7301,8 +7307,8 @@
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=241-1"></script>
-    <script src="fish-art.js?v=245-1"></script>
+    <script src="fish-additions.js?v=246-1"></script>
+    <script src="fish-art.js?v=246-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -7318,6 +7324,7 @@
       let selectedSaveSlot = activeSaveSlot, titleAvatar = "boy", titleDog = "riku", titlePlayerName = "旅人", gameStarted = false, saveSuppressed = false;
       const titleDrafts = new Map(), playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
       let textSpeed = playerOptions.read().textSpeed, pendingSaveDeletion = null, optionsReturnFocus = null;
+      let audioOptions = playerOptions.read();
       const $ = (s) => document.querySelector(s),
         WORLD_WIDTH = 240,
         WORLD_HEIGHT = 135,
@@ -12763,7 +12770,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -13485,6 +13492,11 @@
         gameAudio = {
           context: null,
           master: null,
+          music: null,
+          effects: null,
+          sampleLevels: Object.create(null),
+          jingleFocus: false,
+          focusTimer: null,
           media: Object.create(null),
           preloadedSamples: new Set(),
           surface: null,
@@ -13500,7 +13512,7 @@
         };
       const backgroundMusic = ShuSoundscape.createMusicPlayer();
       const uiAudio = ShuUiFeedback.createPlayer({
-        audio: () => ({ context: gameAudio.context, destination: gameAudio.master }),
+        audio: () => ({ context: gameAudio.context, destination: gameAudio.effects }),
       });
       const uiFeedback = ShuUiFeedback.create({
         document,
@@ -13509,7 +13521,7 @@
         stop: () => uiAudio.stop(),
       });
       const fishEscapeJingle=ShuNushiPresentation.createJingle({
-        audio:()=>({context:gameAudio.context,destination:gameAudio.master}),
+        audio:()=>({context:gameAudio.context,destination:gameAudio.effects}),
       });
       function syncFishEscapeAudio(){
         if(battle?.phase!=="escape"||battle.pausedAt||document.hidden||!s.soundEnabled||!gameAudio.unlocked)return false;
@@ -13542,6 +13554,11 @@
             backgroundMusic.stop(.02);
             gameAudio.context = context;
             gameAudio.master = master;
+            gameAudio.music = context.createGain();
+            gameAudio.effects = context.createGain();
+            gameAudio.music.connect(master);
+            gameAudio.effects.connect(master);
+            applyAudioMix();
             gameAudio.surface = null;
             gameAudio.underwater = null;
             gameAudio.fightReel = null;
@@ -13602,13 +13619,42 @@
           const sample = new AudioClass(spec.src);
           sample.preload = "auto";
           sample.loop = Boolean(spec.loop);
-          sample.volume = Math.max(0, Math.min(1, Number(spec.volume) || 1));
+          gameAudio.sampleLevels[id] = spec.volume ?? 1;
+          sample.volume = sampleAudioLevel(id);
           sample.setAttribute?.("playsinline", "");
           gameAudio.media[id] = sample;
           return sample;
         } catch (_) {
           return null;
         }
+      }
+      function sampleAudioLevel(id) {
+        const ambience = id === "underwater" || id.endsWith("Birds") || CASTING_AUDIO_IDS.includes(id);
+        return Math.max(0, Math.min(1, (gameAudio.sampleLevels[id] ?? GAME_AUDIO_ASSETS[id]?.volume ?? 1) *
+          GAME_AUDIO_MASTER_LEVEL * audioOptions.seVolume / 100 * (gameAudio.jingleFocus && ambience ? .18 : 1)));
+      }
+      function setSampleAudioLevel(id, baseVolume) {
+        gameAudio.sampleLevels[id] = Math.max(0, Math.min(1, Number(baseVolume) || 0));
+        if (gameAudio.media[id]) gameAudio.media[id].volume = sampleAudioLevel(id);
+      }
+      function applyAudioMix() {
+        const context = gameAudio.context;
+        if (context) for (const [bus, level] of [[gameAudio.music, audioOptions.bgmVolume / 100 * (gameAudio.jingleFocus ? .16 : 1)], [gameAudio.effects, audioOptions.seVolume / 100]]) {
+          if (!bus) continue;
+          const now = context.currentTime;
+          bus.gain.cancelScheduledValues(now);
+          bus.gain.setValueAtTime(bus.gain.value, now);
+          bus.gain.linearRampToValueAtTime(level, now + .035);
+        }
+        for (const id of Object.keys(gameAudio.media)) gameAudio.media[id].volume = sampleAudioLevel(id);
+      }
+      function clearJingleFocus() {
+        clearTimeout(gameAudio.focusTimer);gameAudio.focusTimer = null;
+        gameAudio.jingleFocus = false;applyAudioMix();
+      }
+      function focusJingleAudio(duration) {
+        clearTimeout(gameAudio.focusTimer);gameAudio.jingleFocus = true;applyAudioMix();
+        gameAudio.focusTimer = setTimeout(clearJingleFocus, duration);
       }
       function preloadGameAudioSamples() {
         for (const id of Object.keys(GAME_AUDIO_ASSETS)) {
@@ -13629,10 +13675,7 @@
         try {
           if (restart || sample.ended) sample.currentTime = 0;
           sample.loop = loop === null ? Boolean(spec.loop) : Boolean(loop);
-          sample.volume = Math.max(
-            0,
-            Math.min(1, volume === null ? spec.volume : Number(volume)),
-          );
+          setSampleAudioLevel(id, volume === null ? spec.volume : Number(volume));
           const playing = sample.play();
           playing?.catch?.(() => {
             // Mobile browsers can revoke media playback while the app is in
@@ -13657,6 +13700,7 @@
         return true;
       }
       function stopAllGameAudioSamples() {
+        clearJingleFocus();
         stopFishEscapeAudio();
         uiFeedback.stop();
         backgroundMusic.stop(.02);
@@ -13760,9 +13804,7 @@
         const underwater = gameAudio.media.underwater;
         if (underwater) {
           try {
-            underwater.volume = active
-              ? .08
-              : GAME_AUDIO_ASSETS.underwater.volume;
+            setSampleAudioLevel("underwater", active ? .08 : GAME_AUDIO_ASSETS.underwater.volume);
           } catch (_) {}
         }
         if (active) {
@@ -13794,7 +13836,7 @@
           gameAudio.context?.state === "running" && $("#game").classList.contains("active") &&
           !indoors && !["fight","escape"].includes(battle?.phase) && ShuWeather.forecast(sceneGameMinutes()).id === "rain";
         if (!shouldPlay) { stopRainSound(); return false; }
-        if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.master);
+        if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.effects);
         return true;
       }
       function currentSoundScene() {
@@ -13825,7 +13867,7 @@
           const volume = GAME_AUDIO_ASSETS[id].volume *
             (env.period === "night" ? .18 : 1) * (weather === "rain" ? .6 : 1);
           if (!gameAudioSampleIsPlaying(id)) playGameAudioSample(id, { restart: true, volume });
-          else gameAudio.media[id].volume = volume;
+          else setSampleAudioLevel(id, volume);
         }
         return Boolean(wanted);
       }
@@ -13833,7 +13875,7 @@
         const scene = currentSoundScene();
         const enabled = s.soundEnabled && !document.hidden && gameAudio.unlocked;
         // The audio context is opened only by the existing audio-unlock path.
-        backgroundMusic.set(enabled && battle?.phase!=="escape" ? scene.music : null, gameAudio.context, gameAudio.master)
+        backgroundMusic.set(enabled && battle?.phase!=="escape" ? scene.music : null, gameAudio.context, gameAudio.music)
           .then(() => { if (typeof document !== "undefined") renderSoundToggle(); });
         const birds = syncWildlifeSound(scene);
         const rain = syncRainSound();
@@ -13918,7 +13960,7 @@
         }
         gain.gain.exponentialRampToValueAtTime(.0001, end);
         oscillator.connect(gain);
-        gain.connect(gameAudio.master);
+        gain.connect(gameAudio.effects);
         oscillator.start(when);
         oscillator.stop(end + .04);
         oscillator.onended = () => {
@@ -13965,7 +14007,7 @@
         gain.gain.exponentialRampToValueAtTime(.0001, end);
         source.connect(filter);
         filter.connect(gain);
-        gain.connect(gameAudio.master);
+        gain.connect(gameAudio.effects);
         source.start(when);
         source.stop(end + .04);
         source.onended = () => {
@@ -14130,6 +14172,7 @@
       }
       function playSpecialCatchSound(kind) {
         if (!s.soundEnabled || !["giant", "nushi"].includes(kind)) return false;
+        focusJingleAudio(kind === "nushi" ? 3000 : 1900);
         stopUnderwaterSound(.12);
         if (kind === "giant") {
           scheduleNoiseBurst({
@@ -14258,6 +14301,9 @@
         button.setAttribute("aria-label", enabled ? "音を切る" : "音を入れる");
         const track = ShuSoundscape.tracks[backgroundMusic.stats().playing];
         button.title = enabled ? track ? `音を切る · ${track.title}` : "音を切る" : "音を入れる";
+        const optionButton = $("#optionsSoundToggle");
+        optionButton.textContent = enabled ? "サウンド ON" : "サウンド OFF（押すとON）";
+        optionButton.setAttribute("aria-pressed", String(enabled));
       }
       function setSoundEnabled(enabled) {
         s.soundEnabled = Boolean(enabled);
@@ -18385,6 +18431,8 @@
           let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
           if (id === "medaka") weight *= {morning:1.6,day:1.5,evening:.8,night:.12}[period] || 1;
           if (id === "raigyo") weight *= {morning:1.1,day:1.3,evening:1.4,night:.6}[period] || 1;
+          if (id === "bluegill") weight *= {morning:1.3,day:1.35,evening:1.1,night:.25}[period] || 1;
+          if (id === "magochi") weight *= {morning:1.5,day:1,evening:1.5,night:.65}[period] || 1;
           if (id === "suzuki") {
             weight *= {
               morning: 1.35,
@@ -23349,6 +23397,7 @@
         return `${ShuPlayerOptions.name(state.playerName)} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女":"男"} · ${gameClockAt(minutes).dayIndex+1}日目 · ${Math.max(0,Math.floor(Number(state.money)||0))}円 · 釣果${count}匹`;
       }
       function renderOptions() {
+        renderAudioOptions();
         const id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
         const state=gameStarted?s:saved.data||{};
         const editable=gameStarted||(saved.ok&&saved.exists);
@@ -23373,6 +23422,7 @@
       }
       function closeOptions() {
         if(saveSuppressed)return false;
+        stopFishEscapeAudio();clearJingleFocus();
         pendingSaveDeletion=null;$("#optionsDeleteConfirmation").hidden=true;
         dialogueTyper.cancel($("#optionsTextPreview"));$("#options").classList.remove("open");
         $("#game").inert=$("#title").inert=false;
@@ -23395,6 +23445,33 @@
         $("#optionsDeleteCheck").focus({preventScroll:true});$("#optionsDeleteConfirmation").scrollIntoView?.({block:"nearest"});return true;
       }
       $("#optionsClose").onclick=closeOptions;
+      function renderAudioOptions() {
+        for(const [id,key] of [["Bgm","bgmVolume"],["Se","seVolume"]]) {
+          $("#options"+id+"Volume").value=audioOptions[key];
+          $("#options"+id+"Value").textContent=audioOptions[key]+"%";
+          $("#options"+id+"Volume").setAttribute("aria-valuetext",audioOptions[key]+"%");
+        }
+        renderSoundToggle();
+      }
+      for(const [id,key] of [["Bgm","bgmVolume"],["Se","seVolume"]]) $("#options"+id+"Volume").oninput=event=>{
+        if(saveSuppressed)return;
+        const value=Number(event.target.value);
+        if(!playerOptions.write({[key]:value})) {
+          renderAudioOptions();$("#optionsNotice").textContent="音量を保存できなかったよ。もう一度試してね。";return;
+        }
+        audioOptions=playerOptions.read();applyAudioMix();renderAudioOptions();
+        $("#optionsNotice").textContent="音量を保存したよ。";
+      };
+      $("#optionsSoundToggle").onclick=()=>{if(!saveSuppressed){setSoundEnabled(!s.soundEnabled);renderAudioOptions();}};
+      $("#optionsAudioPreview").onclick=async()=>{
+        if(saveSuppressed)return;
+        if(!s.soundEnabled){$("#optionsNotice").textContent="サウンドをONにすると、試し聴きできるよ。";return;}
+        unlockGameAudio();await gameAudio.unlockPromise;
+        if(!$("#options").classList.contains("open")||!s.soundEnabled||document.hidden)return;
+        focusJingleAudio(ShuNushiPresentation.jingleDuration+150);
+        if(!fishEscapeJingle.play()){$("#optionsNotice").textContent="音を準備できなかったよ。もう一度試してね。";clearJingleFocus();}
+        else $("#optionsNotice").textContent=audioOptions.seVolume===0?"SEが0%なので、ジングルは消音中だよ。":"この音量でジングルが鳴るよ。";
+      };
       $("#optionsNameForm").onsubmit=event=>{
         event.preventDefault();if(saveSuppressed)return;
         if(pendingSaveDeletion){$("#optionsNotice").textContent="先に、セーブ削除の確認を終えてね。";return;}
@@ -23844,7 +23921,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=245-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=246-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

@@ -24,5 +24,10 @@
 .game-options .delete-save{background:#54373a;color:#ffe3d7;border-color:#c59685;box-shadow:none}
 .delete-confirm{padding:14px;margin-top:12px;border:2px solid #dca18a;border-radius:10px;background:#402d32}.delete-confirm label{display:flex;align-items:center;gap:10px;min-height:44px;font-size:14px}.delete-confirm input{width:22px;height:22px;flex:none}.delete-actions{display:flex;gap:10px;margin-top:10px}.delete-actions button{flex:1}.game-options [hidden]{display:none!important}
 #optionsNotice{font-size:14px;line-height:1.55;color:#ffe3a1;margin:0;min-height:22px}
+.options-volume{display:grid;grid-template-columns:115px minmax(80px,1fr) 48px;align-items:center;gap:12px;min-height:46px}
+.options-volume label{font-size:14px;font-weight:bold}.options-volume input{width:100%;min-width:0;height:44px;margin:0;accent-color:#ffd785;cursor:pointer;touch-action:pan-y}
+.options-volume output{text-align:right;font-size:14px;font-variant-numeric:tabular-nums;color:#ffe3a1}
+.options-audio-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:8px}.options-audio-actions button{flex:1;min-width:120px}
+@media(max-width:540px){.options-volume{grid-template-columns:98px minmax(60px,1fr) 44px;gap:8px}}
 @media(max-height:560px){.game-options{inset:8px!important;width:min(780px,calc(100vw - 16px))!important;height:calc(100dvh - 16px)!important}.options-heading{padding:8px 14px}.options-heading h2{font-size:20px}.options-body{padding:10px 14px;gap:12px}.options-group{padding:12px}.player-name-choice{margin:6px auto}.title h1{font-size:clamp(26px,5vw,40px)}.title h2{font-size:18px;margin:4px 0}.title .title-box{padding:10px 16px 18px}}
 @media(max-width:540px){.options-speeds{grid-template-columns:repeat(2,minmax(0,1fr))}.options-save-list{grid-template-columns:1fr}.options-name-form{grid-template-columns:1fr}.game-options{width:calc(100vw - 16px)!important;inset:8px!important;height:calc(100dvh - 16px)!important}}
