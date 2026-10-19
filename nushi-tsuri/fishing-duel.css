@@ -25,8 +25,18 @@
 #underwaterTravel{display:none;position:absolute;inset:0;width:100%;height:100%;z-index:2;image-rendering:pixelated;pointer-events:none}
 .underwater-travel #underwaterTravel{display:block}
 .underwater-travel #underwaterPixels,.underwater-travel [data-for="underwaterPixels"]{opacity:0}
+.nushi-water .underwater-backdrop{background:#073e4a url('assets/nushi-open-water-v245.webp') center/cover no-repeat}
+.nushi-water #underwaterPixels,.nushi-water [data-for="underwaterPixels"]{visibility:hidden}
+.nushi-water .surface{opacity:.12}
+.fish-escape-caption{position:absolute;z-index:12;left:5%;right:5%;bottom:13%;padding:12px 8px;color:#fff5d6;text-align:center;font-size:clamp(15px,2.1vw,23px);font-weight:700;line-height:1.65;text-shadow:0 2px 3px #031a26,1px 0 2px #031a26;background:linear-gradient(90deg,transparent,#062d3eb3 20%,#062d3eb3 80%,transparent);pointer-events:none}
+.fish-escape-caption[hidden]{display:none}
+.line-broken .line-svg,.line-broken .fish-tackle,.line-broken .battle-actions,.line-broken .nushi-cue,.line-broken #surfaceSplash{visibility:hidden}
+.world:has(#fishScene.line-broken) .field-notices>.hint{visibility:hidden}
+.line-broken #battleFish{filter:hue-rotate(var(--fish-hue,0deg)) brightness(var(--fish-light,1)) saturate(var(--fish-color,1)) contrast(var(--fish-contrast,1)) drop-shadow(3px 4px 2px #02192d66)}
 @media(prefers-reduced-motion:reduce){
  .underwater-travel #underwaterTravel{display:none}
  .underwater-travel #underwaterPixels,.underwater-travel [data-for="underwaterPixels"]{opacity:1}
+ .nushi-water.underwater-travel #underwaterTravel{display:block}
+ .nushi-water #battleFish{transition:none}
 }
 @media(max-height:500px){.duel-options{padding:6px}.duel-options p{margin:6px 0}.duel-options button{min-height:38px}}

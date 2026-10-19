@@ -70,5 +70,5 @@ for(const condition of conditions)test(`visible cues with ${condition.delayMs}ms
 
 test('holding A throughout a natural heavyweight fight still loses instead of automatically landing it',()=>{
  const r=runFight({id:'namazu',delayMs:0,holdAlways:true});console.log('V228_HOLD '+JSON.stringify(r));
- assert.deepEqual(r.errors,[]);assert.equal(r.phase,'lost');assert.equal(r.maxProgress,0);
+ assert.deepEqual(r.errors,[]);assert.equal(r.phase,'lost');assert.equal(r.lineBroken,true);assert.equal(r.maxProgress,0);
 });

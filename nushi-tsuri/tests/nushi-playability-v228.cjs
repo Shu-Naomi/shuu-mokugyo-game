@@ -38,7 +38,9 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
     if(battle.reeling&&!battle.mood.calm&&!battle.gillWash)wrongRunTicks++;
     maxProgress=Math.max(maxProgress,battle.retrieval);maxTension=Math.max(maxTension,battle.ten);lastPhase=scene.dataset.nushiPhase;
    }
-   return {phase:battle?.phase||'lost',seconds:ticks*.12,maxProgress,maxTension,warningCount,pullOpenings,wrongRunTicks};
+   const lineBroken=battle?.phase==='escape';
+   if(lineBroken)for(let i=0;i<40&&battle?.phase==='escape';i++){testNow+=120;fightTick();}
+   return {lineBroken,phase:battle?.phase||'lost',seconds:ticks*.12,maxProgress,maxTension,warningCount,pullOpenings,wrongRunTicks};
   })()`);
   return {id,delayMs,tier,rngSeed,mode,holdAlways,start,...result,errors:app.errors};
  }finally{app.dispose();}

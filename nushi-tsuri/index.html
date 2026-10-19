@@ -6441,7 +6441,7 @@
     <link rel="stylesheet" href="cast-tackle.css?v=219-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=244-1" />
+      <link rel="stylesheet" href="fishing-duel.css?v=245-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=240-1" />
   </head>
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v244</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v245</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6799,6 +6799,7 @@
             </svg>
           </div>
           <div class="nushi-cue" id="nushiCue" role="status"></div>
+          <div class="fish-escape-caption" id="fishEscapeCaption" role="status" aria-live="polite" hidden></div>
           <div class="battle-ui" id="battleUi">
             <b id="fishName">キャスト</b><small id="phaseLabel"> 距離</small>
             <div class="cast-meter" id="castMeter"><div class="cast-range-fill" id="castRangeFill"></div><div class="cast-marker" id="castMarker"></div></div>
@@ -7287,8 +7288,9 @@
     <script src="compact-ui.js?v=235-1"></script>
     <script src="pet-life-ui.js?v=234-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=244-1"></script>
-    <script src="underwater-camera.js?v=244-1"></script>
+    <script src="fishing-duel.js?v=245-1"></script>
+    <script src="underwater-camera.js?v=245-1"></script>
+    <script src="nushi-presentation.js?v=245-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
@@ -7300,7 +7302,7 @@
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=241-1"></script>
-    <script src="fish-art.js?v=238-1"></script>
+    <script src="fish-art.js?v=245-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -11721,7 +11723,8 @@
         if(ShuFishArt.species[fishId]?.asset===spriteAsset){
           clearStandaloneFishFrame(element);
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):undefined;
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${fishId}${aquariumLook?`|${aquariumLook.key}`:''}`;
+          const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${fishId}${aquariumLook?`|${aquariumLook.key}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.width!==448)canvas.width=448;
           if(canvas.height!==224)canvas.height=224;
@@ -11734,7 +11737,7 @@
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            ShuFishArt.draw(context,image,fishId,spriteCells,spriteFrame,resolveImage,{swimFrame});
+            ShuFishArt.draw(context,image,fishId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend});
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
@@ -13505,6 +13508,20 @@
         play: kind => uiAudio.play(kind),
         stop: () => uiAudio.stop(),
       });
+      const fishEscapeJingle=ShuNushiPresentation.createJingle({
+        audio:()=>({context:gameAudio.context,destination:gameAudio.master}),
+      });
+      function syncFishEscapeAudio(){
+        if(battle?.phase!=="escape"||battle.pausedAt||document.hidden||!s.soundEnabled||!gameAudio.unlocked)return false;
+        const escape=battle.fishEscape;
+        if(!escape.audioStarted&&escape.elapsed<ShuNushiPresentation.jingleDuration)
+          escape.audioStarted=fishEscapeJingle.play(escape.elapsed);
+        return escape.audioStarted;
+      }
+      function stopFishEscapeAudio(){
+        fishEscapeJingle.stop();
+        if(battle?.fishEscape)battle.fishEscape.audioStarted=false;
+      }
       function ensureAudioContext(resume = true) {
         if (!s.soundEnabled) return null;
         let context = gameAudio.context;
@@ -13640,6 +13657,7 @@
         return true;
       }
       function stopAllGameAudioSamples() {
+        stopFishEscapeAudio();
         uiFeedback.stop();
         backgroundMusic.stop(.02);
         let stopped = stopRainSound();
@@ -13774,7 +13792,7 @@
           $("#store").classList.contains("open") || $("#locationInterior").classList.contains("open");
         const shouldPlay = s.soundEnabled && !document.hidden && gameAudio.unlocked &&
           gameAudio.context?.state === "running" && $("#game").classList.contains("active") &&
-          !indoors && battle?.phase !== "fight" && ShuWeather.forecast(sceneGameMinutes()).id === "rain";
+          !indoors && !["fight","escape"].includes(battle?.phase) && ShuWeather.forecast(sceneGameMinutes()).id === "rain";
         if (!shouldPlay) { stopRainSound(); return false; }
         if (!gameAudio.rain) gameAudio.rain = ShuWeather.createRain(gameAudio.context, gameAudio.master);
         return true;
@@ -13815,7 +13833,7 @@
         const scene = currentSoundScene();
         const enabled = s.soundEnabled && !document.hidden && gameAudio.unlocked;
         // The audio context is opened only by the existing audio-unlock path.
-        backgroundMusic.set(enabled ? scene.music : null, gameAudio.context, gameAudio.master)
+        backgroundMusic.set(enabled && battle?.phase!=="escape" ? scene.music : null, gameAudio.context, gameAudio.master)
           .then(() => { if (typeof document !== "undefined") renderSoundToggle(); });
         const birds = syncWildlifeSound(scene);
         const rain = syncRainSound();
@@ -13824,6 +13842,13 @@
       function syncExpectedLoopAudio() {
         const scenePlaying = syncSceneSound();
         if (!s.soundEnabled || document.hidden) return false;
+        if (battle?.phase === "escape") {
+          if(!battle.pausedAt){
+            startUnderwaterSound(battle.f.id,battle.waterAudioWeight);
+            setGillWashAudioFocus(true);syncFishEscapeAudio();
+          }
+          return true;
+        }
         if (battle?.phase === "fight") {
           if (gameAudioSampleIsPlaying("underwater")) {
             gameAudio.underwater ||= {
@@ -21352,6 +21377,8 @@
           "duel-nushi",
           "lure-search",
           "underwater-travel",
+          "nushi-water",
+          "line-broken",
           "nushi-bracing",
           "nushi-pulling",
           "water-rush",
@@ -21366,6 +21393,9 @@
         );
         delete scene.dataset.nushiPhase;
         $("#nushiCue").textContent="";
+        $("#fishEscapeCaption").hidden=true;$("#fishEscapeCaption").textContent="";
+        $("#pull").parentElement.inert=false;
+        delete $("#underwaterTravel").dataset.scenery;
         if($("#lurePreview"))$("#lurePreview").hidden=true;
         const castSurface = $("#castSurface");
         castSurface.className = "cast-surface";
@@ -21398,6 +21428,7 @@
         delete fishElement.dataset.turnPhase;
         delete fishElement.dataset.turnFrom;
         delete fishElement.dataset.resisting;
+        delete fishElement.dataset.resistanceBend;
         delete fishElement.dataset.mouthState;
         delete fishElement.dataset.spriteMode;
         delete fishElement.dataset.spriteFrame;
@@ -21771,15 +21802,13 @@
         if(battle?.fightMode!=="nushi"||battle.phase!=="fight"||battle.gillWash||!battle.nushiWindow?.warning)return null;
         const profile=ShuFishing.rhythm(battle.f.id);
         const at=battle.pausedAt||Date.now(),start=battle.nushiWindow.warningShownAt??at;
-        const wave=Math.sin((at-start)/1000*Math.PI*2*(4.2+profile.tempo));
-        const yaw=.2+(wave+1)*.8;
-        return {frame:(battle.facing||1)>0?yaw:6-yaw,
-          angle:wave*4.5*profile.shake,x:wave*3.2,y:Math.cos((at-start)/60)*1.6};
+        return ShuNushiPresentation.resistance(at-start,profile,battle.facing||1,
+          matchMedia('(prefers-reduced-motion: reduce)').matches);
       }
       function battleFishVisualPose() {
         // The sprite and its hook must use the same effective transform,
         // including authored fixed-head frames and the grounded flatfish.
-        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && !nushiResistancePose();
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && battle.phase!=="escape" && !nushiResistancePose();
         const fixedHead = fixedFaceFishIds.has(battle.f.id);
         const resistance=nushiResistancePose();
         const showingTurn = Boolean((battle.turning||resistance) && !sandGrounded);
@@ -21813,11 +21842,11 @@
         stopBattleFishArt();
         const paint=now=>{
           battleArtAnimationFrame=0;
-          if(!battle||!["fight","lure","interest","bite"].includes(battle.phase))return;
+          if(!battle||!["fight","escape","lure","interest","bite"].includes(battle.phase))return;
           if(!document.hidden&&!battle.pausedAt){
             if(now-battleArtLastPaintAt>=32){
               battleArtLastPaintAt=now;
-              if(battle.phase==="fight")renderBattleFish();
+              if(["fight","escape"].includes(battle.phase))renderBattleFish();
               renderUnderwaterTravel();
             }
             if(battle.phase==="fight")syncBattleFishLine();
@@ -21835,6 +21864,8 @@
           const lure=battle.lureMotion;
           travel=-(lure.travel-camera.lureTravel)*lure.distance*.025;
           camera.lureTravel=lure.travel;
+        }else if(battle.phase==="escape"){
+          travel=battle.fishEscapePose?.travel||0;
         }else if(battle.phase==="fight"){
           travel=battle.fightMode==="nushi"&&!battle.mood.calm&&!battle.gillWash
             ? Math.min(.024,Math.max(.003,(battle.escapeSpeed||Math.abs(battle.vx)||1)*.003))
@@ -21842,20 +21873,29 @@
         }
         ShuUnderwaterCamera.advance(camera,travel,Date.now());
       }
+      const nushiWaterImage=new Image();nushiWaterImage.src=ShuNushiPresentation.background;
       function renderUnderwaterTravel(){
         if(!battle?.underwaterCamera)return;
         const scene=$("#fishScene"),source=$("#underwaterPixels"),canvas=$("#underwaterTravel");
-        const active=(battle.phase==="fight"&&(battle.fightMode==="nushi"||battle.method==="lure"))||
+        const active=(["fight","escape"].includes(battle.phase)&&(battle.fightMode==="nushi"||battle.method==="lure"))||
           (battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase));
-        if(!active||source.dataset.travelReady!=="true"||!scene.clientWidth||!scene.clientHeight||
-          matchMedia('(prefers-reduced-motion: reduce)').matches){scene.classList.remove("underwater-travel");return;}
+        const nushi=battle.fightMode==="nushi"&&active;
+        const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+        scene.classList.toggle("nushi-water",nushi);
+        if(!active||!scene.clientWidth||!scene.clientHeight||(!nushi&&(source.dataset.travelReady!=="true"||reduced))){
+          scene.classList.remove("underwater-travel");return;
+        }
         const width=Math.min(1280,scene.clientWidth),height=Math.round(width*scene.clientHeight/scene.clientWidth);
         if(canvas.width!==width||canvas.height!==height){canvas.width=width;canvas.height=height;}
         const camera=battle.underwaterCamera,offset=ShuUnderwaterCamera.position(camera,Date.now());
         const layers=[source,scene.querySelector('.scenery-motion[data-for="underwaterPixels"]'),
           scene.querySelector('.scenery-foreground[data-for="underwaterPixels"]')];
-        if(ShuUnderwaterCamera.paint(canvas,layers,offset)){
+        const painted=nushi?ShuNushiPresentation.paintWater(canvas,nushiWaterImage,offset,{
+          zone:battle.waterZone,depth:battle.depth,period:gameSceneryEnvironment().period,reduced,
+        }):ShuUnderwaterCamera.paint(canvas,layers,offset);
+        if(painted){
           camera.shown=offset;canvas.dataset.offset=String(offset);
+          canvas.dataset.scenery=nushi?"open-water":"gauge";
           scene.classList.add("underwater-travel");
         }
       }
@@ -21863,7 +21903,7 @@
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
         element.style.top = battle.y + "%";
-        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && !nushiResistancePose();
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && battle.phase!=="escape" && !nushiResistancePose();
         element.classList.toggle("sand-grounded", sandGrounded);
         element.dataset.sandState = sandGrounded ? "grounded" : "lifted";
         const mouthState = battle.mouthState ||
@@ -21884,6 +21924,7 @@
         const resistance=nushiResistancePose();
         const showingTurn = Boolean((battle.turning||resistance) && !sandGrounded);
         element.dataset.resisting=String(Boolean(resistance));
+        element.dataset.resistanceBend=String(resistance?.bend||0);
         if (resistance && !sandGrounded) {
           spriteAsset=fishTurnAssets[battle.f.id];spriteCells=7;
           spriteFrame=resistance.frame;spriteMode="turn";
@@ -22180,6 +22221,7 @@
         timer = setInterval(() => {
           if (!battle || document.hidden || battle.pausedAt) return;
           if(battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase)){updateLurePresentation();updateWaterFx();return;}
+          if(battle.phase==="escape"){updateFishEscape();return;}
           if (battle.phase !== "fight") updateWaterFx();
           if (["cast", "wait", "bite"].includes(battle.phase) ||
               (battle.phase === "cast-flight" && !surfaceCastAnimationFrame))
@@ -22216,7 +22258,7 @@
             updateWaterFx();
             renderBattleFish();
             drawBattle();
-            if (battle.ten >= 100) return lose("エラ洗いで糸が切れた……");
+            if (battle.ten >= 100) return breakFishingLine("エラ洗いで糸が切れた……");
             return;
           }
           updateRetrieval(mood);
@@ -22255,7 +22297,7 @@
             battle.y - battle.surfaceY,
           );
           const landingRadius = ShuRegional.legendary(battle.f.id) ? 11 : 7;
-          if (battle.ten >= 100) return lose("糸が切れた……");
+          if (battle.ten >= 100) return breakFishingLine("糸が切れた……");
           if (battle.retrieval >= 0.999 && arrival <= landingRadius)
             return surfaceCatch();
         }, 120);
@@ -22430,7 +22472,7 @@
           renderTackle();
           return open("tackle");
         }
-        if (battle.phase === "landing") return;
+        if (["landing","escape"].includes(battle.phase)) return;
         if (battle.phase === "cast") {
           log(battle.practice
             ? "サム「投点を選び直したくなったら、またいつでも始めよう」"
@@ -22641,6 +22683,44 @@
           if (battle?.phase === "landing") caught();
         }, 1100);
       }
+      function breakFishingLine(message){
+        if(battle?.fightMode!=="nushi"||battle.phase!=="fight")return lose(message);
+        log(message);
+        const visual=battleFishVisualPose(),now=Date.now();
+        battle.fishEscape=ShuNushiPresentation.createEscape(now,{x:battle.x,y:battle.y,
+          facing:battle.facing||1,scale:battle.renderScale||1});
+        battle.phase="escape";battle.reeling=false;battle.lureHeld=false;
+        battle.nushiWindow=null;battle.gillWash=null;battle.sandLifted=true;
+        battle.renderScale=visual.displayScale/Math.max(.1,battle.specimenVisualScale||1);
+        battle.fishEscape.startScale=battle.renderScale;
+        battle.turning=null;battle.turnArcY=0;battle.turnRoll=0;battle.turnDepth=0;
+        battle.mouthState="closed";battle.mouthOpen=0;
+        const scene=$("#fishScene");
+        scene.classList.remove("nushi-bracing","nushi-pulling","gill-wash","hook-reveal","water-rush");
+        scene.classList.add("line-broken");scene.dataset.nushiPhase="escaped";
+        $("#linePath").setAttribute("d","");clearWaterFx();
+        $("#pull").parentElement.inert=true;
+        const caption=$("#fishEscapeCaption");caption.hidden=false;caption.textContent="糸が切れた……";
+        stopFightReelSound();stopGameAudioSample("fishGillWash");
+        setGillWashAudioFocus(true);syncSceneSound();syncFishEscapeAudio();
+        vibrate([35,25,75]);startBattleFishArt();
+      }
+      function updateFishEscape(){
+        if(battle?.phase!=="escape"||battle.pausedAt||document.hidden)return;
+        const pose=ShuNushiPresentation.advanceEscape(battle.fishEscape,Date.now(),
+          matchMedia('(prefers-reduced-motion: reduce)').matches);
+        battle.fishEscapePose=pose;
+        if(pose.done){log("魚は元気よく泳いで行った");return endBattle();}
+        battle.x=pose.x;battle.y=pose.y;battle.renderScale=pose.scale;
+        battle.renderAngle=-3;battle.facing=1;
+        battle.turning=pose.turn===null?null:{from:-1,to:1,frame:1-pose.turn/6,frames:1};
+        battle.turnSpriteFrame=pose.turn||0;
+        animateFishBody({calm:false,danger:false},pose.speed,1.65);
+        $("#battleFish").style.opacity=String(pose.opacity);
+        const caption=$("#fishEscapeCaption");
+        if(caption.textContent!==pose.caption)caption.textContent=pose.caption;
+        advanceUnderwaterTravel();renderBattleFish();renderUnderwaterTravel();syncFishEscapeAudio();
+      }
       function lose(t) {
         log(t);
         endBattle();
@@ -22675,7 +22755,7 @@
         return ` ・ 棘で${damage}ダメージ／宿でHP ${recoveryHp}まで回復`;
       }
       function caught() {
-        if (!battle?.f || battle.catchRecorded) return;
+        if (!battle?.f || battle.catchRecorded || battle.phase==="escape") return;
         battle.catchRecorded = true;
         const f = battle.f;
         const specimen = battle.specimen;
@@ -22778,6 +22858,7 @@
         }
       }
       function endBattle() {
+        stopFishEscapeAudio();
         stopBattleFishArt();
         if (battle?.tournamentCast && s.tournament) {
           ShuTournament.finishCast(s.tournament);
@@ -23486,7 +23567,10 @@
         if(battleActionHeld||document.hidden||battle?.pausedAt)return;
         battleActionHeld=true;pull();
       }
-      function pauseBattle(){if(battle&&!battle.pausedAt)battle.pausedAt=Date.now();releaseHeldInputs();}
+      function pauseBattle(){
+        if(battle&&!battle.pausedAt)battle.pausedAt=Date.now();
+        stopFishEscapeAudio();releaseHeldInputs();
+      }
       function resumeBattle(){
         if(battle?.pausedAt){
           const now=Date.now(),paused=battle.pausedAt;
@@ -23495,6 +23579,7 @@
           if(battle.nextMood)battle.nextMood+=now-paused;
           ShuFishing.shiftWindow(battle,now-paused);
           if(battle.underwaterCamera)ShuUnderwaterCamera.resume(battle.underwaterCamera,now);
+          if(battle.fishEscape)battle.fishEscape.lastAt=now;
           battle.pausedAt=0;
         }
         releaseHeldInputs();
@@ -23759,7 +23844,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=244-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=245-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

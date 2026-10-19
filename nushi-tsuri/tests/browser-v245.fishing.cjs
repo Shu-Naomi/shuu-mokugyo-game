@@ -3,7 +3,7 @@ const {seed,saveKey}=require('./game-harness.cjs');
 
 module.exports=async function fishingSpec(url,mobile=false,options={}){
  const viewport=options.viewport||(mobile?{width:844,height:390}:{width:1280,height:720});
- const directory=path.join(__dirname,'browser-evidence-v244');fs.mkdirSync(directory,{recursive:true});
+ const directory=path.join(__dirname,'browser-evidence-v245');fs.mkdirSync(directory,{recursive:true});
  const browser=await chromium.launch({headless:true});
  try{for(const mode of ['gauge','nushi']){
   const context=await browser.newContext({viewport,deviceScaleFactor:options.dpr||1,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'});
@@ -21,7 +21,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    await page.clock.install({time:new Date('2026-10-19T00:00:00Z')});await page.clock.pauseAt('2026-10-19T00:00:01Z');
    await page.goto(url,{waitUntil:'load'});await press('#start');await page.clock.runFor(240);
    if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
-   assert.match(await page.locator('.hud').innerText(),/v244/);
+   assert.match(await page.locator('.hud').innerText(),/v245/);
    if(mode==='gauge'){
     // A stalled real timer must first show the bite, then give its full window.
     const old=await snapshot();await openTackle();await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');await finishCast();
@@ -49,6 +49,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    await press('#pull');await page.clock.runFor(180);assert.ok(await value('battle.lureMotion.travel')>0);
    assert.ok(await value('battle.underwaterCamera.offset')<0,'winding the spoon moves the background towards shore');
    assert.equal(await page.locator('#underwaterTravel').isVisible(),true);
+   assert.equal(await page.locator('#underwaterTravel').getAttribute('data-scenery'),mode==='nushi'?'open-water':'gauge');
    if(!mobile&&mode==='gauge'){
     await page.emulateMedia({reducedMotion:'reduce'});await page.clock.runFor(80);
     assert.equal(await page.locator('#underwaterTravel').isVisible(),false);
@@ -148,7 +149,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     await page.evaluate(()=>hideFieldMenu());const beforeLoss=await snapshot();await openTackle();await press('#beginCast');
     await page.evaluate(()=>{battle.cast=50;const spot='mountain-'+battle.mountainType+'-mid';for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;if(pick(50,spot)?.id==='himemasu')return;}throw Error('encounter');});
     await press('#pull');await finishCast();
-    await page.evaluate(()=>{window.v244Rng=907;Math.random=()=>((window.v244Rng=Math.imul(window.v244Rng,1664525)+1013904223>>>0)/4294967296);});
+    await page.evaluate(()=>{window.v245Rng=907;Math.random=()=>((window.v245Rng=Math.imul(window.v245Rng,1664525)+1013904223>>>0)/4294967296);});
     for(let i=0;i<18&&await value('battle.phase')==='lure';i++){await press('#pull');await page.clock.runFor(480);}
     for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
     assert.equal(await value('battle.phase'),'bite');await press('#pull');assert.equal(await value('battle.phase'),'fight');
@@ -160,13 +161,45 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     for(let i=0;i<120&&await value('battle?.phase')==='fight';i++){
      lastUnsafePhase=await page.locator('#fishScene').getAttribute('data-nushi-phase');await page.clock.runFor(120);
     }
-    await hold(false);assert.equal(await value('battle'),null,'holding through resistance or escape breaks the line');
+    await hold(false);assert.equal(await value('battle?.phase'),'escape','holding through resistance or escape breaks the line into the follow-camera scene');
     assert.equal(lastUnsafePhase,resistOnly?'warning':'running','the line breaks during the visible unsafe action');
     assert.match(await value('s.log[0]'),/糸が切れた/);
+    const escapedIndividual=await value('JSON.stringify([battle.f.id,battle.specimen])');
+    assert.equal(await page.locator('#linePath').getAttribute('d'),'');
+    assert.equal(await page.locator('#fishTackleFront').isVisible(),false);
+    assert.equal(await page.locator('#pull').isVisible(),false);
+    assert.equal(await page.locator('#hint').isVisible(),false,'the field fishing instructions stay out of the escape scene');
+    const atBreak=await value('battle.underwaterCamera.offset');
+    await page.clock.runFor(720);assert.equal(await value('battle?.phase'),'escape');
+    assert.equal(await page.locator('#fishEscapeCaption').innerText(),'魚は元気よく泳いで行った');
+    await shot('line-break-follow');
+    assert.equal(await value('JSON.stringify([battle.f.id,battle.specimen])'),escapedIndividual);
+    assert.ok(await value('battle.underwaterCamera.offset')>atBreak,'camera follows the swimming fish after the line is gone');
+    const tail=await page.locator('#battleFish').getAttribute('data-art-swim-frame');
+    await page.clock.runFor(120);assert.notEqual(await page.locator('#battleFish').getAttribute('data-art-swim-frame'),tail,'the escaped fish still swims energetically');
+    // Enable through the real sound button. Muting, blur and returning may
+    // play only the remaining part of this one cue, never a queued old one.
+    if(!mobile){
+     await press('#soundToggle');await page.waitForTimeout(40);
+     assert.equal(await value('gameAudio.context.state'),'running');
+     assert.ok(await value('fishEscapeJingle.stats().sessions')>=1);
+     assert.ok(await value('fishEscapeJingle.stats().voices')>0);
+     await press('#soundToggle');assert.equal(await value('fishEscapeJingle.stats().voices'),0);
+     await press('#soundToggle');await page.waitForTimeout(40);
+    }
+    const frozen=await value('JSON.stringify([battle.fishEscape.elapsed,battle.x,battle.y,battle.underwaterCamera.offset])');
+    await page.evaluate(()=>window.dispatchEvent(new Event('blur')));assert.equal(await value('fishEscapeJingle.stats().voices'),0);
+    await page.clock.fastForward(60000);assert.equal(await value('JSON.stringify([battle.fishEscape.elapsed,battle.x,battle.y,battle.underwaterCamera.offset])'),frozen);
+    await page.evaluate(()=>window.dispatchEvent(new Event('focus')));await page.waitForTimeout(40);
+    await page.clock.runFor(120);assert.equal(await value('battle?.phase'),'escape','a background pause cannot consume the escape scene');
+    if(!mobile){await press('#soundToggle');assert.equal(await value('fishEscapeJingle.stats().voices'),0);}
+    await page.clock.runFor(5000);assert.equal(await value('battle'),null);
+    assert.equal(await page.locator('#fishEscapeCaption').isVisible(),false);assert.equal(await value('fishEscapeJingle.stats().voices'),0);
+    assert.equal(await page.locator('#fishScene').evaluate(n=>n.classList.contains('line-broken')),false);
     const lost=await snapshot();assert.deepEqual(lost.caught,beforeLoss.caught);assert.deepEqual(lost.baits,beforeLoss.baits);assert.deepEqual(lost.lures,beforeLoss.lures);assert.equal(lost.time-beforeLoss.time,10);
     assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    }
-   console.log('V244_FISHING_SPEC_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,mode,seconds,shortTaps:true,visibleBiteWindow:true,pausedBite:true,sameIndividual:true,rightwardTicks,runTravel,pullTravel,longestPullMs,scrolling:true,noTensionWindow:mode==='nushi',visibleHeadShake:mode==='nushi',unsafePullBreaks:mode==='nushi',oneCast:true,reload:true,errors,failed}));
+   console.log('V245_FISHING_SPEC_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,mode,seconds,shortTaps:true,visibleBiteWindow:true,pausedBite:true,sameIndividual:true,rightwardTicks,runTravel,pullTravel,longestPullMs,scrolling:true,noTensionWindow:mode==='nushi',visibleHeadShake:mode==='nushi',unsafePullBreaks:mode==='nushi',escapeCamera:mode==='nushi',escapeTelop:mode==='nushi',escapePause:mode==='nushi',jingleMute:!mobile&&mode==='nushi',oneCast:true,reload:true,errors,failed}));
   }catch(e){await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+mode+'-failure.png')}).catch(()=>{});throw e;}
   finally{await context.close();}
  }}finally{await browser.close();}
