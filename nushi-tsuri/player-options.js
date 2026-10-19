@@ -1,4 +1,4 @@
-/* Player identity belongs to each adventure; reading speed belongs to this device. */
+/* Player identity belongs to each adventure; reading speed and volume belong to this device. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;
   if(root)root.ShuPlayerOptions=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
@@ -6,6 +6,10 @@
   const key='nushi-inugoya-options-v1';
   const speeds=Object.freeze({slow:70,normal:35,fast:12,instant:0});
   const labels={slow:'ゆっくり',normal:'ふつう',fast:'はやい',instant:'一度に表示'};
+  const defaults=Object.freeze({textSpeed:'normal',bgmVolume:45,seVolume:80});
+  function volume(value,fallback){return typeof value==='number'&&Number.isFinite(value)?Math.round(Math.max(0,Math.min(100,value))):fallback;}
+  function normalize(saved){return {textSpeed:Object.hasOwn(speeds,saved?.textSpeed)?saved.textSpeed:defaults.textSpeed,
+    bgmVolume:volume(saved?.bgmVolume,defaults.bgmVolume),seVolume:volume(saved?.seVolume,defaults.seVolume)};}
   const split=value=>typeof Intl.Segmenter==='function'
     ? Array.from(new Intl.Segmenter('ja',{granularity:'grapheme'}).segment(value),p=>p.segment)
     : Array.from(value);
@@ -14,11 +18,17 @@
   function validName(value){const parts=split(clean(value));return parts.length>0&&parts.length<=12;}
   const gender=value=>value==='girl'?'girl':'boy';
   function create(getStorage=()=>globalThis.localStorage){
-    function read(){try{const saved=JSON.parse(getStorage().getItem(key));
-      return {textSpeed:Object.hasOwn(speeds,saved?.textSpeed)?saved.textSpeed:'normal'};
-    }catch(_){return {textSpeed:'normal'};}}
-    function write(textSpeed){if(!Object.hasOwn(speeds,textSpeed))return false;
-      try{getStorage().setItem(key,JSON.stringify({textSpeed}));return true;}catch(_){return false;}}
+    function read(){try{return normalize(JSON.parse(getStorage().getItem(key)));}catch(_){return {...defaults};}}
+    function write(change){
+      if(typeof change==='string'){if(!Object.hasOwn(speeds,change))return false;change={textSpeed:change};}
+      if(!change||typeof change!=='object'||Array.isArray(change))return false;
+      const next={...read()};
+      if(Object.hasOwn(change,'textSpeed')){if(!Object.hasOwn(speeds,change.textSpeed))return false;next.textSpeed=change.textSpeed;}
+      for(const key of ['bgmVolume','seVolume'])if(Object.hasOwn(change,key)){
+        if(typeof change[key]!=='number'||!Number.isFinite(change[key]))return false;
+        next[key]=volume(change[key],defaults[key]);
+      }
+      try{getStorage().setItem(key,JSON.stringify(next));return true;}catch(_){return false;}}
     return {read,write};
   }
   function typer(clock=globalThis){
@@ -50,5 +60,5 @@
     function cancelAll(){for(const container of running.keys())cancel(container);}
     return {start,finish,cancel,cancelAll};
   }
-  return {key,speeds,labels,split,name,validName,gender,create,typer};
+  return {key,speeds,labels,defaults,normalize,split,name,validName,gender,create,typer};
 });

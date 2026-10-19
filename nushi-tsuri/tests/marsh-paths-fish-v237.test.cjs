@@ -34,7 +34,7 @@ test('touch controls traverse the painted ring, side decks and all four banks, t
   const restored=boot(saved);try{assert.deepEqual(progress(restored.window),before);assert.equal(read(restored.window,'s.mapRegion'),'mountainPond');assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
 });
 
-test('five marsh species have normal tackle odds and catch records that survive reload; the catalogue stays at 45 fish',()=>{
+test('five marsh species have normal tackle odds and catch records that survive reload; the catalogue includes all 49 fish',()=>{
   for(const [id,bait,hook,distance]of fishCases){
     const app=boot(fixture({gameMinutes:600,ownedRods:['bamboo','starGazer'],selectedRod:'starGazer',selectedBait:bait,selectedHook:hook,baits:{paste:10,river:10,liveMinnow:10,worm:10}})),w=app.window;let saved;
     try{
@@ -51,7 +51,7 @@ test('five marsh species have normal tackle odds and catch records that survive 
       w.eval('caught();caught()');assert.equal(read(w,`s.caught.${id}`),1);
       assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);
       if(id!=='dojo')assert.match(read(w,`fishEncyclopediaData.${id}.locations`),/峠の沼/);
-      assert.equal(read(w,'fish.length'),46);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
+      assert.equal(read(w,'fish.length'),49);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
     }finally{app.dispose();}
     const restored=boot(saved);try{assert.equal(read(restored.window,`s.caught.${id}`),1);assert.match(read(restored.window,`s.fishCatchRecords.${id}.last.spotId`),/^mountain-highMarsh-/);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
   }

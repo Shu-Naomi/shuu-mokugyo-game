@@ -36,5 +36,6 @@ jobs:
           path: |
             nushi-tsuri/tests/browser-evidence-v238/
             nushi-tsuri/tests/browser-evidence-v245/
+            nushi-tsuri/tests/browser-evidence-v246/
           retention-days: 14
           if-no-files-found: warn
