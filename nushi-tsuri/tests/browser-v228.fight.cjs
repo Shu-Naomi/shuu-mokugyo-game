@@ -26,7 +26,7 @@ module.exports=async function fightControls(url,mobile=false){
   }
   try{
    await page.clock.install({time:new Date('2026-10-09T06:00:00Z')});await page.clock.pauseAt('2026-10-09T06:00:01Z');
-   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v243/);await press('#start');
+   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v244/);await press('#start');
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
    async function fieldReady(){
@@ -65,9 +65,9 @@ module.exports=async function fightControls(url,mobile=false){
    const inputDelay=mode==='nushi'?600:0;
    for(let tick=0;tick<7500;tick++){
     const ui=await page.evaluate(()=>({fight:battle?.phase,phase:document.querySelector('#fishScene').dataset.nushiPhase,
-     leap:document.querySelector('#fishScene').classList.contains('gill-wash'),ten:parseFloat(document.querySelector('#ten').style.width)}));
+     leap:document.querySelector('#fishScene').classList.contains('gill-wash'),ten:document.querySelector('#fishScene').classList.contains('duel-nushi')?null:parseFloat(document.querySelector('#ten').style.width)}));
     if(ui.fight!=='fight')break;
-    const wish=(mode==='nushi'?(ui.phase==='slack'||ui.phase==='pulling')&&ui.ten<65:ui.ten<65)&&!ui.leap;
+    const wish=(mode==='nushi'?(ui.phase==='slack'||ui.phase==='pulling'):ui.ten<65)&&!ui.leap;
     if(wish!==wishBefore){queue.push({at:tick*120+inputDelay,value:wish});wishBefore=wish;}
     while(queue.length&&queue[0].at<=tick*120)await setHeld(queue.shift().value);
     if(mode==='nushi'&&ui.phase==='warning'&&oldPhase!=='warning')warningCount++;

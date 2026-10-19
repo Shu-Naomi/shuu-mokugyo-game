@@ -3,20 +3,22 @@ const {createCanvas}=require('@napi-rs/canvas');
 const F=require('../fishing-duel.js'),Camera=require('../underwater-camera.js');
 const {boot,seed,read}=require('./game-harness.cjs');
 
-test('a pull started late in the slack has 3.6 seconds of useful retrieval, then a visible 1.2 second release cue',()=>{
- const b={fightMode:'nushi',mood:{id:'rest',calm:true},f:{id:'namazu'},ten:18,retrieval:.1,reeling:false};
- b.nextMood=F.beginWindow(b,b.mood,520,10000);
- assert.ok(b.nushiWindow.warnAt>=13000);
- assert.equal(F.acceptPull(b,12900),true);b.reeling=true;
- const deadline=b.nextMood,gear={power:38,strength:4.8,control:1.95};
- for(let now=12900;now<16500;now+=120){
-  assert.equal(F.windowPhase(b,now),'pulling');F.step(b,b.mood,gear);
-  F.acceptPull(b,now);assert.equal(b.nextMood,deadline);
+test('short and long species budgets both retrieve a meaningful distance without press-to-refill',()=>{
+ for(const roll of [0,1]){
+  const b={fightMode:'nushi',mood:{id:'rest',calm:true},f:{id:'namazu'},ten:18,retrieval:.1,reeling:false};
+  b.nextMood=F.beginWindow(b,b.mood,520,10000,()=>roll);
+  const pressAt=b.nushiWindow.warnAt-100;
+  assert.equal(F.acceptPull(b,pressAt),true);b.reeling=true;
+  const deadline=b.nextMood,warn=b.nushiWindow.warnAt,gear={power:38,strength:4.8,control:1.95};
+  assert.equal(warn-pressAt,F.rhythm('namazu').pull[roll]);
+  for(let now=pressAt;now<warn;now+=120){
+   assert.equal(F.windowPhase(b,now),'pulling');F.step(b,b.mood,gear,1,now);
+   F.acceptPull(b,now);assert.equal(b.nextMood,deadline);
+  }
+  assert.ok(b.retrieval>.3,'even the short opening retrieves a useful stretch');
+  assert.equal(F.windowPhase(b,warn),'warning');assert.equal(b.nextMood,warn+F.nushiTiming.warning);
+  const before=b.retrieval;F.step(b,b.mood,gear,1,warn);assert.equal(b.retrieval,before);
  }
- assert.ok(b.retrieval>.4,'one calm period visibly retrieves a meaningful stretch');
- assert.equal(F.windowPhase(b,16500),'warning');
- assert.ok(b.nextMood>=17700);
- const before=b.retrieval;F.step(b,b.mood,gear);assert.equal(b.retrieval,before);
 });
 
 test('a stalled tick cannot jump straight from pulling into the fish run without showing its warning',()=>{
@@ -24,9 +26,9 @@ test('a stalled tick cannot jump straight from pulling into the fish run without
  try{
   w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();var testNow=10000;Date.now=()=>testNow;startFight();releaseBattleAction();stopBattleFishArt();battle.mood=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.nextMood=ShuFishing.beginWindow(battle,battle.mood,520,testNow);pressBattleAction();var fightTick;setInterval=fn=>(fightTick=fn,9001);battleTick();testNow=battle.nextMood+6000;fightTick()');
   assert.equal(w.document.querySelector('#fishScene').dataset.nushiPhase,'warning');
-  assert.equal(read(w,'battle.nextMood-testNow'),1200);
+  assert.equal(read(w,'battle.nextMood-testNow'),F.nushiTiming.warning);
   const gained=read(w,'battle.retrieval');w.releaseBattleAction();
-  w.eval('testNow+=1080;fightTick()');assert.equal(read(w,'battle.mood.calm'),true);
+  w.eval('testNow+=1320;fightTick()');assert.equal(read(w,'battle.mood.calm'),true);
   assert.equal(read(w,'battle.retrieval'),gained);
   w.eval('testNow+=240;fightTick()');assert.ok(read(w,'battle.nextMood')>read(w,'testNow'));
   assert.deepEqual(app.errors,[]);

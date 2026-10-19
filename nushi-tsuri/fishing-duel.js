@@ -82,16 +82,37 @@
     return {...base,power:base.power+level*2,control:base.control+level*.08,
       strength:(strengths[id]||1)+level*.25,level,role:roles[id]||roles.bamboo};
   }
-  // Player-facing rhythm, tuned here rather than claimed as the original's
-  // timings. A late, correct press still gets a complete sustained pull.
-  const nushiTiming=Object.freeze({slack:3000,pull:3600,warning:1200,run:2100});
-  function beginWindow(b,mood,duration,now){
+  // Species choose a fresh pulling budget once per turn. Re-pressing cannot
+  // reroll or refill it; the first timely press still gets that whole budget.
+  const nushiTiming=Object.freeze({slack:2400,warning:1440,reaction:720,breakHold:1080,run:1800});
+  const rhythms={
+    gentle:{pull:[2800,6400],run:[1800,3000],speed:1.15,shake:.85,tempo:.8},
+    dart:{pull:[1600,4400],run:[2100,3800],speed:1.8,shake:1.15,tempo:1.25},
+    heavy:{pull:[2200,6000],run:[2400,4400],speed:1.5,shake:1.3,tempo:.85},
+    ambush:{pull:[1800,5000],run:[2100,4100],speed:1.95,shake:1.4,tempo:1.1},
+    bottom:{pull:[2000,5600],run:[2000,3800],speed:1.35,shake:1.2,tempo:1},
+    legendary:{pull:[1600,5200],run:[2600,4800],speed:2.25,shake:1.6,tempo:1.05}
+  };
+  const speciesRhythms={};
+  for(const [kind,ids]of Object.entries({
+    gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
+    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba',
+    heavy:'koi nigoi namazu bora kurodai madai',
+    ambush:'raigyo bass suzuki unagi',
+    bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi',
+    legendary:'nushi streamNushi coastNushi caveNushi starNushi'
+  }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
+  for(const p of Object.values(rhythms)){Object.freeze(p.pull);Object.freeze(p.run);Object.freeze(p);}
+  function rhythm(id){return rhythms[speciesRhythms[id]]||rhythms.heavy;}
+  function beginWindow(b,mood,duration,now,rng=Math.random){
     b.nushiWindow=null;
     if(b.fightMode!=="nushi")return now+duration;
-    if(!mood.calm)return now+Math.max(nushiTiming.run,Math.min(4200,duration*2.4));
-    const warnAt=now+Math.max(nushiTiming.slack,duration);
+    const profile=rhythm(b.f?.id),range=mood.calm?profile.pull:profile.run;
+    const budget=Math.round(range[0]+clamp(rng(),0,1)*(range[1]-range[0]));
+    if(!mood.calm)return now+budget;
+    const warnAt=now+Math.max(nushiTiming.slack,budget);
     b.nushiWindow={moodId:mood.id,openedAt:now,warnAt,endsAt:warnAt+nushiTiming.warning,
-      accepted:false,warning:false,warningShownAt:null};
+      pullBudget:budget,accepted:false,warning:false,warningShownAt:null};
     return b.nushiWindow.endsAt;
   }
   function acceptPull(b,now){
@@ -103,7 +124,7 @@
     // refill its deadline, and a hold carried over from a run is not a press.
     if(!window.accepted){
       window.accepted=true;window.pullStartedAt=now;
-      window.warnAt=Math.max(window.warnAt,now+nushiTiming.pull);
+      window.warnAt=Math.max(window.warnAt,now+window.pullBudget);
       window.endsAt=window.warnAt+nushiTiming.warning;
       b.nextMood=window.endsAt;
     }
@@ -139,26 +160,31 @@
     for(const key of ["openedAt","warnAt","endsAt","pullStartedAt","warningShownAt"])
       if(Number.isFinite(b.nushiWindow[key]))b.nushiWindow[key]+=duration;
   }
-  function step(b,mood,equipment,pullMultiplier=1){
+  function step(b,mood,equipment,pullMultiplier=1,now=Date.now()){
     const before=b.retrieval||0;
     const force=(fishStrength[b.f.id]||1.5)*clamp(pullMultiplier,.65,1.8);
     const ratio=force/equipment.strength;
     const running=!mood.calm;
     const window=b.nushiWindow?.moodId===mood.id?b.nushiWindow:null;
     const canPull=!window||window.accepted&&!window.warning;
-    // The body and line are the primary cue. Pulling a running fish cannot
-    // shortcut a stronger rod; slack periods are the actual retrieval window.
+    // The first head shakes are a visible release cue, with a reaction margin.
+    // Sustained force against a run/resistance breaks even an overpowered rod.
+    const resisting=Boolean(window?.warning);
+    const unsafe=running||(resisting&&window.warningShownAt!==null&&now-window.warningShownAt>=nushiTiming.reaction);
     if(b.reeling){
-      if(running){
-        b.ten+= (mood.danger?8.5:4.4)*ratio/equipment.control;
-        b.retrieval=before-.0018*ratio;
-      }else if(canPull){
+      if(unsafe){
+        b.nushiStrain=(b.nushiStrain||0)+120*clamp(ratio,.85,1.5);
+        b.ten+=Math.max(10,14*ratio/equipment.control);
+        if(b.nushiStrain>=nushiTiming.breakHold&&!b.practice)b.ten=110;
+        b.retrieval=before-(running?.0018*ratio:0);
+      }else if(canPull&&!resisting){
         b.ten+=1.4*ratio/equipment.control;
         const strengthGate=clamp((equipment.strength/force-.25)/.8,0,1.5);
         const sand=b.f.id==="hirame"&&!b.sandLifted?.45:1;
         b.retrieval=before+.0105*(equipment.power/20)*strengthGate/(b.distanceFactor||1)*sand;
       }
     }else{
+      b.nushiStrain=0;
       b.ten=Math.max(3,b.ten-(running?2.8:4.2)*equipment.control);
       // Releasing a successful pull before the run preserves its gain.
       // Late releases and pulling a running fish still surrender distance.
@@ -171,5 +197,5 @@
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
   return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
-    nushiTiming,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
+    nushiTiming,rhythm,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
 });

@@ -1,3 +1,7 @@
+.nushi-cue{display:none}
+.duel-nushi #battleUi{display:none}
+.duel-nushi .nushi-cue{display:block;position:absolute;z-index:7;top:5%;left:3%;max-width:85%;white-space:pre-line;color:#fff;font-size:clamp(11px,1.5vw,15px);line-height:1.65;text-shadow:0 1px 3px #041321,1px 0 2px #041321;pointer-events:none}
+.duel-nushi.nushi-bracing .nushi-cue{color:#ffe3a0}
 .duel-options{padding:10px;margin:8px 0 14px;background:#122e3e;border:1px solid #8b7955;border-radius:8px;color:#e6dcc0}
 .duel-options>div{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
 .duel-options button{min-height:42px;font-size:12px;padding:7px 10px}
