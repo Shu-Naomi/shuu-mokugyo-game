@@ -10,7 +10,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=exp=>page.evaluate(exp),shot=name=>page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  const settings=()=>value('JSON.parse(localStorage.getItem("nushi-inugoya-options-v1"))');
- async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v247/);}
+ async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v248/);}
  async function optionsOpen(){await press('#menu');await press('[data-field-menu-target="options"]');await page.locator('#options.open').waitFor();}
  async function slider(id,from,to){
   const r=await page.locator(id).boundingBox(),a={x:r.x+8+(r.width-16)*from,y:r.y+r.height/2},b={x:r.x+8+(r.width-16)*to,y:a.y};
@@ -51,7 +51,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
    await page.evaluate(()=>{battle.retrieval=1;surfaceCatch();});await page.waitForFunction(({id,count})=>s.caught[id]===count,{id,count:(old.caught[id]||0)+1});
    assert.equal(await value('s.baits.'+bait),old.baits[bait]-1);const count=await value('s.caught.'+id);await page.evaluate(()=>caught());assert.equal(await value('s.caught.'+id),count);assert.equal(await value('s.catchMemories.'+id+'.best.method'),'bait');
   }
-  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),52);
+  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),55);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V246_PASS '+JSON.stringify({viewport,mobile,dpr:options.dpr||1,levels,species:3,modes:2,errors:errors.length,httpErrors:failed.length}));
  }finally{await context.close();if(!options.browser)await browser.close();}
 };

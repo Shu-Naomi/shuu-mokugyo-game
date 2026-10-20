@@ -2,6 +2,14 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),fs=requir
 const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),Life=require('../world-life.js'),F=require('../fish-additions.js');
 const regions=['village',...Object.keys(M.regions),'coast'];
 const snapshot=w=>read(w,'({hp:s.hp,money:s.money,time:s.gameMinutes,baits:s.baits,caught:s.caught,equipment:s.equipment,rod:s.selectedRod,bait:s.selectedBait,hook:s.selectedHook,region:s.mapRegion,x:s.x,y:s.y,direction:s.direction})');
+test('growing fish notes page three at a time, wrap, and reset for another place without changing the save',()=>{
+ const a=boot({...seed(),soundEnabled:false}),w=a.window;
+ try{w.open('record');w.document.querySelector('#fishdexFieldGuide').click();w.eval('fieldGuideView.select("water-sea")');const before=snapshot(w),stored=w.localStorage.getItem(saveKey),expected=read(w,'ShuFieldGuide.waterNotes("sea-",{additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks}).map(n=>n.id)'),all=[];
+  const next=w.document.querySelector('#fieldGuideNotesNext');assert.equal(next.hidden,false);
+  for(let n=0;n<Math.ceil(expected.length/3);n++){const ids=[...w.document.querySelectorAll('[data-guide-fish]')].map(n=>n.dataset.guideFish);assert.ok(ids.length<=3);all.push(...ids);next.click();}
+  assert.deepEqual(all,expected);assert.equal(w.document.querySelector('[data-guide-fish]').dataset.guideFish,expected[0]);assert.deepEqual(snapshot(w),before);assert.equal(w.localStorage.getItem(saveKey),stored);assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
 test('every regional guide uses real waters, doors and exits, and only existing new-fish pool/tackle data',()=>{
  const app=boot({...seed(),soundEnabled:false}),w=app.window;
  try{for(const region of regions){const data=read(w,`ShuFieldGuide.model({...s,mapRegion:${JSON.stringify(region)}},{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon})`);

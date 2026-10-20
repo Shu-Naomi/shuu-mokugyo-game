@@ -14,11 +14,12 @@ module.exports=async function guide(page,mobile,viewport){
   const before=await snapshot(),stored=await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2'));
   if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');assert.ok(await page.locator('#fishdexFilters').evaluate(n=>[...n.querySelectorAll('button')].every(b=>{const r=b.getBoundingClientRect();return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&r.width>=44;})),'all habitat filters and guide actions stay visible');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
   assert.equal(await page.locator('#record.open').count(),0);await fit();
-  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind})));
+  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind,notes:e.notes.filter(n=>n.id).map(n=>n.id)})));
   let seen=0;
   do{
    const ids=await page.locator('[data-guide-place]').evaluateAll(bs=>bs.map(b=>b.dataset.guidePlace));assert.ok(ids.length>0&&ids.length<=3);
    for(const id of ids){await press('[data-guide-place="'+id+'"]');const e=entries.find(e=>e.id===id);assert.equal(await page.locator('[data-guide-place="'+id+'"]').getAttribute('aria-pressed'),'true');assert.ok((await page.locator('#fieldGuideMap').getAttribute('aria-label')).includes(e.name));await fit();seen++;places++;
+    if(e.notes.length){const all=[];for(let n=0;n<Math.ceil(e.notes.length/3);n++){all.push(...await page.locator('[data-guide-fish]').evaluateAll(ns=>ns.map(n=>n.dataset.guideFish)));await fit();if(n+1<Math.ceil(e.notes.length/3))await press('#fieldGuideNotesNext');}assert.deepEqual(all,e.notes,'every fish note stays reachable without shrinking the controls');}
     if(region==='mountainPond'&&e.kind==='water'||id==='wetland-shop'||region==='coast'&&e.id==='water-sand'){
      await page.locator('#fieldGuideMapArt').evaluate(async art=>{const im=new Image();im.src=getComputedStyle(art).backgroundImage.slice(5,-2);await im.decode();if(!im.naturalWidth)throw Error('guide background did not decode');});
      if(e.kind==='shop')await page.waitForFunction(()=>[...document.querySelectorAll('#fieldGuideBuildings canvas')].every(c=>{const p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;return p.some((x,i)=>i%4===3&&x>100);}));

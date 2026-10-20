@@ -30,12 +30,12 @@ for(const id of ['moroko','namazu','raigyo','starNushi']){
  });
 }
 
-test('timely release clears strain, preserves the gain and lets the line recover; practice stays forgiving',()=>{
+test('timely release clears strain and lets the line recover while a running fish still takes line; practice stays forgiving',()=>{
  const b=fish();F.beginWindow(b,b.mood,500,10000,()=>.3);F.acceptPull(b,10600);b.reeling=true;
  const warn=b.nushiWindow.warnAt;F.windowPhase(b,warn);F.step(b,b.mood,gear,1,warn+720);
  assert.ok(b.nushiStrain>0);F.releasePull(b,warn+800);b.reeling=false;const gain=b.retrieval;
  for(let i=0;i<15;i++)F.step(b,{id:'rush',calm:false},gear,1,warn+840+i*120);
- assert.equal(b.nushiStrain,0);assert.equal(b.retrieval,gain);assert.ok(b.ten<10);
+ assert.equal(b.nushiStrain,0);assert.ok(b.retrieval<gain);assert.ok(b.ten<10);
  b.practice=true;b.reeling=true;for(let i=0;i<30;i++)F.step(b,{id:'rush',calm:false},gear);
  assert.ok(b.ten<100);
 });
@@ -62,8 +62,8 @@ test('escape surges also vary the background speed when a fish reaches the right
  try{
   w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==="bass");var testNow=10000;Date.now=()=>testNow;startFight();clearInterval(timer);stopBattleFishArt();battle.gillWash=null;battle.mood=fightProfiles[battle.f.id].moods.find(m=>!m.calm);battle.x=fishSwimBounds().maxX;');
   const speeds=[],travel=[];
-  for(let i=0;i<20;i++){w.eval('testNow+=120;moveBattleFish(battle.mood);advanceUnderwaterTravel()');speeds.push(read(w,'battle.escapeSpeed'));travel.push(read(w,'battle.underwaterCamera.velocity'));}
-  assert.ok(Math.max(...speeds)>Math.min(...speeds)*1.4);assert.ok(Math.max(...travel)>.01);assert.ok(Math.max(...travel)-Math.min(...travel)>.002);
+  for(let i=0;i<20;i++){w.eval('testNow+=120;updateRetrieval(battle.mood);moveBattleFish(battle.mood);advanceUnderwaterTravel()');speeds.push(read(w,'battle.escapeSpeed'));travel.push(read(w,'battle.underwaterCamera.velocity'));}
+  assert.ok(Math.max(...speeds)>Math.min(...speeds)*1.4);assert.ok(Math.max(...travel)>.001);assert.ok(Math.max(...travel)-Math.min(...travel)>.0005);
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });

@@ -6432,7 +6432,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
-    <link rel="stylesheet" href="field-guide.css?v=239-1" />
+    <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="pet-life.css?v=231-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
@@ -6443,7 +6443,7 @@
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=247-1" />
+    <link rel="stylesheet" href="compact-ui.css?v=248-1" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v247</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v248</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6638,13 +6638,9 @@
               <span class="field-menu-icon" aria-hidden="true">✦</span>
               <span class="field-menu-label">湖の手帳<small>旅の思い出を読む</small></span>
             </button>
-            <button type="button" data-field-menu-target="tackle">
-              <span class="field-menu-icon" aria-hidden="true">🎣</span>
-              <span class="field-menu-label">タックル<small>装備を変更</small></span>
-            </button>
             <button type="button" data-field-menu-target="items">
               <span class="field-menu-icon" aria-hidden="true">🎒</span>
-              <span class="field-menu-label">持ち物</span>
+              <span class="field-menu-label">持ち物・装備<small>道具・仕掛け・身支度</small></span>
             </button>
             <button type="button" data-field-menu-target="quests">
               <span class="field-menu-icon" aria-hidden="true">📌</span>
@@ -6887,7 +6883,7 @@
             <div id="fieldGuideMap" role="img"><div id="fieldGuideMapArt"><div id="fieldGuideBuildings"></div><svg id="fieldGuideOverlay" viewBox="0 0 240 135" aria-hidden="true"></svg><span id="fieldGuideLegend"></span></div></div>
             <nav class="field-guide-catalog" aria-label="水辺と暮らしの場所"><div id="fieldGuidePlaces"></div><div class="field-guide-pagination"><button id="fieldGuidePrevious" type="button" aria-label="前の案内へ">‹ 前</button><span id="fieldGuidePage" aria-live="polite"></span><button id="fieldGuideNext" type="button" aria-label="次の案内へ">次 ›</button></div></nav>
           </div>
-          <footer class="field-guide-footer"><span id="fieldGuideNoteLabel"></span><p id="fieldGuideNote" aria-live="polite"></p></footer>
+          <footer class="field-guide-footer"><div class="field-guide-note-menu"><span id="fieldGuideNoteLabel"></span><button id="fieldGuideNotesNext" type="button" hidden>次の魚</button></div><p id="fieldGuideNote" aria-live="polite"></p></footer>
         </section>
         <section class="modal lake-intro-modal" id="lakeIntro" role="dialog" aria-modal="true" aria-labelledby="lakeIntroTitle" tabindex="-1">
           <header class="lake-intro-header">
@@ -7085,13 +7081,13 @@
           <div class="inventory-shell">
             <div class="inventory-heading">
               <small class="location-brand">FIELD ITEM MENU</small>
-              <h2>道具袋</h2>
+              <h2>持ち物・装備</h2>
               <button class="close" data-close>閉じる</button>
             </div>
             <nav class="inventory-tabs" aria-label="道具袋の分類">
               <button data-inventory-tab="items" class="active">持ち物</button>
-              <button data-inventory-tab="equipment">装備</button>
               <button data-inventory-tab="tackle">タックル</button>
+              <button data-inventory-tab="equipment">身支度</button>
             </nav>
             <div class="inventory-content">
               <section class="inventory-panel active" data-inventory-panel="items">
@@ -7106,7 +7102,7 @@
                 <div class="inventory-browser">
                   <nav class="item-category-nav" id="inventoryCategories" aria-label="持ち物の種類"></nav>
                   <div class="inventory-category-content">
-                    <header class="item-category-summary"><h3 id="inventoryCategoryTitle">釣り餌</h3><p id="inventoryCategoryHint"></p></header>
+                    <header class="item-category-summary"><h3 id="inventoryCategoryTitle">食べ物・作り置き</h3><p id="inventoryCategoryHint"></p></header>
                     <div id="inventoryItems"></div>
                   </div>
                 </div>
@@ -7290,24 +7286,24 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=230-1"></script>
-    <script src="aquarium-life.js?v=247-1"></script>
-    <script src="compact-ui.js?v=247-1"></script>
+    <script src="aquarium-life.js?v=248-1"></script>
+    <script src="compact-ui.js?v=248-1"></script>
     <script src="pet-life-ui.js?v=247-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=247-1"></script>
+    <script src="fishing-duel.js?v=248-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
-    <script src="field-guide.js?v=239-1"></script>
-    <script src="mountain-region.js?v=241-1"></script>
+    <script src="field-guide.js?v=248-2"></script>
+    <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=247-1"></script>
+    <script src="fish-additions.js?v=248-1"></script>
     <script src="fish-art.js?v=247-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
@@ -12232,7 +12228,7 @@
         petSceneFrame = 0,
         compactInventoryRendering = false,
         inventoryTab = "items",
-        inventoryCategory = "bait",
+        inventoryCategory = "food",
         samShopTab = "tackle",
         samShopCategories = { tackle: "bait", goods: "hands" },
         locationCategory = "food",
@@ -12770,7 +12766,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -19624,7 +19620,7 @@
         return "";
       }
       function renderCompactInventory() {
-        ShuCompactUI.inventory($("#inventory"),{money:s.money,art:compactItemArt});
+        ShuCompactUI.inventory($("#inventory"),{money:s.money,art:compactItemArt,methodDescription:`銀のスプーン ×${s.lures.silverSpoon||0} · 繰り返し使えるルアー`});
       }
       function renderEquipment() {
         ShuCompactUI.release($("#inventory"));
@@ -19659,13 +19655,11 @@
         if(!compactInventoryRendering)renderCompactInventory();
       }
       const inventoryCategories = [
-        { id: "bait", label: "餌", icon: "🪱", title: "釣り餌", hint: "魚を誘う餌。仕掛けの変更は上の「タックル」から。" },
-        { id: "lures", label: "ルアー", icon: "🪝", title: "ルアー", hint: "繰り返し使える釣具。釣り方の変更は「タックル」から。" },
         { id: "food", label: "食べ物", icon: "🍱", title: "食べ物・作り置き", hint: "体力を回復する食べ物と、翌朝まで効果が続く料理。" },
         { id: "ingredients", label: "食材", icon: "🌿", title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
         { id: "dogTreats", label: "犬のおやつ", icon: "🍪", title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
         { id: "dogToys", label: "犬のおもちゃ", icon: "🎾", title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
-        { id: "tackle", label: "釣具・パーツ", icon: "🎣", title: "ハリ・竿のパーツ", hint: "釣り竿の確認や装備変更は上の「タックル」から。" },
+        { id: "parts", label: "保管釣具", icon: "🎣", title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とスプーンは「タックル」から選べるよ。" },
         { id: "collection", label: "コレクション", icon: "🏆", title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
         { id: "offerings", label: "奉納品", icon: "⛩️", title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
       ];
@@ -19690,8 +19684,8 @@
         }
         return [...entries.values()];
       }
-      function setInventoryCategory(category = "bait") {
-        inventoryCategory = inventoryCategories.some(item => item.id === category) ? category : "bait";
+      function setInventoryCategory(category = "food") {
+        inventoryCategory = inventoryCategories.some(item => item.id === category) ? category : "food";
         $("#inventoryCategories").querySelectorAll("button").forEach(button => {
           const active = button.dataset.inventoryCategory === inventoryCategory;
           button.classList.toggle("active", active);
@@ -19729,20 +19723,10 @@
       }
       function renderInventory() {
         ShuCompactUI.release($("#inventory"));compactInventoryRendering=true;
-        const baitIcons = Object.fromEntries(
-          Object.entries(baitData).map(([id]) => [id, ShuTackleArt.icon(id)]),
-        );
         const hpPercent = Math.max(0, Math.min(100, s.hp / s.maxHp * 100));
         $("#inventoryHpText").textContent = `${s.hp} / ${s.maxHp}`;
         $("#inventoryHpFill").style.width = `${hpPercent}%`;
         $("#inventoryHpFill").classList.toggle("low", hpPercent <= 35);
-        const baitMarkup = Object.entries(baitData)
-          .map(([id, item]) =>
-            `<div class="inventory-card"><i>${baitIcons[id] || "🎒"}</i>` +
-            `<span><b>${item.name}</b><br><small>${item.role}</small></span>` +
-            `<strong>×${s.baits[id] || 0}</strong></div>`,
-          )
-          .join("");
         const fieldItemMarkup = (use) => Object.entries(fieldItemData)
           .filter(([, item]) => item.use === use)
           .map(([id, item]) => {
@@ -19805,9 +19789,10 @@
             `<span><b>${item.name}</b><br><small>犬のおもちゃ／犬ごとに毎日1回</small></span>` +
             `<strong>所持</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
-        const lureMarkup = Object.entries(lureData)
+        const storedLureMarkup = Object.entries(lureData)
+          .filter(([id]) => id !== "silverSpoon")
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${ShuTackleArt.icon(id)}</i>` +
+            `<div class="inventory-card" data-stored-lure="${id}"><i>${ShuTackleArt.icon(id)}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
             `<strong>×${s.lures[id] || 0}</strong></div>`)
           .join("");
@@ -19824,18 +19809,15 @@
             `<span><b>${item.name}</b><br><small>魚図鑑の収集棚に記録済み</small></span>` +
             `<strong>×${s.fishdexCollectibles[id]}</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
-        const hookMarkup = Object.entries(ShuTackle.hooks).map(([id, hook]) =>
-          `<div class="inventory-card"><i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i><span><b>${hook.name}</b><br><small>${hook.role}</small></span><strong>${s.selectedHook===id ? "装備中" : "所持"}</strong></div>`).join("");
         const sharedIngredients = sharedCookingIngredients();
         const sharedMaterialMarkup = sharedIngredients.map(({storage, id, item}) =>
           `<div class="inventory-card"><i>${storage === "baits" ? ShuTackleArt.icon(id) : item.icon}</i>` +
           `<span><b>${item.name}</b><br><small>${storage === "baits" ? "餌欄" : "犬のおやつ欄"}と共用／料理にも使える</small></span><strong>×${s[storage][id] || 0}</strong></div>`).join("");
         const groups = {
-          bait: baitMarkup, lures: lureMarkup,
           food: `<h4 class="inventory-section-heading">食事効果・作り置き</h4>${activeMealMarkup}${preparedMealMarkup}<h4 class="inventory-section-heading">体力を回復する食べ物</h4>${fieldItemMarkup("recovery")}`,
           ingredients: `${cookingMaterialMarkup}${fieldItemMarkup("ingredient")}${sharedMaterialMarkup}`,
           dogTreats: dogTreatMarkup, dogToys: ownedDogToyMarkup,
-          tackle: `<h4 class="inventory-section-heading">ハリ（3種類を所持・消耗なし）</h4>${hookMarkup}<h4 class="inventory-section-heading">竿の追加パーツ</h4>${rodPartMarkup}`,
+          parts: storedLureMarkup + rodPartMarkup,
           collection: `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`,
           offerings: fieldItemMarkup("offering"),
         };
@@ -19844,11 +19826,10 @@
         const ownedTypes = (table, storage, predicate = () => true) => Object.entries(table)
           .filter(([id, item]) => predicate(item) && (storage[id] || 0) > 0).length;
         const counts = {
-          bait: ownedTypes(baitData, s.baits), lures: ownedTypes(lureData, s.lures),
           food: ownedTypes(preparedMealData, s.preparedMeals) + ownedTypes(fieldItemData, s.items, item => item.use === "recovery"),
           ingredients: ownedTypes(cookingIngredientData, s.cookingIngredients) + ownedTypes(fieldItemData, s.items, item => item.use === "ingredient") + sharedIngredients.filter(({storage, id}) => (s[storage][id] || 0) > 0).length,
           dogTreats: ownedTypes(dogCareData, s.dogTreats, item => item.type === "treat"),
-          dogToys: s.ownedDogToys.length, tackle: Object.keys(ShuTackle.hooks).length + ownedTypes(rodPartData, s.rodParts),
+          dogToys: s.ownedDogToys.length, parts: ownedTypes(rodPartData, s.rodParts) + Object.keys(lureData).filter(id => id !== "silverSpoon" && (s.lures[id] || 0) > 0).length,
           collection: ownedTypes(fishdexCollectibleData, s.fishdexCollectibles) + Object.values(ShuTournament.definitions).filter(d => (s.tournamentRecords[d.id]?.wins || 0) > 0).length,
           offerings: ownedTypes(fieldItemData, s.items, item => item.use === "offering"),
         };
@@ -19869,7 +19850,7 @@
           ? tab
           : "items";
         document.querySelectorAll("[data-inventory-tab]").forEach((button) =>
-          button.classList.toggle("active", button.dataset.inventoryTab === inventoryTab),
+          {button.classList.toggle("active", button.dataset.inventoryTab === inventoryTab);button.setAttribute("aria-pressed",String(button.dataset.inventoryTab === inventoryTab));},
         );
         document.querySelectorAll("[data-inventory-panel]").forEach((panel) =>
           panel.classList.toggle("active", panel.dataset.inventoryPanel === inventoryTab),
@@ -19924,7 +19905,7 @@
         for(const id of ["#inventoryTackleSummary"]){
           let panel=$(id).nextElementSibling;
           if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
-          panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が走る間はAを離して待つ。糸が緩んだら押して引き、尾に力が入る予兆で離そう。左の水面へ寄せるには、魚に合う丈夫な竿が必要。":"Aを押して巻く。張力が上がったらAを離して待とう。"} Bを1回押すと糸を出して張力をすぐ逃がせる。魚との距離は少し開くので、張力が高い時に使おう。</p>
+          panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が走る間はAを離して待つ。糸が緩んだら押して引き、顔を振って抵抗する合図で離そう。左の水面へ寄せるには、魚に合う丈夫な竿が必要。":"Aを押して巻く。張力が上がったらAを離して待とう。"} Bを1回押すと糸を出して張力をすぐ逃がせる。魚との距離は少し開くので、張力が高い時に使おう。</p>
             <div role="group" aria-label="釣り方"><button data-fishing-method="bait" aria-pressed="${s.fishingMethod==="bait"}">エサ釣り</button><button data-fishing-method="lure" aria-pressed="${s.fishingMethod==="lure"}" ${s.ownedRods.includes("lureRod")&&s.lures.silverSpoon>0?"":"disabled"}>スプーンで誘う</button></div><small>スプーンにはルアーロッドが必要。サムの店で購入できるよ。アワセ後は一度Aを離してから引く。</small>
             ${s.rodCopies.starGazer>1?`<div class="rod-duplicates"><b>星見の竿 ${s.rodCopies.starGazer}本 · 強化＋${s.rodLevels.starGazer}</b><button data-rod-duplicate="sell">余分な一本を売る · 12000円</button><button data-rod-duplicate="upgrade" ${s.rodLevels.starGazer>=5?"disabled":""}>一本を重ねて強化</button><small>選ばなければ保管。最後の一本は残るよ。</small></div>`:""}`;
           panel.querySelectorAll("[data-fight-mode]").forEach(b=>b.onclick=()=>{s.fightMode=b.dataset.fightMode;renderTackle();save();});
@@ -20674,8 +20655,8 @@
           let weight = mood.weight;
           if (mood.stageWeights) weight *= mood.stageWeights[nushiStage - 1] ?? 1;
           if (boosted && mood.calm) weight *= 3.4;
-          if (mood.calm) weight *= 1 + (battle.retrieval || 0) * 1.05;
-          if (mood.danger) weight *= 1 - (battle.retrieval || 0) * 0.18;
+          if (mood.calm) weight *= 1 + clampBattle(battle.retrieval || 0,0,1) * 1.05;
+          if (mood.danger) weight *= 1 - clampBattle(battle.retrieval || 0,0,1) * 0.18;
           if (!force && previous === mood.id) weight *= 0.38;
           return { mood, weight };
         });
@@ -20745,7 +20726,7 @@
           base.minY=Math.min(base.minY,Math.max(8,battle.startY-3));
           base.maxY=Math.max(base.maxY,Math.min(84,battle.startY+3));
         }
-        const progress = battle.retrieval || 0;
+        const progress = clampBattle(battle.retrieval || 0,0,1);
         const bounds = {
           minX: base.minX + (7 - base.minX) * progress,
           maxX: base.maxX + ((ShuRegional.legendary(battle.f.id) ? Math.min(base.maxX,88) : 92) - base.maxX) * progress,
@@ -21128,9 +21109,7 @@
         const escape=battle.fightMode==="nushi"&&!mood.calm&&!battle.gillWash;
         const rhythm=ShuFishing.rhythm(battle.f.id);
         if(escape){
-          // A pulsed swimming effort also drives the camera at the screen edge.
-          const surge=.72+.56*Math.sin(battle.moodTick*.64*rhythm.tempo)**2;
-          battle.escapeSpeed=clampBattle((1.4+(mood.speedX||.6)*.48)*rhythm.speed,2.25,6.2)*surge;
+          battle.escapeSpeed=ShuFishing.escapePace(battle,mood);
           battle.targetVx=battle.escapeSpeed;battle.motionX=1;
           battle.targetVy+=Math.sin(battle.moodTick*1.05*rhythm.tempo)*rhythm.shake*.85;
         }else battle.escapeSpeed=0;
@@ -21154,7 +21133,7 @@
           battle.vx += (battle.targetVx / courseLength) * bodyMotion.thrust;
           battle.vy += (battle.targetVy / courseLength) * bodyMotion.thrust;
         }
-        const progress = battle.retrieval || 0;
+        const progress = clampBattle(battle.retrieval || 0,0,1);
         const baseX =
           battle.startX + (battle.surfaceX - battle.startX) * progress;
         const baseY =
@@ -21915,9 +21894,7 @@
         }else if(battle.phase==="escape"){
           travel=battle.fishEscapePose?.travel||0;
         }else if(battle.phase==="fight"){
-          travel=battle.fightMode==="nushi"&&!battle.mood.calm&&!battle.gillWash
-            ? Math.min(.024,Math.max(.003,(battle.escapeSpeed||Math.abs(battle.vx)||1)*.003))
-            : -(battle.retrievalDelta||0)*(battle.startMeters||20)*.025;
+          travel=-(battle.retrievalDelta||0)*(battle.startMeters||20)*(battle.fightMode==="nushi"?.05:.025);
         }
         ShuUnderwaterCamera.advance(camera,travel,Date.now());
       }
@@ -22552,11 +22529,13 @@
         }
         battle.lineFeedAt = Date.now();
         battle.ten = Math.max(3, battle.ten - Math.max(14, Math.min(24, battle.ten * .24)));
-        battle.retrieval = Math.max(0, (battle.retrieval || 0) - .018);
-        battle.retrievalDelta = -.018;
+        const before=battle.retrieval||0;
+        battle.retrieval = Math.max(battle.fightMode==="nushi"?-Infinity:0,before-.018);
+        battle.retrievalDelta = battle.retrieval-before;
         battle.recoveryMessage = "糸を出した！張力が下がり、魚との距離が少し開いた。Aを離して待ち、落ち着いたら巻こう。";
         battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
         $("#battleMsg").textContent = battle.recoveryMessage;
+        if(battle.fightMode==="nushi")advanceUnderwaterTravel();
         drawBattle();
       }
       function drawBattle() {
@@ -22564,8 +22543,8 @@
         syncNushiFightCue();
         const slack=battle.fightMode==="nushi"?battle.lineSlack:battle.calm;
         const remaining = Math.max(0, 1 - (battle.retrieval || 0));
-        $("#distanceMeter").style.width = remaining * 100 + "%";
-        const meters = Math.max(0, Math.ceil((battle.startMeters || 0) * remaining));
+        $("#distanceMeter").style.width = Math.min(100,remaining * 100) + "%";
+        const meters = Math.ceil(battle.fightMode==="nushi"?ShuFishing.remainingMeters(battle):(battle.startMeters||0)*remaining);
         $("#distanceLabel").textContent = `左の水面まで ${meters}m`;
         if(battle.fightMode==="nushi"){
           const phase=$("#fishScene").dataset.nushiPhase;
@@ -23921,7 +23900,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=247-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=248-2").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

@@ -443,3 +443,61 @@
  #petLifeModal .pet-fish-sales .compact-selection-description{font-size:11px;line-height:15px}
  #petLifeModal .pet-fish-sales>.pet-message{right:208px;font-size:11px;line-height:15px}
 }
+
+/* v248: one bag, with supplies, tackle and clothing in full-width shelves. */
+#inventory.compact-inventory{--compact-ink:#493923;--compact-gold:#fff0bf;background:#e7d7ae!important;border-color:#907648!important;border-radius:12px!important;box-shadow:0 6px 24px #17180f80,inset 0 0 0 2px #f7e8be}
+#inventory.compact-inventory .inventory-shell{background:repeating-linear-gradient(0deg,#ffffff08 0 1px,transparent 1px 4px),#eadbb8;padding:9px;gap:6px}
+#inventory .inventory-content,#inventory .inventory-panel,#inventory .inventory-category-content,#inventory .compact-group-body,#inventory .compact-group-panel{background:transparent}
+#inventory .compact-window-heading{padding:0 3px 7px;border-color:#b2996b}
+#inventory .compact-window-heading h2{color:#68472a!important}
+#inventory .compact-wallet{color:#6e542e}
+#inventory .compact-window-heading>[data-close]{order:6}
+#inventory .compact-window-heading>.inventory-vitals{color:#57442b;background:#f5e9cb;border-color:#bca67a}
+#inventory .compact-window-heading>button,#inventory .compact-pager button,#inventory [data-compact-info]{background:linear-gradient(#ebd5a4,#c6a675);color:#503b24;border:1px solid #aa8656;border-radius:7px;box-shadow:inset 0 1px #fff0c8}
+#inventory .inventory-tabs button,#inventory #inventoryCategories button,#inventory .compact-kind-nav button{background:linear-gradient(#b59b6d,#95805a);color:#fff3d5;border:1px solid #85704a;box-shadow:inset 0 1px #dcca9e;border-radius:7px;font-size:12px}
+#inventory .inventory-tabs button.active,#inventory #inventoryCategories button.active,#inventory .compact-kind-nav button[aria-pressed=true]{background:linear-gradient(#fff0b7,#ddbd7d);color:#553a22;border-color:#876237;box-shadow:inset 0 -3px #a77c43}
+#inventory.compact-inventory #inventoryCategories{grid-template-columns:repeat(7,minmax(0,1fr))}
+#inventory.compact-inventory #inventoryCategories button{display:flex;flex-direction:row;gap:5px;font-size:12px}
+#inventory.compact-inventory #inventoryCategories button span{font-size:12px}
+#inventory.compact-inventory #inventoryCategories button small{padding:1px 4px;border-radius:4px;background:#69532d25;color:inherit}
+#inventory .compact-equipment-summary>div,#inventory #inventoryTackleSummary{color:#67482a;background:#f4e7c7;border-color:#b79e70}
+#inventory .compact-equipment-summary small{color:#796440}
+#inventory .compact-sam-list{background:transparent;border:0!important;padding:0!important;box-shadow:none;gap:4px!important}
+#inventory .compact-sam-list .compact-product-grid{width:100%;grid-template-columns:repeat(var(--compact-list-columns,1),minmax(0,1fr))!important;grid-auto-rows:44px;gap:2px;flex:0 0 var(--compact-list-height);height:var(--compact-list-height)}
+#inventory .compact-sam-list .compact-product-select{background:linear-gradient(105deg,#f6eaca,#e7d5ae)!important;color:#493722!important;border:1px solid #c4ab7e!important;border-radius:6px!important;box-shadow:inset 0 1px #fff3d9!important}
+#inventory .compact-sam-list .compact-product-select[aria-selected=true]{background:linear-gradient(105deg,#fff1be,#edcf91)!important;border-color:#986c3d!important;box-shadow:inset 3px 0 #925632!important}
+#inventory .compact-product-select::before{color:#915031}
+#inventory .compact-product-select:focus-visible{outline-color:#8a532c}
+#inventory .compact-sam-list .compact-product-name{font-size:13px!important;line-height:17px!important}
+#inventory .compact-sam-list .compact-product-stock,#inventory .compact-page-label{color:#725c39;font-size:11px}
+#inventory .compact-sam-list .compact-operation-space{flex:0 0 44px;height:44px;min-height:44px}
+#inventory .compact-sam-list .compact-selection-panel{inset:var(--compact-operation-top) 0 auto;display:flex;flex-direction:row;align-items:center;gap:8px;height:44px;min-height:44px;padding:0;border:0;border-top:1px solid #b79d70;background:transparent}
+#inventory .compact-sam-list .compact-selection-heading{display:none}
+#inventory .compact-sam-list .compact-selection-description{flex:1;min-width:0;margin:0;padding:0;border:0;color:#59462d;font-size:13px;line-height:18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+#inventory .compact-sam-list .compact-product-actions{flex:0 0 250px!important;min-width:48px;max-width:38%}
+#inventory .compact-sam-list .compact-product-actions{justify-content:flex-end}
+#inventory .compact-sam-list .compact-read-only .compact-product-actions{flex-basis:48px!important}
+#inventory .compact-selection-panel .compact-action{background:linear-gradient(#a66943,#855035);color:#fff0cc;border:1px solid #7c4b2c;border-radius:7px;box-shadow:inset 0 1px #cf9d73}
+#inventory .compact-selection-panel .compact-action[aria-pressed=true],#inventory .compact-selection-panel .compact-action.selected{background:linear-gradient(#6f8356,#526640);color:#fff2ca;border-color:#56623b;box-shadow:inset 0 1px #a5b485}
+#inventory .compact-selection-panel .compact-action:disabled{background:#c4b799;color:#6b624e;border-color:#b0a180;box-shadow:none}
+#inventory .compact-sam-list .compact-pager{position:absolute;top:var(--compact-operation-top);left:0;width:150px}
+#inventory .compact-sam-list:has(.compact-pager:not([hidden])) .compact-selection-panel{left:158px}
+#inventory .compact-catalog-empty,#inventory .compact-catalog-empty>.compact-icon{color:#705b38}
+#inventory .compact-sam-list:has(.compact-catalog-empty) .compact-product-grid{flex:1;height:auto}
+#inventory .compact-sam-list:has(.compact-catalog-empty) .compact-operation-space{display:none}
+#inventory .compact-sheet{background:#efe0ba;color:#513d25;border-color:#a58b5c;border-radius:10px}
+#inventory .compact-sheet-heading{background:#806546;color:#fff0c2}
+#inventory .compact-sheet-heading h3{color:#fff0c2}
+#inventory .compact-detail-art{background:#dccba4}
+#inventory .compact-detail-status{color:#725935}
+#inventory .compact-toast{right:auto;bottom:auto;min-height:30px;max-height:44px;margin:0;padding:0;box-sizing:border-box;background:#eadbb8;color:#674428;border:0;border-radius:0;box-shadow:none;font-size:13px;line-height:18px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical}
+#inventory:has(>.compact-toast) .compact-selection-description{visibility:hidden}
+@media(max-height:500px){
+ #inventory.compact-inventory .inventory-shell{padding:5px 7px;gap:4px}
+ #inventory.compact-inventory #inventoryCategories button{gap:3px;padding:3px;font-size:10px}
+ #inventory.compact-inventory #inventoryCategories button span{font-size:10px}
+ #inventory .compact-sam-list .compact-selection-description{font-size:11px;line-height:15px}
+ #inventory .compact-sam-list .compact-product-actions{flex-basis:190px!important}
+ #inventory .compact-kind-nav button{font-size:11px}
+ #inventory .compact-toast{font-size:11px;line-height:15px}
+}

@@ -16,14 +16,14 @@ test('a late correct pull gets its species budget once, then a readable head-sha
  const gauge={fightMode:'gauge'};assert.equal(F.beginWindow(gauge,b.mood,520,10000),10520);assert.equal(gauge.nushiWindow,null);
 });
 
-test('releasing a successful pull before a run retains distance, while a late release still loses it',()=>{
+test('a timely release gives less line than a forced pull, but never freezes a running fish distance',()=>{
  const b={fightMode:'nushi',mood:{id:'rest',calm:true},f:{id:'starNushi'},retrieval:.4,ten:18,reeling:false};
  b.nextMood=F.beginWindow(b,b.mood,520,10000);F.acceptPull(b,10600);b.reeling=true;
  assert.equal(F.releasePull(b,11900),true);b.reeling=false;b.mood={id:'rush',calm:false,danger:true};
  F.beginWindow(b,b.mood,1000,12700);const before=b.retrieval;
  for(let i=0;i<40;i++)F.step(b,b.mood,{power:38,strength:4.8,control:1.95},1.75);
- assert.equal(b.retrieval,before);F.acceptPull(b,14000);b.reeling=true;
- F.step(b,b.mood,{power:38,strength:4.8,control:1.95},1.75);assert.ok(b.retrieval<before);
+ assert.ok(b.retrieval<before);const releasedDelta=b.retrievalDelta;F.acceptPull(b,14000);b.reeling=true;
+ F.step(b,b.mood,{power:38,strength:4.8,control:1.95},1.75);assert.ok(b.retrievalDelta<releasedDelta);
  b.reeling=false;const late={fightMode:'nushi',mood:{id:'rest',calm:true},reeling:false};
  late.nextMood=F.beginWindow(late,late.mood,520,10000);F.acceptPull(late,10600);late.reeling=true;
  assert.equal(F.releasePull(late,late.nextMood+120),false);assert.equal(late.nushiYielded,false);
