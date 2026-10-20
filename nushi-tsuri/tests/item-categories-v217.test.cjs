@@ -8,7 +8,7 @@ test('bag categories separate food, ingredients, dog toys and collections withou
  const app=boot({...seed(),items:{tomato:2,wildGreens:1,offeringDaikon:3},lures:{silverSpoon:1},dogTreats:{treeNut:2}}),w=app.window;
  try{
   w.openInventory('items');const before=resources(w);
-  for(const category of ['bait','lures','food','ingredients','dogTreats','dogToys','tackle','collection','offerings']){
+  for(const category of ['food','ingredients','dogTreats','dogToys','parts','collection','offerings']){
    click(w,`[data-inventory-category="${category}"]`);assert.deepEqual(visible(w,'inventory'),[category]);
    assert.equal(w.document.querySelectorAll('#inventoryCategories [aria-pressed="true"]').length,1);
    assert.deepEqual(resources(w),before);

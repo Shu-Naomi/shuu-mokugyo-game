@@ -48,6 +48,8 @@
   Object.assign(spoon,{bluegill:1.6,aburahaya:.65,magochi:2.4});
   Object.assign(fishStrength,{oyanirami:1.12,akakamasu:2.05,ishidai:2.8});
   Object.assign(spoon,{oyanirami:1.8,akakamasu:3.2,ishidai:.4});
+  Object.assign(fishStrength,{kawayoshinobori:.48,utsubo:3.1,buri:3.55});
+  Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -100,14 +102,19 @@
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
     gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu',
+    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
-    ambush:'raigyo bass suzuki unagi oyanirami',
-    bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi',
+    ambush:'raigyo bass suzuki unagi oyanirami utsubo',
+    bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
   for(const p of Object.values(rhythms)){Object.freeze(p.pull);Object.freeze(p.run);Object.freeze(p);}
   function rhythm(id){return rhythms[speciesRhythms[id]]||rhythms.heavy;}
+  function escapePace(b,mood,tick=b.moodTick||0){
+    const profile=rhythm(b.f.id),surge=.72+.56*Math.sin(tick*.64*profile.tempo)**2;
+    return clamp((1.4+(mood.speedX||.6)*.48)*profile.speed,2.25,6.2)*surge;
+  }
+  function remainingMeters(b){return Math.max(0,(b.startMeters??20)*(1-(b.retrieval||0)));}
   function beginWindow(b,mood,duration,now,rng=Math.random){
     b.nushiWindow=null;
     if(b.fightMode!=="nushi")return now+duration;
@@ -180,7 +187,6 @@
         b.nushiStrain=(b.nushiStrain||0)+120*(resisting?1.8:clamp(ratio,.85,1.5));
         b.ten+=Math.max(10,14*ratio/equipment.control);
         if(b.nushiStrain>=nushiTiming.breakHold&&!b.practice)b.ten=110;
-        b.retrieval=before-(running?.0018*ratio:0);
       }else if(canPull&&!resisting){
         b.ten+=1.4*ratio/equipment.control;
         const strengthGate=clamp((equipment.strength/force-.25)/.8,0,1.5);
@@ -190,16 +196,20 @@
     }else{
       b.nushiStrain=0;
       b.ten=Math.max(3,b.ten-(running?2.8:4.2)*equipment.control);
-      // Releasing a successful pull before the run preserves its gain.
-      // Late releases and pulling a running fish still surrender distance.
-      b.retrieval=before-(running&&!b.nushiYielded?.00045*ratio:0);
+    }
+    // The fish pays out real line on every rightward run, even after a timely
+    // release and beyond the original cast distance. The same pace drives its
+    // swimming pose; a camera at the screen edge never stops the distance.
+    if(running){
+      const meters=escapePace(b,mood,(b.moodTick||0)+1)*.018*(b.reeling?1.5:b.nushiYielded?.75:1);
+      b.retrieval=before-meters/Math.max(.1,b.startMeters??20);
     }
     // Starter gear is never sufficient for the nushi, even at the best timing.
     if(!b.practice&&equipment.strength<(minStrength[b.f.id]||0))b.retrieval=Math.min(.6,b.retrieval);
-    b.retrieval=clamp(b.retrieval,0,1);b.retrievalDelta=b.retrieval-before;
+    b.retrieval=Math.min(1,b.retrieval??before);b.retrievalDelta=b.retrieval-before;
     b.ten=clamp(b.ten,3,b.practice?88:110);b.lineSlack=!running&&!window?.warning&&!b.reeling;
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
   return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
-    nushiTiming,rhythm,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
+    nushiTiming,rhythm,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
 });

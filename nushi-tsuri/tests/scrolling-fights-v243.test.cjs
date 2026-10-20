@@ -72,7 +72,7 @@ test('camera travel reverses smoothly, and resume starts at the last shown frame
 for(const method of ['bait','lure'])test('background travel reflects fish escape and retrieval without changing a specimen, resources or real meters: '+method,()=>{
  const app=boot({...seed(),hp:100,soundEnabled:false,fightMode:'nushi',fishingMethod:method,ownedRods:['tideMaster','lureRod'],selectedRod:method==='lure'?'lureRod':'tideMaster',lures:{silverSpoon:1}}),w=app.window;
  try{
-  w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==="bass");battle.specimen=rollFishSpecimen(battle.f,()=>.5);startFight();clearInterval(timer);stopBattleFishArt();battle.mood=fightProfiles[battle.f.id].moods.find(m=>!m.calm);battle.vx=1;battle.retrievalDelta=0;advanceUnderwaterTravel()');
+  w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==="bass");battle.specimen=rollFishSpecimen(battle.f,()=>.5);startFight();clearInterval(timer);stopBattleFishArt();battle.mood=fightProfiles[battle.f.id].moods.find(m=>!m.calm);battle.vx=1;battle.retrievalDelta=-.01;advanceUnderwaterTravel()');
   const before=read(w,'[battle.f.id,battle.specimen,battle.startMeters,battle.retrieval,s.baits,s.lures,s.gameMinutes,s.caught]');
   assert.ok(read(w,'battle.underwaterCamera.offset')>0);
   w.eval('battle.mood=fightProfiles[battle.f.id].moods.find(m=>m.calm);battle.retrievalDelta=.01;for(let i=0;i<20;i++)advanceUnderwaterTravel()');

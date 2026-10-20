@@ -17,7 +17,7 @@ module.exports=async function categories(url,mobile=false){
  }
  try{
   await page.goto(url,{waitUntil:'load'});await press('#start');await bag();const before=await stock();
-  for(const category of ['bait','lures','food','ingredients','dogTreats','dogToys','tackle','collection','offerings']){
+  for(const category of ['food','ingredients','dogTreats','dogToys','parts','collection','offerings']){
    await press(`[data-inventory-category="${category}"]`);await selected('inventory',category);assert.equal(await stock(),before);
    const bounds=await page.locator(`[data-inventory-category="${category}"]`).boundingBox();assert.ok(bounds.height>=44,'category touch target');
   }

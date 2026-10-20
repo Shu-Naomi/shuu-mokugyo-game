@@ -6,7 +6,7 @@ test('fresh and sea shelves contain only self-caught ordinary fish; selection, p
  const a=boot({...seed(),money:100000,soundEnabled:false}),w=a.window;
  try{
   w.eval('for(const f of fish)s.caught[f.id]=1;petUi.open("shop")');const before=snapshot(w);
-  assert.equal(w.document.querySelectorAll('.pet-fish-sales [data-pet-buy]').length,47);
+  assert.equal(w.document.querySelectorAll('.pet-fish-sales [data-pet-buy]').length,50);
   assert.ok(w.document.querySelector('.pet-fish-sales.compact-sam-list'));
   assert.equal(w.document.querySelectorAll('[data-pet-water]').length,3);
   for(const [category,label,id]of [['fresh','淡水','oyanirami'],['sea','海水','ishidai']]){

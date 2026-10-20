@@ -3,7 +3,7 @@
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
-  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi'].includes(id);
+  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo'].includes(id);
   // Each fish has its own tank pacing and water column. Gameplay and feeding
   // use the same layout and never change catch records or reel physics.
   const gaits=Object.freeze({
@@ -11,6 +11,7 @@
     mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],
     bluegill:[.98,.65,-.015],aburahaya:[1.36,.7,-.025],magochi:[.63,.26,.075],
     oyanirami:[.79,.49,.015],akakamasu:[1.58,.91,-.055],ishidai:[.92,.68,.035],
+    kawayoshinobori:[.54,.23,.08],utsubo:[.81,.44,.085],buri:[1.67,.84,-.065],
     tanago:[.78,.65,-.01],motsugo:[1.23,.72,-.02],medaka:[.86,.38,-.09],
     kamatsuka:[.62,.27,.065],nigoi:[.89,.58,.04],raigyo:[.71,.42,.02],
     moroko:[1,1,0], funa:[.84,.65,.02], koi:[.64,.6,.08],

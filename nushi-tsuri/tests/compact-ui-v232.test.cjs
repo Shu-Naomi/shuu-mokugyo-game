@@ -3,7 +3,7 @@ const fixture=()=>({...seed(),money:596209,items:{tomato:2,wildGreens:3,offering
 const click=(w,q)=>{const n=w.document.querySelector(q);assert.ok(n,q);assert.equal(n.disabled,false,q);n.click();return n;};
 const snapshot=w=>read(w,'({money:s.money,time:s.gameMinutes,hp:s.hp,baits:s.baits,items:s.items,meals:s.preparedMeals,ingredients:s.cookingIngredients,toys:s.ownedDogToys,treats:s.dogTreats,rods:s.ownedRods,copies:s.rodCopies,levels:s.rodLevels,fish:s.petLife.fish,food:s.petLife.food,equipment:s.equipment,vehicles:s.ownedVehicles,caught:s.caught})');
 test('bag pages and details do not consume or equip anything; Escape closes only the detail and returns focus',()=>{
- const a=boot(fixture()),w=a.window;try{w.openInventory('items');click(w,'[data-inventory-category="food"]');const before=snapshot(w);
+ const a=boot(fixture()),w=a.window;try{Object.defineProperty(w,'innerHeight',{value:390});w.openInventory('items');click(w,'[data-inventory-category="food"]');const before=snapshot(w);
   const next=w.document.querySelector('#inventoryCategory-food [data-compact-page="next"]');assert.equal(next.disabled,false);next.click();assert.deepEqual(snapshot(w),before);click(w,'#inventoryCategory-food [data-compact-page="previous"]');
   const item=w.document.querySelector('#inventory [data-use-item="tomato"]').closest('.compact-product');const opener=item.querySelector('[data-compact-info]');opener.click();
   assert.equal(w.document.querySelectorAll('.compact-sheet').length,1);assert.deepEqual(snapshot(w),before);

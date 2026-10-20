@@ -106,6 +106,34 @@
   akakamasu:{asset:'assets/fish-akakamasu-v247.png',boxes:[[19,207,531,202],[530,195,424,228],[978,187,303,257],[1320,185,206,261],[18,626,309,254],[307,635,372,237],[654,663,445,191],[1109,663,415,193]],heads:[[.99,.64],[.99,.72],[.98,.82],[.5,.75],[.01,.8],[.01,.78],[.01,.7],[.99,.57]],continuousBody:true},
   ishidai:{asset:'assets/fish-ishidai-v247.png',boxes:[[29,145,457,312],[504,144,389,317],[916,136,305,336],[1245,142,272,319],[13,558,305,333],[320,568,362,317],[687,585,415,304],[1122,583,401,306]],heads:[[.99,.62],[.98,.68],[.97,.68],[.5,.72],[.06,.7],[.02,.66],[.01,.62],[.99,.53]],continuousBody:true}
  });
+ definitions.push(
+  {id:'kawayoshinobori',name:'カワヨシノボリ',base:'mahaze',number:53,price:160,resistance:50,band:'small',hook:'small',
+   scientific:'Rhinogobius flumineus',habitats:['river'],rarity:2,label:'川底の小さな吸盤',
+   ecology:'一生を川で過ごす小型のハゼの仲間。丸い尾と大きな胸びれを持ち、石の間で小さな水生昆虫などを食べる。',
+   locations:'民家川／星見渓流／水郷の湿地・砂底の小川（岸際〜中層）',time:'いつでも',
+   rods:['bamboo','youngBamboo'],baits:['river','worm','smallShrimp'],tip:'川虫＋ハリ小で川底の石の近くへ。短く底へ戻る動きを待って、そっと寄せよう。',
+   intro:'丸い胸びれのカワヨシノボリだ。石へ戻る小さな走りを、やさしくいなそう。',lengths:[1.2,2,3,4,5,6.5,8],
+   baitWeights:{river:3.2,worm:2.4,smallShrimp:1.6,shrimp:.7,paste:.15,corn:.03,liveMinnow:.01}},
+  {id:'utsubo',name:'ウツボ',base:'unagi',number:54,price:1050,resistance:205,band:'large',hook:'large',
+   scientific:'Gymnothorax kidako',habitats:['sea'],rarity:3,label:'岩穴のまだら模様',
+   ecology:'黄色いまだら模様の長い体を持つ海の魚。岩穴に身をひそめ、大きな口と鋭い歯で獲物を捕らえる。胸びれはない。',
+   locations:'潮見浜・港（深場）／岩礁の小島（中層〜深場）',time:'いつでも',
+   rods:['shoreReed','tideMaster'],baits:['liveMinnow','shrimp','crab'],tip:'活き小魚＋ハリ大で岩礁の深場へ。体をくねらせ岩穴へ戻ろうとする間は、糸を引かずに待とう。',
+   intro:'まだら模様のウツボだ。岩穴へ戻ろうとする長い体の力を、無理せず受け流そう。',lengths:[15,28,43,60,78,100,125],
+   baitWeights:{liveMinnow:3.2,shrimp:1.8,crab:1.2,smallShrimp:.8,worm:.15,shell:.08,river:.02,paste:.01}},
+  {id:'buri',name:'ブリ',base:'suzuki',number:55,price:1200,resistance:220,band:'large',hook:'large',
+   scientific:'Seriola quinqueradiata',habitats:['sea'],rarity:3,label:'沖を駆ける黄色い帯',
+   ecology:'青緑の背と体側の黄色い帯を持つ海の魚。成長や地方で呼び名が変わる出世魚の一種で、幼魚は流れ藻に集まる。',
+   locations:'潮見浜・港／白砂と岩礁の小島（深場）',time:'いつでも',
+   rods:['shoreReed','tideMaster'],baits:['liveMinnow','shrimp'],tip:'活き小魚＋ハリ大で沖の深場へ。スプーンも追う力強い回遊魚。長い走りの後に来る引きどころを狙おう。',
+   intro:'黄色い帯のブリだ。沖へ向かう力強い走りが止まるのを待とう。',lengths:[12,24,40,57,75,98,125],
+   baitWeights:{liveMinnow:3.6,shrimp:1.5,smallShrimp:1,worm:.08,crab:.08,shell:.02,river:.01,paste:.01}}
+ );
+ Object.assign(art,{
+  kawayoshinobori:{asset:'assets/fish-kawayoshinobori-v248.png',boxes:[[9,233,480,181],[516,229,382,195],[928,208,280,225],[1226,173,297,261],[17,612,310,229],[328,649,372,192],[709,665,429,165],[1149,649,377,185]],heads:[[.99,.62],[.99,.74],[.93,.65],[.5,.7],[.02,.65],[.01,.62],[.01,.53],[.99,.43]],continuousBody:true},
+  utsubo:{asset:'assets/fish-utsubo-v248.png',boxes:[[28,84,451,328],[489,137,417,298],[888,138,305,311],[1281,118,231,346],[19,543,306,342],[328,543,381,327],[673,585,482,286],[1163,586,358,285]],heads:[[.99,.85],[.99,.9],[.97,.95],[.45,.88],[.02,.9],[.01,.94],[.01,.9],[.99,.68]],continuousBody:true},
+  buri:{asset:'assets/fish-buri-v248.png',boxes:[[15,222,459,197],[503,212,357,229],[890,203,287,244],[1231,189,276,271],[34,611,274,242],[334,618,374,218],[709,631,406,188],[1130,632,392,185]],heads:[[.99,.58],[.99,.68],[.97,.61],[.5,.66],[.02,.67],[.01,.6],[.01,.52],[.99,.41]],continuousBody:true}
+ });
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -132,6 +160,10 @@
  for(const id of ['sea-mid','coast-sand-mid','coast-reef-mid'])Object.assign(pools[id],{akakamasu:.24});
  for(const id of ['sea-deep','coast-sand-deep','coast-reef-deep'])Object.assign(pools[id],{akakamasu:.16});
  Object.assign(pools['sea-deep'],{ishidai:.16});Object.assign(pools['coast-reef-mid'],{ishidai:.18});Object.assign(pools['coast-reef-deep'],{ishidai:.28});
+ for(const id of ['river-shallow','mountain-stream-shallow','mountain-wetCreek-shallow'])Object.assign(pools[id],{kawayoshinobori:.25});
+ for(const id of ['river-mid','mountain-stream-mid','mountain-wetCreek-mid'])Object.assign(pools[id],{kawayoshinobori:.12});
+ Object.assign(pools['sea-deep'],{utsubo:.1});Object.assign(pools['coast-reef-mid'],{utsubo:.14});Object.assign(pools['coast-reef-deep'],{utsubo:.24});
+ for(const id of ['sea-deep','coast-sand-deep','coast-reef-deep'])Object.assign(pools[id],{buri:.2});
  function install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle}){
   for(const d of definitions){
    if(fish.some(f=>f.id===d.id))continue;
