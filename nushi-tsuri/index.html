@@ -19659,7 +19659,7 @@
         { id: "ingredients", label: "食材", icon: "🌿", title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
         { id: "dogTreats", label: "犬のおやつ", icon: "🍪", title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
         { id: "dogToys", label: "犬のおもちゃ", icon: "🎾", title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
-        { id: "parts", label: "竿のパーツ", icon: "🎣", title: "竿の追加パーツ", hint: "手に入れた竿のパーツ。餌・ハリ・竿と釣り方は「タックル」から選べるよ。" },
+        { id: "parts", label: "保管釣具", icon: "🎣", title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とスプーンは「タックル」から選べるよ。" },
         { id: "collection", label: "コレクション", icon: "🏆", title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
         { id: "offerings", label: "奉納品", icon: "⛩️", title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
       ];
@@ -19789,6 +19789,13 @@
             `<span><b>${item.name}</b><br><small>犬のおもちゃ／犬ごとに毎日1回</small></span>` +
             `<strong>所持</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
+        const storedLureMarkup = Object.entries(lureData)
+          .filter(([id]) => id !== "silverSpoon")
+          .map(([id, item]) =>
+            `<div class="inventory-card" data-stored-lure="${id}"><i>${ShuTackleArt.icon(id)}</i>` +
+            `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
+            `<strong>×${s.lures[id] || 0}</strong></div>`)
+          .join("");
         const rodPartMarkup = Object.entries(rodPartData)
           .map(([id, item]) =>
             `<div class="inventory-card"><i>${ShuTackleArt.icon(id)}</i>` +
@@ -19810,7 +19817,7 @@
           food: `<h4 class="inventory-section-heading">食事効果・作り置き</h4>${activeMealMarkup}${preparedMealMarkup}<h4 class="inventory-section-heading">体力を回復する食べ物</h4>${fieldItemMarkup("recovery")}`,
           ingredients: `${cookingMaterialMarkup}${fieldItemMarkup("ingredient")}${sharedMaterialMarkup}`,
           dogTreats: dogTreatMarkup, dogToys: ownedDogToyMarkup,
-          parts: rodPartMarkup,
+          parts: storedLureMarkup + rodPartMarkup,
           collection: `<h4 class="inventory-section-heading">図鑑収集品</h4>${collectibleMarkup}<h4 class="inventory-section-heading">大会トロフィー</h4>${tournamentInventoryTrophies()}`,
           offerings: fieldItemMarkup("offering"),
         };
@@ -19822,7 +19829,7 @@
           food: ownedTypes(preparedMealData, s.preparedMeals) + ownedTypes(fieldItemData, s.items, item => item.use === "recovery"),
           ingredients: ownedTypes(cookingIngredientData, s.cookingIngredients) + ownedTypes(fieldItemData, s.items, item => item.use === "ingredient") + sharedIngredients.filter(({storage, id}) => (s[storage][id] || 0) > 0).length,
           dogTreats: ownedTypes(dogCareData, s.dogTreats, item => item.type === "treat"),
-          dogToys: s.ownedDogToys.length, parts: ownedTypes(rodPartData, s.rodParts),
+          dogToys: s.ownedDogToys.length, parts: ownedTypes(rodPartData, s.rodParts) + Object.keys(lureData).filter(id => id !== "silverSpoon" && (s.lures[id] || 0) > 0).length,
           collection: ownedTypes(fishdexCollectibleData, s.fishdexCollectibles) + Object.values(ShuTournament.definitions).filter(d => (s.tournamentRecords[d.id]?.wins || 0) > 0).length,
           offerings: ownedTypes(fieldItemData, s.items, item => item.use === "offering"),
         };

@@ -112,7 +112,7 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
   const originals=selector=>[...w.document.querySelectorAll(selector)].filter(n=>!n.closest('.compact-row-art,.sam-category-icon')).length;
   try{w.eval('openInventory("items")');
     for(const selector of ['#inventory [data-pick-bait]','#inventory [data-pick-hook]','#inventory [data-fishing-method="lure"]'])for(const button of w.document.querySelectorAll(selector))assert.ok(button.closest('.compact-product').querySelector('.compact-row-art .tackle-pixel-icon'),selector);
-    assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .tackle-pixel-icon').length,1);
+    assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .tackle-pixel-icon').length,2);
     assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .tackle-pixel-icon').length,2);
     for(const id of ['bait','lures','tackle'])assert.equal(w.document.querySelector('#inventoryCategory-'+id),null,'the old duplicate shelf is gone');
     w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),7);
