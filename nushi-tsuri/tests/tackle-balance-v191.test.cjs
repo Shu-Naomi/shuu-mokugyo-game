@@ -83,8 +83,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
     assert.match(doc.querySelector('#battleMsg').textContent,/ハリ大/);
     w.eval('battle=null;save()');saved=JSON.parse(w.localStorage.getItem(saveKey));
     assert.equal(saved.selectedHook,'large');assert.equal(saved.baits.nushiSecret,2);
-    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"]').closest('.compact-product').querySelector('.compact-art svg'));
-    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"]').closest('.compact-product').querySelector('.compact-art svg'));
+    assert.ok(doc.querySelector('#inventoryBaitOptions [data-pick-bait="nushiSecret"]').closest('.compact-product').querySelector('.compact-row-art svg'));
+    assert.ok(doc.querySelector('#inventoryHookOptions [data-pick-hook="large"]').closest('.compact-product').querySelector('.compact-row-art svg'));
     assert.match(w.fishdexKnownDetail(w.eval('fish.find(f=>f.id==="funa")')),/ハリ小.*基本サイズ帯は標準/s);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
@@ -110,7 +110,11 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
   assert.equal(variants.size,ids.length);
   const app=boot({...seed(),fishdexCollectibles:{ancientFloat:1,glassHook:1}}),w=app.window;
   const originals=selector=>[...w.document.querySelectorAll(selector)].filter(n=>!n.closest('.compact-row-art,.sam-category-icon')).length;
-  try{w.eval('openInventory("items")');assert.equal(originals('[data-inventory-category-panel]:not([data-inventory-category-panel="ingredients"]) .tackle-pixel-icon'),19);
+  try{w.eval('openInventory("items")');
+    for(const selector of ['#inventory [data-pick-bait]','#inventory [data-pick-hook]','#inventory [data-fishing-method="lure"]'])for(const button of w.document.querySelectorAll(selector))assert.ok(button.closest('.compact-product').querySelector('.compact-row-art .tackle-pixel-icon'),selector);
+    assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .tackle-pixel-icon').length,1);
+    assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .tackle-pixel-icon').length,2);
+    for(const id of ['bait','lures','tackle'])assert.equal(w.document.querySelector('#inventoryCategory-'+id),null,'the old duplicate shelf is gone');
     w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),7);
     w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .tackle-pixel-icon').length,2);
     assert.deepEqual(app.errors,[]);

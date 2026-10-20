@@ -206,7 +206,7 @@
   const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖",wetPond:"睡蓮の池",wetCreek:"砂底の小川",wetMarsh:"水郷の葦の沼"};
   const populations={
     stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
-      {ugui:.12,iwana:.28,amago:.28,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
+      {ugui:.12,iwana:.28,amago:.33,kajika:.12,yamame:.16,nijimasu:.10,ayu:.04,unagi:.02},
       {ugui:.08,iwana:.31,amago:.15,kajika:.26,yamame:.08,nijimasu:.12,unagi:.04,namazu:.04}],
     pond:[{wakasagi:.22,moroko:.23,funa:.35,bass:.20},
       {wakasagi:.28,funa:.28,koi:.18,bass:.18,namazu:.08},

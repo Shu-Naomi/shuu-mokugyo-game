@@ -6432,7 +6432,7 @@
       }
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
-    <link rel="stylesheet" href="field-guide.css?v=239-1" />
+    <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="pet-life.css?v=231-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
@@ -6883,7 +6883,7 @@
             <div id="fieldGuideMap" role="img"><div id="fieldGuideMapArt"><div id="fieldGuideBuildings"></div><svg id="fieldGuideOverlay" viewBox="0 0 240 135" aria-hidden="true"></svg><span id="fieldGuideLegend"></span></div></div>
             <nav class="field-guide-catalog" aria-label="水辺と暮らしの場所"><div id="fieldGuidePlaces"></div><div class="field-guide-pagination"><button id="fieldGuidePrevious" type="button" aria-label="前の案内へ">‹ 前</button><span id="fieldGuidePage" aria-live="polite"></span><button id="fieldGuideNext" type="button" aria-label="次の案内へ">次 ›</button></div></nav>
           </div>
-          <footer class="field-guide-footer"><span id="fieldGuideNoteLabel"></span><p id="fieldGuideNote" aria-live="polite"></p></footer>
+          <footer class="field-guide-footer"><div class="field-guide-note-menu"><span id="fieldGuideNoteLabel"></span><button id="fieldGuideNotesNext" type="button" hidden>次の魚</button></div><p id="fieldGuideNote" aria-live="polite"></p></footer>
         </section>
         <section class="modal lake-intro-modal" id="lakeIntro" role="dialog" aria-modal="true" aria-labelledby="lakeIntroTitle" tabindex="-1">
           <header class="lake-intro-header">
@@ -7296,8 +7296,8 @@
     <script src="catch-memories.js?v=229-1"></script>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="world-life.js?v=241-1"></script>
-    <script src="field-guide.js?v=239-1"></script>
-    <script src="mountain-region.js?v=241-1"></script>
+    <script src="field-guide.js?v=248-2"></script>
+    <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
@@ -23893,7 +23893,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=248-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=248-2").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

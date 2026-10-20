@@ -36,7 +36,7 @@
    entries,buildings:data.life.buildings.filter(b=>b.region===region),player:{x:state.x,y:state.y},playerLabel:state.home?'家の入口':'現在地'};
  }
  function create({element,life}){
-  const doc=element.ownerDocument,find=id=>element.querySelector('#'+id),svgNS='http://www.w3.org/2000/svg';let current,selected=0,page=0;
+  const doc=element.ownerDocument,find=id=>element.querySelector('#'+id),svgNS='http://www.w3.org/2000/svg';let current,selected=0,page=0,notePage=0;
   const makeSvg=(name,attrs)=>{const n=doc.createElementNS(svgNS,name);for(const [k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n;};
   const image=new Image();image.onload=()=>{if(current)paintBuildings();};
   function paintBuildings(){
@@ -46,7 +46,7 @@
     layer.append(c);if(image.complete&&image.naturalWidth)life.drawBuilding(c,image,b.sprite);
    }
   }
-  function choose(index,focus=false){selected=Math.max(0,Math.min(current.entries.length-1,index));page=Math.floor(selected/PAGE_SIZE);render();if(focus)find('fieldGuidePlaces').querySelector('[aria-pressed="true"]').focus({preventScroll:true});}
+  function choose(index,focus=false){selected=Math.max(0,Math.min(current.entries.length-1,index));page=Math.floor(selected/PAGE_SIZE);notePage=0;render();if(focus)find('fieldGuidePlaces').querySelector('[aria-pressed="true"]').focus({preventScroll:true});}
   function render(){
    const entry=current.entries[selected],pages=Math.ceil(current.entries.length/PAGE_SIZE),list=find('fieldGuidePlaces');list.replaceChildren();
    for(const [i,e]of current.entries.entries()){if(Math.floor(i/PAGE_SIZE)!==page)continue;const button=doc.createElement('button');button.type='button';button.dataset.guidePlace=e.id;button.setAttribute('aria-pressed',String(i===selected));
@@ -60,14 +60,19 @@
    map.append(makeSvg('circle',{cx:entry.point.x,cy:entry.point.y,r:4.6,class:'guide-place-ring'}),makeSvg('circle',{cx:current.player.x,cy:current.player.y,r:2.2,class:'guide-player-dot'}));
    find('fieldGuideMap').setAttribute('aria-label',`${current.name}の案内図。選択中：${entry.name}。赤い丸は${current.playerLabel}。`);
    find('fieldGuideLegend').textContent=`● ${current.playerLabel}　◎ 選んだ場所`;
-   const note=find('fieldGuideNote');note.replaceChildren();
-   for(const line of entry.notes.length?entry.notes:[{text:'水辺に向いてAで釣る。エサ・ハリ・投げる距離を変えて探ろう。'}]){const n=doc.createElement('span');n.textContent=line.text;if(line.id)n.dataset.guideFish=line.id;note.append(n);}
-   find('fieldGuideNoteLabel').textContent=entry.kind==='water'&&entry.notes.length?'この水辺の新顔':'旅のメモ';
+   renderNotes();
   }
+  function renderNotes(){
+   const entry=current.entries[selected],lines=entry.notes.length?entry.notes:[{text:'水辺に向いてAで釣る。エサ・ハリ・投げる距離を変えて探ろう。'}],pages=Math.ceil(lines.length/PAGE_SIZE),note=find('fieldGuideNote');note.replaceChildren();
+   for(const line of lines.slice(notePage*PAGE_SIZE,(notePage+1)*PAGE_SIZE)){const n=doc.createElement('span');n.textContent=line.text;if(line.id)n.dataset.guideFish=line.id;note.append(n);}
+   find('fieldGuideNoteLabel').textContent=entry.kind==='water'&&entry.notes.length?'この水辺の新顔':'旅のメモ';
+   const next=find('fieldGuideNotesNext');next.hidden=pages===1;next.disabled=pages===1;next.textContent=`次の魚 ${notePage+1} / ${pages}`;next.setAttribute('aria-label',`次の魚の案内、${notePage+1} / ${pages}ページ`);
+  }
+  find('fieldGuideNotesNext').onclick=()=>{notePage=(notePage+1)%Math.ceil(current.entries[selected].notes.length/PAGE_SIZE);renderNotes();};
   find('fieldGuidePrevious').onclick=()=>choose((page-1)*PAGE_SIZE,true);
   find('fieldGuideNext').onclick=()=>choose((page+1)*PAGE_SIZE,true);
-  element.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const buttons=[...element.querySelectorAll('button:not(:disabled)')],first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&doc.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&doc.activeElement===last){event.preventDefault();first.focus();}});
-  return {show(data){current=data;selected=0;page=0;find('fieldGuideRegion').textContent=data.name;find('fieldGuideMapArt').style.backgroundImage=`url("${data.asset}")`;paintBuildings();if(data.buildings.length&&!image.src)image.src='assets/settlement-buildings-v238.png';render();},select:id=>{const i=current?.entries.findIndex(e=>e.id===id);if(i>=0)choose(i);}};
+  element.addEventListener('keydown',event=>{if(event.key!=='Tab')return;const buttons=[...element.querySelectorAll('button:not(:disabled)')].filter(n=>!n.hidden),first=buttons[0],last=buttons.at(-1);if(event.shiftKey&&doc.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey&&doc.activeElement===last){event.preventDefault();first.focus();}});
+  return {show(data){current=data;selected=0;page=0;notePage=0;find('fieldGuideRegion').textContent=data.name;find('fieldGuideMapArt').style.backgroundImage=`url("${data.asset}")`;paintBuildings();if(data.buildings.length&&!image.src)image.src='assets/settlement-buildings-v238.png';render();},select:id=>{const i=current?.entries.findIndex(e=>e.id===id);if(i>=0)choose(i);}};
  }
  return {PAGE_SIZE,waterNotes,model,create};
 });

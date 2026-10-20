@@ -6,13 +6,16 @@ const ready=rod=>({...seed(),hp:100,soundEnabled:false,mapRegion:'coast',boatAct
   fightMode:'nushi',baits:{shrimp:40},selectedBait:'shrimp',selectedHook:'large',
   regionalCaught:{coast:Object.fromEntries(R.ordinary.coast.map(id=>[id,1]))},regionalCatchVersion:1});
 
-test('correctly yielding then pulling short slack windows makes net progress with a suitable sea rod',()=>{
-  const b={f:{id:'coastNushi'},retrieval:.2,ten:18,distanceFactor:1.55};
+test('species pull windows overcome real escape distance with a suitable sea rod and timely release',()=>{
+  const b={fightMode:'nushi',f:{id:'coastNushi'},retrieval:.2,startMeters:29,ten:18,distanceFactor:1.55};let now=10000;
   const gear={strength:F.strengths.shoreReed,power:32,control:1.65};
-  // A sustained run followed by a brief slack window, with no pulling while it runs.
+  // Secure an actual species opening, release, then let the next run take line.
   for(let cycle=0;cycle<8;cycle++){
-    b.reeling=false;for(let i=0;i<36;i++)F.step(b,{calm:false,danger:true},gear,1);
-    b.reeling=true;for(let i=0;i<5;i++)F.step(b,{calm:true},gear,1);
+    b.mood={id:'rest',calm:true};F.beginWindow(b,b.mood,500,now,()=>.3);F.acceptPull(b,now);b.reeling=true;
+    const end=b.nushiWindow.warnAt;for(;now<end;now+=120)F.step(b,b.mood,gear,1,now);
+    F.releasePull(b,now);b.reeling=false;const gained=b.retrieval;b.mood={id:'run',calm:false,danger:true};
+    for(let i=0;i<36;i++){F.step(b,b.mood,gear,1,now);b.moodTick=(b.moodTick||0)+1;now+=120;}
+    assert.ok(b.retrieval<gained,'a running fish really takes line after release');
   }
   assert.ok(b.retrieval>.2,'earned distance survives the next run');assert.ok(b.ten<100);
   b.ten=70;b.reeling=true;for(let i=0;i<10;i++)F.step(b,{calm:false,danger:true},gear,1);

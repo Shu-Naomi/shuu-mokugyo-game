@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v248-inventory-distance-fish-248-1";
+const CACHE_NAME = "nushi-tsuri-v248-inventory-distance-fish-248-2";
 const CORE_ASSETS = [
   "./assets/fish-kawayoshinobori-v248.png",
   "./assets/fish-utsubo-v248.png",
@@ -14,8 +14,8 @@ const CORE_ASSETS = [
   "./assets/fish-bluegill-v246.png",
   "./assets/fish-aburahaya-v246.png",
   "./assets/fish-magochi-v246.png",
-  "./field-guide.js?v=239-1",
-  "./field-guide.css?v=239-1",
+  "./field-guide.js?v=248-2",
+  "./field-guide.css?v=248-2",
   "./world-life.js?v=241-1",
   "./fish-additions.js?v=248-1",
   "./assets/fish-kawamutsu-v238.png",
@@ -73,7 +73,7 @@ const CORE_ASSETS = [
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=241-1",
+  "./mountain-region.js?v=248-2",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=227-1",
   "./lake-intro.js?v=216-1",
