@@ -425,7 +425,9 @@ if(require.main===module)(async()=>{
     const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const streamUpdate=require('./browser-v219.features.cjs');await streamUpdate(url,false);await streamUpdate(url,true);
     const waterUpdate=require('./browser-v220.features.cjs');await waterUpdate(url,false);await waterUpdate(url,true);
-    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
+    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);
+    // Repeat at the original failure point as well as at startup.
+    await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
     const intro=require('./browser-v215.features.cjs');await intro(url,false);await intro(url,true);
