@@ -29,8 +29,8 @@ module.exports=async function buriAquarium(url,mobile=false,options={}){
   const after=await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,records:s.sizeRecords,money:s.money,identity:s.petLife.fish.filter(f=>f.generation===1).map(({uid,bornSize,sex,generation,origin})=>({uid,bornSize,sex,generation,origin}))})));assert.deepEqual(after,original);
   const saved=await page.evaluate(()=>JSON.parse(JSON.stringify(s.petLife)));await press('#petLifeModal [data-pet-action="close"]');await page.reload({waitUntil:'domcontentloaded'});await start();await openNative();assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify(s.petLife))),saved);await fit();assert.equal(await page.evaluate(()=>fish.length),57);assert.equal(await page.evaluate(()=>fish.find(f=>f.id==='buri').name),'ブリ');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   // A fresh shop fish now starts at Mojako too, independently of these bred parents.
-  await press('[data-pet-action="shop"]');const offer=await revealProduct(page,'[data-pet-buy="buri"]',mobile);
-  assert.match(await offer.locator('xpath=ancestor::article[1]').innerText(),/1\.50cm.*モジャコから育てる/s);
+  await press('[data-pet-action="shop"]');await revealProduct(page,'[data-pet-buy="buri"]',mobile);
+  assert.match(await page.locator('.compact-product:has([data-pet-buy="buri"]) .compact-selection-description').innerText(),/1\.50cm.*モジャコから育てる/s);
   await pressProduct(page,'[data-pet-buy="buri"]',mobile);await press('[data-pet-action="aquarium"]');
   const purchased=await page.evaluate(()=>JSON.parse(JSON.stringify(s.petLife.fish.find(f=>f.origin==='shop'))));
   assert.equal(purchased.length,150);assert.equal(purchased.bornSize,150);assert.equal(purchased.generation,0);
