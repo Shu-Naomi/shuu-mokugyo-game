@@ -9,7 +9,7 @@ module.exports=async function inventoryDistance(url,mobile=false,options={}){
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),act=q=>pressProduct(page,q,mobile),value=expression=>page.evaluate(expression),shot=name=>page.screenshot({path:path.join(dir,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  const snapshot=()=>page.evaluate(()=>JSON.parse(JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,items:s.items,baits:s.baits,lures:s.lures,copies:s.rodCopies,levels:s.rodLevels,caught:s.caught,method:s.fishingMethod,mode:s.fightMode,rod:s.selectedRod,hook:s.selectedHook,equipment:s.equipment})));
- async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v248/);}
+ async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v249/);}
  async function layout(name){const result=await page.locator('#inventory').evaluate(root=>{
   const r=root.getBoundingClientRect(),visible=[...root.querySelectorAll('.compact-catalog')].find(n=>n.getClientRects().length),rows=visible?[...visible.querySelectorAll('[data-compact-select]')].filter(n=>n.getClientRects().length):[];
   const buttons=[...root.querySelectorAll('button')].filter(n=>n.getClientRects().length&&getComputedStyle(n).display!=='contents');

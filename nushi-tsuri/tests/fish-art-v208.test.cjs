@@ -59,8 +59,11 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
   const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
-  assert.ok(sw.includes('fish-art.js?v=247-1'));
-  for(const asset of new Set(Object.keys(Art.species).flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);
+  const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
+  const painter=html.match(/<script src="(fish-art\.js\?v=[^"]+)"/u)?.[1];
+  assert.ok(painter,'the page loads a versioned fish painter');
+  assert.ok(sw.includes(painter),'the offline cache includes the painter used by the page');
+  for(const asset of new Set([...Object.keys(Art.species),...Object.keys(Art.aquarium)].flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);
   const app=boot();try{
     assert.deepEqual(read(app.window,'fish.map(f=>f.id).sort()'),Object.keys(Art.species).sort());
     assert.equal(read(app.window,'fish.find(f=>f.id==="shirogisu").resistance'),84);

@@ -6433,7 +6433,7 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
-    <link rel="stylesheet" href="pet-life.css?v=231-1" />
+    <link rel="stylesheet" href="pet-life.css?v=249-1" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
@@ -6478,7 +6478,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v248</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v249</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7285,10 +7285,10 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=230-1"></script>
-    <script src="aquarium-life.js?v=248-1"></script>
+    <script src="pet-life.js?v=249-1"></script>
+    <script src="aquarium-life.js?v=249-1"></script>
     <script src="compact-ui.js?v=248-1"></script>
-    <script src="pet-life-ui.js?v=247-1"></script>
+    <script src="pet-life-ui.js?v=249-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=248-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -7304,7 +7304,7 @@
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=248-1"></script>
-    <script src="fish-art.js?v=247-1"></script>
+    <script src="fish-art.js?v=249-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -11735,12 +11735,14 @@
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
           const resolveImage=asset=>fishAtlasImage(aquariumLook?.adultIsaki&&asset===ShuFishArt.species.isaki.asset?'assets/aquarium-isaki-adult-v230.png':asset);
-          const image=resolveImage(spriteAsset);
-          const sources=ShuFishArt.assets(fishId).map(resolveImage);
+          const artId=aquariumLook?.artId||fishId;
+          const image=resolveImage(ShuFishArt.aquarium[artId]?.asset||spriteAsset);
+          const sources=ShuFishArt.assets(artId).map(resolveImage);
+          canvas.dataset.artVariant=artId;
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            ShuFishArt.draw(context,image,fishId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend});
+            ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend});
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
@@ -12770,11 +12772,16 @@
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
-      function petBirthMessage(state = s) {
-        const birth=state.petLife?.lastBirth;
-        if(!birth||birth.day!==gameClockAt(state.gameMinutes).dayIndex)return "";
-        const name=petCatalog.find(f=>f.id===birth.species)?.name;
-        return name?`水槽${birth.tank+1}で${name}の稚魚が生まれた！`:"";
+      function petDailyMessage(state = s) {
+        const today=gameClockAt(state.gameMinutes).dayIndex,p=state.petLife,messages=[];
+        const birth=p?.lastBirth;
+        if(birth?.day===today){
+          const name=petCatalog.find(f=>f.id===birth.species)?.name;
+          if(name)messages.push(`水槽${birth.tank+1}で${name}の稚魚が生まれた！`);
+        }
+        const growth=p?.lastGrowth,f=p?.fish.find(a=>a.uid===growth?.uid);
+        if(f&&growth.day===today)messages.push(`飼育魚 #${f.uid.slice(4)}が${ShuPetLife.displayName(f,petCatalog)}に育った！`);
+        return messages.join(" ");
       }
       s.tournament = ShuTournament.normalize(s.tournament);
       s.tournamentGathering = ShuTournament.normalizeGathering(s.tournamentGathering, s.gameMinutes);
@@ -16285,7 +16292,7 @@
         if (s.tournament) { showRescueToast("休むときは、大会ビクから大会を終了しよう。"); return false; }
         sleepUntilNextMorning(s);
         s.hp = s.maxHp;
-        const birth=petBirthMessage();
+        const birth=petDailyMessage();
         const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。${birth}`;
         log(message);
         showRescueToast(`🛏️ 翌朝06:00まで休んだ。体力全回復！${birth?` 🐟 ${birth}`:""}`, birth?4200:2800);
@@ -17038,7 +17045,7 @@
           sleepUntilNextMorning(s);
           s.hp = s.maxHp;
           s.calmBonus = Math.max(s.calmBonus, 1);
-          setLocationDialogue(`布団へ横になると、湖と水車の音だけが聞こえた。翌朝六時、傷も疲れもすっかり癒えて目を覚ました。${petBirthMessage()}`);
+          setLocationDialogue(`布団へ横になると、湖と水車の音だけが聞こえた。翌朝六時、傷も疲れもすっかり癒えて目を覚ました。${petDailyMessage()}`);
           log(`湖畔の釣り宿へ泊まり、${gameClockLabel(s.gameMinutes)}に起きた。体力が全回復し、次の釣りも少し穏やかになる。`);
         } else if (activeLocationId === "yaoya" || activeLocationId === "diner") {
           renderLocationGoods();
@@ -23900,7 +23907,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=248-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=249-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

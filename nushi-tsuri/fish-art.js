@@ -40,12 +40,20 @@
   for(const [id,definition]of Object.entries(wetlandArt))species[id]={asset:definition.asset};
   for(const id of ["iwana","amago","kajika"])native[id].continuousBody=true;
   for(const [id,definition]of Object.entries(native))species[id].asset=definition.asset;
-  const assets=id=>[species[id].asset];
+  // Aquarium age variants are drawings of the same species, never extra
+  // encounter or encyclopedia entries.
+  const aquarium=Object.freeze({
+    buriMojako:{asset:'assets/aquarium-buri-mojako-v249.png',boxes:[[28,212,453,205],[503,205,356,233],[893,196,278,252],[1225,189,282,266],[47,598,261,251],[339,603,347,235],[691,628,421,189],[1129,628,388,203]],heads:[[.99,.615],[.99,.65],[.99,.69],[.5,.67],[.01,.71],[.01,.62],[.01,.54],[.995,.4]],continuousBody:true},
+    buriYoung:{asset:'assets/aquarium-buri-young-v249.png',boxes:[[27,211,455,212],[505,203,359,232],[901,197,271,257],[1226,185,286,276],[36,591,298,242],[344,591,366,234],[712,618,407,205],[1130,623,388,199]],heads:[[.99,.63],[.99,.7],[.98,.67],[.5,.69],[.01,.76],[.01,.65],[.01,.54],[.99,.46]],continuousBody:true},
+  });
+  Object.assign(native,aquarium);
+  const sprites={...species,...aquarium};
+  const assets=id=>[sprites[id].asset];
   const projection=()=>1;
   // A few loach originals use a larger drawing scale. Normalize both axes
   // together, preserving their anatomy while keeping the same individual.
   const cellScale=(id,cell)=>native[id]?.scales?.[cell]||1;
-  const cellAsset=id=>species[id].asset;
+  const cellAsset=id=>sprites[id].asset;
   const turn=[1,.72,.36,0,-.36,-.72,-1].map((xScale,i)=>({xScale,yOffset:[0,.025,.06,.08,.06,.025,0][i]}));
   const mouth=[{xScale:1,yOffset:0},{xScale:1,yOffset:.025},{xScale:1,yOffset:.05}];
   const heads=[[.985,.62],[.985,.68],[.98,.75],[.5,.75],[.02,.72],[.015,.65],[.015,.62],[.985,.72]];
@@ -93,7 +101,7 @@
     // Barbels extend past the actual lip: never attach the hook to a whisker.
     return flip?[1-point[0],point[1]]:point;
   }
-  function source(id,cell){const d=species[id];return native[id]?.boxes[cell]||groups[d.group].boxes[d.index*8+cell];}
+  function source(id,cell){const d=sprites[id];return native[id]?.boxes[cell]||groups[d.group].boxes[d.index*8+cell];}
   const isolatedCells=new WeakMap();
   function isolatedCell(ctx,image,id,cell){
     let cache=isolatedCells.get(image);
@@ -271,7 +279,7 @@
     ctx.restore();
   }
   function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
-    if(!species[id])return false;
+    if(!sprites[id])return false;
     const p=pose(id,cells,frame);
     // Wait for the requested original rather than cropping the wrong image.
     if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
@@ -288,5 +296,5 @@
     }
     return true;
   }
-  return Object.freeze({species,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets});
+  return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets});
 });

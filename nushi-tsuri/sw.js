@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v248-inventory-distance-fish-248-2";
+const CACHE_NAME = "nushi-tsuri-v249-buri-growth-249-1";
 const CORE_ASSETS = [
+  "./assets/aquarium-buri-mojako-v249.png",
+  "./assets/aquarium-buri-young-v249.png",
   "./assets/fish-kawayoshinobori-v248.png",
   "./assets/fish-utsubo-v248.png",
   "./assets/fish-buri-v248.png",
@@ -63,8 +65,8 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./item-categories.css?v=217-1",
-  "./pet-life.js?v=230-1",
-  "./pet-life-ui.js?v=247-1",
+  "./pet-life.js?v=249-1",
+  "./pet-life-ui.js?v=249-1",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
   "./fishing-duel.js?v=248-1",
@@ -82,7 +84,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=218-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=247-1",
+  "./fish-art.js?v=249-1",
   "./assets/fish-suzuki-v216.png",
   "./assets/fish-kurodai-v216.png",
   "./assets/fish-moroko-v215.png",
@@ -112,9 +114,9 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
   "./tackle-art.js?v=191-1",
-  "./aquarium-life.js?v=248-1",
+  "./aquarium-life.js?v=249-1",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=231-1",
+  "./pet-life.css?v=249-1",
   "./rival-anglers.js?v=199-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",
