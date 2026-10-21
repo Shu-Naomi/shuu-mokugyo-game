@@ -247,7 +247,13 @@ async function saveSlotSmoke(url,mobile){
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
-  const playing=slot=>page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);
+  const playing=async slot=>{
+    try{await page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);}
+    catch(error){
+      const snapshot=await page.evaluate(()=>({url:location.href,titleActive:document.querySelector('#title')?.classList.contains('active'),gameActive:document.querySelector('#game')?.classList.contains('active'),hud:document.querySelector('#activeSaveSlot')?.textContent,startLabel:document.querySelector('#start')?.textContent,startDisabled:document.querySelector('#start')?.disabled,name:document.querySelector('#titlePlayerName')?.value,slots:[...document.querySelectorAll('[data-save-slot]')].map(n=>({id:n.dataset.saveSlot,selected:n.getAttribute('aria-pressed'),text:n.textContent})),worker:navigator.serviceWorker.controller?.scriptURL}));
+      console.error('SAVE_SLOT_START_FAILURE '+JSON.stringify({slot,mobile,errors,snapshot}));throw error;
+    }
+  };
   async function selection(){await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});}
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
@@ -385,7 +391,7 @@ async function audioSmoke(url,mobile){
     console.log('AUDIO_SMOKE_PASS '+JSON.stringify({mobile,tracks:checked.length,mastersPlayback:true,muteResume:true,loop:checked.find(r=>r.loop)?.loop,errors}));
   }finally{await browser.close();}
 }
-module.exports={smoke};
+module.exports={smoke,saveSlotSmoke};
 if(require.main===module)(async()=>{
   let server;
   try{
@@ -408,6 +414,7 @@ if(require.main===module)(async()=>{
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);
     const aquariumGrowth=require('./browser-v230.aquarium.cjs');await aquariumGrowth(url,false);await aquariumGrowth(url,true);
     const memories=require('./browser-v229.memories.cjs');await memories(url,false);await memories(url,true);
     const fightControls=require('./browser-v228.fight.cjs');await fightControls(url,false);await fightControls(url,true);
@@ -418,7 +425,7 @@ if(require.main===module)(async()=>{
     const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const streamUpdate=require('./browser-v219.features.cjs');await streamUpdate(url,false);await streamUpdate(url,true);
     const waterUpdate=require('./browser-v220.features.cjs');await waterUpdate(url,false);await waterUpdate(url,true);
-    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
+    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
     const intro=require('./browser-v215.features.cjs');await intro(url,false);await intro(url,true);
