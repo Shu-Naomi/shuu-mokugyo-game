@@ -254,7 +254,17 @@ async function saveSlotSmoke(url,mobile){
       console.error('SAVE_SLOT_START_FAILURE '+JSON.stringify({slot,mobile,errors,snapshot}));throw error;
     }
   };
-  async function selection(){await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});}
+  async function selection(){
+    await press('#menu');
+    await Promise.all([page.waitForEvent('domcontentloaded'),press('[data-field-menu-target="saveSlots"]')]);
+    await page.locator('#title.active').waitFor({state:'visible'});
+  }
+  async function launch(slot){
+    const current=Number(new URL(page.url()).searchParams.get('saveSlot')||1);
+    if(current!==slot)await Promise.all([page.waitForEvent('domcontentloaded'),press('#start')]);
+    else await press('#start');
+    await playing(slot);
+  }
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
     await press('[data-save-slot="2"]');await press('[data-avatar="girl"]');await press('[data-dog="grey"]');
@@ -262,24 +272,24 @@ async function saveSlotSmoke(url,mobile){
     const layout=await page.locator('.title-box').evaluate(box=>({inside:box.getBoundingClientRect().top>=-1&&box.getBoundingClientRect().bottom<=innerHeight+1,horizontal:box.scrollWidth<=box.clientWidth+1,cards:[...box.querySelectorAll('[data-save-slot]')].every(b=>b.getBoundingClientRect().width>90)}));
     assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
-    await press('#start');await playing(2);assert.equal(await stored(saveKey),oldBytes);
+    await launch(2);assert.equal(await stored(saveKey),oldBytes);
     await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
     const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
     await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
-    await selection();await press('[data-save-slot="1"]');await press('#start');await playing(1);
+    await selection();await press('[data-save-slot="1"]');await launch(1);
     assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await stored(secondKey),secondBytes);
-    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await press('#start');await playing(2);
+    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await launch(2);
     assert.equal(await page.evaluate(()=>s.money),8888);assert.equal(await page.evaluate(()=>s.items.fishBento),4);
     const discovery=await page.evaluate(()=>{const cycle=ensureForageCycle(),point=foragePointData.find(p=>!cycle.harvested.includes(p.id));delete cycle.active[point.id];const before=s.baits.shell,amount=ShuPetLife.forageCount(s,s.dog);startDogForageDiscovery(point,'shell');return {id:point.id,before,amount};});
     await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:10000});
     assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     assert.equal(await page.locator(`[data-forage-point="${discovery.id}"]`).count(),0);assert.match(await page.locator('#rescueToast').innerText(),/Grey.*貝.*掘り出した/);
     assert.equal(JSON.parse(await stored(secondKey)).baits.shell,discovery.before+discovery.amount);assert.equal(JSON.parse(await stored(saveKey)).money,11111);
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');await playing(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
+    await page.reload({waitUntil:'domcontentloaded'});await launch(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     await selection(); // On the title page, pagehide must preserve damaged data.
     await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
     assert.equal(await page.locator('#start').isDisabled(),true);assert.equal(await page.locator('#saveSlotNotice').isVisible(),true);
-    await press('[data-save-slot="1"]');await press('#start');await playing(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
+    await press('[data-save-slot="1"]');await launch(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
     assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,dogPickup:true,corruptProtected:true,errors}));
   }finally{await browser.close();}
 }
