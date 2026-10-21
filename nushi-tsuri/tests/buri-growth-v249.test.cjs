@@ -17,17 +17,19 @@ test('aquarium names change at integer boundaries, including Hamachi as an alias
 });
 
 test('real cared-for growth promotes the same specimen once and preserves its identity and records',()=>{
- const s=state(),f=P.acquire(s,'buri',catalog,0,0).fish,uid=f.uid,sex=f.sex;
+ const s=state();let f=P.acquire(s,'buri',catalog,0,0).fish;const uid=f.uid,sex=f.sex;
  const original=copy({money:s.money,caught:s.caught,born:f.bornSize,origin:f.origin,generation:f.generation});
- for(let d=0;d<4;d++)care(s,d);
- assert.equal(f.length,3600);assert.equal(P.displayName(f,catalog),'イナダ');
- assert.deepEqual(f.growthHistory.map(h=>h.stage),['wakashi','inada']);assert.equal(f.growthHistory[1].day,4);assert.equal(f.growthHistory[1].initial,false);
- assert.deepEqual(s.petLife.lastGrowth,{uid,from:'wakashi',to:'inada',day:4});
- assert.equal(P.sync(s,catalog,4),false);assert.equal(f.growthHistory.length,2);assert.equal(f.uid,uid);assert.equal(f.sex,sex);
+ assert.equal(f.length,150);assert.equal(P.displayName(f,catalog),'モジャコ');
+ const purchased=copy(s);P.normalize(s,catalog,['shuu'],0);assert.deepEqual(s,purchased);f=s.petLife.fish[0];
+ for(let d=0;d<3;d++)care(s,d);
+ assert.equal(f.length,1050);assert.equal(P.displayName(f,catalog),'ワカシ');
+ assert.deepEqual(f.growthHistory.map(h=>h.stage),['mojako','wakashi']);assert.equal(f.growthHistory[1].day,3);assert.equal(f.growthHistory[1].initial,false);
+ assert.deepEqual(s.petLife.lastGrowth,{uid,from:'mojako',to:'wakashi',day:3});
+ assert.equal(P.sync(s,catalog,3),false);assert.equal(f.growthHistory.length,2);assert.equal(f.uid,uid);assert.equal(f.sex,sex);
  assert.deepEqual({money:s.money,caught:s.caught,born:f.bornSize,origin:f.origin,generation:f.generation},original);
- for(let d=4;d<40;d++)care(s,d);
- assert.equal(f.length,12499);assert.deepEqual(f.growthHistory.map(h=>h.stage),['wakashi','inada','warasa','buri']);
- const before=copy(s);P.normalize(s,catalog,['shuu'],40);assert.deepEqual(s,before);
+ for(let d=3;d<42;d++)care(s,d);
+ assert.equal(f.length,12499);assert.deepEqual(f.growthHistory.map(h=>h.stage),['mojako','wakashi','inada','warasa','buri']);
+ const before=copy(s);P.normalize(s,catalog,['shuu'],42);assert.deepEqual(s,before);
  assert.equal(L.dimensions(s.petLife.fish,catalog).widthCm,360);
 });
 
@@ -72,21 +74,49 @@ test('old Buri keep their size, eggs and identity without invented promotions or
  P.sync(s,catalog,3);assert.ok(s.petLife.fish.some(f=>f.origin==='bred'&&f.length===150));
 });
 
+test('legacy shop Buri keep their 24cm birth size, growth, eggs and adult breeding credit',()=>{
+ for(const length of [2400,8000]){
+  const s=pair(length);s.petLife.fish.forEach(f=>{f.bornSize=2400;});
+  s.petLife.eggs=[{uid:'egg-1',species:'buri',tank:0,laidDay:0,hatchDay:3,generation:1,water:100}];s.petLife.nextEggId=2;
+  if(length===8000)s.petLife.breeding={'0:buri':{days:2,lastDay:0,mother:'pet-2',father:'pet-1'}};
+  const before=copy(s);P.normalize(s,catalog,['shuu'],0);assert.deepEqual(s,before);
+  care(s,0);assert.equal(s.petLife.fish[0].bornSize,2400);assert.equal(s.petLife.fish[0].length,length+300);
+  assert.deepEqual(s.petLife.eggs[0],before.petLife.eggs[0]);assert.equal(s.petLife.eggs.length,length===8000?2:1);
+ }
+ assert.equal(P.purchaseSize(catalog[1]),catalog[1].start);
+});
+
+test('a newly purchased Mojako survives an actual game save and reload at 1.5cm',()=>{
+ const app=boot({...seed(),caught:{buri:1},money:30000,gameMinutes:600});let saved,fresh;
+ try{
+  const w=app.window;w.eval("petUi.open('shop')");w.document.querySelector('[data-pet-buy="buri"]').click();
+  fresh=read(w,'s.petLife.fish[0]');w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+ const restored=boot(saved);try{
+  const w=restored.window;assert.deepEqual(read(w,'s.petLife.fish[0]'),fresh);assert.equal(fresh.length,150);assert.equal(fresh.bornSize,150);
+  w.eval("petUi.open('aquarium')");assert.match(w.document.querySelector('.pet-tank-info h3').textContent,/モジャコ/);
+  assert.deepEqual(read(w,'s.caught'),saved.caught);assert.deepEqual(restored.errors,[]);
+ }finally{restored.dispose();}
+});
+
 test('the actual shop, aquarium records and reload use stage names but the wild encyclopedia stays one Buri',()=>{
  const app=boot({...seed(),caught:{...seed().caught,buri:1},money:30000,gameMinutes:600}),w=app.window;let saved;
  try{
-  w.eval("petUi.open('shop');ShuPetLife.acquire(s,'buri',petCatalog,0);s.petLife.food=100;petUi.open('aquarium')");
-  assert.match(w.document.querySelector('.pet-tank-info h3').textContent,/ワカシ/);
-  for(let d=0;d<4;d++)w.eval("ShuPetLife.care(s,s.petLife.fish[0].uid,'water',"+d+",petCatalog);ShuPetLife.care(s,s.petLife.fish[0].uid,'feed',"+d+",petCatalog);sleepAtPlayerHome()");
+  w.eval("petUi.open('shop')");
+  const stock=w.document.querySelector('[data-pet-buy="buri"]').closest('article');assert.match(stock.textContent,/1\.50cm.*モジャコから育てる/s);
+  w.document.querySelector('[data-pet-buy="buri"]').click();w.eval("s.petLife.food=100;petUi.open('aquarium')");
+  assert.match(w.document.querySelector('.pet-tank-info h3').textContent,/モジャコ/);assert.equal(w.document.querySelector('[data-pet-size-rank]').textContent,'稚魚');
+  const fresh=read(w,'s.petLife.fish[0]');assert.equal(fresh.length,150);assert.equal(fresh.bornSize,150);assert.equal(fresh.origin,'shop');assert.equal(fresh.generation,0);
+  for(let d=0;d<12;d++)w.eval("ShuPetLife.care(s,s.petLife.fish[0].uid,'water',"+d+",petCatalog);ShuPetLife.care(s,s.petLife.fish[0].uid,'feed',"+d+",petCatalog);sleepAtPlayerHome()");
   w.eval("petUi.open('aquarium')");
   assert.match(w.document.querySelector('.pet-tank-info h3').textContent,/イナダ/);assert.match(w.document.querySelector('.pet-growth-notice').textContent,/イナダに育った/);
   w.document.querySelector('[data-pet-action="records"]').click();const record=w.document.querySelector('[data-pet-growth="inada"]');
-  assert.ok(record);assert.match(record.textContent,/ハマチ/);assert.match(record.textContent,/ワカシ.*イナダ/s);assert.match(record.textContent,/80.00cm/);
+  assert.ok(record);assert.match(record.textContent,/ハマチ/);assert.match(record.textContent,/モジャコ.*ワカシ.*イナダ/s);assert.match(record.textContent,/80.00cm/);
   assert.match(w.document.querySelector('#rescueToast').textContent,/イナダに育った/);
-  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),55);assert.equal(Object.keys(A.species).length,55);assert.equal(read(w,"s.caught.buri"),1);
+  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),57);assert.equal(Object.keys(A.species).length,57);assert.equal(read(w,"s.caught.buri"),1);
   w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
- const restored=boot(saved);try{restored.window.eval("petUi.open('aquarium')");assert.match(restored.window.document.querySelector('.pet-tank-info h3').textContent,/イナダ/);assert.equal(read(restored.window,'s.petLife.fish[0].growthHistory.length'),2);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
+ const restored=boot(saved);try{restored.window.eval("petUi.open('aquarium')");assert.match(restored.window.document.querySelector('.pet-tank-info h3').textContent,/イナダ/);assert.equal(read(restored.window,'s.petLife.fish[0].growthHistory.length'),3);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
 });
 
 test('aquarium age drawings remain unclipped and distinct at all 97 headings without replacing wild Buri',async()=>{

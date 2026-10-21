@@ -131,8 +131,28 @@
  );
  Object.assign(art,{
   kawayoshinobori:{asset:'assets/fish-kawayoshinobori-v248.png',boxes:[[9,233,480,181],[516,229,382,195],[928,208,280,225],[1226,173,297,261],[17,612,310,229],[328,649,372,192],[709,665,429,165],[1149,649,377,185]],heads:[[.99,.62],[.99,.74],[.93,.65],[.5,.7],[.02,.65],[.01,.62],[.01,.53],[.99,.43]],continuousBody:true},
-  utsubo:{asset:'assets/fish-utsubo-v248.png',boxes:[[28,84,451,328],[489,137,417,298],[888,138,305,311],[1281,118,231,346],[19,543,306,342],[328,543,381,327],[673,585,482,286],[1163,586,358,285]],heads:[[.99,.85],[.99,.9],[.97,.95],[.45,.88],[.02,.9],[.01,.94],[.01,.9],[.99,.68]],continuousBody:true},
+  utsubo:{asset:'assets/fish-utsubo-v250.png',boxes:[[8,177,523,236],[473,205,491,223],[925,203,303,246],[1278,176,201,277],[26,607,281,255],[260,617,440,248],[606,613,530,252],[1053,622,477,246]],heads:[[.995,.82],[.995,.88],[.95,.93],[.67,.90],[.23,.91],[.01,.86],[.01,.84],[.01,.84]],scales:{7:1.096},mouthFlip:true,continuousBody:true},
   buri:{asset:'assets/fish-buri-v248.png',boxes:[[15,222,459,197],[503,212,357,229],[890,203,287,244],[1231,189,276,271],[34,611,274,242],[334,618,374,218],[709,631,406,188],[1130,632,392,185]],heads:[[.99,.58],[.99,.68],[.97,.61],[.5,.66],[.02,.67],[.01,.6],[.01,.52],[.99,.41]],continuousBody:true}
+ });
+ definitions.push(
+  {id:'hiramasa',name:'ヒラマサ',base:'buri',number:56,price:1750,resistance:242,band:'large',hook:'large',
+   scientific:'Seriola aureovittata',habitats:['sea'],rarity:4,label:'岩礁を駆ける鮮やかな帯',
+   ecology:'細身で側扁した体と鮮やかな黄色の帯が目印。上あごの後ろの角が丸く、胸びれは腹びれより短い。岩礁の周辺で小魚を追う。',
+   locations:'潮見浜・港（深場）／岩礁の小島（中層〜深場）',time:'いつでも',
+   rods:['shoreReed','tideMaster'],baits:['liveMinnow','shrimp'],tip:'活き小魚＋ハリ大で岩礁の沖へ。長く速い走りで距離を戻されるので、糸が緩んだ番に取り返そう。',
+   intro:'鮮やかな帯のヒラマサだ。岩礁の沖へ伸びる速い走りをいなそう。',lengths:[18,30,50,75,105,140,190],
+   baitWeights:{liveMinnow:3.8,shrimp:1.7,smallShrimp:.9,worm:.05,crab:.05,shell:.01,river:.01,paste:.01}},
+  {id:'kanpachi',name:'カンパチ',base:'buri',number:57,price:1800,resistance:250,band:'large',hook:'large',
+   scientific:'Seriola dumerili',habitats:['sea'],rarity:4,label:'目を横切る褐色の帯',
+   ecology:'ブリやヒラマサより体高があり、目の上を斜めに走る褐色の帯を持つ。岩礁の周辺を泳ぎ、小魚や甲殻類などを捕らえる。',
+   locations:'潮見浜・港（深場）／岩礁の小島（中層〜深場）',time:'いつでも',
+   rods:['shoreReed','tideMaster'],baits:['liveMinnow','shrimp','smallShrimp'],tip:'活き小魚＋ハリ大で岩礁の深場へ。根へ向かう重い突進と、向きを変えて糸が緩む間を見分けよう。',
+   intro:'目の上に褐色の帯があるカンパチだ。根へ向かう重い突進を受け流そう。',lengths:[14,25,43,65,90,120,170],
+   baitWeights:{liveMinnow:3.7,shrimp:1.8,smallShrimp:1.2,worm:.04,crab:.15,shell:.02,river:.01,paste:.01}}
+ );
+ Object.assign(art,{
+  hiramasa:{asset:'assets/fish-hiramasa-v250.png',boxes:[[27,198,455,212],[506,190,373,247],[920,164,254,277],[1232,157,271,287],[39,599,260,258],[339,617,385,238],[713,633,404,203],[1127,633,395,208]],heads:[[.985,.51],[.985,.60],[.985,.58],[.5,.75],[.015,.64],[.015,.56],[.015,.52],[.985,.42]],continuousBody:true},
+  kanpachi:{asset:'assets/fish-kanpachi-v250.png',boxes:[[17,181,455,261],[497,178,364,275],[903,179,280,286],[1232,166,290,305],[38,600,296,278],[344,604,375,260],[709,610,417,240],[1151,618,371,236]],heads:[[.985,.57],[.985,.66],[.985,.62],[.5,.71],[.015,.60],[.015,.61],[.015,.56],[.985,.49]],continuousBody:true}
  });
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
@@ -164,6 +184,9 @@
  for(const id of ['river-mid','mountain-stream-mid','mountain-wetCreek-mid'])Object.assign(pools[id],{kawayoshinobori:.12});
  Object.assign(pools['sea-deep'],{utsubo:.1});Object.assign(pools['coast-reef-mid'],{utsubo:.14});Object.assign(pools['coast-reef-deep'],{utsubo:.24});
  for(const id of ['sea-deep','coast-sand-deep','coast-reef-deep'])Object.assign(pools[id],{buri:.2});
+ Object.assign(pools['sea-deep'],{hiramasa:.08,kanpachi:.08});
+ Object.assign(pools['coast-reef-mid'],{hiramasa:.12,kanpachi:.10});
+ Object.assign(pools['coast-reef-deep'],{hiramasa:.20,kanpachi:.22});
  function install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle}){
   for(const d of definitions){
    if(fish.some(f=>f.id===d.id))continue;
@@ -174,6 +197,23 @@
    fishSizeProfiles[d.id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:Math.round(d.lengths[i]*100),maxHundredths:Math.round(d.lengths[i+1]*100)-1}));
    fishEncyclopediaData[d.id]={number:d.number,scientific:d.scientific,habitats:d.habitats,rarity:d.rarity,rarityLabel:d.label,ecology:d.ecology,locations:d.locations,time:d.time,rods:d.rods,baits:d.baits,tip:d.tip};
    tackle.species[d.id]={band:d.band,recommendedHook:d.hook,baits:d.baitWeights};
+  }
+  // Long-bodied morays glide and undulate instead of inheriting the eel's
+  // quick zig-zags and rolling turns. The renderer keeps their lips fixed.
+  Object.assign(fishMotionProfiles.utsubo,{beat:.42,speedBeat:.065,burst:1.18,thrust:.075,
+   recoil:0,sway:0,roll:0,turnTicks:4,turnFrames:18,turnArc:1.6,turnRoll:1.2});
+  Object.assign(fishLifeProfiles.utsubo,{wave:.08,bend:0,pulse:0});
+  fightProfiles.utsubo={intro:definitions.find(d=>d.id==='utsubo').intro,moods:[
+   {id:'crevice-glide',name:'岩陰への泳ぎ',icon:'≋',weight:.34,min:850,max:1300,motion:'steady',speedX:2.4,speedY:.6,tension:6.3,release:5.6,reel:.72,scale:1,frameEvery:2,hold:'ウツボが岩陰へ泳ぐ。糸が緩むまで無理に引かない。',loose:'長い体の波を見て、走りを受け流そう。'},
+   {id:'crevice-run',name:'岩穴への突進',icon:'➜',weight:.36,min:750,max:1150,motion:'deep',speedX:4.1,speedY:1.1,tension:8.5,release:6.1,reel:.48,scale:1.03,frameEvery:1,danger:true,hold:'岩穴へ強く戻ろうとする！Aを離して受け流そう。',loose:'岩穴へ戻る走りが落ち着くのを待とう。'},
+   {id:'rest',name:'体をほどく',icon:'◎',weight:.30,min:650,max:1000,motion:'rest',speedX:.3,speedY:.2,tension:1.9,release:5.2,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'体をほどいて糸が緩んだ！今が寄せる番。',loose:'糸が緩んでいる。Aでそっと寄せよう。'}
+  ]};
+  for(const [id,runName,motion,speed,shake]of [['hiramasa','沖への疾走','rush',6.1,.8],['kanpachi','根への突進','deep',5.1,1.6]]){
+   fightProfiles[id]={intro:definitions.find(d=>d.id===id).intro,moods:[
+    {id:'ocean-run',name:runName,icon:'➜',weight:.40,min:850,max:1400,motion,speedX:speed,speedY:shake,tension:9.2,release:6.3,reel:.42,scale:1.03,frameEvery:1,danger:true,hold:'強い走りだ！Aを離して糸を引き出させよう。',loose:'魚が距離を取り返す。落ち着いて次の引きどころを待とう。'},
+    {id:'ocean-drive',name:id==='hiramasa'?'長い走り':'重い粘り',icon:'≋',weight:.28,min:950,max:1500,motion:id==='hiramasa'?'steady':'heavy',speedX:speed*.68,speedY:shake*.5,tension:7.1,release:5.8,reel:.65,scale:1,frameEvery:2,hold:'まだ糸が張っている。魚が向きを変えるまで待とう。',loose:'走る勢いが落ちてきた。糸の緩みを見よう。'},
+    {id:'rest',name:'向き直る',icon:'◎',weight:.32,min:700,max:1100,motion:'rest',speedX:.3,speedY:.2,tension:1.7,release:5.4,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aで距離を取り返そう。',loose:'引きどころだ。Aを押して寄せよう。'}
+   ]};
   }
   for(const spot of fishingSpots)if(pools[spot.id])Object.assign(spot.weights,pools[spot.id]);
  }

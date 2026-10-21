@@ -89,7 +89,7 @@
         target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
           .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],beat:0,from,to,mix};
     }
-    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?(native[id]?.dense?25:7):0,jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
+    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?(native[id]?.dense?25:7):0,flip:!!(jaw&&native[id]?.mouthFlip),jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
     return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:clock%8/8*Math.PI*2};
   }
   function hookPose(id,cells,frame){
@@ -256,7 +256,7 @@
     ctx.save();ctx.globalAlpha=alpha;
     if(p.flip){ctx.translate(448,0);ctx.scale(-1,1);}
     const dx=p.flip?448-x-width:x;
-    if(!p.beat||p.heading!==undefined){ctx.drawImage(image,...box,dx,y,width,height);ctx.restore();return;}
+    if(id==='utsubo'||!p.beat||p.heading!==undefined){ctx.drawImage(image,...box,dx,y,width,height);ctx.restore();return;}
     // Sample each pixel once. Thin overlapping strips left vertical seams and
     // blurred the scale pattern, particularly when enlarged on a phone.
     const warp=u=>u+.035*Math.sin(p.beat-u*1.3)*Math.pow(Math.max(0,(.7-u)/.7),2);
@@ -278,6 +278,27 @@
     ctx.putImageData(pixels,0,0);
     ctx.restore();
   }
+  function undulateMoray(ctx,p,phase){
+    // Move one intact raster column at a time, with a fixed face and lip.
+    // The generic swimmer's horizontal squeeze made this long body pulse
+    // like rubber. A travelling wave now grows toward the trailing tail.
+    const pixels=ctx.getImageData(0,0,448,224),out=ctx.createImageData(448,224);
+    const from=new Uint32Array(pixels.data.buffer),to=new Uint32Array(out.data.buffer);
+    const heading=p.heading===undefined?0:p.heading/6*Math.PI;
+    const facing=Math.cos(heading),head=p.target[0]*448;
+    const span=Math.max(1,facing>=0?head-22:426-head);
+    for(let x=0;x<448;x++){
+      let top=224,bottom=-1;
+      for(let y=0;y<224;y++)if(pixels.data[(y*448+x)*4+3]>0){top=Math.min(top,y);bottom=y;}
+      if(bottom<top)continue;
+      const rear=clamp((facing>=0?head-x:x-head)/span,0,1);
+      const weight=Math.pow(clamp((rear-.2)/.8,0,1),1.3);
+      const wave=13*weight*Math.abs(facing)*Math.sin(phase-rear*Math.PI*2.2);
+      const shift=Math.round(clamp(wave,2-top,221-bottom));
+      for(let y=top;y<=bottom;y++)to[(y+shift)*448+x]=from[y*448+x];
+    }
+    ctx.putImageData(out,0,0);
+  }
   function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
     if(!sprites[id])return false;
     const p=pose(id,cells,frame);
@@ -294,6 +315,7 @@
       if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
       paint(ctx,image,id,p,1,resolveImage);
     }
+    if(id==='utsubo')undulateMoray(ctx,p,motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
     return true;
   }
   return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets});

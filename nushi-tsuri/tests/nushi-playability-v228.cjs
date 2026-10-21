@@ -3,18 +3,19 @@ const {findRoute}=require('./water-routes-v220.cjs');
 const M=require('../mountain-region.js');
 
 function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false}){
- const wet=id==='raigyo',bait=wet?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm';
+ const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm';
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:wet?600:1320,
-  ...(wet?{mapRegion:'wetland',...M.regions.wetland.entry}:{}),
+  ...(wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
   ownedRods:['tideMaster'],selectedRod:'tideMaster',fightMode:mode,selectedHook:'large',selectedBait:bait,
   baits:{worm:20,nushiSecret:20,liveMinnow:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
  try{
   if(wet)for(const direction of findRoute(w,'wetMarsh').path)w.move(direction);
-  const spot=wet?'mountain-wetMarsh-mid':'lake-deep',distance=wet?50:95;
+ const spot=wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=wet?50:95;
+  w.eval(`${sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
   const encounter=read(w,`(()=>{for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;
    if(pick(${distance},${JSON.stringify(spot)})?.id===${JSON.stringify(id)})return r;}return null;})()`);
   if(encounter===null)throw Error('No legal encounter for '+id);
-  w.eval(`cast();beginFishing();clearInterval(timer);Math.random=()=>${encounter};battle.cast=${distance};launchSurfaceCast();settleSurfaceCast();
+  w.eval(`Math.random=()=>${encounter};battle.cast=${distance};launchSurfaceCast();settleSurfaceCast();
    battle.specimen=rollFishSpecimen(battle.f,()=>${tier});battle.specimenVisualScale=fishVisualScale(battle.specimen);var testNow=200000,testRng=${rngSeed};Date.now=()=>testNow;
    Math.random=()=>((testRng=Math.imul(testRng,1664525)+1013904223>>>0)/4294967296);
    battle.biteAt=testNow;syncBitePhase();pressBattleAction();releaseBattleAction();stopBattleFishArt();
