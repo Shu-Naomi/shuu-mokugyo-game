@@ -6456,8 +6456,8 @@
         <h2>星降る湖</h2>
         <p>祖父の手帳と三匹の子犬。星降る湖で、暮らしを始めよう。</p>
         <div class="save-slots" role="group" aria-label="冒険のセーブを選ぶ">
-          <button class="save-slot" data-save-slot="1" aria-pressed="true"><b>セーブ1</b><small></small></button>
-          <button class="save-slot" data-save-slot="2" aria-pressed="false"><b>セーブ2</b><small></small></button>
+          <button class="save-slot" data-save-slot="1" aria-pressed="true" disabled><b>セーブ1</b><small></small></button>
+          <button class="save-slot" data-save-slot="2" aria-pressed="false" disabled><b>セーブ2</b><small></small></button>
         </div>
         <p class="save-note">選んだ冒険だけに自動セーブするよ。</p>
         <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
@@ -6472,13 +6472,13 @@
           <button data-dog="riku">🐕‍🦺 リク</button>
           <button data-dog="grey">🐕 Grey</button>
         </div>
-        <button id="start">湖へ行く</button><br />
+        <button id="start" disabled>湖へ行く</button><br />
         <button id="titleOptions" type="button">オプション</button>
       </div>
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v249</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v250</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -7285,12 +7285,12 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=249-1"></script>
-    <script src="aquarium-life.js?v=249-1"></script>
+    <script src="pet-life.js?v=250-1"></script>
+    <script src="aquarium-life.js?v=250-1"></script>
     <script src="compact-ui.js?v=248-1"></script>
-    <script src="pet-life-ui.js?v=249-1"></script>
+    <script src="pet-life-ui.js?v=250-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=248-1"></script>
+    <script src="fishing-duel.js?v=250-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7303,8 +7303,8 @@
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=248-1"></script>
-    <script src="fish-art.js?v=249-1"></script>
+    <script src="fish-additions.js?v=250-1"></script>
+    <script src="fish-art.js?v=250-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -11725,7 +11725,7 @@
         const canvas = fishAtlasCanvas(element);
         if(ShuFishArt.species[fishId]?.asset===spriteAsset){
           clearStandaloneFishFrame(element);
-          const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):undefined;
+          const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
           const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${fishId}${aquariumLook?`|${aquariumLook.key}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
@@ -12768,7 +12768,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -16443,7 +16443,7 @@
         const width = Math.max(18, Math.min(36, 18 * Math.sqrt(lengthCm / 10)));
         // Swift species make shorter dashes in the home tank. This keeps the
         // same low screen-space speed and turns gently at the boundaries.
-        const dashMargin = Math.max(0, (swim.speed - 1) * 35);
+        const dashMargin = Math.min(Math.max(0, (swim.speed - 1) * 35), Math.max(0, 42 - width / 2));
         const left = width / 2 + 4 + dashMargin, right = 100 - left;
         const travel = (bottomDweller ? 18 : 14) / swim.speed, turn = 1.2;
         const leg = travel + turn;
@@ -16481,7 +16481,7 @@
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
         const key = `${id}:${turning ? "turn" : "swim"}:${frame}${look?`:${look.key}`:''}`;
         if (element.dataset.aquariumFrame !== key) {
-          drawFishAtlasFrame(element, asset, cells, frame, id,look,pose);
+          drawFishAtlasFrame(element, asset, cells, frame, id,look,{...pose,swimFrame});
           element.dataset.aquariumFrame = key;
         }
       }
@@ -22396,6 +22396,7 @@
         battle.mood = null;
         battle.nushiWindow = null;
         battle.nushiYielded = false;
+        battle.nushiRunTicks = 0;
         battle.nushiStrain = 0;
         battle.escapeSpeed = 0;
         battle.nextMood = 0;
@@ -23907,7 +23908,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=249-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=250-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

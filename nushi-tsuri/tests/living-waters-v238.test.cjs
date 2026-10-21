@@ -15,7 +15,7 @@ test('six ordinary additions have normal tackle odds, one bait per cast, art, re
    assert.ok(roll>=0,id+' natural odds');const fillet=read(w,'s.cookingIngredients.fishFillet');
    w.eval('Math.random=()=>'+roll+';commitCastResources();resolveSurfaceCast('+distance+');clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish()');
    assert.equal(read(w,'battle.f.id'),id);assert.equal(read(w,'battle.spot'),spot);assert.equal(read(w,'s.baits.'+bait),19);assert.equal(w.document.querySelector('#battleFish canvas').dataset.artSpecies,id);
-   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),55);
+   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),57);
    assert.equal(read(w,"petCatalog.find(f=>f.id==='"+id+"').waterLabel"),['mahaze','sayori','masaba'].includes(id)?'海水':'淡水');assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),40+i);assert.equal(read(w,'fishSizeProfiles.'+id+'.length'),6);
    w.eval("hideCatchCard();drawAquariumSprite($('#homeAquariumFish'),'"+id+"',4,{spriteMode:'turn',yaw:Math.PI/2,turnFrame:2});save()");assert.equal(w.document.querySelector('#homeAquariumFish canvas').dataset.artSpecies,id);
    saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);

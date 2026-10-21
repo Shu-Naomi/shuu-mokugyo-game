@@ -32,6 +32,8 @@
   const tankIds=state=>[...Array.from({length:state.petLife.unlockedTanks},(_,i)=>i),...LEGEND_TANKS.filter(t=>state.petLife.legendTanks?.[t.key]).map(t=>t.id)];
   const totalCapacity=state=>tankIds(state).reduce((n,t)=>n+tankCapacity(t),0);
   const frySize=spec=>Math.min(Math.max(10,Math.floor((spec.min||100)*.25)),150,(spec.min||100)-1);
+  // Aquarium Buri start as Mojako; wild size tiers and adult breeding stay separate.
+  const purchaseSize=spec=>spec.id==="buri"?frySize(spec):spec.start;
   // These centimetre boundaries are the aquarium's game progression, not
   // universal regional names or biological estimates of sexual maturity.
   const BURI_STAGES=Object.freeze([
@@ -73,7 +75,7 @@
       if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(isLegend(spec)&&(!(state.caught?.[spec.id]>0)||legendUsed.has(spec.id))))return [];
       used.add(f.uid);if(isLegend(spec))legendUsed.add(spec.id);
       const generation=int(f.generation,0,20),bred=generation>0&&(f.origin==="bred"||old.version<5);
-      const minimum=bred&&old.version>=5?frySize(spec):spec.min||spec.start;
+      const minimum=bred&&old.version>=5?frySize(spec):spec.id==="buri"&&f.origin==="shop"?purchaseSize(spec):spec.min||spec.start;
       const bornSize=int(f.bornSize,minimum,spec.max);
       const fish={uid:f.uid,species:spec.id,tank:isLegend(spec)?legendTank(spec):old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),origin:bred?"bred":isLegend(spec)?"legend":"shop",
         acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
@@ -239,7 +241,7 @@
     if(!canHouse(state,species,catalog,tank))return {ok:false,message:isLegend(spec)?"このぬしは、同じ水のぬし専用総合水槽へ迎えよう。":"この水槽は満員か、水の種類が違うよ。通常水槽は1槽5匹まで迎えられる。"};
     if(!Number.isFinite(state.money)||state.money<spec.price)return {ok:false,message:`${spec.price}円が必要だよ。`};
     state.money-=spec.price;
-    const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):spec.start;
+    const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):purchaseSize(spec);
     const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,origin:isLegend(spec)?"legend":"shop",acquiredDay:day,lastDay:day,
       fedDay:-1,changedDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1};
     f.sex=sexOf(f);p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);
@@ -413,6 +415,6 @@
     return advanceContest(state);
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });

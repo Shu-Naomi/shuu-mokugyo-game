@@ -88,7 +88,7 @@ async function smoke(url,screenshots=true){
   async function start(){
     await page.locator('#start').click();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v249/);
+    assert.match(await page.locator('.hud').innerText(),/v250/);
   }
   async function walk(region,goal){
     const keys=route(region,await position(),goal);
@@ -142,7 +142,7 @@ async function touchSmoke(url){
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
     await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
     await page.locator('#game.active').waitFor({state:'visible'});
-    assert.match(await page.locator('.hud').innerText(),/v249/);
+    assert.match(await page.locator('.hud').innerText(),/v250/);
     const position=()=>page.locator('#player').evaluate(el=>({
       x:Math.round(parseFloat(el.style.left)*2.4*1e6)/1e6,
       y:Math.round(parseFloat(el.style.top)*1.35*1e6)/1e6,
@@ -247,8 +247,24 @@ async function saveSlotSmoke(url,mobile){
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
-  const playing=slot=>page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);
-  async function selection(){await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});}
+  const playing=async slot=>{
+    try{await page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);}
+    catch(error){
+      const snapshot=await page.evaluate(()=>({url:location.href,titleActive:document.querySelector('#title')?.classList.contains('active'),gameActive:document.querySelector('#game')?.classList.contains('active'),hud:document.querySelector('#activeSaveSlot')?.textContent,startLabel:document.querySelector('#start')?.textContent,startDisabled:document.querySelector('#start')?.disabled,name:document.querySelector('#titlePlayerName')?.value,slots:[...document.querySelectorAll('[data-save-slot]')].map(n=>({id:n.dataset.saveSlot,selected:n.getAttribute('aria-pressed'),text:n.textContent})),worker:navigator.serviceWorker.controller?.scriptURL}));
+      console.error('SAVE_SLOT_START_FAILURE '+JSON.stringify({slot,mobile,errors,snapshot}));throw error;
+    }
+  };
+  async function selection(){
+    await press('#menu');
+    await Promise.all([page.waitForEvent('domcontentloaded'),press('[data-field-menu-target="saveSlots"]')]);
+    await page.locator('#title.active').waitFor({state:'visible'});
+  }
+  async function launch(slot){
+    const current=Number(new URL(page.url()).searchParams.get('saveSlot')||1);
+    if(current!==slot)await Promise.all([page.waitForEvent('domcontentloaded'),press('#start')]);
+    else await press('#start');
+    await playing(slot);
+  }
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
     await press('[data-save-slot="2"]');await press('[data-avatar="girl"]');await press('[data-dog="grey"]');
@@ -256,24 +272,24 @@ async function saveSlotSmoke(url,mobile){
     const layout=await page.locator('.title-box').evaluate(box=>({inside:box.getBoundingClientRect().top>=-1&&box.getBoundingClientRect().bottom<=innerHeight+1,horizontal:box.scrollWidth<=box.clientWidth+1,cards:[...box.querySelectorAll('[data-save-slot]')].every(b=>b.getBoundingClientRect().width>90)}));
     assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
-    await press('#start');await playing(2);assert.equal(await stored(saveKey),oldBytes);
+    await launch(2);assert.equal(await stored(saveKey),oldBytes);
     await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
     const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
     await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
-    await selection();await press('[data-save-slot="1"]');await press('#start');await playing(1);
+    await selection();await press('[data-save-slot="1"]');await launch(1);
     assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await stored(secondKey),secondBytes);
-    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await press('#start');await playing(2);
+    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await launch(2);
     assert.equal(await page.evaluate(()=>s.money),8888);assert.equal(await page.evaluate(()=>s.items.fishBento),4);
     const discovery=await page.evaluate(()=>{const cycle=ensureForageCycle(),point=foragePointData.find(p=>!cycle.harvested.includes(p.id));delete cycle.active[point.id];const before=s.baits.shell,amount=ShuPetLife.forageCount(s,s.dog);startDogForageDiscovery(point,'shell');return {id:point.id,before,amount};});
     await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:10000});
     assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     assert.equal(await page.locator(`[data-forage-point="${discovery.id}"]`).count(),0);assert.match(await page.locator('#rescueToast').innerText(),/Grey.*貝.*掘り出した/);
     assert.equal(JSON.parse(await stored(secondKey)).baits.shell,discovery.before+discovery.amount);assert.equal(JSON.parse(await stored(saveKey)).money,11111);
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');await playing(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
+    await page.reload({waitUntil:'domcontentloaded'});await launch(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     await selection(); // On the title page, pagehide must preserve damaged data.
     await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
     assert.equal(await page.locator('#start').isDisabled(),true);assert.equal(await page.locator('#saveSlotNotice').isVisible(),true);
-    await press('[data-save-slot="1"]');await press('#start');await playing(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
+    await press('[data-save-slot="1"]');await launch(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
     assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,dogPickup:true,corruptProtected:true,errors}));
   }finally{await browser.close();}
 }
@@ -385,7 +401,7 @@ async function audioSmoke(url,mobile){
     console.log('AUDIO_SMOKE_PASS '+JSON.stringify({mobile,tracks:checked.length,mastersPlayback:true,muteResume:true,loop:checked.find(r=>r.loop)?.loop,errors}));
   }finally{await browser.close();}
 }
-module.exports={smoke};
+module.exports={smoke,saveSlotSmoke};
 if(require.main===module)(async()=>{
   let server;
   try{
@@ -408,6 +424,7 @@ if(require.main===module)(async()=>{
       await new Promise(resolve=>server.listen(0,'127.0.0.1',resolve));
       url='http://127.0.0.1:'+server.address().port+'/nushi-tsuri/';
     }
+    await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);
     const aquariumGrowth=require('./browser-v230.aquarium.cjs');await aquariumGrowth(url,false);await aquariumGrowth(url,true);
     const memories=require('./browser-v229.memories.cjs');await memories(url,false);await memories(url,true);
     const fightControls=require('./browser-v228.fight.cjs');await fightControls(url,false);await fightControls(url,true);
@@ -418,7 +435,9 @@ if(require.main===module)(async()=>{
     const options=require('./browser-v218.features.cjs');await options(url,false);await options(url,true);
     const streamUpdate=require('./browser-v219.features.cjs');await streamUpdate(url,false);await streamUpdate(url,true);
     const waterUpdate=require('./browser-v220.features.cjs');await waterUpdate(url,false);await waterUpdate(url,true);
-    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
+    await smoke(url);await touchSmoke(url);await storySmoke(url,false);await storySmoke(url,true);
+    // Repeat at the original failure point as well as at startup.
+    await saveSlotSmoke(url,false);await saveSlotSmoke(url,true);await audioSmoke(url,false);await audioSmoke(url,true);
     const features=require('./browser-v209.features.cjs');await features(url,false);await features(url,true);
     const motion=require('./browser-v213.features.cjs');await motion(url,false);await motion(url,true);
     const intro=require('./browser-v215.features.cjs');await intro(url,false);await intro(url,true);

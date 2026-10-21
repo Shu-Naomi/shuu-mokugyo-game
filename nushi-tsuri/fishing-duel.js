@@ -50,6 +50,8 @@
   Object.assign(spoon,{oyanirami:1.8,akakamasu:3.2,ishidai:.4});
   Object.assign(fishStrength,{kawayoshinobori:.48,utsubo:3.1,buri:3.55});
   Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4});
+  Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15});
+  Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -97,7 +99,9 @@
     heavy:{pull:[2200,6000],run:[2400,4400],speed:1.5,shake:1.3,tempo:.85},
     ambush:{pull:[1800,5000],run:[2100,4100],speed:1.95,shake:1.4,tempo:1.1},
     bottom:{pull:[2000,5600],run:[2000,3800],speed:1.35,shake:1.2,tempo:1},
-    legendary:{pull:[1600,5200],run:[2600,4800],speed:2.25,shake:1.6,tempo:1.05}
+    legendary:{pull:[1600,5200],run:[2600,4800],speed:2.25,shake:1.6,tempo:1.05},
+    pelagic:{pull:[2200,5600],run:[2600,4200],speed:2.1,shake:1.15,tempo:1.2},
+    reefRunner:{pull:[2200,5800],run:[2400,4400],speed:1.95,shake:1.65,tempo:1.05}
   };
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
@@ -106,13 +110,17 @@
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
     bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori',
-    legendary:'nushi streamNushi coastNushi caveNushi starNushi'
+    legendary:'nushi streamNushi coastNushi caveNushi starNushi',
+    pelagic:'hiramasa',reefRunner:'kanpachi'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
   for(const p of Object.values(rhythms)){Object.freeze(p.pull);Object.freeze(p.run);Object.freeze(p);}
   function rhythm(id){return rhythms[speciesRhythms[id]]||rhythms.heavy;}
+  // Only active runs spend the fish's stamina. A paused clock or an ignored
+  // slack window cannot tire it out. Even a tired fish continues taking line.
+  const fatigue=b=>clamp((b.nushiRunTicks||0)/100,0,1);
   function escapePace(b,mood,tick=b.moodTick||0){
     const profile=rhythm(b.f.id),surge=.72+.56*Math.sin(tick*.64*profile.tempo)**2;
-    return clamp((1.4+(mood.speedX||.6)*.48)*profile.speed,2.25,6.2)*surge;
+    return clamp((1.4+(mood.speedX||.6)*.48)*profile.speed,2.25,6.2)*surge*(1-.25*fatigue(b));
   }
   function remainingMeters(b){return Math.max(0,(b.startMeters??20)*(1-(b.retrieval||0)));}
   function beginWindow(b,mood,duration,now,rng=Math.random){
@@ -173,7 +181,8 @@
   }
   function step(b,mood,equipment,pullMultiplier=1,now=Date.now()){
     const before=b.retrieval||0;
-    const force=(fishStrength[b.f.id]||1.5)*clamp(pullMultiplier,.65,1.8);
+    if(!mood.calm)b.nushiRunTicks=(b.nushiRunTicks||0)+1;
+    const force=(fishStrength[b.f.id]||1.5)*clamp(pullMultiplier,.65,1.8)*(1-.45*fatigue(b));
     const ratio=force/equipment.strength;
     const running=!mood.calm;
     const window=b.nushiWindow?.moodId===mood.id?b.nushiWindow:null;
@@ -201,7 +210,7 @@
     // release and beyond the original cast distance. The same pace drives its
     // swimming pose; a camera at the screen edge never stops the distance.
     if(running){
-      const meters=escapePace(b,mood,(b.moodTick||0)+1)*.018*(b.reeling?1.5:b.nushiYielded?.75:1);
+      const meters=escapePace(b,mood,(b.moodTick||0)+1)*.06*(b.reeling?1.5:b.nushiYielded?.85:1);
       b.retrieval=before-meters/Math.max(.1,b.startMeters??20);
     }
     // Starter gear is never sufficient for the nushi, even at the best timing.
