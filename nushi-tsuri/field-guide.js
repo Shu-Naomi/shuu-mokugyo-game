@@ -10,10 +10,16 @@
   });
  }
  function model(state,data){
-  const region=data.mountain.isRegion(state.mapRegion)?state.mapRegion:state.mapRegion==='coast'?'coast':'village';
+  const offshore=data.offshore&&state.mapRegion===data.offshore.id?data.offshore:null;
+  const region=offshore?offshore.id:data.mountain.isRegion(state.mapRegion)?state.mapRegion:state.mapRegion==='coast'?'coast':'village';
   const entries=[],mountain=data.mountain.regions[region];
   function water(id,name,point,polygon,prefix){entries.push({id:'water-'+id,kind:'water',name,point,polygon,notes:waterNotes(prefix,data)});}
-  if(mountain){
+  if(offshore){
+   for(const p of offshore.fishingPoints)water(p.id,offshore.names[p.id],p,null,'offshore-'+p.id+'-');
+   entries.push({id:'offshore-ferry',kind:'exit',name:'星見港への帰り船',point:offshore.entry,notes:[{text:'船着き場でAを押して船長に相談。帰りの運賃は支払い済みで、所持金がなくても港へ戻れるよ。'}]},
+    {id:'offshore-rest',kind:'house',name:'島の休憩所',point:offshore.rest,notes:[{text:'Aで30分休み、体力を30回復。無料で利用できるよ。'}]},
+    {id:'offshore-lighthouse',kind:'house',name:'灯台のふもと',point:offshore.lighthouse,notes:[{text:'坂道をたどって灯台のふもとへ。潮風島の景色を見渡せるよ。'}]});
+  }else if(mountain){
    for(const [id,polygon]of Object.entries(mountain.waters)){
     const point=polygon.reduce((p,[x,y])=>({x:p.x+x/polygon.length,y:p.y+y/polygon.length}),{x:0,y:0});
     water(id,data.mountain.names[id],point,polygon,'mountain-'+id+'-');
@@ -31,8 +37,9 @@
    water('lake','星降る湖',{x:118,y:33},data.lakePolygon,'lake-');
    water('river','民家川',{x:88,y:109},null,'river-');
    water('sea','潮見浜・港',{x:195,y:122},null,'sea-');
+   if(data.offshore)entries.push({id:'village-ferry',kind:'exit',name:'潮風島への漁船',point:data.offshore.harbor,notes:[{text:'船長タツにAで相談。潮風島へ往復800円・片道1時間。帰りもこの漁船で戻れるよ。'}]});
   }
-  return {region,name:mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/terrain-world-v54.png'),
+  return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/terrain-world-v54.png'),
    entries,buildings:data.life.buildings.filter(b=>b.region===region),player:{x:state.x,y:state.y},playerLabel:state.home?'家の入口':'現在地'};
  }
  function create({element,life}){

@@ -13,6 +13,7 @@
     oyanirami:[.79,.49,.015],akakamasu:[1.58,.91,-.055],ishidai:[.92,.68,.035],
     kawayoshinobori:[.54,.23,.08],utsubo:[.70,.25,.085],buri:[1.67,.84,-.065],
     hiramasa:[1.83,.68,-.05],kanpachi:[1.52,.72,-.015],
+    shimaaji:[1.43,.67,-.03],ishigakidai:[.83,.48,.03],akahata:[.68,.39,.065],
     tanago:[.78,.65,-.01],motsugo:[1.23,.72,-.02],medaka:[.86,.38,-.09],
     kamatsuka:[.62,.27,.065],nigoi:[.89,.58,.04],raigyo:[.71,.42,.02],
     moroko:[1,1,0], funa:[.84,.65,.02], koi:[.64,.6,.08],

@@ -10,7 +10,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
  const press=q=>page.locator(q)[mobile?'tap':'click'](),shot=name=>page.screenshot({path:path.join(dir,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  let held=false,button;
  async function hold(value){if(value===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:value?'touchStart':'touchEnd',touchPoints:value?[{x:button.x,y:button.y,id:1}]:[]});else if(value){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=value;}
- async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v250/);}
+ async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
  try{
   await page.clock.install({time:new Date('2026-10-21T12:00:00Z')});await page.clock.pauseAt('2026-10-21T12:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   for(const id of ['utsubo','hiramasa','kanpachi']){
@@ -42,7 +42,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
   for(const id of ['utsubo','hiramasa','kanpachi'])await pressProduct(page,'[data-pet-buy="'+id+'"]',mobile);
   await press('[data-pet-action="aquarium"]');assert.equal(await page.locator('.pet-fish-roster [data-pet-inspect]').count(),3);await shot('three-sea-fish-aquarium');
   const saved=await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits})));await press('#petLifeModal [data-pet-action="close"]');await page.reload({waitUntil:'domcontentloaded'});await start();
-  assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits}))),saved);assert.equal(await page.evaluate(()=>fish.length),57);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits}))),saved);assert.equal(await page.evaluate(()=>fish.length),60);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V250_GAMEPLAY_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,results,threeSeaFishHoused:true,saveReload:true,errors:errors.length,httpErrors:failed.length}));
  }finally{if(held)await hold(false).catch(()=>{});await context.close();await browser.close();}
 };

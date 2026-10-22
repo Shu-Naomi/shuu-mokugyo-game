@@ -17,7 +17,7 @@ for(const mode of ['gauge','nushi'])test('registered river and sea additions enc
    w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);
    assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'s.catchMemories.'+id+'.first.fightMode'),mode);
    assert.equal(read(w,'s.catchMemories.'+id+'.first.hundredths'),specimen.hundredths);
-   assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),number);assert.equal(read(w,'fish.length'),57);
+   assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),number);assert.equal(read(w,'fish.length'),60);
    assert.equal(read(w,`petCatalog.find(f=>f.id==='${id}').waterLabel`),zone==='sea'?'海水':'淡水');
    w.eval(`hideCatchCard();var newFish248=ShuPetLife.acquire(s,'${id}',petCatalog,0);`);assert.equal(read(w,'newFish248.ok'),true);
    const length=read(w,'newFish248.fish.length');w.eval('ShuPetLife.buyFood(s,1);var fed248=ShuPetLife.care(s,newFish248.fish.uid,"feed",0,petCatalog);ShuPetLife.sync(s,petCatalog,1);save()');assert.equal(read(w,'fed248.ok'),true);assert.ok(read(w,'newFish248.fish.length')>length);assert.equal(read(w,'s.caught.'+id),1);

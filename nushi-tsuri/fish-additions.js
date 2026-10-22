@@ -154,6 +154,19 @@
   hiramasa:{asset:'assets/fish-hiramasa-v250.png',boxes:[[27,198,455,212],[506,190,373,247],[920,164,254,277],[1232,157,271,287],[39,599,260,258],[339,617,385,238],[713,633,404,203],[1127,633,395,208]],heads:[[.985,.51],[.985,.60],[.985,.58],[.5,.75],[.015,.64],[.015,.56],[.015,.52],[.985,.42]],continuousBody:true},
   kanpachi:{asset:'assets/fish-kanpachi-v250.png',boxes:[[17,181,455,261],[497,178,364,275],[903,179,280,286],[1232,166,290,305],[38,600,296,278],[344,604,375,260],[709,610,417,240],[1151,618,371,236]],heads:[[.985,.57],[.985,.66],[.985,.62],[.5,.71],[.015,.60],[.015,.61],[.015,.56],[.985,.49]],continuousBody:true}
  });
+ definitions.push(
+  {id:'shimaaji',name:'シマアジ',base:'buri',number:58,price:1650,resistance:225,band:'large',hook:'large',scientific:'Pseudocaranx dentex',habitats:['sea'],rarity:4,label:'潮風島を巡る銀色の群れ',
+   ecology:'体高のある銀色の体と胸びれの上の黒い斑点が目印。若い個体では黄色の帯が見られる。岩礁の周りで小魚や甲殻類を食べる。',locations:'潮風島・東の潮目（中層〜深場）',time:'いつでも（朝夕が狙い目）',rods:['shoreReed','tideMaster'],baits:['shrimp','liveMinnow'],tip:'漁船で潮風島へ渡り、東の潮目でオキアミ＋ハリ大を中層へ。速い走りをいなし、糸の緩みで寄せよう。',intro:'胸びれの上に黒い斑点。潮目を走るシマアジだ！',lengths:[18,27,38,50,65,82,120],baitWeights:{shrimp:3.7,liveMinnow:2.8,smallShrimp:1.8,worm:.05,crab:.08,shell:.02,river:.01,paste:.01}},
+  {id:'ishigakidai',name:'イシガキダイ',base:'ishidai',number:59,price:1500,resistance:230,band:'large',hook:'large',scientific:'Oplegnathus punctatus',habitats:['sea'],rarity:4,label:'離島の磯に潜む石垣模様',
+   ecology:'体高のある厚い体に石垣のような細かな黒い斑点を持つ。強い歯で貝や甲殻類をかみ砕く岩礁の魚。イシダイの縞模様とは区別できる。',locations:'潮風島・西の磯（岸際〜深場）',time:'いつでも',rods:['shoreReed','tideMaster'],baits:['shell','crab','smallShrimp'],tip:'潮風島の西の磯で貝＋ハリ大。岩へ戻る重い引きが落ち着いたら、糸の緩んだ間に取り返そう。',intro:'石垣のような斑点のイシガキダイ。磯へ戻る重い引きだ。',lengths:[12,20,30,40,52,65,80],baitWeights:{shell:4.2,crab:3.6,smallShrimp:1.5,shrimp:1.1,liveMinnow:.05,worm:.03,river:.01,paste:.01}},
+  {id:'akahata',name:'アカハタ',base:'kasago',number:60,price:950,resistance:150,band:'medium',hook:'medium',scientific:'Epinephelus fasciatus',habitats:['sea'],rarity:3,label:'岩陰にひそむ朱色のハタ',
+   ecology:'大きな頭と口を持つ赤いハタ。体には濃い赤色の帯、背びれのとげの先には黒い色が見られる。岩礁で小魚や甲殻類を狙う。',locations:'潮風島・入り江／西の磯（岸際〜中層）',time:'いつでも',rods:['clearStream','shoreReed'],baits:['smallShrimp','liveMinnow','shrimp'],tip:'潮風島の入り江で小エビ＋ハリ中。岩陰への短い突進を受け流し、動きが緩んだら寄せよう。',intro:'赤い帯と黒い背びれの先。岩陰からアカハタが出てきた！',lengths:[8,12,18,24,30,36,45],baitWeights:{smallShrimp:3.4,liveMinnow:3.1,shrimp:2.4,crab:1.7,worm:.25,shell:.08,river:.02,paste:.01}}
+ );
+ Object.assign(art,{
+  shimaaji:{asset:'assets/fish-shimaaji-v251.png',boxes:[[16,142,517,263],[543,124,407,300],[1044,106,197,328],[1274,105,245,329],[17,603,209,324],[255,603,331,323],[592,631,468,269],[1072,634,452,266]],heads:[[.99,.59],[.99,.67],[.90,.74],[.5,.75],[.03,.63],[.01,.65],[.01,.54],[.995,.61]],continuousBody:true},
+  ishigakidai:{asset:'assets/fish-ishigakidai-v251.png',boxes:[[28,123,503,332],[539,118,382,352],[946,111,284,364],[1254,111,242,357],[24,595,259,343],[288,586,340,351],[616,615,442,318],[1077,616,445,316]],heads:[[.99,.62],[.99,.66],[.82,.68],[.5,.72],[.18,.63],[.01,.61],[.01,.54],[.995,.57]],continuousBody:true},
+  akahata:{asset:'assets/fish-akahata-v251.png',boxes:[[27,208,470,248],[526,203,363,264],[932,199,261,268],[1229,201,269,261],[16,599,253,247],[306,598,334,251],[651,599,426,248],[1096,598,415,248]],heads:[[.99,.61],[.99,.64],[.78,.68],[.5,.74],[.21,.64],[.01,.62],[.01,.57],[.995,.57]],continuousBody:true}
+ });
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -187,6 +200,12 @@
  Object.assign(pools['sea-deep'],{hiramasa:.08,kanpachi:.08});
  Object.assign(pools['coast-reef-mid'],{hiramasa:.12,kanpachi:.10});
  Object.assign(pools['coast-reef-deep'],{hiramasa:.20,kanpachi:.22});
+ // These fish are exclusive to the distant island's normal encounter pools.
+ Object.assign(pools,{
+  'offshore-cove-shallow':{akahata:.45,ishigakidai:.12},'offshore-cove-mid':{akahata:.38,ishigakidai:.15},'offshore-cove-deep':{akahata:.14,ishigakidai:.2},
+  'offshore-west-shallow':{ishigakidai:.42,akahata:.3},'offshore-west-mid':{ishigakidai:.5,akahata:.24},'offshore-west-deep':{ishigakidai:.55,akahata:.12},
+  'offshore-east-shallow':{shimaaji:.18,akahata:.12},'offshore-east-mid':{shimaaji:.55},'offshore-east-deep':{shimaaji:.5}
+ });
  function install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle}){
   for(const d of definitions){
    if(fish.some(f=>f.id===d.id))continue;
@@ -213,6 +232,13 @@
     {id:'ocean-run',name:runName,icon:'➜',weight:.40,min:850,max:1400,motion,speedX:speed,speedY:shake,tension:9.2,release:6.3,reel:.42,scale:1.03,frameEvery:1,danger:true,hold:'強い走りだ！Aを離して糸を引き出させよう。',loose:'魚が距離を取り返す。落ち着いて次の引きどころを待とう。'},
     {id:'ocean-drive',name:id==='hiramasa'?'長い走り':'重い粘り',icon:'≋',weight:.28,min:950,max:1500,motion:id==='hiramasa'?'steady':'heavy',speedX:speed*.68,speedY:shake*.5,tension:7.1,release:5.8,reel:.65,scale:1,frameEvery:2,hold:'まだ糸が張っている。魚が向きを変えるまで待とう。',loose:'走る勢いが落ちてきた。糸の緩みを見よう。'},
     {id:'rest',name:'向き直る',icon:'◎',weight:.32,min:700,max:1100,motion:'rest',speedX:.3,speedY:.2,tension:1.7,release:5.4,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aで距離を取り返そう。',loose:'引きどころだ。Aを押して寄せよう。'}
+   ]};
+  }
+  for(const [id,runName,speed,force]of [['shimaaji','潮目への疾走',5.5,8.5],['ishigakidai','磯への重い突進',3.8,9],['akahata','岩陰への短い突進',3.4,7.2]]){
+   fightProfiles[id]={intro:definitions.find(d=>d.id===id).intro,moods:[
+    {id:'island-run',name:runName,icon:'➜',weight:.4,min:800,max:1300,motion:id==='shimaaji'?'rush':'deep',speedX:speed,speedY:.9,tension:force,release:5.8,reel:.5,scale:1.02,frameEvery:1,danger:true,hold:'魚の走りだ！Aを離して受け流そう。',loose:'走りが緩むまで待とう。'},
+    {id:'island-drive',name:id==='shimaaji'?'群れへ向かう泳ぎ':'岩際の粘り',icon:'≋',weight:.28,min:800,max:1250,motion:'steady',speedX:speed*.65,speedY:.4,tension:6.8,release:5.3,reel:.72,scale:1,frameEvery:2,hold:'まだ糸が張っている。無理に引かずに待とう。',loose:'魚の向き直りを見ていよう。'},
+    {id:'rest',name:'向き直る',icon:'◎',weight:.32,min:750,max:1200,motion:'rest',speedX:.3,speedY:.2,tension:1.8,release:5.3,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aで寄せよう。',loose:'今が引きどころ。Aで距離を取り返そう。'}
    ]};
   }
   for(const spot of fishingSpots)if(pools[spot.id])Object.assign(spot.weights,pools[spot.id]);

@@ -50,8 +50,8 @@
   Object.assign(spoon,{oyanirami:1.8,akakamasu:3.2,ishidai:.4});
   Object.assign(fishStrength,{kawayoshinobori:.48,utsubo:3.1,buri:3.55});
   Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4});
-  Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15});
-  Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6});
+  Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
+  Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -111,7 +111,7 @@
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
     bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi',
-    pelagic:'hiramasa',reefRunner:'kanpachi'
+    pelagic:'hiramasa shimaaji',reefRunner:'kanpachi ishigakidai akahata'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
   for(const p of Object.values(rhythms)){Object.freeze(p.pull);Object.freeze(p.run);Object.freeze(p);}
   function rhythm(id){return rhythms[speciesRhythms[id]]||rhythms.heavy;}
