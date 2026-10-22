@@ -33,7 +33,10 @@ test('coastal casting always offers a short shallow cast, including the eastern 
 });
 test('NPC walking includes closed and open feet instead of alternating two identical wide stances',async()=>{
  const image=await loadImage(path.join(__dirname,'../assets/village-residents-v238.png'));
- for(const person of L.residents){const frames=new Set();for(let t=3100;t<4500;t+=170)frames.add(L.residentPose(person,t).frame);assert.ok(frames.has(0)&&frames.has(1)&&frames.has(2));
+ for(const person of L.residents){const frames=new Set();for(let t=3100;t<4500;t+=170)frames.add(L.residentPose(person,t).frame);
+  const stationary=person.route[0].every((value,index)=>value===person.route[1][index]);
+  if(stationary){assert.deepEqual([...frames],[0],person.id+' keeps both feet planted');continue;}
+  assert.ok(frames.has(0)&&frames.has(1)&&frames.has(2),person.id+' walking poses');
   const canvas=createCanvas(96,128);L.drawResident(canvas,image,person.sprite,{frame:0,facing:'right'});const neutral=Buffer.from(canvas.getContext('2d').getImageData(0,85,96,43).data);
   L.drawResident(canvas,image,person.sprite,{frame:1,facing:'right'});assert.notDeepEqual(Buffer.from(canvas.getContext('2d').getImageData(0,85,96,43).data),neutral);
  }
