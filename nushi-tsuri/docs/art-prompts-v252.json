@@ -1,0 +1,15 @@
+{
+  "mode": "built-in image_gen",
+  "version": 252,
+  "outputs": [
+    {
+      "id": "rural-canals",
+      "prompt": "Use case: stylized-concept. Asset type: original 16-bit fishing RPG overworld background, a single complete wide 16:9 map. Primary request: a peaceful Japanese rural rice-farming area centered on a small irrigation canal, matching the richly detailed Super Famicom-era pixel scenery of a lakeside fishing village. True crisp intricate pixel clusters, many tiny leaves, stones, worn dirt, aged wood, subtle shallow-water ripples; polished mature 16-bit game artwork, no blur or vector shapes. Slight overhead orthographic three-quarter RPG view, not a perspective landscape. The whole walkable landscape is visible from above. Interconnected worn earthen farm lanes enter from the lower edge and wind around rice paddies. A clear narrow blue-green irrigation canal curves through the fields with several connected feeder channels. Two or three modest old timber/stone footbridges visibly connect the lanes across the canal; both ends of every bridge meet dry paths. Include broad dry standing banks for fishing at three distinct parts of the water, with clear earth edges and no characters. The rice plots, low grass banks, simple sluice gate, one small weathered farm-tool shed, straw bundles, buckets and tiny flowers belong naturally to this old working countryside. Every main path connects into one coherent network; the canal and paddy water stay visibly separate from dry walking ground. Soft spring daylight, earthy warm browns, layered natural greens and clear water, detailed shadows and aged surfaces consistent across the entire image. No people, animals, fish sprites, UI, lettering, labels, logos, map icons, grid, border, or watermark. The image fills the entire canvas. Do not depict modern concrete roads, asphalt, cars or a floating pasted-on building.",
+      "asset": "assets/rural-canals-v252.png",
+      "width": 1672,
+      "height": 940,
+      "sha256": "a007a6021399335c26eb52e72f479a9c7dff0fd3873e639584fbc85aa7c8e363",
+      "transparent_background": false
+    }
+  ]
+}
