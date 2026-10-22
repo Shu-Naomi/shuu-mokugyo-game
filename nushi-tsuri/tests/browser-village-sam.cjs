@@ -20,13 +20,19 @@ module.exports=async function villageSam(url,mobile=false,options={}){
    }throw Error('No village route '+JSON.stringify(target));
   },target);
   for(const d of route){const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d);await press('[data-move="'+d+'"]');await page.clock.runFor(50);const actual=await state();assert.equal(actual.x,expected.x);assert.equal(actual.y,expected.y);walked++;}
-  const at=await state();assert.ok(Math.hypot(at.x-target.x,at.y-target.y)<=2);visits.push({name:target.name,...at});await page.clock.runFor(300);
+  const at=await state();assert.ok(Math.hypot(at.x-target.x,at.y-target.y)<=2);visits.push({name:target.name,...at});await page.clock.runFor(700);
+  // CSS transitions use the real rendering clock. Let feet and the following
+  // dog finish their normal motion before measuring or recording a screen.
+  await page.waitForTimeout(700);
+  const feet=await page.evaluate(()=>{const p=document.querySelector('#player').getBoundingClientRect(),m=document.querySelector('#map').getBoundingClientRect();return {dx:Math.abs(p.x+p.width/2-(m.x+m.width*s.x/240)),dy:Math.abs(p.bottom-(m.y+m.height*s.y/135))};});
+  assert.ok(feet.dx<1&&feet.dy<1,'visible player feet reach the actual collision position '+JSON.stringify(feet));
  }
  try{
   await page.clock.install({time:new Date('2026-10-22T03:00:00Z')});await page.clock.pauseAt('2026-10-22T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   const before=await progress();assert.ok(resources.length,'new shop art actually loaded');
   await walkTo({name:'sam-from-home',x:197,y:91,direction:'up'});assert.equal(await value('isAtSamShopEntrance()'),true);
-  const controlFit=await page.evaluate(()=>['#action',...['up','right','down','left'].map(d=>'[data-move="'+d+'"]')].every(q=>{const b=document.querySelector(q),r=b.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return r.width>=44&&r.height>=44&&r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1&&(top===b||b.contains(top));}));assert.ok(controlFit,'landscape controls fit and accept touches');
+  const controls=await page.evaluate(()=>['#action',...['up','right','down','left'].map(d=>'[data-move="'+d+'"]')].map(q=>{const b=document.querySelector(q),r=b.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {q,width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:top===b||b.contains(top)};}));
+  const controlFit=controls.every(c=>c.width>=44&&c.height>=44&&c.inside&&c.unblocked);assert.ok(controlFit,'landscape controls fit and accept touches '+JSON.stringify(controls));
   const at=await state();await shot('sam-step-arrival');await press('#action');await page.locator('#store.open').waitFor();assert.deepEqual(await progress(),before);
   const fit=await page.locator('#store').evaluate(n=>{const r=n.getBoundingClientRect(),b=n.querySelector('[data-close]').getBoundingClientRect();return r.top>=0&&r.bottom<=innerHeight+1&&b.width>=44&&b.height>=44&&b.bottom<=innerHeight+1;});assert.ok(fit,'shop and exit fit');
   await require('./compact-ui-helpers.cjs').pressProduct(page,'#store [data-buy-bait="worm"]',mobile);const bought=await progress();assert.equal(bought.money,before.money-120);assert.equal(bought.baits.worm,before.baits.worm+3);assert.deepEqual({...bought,money:before.money,baits:before.baits},before);await shot('sam-buy');
