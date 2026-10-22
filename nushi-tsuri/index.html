@@ -1772,7 +1772,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#boatVisual):not(#worldLifeLayer) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer) {
         display: none !important;
       }
       .map.v54-map.coast > :not(#player):not(#dog):not(#coastPixels):not(#boatVisual) { display: none !important; }
@@ -6444,6 +6444,7 @@
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=248-1" />
+    <link rel="stylesheet" href="offshore-island.css?v=251-2" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6478,7 +6479,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v250</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span>v251</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
@@ -6488,6 +6489,8 @@
       <main class="world" id="world">
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
+          <canvas id="offshorePixels" width="1672" height="941" role="img" aria-label="漁船で渡る潮風島"></canvas>
+          <canvas id="offshoreShip" width="540" height="198" aria-hidden="true"></canvas>
           <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
           <canvas id="mountainPixels" width="1536" height="864" role="img" aria-label="星見渓流と木漏れ日の池、葦の沼"></canvas>
           <canvas id="boatVisual" width="192" height="144" aria-hidden="true"></canvas>
@@ -7286,24 +7289,33 @@
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=250-1"></script>
-    <script src="aquarium-life.js?v=250-1"></script>
+    <script src="aquarium-life.js?v=251-1"></script>
     <script src="compact-ui.js?v=248-1"></script>
     <script src="pet-life-ui.js?v=250-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=250-1"></script>
+    <script src="fishing-duel.js?v=251-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
+    <section id="offshoreFerry" class="modal" role="dialog" aria-modal="true" aria-labelledby="offshoreFerryTitle">
+      <div class="ferry-window"><h2 id="offshoreFerryTitle">漁師の渡し船 · 潮風島</h2>
+        <div class="ferry-layout"><canvas class="ferry-picture" id="offshoreFerryPicture" width="540" height="198" role="img" aria-label="船長タツの漁船"></canvas>
+          <div><p id="offshoreFerryLine"></p><small id="offshoreFerryNote"></small><small id="offshoreFerryStatus" role="status"></small>
+            <div class="ferry-actions"><button id="offshoreFerryGo" type="button">往復800円で潮風島へ</button><button id="offshoreFerryCancel" class="ferry-cancel" type="button">やめる</button></div>
+          </div></div>
+      </div>
+    </section>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="world-life.js?v=241-1"></script>
-    <script src="field-guide.js?v=248-2"></script>
+    <script src="offshore-island.js?v=251-1"></script>
+    <script src="world-life.js?v=251-2"></script>
+    <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=250-1"></script>
+    <script src="fish-additions.js?v=251-1"></script>
     <script src="fish-art.js?v=250-1"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
@@ -7853,6 +7865,7 @@
           { id: "coast-reef-deep", zone: "sea", depth: "deep", name: "岩礁の小島・沖", role: "沖のマダイと岩陰のアイナメ",
             weights: {kawahagi:.10, isaki: .20, madai: .28, ainame: .18, kurodai: .16, kasago: .10, suzuki: .08 } },
           ...ShuMountain.spots,
+          ...ShuOffshore.spots,
         ],
         baitData = {
           worm: {
@@ -12768,7 +12781,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
@@ -12924,7 +12937,7 @@
         : s.maxHp;
       // Old saves stay in the village. A missing boat or invalid sea location
       // restores a safe dock without changing inventory or fishing records.
-      s.mapRegion = ["village","coast"].includes(s.mapRegion) || ShuMountain.isRegion(s.mapRegion) ? s.mapRegion : "village";
+      s.mapRegion = ["village","coast",ShuOffshore.id].includes(s.mapRegion) || ShuMountain.isRegion(s.mapRegion) ? s.mapRegion : "village";
       s.boatActive = s.mapRegion === "coast" && s.boatActive === true;
       if (s.mapRegion === "coast" && !s.equipment.vehicle) {
         s.mapRegion = "village";
@@ -14381,7 +14394,7 @@
         return Math.hypot(s.x - x, s.y - y) < r;
       }
       function activeLandingDock() {
-        if (ShuMountain.isRegion(s.mapRegion)) return null;
+        if (ShuMountain.isRegion(s.mapRegion) || s.mapRegion===ShuOffshore.id) return null;
         if (s.mapRegion === "village") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
           ? { id:"harbor",...ShuCoast.docks.harbor } : null;
         return Object.entries(ShuCoast.docks)
@@ -14422,6 +14435,40 @@
         log("体力が尽き、漁師に助けられて星見港へ戻った。体力を25まで回復した。");
         showRescueToast("漁師に助けられて港へ戻った。宿か食事で体力を整えよう。");
         render();save();
+      }
+      function openOffshoreFerry() {
+        if(!ShuOffshore.atPier(s) || battle || s.boatActive) return false;
+        const returning=s.mapRegion===ShuOffshore.id;
+        $("#offshoreFerryTitle").textContent=returning?"潮風島から星見港へ":"漁師の渡し船 · 潮風島";
+        $("#offshoreFerryLine").textContent=returning?"船長タツ「帰る準備はできたかい？ 港まで送るよ。帰りの運賃はもう受け取ってるからね」":"船長タツ「沖の潮風島へ渡るかい？ うちの漁船で送るよ。往復800円、帰りもこの船に任せな」";
+        $("#offshoreFerryNote").textContent=returning?"帰りは追加料金なし。所持金がなくても、体力が少なくても戻れるよ。片道1時間。":"往復800円 · 片道1時間。帰りは追加料金なし。ワンコも一緒に乗れるよ。";
+        const go=$("#offshoreFerryGo");go.textContent=returning?"港へ戻る · 支払い済み":"往復800円で潮風島へ";
+        go.disabled=!returning&&(s.tournament || s.money<ShuOffshore.fare);
+        $("#offshoreFerryStatus").textContent=!returning&&s.tournament?"大会が終わったら渡ろう。":!returning&&s.money<ShuOffshore.fare?`所持金 ${s.money}円。往復800円が必要だよ。`:returning?"釣った魚も、そのまま港へ持ち帰れる。":"西の磯はイシガキダイ、入り江はアカハタ、東の潮目はシマアジを狙えるよ。";
+        ShuOffshore.paintShip($("#offshoreFerryPicture"),returning);
+        open("offshoreFerry");releaseHeldInputs();$("#offshoreFerryCancel").focus({preventScroll:true});return true;
+      }
+      function takeOffshoreFerry() {
+        if(!$("#offshoreFerry").classList.contains("open") || battle) return false;
+        const returning=s.mapRegion===ShuOffshore.id,result=ShuOffshore.voyage(s,returning);
+        if(!result.ok){$("#offshoreFerryStatus").textContent=result.reason;return false;}
+        $("#offshoreFerryGo").disabled=true;
+        close();releaseHeldInputs();clearTimeout(walkTimer);clearTimeout(dogWalkTimer);clearInterval(playerWalkInterval);playerWalkInterval=0;
+        playerWalking=false;dogWalking=false;playerAnimFrame=0;dogWorldPosition=null;
+        $("#player").classList.remove("walking");$("#dog").classList.remove("walking");
+        advanceGameTime(s,result.minutes);
+        log(returning?"船長タツの漁船で星見港へ戻った。帰りの運賃は支払い済み。":"往復800円を払い、船長タツの漁船で潮風島へ渡った。帰りもこの船で戻れる。");
+        const map=$("#map");map.classList.add("region-arrival");hideFieldMenu();render();map.getBoundingClientRect();map.classList.remove("region-arrival");save();return true;
+      }
+      function offshoreAction() {
+        if(ShuOffshore.atPier(s))return openOffshoreFerry();
+        if(ShuOffshore.near(s,ShuOffshore.rest,5)){
+          const healed=Math.min(30,s.maxHp-s.hp);if(!healed){showRescueToast("潮風島の休憩所。体力は満タンだ。");return true;}
+          advanceGameTime(s,30);s.hp+=healed;log(`島の休憩所で30分休み、体力を${healed}回復した。`);render();save();return true;
+        }
+        if(ShuOffshore.near(s,ShuOffshore.lighthouse,4)){showRescueToast("灯台のふもとから、島を巡る潮の流れが見える。");return true;}
+        const spot=nearbyFishingSpot();if(spot){cast(spot);return true;}
+        showRescueToast("潮風島。道をたどって磯や入り江へ。帰りは南の船着き場で船長に話そう。");return true;
       }
       function coastAction() {
         const dock=activeLandingDock();
@@ -14871,7 +14918,10 @@
       function renderPixelScenery() {
         worldLife?.render(performance.now(),true);
         const env = gameSceneryEnvironment();
-        if (s.mapRegion === "coast" && !battle) {
+        if (s.mapRegion === ShuOffshore.id && !battle) {
+          const key=`offshore:${env.key}`;
+          if(pixelSceneCache.get($("#offshorePixels"))!==key){ShuOffshore.paint($("#offshorePixels"),env);pixelSceneCache.set($("#offshorePixels"),key);}
+        } else if (s.mapRegion === "coast" && !battle) {
           if (pixelSceneCache.get($("#coastPixels")) !== env.key) {
             ShuCoast.paint($("#coastPixels"), env);
             pixelSceneCache.set($("#coastPixels"), env.key);
@@ -15017,6 +15067,7 @@
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         if (x < 2 || x > WORLD_WIDTH - 2 || y < 2 || y > WORLD_HEIGHT - 2)
           return false;
+        if (s.mapRegion === ShuOffshore.id) return ShuOffshore.walkable(x,y);
         if (s.mapRegion === "coast") return s.boatActive
           ? ShuCoast.water(x,y) : ShuCoast.shore(x,y);
         if (ShuMountain.isRegion(s.mapRegion)) return ShuMountain.walkable(x,y,s.mapRegion);
@@ -15051,6 +15102,7 @@
               return { x: candidateX, y: candidateY };
           }
         }
+        if(s.mapRegion===ShuOffshore.id)return {x:ShuOffshore.entry.x,y:ShuOffshore.entry.y};
         return ShuMountain.isRegion(s.mapRegion) ? {x:ShuMountain.regionData(s.mapRegion).entry.x,y:ShuMountain.regionData(s.mapRegion).entry.y} : { x: 123, y: 92 };
       }
       function fishingSpotById(id, fallback = true) {
@@ -15060,6 +15112,7 @@
       function waterZoneAtWorld(x, y) {
         if (x < 0 || x > WORLD_WIDTH || y < 0 || y > WORLD_HEIGHT)
           return null;
+        if (s.mapRegion === ShuOffshore.id) return ShuOffshore.water(x,y) ? "sea" : null;
         if (s.mapRegion === "coast") return ShuCoast.water(x,y) ? "sea" : null;
         if (ShuMountain.isRegion(s.mapRegion)) {
           const type=ShuMountain.waterType(x,y,s.mapRegion);
@@ -17323,6 +17376,7 @@
         setSurfaceCastMotionFrame(0, true);
         $("#castZoneName").textContent = battle.practice
           ? "SAM'S TRY POND・水面"
+          : battle.offshoreType ? `${ShuOffshore.names[battle.offshoreType]}・海面`
           : battle.mountainType ? `${ShuMountain.names[battle.mountainType]}・水面`
           : battle.coastType ? `${ShuCoast.docks[battle.coastType].name}・海面` : {
               lake: "星降る湖・湖面",
@@ -17345,6 +17399,7 @@
         direction = s.direction,
       ) {
         if(!isWalkableWorld(playerX,playerY))return null;
+        if(s.mapRegion===ShuOffshore.id)return ShuOffshore.fishingWater(playerX,playerY,direction);
         if(s.mapRegion==="coast")return ShuCoast.fishingWater(playerX,playerY,direction);
         if(ShuMountain.isRegion(s.mapRegion))return ShuMountain.fishingWater(playerX,playerY,direction,s.mapRegion);
         // A bridge remains a crossing, never an invisible fishing hotspot.
@@ -17383,13 +17438,15 @@
         if (!water) return null;
         const coastType=s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null;
         const mountainType=ShuMountain.isRegion(s.mapRegion)?water.type:null;
+        const offshoreType=s.mapRegion===ShuOffshore.id?water.type:null;
         return {
-          ...fishingSpotById(mountainType?`mountain-${mountainType}-shallow`:coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
+          ...fishingSpotById(offshoreType?`offshore-${offshoreType}-shallow`:mountainType?`mountain-${mountainType}-shallow`:coastType?`coast-${coastType}-shallow`:`${water.zone}-shallow`),
           waterZone: water.zone,
           waterX: water.x,
           waterY: water.y,
           coastType,
           mountainType,
+          offshoreType,
         };
       }
       function dogFollowPosition() {
@@ -17642,10 +17699,13 @@
       }
       function render() {
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
-        const coast=s.mapRegion==="coast", mountain=ShuMountain.isRegion(s.mapRegion);
+        const coast=s.mapRegion==="coast", mountain=ShuMountain.isRegion(s.mapRegion),offshore=s.mapRegion===ShuOffshore.id;
         const mapElement=$("#map");
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
+        mapElement.classList.toggle("offshore",offshore);
+        const ferry=$("#offshoreShip");ferry.hidden=!(offshore||s.mapRegion==="village");
+        if(!ferry.hidden){const point=offshore?{x:118,y:104}:{x:214,y:119};ferry.style.left=`${worldToMapX(point.x)}%`;ferry.style.top=`${worldToMapY(point.y)}%`;ShuOffshore.paintShip(ferry,offshore);}
         if(mountain) {
           const canvas=$("#mountainPixels"), label=ShuMountain.regionData(s.mapRegion).name;
           if(canvas.getAttribute("aria-label")!==label)canvas.setAttribute("aria-label",label);
@@ -17701,7 +17761,8 @@
         renderForagePoints();
         renderQuestBoardStatus();
         const boatHud=$("#boatHud");
-        boatHud.hidden=!coast;
+        boatHud.hidden=!(coast||offshore);
+        if(offshore)boatHud.textContent=`潮風島 · 帰り支払い済み`;
         if(coast)boatHud.textContent=`${s.boatActive?(s.equipment.vehicle==="canoe"?"🛶":"🛁"):"🏝"} ${s.hp}/${s.maxHp}`;
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
@@ -17738,7 +17799,13 @@
         const spot = nearbyFishingSpot();
         const tournamentNpc = nearbyTournamentNpc();
         const rival = nearbyRival();
-        $("#hint").textContent = coast
+        $("#hint").textContent = offshore
+          ? ShuOffshore.atPier(s)?"漁船の船着き場。Aで船長に話して港へ戻る。帰りは追加料金なし。"
+            : ShuOffshore.near(s,ShuOffshore.rest,5)?"島の休憩所。Aで30分休み、体力を30回復。"
+            : spot?`${ShuOffshore.names[spot.offshoreType]}。海へ向いてAで釣る。`
+            : "潮風島。磯・入り江・潮目を巡ろう。帰りの漁船は南の船着き場へ。"
+          : s.mapRegion==="village"&&ShuOffshore.atPier(s)?"船長タツの離島便。Aで相談。潮風島まで往復800円、帰りの運賃も込み。"
+          : coast
           ? s.boatActive
             ? activeLandingDock()
               ? `${activeLandingDock().name}の桟橋。Aで上陸。移動は${ShuCoast.costFor(s.equipment.vehicle)}体力ずつ使う。`
@@ -17936,7 +18003,7 @@
           ? ShuCoast.stepFor(s.equipment.vehicle) : 4;
         if (ShuMountain.isRegion(s.mapRegion)) {
           Object.assign(s, ShuMountain.moveTarget(previousX, previousY, d, n, s.mapRegion));
-        } else if(s.mapRegion==='village'||s.mapRegion==='coast'&&!s.boatActive){
+        } else if(s.mapRegion===ShuOffshore.id||s.mapRegion==='village'||s.mapRegion==='coast'&&!s.boatActive){
           Object.assign(s,ShuWorldLife.moveTarget(previousX,previousY,d,n,isWalkableWorld));
         } else {
           ({
@@ -18302,6 +18369,8 @@
         if (playerHomeState.transitioning) return;
         if (playerHomeIsActive()) return playerHomeAction();
         if (rescueInProgress || forageDiscoveryInProgress) return;
+        if (s.mapRegion===ShuOffshore.id) return offshoreAction();
+        if (s.mapRegion==="village"&&ShuOffshore.atPier(s)) return openOffshoreFerry();
         if (s.mapRegion==="coast") return coastAction();
         if (ShuMountain.isRegion(s.mapRegion)) return mountainAction();
         if (ShuMountain.atVillageGate(s.x,s.y)) return travelMountain(true);
@@ -18609,7 +18678,8 @@
         const minimumDepth = "shallow";
         const coastType=spot.coastType || (s.mapRegion==="coast"?ShuCoast.coastName(s.x,s.y):null);
         const mountainType=spot.mountainType || (ShuMountain.isRegion(s.mapRegion)?ShuMountain.waterType(spot.waterX,spot.waterY,s.mapRegion):null);
-        const profile = fishingSpotById(mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
+        const offshoreType=spot.offshoreType || (s.mapRegion===ShuOffshore.id?ShuOffshore.areaAt(s.x,s.y):null);
+        const profile = fishingSpotById(offshoreType?`offshore-${offshoreType}-${minimumDepth}`:mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
           reeling: false,
@@ -18622,10 +18692,11 @@
           playerX: s.x,
           playerY: s.y,
           castLocale: zone === "sea"
-            ? coastType ? `coast-${coastType}` : seaCastLocaleAtWorld(s.x,s.y)
+            ? offshoreType ? ShuOffshore.localeFor(offshoreType) : coastType ? `coast-${coastType}` : seaCastLocaleAtWorld(s.x,s.y)
             : zone,
           coastType,
           mountainType,
+          offshoreType,
         };
         setFishingSceneTheme(zone, minimumDepth);
         resetWaterFx();
@@ -20005,6 +20076,7 @@
           ? battle?.castLocale || seaCastLocaleAtWorld(playerX, playerY)
           : waterZone;
         const coastType = battle?.coastType || /^coast-(sand|reef)-/.exec(spot.id)?.[1] || null;
+        const offshoreType=battle?.offshoreType || /^offshore-(cove|west|east)-/.exec(spot.id)?.[1] || null;
         const mountainType=battle?.mountainType || /^mountain-(stream|pond|marsh|highPond|highMarsh|underground|wetPond|wetCreek|wetMarsh)-/.exec(spot.id)?.[1] || null;
         close();
         battle = {
@@ -20027,6 +20099,7 @@
           castLocale,
           coastType,
           mountainType,
+          offshoreType,
           bait: practice ? practiceBait : s.selectedBait,
           hook: practice ? "medium" : s.selectedHook,
           baitCommitted: false,
@@ -20154,7 +20227,7 @@
               battle.minimumDepth || "shallow",
             );
         battle.depth = depth;
-        battle.spot = battle.mountainType ? `mountain-${battle.mountainType}-${depth}` : battle.coastType
+        battle.spot = battle.offshoreType ? `offshore-${battle.offshoreType}-${depth}` : battle.mountainType ? `mountain-${battle.mountainType}-${depth}` : battle.coastType
           ? `coast-${battle.coastType}-${depth}`
           : `${battle.waterZone || "lake"}-${depth}`;
         const spot = fishingSpotById(battle.spot);
@@ -22892,6 +22965,8 @@
           $("#catchStoryButton").hidden = false;
         }
       }
+      $("#offshoreFerryGo").onclick=takeOffshoreFerry;
+      $("#offshoreFerryCancel").onclick=close;
       function endBattle() {
         stopFishEscapeAudio();
         stopBattleFishArt();
@@ -23237,7 +23312,7 @@
       function openFieldGuide() {
         close();releaseHeldInputs();
         fieldGuideView ||= ShuFieldGuide.create({element:$("#fieldGuide"),life:ShuWorldLife});
-        fieldGuideView.show(ShuFieldGuide.model({...s,home:playerHomeIsActive()},{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}));
+        fieldGuideView.show(ShuFieldGuide.model({...s,home:playerHomeIsActive()},{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}));
         open("fieldGuide");$("#fieldGuideClose").focus({preventScroll:true});
       }
       function renderRecord() {
@@ -23908,7 +23983,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=250-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=251-2").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

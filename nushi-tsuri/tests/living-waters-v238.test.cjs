@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),{boot,seed,read,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-routes-v220.cjs'),{routeTo}=require('./wetland-v227.cjs');
-const M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fish-additions.js'),A=require('../fish-art.js'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
+const I=require('../offshore-island.js'),M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fish-additions.js'),A=require('../fish-art.js'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
 const {fishCases,pondLoop}=require('./living-waters-v238.cjs'),root=path.resolve(__dirname,'..');
 const progress=w=>read(w,'({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,time:s.gameMinutes,equipment:s.equipment})');
 function touch(w,d){const b=w.document.querySelector('[data-move="'+d+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();}
@@ -15,7 +15,7 @@ test('six ordinary additions have normal tackle odds, one bait per cast, art, re
    assert.ok(roll>=0,id+' natural odds');const fillet=read(w,'s.cookingIngredients.fishFillet');
    w.eval('Math.random=()=>'+roll+';commitCastResources();resolveSurfaceCast('+distance+');clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish()');
    assert.equal(read(w,'battle.f.id'),id);assert.equal(read(w,'battle.spot'),spot);assert.equal(read(w,'s.baits.'+bait),19);assert.equal(w.document.querySelector('#battleFish canvas').dataset.artSpecies,id);
-   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),57);
+   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),60);
    assert.equal(read(w,"petCatalog.find(f=>f.id==='"+id+"').waterLabel"),['mahaze','sayori','masaba'].includes(id)?'海水':'淡水');assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),40+i);assert.equal(read(w,'fishSizeProfiles.'+id+'.length'),6);
    w.eval("hideCatchCard();drawAquariumSprite($('#homeAquariumFish'),'"+id+"',4,{spriteMode:'turn',yaw:Math.PI/2,turnFrame:2});save()");assert.equal(w.document.querySelector('#homeAquariumFish canvas').dataset.artSpecies,id);
    saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
@@ -45,7 +45,7 @@ test('touch walks the entire painted pond ring and enters all six houses or shop
  }finally{app.dispose();}
 });
 test('residents stay on dry routes, never obstruct the player and consume no gameplay random numbers',()=>{
- for(const p of L.residents)for(let ms=0;ms<=60000;ms+=150){const a=L.residentPose(p,ms);assert.ok(Number.isFinite(a.x)&&Number.isFinite(a.y));if(p.region!=='village')assert.equal(M.walkable(a.x,a.y,p.region),true,p.id+' '+ms);assert.equal(L.solid(a.x,a.y,p.region),false);}
+ for(const p of L.residents)for(let ms=0;ms<=60000;ms+=150){const a=L.residentPose(p,ms);assert.ok(Number.isFinite(a.x)&&Number.isFinite(a.y));if(p.region!=='village')assert.equal(p.region===I.id?I.walkable(a.x,a.y):M.walkable(a.x,a.y,p.region),true,p.id+' '+ms);assert.equal(L.solid(a.x,a.y,p.region),false);}
  const app=boot({...seed(),hp:100}),w=app.window;try{const before=progress(w);w.eval('var lifeRolls=0;Math.random=()=>{lifeRolls++;return .5};for(let i=0;i<20;i++)worldLife.render(performance.now()+i*200,true)');assert.equal(read(w,'lifeRolls'),0);assert.deepEqual(progress(w),before);assert.deepEqual(app.errors,[]);}finally{app.dispose();}
 });
 test('shared pixels keep identical seasonal color across prop boundaries and green foam never turns red',()=>{

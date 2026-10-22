@@ -12,7 +12,7 @@ test('growing fish notes page three at a time, wrap, and reset for another place
 });
 test('every regional guide uses real waters, doors and exits, and only existing new-fish pool/tackle data',()=>{
  const app=boot({...seed(),soundEnabled:false}),w=app.window;
- try{for(const region of regions){const data=read(w,`ShuFieldGuide.model({...s,mapRegion:${JSON.stringify(region)}},{mountain:ShuMountain,coast:ShuCoast,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon})`);
+ try{for(const region of regions){const data=read(w,`ShuFieldGuide.model({...s,mapRegion:${JSON.stringify(region)}},{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon})`);
   assert.equal(data.region,region);assert.ok(fs.existsSync(path.join(__dirname,'..',data.asset)));assert.ok(data.entries.length>0);
   assert.equal(new Set(data.entries.map(e=>e.id)).size,data.entries.length);
   for(const e of data.entries){assert.ok(Number.isFinite(e.point.x)&&Number.isFinite(e.point.y));

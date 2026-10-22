@@ -113,7 +113,7 @@ test('the actual shop, aquarium records and reload use stage names but the wild 
   w.document.querySelector('[data-pet-action="records"]').click();const record=w.document.querySelector('[data-pet-growth="inada"]');
   assert.ok(record);assert.match(record.textContent,/ハマチ/);assert.match(record.textContent,/モジャコ.*ワカシ.*イナダ/s);assert.match(record.textContent,/80.00cm/);
   assert.match(w.document.querySelector('#rescueToast').textContent,/イナダに育った/);
-  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),57);assert.equal(Object.keys(A.species).length,57);assert.equal(read(w,"s.caught.buri"),1);
+  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),60);assert.equal(Object.keys(A.species).length,60);assert.equal(read(w,"s.caught.buri"),1);
   w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const restored=boot(saved);try{restored.window.eval("petUi.open('aquarium')");assert.match(restored.window.document.querySelector('.pet-tank-info h3').textContent,/イナダ/);assert.equal(read(restored.window,'s.petLife.fish[0].growthHistory.length'),3);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}

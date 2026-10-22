@@ -64,7 +64,7 @@ test('moray waves travel along the body while the head, mouth anchor and pixel c
 test('the new pelagic fish retain separate species, encounter rhythms and drawings from Buri growth',()=>{
  const a=boot(seed()),w=a.window;
  try{
-  assert.equal(read(w,'fish.length'),57);assert.deepEqual(read(w,"fish.filter(f=>['buri','hiramasa','kanpachi'].includes(f.id)).map(f=>f.name)"),['ブリ','ヒラマサ','カンパチ']);
+  assert.equal(read(w,'fish.length'),60);assert.deepEqual(read(w,"fish.filter(f=>['buri','hiramasa','kanpachi'].includes(f.id)).map(f=>f.name)"),['ブリ','ヒラマサ','カンパチ']);
   for(const id of ['hiramasa','kanpachi']){assert.equal(read(w,`petCatalog.find(f=>f.id==='${id}').waterLabel`),'海水');assert.equal(read(w,`ShuPetLife.growthStage({species:'${id}',length:9000})`),null);assert.notEqual(A.species[id].asset,A.species.buri.asset);}
   assert.notDeepEqual(F.rhythm('hiramasa'),F.rhythm('kanpachi'));assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
