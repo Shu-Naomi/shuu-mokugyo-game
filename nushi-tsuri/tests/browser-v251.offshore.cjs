@@ -10,7 +10,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>{const v=eval(q);return v===undefined?null:JSON.parse(JSON.stringify(v));},q);
  const shot=name=>page.screenshot({path:path.join(directory,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  const snapshot=()=>value('({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction,money:s.money,time:s.gameMinutes,hp:s.hp,caught:s.caught,records:s.fishCatchRecords,memories:s.catchMemories,baits:s.baits,equipment:s.equipment,pet:s.petLife})');
- let held=false,button,walked=0;
+ let held=false,button,walked=0,lastFightTrace=[];
  async function hold(on){if(on===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:on?'touchStart':'touchEnd',touchPoints:on?[{x:button.x,y:button.y,id:1}]:[]});else if(on){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=on;}
  async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
  async function fitFerry(){const result=await page.locator('.ferry-window').evaluate(n=>{const r=n.getBoundingClientRect();return {inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,buttons:[...n.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.width>=44&&q.height>=44&&q.top>=r.top&&q.bottom<=r.bottom+1;})};});assert.ok(result.inside&&result.buttons&&result.scroll<=1,JSON.stringify(result));}
@@ -42,14 +42,19 @@ module.exports=async function offshore(url,mobile=false,options={}){
    // cues, distance, line pressure, landing and award remain the real game.
    await page.evaluate(()=>{Math.random=window.v251OriginalRandom;battle.specimen=rollFishSpecimen(battle.f,()=>.999999);battle.specimenVisualScale=fishVisualScale(battle.specimen);window.v251Rng=301;Math.random=()=>((window.v251Rng=Math.imul(window.v251Rng,1664525)+1013904223>>>0)/4294967296);battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();});
    await press('#pull');await page.clock.runFor(240);assert.equal(await value('battle.phase'),'fight');assert.equal(await value('battle.fightMode'),mode);const r=await page.locator('#pull').boundingBox();assert.ok(r&&r.width>=44&&r.height>=44&&r.y+r.height<=viewport.height+1);button={x:r.x+r.width/2,y:r.y+r.height/2};
-   const queue=[];let previous=null,ticks=0,warnings=0,last=null;
+   const queue=[];let previous=null,ticks=0,warnings=0,last=null;lastFightTrace=[];
    for(;ticks<1800;ticks++){
     const ui=await page.evaluate(()=>({phase:battle?.phase,cue:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),tension:parseFloat(document.querySelector('#ten').style.width)||0}));if(ui.phase!=='fight')break;
-    const wish=!ui.leap&&(mode==='gauge'?ui.tension<65:['slack','pulling'].includes(ui.cue));if(wish!==previous){queue.push({at:ticks*120+600,on:wish});previous=wish;}if(ui.cue==='warning'&&last!=='warning')warnings++;last=ui.cue;while(queue.length&&queue[0].at<=ticks*120)await hold(queue.shift().on);await page.clock.runFor(120);
+    // Strong reef fish need an early release and a low-tension restart.
+    // Both decisions use the visible bar, with the same 600 ms reaction time.
+    const wish=!ui.leap&&(mode==='gauge'?ui.tension<(previous?45:20):['slack','pulling'].includes(ui.cue));if(wish!==previous){queue.push({at:ticks*120+600,on:wish});previous=wish;}if(ui.cue==='warning'&&last!=='warning')warnings++;last=ui.cue;while(queue.length&&queue[0].at<=ticks*120)await hold(queue.shift().on);lastFightTrace.push({tick:ticks,held,...ui});if(lastFightTrace.length>35)lastFightTrace.shift();await page.clock.runFor(120);
    }
    assert.equal(await value('battle?.phase'),'landing',id+' actual landing');await hold(false);if(mode==='nushi')assert.ok(warnings>0);await page.clock.runFor(1600);assert.equal(await value('s.caught.'+id),caughtBefore+1);assert.equal(await value('s.baits.'+bait),baitBefore-1);assert.equal(await value('s.fishCatchRecords.'+id+'.last.spotId'),spot);await shot(id+'-caught');await page.evaluate(()=>hideCatchCard());results.push({id,area,mode,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
   }
   const onIsland=await snapshot();await page.reload({waitUntil:'domcontentloaded'});await start();assert.deepEqual(await snapshot(),onIsland);assert.equal(await value('fish.length'),60);await walkTo(I.entry);await press('#action');await fitFerry();assert.match(await page.locator('#offshoreFerryNote').innerText(),/追加料金なし/);await shot('paid-return');const beforeReturn=await snapshot();await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'village');assert.equal(await value('s.money'),beforeReturn.money);assert.equal(await value('s.gameMinutes'),beforeReturn.time+60);assert.deepEqual(await value('s.caught'),beforeReturn.caught);await shot('returned-to-harbor');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V251_OFFSHORE_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,roundTripFare:800,departureOnce:true,cancelFree:true,noPersonalBoat:true,walked,visited:['shelter','lighthouse','cove','west','east'],results,islandSaveReload:true,freeReturn:true,catchRecordsPreserved:true,errors:0,httpErrors:0}));
+ }catch(error){
+  await shot('failure').catch(()=>{});const state=await value('({region:s.mapRegion,x:s.x,y:s.y,log:s.log.slice(0,4),phase:battle?.phase,tension:battle?.ten})').catch(()=>null);
+  fs.writeFileSync(path.join(directory,'failure-'+viewport.width+'.json'),JSON.stringify({error:error.stack,state,lastFightTrace,errors,failed},null,2));console.error('V251_FAILURE '+JSON.stringify({state,lastFightTrace}));throw error;
  }finally{if(held)await hold(false).catch(()=>{});await context.close();await browser.close();}
 };

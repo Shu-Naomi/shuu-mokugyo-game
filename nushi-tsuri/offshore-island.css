@@ -6,7 +6,7 @@
 .map.v54-map #offshoreShip { position:absolute; width:12%; height:8.2%; transform:translate(-50%,-70%); z-index:5; image-rendering:pixelated; pointer-events:none; }
 .map.v54-map.coast #offshoreShip,.map.v54-map.mountain #offshoreShip { display:none !important; }
 .ferry-window { width:min(720px,94vw); max-height:calc(100dvh - 112px); padding:16px; box-sizing:border-box; overflow:auto; background:linear-gradient(135deg,#fff2d1,#dfcf9f); color:#342d25; border:4px double #6a5439; box-shadow:0 8px 28px #0008; border-radius:12px; }
-.ferry-window h2 { margin:0 0 8px; font-size:21px; }
+.ferry-window h2 { margin:0 0 8px; font-size:21px; color:#553a24; }
 .ferry-layout { display:grid; grid-template-columns:minmax(140px,1fr) minmax(260px,1.4fr); gap:16px; align-items:center; }
 .ferry-picture { width:100%; aspect-ratio:2.7; image-rendering:pixelated; }
 .ferry-window p { margin:6px 0 12px; line-height:1.5; }

@@ -1,17 +1,19 @@
 const {boot,seed,read}=require('./game-harness.cjs');
 const {findRoute}=require('./water-routes-v220.cjs');
 const M=require('../mountain-region.js');
+const I=require('../offshore-island.js');
 
-function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false}){
- const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm';
+function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold}){
+ const island={shimaaji:{area:'east',bait:'shrimp',distance:50},ishigakidai:{area:'west',bait:'shell',distance:50},akahata:{area:'cove',bait:'smallShrimp',distance:20}}[id];
+ const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=island?.bait||(wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm');
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:wet?600:1320,
-  ...(wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
-  ownedRods:['tideMaster'],selectedRod:'tideMaster',fightMode:mode,selectedHook:'large',selectedBait:bait,
-  baits:{worm:20,nushiSecret:20,liveMinnow:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
+  ...(island?{mapRegion:I.id,...I.fishingPoints.find(p=>p.id===island.area)}:wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
+  ownedRods:['tideMaster'],selectedRod:'tideMaster',fightMode:mode,selectedHook:island?.area==='cove'?'medium':'large',selectedBait:bait,
+  baits:{worm:20,nushiSecret:20,liveMinnow:20,shrimp:20,shell:20,smallShrimp:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
  try{
   if(wet)for(const direction of findRoute(w,'wetMarsh').path)w.move(direction);
- const spot=wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=wet?50:95;
-  w.eval(`${sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
+ const spot=island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':'mid'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=island?.distance||(wet?50:95);
+  w.eval(`${island?'action()':sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
   const encounter=read(w,`(()=>{for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;
    if(pick(${distance},${JSON.stringify(spot)})?.id===${JSON.stringify(id)})return r;}return null;})()`);
   if(encounter===null)throw Error('No legal encounter for '+id);
@@ -29,7 +31,7 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
    let observed=null,ticks=0,maxProgress=0,maxTension=0,warningCount=0,pullOpenings=0,lastPhase=null,wrongRunTicks=0;
    for(;ticks<7500&&battle?.phase==='fight';ticks++){
     const phase=scene.dataset.nushiPhase;
-    const wish=${holdAlways}||(${JSON.stringify(mode)}==='gauge'?parseFloat(ten.style.width)<65:
+    const wish=${holdAlways}||(${JSON.stringify(mode)}==='gauge'?parseFloat(ten.style.width)<(observed?${gaugeThreshold}:${gaugeResumeThreshold}):
       (phase==='slack'||phase==='pulling'))&&!scene.classList.contains('gill-wash');
     if(wish!==observed){queue.push({at:testNow+${delayMs},wish});observed=wish;}
     while(queue.length&&queue[0].at<=testNow){const action=queue.shift();if(action.wish)pressBattleAction();else releaseBattleAction();}

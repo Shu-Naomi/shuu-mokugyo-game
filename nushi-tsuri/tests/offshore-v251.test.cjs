@@ -3,6 +3,7 @@ const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('../fish-art.js'),F=require('../fish-additions.js');
 const cases=[['shimaaji','east','shrimp','large',50,58],['ishigakidai','west','shell','large',50,59],['akahata','cove','smallShrimp','medium',20,60]];
 const copy=x=>JSON.parse(JSON.stringify(x));
+const {runFight}=require('./nushi-playability-v228.cjs');
 const snapshot=w=>read(w,'({region:s.mapRegion,x:s.x,y:s.y,money:s.money,minutes:s.gameMinutes,boat:s.boatActive,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife})');
 
 test('the painted paths connect the landing, all fishing platforms, shelter and lighthouse without water walking',()=>{
@@ -57,10 +58,15 @@ for(const mode of ['gauge','nushi'])test('island fish use their real shore, norm
 test('exclusive fish do not leak to the mainland, while their island guide and offline assets are complete',()=>{
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
  for(const [id,area]of cases){const d=F.definitions.find(f=>f.id===id);assert.ok(d.locations.includes(I.name));assert.ok(F.pools[`offshore-${area}-mid`][id]>0);for(const [spot,weights]of Object.entries(F.pools))if(!spot.startsWith('offshore-'))assert.ok(!weights[id],id+' excluded from '+spot);assert.notEqual(A.species[id].asset,A.species[d.base].asset);assert.ok(sw.includes(A.species[id].asset));}
- for(const a of Object.values(I.assets))assert.ok(sw.includes(a));assert.ok(sw.includes('./offshore-island.js?v=251-1'));assert.ok(sw.includes('./offshore-island.css?v=251-1'));
+ for(const a of Object.values(I.assets))assert.ok(sw.includes(a));assert.ok(sw.includes('./offshore-island.js?v=251-1'));assert.ok(sw.includes('./offshore-island.css?v=251-2'));
  const a=boot({...seed(),mapRegion:I.id,...I.entry});try{const w=a.window,before=snapshot(w);w.open('record');w.document.querySelector('#fishdexFieldGuide').click();assert.equal(w.document.querySelector('#fieldGuideRegion').textContent,I.name);assert.equal(w.document.querySelectorAll('[data-guide-place]').length,3);assert.deepEqual(snapshot(w),before);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
 });
 
 test('all original island fish remain whole and attached to their lips across 97 turn headings',async()=>{
  for(const [id]of cases){const im=await loadImage(path.join(__dirname,'..',A.species[id].asset)),ctx=createCanvas(448,224).getContext('2d');for(let n=0;n<=96;n++){assert.equal(A.draw(ctx,im,id,7,n/16,()=>im),true);const p=ctx.getImageData(0,0,448,224).data;let count=0,edge=0;for(let i=0;i<448*224;i++)if(p[i*4+3]>100){count++;const x=i%448,y=Math.floor(i/448);if(x<2||x>445||y<2||y>221)edge++;}assert.ok(count>3500,id+' body '+n);assert.equal(edge,0,id+' fin '+n);const head=A.pose(id,7,n/16).target;assert.ok(ctx.getImageData(Math.round(head[0]*448)-6,Math.round(head[1]*224)-6,13,13).data.some((v,i)=>i%4===3&&v>100),id+' lip '+n);}}
+});
+
+for(const [id]of cases)for(const mode of ['gauge','nushi'])test('a giant island fish lands through real physics and visible cues with a 600ms reaction: '+id+'/'+mode,()=>{
+ const result=runFight({id,mode,tier:.999999,delayMs:600,rngSeed:301,gaugeThreshold:45,gaugeResumeThreshold:20});
+ console.log('V251_FIGHT '+JSON.stringify(result));assert.deepEqual(result.errors,[]);assert.equal(result.start.id,id);assert.equal(result.phase,'landing');assert.ok(result.seconds<180);assert.ok(result.maxTension<100);
 });

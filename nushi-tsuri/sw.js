@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-offshore-ferry-251-1";
+const CACHE_NAME = "nushi-tsuri-v251-offshore-ferry-251-2";
 const CORE_ASSETS = [
   "./offshore-island.js?v=251-1",
-  "./offshore-island.css?v=251-1",
+  "./offshore-island.css?v=251-2",
   "./assets/offshore-world-v251.png",
   "./assets/offshore-ferry-v251.png",
   "./assets/fish-shimaaji-v251.png",
@@ -27,7 +27,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=251-1",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=251-1",
+  "./world-life.js?v=251-2",
   "./fish-additions.js?v=251-1",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
