@@ -1,0 +1,60 @@
+name: v251 published island gameplay
+on:
+  push:
+    branches: [codex/v251-public-checks]
+    paths: ['.github/workflows/v251-public-only.yml']
+permissions:
+  contents: read
+concurrency:
+  group: v251-public-only
+  cancel-in-progress: true
+jobs:
+  published:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        screen:
+          - {width: 1280, height: 720, touch: '0', dpr: 1}
+          - {width: 844, height: 390, touch: '1', dpr: 1}
+          - {width: 820, height: 366, touch: '1', dpr: 1.875}
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 0f129b0d683ea1e8436f3c6f7b79055348e653cb
+      - name: Confirm the published v251 game and browser sources
+        run: test "$(git rev-parse HEAD:nushi-tsuri)" = 85abfe1c53508d514df71f7ec76f552c4c27176b
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y fonts-noto-cjk
+      - name: Check only the public URL after Pages publication
+        shell: bash
+        env:
+          WIDTH: ${{ matrix.screen.width }}
+          HEIGHT: ${{ matrix.screen.height }}
+          TOUCH: ${{ matrix.screen.touch }}
+          DPR: ${{ matrix.screen.dpr }}
+        run: |
+          set -o pipefail
+          node - <<'JS' | tee public-v251-${WIDTH}.log
+          const run=require('./browser-v251.offshore.cjs');
+          run('https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=251',process.env.TOUCH==='1',{viewport:{width:Number(process.env.WIDTH),height:Number(process.env.HEIGHT)},dpr:Number(process.env.DPR),public:true}).catch(error=>{console.error(error);process.exitCode=1;});
+          JS
+      - name: Preserve published voyage screens and results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: v251-public-${{ matrix.screen.width }}
+          path: |
+            nushi-tsuri/tests/browser-evidence-v251/
+            nushi-tsuri/tests/public-v251-*.log
+          retention-days: 14
+          if-no-files-found: warn
