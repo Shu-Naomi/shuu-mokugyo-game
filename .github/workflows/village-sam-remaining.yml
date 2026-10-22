@@ -1,0 +1,58 @@
+name: Sam remaining screens on Ubuntu 24.04
+on:
+  push:
+    branches: [codex/sam-remaining-checks]
+    paths: ['.github/workflows/village-sam-remaining.yml']
+permissions:
+  contents: read
+concurrency:
+  group: sam-remaining-screens
+  cancel-in-progress: true
+jobs:
+  remaining:
+    name: Sam ${{ matrix.screen.width }}x${{ matrix.screen.height }}
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        screen:
+          - {width: 1280, height: 720, touch: '0', dpr: 1}
+          - {width: 844, height: 390, touch: '1', dpr: 1}
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 41bab444474e7a23b66fc69b3c049dfc78bc64a1
+      - name: Confirm the exact source already tested at 820x366
+        run: test "$(git rev-parse HEAD:nushi-tsuri)" = 64c0b0f0c1bc55a4640a2c5e26f50cef59d6d0c6
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - name: Install Japanese fonts with bounded network waits
+        run: sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y fonts-noto-cjk
+      - name: Verify the remaining native input condition
+        shell: bash
+        env:
+          SAM_WIDTH: ${{ matrix.screen.width }}
+          SAM_HEIGHT: ${{ matrix.screen.height }}
+          SAM_TOUCH: ${{ matrix.screen.touch }}
+          SAM_DPR: ${{ matrix.screen.dpr }}
+        run: |
+          set -o pipefail
+          node browser-village-sam-evidence.cjs | tee sam-remaining-${SAM_WIDTH}.log
+      - name: Preserve screens and exact results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-remaining-${{ matrix.screen.width }}
+          path: |
+            nushi-tsuri/tests/browser-evidence-village-sam/
+            nushi-tsuri/tests/sam-remaining-*.log
+          retention-days: 14
+          if-no-files-found: warn
