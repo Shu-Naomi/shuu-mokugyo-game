@@ -1,0 +1,12 @@
+{
+  "mode": "built-in image_gen edit",
+  "editTarget": "terrain-world-v54.png: crop [1120,412,272,216]",
+  "source": "assets/village-sam-v251-3.png",
+  "placement": [
+    1120,
+    412,
+    272,
+    216
+  ],
+  "prompt": "Use case: precise-object-edit.\nImage 1 is the ONLY edit target: a tight 272x216-pixel crop of Sam's old fishing shop and its immediately surrounding paths from an existing SFC-style RPG map. Keep precisely this crop framing and proportions, the shop's size and position, roof shape, original dark fine-pixel style, warm brown/grey/moss palette and lighting. Do NOT zoom or add another building. Return the same 34:27 aspect ratio.\nMake this same place feel like a much loved fishing shop that has operated since the protagonist's grandfather's time. Keep dark weathered Japanese roof tiles and old timber. Retain the existing sign in its same location and size with only readable short text \"SAM\" plus a small simple fish emblem; replace the tiny English subtitle with faded decorative marks. Keep a modest faded indigo awning over the LEFT shop window, behind a narrow rack of 3 bamboo rods on the FAR LEFT wall. Put two small wooden bait boxes and one weathered bucket tight against the left facade, among the existing props; one modest planter at the far right facade. Preserve the aged grain and worn stone steps; a few repaired roof tiles and edge moss show generations of use.\nCRITICAL: the door remains at 53% of image width and about 62% image height, with the existing narrow stair straight down to 80% image height. Keep the approach strip from x46%..60%,y64%..90% completely clear of rods, buckets, crates, planters and signs. Keep existing west alley (x0%..13%) open, and the entire bottom paved east-west harbor route (y90%..100%) clear. Keep all outer 10% border pixels and the little sliver of pond on the right edge unchanged, so the crop can join its source terrain cleanly. Props stay under the eaves, inside the existing building footprint; no larger obstacles in roads.\nThis is a restrained cohesive redesign of one old shop, not adding more buildings or changing the whole village. No people, animals, UI, huge signs, camera tilt, blur, glossy modern materials or vector shapes. Match the original dense tiny hand placed pixel detail, never smooth paint."
+}
