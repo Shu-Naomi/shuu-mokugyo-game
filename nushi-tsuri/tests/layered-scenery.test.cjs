@@ -14,7 +14,9 @@ const canvasFor=image=>{const c=createCanvas(image.width,image.height);c.getCont
 const originalPlacement=scene=>{const sign=scene.parts.find(p=>p.id==='return-sign');if(sign){sign.offset=[0,0];sign.flipX=false;}return scene;};
 const load=async(id,e=env)=>{
   const definition=Data.get(id,e);
-  const source=await loadImage(path.join(root,definition.source));
+  const original=await loadImage(path.join(root,definition.source));
+  const edits=await Promise.all((definition.edits||[]).map(edit=>loadImage(path.join(root,edit.source))));
+  const source=Art.assembleSource(original,definition,edits,createCanvas);
   const underlay=definition.underlay?await loadImage(path.join(root,definition.underlay)):null;
   return {source,scene:Art.prepare(source,underlay,definition,e,createCanvas)};
 };

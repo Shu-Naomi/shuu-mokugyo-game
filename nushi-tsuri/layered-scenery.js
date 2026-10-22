@@ -151,6 +151,23 @@
     // No per-frame allocation, pixel reading, image decoding or randomness.
     return {style,pixel,frames,count:budget,interval:style==='river'?420:style==='sea'?580:quiet?1100:760};
   }
+  // Assemble authored district art before partitioning/seasonal grading, so
+  // the worker and main-thread compositor receive exactly the same pixels.
+  // No edits ever extend beyond their explicit art-space polygon.
+  function assembleSource(source,definition,editImages,canvasFactory=makeCanvas) {
+    if(!definition.edits?.length)return source;
+    const width=source.naturalWidth||source.width,height=source.naturalHeight||source.height;
+    const canvas=canvasFactory(width,height),ctx=canvas.getContext('2d');
+    ctx.imageSmoothingEnabled=false;ctx.drawImage(source,0,0,width,height);
+    const sx=width/definition.units[0],sy=height/definition.units[1];
+    definition.edits.forEach((edit,index)=>{
+      const image=editImages[index];if(!image)throw Error('Missing district art: '+edit.id);
+      ctx.save();ctx.beginPath();
+      edit.clip.forEach(([x,y],i)=>i?ctx.lineTo(x*sx,y*sy):ctx.moveTo(x*sx,y*sy));ctx.closePath();ctx.clip();
+      const [x,y,w,h]=edit.to;ctx.drawImage(image,x*sx,y*sy,w*sx,h*sy);ctx.restore();
+    });
+    return canvas;
+  }
   function prepare(source,underlay,definition,env={season:'spring',period:'day'},canvasFactory=makeCanvas) {
     const sourceWidth=source.naturalWidth||source.width,sourceHeight=source.naturalHeight||source.height;
     const rect=definition.sourceRect;
@@ -379,8 +396,9 @@
         try {
           let pending=prepared.get(key);
           if(!pending) {
-            pending=Promise.all([image(definition.source),definition.underlay?image(definition.underlay):null])
-              .then(([source,underlay])=>buildScene(source,underlay,definition,env,canvasFactory));
+            pending=Promise.all([image(definition.source),definition.underlay?image(definition.underlay):null,
+              ...((definition.edits||[]).map(edit=>image(edit.source)))])
+              .then(([source,underlay,...edits])=>buildScene(assembleSource(source,definition,edits,canvasFactory),underlay,definition,env,canvasFactory));
             prepared.set(key,pending);trim(prepared,3);
             pending.catch(()=>prepared.delete(key));
           }
@@ -429,7 +447,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=238-1');
+            worker=new Worker('scenery-worker.js?v=251-3');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
@@ -470,5 +488,5 @@
     addEventListener('pagehide',()=>browserController.stop());addEventListener('pageshow',()=>browserController.wake());
     return browserController;
   }
-  return {partition,prepare,compose,motion,foreground,createController,paint:(canvas,id,env)=>browser().paint(canvas,id,env),refresh:canvas=>browser().refresh(canvas),assets:Data.assets};
+  return {partition,assembleSource,prepare,compose,motion,foreground,createController,paint:(canvas,id,env)=>browser().paint(canvas,id,env),refresh:canvas=>browser().refresh(canvas),assets:Data.assets};
 });

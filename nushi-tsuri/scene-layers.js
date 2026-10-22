@@ -17,6 +17,10 @@
   const world = {
     id:'world', source:'assets/terrain-world-v54.png',
     underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],coherentGrade:true,
+    // Only the shop district is replaced. The unedited village master remains
+    // the source of every road, shoreline and building outside this polygon.
+    edits:[{id:'sam-shop-front',source:'assets/village-sam-v251-3.png',to:[1120,405,272,216],
+      clip:[[1151,509],[1184,490],[1184,443],[1236,443],[1265,438],[1329,443],[1350,506],[1355,589],[1327,604],[1151,601]]}],
     waterColorMasks:[[[0,680],[145,680],[294,700],[461,735],[584,775],[663,790],[740,790],[740,864],[0,864]]],
     parts:[
       box('meadow','grass',0,0,1536,864,vegetation),
@@ -46,7 +50,7 @@
       part('yaoya','buildings',[[429,393],[449,350],[506,347],[519,362],[565,360],[580,401],[586,469],[559,489],[439,486]]),
       part('diner','buildings',[[835,398],[855,352],[987,350],[1004,395],[1006,479],[851,489]]),
       part('main-shrine','buildings',[[1151,278],[1209,240],[1232,221],[1254,247],[1301,270],[1327,293],[1302,311],[1310,363],[1254,401],[1170,361],[1172,304],[1142,306]]),
-      part('sam-shop','buildings',[[1165,509],[1192,491],[1190,453],[1232,453],[1265,447],[1317,453],[1334,511],[1336,573],[1308,597],[1163,589]]),
+      part('sam-shop','buildings',[[1151,509],[1184,490],[1184,443],[1236,443],[1265,438],[1329,443],[1350,506],[1355,589],[1327,604],[1151,601]]),
       part('fish-market','buildings',[[935,580],[963,562],[994,544],[1055,556],[1088,552],[1106,599],[1108,648],[952,656],[925,632]]),
       part('harbor-shop','buildings',[[794,715],[827,687],[873,668],[915,685],[928,716],[927,771],[818,784],[798,768]]),
       box('stone-bridge','rocks',636,479,108,77),
@@ -59,6 +63,8 @@
       box('diner-props','props',788,420,58,60),
       box('diner-parasol','props',1006,416,54,65),
       box('village-board','props',771,437,22,40),
+      box('sam-bait-chest','props',1200,575,23,16,{parent:'sam-shop'}),
+      box('sam-front-pail','props',1224,579,14,14,{parent:'sam-shop'}),
       box('beach-umbrella','props',418,650,32,35),
       box('west-boat','props',957,784,71,41),
       box('middle-boat','props',1118,704,69,39),
@@ -222,12 +228,15 @@
     const urls=new Set();
     for(const id of ids) for(const period of ['dawn','morning','day','evening','night']) {
       const d=get(id,{period}); urls.add(d.source); if(d.underlay)urls.add(d.underlay);
+      for(const edit of d.edits||[])urls.add(edit.source);
     }
     return [...urls];
   }
   // Only the visible trunks in the detailed master have small foot collisions.
   // Building/water/path geometry continues to belong to the existing game.
   const trunks=[[416,223],[420,345],[543,568],[1112,214],[92,344],[1483,413]];
-  const propSolid=(x,y)=>trunks.some(([px,py])=>Math.abs(x-px/6.4)<.85&&Math.abs(y-py/6.4)<.55);
+  const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
+  const propSolid=(x,y)=>trunks.some(([px,py])=>Math.abs(x-px/6.4)<.85&&Math.abs(y-py/6.4)<.55)||
+    shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom);
   return {get,ids,assets,propSolid};
 });
