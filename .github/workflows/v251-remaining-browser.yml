@@ -1,0 +1,65 @@
+name: v251 remaining browser coverage
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/v251-remaining-browser.yml']
+permissions:
+  contents: read
+concurrency:
+  group: v251-remaining-${{ github.event.pull_request.head.ref }}
+  cancel-in-progress: true
+jobs:
+  remaining:
+    name: ${{ matrix.suite }} ${{ matrix.width }}x${{ matrix.height }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {suite: shore, width: 820, height: 366, touch: '1', dpr: 1.875}
+          - {suite: inventory, width: 1280, height: 720, touch: '0', dpr: 1}
+          - {suite: inventory, width: 844, height: 390, touch: '1', dpr: 1}
+          - {suite: inventory, width: 820, height: 366, touch: '1', dpr: 1.875}
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - name: Confirm exactly the previously tested game and test sources
+        run: test "$(git rev-parse HEAD:nushi-tsuri)" = 85abfe1c53508d514df71f7ec76f552c4c27176b
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get install -y fonts-noto-cjk
+      - name: Finish the cases interrupted by the earlier 20 minute job
+        env:
+          SUITE: ${{ matrix.suite }}
+          WIDTH: ${{ matrix.width }}
+          HEIGHT: ${{ matrix.height }}
+          TOUCH: ${{ matrix.touch }}
+          DPR: ${{ matrix.dpr }}
+        run: |
+          node - <<'JS'
+          const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
+          const root=path.resolve('..'),suite=process.env.SUITE;
+          const run=require(suite==='shore'?'./browser-v247.shore-shop.cjs':'./browser-v248.inventory-distance.cjs');
+          const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
+          const server=http.createServer((req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',f=path.resolve(root,p);if(!f.startsWith(root+path.sep)||!fs.statSync(f).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(f).pipe(res);}catch{res.writeHead(404);res.end();}});
+          (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));try{await run('http://127.0.0.1:'+server.address().port+'/nushi-tsuri/',process.env.TOUCH==='1',{viewport:{width:Number(process.env.WIDTH),height:Number(process.env.HEIGHT)},dpr:Number(process.env.DPR)});console.log('V251_REMAINDER_PASS '+JSON.stringify({suite,width:process.env.WIDTH,height:process.env.HEIGHT,originalSources:true}));}finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});
+          JS
+      - name: Preserve the remaining screens
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: v251-remaining-${{ matrix.suite }}-${{ matrix.width }}
+          path: |
+            nushi-tsuri/tests/browser-evidence-v247/
+            nushi-tsuri/tests/browser-evidence-v248/
+          retention-days: 14
+          if-no-files-found: warn
