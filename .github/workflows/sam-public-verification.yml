@@ -12,9 +12,13 @@ jobs:
   public-routes:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
     defaults:
       run:
         working-directory: nushi-tsuri/tests
+        shell: bash
     steps:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
@@ -26,8 +30,18 @@ jobs:
           node-version: '22'
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
-      - run: npx playwright install --with-deps chromium
-      - run: sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y fonts-noto-cjk
+      - name: Install pinned Japanese Noto fonts
+        run: |
+          mkdir -p /usr/local/share/fonts/noto-ci
+          cd /usr/local/share/fonts/noto-ci
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Regular.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Bold.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf
+          sha256sum --check <<'FONT_HASHES'
+          68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5  NotoSansCJKjp-Regular.otf
+          e53dcb0dcb2922e45d01aae1ebd2f382bb81d4229b18b6b883bd170678af1f76  NotoSansCJKjp-Bold.otf
+          FONT_HASHES
+          fc-cache -f
+          fc-match -f '%{family}\n' 'sans-serif:lang=ja' | grep -F 'Noto Sans CJK JP'
       - name: Check only published files and the three public route conditions
         run: |
           node - <<'JS' 2>&1 | tee sam-public-results.log
