@@ -68,6 +68,14 @@ jobs:
         env:
           AQUARIUM_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-aquarium-identity-evidence.cjs 2>&1 | tee aquarium-identity-browser.log
+      - name: Wait for the published runtime to match the merged source
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        run: node aquarium-identity-public-source.cjs 2>&1 | tee aquarium-identity-public-source.log
+      - name: Exercise the published aquarium on the same three screens
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          AQUARIUM_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=251-7
+        run: node browser-aquarium-identity-evidence.cjs 2>&1 | tee aquarium-identity-public-browser.log
       - name: Preserve focused browser evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9

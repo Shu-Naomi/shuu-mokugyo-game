@@ -4,9 +4,10 @@ module.exports=async function identityUI(url,screen){
  const {width,height,mobile,dpr}=screen,viewport={width,height},browser=await chromium.launch({headless:true});
  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,locale:'ja-JP',serviceWorkers:'block'});
  const errors=[],httpErrors=[],directory=path.join(__dirname,'aquarium-identity-evidence');fs.mkdirSync(directory,{recursive:true});
+ let page;
  try{
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:fixture()});
-  const page=await context.newPage(),press=q=>page.locator(q)[mobile?'tap':'click']();
+  page=await context.newPage();const press=q=>page.locator(q)[mobile?'tap':'click']();
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
   const shot=async name=>page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});
   const snapshot=()=>page.evaluate(()=>({fish:s.petLife.fish,eggs:s.petLife.eggs,money:s.money,food:s.petLife.food,time:s.gameMinutes,caught:s.caught}));
@@ -50,5 +51,8 @@ module.exports=async function identityUI(url,screen){
   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
   const result={screen,overview,checked,legacyResume:true,careOnce:true,careResume:true,unchangedEggs:true,errors,httpErrors};
   fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify(result,null,2));console.log('AQUARIUM_IDENTITY_PASS '+JSON.stringify(result));
+ }catch(error){
+  if(page)await page.screenshot({path:path.join(directory,`${width}x${height}-failure.png`)}).catch(()=>{});
+  fs.writeFileSync(path.join(directory,`${width}x${height}-failure.json`),JSON.stringify({error:error.stack,screen,errors,httpErrors},null,2));throw error;
  }finally{await context.close();await browser.close();}
 };
