@@ -1,0 +1,66 @@
+name: Published Sam shop routes
+on:
+  push:
+    branches: [codex/sam-public-verification]
+    paths: ['.github/workflows/sam-public-verification.yml']
+permissions:
+  contents: read
+concurrency:
+  group: sam-public-verification
+  cancel-in-progress: false
+jobs:
+  public-routes:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: abb2697830150b38fa6d2ebd1d0861ff87b10e28
+      - name: Confirm the merged game and tests
+        run: test "$(git rev-parse HEAD^{tree})" = 95917175593a329933c65992534d96b97fcc4cc3
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get -o Acquire::Retries=2 -o Acquire::http::Timeout=30 -o Acquire::https::Timeout=30 install -y fonts-noto-cjk
+      - name: Check only published files and the three public route conditions
+        run: |
+          node - <<'JS' 2>&1 | tee sam-public-results.log
+          const assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process');
+          const run=require('./browser-village-sam.cjs');
+          const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
+          const files=['assets/village-sam-v251-3.png','index.html','layered-scenery.js','scene-layers.js','scenery-worker.js','sw.js'];
+          async function verify(){
+            for(const p of files){
+              const r=await fetch(base+p+'?verify-sam=abb269783015',{cache:'no-store',signal:AbortSignal.timeout(45000)});
+              assert.equal(r.status,200,p);const b=Buffer.from(await r.arrayBuffer());
+              const hash=crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');
+              const expected=execFileSync('git',['rev-parse','HEAD:nushi-tsuri/'+p],{encoding:'utf8'}).trim();
+              assert.equal(hash,expected,'Published file matches the merged tree: '+p);
+            }
+            console.log('SAM_PUBLIC_FILES_PASS '+JSON.stringify({main:'abb2697830150b38fa6d2ebd1d0861ff87b10e28',matched:files.length}));
+          }
+          (async()=>{
+            await verify();
+            for(const c of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){
+              await run(base+'?v=251-3',c.mobile,{viewport:{width:c.width,height:c.height},dpr:c.dpr});
+              console.log('VILLAGE_SAM_PUBLIC_PASS '+JSON.stringify({...c,public:true,main:'abb2697830150b38fa6d2ebd1d0861ff87b10e28'}));
+            }
+            await verify();
+          })().catch(e=>{console.error(e);process.exitCode=1;});
+          JS
+      - name: Preserve public route evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-public-routes
+          path: |
+            nushi-tsuri/tests/sam-public-results.log
+            nushi-tsuri/tests/browser-evidence-village-sam/
+          retention-days: 14
+          if-no-files-found: warn
