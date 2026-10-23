@@ -201,6 +201,6 @@ module.exports=async function features(url,mobile){
     }
     console.log('V214_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:fishCount,poses:fishResult.length,fightModes:2,recipes:3,
       speciesArt:fishResult.filter(r=>r.tallFins!==null).map(({mode,id,tallFins})=>({mode,id,tallFins})),
-      dogs:3,careArt,handArt,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
+      dogs:3,careArt,petReaction,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));
   }finally{await browser.close();}
 };
