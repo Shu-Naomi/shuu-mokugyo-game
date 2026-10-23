@@ -1,7 +1,7 @@
 name: Care gestures and inn UI
 on:
   push:
-    branches: [main, codex/dog-care-inn-ui-v251-5]
+    branches: [main, codex/dog-care-inn-ui-v251-5, codex/dog-care-no-human-hand]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/compact-ui.*'
@@ -56,6 +56,8 @@ jobs:
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check the affected UI, recipes, dog effects and offline cache
         run: node --test --test-concurrency=2 care-inn-ui-v251-5.test.cjs dog-care-petting-v211.test.cjs dog-care-motion-v209.test.cjs dog-care-art-v210.test.cjs compact-ui-v232.test.cjs cooking-v208.test.cjs cooking-size-v215.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee care-inn-unit.log
+      - name: Check the unchanged daily petting limit
+        run: node --test --test-name-pattern='each dog has its own daily' pet-life.test.cjs 2>&1 | tee care-inn-daily.log
       - name: Preserve all 651 native petting frames
         run: node care-inn-frame-checks.cjs ui-evidence-v251-5/native 2>&1 | tee care-inn-frames.log
       - name: Exercise care and the inn on three landscape screens

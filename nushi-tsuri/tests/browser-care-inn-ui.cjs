@@ -14,18 +14,25 @@ module.exports=async function careInn(url,screen){
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   await page.evaluate(()=>openDogCare('shuu'));await page.waitForFunction(()=>dogIdleImage.complete&&dogIdleImage.naturalWidth>0);
   const frames=await page.evaluate(()=>{
-   const canvas=document.createElement('canvas'),mask=document.createElement('canvas');canvas.width=mask.width=320;canvas.height=mask.height=180;const ctx=canvas.getContext('2d'),hc=mask.getContext('2d'),rows=[];
-   for(const dog of ['shuu','riku','grey']){let previous,maxWidth=0,full=0,shape=null;for(let i=0;i<=216;i++){
-    const p=i/216;ctx.clearRect(0,0,320,180);const face=drawDogCareCloseup(ctx,dog,'pet',p,10000+p*3600),h=dogCarePetHand(face.crown,p),x=Math.round(h.x),y=Math.round(h.y);hc.clearRect(0,0,320,180);drawDogCareHand(hc,x,y,null,1,'stroke');
-    const d=hc.getImageData(0,0,320,180).data;let left=320,right=-1,bottom=-1,points=[];for(let py=0;py<180;py++)for(let px=0;px<320;px++){const j=(py*320+px)*4;if(d[j+3]>=180&&d[j]>170&&d[j]-d[j+2]>55&&d[j+1]<220){left=Math.min(left,px);right=Math.max(right,px);bottom=Math.max(bottom,py);points.push((px-x)+','+(py-y));}}
-    if(bottom>face.crown.y+5)throw Error(dog+' fingers below forehead '+i);if(previous&&Math.hypot(x-previous.x,y-previous.y)>=6)throw Error(dog+' hand jumps '+i);previous={x,y};
-    if(y>=20){if(right-left>46)throw Error(dog+' oversized hand');maxWidth=Math.max(maxWidth,right-left);const s=points.join(';');if(shape==null)shape=s;else if(shape!==s)throw Error(dog+' changing finger contour '+i);full++;}
-   }rows.push({dog,frames:217,fullHandFrames:full,maxSkinWidth:maxWidth,rigidContour:true,belowBrows:0});}return {frames:651,rows};
+   if(typeof dogCarePetHand!=='undefined'||typeof drawDogCareStrokingHand!=='undefined')throw Error('old petting hand still exists');
+   const actual=document.querySelector('#dogCareSceneCanvas'),ctx=actual.getContext('2d'),reference=document.createElement('canvas');reference.width=320;reference.height=180;const ref=reference.getContext('2d'),rows=[],saved={...dogCareScene},paintHand=drawDogCareHand;
+   let handCalls=0;drawDogCareHand=()=>{handCalls++;throw Error('human hand during petting');};
+   try{
+    for(const dog of ['shuu','riku','grey']){let first,last,previous,min=Infinity,max=-Infinity;for(let i=0;i<=216;i++){
+     const p=i/216,now=10000+p*3600;dogCareScene={mode:'pet',dogId:dog,startedAt:10000,duration:3600,frame:i%8};actual.dataset.handPhase='feed';drawDogCareScene(now);
+     if(actual.dataset.handPhase!==undefined)throw Error('hand phase in petting');
+     ref.clearRect(0,0,320,180);ref.imageSmoothingEnabled=false;drawDogCareBackdrop(ref,i%8);const face=drawDogCareCloseup(ref,dog,'pet',p,now);drawDogCareHearts(ref,i%8,-18);
+     const pixels=ctx.getImageData(0,0,320,180).data,expected=ref.getImageData(0,0,320,180).data;let hearts=0;
+     for(let j=0;j<pixels.length;j++){if(pixels[j]!==expected[j])throw Error(dog+' unexpected overlay at frame '+i);if(j%4===0&&pixels[j]===255&&pixels[j+1]===143&&pixels[j+2]===168)hearts++;}
+     if(!hearts)throw Error(dog+' missing hearts '+i);const crown=face.crown;if(previous&&Math.hypot(crown.x-previous.x,crown.y-previous.y)>=1)throw Error(dog+' head jumps '+i);first||=crown;last=crown;previous=crown;min=Math.min(min,crown.x);max=Math.max(max,crown.x);
+    }if(Math.hypot(last.x-first.x,last.y-first.y)>.001||max-min<=4||max-min>=12)throw Error(dog+' reaction does not settle');rows.push({dog,frames:217,humanHandCalls:0,unexpectedOverlayPixels:0,heartsFrames:217,returnsToRest:true});}
+    if(handCalls)throw Error('human hand drawn');return {frames:651,rows};
+   }finally{drawDogCareHand=paintHand;dogCareScene=saved;drawDogCareScene();}
   });assert.equal(frames.frames,651);fs.writeFileSync(path.join(dir,'all-frame-metrics.json'),JSON.stringify(frames,null,2));
   for(const id of ['shuu','riku','grey']){
    await target('[data-dog-care-id="'+id+'"]');await press('[data-dog-care-id="'+id+'"]');const before=await progress();const expected=await page.evaluate(id=>{const copy=JSON.parse(JSON.stringify(s));const gain=ShuPetLife.pet(copy,id,gameClockAt(s.gameMinutes).dayIndex);return {gain,daily:copy.petLife.dogDaily};},id);
-   await target('#dogCarePet');await press('#dogCarePet');await page.waitForFunction(()=>dogCareScene.mode==='pet'&&document.querySelector('#dogCareSceneCanvas').dataset.handPhase==='stroke');
-   const caption=await page.evaluate(()=>{const a=document.querySelector('#dogCareStage').getBoundingClientRect(),b=document.querySelector('#dogCareSceneLabel').getBoundingClientRect();return {stageBottom:a.bottom,captionTop:b.top,stageWidth:a.width,heroWidth:document.querySelector('.dog-care-hero').getBoundingClientRect().width};});assert.ok(caption.captionTop>=caption.stageBottom,'the caption never covers the head or hand');assert.ok(Math.abs(caption.stageWidth-caption.heroWidth)<1,'the portrait uses its full column '+JSON.stringify(caption));
+   await target('#dogCarePet');await press('#dogCarePet');await page.waitForFunction(()=>dogCareScene.mode==='pet'&&Number(document.querySelector('#dogCareSceneCanvas').dataset.careProgress)>=.3&&document.querySelector('#dogCareSceneCanvas').dataset.handPhase===undefined);
+   const caption=await page.evaluate(()=>{const a=document.querySelector('#dogCareStage').getBoundingClientRect(),b=document.querySelector('#dogCareSceneLabel').getBoundingClientRect();return {stageBottom:a.bottom,captionTop:b.top,stageWidth:a.width,heroWidth:document.querySelector('.dog-care-hero').getBoundingClientRect().width};});assert.ok(caption.captionTop>=caption.stageBottom,'the caption never covers the dog reaction');assert.ok(Math.abs(caption.stageWidth-caption.heroWidth)<1,'the portrait uses its full column '+JSON.stringify(caption));
    await shot(id+'-petting');await page.waitForFunction(()=>!dogCareIsBusy());const after=await progress();assert.equal(after.affinity[id],before.affinity[id]+expected.gain);assert.deepEqual(after.daily,expected.daily);for(const key of ['money','hp','time','caught','baits','items','ingredients','meals','tricks','treats','toys','dog','story','records','mode'])assert.deepEqual(after[key],before[key],'pet keeps '+key);petting.push(id);
   }
   for(const id of ['rubberBall','tugRope','starFrisbee','squeakyNushi']){const q='[data-play-dog-toy="'+id+'"]',r=await target(q),bottom=await page.locator('.dog-care-footer').evaluate(n=>n.getBoundingClientRect().top);assert.ok(r.bottom<=bottom,'toy remains above action row '+id);}

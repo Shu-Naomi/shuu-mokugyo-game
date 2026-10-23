@@ -2,26 +2,19 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),path=requ
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot}=require('./game-harness.cjs');
 
-test('the relaxed hand rests across the crown without fingers hanging down the face',()=>{
+test('petting has no human hand and clears a previous feeding phase for every dog',()=>{
   const app=boot(),w=app.window;
   try{
-    const canvas=createCanvas(320,180),ctx=canvas.getContext('2d'),x=150,y=40;
-    w.drawDogCareHand(ctx,x,y,null,1,'stroke');
-    const pixels=ctx.getImageData(0,0,320,180).data;
-    let upper=0,side=0,below=0,contact=0,left=320,right=0;
-    for(let py=0;py<180;py++)for(let px=0;px<320;px++){
-      const i=(py*320+px)*4;
-      if(pixels[i+3]<180)continue;
-      if(!py)upper++;if(px===319)side++;
-      if(pixels[i]>170&&pixels[i]-pixels[i+2]>55&&pixels[i+1]<220){
-        if(py>y+11)below++;
-        if(py>=y-2&&py<=y+2){contact++;left=Math.min(left,px);right=Math.max(right,px);}
-      }
+    assert.equal(typeof w.dogCarePetHand,'undefined');assert.equal(typeof w.drawDogCareStrokingHand,'undefined');
+    w.drawDogCareHand=()=>assert.fail('petting must never draw a human hand');
+    let hearts=0;w.drawDogCareHearts=()=>hearts++;
+    for(const dog of ['shuu','riku','grey'])for(const progress of [0,.5,1]){
+      const canvas=w.document.querySelector('#dogCareSceneCanvas');canvas.dataset.handPhase='feed';
+      w.eval(`dogCareScene={mode:'pet',dogId:'${dog}',startedAt:10000,duration:3600,frame:0}`);
+      w.drawDogCareScene(10000+progress*3600);
+      assert.equal(canvas.dataset.handPhase,undefined);assert.match(w.document.querySelector('#dogCareSceneLabel').textContent,/目を細め/);
     }
-    assert.ok(right-left>=26&&right-left<=40&&contact>50,'the smaller hand rests on the crown, within half a portrait head');
-    assert.equal(below,0,'no fingers point down over the brows and eyes');
-    assert.ok(upper>10,'the sleeve enters from above');assert.equal(side,0,'no side-only arm');
-    assert.deepEqual(app.errors,[]);
+    assert.equal(hearts,9);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });
 

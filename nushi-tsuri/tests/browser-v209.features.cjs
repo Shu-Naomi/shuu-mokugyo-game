@@ -79,22 +79,15 @@ module.exports=async function features(url,mobile){
       return {id,altered};
     }));
     for(const portrait of careArt)assert.equal(portrait.altered,0,portrait.id+' intact original portrait');
-    const handArt=await page.evaluate(()=>{
-      const canvas=document.createElement('canvas');canvas.width=320;canvas.height=180;
-      const ctx=canvas.getContext('2d');drawDogCareHand(ctx,150,40,null,1,'stroke');
-      const pixels=ctx.getImageData(0,0,320,180).data;let upper=0,side=0,below=0,contact=0,left=320,right=0;
-      for(let y=0;y<180;y++)for(let x=0;x<320;x++){
-        const i=(y*320+x)*4;if(pixels[i+3]<180)continue;
-        if(!y)upper++;if(x===319)side++;
-        if(pixels[i]>170&&pixels[i]-pixels[i+2]>55&&pixels[i+1]<220){
-          if(y>51)below++;
-          if(y>=38&&y<=42){contact++;left=Math.min(left,x);right=Math.max(right,x);}
-        }
-      }
-      return {upper,side,below,contact,span:right-left};
-    });
-    assert.ok(handArt.span>=26&&handArt.span<=40&&handArt.contact>50);assert.equal(handArt.below,0);
-    assert.ok(handArt.upper>10);assert.equal(handArt.side,0);
+    const petReaction=await page.evaluate(()=>{
+      if(typeof dogCarePetHand!=='undefined'||typeof drawDogCareStrokingHand!=='undefined')throw Error('old petting hand still exists');
+      const saved={...dogCareScene},paint=drawDogCareHand;let samples=0;
+      drawDogCareHand=()=>{throw Error('petting drew a human hand');};
+      try{for(const dog of ['shuu','riku','grey'])for(const p of [0,.5,1]){
+        dogCareScene={mode:'pet',dogId:dog,startedAt:10000,duration:3600,frame:0};drawDogCareScene(10000+p*3600);
+        if(document.querySelector('#dogCareSceneCanvas').dataset.handPhase!==undefined)throw Error('petting hand phase');samples++;
+      }return {samples};}finally{drawDogCareHand=paint;dogCareScene=saved;drawDogCareScene();}
+    });assert.equal(petReaction.samples,9);
     const layout=await page.locator('#dogCare').evaluate(el=>{
       const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
         hero=el.querySelector('.dog-care-hero').getBoundingClientRect();
