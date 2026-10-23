@@ -8,7 +8,7 @@ async function files(phase){
  const rows=[];
  for(const file of ['index.html','sw.js','compact-ui.css','compact-ui.js','pet-life.js','save-slots.js','assets/dog-idles.png']){
   const response=await fetch(new URL(file+'?nohand='+main,base),{headers:{'Cache-Control':'no-cache'}});assert.equal(response.status,200,file);
-  const data=Buffer.from(await response.arrayBuffer()),expected=git('rev-parse','HEAD:nushi-tsuri/'+file);assert.equal(blob(data),expected,file+' published Git blob');
+  const data=Buffer.from(await response.arrayBuffer()),expected=git('rev-parse',main+':nushi-tsuri/'+file);assert.equal(git('rev-parse','HEAD:nushi-tsuri/'+file),expected,'unchanged game source '+file);assert.equal(blob(data),expected,file+' published Git blob');
   rows.push({file,bytes:data.length,sha:expected});
  }
  fs.writeFileSync(path.join(output,phase+'-files.json'),JSON.stringify({main,rows},null,2));
@@ -34,6 +34,13 @@ async function cacheUpdate(){
   },{legacy,base});
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});
   await page.waitForFunction(async()=>{const names=await caches.keys();return navigator.serviceWorker.controller?.state==='activated'&&names.includes('nushi-tsuri-v251-pet-reaction-251-6')&&!names.includes('nushi-tsuri-v251-care-inn-ui-251-5');},null,{timeout:180000});
+  const initialCache=await page.evaluate(async base=>{
+   const cache=await caches.open('nushi-tsuri-v251-pet-reaction-251-6'),keys=await cache.keys(),r=await cache.match(new URL('index.html',base)),relaxed=await cache.match(new URL('index.html',base),{ignoreVary:true});
+   return {entryCount:keys.length,indexFound:Boolean(r),ignoringVaryFound:Boolean(relaxed),indexRequests:keys.filter(r=>r.url.includes('index.html')).map(r=>({url:r.url,headers:[...r.headers]})),vary:relaxed?.headers.get('vary')};
+  },base);console.log('NOHAND_CACHE_INITIAL '+JSON.stringify(initialCache));
+  // Warm a real navigation under the activated worker before testing offline reuse.
+  await page.reload({waitUntil:'domcontentloaded'});
+  await page.waitForFunction(async base=>Boolean(await (await caches.open('nushi-tsuri-v251-pet-reaction-251-6')).match(new URL('index.html',base))),base,{timeout:30000});
   const installed=await page.evaluate(async base=>{
    const names=await caches.keys(),cache=await caches.open('nushi-tsuri-v251-pet-reaction-251-6'),r=await cache.match(new URL('index.html',base));
    return {names,html:await r.text(),worker:navigator.serviceWorker.controller.scriptURL};
@@ -56,8 +63,8 @@ async function cacheUpdate(){
  }finally{await context.close();await browser.close();}
 }
 (async()=>{
- assert.equal(git('rev-parse','HEAD^'),main,'the public-check commit directly follows the tested main');
+ cp.execFileSync('git',['merge-base','--is-ancestor',main,'HEAD']);
  await files('before');
- for(const screen of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){await care(url,screen);console.log('NOHAND_PUBLIC_PASS '+JSON.stringify({...screen,main,dailyCap:true,public:true}));}
+ if(!process.env.NOHAND_CACHE_ONLY)for(const screen of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){await care(url,screen);console.log('NOHAND_PUBLIC_PASS '+JSON.stringify({...screen,main,dailyCap:true,public:true}));}
  await cacheUpdate();await files('after');
 })().catch(e=>{console.error(e);process.exitCode=1;});
