@@ -1,4 +1,4 @@
-name: Published village inn routes
+name: Published inn interior rendering
 on:
   push:
     branches: [codex/inn-public-verification-v251-4]
@@ -53,31 +53,31 @@ jobs:
           fc-scan --format '%{family}\n' /usr/local/share/fonts/noto-ci/NotoSansCJKjp-Regular.otf | grep -F 'Noto Sans CJK JP'
           fc-match -f '%{family}\n' 'sans-serif:lang=ja'
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
-      - name: Check the published inn files and three landscape routes
+      - name: Check the published interior with the normal browser clock
         run: |
-          node - <<'JS' 2>&1 | tee inn-public-results.log
-          const assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process'),run=require('./browser-village-inn.cjs');
-          const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/',main='5dfb91ff398dbccad7cfce0776d595c252014a30';
+          node - <<'JS' 2>&1 | tee inn-natural-results.log
+          const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
+          const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/',main='5dfb91ff398dbccad7cfce0776d595c252014a30',dir=path.join(__dirname,'browser-evidence-village-inn-natural');fs.mkdirSync(dir,{recursive:true});
           const files=['assets/village-inn-v251-4.png','index.html','layered-scenery.js','scene-layers.js','scenery-worker.js','sw.js'];
-          async function verify(){
-            for(const p of files){
-              const r=await fetch(base+p+'?verify-inn='+main.slice(0,12),{cache:'no-store',signal:AbortSignal.timeout(45000)});
-              assert.equal(r.status,200,p);const b=Buffer.from(await r.arrayBuffer()),actual=crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');
-              assert.equal(actual,execFileSync('git',['rev-parse','HEAD:nushi-tsuri/'+p],{encoding:'utf8'}).trim(),'Published inn file '+p);
-            }console.log('INN_PUBLIC_FILES_PASS '+JSON.stringify({main,matched:files.length}));
-          }
-          (async()=>{await verify();for(const c of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){
-            await run(base+'?v=251-4',c.mobile,{viewport:{width:c.width,height:c.height},dpr:c.dpr,public:true});
-            console.log('INN_PUBLIC_ROUTE_PASS '+JSON.stringify({...c,public:true,main}));
-          }await verify();})().catch(e=>{console.error(e);process.exitCode=1;});
+          async function verify(){for(const p of files){const r=await fetch(base+p+'?verify-inn='+main.slice(0,12),{cache:'no-store',signal:AbortSignal.timeout(45000)});assert.equal(r.status,200,p);const b=Buffer.from(await r.arrayBuffer()),actual=crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');assert.equal(actual,execFileSync('git',['rev-parse','HEAD:nushi-tsuri/'+p],{encoding:'utf8'}).trim(),p);}console.log('INN_NATURAL_FILES_PASS '+JSON.stringify({main,matched:files.length}));}
+          (async()=>{await verify();const browser=await chromium.launch({headless:true});try{for(const c of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){
+            const context=await browser.newContext({viewport:{width:c.width,height:c.height},isMobile:c.mobile,hasTouch:c.mobile,deviceScaleFactor:c.dpr,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage(),errors=[],http=[],art=[];
+            page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)http.push(r.status()+' '+new URL(r.url()).pathname);if(r.url().includes('/fishing-inn-master.png'))art.push(r.status());});
+            await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),x:42,y:35,direction:'up',gameMinutes:600,soundEnabled:false}});
+            await page.goto(base+'?v=251-4',{waitUntil:'domcontentloaded',timeout:90000});const press=q=>page.locator(q)[c.mobile?'tap':'click']();await press('#start');await page.waitForTimeout(300);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await page.waitForFunction(()=>document.querySelector('#worldPixels').style.backgroundImage==='none');
+            await press('#action');await page.locator('#locationInterior.open').waitFor();
+            await page.waitForFunction(()=>{const c=document.querySelector('#locationPixels');if(!c?.width||!c.height)return false;const d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let visible=0,total=0,colors=new Set();for(let i=0;i<d.length;i+=64){total++;if(d[i+3]>0){visible++;colors.add(d[i]+','+d[i+1]+','+d[i+2]);}}return visible>total*.5&&colors.size>100;},null,{timeout:30000});
+            const rendered=await page.evaluate(()=>{const c=document.querySelector('#locationPixels'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let visible=0,total=0,colors=new Set();for(let i=0;i<d.length;i+=64){total++;if(d[i+3]>0){visible++;colors.add(d[i]+','+d[i+1]+','+d[i+2]);}}return {width:c.width,height:c.height,visible,total,colors:colors.size};});
+            await page.screenshot({path:path.join(dir,c.width+'x'+c.height+'-natural-inn-interior.png')});assert.ok(art.includes(200),'original inn interior asset loaded');assert.deepEqual(errors,[]);assert.deepEqual(http,[]);console.log('INN_NATURAL_RENDER_PASS '+JSON.stringify({...c,public:true,normalClock:true,main,originalInteriorArt:art,rendered,errors:0,httpErrors:0,scope:'visual-only; real walks are already verified by run39895226778'}));await context.close();
+          }}finally{await browser.close();}await verify();})().catch(e=>{console.error(e);process.exitCode=1;});
           JS
       - name: Preserve public inn route evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         with:
-          name: inn-public-routes
+          name: inn-natural-interior
           path: |
-            nushi-tsuri/tests/inn-public-results.log
-            nushi-tsuri/tests/browser-evidence-village-inn/
+            nushi-tsuri/tests/inn-natural-results.log
+            nushi-tsuri/tests/browser-evidence-village-inn-natural/
           retention-days: 14
           if-no-files-found: warn
