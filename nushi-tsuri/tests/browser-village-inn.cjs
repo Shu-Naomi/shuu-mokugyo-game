@@ -27,7 +27,7 @@ module.exports=async function villageInn(url,mobile=false,options={}){
  try{
   await page.clock.install({time:new Date('2026-10-23T03:00:00Z')});await page.clock.pauseAt('2026-10-23T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   const before=await progress();assert.ok(resources.length,'inn original loaded into the real world controller');
-  await walkTo({name:'front-road-from-home',x:42,y:39,direction:'up'});await walkTo({name:'inn-gate-and-steps',x:42,y:35,direction:'up'});assert.equal(await value('nearbyWorldLandmark().id'),'farmhouse');
+  await walkTo({name:'front-road-from-home',x:42,y:39,direction:'right'});await walkTo({name:'inn-gate-and-steps',x:42,y:35,direction:'up'});assert.equal(await value('nearbyWorldLandmark().id'),'farmhouse');
   const controls=await page.evaluate(()=>['#action',...['up','right','down','left'].map(d=>'[data-move="'+d+'"]')].map(q=>{const b=document.querySelector(q),r=b.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {q,width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:top===b||b.contains(top)};}));
   assert.ok(controls.every(c=>c.width>=44&&c.height>=44&&c.inside&&c.unblocked),'44px controls fit '+JSON.stringify(controls));await shot('inn-gate-arrival');
   const at=await state();await press('#action');await page.locator('#locationInterior.open').waitFor();assert.equal(await value('activeLocationId'),'farmhouse');assert.deepEqual(await progress(),before);
