@@ -1,4 +1,5 @@
 /* Shared catalogue frames; descriptions scroll only inside an opened sheet. */
+.location-scene{display:contents}
 .compact-window{--compact-ink:#dcebe0;--compact-gold:#ffe0a0;position:absolute!important;overflow:hidden!important;inset:12px 2% 8px!important}
 .compact-window .compact-suppressed{display:none!important}
 .compact-window [hidden]{display:none!important}
@@ -501,3 +502,81 @@
  #inventory .compact-kind-nav button{font-size:11px}
  #inventory .compact-toast{font-size:11px;line-height:15px}
 }
+
+/* v251-5: the care portrait, scrollable tools and action row have separate space. */
+#dogCare .dog-care-shell{grid-template-rows:44px 48px minmax(0,1fr) 56px;gap:0}
+#dogCare .dog-care-heading{padding:3px 8px}
+#dogCare .dog-care-heading small{display:none}
+#dogCare .dog-care-heading h2{font-size:17px;line-height:22px}
+#dogCare .dog-care-heading .close{min-width:64px;min-height:44px;padding:4px 10px;font-size:13px}
+#dogCare .dog-care-tabs{padding:2px 8px;gap:6px}
+#dogCare .dog-care-tabs button{min-height:44px;padding:4px 6px;font-size:13px}
+#dogCare .dog-care-content{display:grid;grid-template-columns:minmax(0,44%) minmax(0,1fr);gap:8px;min-height:0;min-width:0;padding:3px 8px 6px;overflow:hidden}
+#dogCare .dog-care-hero{display:flex;position:relative;min-height:0;min-width:0;margin:0;padding:0;border:0;background:none;overflow:hidden}
+#dogCare .dog-care-stage{min-height:0;height:100%;width:100%;box-sizing:border-box}
+#dogCare .dog-care-stage-label{top:4px;left:4px;max-width:calc(100% - 8px);font-size:11px;line-height:15px;padding:2px 4px}
+#dogCare .dog-care-best{position:absolute;bottom:4px;right:6px;margin:0;padding:2px 4px;background:#0b2235e8;border-radius:3px;font-size:11px;line-height:14px;pointer-events:none}
+#dogCare .dog-care-catch-button{min-width:124px;min-height:44px;font-size:13px}
+#dogCare .dog-care-catch-button small{font-size:11px}
+#dogCare .dog-care-details{display:flex;flex-direction:column;min-width:0;min-height:0;gap:5px}
+#dogCare .dog-care-profile{flex:0 0 auto;min-width:0;max-height:43%;overflow:auto;padding:0 3px 3px;box-sizing:border-box;scrollbar-width:thin}
+#dogCare .dog-care-name-row{display:flex;align-items:baseline;gap:7px;min-width:0}
+#dogCare .dog-care-name-row h3{order:-1;flex-shrink:0;font-size:16px;line-height:20px}
+#dogCare .dog-care-name-row small{font-size:12px;line-height:17px;color:#b7d5d6}
+#dogCare .dog-care-gauges{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:3px}
+#dogCare .dog-care-stat{position:relative;min-width:0}
+#dogCare .dog-affinity-line,#dogCare .dog-trick-label{display:flex;justify-content:space-between;gap:4px;margin:0;font-size:12px;line-height:17px}
+#dogCare .dog-affinity-meter,#dogCare .dog-trick-meter{height:6px;margin:2px 0 0}
+#dogCare #dogCareHearts,#dogCare #dogCareFrisbees{position:absolute;width:1px;height:1px;margin:0;overflow:hidden;clip-path:inset(50%)}
+#dogCare .dog-care-profile p{min-height:0;margin:4px 0 0;font-size:12px;line-height:17px}
+#dogCare .dog-care-body{flex:1;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));min-height:0;gap:8px;padding:0 3px 4px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scroll-padding-bottom:5px}
+#dogCare .dog-care-body h3{position:sticky;top:0;z-index:1;margin:0 0 4px;padding:2px 0;background:#142c3b;font-size:13px;line-height:18px}
+#dogCare .dog-care-body h3 small{display:block;margin:0;font-size:11px;line-height:15px}
+#dogCare .dog-care-grid{gap:5px}
+#dogCare .dog-care-card{grid-template-columns:24px minmax(0,1fr) auto;min-height:52px;padding:5px;gap:4px;box-sizing:border-box}
+#dogCare .dog-care-card>i{font-size:19px}
+#dogCare .dog-care-card b{font-size:12px;line-height:16px;white-space:normal}
+#dogCare .dog-care-card small{font-size:11px;line-height:15px}
+#dogCare .dog-care-card strong{font-size:11px;line-height:15px;white-space:normal}
+#dogCare .dog-care-footer{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;padding:4px 8px 6px;min-height:0;box-sizing:border-box}
+#dogCare .dog-care-footer button{min-height:44px;padding:3px 5px;font-size:12px;line-height:16px}
+#dogCare .dog-care-footer button small{font-size:11px;line-height:14px}
+
+/* Only the fishing inn uses this scene / kitchen / conversation arrangement. */
+#locationInterior.compact-inn{border-color:#ad8857;background:#493923}
+#locationInterior.compact-inn .location-layout{grid-template-columns:minmax(210px,33%) minmax(0,1fr)!important;grid-template-rows:minmax(0,1fr) auto}
+#locationInterior.compact-inn .location-visual{grid-column:1;grid-row:1;display:grid;grid-template-rows:26px minmax(0,1fr);gap:5px;padding:6px;box-sizing:border-box;border-right:1px solid #a18a5c;background:repeating-linear-gradient(0deg,#946a3510 0 1px,transparent 1px 6px),#30271d}
+#locationInterior.compact-inn .inn-scene-title{grid-row:1;margin:0;text-align:center;align-self:center;color:#f4dfb1;font-size:16px;line-height:22px;font-weight:700}
+#locationInterior.compact-inn .location-scene{grid-row:2;display:block;position:relative;align-self:stretch;width:100%;height:100%;min-height:0;overflow:hidden}
+#locationInterior.compact-inn .location-scene>canvas{position:absolute!important;inset:0!important;width:100%!important;height:100%!important;object-fit:contain!important}
+#locationInterior.compact-inn .location-panel{grid-column:2;grid-row:1;gap:6px;padding:6px;background:repeating-linear-gradient(0deg,#d0b0750b 0 1px,transparent 1px 5px),#e8dbbb;color:#443624}
+#locationInterior.compact-inn .compact-window-heading{flex:0 0 44px;height:44px;min-height:44px;margin:0;padding:0;border:0;gap:5px;box-sizing:border-box}
+#locationInterior.compact-inn .compact-window-heading>button{order:1;min-width:48px;min-height:44px;padding:4px 7px;background:linear-gradient(#e5c98f,#c5a36c);border-color:#9b7948;color:#493522;font-size:12px}
+#locationInterior.compact-inn #locationCategories{order:0;display:flex;flex:1;min-width:0;min-height:44px;gap:4px;margin:0}
+#locationInterior.compact-inn #locationCategories button{flex:1;min-width:0;min-height:44px;padding:4px 7px;border-color:#9a8057;border-radius:6px;background:#d1bc94;color:#4c3c28;font-size:13px}
+#locationInterior.compact-inn #locationCategories button.active{background:#f7ebc9;border-color:#8b683f;box-shadow:inset 0 -3px #bc965c;color:#44311e}
+#locationInterior.compact-inn #locationGoods{gap:0}
+#locationInterior.compact-inn .compact-catalog{border:0!important;padding:0!important;background:none;box-shadow:none}
+#locationInterior.compact-inn .compact-product-grid{width:42%;gap:3px;grid-auto-rows:44px}
+#locationInterior.compact-inn .compact-product-select{padding:2px 3px!important;border-radius:5px!important;background:#e1d2ae!important;color:#473922!important}
+#locationInterior.compact-inn .compact-product-select[aria-selected=true]{background:#faf0cf!important;border-color:#a17d42!important;box-shadow:inset 0 0 0 1px #e1bf77!important}
+#locationInterior.compact-inn .compact-product-select:before{color:#9a612e}
+#locationInterior.compact-inn .compact-product-name{font-size:13px!important;line-height:17px!important}
+#locationInterior.compact-inn .compact-product-stock{color:#726142;font-size:11px}
+#locationInterior.compact-inn .compact-selection-panel{inset:0 0 0 44%;gap:4px;padding:5px 7px;border-left:1px solid #a38e61;background:#f3e8cb;color:#453722}
+#locationInterior.compact-inn .compact-selection-heading{gap:6px}
+#locationInterior.compact-inn .compact-selection-heading>.compact-art{flex:0 0 27px;width:27px!important;height:27px!important;max-height:27px!important;border:0;background:none;font-size:22px}
+#locationInterior.compact-inn .compact-selection-name{margin:0!important;color:#594122;font-size:14px;line-height:19px}
+#locationInterior.compact-inn .compact-selection-status{color:#75613b;font-size:11px}
+#locationInterior.compact-inn .compact-selection-description{padding:3px 0 0;border-top:1px solid #c3af80;color:#4b3d27;font-size:13px;line-height:18px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+#locationInterior.compact-inn .compact-pager{width:42%;min-height:44px;height:44px;gap:2px;background:none;border:0;padding:0;box-shadow:none}
+#locationInterior.compact-inn .compact-pager button{min-width:44px;min-height:44px;width:44px;padding:3px;background:#decb9f;color:#5d472a;border-color:#a38a58}
+#locationInterior.compact-inn .compact-page-label{font-size:11px;color:#6e5837;line-height:15px}
+#locationInterior.compact-inn .compact-product-actions>button{background:linear-gradient(#718553,#4c623c);border-color:#7c8050;color:#fff2c6;min-height:44px}
+#locationInterior.compact-inn .compact-quantity-dock{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 48px;min-height:48px;margin:0;padding:4px 0 0;border-top:1px solid #b6a076;background:none;box-sizing:border-box}
+#locationInterior.compact-inn .inn-rest-note{order:-1;flex:1;color:#6b5535;font-size:12px;line-height:17px}
+#locationInterior.compact-inn #locationAction{flex:0 0 150px;min-height:44px;max-height:44px;width:auto;display:flex;align-items:center;justify-content:center;gap:12px;margin:0;padding:4px 10px;background:linear-gradient(#dbbd81,#b39058);border-color:#94703c;color:#49321d;font-size:14px}
+#locationInterior.compact-inn #locationAction small{font-size:12px}
+#locationInterior.compact-inn .compact-scene-dialogue{grid-column:1/-1;grid-row:2;position:relative;inset:auto;min-height:36px;max-height:84px;overflow:auto;margin:0;padding:6px 10px;box-sizing:border-box;border:0;border-top:1px solid #bba16b;box-shadow:none;background:#2e3927;color:#f5ecd2;overscroll-behavior:contain;scrollbar-width:thin}
+#locationInterior.compact-inn .compact-scene-dialogue .location-dialogue{display:block;-webkit-line-clamp:unset;margin:0;padding:0;overflow:visible;max-height:none;font-size:13px;line-height:18px;color:inherit}
+@media(min-height:501px){#locationInterior.compact-inn .location-layout{grid-template-columns:minmax(280px,39%) minmax(0,1fr)!important}#dogCare .dog-care-content{grid-template-columns:minmax(0,49%) minmax(0,1fr)}#dogCare .dog-care-profile{max-height:35%}#dogCare .dog-care-card{min-height:60px}#dogCare .dog-care-profile p{font-size:13px;line-height:19px}}

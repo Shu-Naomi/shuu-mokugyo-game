@@ -18,7 +18,7 @@ test('the relaxed hand rests across the crown without fingers hanging down the f
         if(py>=y-2&&py<=y+2){contact++;left=Math.min(left,px);right=Math.max(right,px);}
       }
     }
-    assert.ok(right-left>40&&contact>90,'broad palm and fingers lie across the head');
+    assert.ok(right-left>=26&&right-left<=40&&contact>50,'the smaller hand rests on the crown, within half a portrait head');
     assert.equal(below,0,'no fingers point down over the brows and eyes');
     assert.ok(upper>10,'the sleeve enters from above');assert.equal(side,0,'no side-only arm');
     assert.deepEqual(app.errors,[]);

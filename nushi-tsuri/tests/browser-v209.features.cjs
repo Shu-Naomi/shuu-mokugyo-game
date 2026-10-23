@@ -93,7 +93,7 @@ module.exports=async function features(url,mobile){
       }
       return {upper,side,below,contact,span:right-left};
     });
-    assert.ok(handArt.span>40&&handArt.contact>90);assert.equal(handArt.below,0);
+    assert.ok(handArt.span>=26&&handArt.span<=40&&handArt.contact>50);assert.equal(handArt.below,0);
     assert.ok(handArt.upper>10);assert.equal(handArt.side,0);
     const layout=await page.locator('#dogCare').evaluate(el=>{
       const bounds=el.getBoundingClientRect(),stage=document.querySelector('#dogCareStage').getBoundingClientRect(),
