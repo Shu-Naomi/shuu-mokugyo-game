@@ -33,14 +33,22 @@ async function cacheUpdate(){
    if(!(await (await old.match(new URL('index.html',base))).text()).includes('function dogCarePetHand('))throw Error('legacy hand was not cached');
   },{legacy,base});
   await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});
-  await page.waitForFunction(async()=>{const names=await caches.keys();return navigator.serviceWorker.controller?.state==='activated'&&names.includes('nushi-tsuri-v251-pet-reaction-251-6')&&!names.includes('nushi-tsuri-v251-care-inn-ui-251-5');},null,{timeout:180000});
+  await page.evaluate(async()=>{
+   const deadline=Date.now()+180000;
+   while(Date.now()<deadline){const names=await caches.keys();if(navigator.serviceWorker.controller?.state==='activated'&&names.includes('nushi-tsuri-v251-pet-reaction-251-6')&&!names.includes('nushi-tsuri-v251-care-inn-ui-251-5'))return;await new Promise(r=>setTimeout(r,200));}
+   throw Error('current worker/cache did not activate');
+  });
   const initialCache=await page.evaluate(async base=>{
    const cache=await caches.open('nushi-tsuri-v251-pet-reaction-251-6'),keys=await cache.keys(),r=await cache.match(new URL('index.html',base)),relaxed=await cache.match(new URL('index.html',base),{ignoreVary:true});
    return {entryCount:keys.length,indexFound:Boolean(r),ignoringVaryFound:Boolean(relaxed),indexRequests:keys.filter(r=>r.url.includes('index.html')).map(r=>({url:r.url,headers:[...r.headers]})),vary:relaxed?.headers.get('vary')};
-  },base);console.log('NOHAND_CACHE_INITIAL '+JSON.stringify(initialCache));
+  },base);console.log('NOHAND_CACHE_INITIAL '+JSON.stringify(initialCache));assert.equal(initialCache.indexFound,true,'new worker pre-caches the current HTML');
   // Warm a real navigation under the activated worker before testing offline reuse.
   await page.reload({waitUntil:'domcontentloaded'});
-  await page.waitForFunction(async base=>Boolean(await (await caches.open('nushi-tsuri-v251-pet-reaction-251-6')).match(new URL('index.html',base))),base,{timeout:30000});
+  await page.evaluate(async base=>{
+   const deadline=Date.now()+30000;
+   while(Date.now()<deadline){if(await (await caches.open('nushi-tsuri-v251-pet-reaction-251-6')).match(new URL('index.html',base)))return;await new Promise(r=>setTimeout(r,100));}
+   throw Error('controlled navigation did not cache the current HTML');
+  },base);
   const installed=await page.evaluate(async base=>{
    const names=await caches.keys(),cache=await caches.open('nushi-tsuri-v251-pet-reaction-251-6'),r=await cache.match(new URL('index.html',base));
    return {names,html:await r.text(),worker:navigator.serviceWorker.controller.scriptURL};
