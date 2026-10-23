@@ -23,6 +23,8 @@ jobs:
       - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: abb2697830150b38fa6d2ebd1d0861ff87b10e28
+      - name: Set ownership of this container checkout
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
       - name: Confirm the merged game and tests
         run: test "$(git rev-parse HEAD^{tree})" = 95917175593a329933c65992534d96b97fcc4cc3
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
