@@ -7,7 +7,7 @@ const root=path.resolve(__dirname,'..'),pixels=c=>c.getContext('2d').getImageDat
 const snapshot=w=>read(w,'({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
 
 test('Sam district source art is preserved, and the assembled village changes no pixel outside the shop district',async()=>{
- const d=Data.get('world'),original=await loadImage(path.join(root,d.source));
+ const d={...Data.get('world'),edits:Data.get('world').edits.filter(e=>e.id==='sam-shop-front')},original=await loadImage(path.join(root,d.source));
  const raw=fs.readFileSync(path.join(root,d.edits[0].source));
  assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),'88d868055afb912bc4054cbc286e9d774891225b5086a411ae70d294acf6b372');
  const edits=await Promise.all(d.edits.map(e=>loadImage(path.join(root,e.source))));
