@@ -6443,7 +6443,7 @@
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=248-1" />
+    <link rel="stylesheet" href="compact-ui.css?v=251-5" />
     <link rel="stylesheet" href="offshore-island.css?v=251-2" />
   </head>
   <body>
@@ -7050,7 +7050,9 @@
         <div class="modal shop-modal" id="locationInterior">
           <div class="location-layout">
             <div class="location-visual">
-              <canvas id="locationPixels" width="640" height="320" role="img" aria-label="施設の内装"></canvas>
+              <div class="location-scene">
+                <canvas id="locationPixels" width="640" height="320" role="img" aria-label="施設の内装"></canvas>
+              </div>
             </div>
             <div class="location-panel">
               <button class="close" data-close>外へ出る</button>
@@ -7215,31 +7217,43 @@
           <div class="dog-care-shell">
             <header class="dog-care-heading">
               <div><small>WANCO FRIENDSHIP</small><h2>ワンコずと遊ぶ</h2></div>
+              <div class="dog-care-best" id="dogCareCatchBest">わんこキャッチ BEST 0 / 3</div>
               <button class="close" data-close>閉じる</button>
             </header>
             <nav class="dog-care-tabs" id="dogCareDogs" aria-label="お世話するワンコ"></nav>
-            <section class="dog-care-hero">
+            <div class="dog-care-content">
+              <section class="dog-care-hero">
               <div class="dog-care-stage" id="dogCareStage">
                 <canvas id="dogCareSceneCanvas" width="320" height="180" aria-label="ワンコを撫でる・食べる・走って戻るモーション"></canvas>
-                <div class="dog-care-stage-label" id="dogCareSceneLabel">のんびり待機中</div>
                 <button class="dog-care-catch-button" id="dogCareCatchButton" hidden>キャッチ！<small>光ったら画面をタップ</small></button>
               </div>
+                <div class="dog-care-stage-label" id="dogCareSceneLabel">のんびり待機中</div>
+              </section>
+              <div class="dog-care-details">
               <div class="dog-care-profile">
+                <div class="dog-care-name-row">
                 <small id="dogCareRole">案内・調査役</small>
                 <h3 id="dogCareName">シュウ</h3>
+                </div>
+                <div class="dog-care-gauges">
+                <div class="dog-care-stat">
                 <div id="dogCareHearts" class="dog-hearts" role="img"></div>
                 <div class="dog-affinity-line"><b id="dogCareTier">顔なじみ</b><span id="dogCarePoints">0 / 100</span></div>
                 <div class="dog-affinity-meter"><i id="dogCareAffinityFill"></i></div>
+                </div>
+                <div class="dog-care-stat">
                 <div class="dog-trick-label"><b>芸</b><span id="dogCareTrickPoints"></span></div>
                 <div id="dogCareFrisbees" class="dog-frisbees" role="img"></div>
                 <div class="dog-trick-meter"><i id="dogCareTrickFill"></i></div>
+                </div>
+                </div>
                 <p id="dogCareMessage" aria-live="polite">今日は何をして遊ぼう？</p>
-                <div class="dog-care-best" id="dogCareCatchBest">わんこキャッチ BEST 0 / 3</div>
               </div>
-            </section>
             <div class="dog-care-body">
               <section><h3>🍪 おやつ<small>犬ごとに一日1個</small></h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
               <section><h3>🎾 おもちゃ<small>好感度は一日1回</small></h3><div class="dog-care-grid" id="dogCareToys"></div></section>
+            </div>
+              </div>
             </div>
             <footer class="dog-care-footer">
               <button id="dogCarePet">ナデナデする<small>なつき度＋8・一日3回</small></button>
@@ -7290,7 +7304,7 @@
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="pet-life.js?v=250-1"></script>
     <script src="aquarium-life.js?v=251-1"></script>
-    <script src="compact-ui.js?v=248-1"></script>
+    <script src="compact-ui.js?v=251-5"></script>
     <script src="pet-life-ui.js?v=250-1"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
@@ -19038,16 +19052,16 @@
           x=crown.x+46*(1-t);y=-60+(crown.y+55)*t;phase="approach";
         }else if(progress<.42){
           const t=dogCareEase((progress-.18)/.24);
-          x=crown.x+18*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
+          x=crown.x+10*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
         }else if(progress<.54){
           const t=dogCareEase((progress-.42)/.12);
-          x=crown.x+18*(1-t);y=crown.y-5-Math.sin(t*Math.PI)*14;phase="lift";
+          x=crown.x+10*(1-t);y=crown.y-5-Math.sin(t*Math.PI)*14;phase="lift";
         }else if(progress<.8){
           const t=dogCareEase((progress-.54)/.26);
-          x=crown.x+18*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
+          x=crown.x+10*t;y=crown.y-5+Math.sin(t*Math.PI)*2;phase="stroke";
         }else{
           const t=dogCareEase((progress-.8)/.2);
-          x=crown.x+18+28*t;y=crown.y-5-(crown.y+55)*t;phase="withdraw";
+          x=crown.x+10+36*t;y=crown.y-5-(crown.y+55)*t;phase="withdraw";
         }
         return {x,y,phase};
       }
@@ -19086,40 +19100,30 @@
       }
       function drawDogCareStrokingHand(ctx,x,y) {
         ctx.save();ctx.translate(x,y);
-        const skin="#e7ad83",edge="#885642";
-        const path=(color,draw,outline=true)=>{
+        const skin="#e7ad83",edge="#92664f";
+        const path=(color,draw,outline=false)=>{
           ctx.beginPath();draw();ctx.closePath();ctx.fillStyle=color;ctx.fill();
           if(outline){ctx.strokeStyle=edge;ctx.lineWidth=1;ctx.lineJoin="round";ctx.stroke();}
         };
-        // Palm down on the crown: the thumb stays on the far upper side.
-        // Fingernails are on the visible upper surface; the lower palm edge
-        // rests flat on the fur, without an upturned thumb or palm crease.
-        path("#d7e8ef",()=>{ctx.moveTo(13,-21);ctx.lineTo(77,-106);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
-        path("#b5ccd8",()=>{ctx.moveTo(25,-18);ctx.lineTo(91,-98);ctx.lineTo(101,-92);ctx.lineTo(29,-9);},false);
-        path(skin,()=>{ctx.moveTo(7,-14);ctx.lineTo(17,-27);ctx.lineTo(31,-17);ctx.lineTo(21,-3);});
-        // Four softly bent fingers, longest in the middle, are staggered in
-        // depth. Each has a rounded tip and joins the same broad palm.
-        path(skin,()=>{ctx.moveTo(10,-13);ctx.quadraticCurveTo(1,-24,-11,-23);
-          ctx.quadraticCurveTo(-20,-23,-22,-17);ctx.quadraticCurveTo(-21,-13,-15,-14);
-          ctx.lineTo(-6,-15);ctx.lineTo(1,-7);});
-        const fingers=[[-19,-15,-33,-12],[-21,-11,-40,-8],[-21,-7,-42,-4],[-18,-3,-36,0]];
-        for(const [baseX,baseY,tipX,tipY]of fingers)path(skin,()=>{
-          ctx.moveTo(baseX,baseY);ctx.quadraticCurveTo(tipX+5,baseY-1,tipX,tipY-2);
-          ctx.quadraticCurveTo(tipX-3,tipY,tipX,tipY+2);
-          ctx.quadraticCurveTo(baseX-5,tipY+4,baseX+6,baseY+5);
-        });
-        path(skin,()=>{ctx.moveTo(-19,-16);ctx.quadraticCurveTo(-6,-21,8,-15);
-          ctx.lineTo(22,-10);ctx.quadraticCurveTo(25,-3,15,2);
-          ctx.lineTo(-19,2);ctx.quadraticCurveTo(-24,-5,-19,-16);});
-        path("#f3c19a",()=>{ctx.moveTo(-15,-14);ctx.quadraticCurveTo(-4,-18,6,-13);
-          ctx.lineTo(16,-9);ctx.quadraticCurveTo(1,-9,-15,-10);},false);
-        // Small dorsal nails make the contact side legible even on a phone.
-        for(const [, ,tipX,tipY]of fingers)path("#f8d4b7",()=>{
-          ctx.moveTo(tipX+1,tipY-1.5);ctx.quadraticCurveTo(tipX+4,tipY-3,tipX+7,tipY-1.5);
-          ctx.lineTo(tipX+7,tipY);ctx.lineTo(tipX+1,tipY);},false);
-        ctx.strokeStyle="#bd805e";ctx.lineWidth=1;ctx.beginPath();
-        ctx.moveTo(-18,1);ctx.lineTo(12,1);ctx.stroke();
-        path("#82a9b9",()=>{ctx.moveTo(14,-26);ctx.lineTo(20,-31);ctx.lineTo(35,-20);ctx.lineTo(29,-13);},false);
+        // One rigid dorsal silhouette: four fingers and one thumb. Keeping
+        // the entire outline together prevents detached or multiplying digits.
+        path("#d7e8ef",()=>{ctx.moveTo(11,-17);ctx.lineTo(45,-77);ctx.lineTo(57,-70);ctx.lineTo(22,-10);});
+        path("#b5ccd8",()=>{ctx.moveTo(18,-14);ctx.lineTo(51,-73);ctx.lineTo(57,-70);ctx.lineTo(22,-10);});
+        path(skin,()=>{ctx.moveTo(11,-18);ctx.lineTo(22,-12);ctx.lineTo(15,-1);ctx.lineTo(5,-7);},true);
+        path(skin,()=>{
+          ctx.moveTo(12,-8);ctx.quadraticCurveTo(5,-12,-3,-15);
+          ctx.quadraticCurveTo(-7,-15,-8,-12);ctx.quadraticCurveTo(-8,-10,-4,-9);ctx.lineTo(-1,-7);
+          ctx.lineTo(-13,-7);ctx.quadraticCurveTo(-18,-8,-19,-6);ctx.quadraticCurveTo(-20,-4,-17,-4);ctx.lineTo(-10,-3.5);
+          ctx.lineTo(-19,-3.5);ctx.quadraticCurveTo(-22,-3,-22,-1.5);ctx.quadraticCurveTo(-22,0,-19,.3);ctx.lineTo(-11,.3);
+          ctx.lineTo(-17,1);ctx.quadraticCurveTo(-20,1.5,-19,3);ctx.quadraticCurveTo(-18,4,-15,3.5);ctx.lineTo(-7,3.5);
+          ctx.lineTo(-12,4.2);ctx.quadraticCurveTo(-14,4.5,-13,6);ctx.quadraticCurveTo(-12,7,-9,6.5);
+          ctx.lineTo(0,5);ctx.quadraticCurveTo(7,5,15,0);ctx.lineTo(17,-6);
+        },true);
+        path("#f3c19a",()=>{ctx.moveTo(-8,-5);ctx.quadraticCurveTo(0,-9,9,-6);ctx.lineTo(10,-3);ctx.quadraticCurveTo(0,-1,-8,-2);});
+        ctx.strokeStyle="#c48c69";ctx.lineWidth=.7;ctx.beginPath();
+        ctx.moveTo(-16,-3.5);ctx.lineTo(-8,-3);ctx.moveTo(-17,.4);ctx.lineTo(-8,1);
+        ctx.moveTo(-13,3.6);ctx.lineTo(-6,3.2);ctx.stroke();
+        path("#82a9b9",()=>{ctx.moveTo(10,-20);ctx.lineTo(14,-25);ctx.lineTo(26,-18);ctx.lineTo(22,-12);});
         ctx.restore();
       }
       function drawDogCareHearts(ctx, frame, offsetX = 0) {
@@ -19576,7 +19580,7 @@
         if(dogCareIsBusy())return false;
         const gained=ShuPetLife.pet(s,dogId,gameClockAt(s.gameMinutes).dayIndex);
         dogCareStatusMessage=`${dogProfileData[dogId].name}をナデナデ♡ ${gained?`なつき度＋${gained}`:"今日はもうたっぷり仲良くなったね"}`;
-        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("pet",dogId,null,1800);save();return true;
+        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("pet",dogId,null,3600);save();return true;
       }
       function trainDogCare() {
         const dogId=dogCareSelectedId;

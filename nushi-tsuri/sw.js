@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-village-inn-251-4";
+const CACHE_NAME = "nushi-tsuri-v251-care-inn-ui-251-5";
 const CORE_ASSETS = [
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
@@ -40,8 +40,8 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=248-1",
-  "./compact-ui.css?v=248-1",
+  "./compact-ui.js?v=251-5",
+  "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",

@@ -97,7 +97,7 @@
     controllers.add(c);c.apply();if(typeof ResizeObserver==='function'){c.observer=new ResizeObserver(()=>c.apply());c.observer.observe(opts.list?node:grid);}return c;
   }
   function release(scope,remember=true){if(!scope)return;if(sheet&&scope.contains(sheet.scope))closeSheet(false);if(remember)rememberFocus(scope);else focusAfter.delete(scope.id);[...controllers].filter(c=>scope.contains(c.root)).forEach(c=>c.release());
-    for(const [s,d] of [...decorations])if(scope.contains(s)){d.moves.reverse().forEach(m=>{if(m.mark.parentNode)m.mark.replaceWith(m.n);m.n.hidden=m.hidden;m.n.onclick=m.onclick;});d.cleanup.forEach(f=>f());d.suppressed.forEach(n=>n.classList.remove('compact-suppressed'));d.nodes.forEach(n=>n.remove());s.classList.remove('compact-window','compact-pet-shop','compact-location-shop','compact-store','compact-vehicle-shop','compact-inventory','compact-service');d.panel?.classList.remove('compact-panel');decorations.delete(s);}
+    for(const [s,d] of [...decorations])if(scope.contains(s)){d.moves.reverse().forEach(m=>{if(m.mark.parentNode)m.mark.replaceWith(m.n);m.n.hidden=m.hidden;m.n.onclick=m.onclick;});d.cleanup.forEach(f=>f());d.suppressed.forEach(n=>n.classList.remove('compact-suppressed'));d.nodes.forEach(n=>n.remove());s.classList.remove('compact-window','compact-pet-shop','compact-location-shop','compact-store','compact-vehicle-shop','compact-inventory','compact-service','compact-inn');d.panel?.classList.remove('compact-panel');decorations.delete(s);}
   }
   function frame(scope,panel,money,nodes){const d=decorate(scope);d.panel=panel;panel.classList.add('compact-panel');const heading=el('header','compact-window-heading'),title=panel.querySelector('h2'),close=scope.querySelector('[data-close]');panel.prepend(heading);d.nodes.push(heading);move(title,heading,d);if(title&&!title.id)title.id='compactTitle-'+scope.id;scope.setAttribute('role','dialog');scope.setAttribute('aria-modal','true');if(title)scope.setAttribute('aria-labelledby',title.id);
     const wallet=el('span','compact-wallet',Number(money||0).toLocaleString('ja-JP')+'円'),help=button('案内','info');help.dataset.compactGuide='';heading.append(wallet,help);move(close,heading,d);help.onclick=e=>{e.stopPropagation();guide(scope,'案内・使い方',help,nodes);};return d;}
@@ -118,6 +118,15 @@
     ['.location-brand','#locationNote','.cooking-kitchen-status'].forEach(q=>suppress(panel.querySelector(q),d));const stock=scope.querySelector('#locationGoods');
     if(stock.hidden){scope.classList.add('compact-service');const hero=add(panel,el('div','compact-service-card'),d);move(panel.querySelector('#locationDialogue'),hero,d);}else sceneConversation(scope,scope.querySelector('.location-visual'),panel.querySelector('#locationDialogue'),d);
     const dock=add(panel,el('footer','compact-quantity-dock'),d);move(stock.querySelector('.quantity-picker'),dock,d);move(panel.querySelector('#locationAction'),dock,d);dock.hidden=!dock.querySelector('.quantity-picker')&&scope.querySelector('#locationAction')?.hidden;
+    if(ctx.id==='farmhouse'){
+      scope.classList.add('compact-inn');
+      const heading=panel.querySelector('.compact-window-heading'),visual=scope.querySelector('.location-visual');
+      add(visual,el('h3','inn-scene-title',clean(heading.querySelector('h2'))),d);
+      suppress(heading.querySelector('h2'),d);suppress(heading.querySelector('.compact-wallet'),d);
+      move(scope.querySelector('#locationCategories'),heading,d);
+      const dialogue=visual.querySelector('.compact-scene-dialogue');if(dialogue)scope.querySelector('.location-layout').append(dialogue);
+      add(dock,el('span','inn-rest-note','ひと休みすると、翌朝6時に。'),d);
+    }
     stock.querySelectorAll('[data-location-category-panel]').forEach(n=>catalog(n,{selector:'button.location-good',key:'location:'+ctx.id+':'+n.id}));restoreFocus(scope);
   }
   function vehicle(scope,ctx){release(scope);scope.classList.add('compact-vehicle-shop');const panel=scope.querySelector('.vehicle-shop-shell'),d=frame(scope,panel,ctx.money,()=>[panel.querySelector('#vehicleShopDialogue')]);suppress(panel.querySelector('.shop-brand'),d);
