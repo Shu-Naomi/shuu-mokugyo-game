@@ -64,7 +64,7 @@ test('care redraws show petting, chewing and a run home without repeating traini
    w.openDogCare(id);click(w,'#dogCarePet');const petState=read(w,'s');
    for(let n=0;n<20;n++)w.drawDogCareScene(now+400+n*40);
    assert.match(w.document.querySelector('#dogCareSceneLabel').textContent,/目を細め/);assert.deepEqual(read(w,'s'),petState);
-   now+=2000;w.advanceDogCareScene();
+   now+=read(w,'dogCareScene.duration')+100;w.advanceDogCareScene();
    click(w,'#dogCareTrain');const trained=read(w,'s');
    w.drawDogCareScene(now+200);assert.match(w.document.querySelector('#dogCareSceneLabel').textContent,/走って/);
    w.drawDogCareScene(now+1800);assert.match(w.document.querySelector('#dogCareSceneLabel').textContent,/戻ろう/);
