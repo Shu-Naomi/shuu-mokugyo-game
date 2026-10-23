@@ -1,0 +1,73 @@
+name: Published care and inn UI
+on:
+  push:
+    branches: [codex/care-inn-public-v251-5]
+    paths: ['.github/workflows/care-inn-public.yml']
+permissions:
+  contents: read
+concurrency:
+  group: care-inn-public-v251-5
+  cancel-in-progress: false
+jobs:
+  inn:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 2951d723429e99db7bb166362f340012ca42b794
+      - name: Set ownership of this container checkout
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - name: Confirm the published source tree
+        run: test "$(git rev-parse HEAD^{tree})" = c0c991974e6a93b5b50e5982e46f23654a3ee8ee
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - name: Install pinned Japanese Noto fonts
+        run: |
+          mkdir -p /usr/local/share/fonts/noto-ci
+          cd /usr/local/share/fonts/noto-ci
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Regular.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Bold.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf
+          sha256sum --check <<'FONT_HASHES'
+          68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5  NotoSansCJKjp-Regular.otf
+          e53dcb0dcb2922e45d01aae1ebd2f382bb81d4229b18b6b883bd170678af1f76  NotoSansCJKjp-Bold.otf
+          FONT_HASHES
+          cat > /etc/fonts/conf.d/99-nushi-japanese.conf <<'FONT_CONFIG'
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+          <fontconfig>
+            <alias><family>sans-serif</family><prefer><family>Noto Sans CJK JP</family></prefer></alias>
+          </fontconfig>
+          FONT_CONFIG
+          fc-cache -f
+          fc-scan --format '%{family}\n' /usr/local/share/fonts/noto-ci/NotoSansCJKjp-Regular.otf | grep -F 'Noto Sans CJK JP'
+          fc-match -f '%{family}\n' 'sans-serif:lang=ja'
+          fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
+      - name: Verify the published files and both screens in three viewports
+        run: |
+          node - <<'JS' 2>&1 | tee care-inn-public.log
+          const assert=require('node:assert/strict'),crypto=require('node:crypto'),{execFileSync}=require('node:child_process'),run=require('./browser-care-inn-ui.cjs');
+          const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/',main='2951d723429e99db7bb166362f340012ca42b794',files=['index.html','compact-ui.css','compact-ui.js','sw.js','assets/dog-idles.png','assets/layered-v163/fishing-inn-master.png'];
+          async function verify(){for(const p of files){const r=await fetch(base+p+'?care-inn='+main.slice(0,12),{cache:'no-store',signal:AbortSignal.timeout(45000)});assert.equal(r.status,200,p);const b=Buffer.from(await r.arrayBuffer()),sha=crypto.createHash('sha1').update(Buffer.from('blob '+b.length+'\0')).update(b).digest('hex');assert.equal(sha,execFileSync('git',['rev-parse','HEAD:nushi-tsuri/'+p],{encoding:'utf8'}).trim(),p);}console.log('CARE_INN_PUBLIC_FILES_PASS '+JSON.stringify({main,matched:6}));}
+          (async()=>{await verify();for(const c of [{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}]){await run(base+'?v=251-5',c);console.log('CARE_INN_PUBLIC_PASS '+JSON.stringify({...c,main,public:true}));}await verify();})().catch(e=>{console.error(e);process.exitCode=1;});
+          JS
+      - name: Preserve published screenshots, videos and results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: care-inn-public-evidence
+          path: |
+            nushi-tsuri/tests/care-inn-public.log
+            nushi-tsuri/tests/ui-evidence-v251-5/
+          retention-days: 14
+          if-no-files-found: warn
