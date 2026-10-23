@@ -1,0 +1,65 @@
+name: Public pet reaction and legacy cache
+on:
+  push:
+    branches: [codex/nohand-public-v251-6]
+permissions:
+  contents: read
+concurrency:
+  group: nohand-public-v251-6
+  cancel-in-progress: true
+jobs:
+  inn:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 2
+      - name: Set ownership of this container checkout
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - name: Install pinned Japanese Noto fonts
+        run: |
+          mkdir -p /usr/local/share/fonts/noto-ci
+          cd /usr/local/share/fonts/noto-ci
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Regular.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Regular.otf
+          curl --fail --location --connect-timeout 10 --max-time 60 --retry 2 --output NotoSansCJKjp-Bold.otf https://raw.githubusercontent.com/notofonts/noto-cjk/f8d157532fbfaeda587e826d4cd5b21a49186f7c/Sans/OTF/Japanese/NotoSansCJKjp-Bold.otf
+          sha256sum --check <<'FONT_HASHES'
+          68a3fc98800b2a27b371f2fb79991daf3633bd89309d4ffaa6946fd587f375b5  NotoSansCJKjp-Regular.otf
+          e53dcb0dcb2922e45d01aae1ebd2f382bb81d4229b18b6b883bd170678af1f76  NotoSansCJKjp-Bold.otf
+          FONT_HASHES
+          cat > /etc/fonts/conf.d/99-nushi-japanese.conf <<'FONT_CONFIG'
+          <?xml version="1.0"?>
+          <!DOCTYPE fontconfig SYSTEM "urn:fontconfig:fonts.dtd">
+          <fontconfig>
+            <alias><family>sans-serif</family><prefer><family>Noto Sans CJK JP</family></prefer></alias>
+          </fontconfig>
+          FONT_CONFIG
+          fc-cache -f
+          fc-scan --format '%{family}\n' /usr/local/share/fonts/noto-ci/NotoSansCJKjp-Regular.otf | grep -F 'Noto Sans CJK JP'
+          fc-match -f '%{family}\n' 'sans-serif:lang=ja'
+          fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
+      - name: Check the published pet reaction, daily cap and legacy cache
+        run: node browser-nohand-public.cjs 2>&1 | tee nohand-public.log
+      - name: Preserve public petting and offline evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: nohand-public-evidence
+          path: |
+            nushi-tsuri/tests/nohand-public.log
+            nushi-tsuri/tests/ui-evidence-v251-5/
+            nushi-tsuri/tests/ui-evidence-v251-6-public/
+          retention-days: 14
+          if-no-files-found: warn
