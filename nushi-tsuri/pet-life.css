@@ -173,6 +173,23 @@
  .pet-aquarium .pet-content{padding:6px 10px}.pet-aquarium-view{grid-template-rows:44px minmax(0,1fr) 48px;gap:6px}.pet-aquarium .pet-tank-info{gap:4px;padding:6px}.pet-profile-portrait{display:none}.pet-aquarium .pet-tank-info h3{font-size:14px;line-height:18px}.pet-tank-info h3>small{line-height:16px;font-size:10px;top:0}.pet-profile-length>strong{font-size:20px}.pet-profile-length>span{font-size:10px;padding:2px 4px}.pet-vitals{gap:4px}.pet-gauge{height:16px}.pet-xp-line{line-height:12px}.pet-aquarium .pet-message{bottom:66px;font-size:11px;padding:6px 9px}
  .pet-aquarium .pet-dock-secondary{font-size:11px;padding:4px 8px!important}.pet-aquarium .pet-care-dock>button{font-size:12px}.pet-aquarium .pet-care-actions button{min-width:90px;font-size:12px;padding:5px 8px}
 }
-@media(max-height:380px){.pet-aquarium .pet-xp-line{display:none}.pet-aquarium .pet-fish-roster{min-height:44px}}
+@media(max-height:380px){.pet-aquarium .pet-fish-roster{min-height:44px}}
 @media(max-width:720px){.pet-aquarium{--pet-profile-width:208px}.pet-tank-current>span{font-size:10px}.pet-tank-current strong{font-size:12px}.pet-tank-current .pet-icon{display:none}.pet-aquarium .pet-view-switch button{min-width:44px;padding:5px;font-size:11px}.pet-view-switch .pet-icon{display:none}.pet-aquarium .pet-care-dock>button{padding:5px 7px;font-size:11px}.pet-dock-secondary>span{display:none}.pet-aquarium .pet-dock-secondary{width:44px}.pet-aquarium .pet-care-actions button{min-width:82px;font-size:11px}.pet-dock-stock{font-size:11px}}
 @media(max-width:540px){.pet-aquarium{--pet-profile-width:170px}.pet-aquarium .pet-tank-layout{grid-template-columns:minmax(0,1fr) var(--pet-profile-width);gap:6px}.pet-tank-current>span{display:none}.pet-aquarium .pet-view-switch button{min-width:38px}.pet-profile-length>strong{font-size:19px}.pet-aquarium .pet-care-dock{gap:4px}.pet-aquarium .pet-care-actions button{min-width:70px;padding:4px}.pet-dock-stock{display:none}.pet-aquarium .pet-care-dock>button{font-size:10px}.pet-aquarium .pet-dock-secondary{width:36px}.pet-aquarium .pet-message{right:16px}.pet-sheet{width:94%}}
+/* Identity stays beside the specimen, without taking space from its tank. */
+.pet-aquarium .pet-fish-roster button{flex:0 0 auto;width:auto;min-width:104px;padding:1px 6px}
+.pet-aquarium .pet-fish-roster small{font-size:12px!important;line-height:16px;white-space:nowrap}
+.pet-aquarium .pet-roster-art{height:20px}
+.pet-profile-meta{display:flex;flex-direction:column;align-items:flex-end;gap:2px;min-width:0;line-height:16px;text-align:right}
+.pet-profile-identity{font-size:12px;color:#fff0c6;white-space:nowrap}
+.pet-profile-meta [data-pet-size-rank]{font-size:12px;color:#d4e3d6}
+.pet-aquarium .pet-xp-line{display:grid;font-size:12px;line-height:16px;grid-template-columns:60px minmax(0,1fr) auto}
+.pet-aquarium .pet-xp-line small{font-size:12px}
+@media(max-height:500px){
+ .pet-aquarium .pet-tank-info{gap:3px}
+ .pet-aquarium .pet-vitals{grid-template-columns:1fr 1fr;gap:8px}
+ .pet-aquarium .pet-gauge{height:auto;grid-template-columns:1fr auto;grid-template-rows:16px 6px;gap:2px 4px;font-size:12px}
+ .pet-aquarium .pet-gauge b{font-size:12px;grid-column:2;grid-row:1}
+ .pet-aquarium .pet-gauge-track{grid-column:1 / -1;grid-row:2;height:6px;box-sizing:border-box}
+ .pet-profile-meta{gap:0;line-height:15px}
+}
