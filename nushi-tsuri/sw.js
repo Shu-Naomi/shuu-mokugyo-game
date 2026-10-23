@@ -1,6 +1,7 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-offshore-ferry-251-2";
+const CACHE_NAME = "nushi-tsuri-v251-village-sam-251-3";
 const CORE_ASSETS = [
+  "./assets/village-sam-v251-3.png",
   "./offshore-island.js?v=251-1",
   "./offshore-island.css?v=251-2",
   "./assets/offshore-world-v251.png",
@@ -159,11 +160,11 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=247-1",
   "./pixel-scenes.css?v=240-1",
-  "./scene-layers.js?v=238-1",
+  "./scene-layers.js?v=251-3",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
-  "./layered-scenery.js?v=238-1",
-  "./scenery-worker.js?v=238-1",
+  "./layered-scenery.js?v=251-3",
+  "./scenery-worker.js?v=251-3",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",
