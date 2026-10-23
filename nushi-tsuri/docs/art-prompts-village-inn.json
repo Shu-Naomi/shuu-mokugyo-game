@@ -1,0 +1,22 @@
+{
+  "mode": "built-in image_gen edit",
+  "reference": "assets/terrain-world-v54.png",
+  "referenceCrop": [
+    128,
+    48,
+    272,
+    216
+  ],
+  "asset": "assets/village-inn-v251-4.png",
+  "placement": [
+    120,
+    48,
+    272,
+    216
+  ],
+  "prompts": [
+    "Use case: precise-object-edit.\nAsset type: one exterior district painting for the existing warm, highly detailed SFC-era Japanese fishing RPG 星降る湖.\nInput image 1 is the EDIT TARGET: a 272 by 216 pixel crop of the existing village's old house, fenced vegetable garden, and the road in front. Preserve its overhead three-quarter RPG camera, exact framing, roof silhouette, building footprint, scale, tiny dense dithered pixels, restrained olive/ochre grass and earth, weathered charcoal tiles and brown timber. Render a refined high resolution version of this SAME district, with crisp tiny pixel clusters, not a smooth illustration.\nPrimary request: make this the village's small, long-established fishing inn, cared for by the same family for years. Keep the existing house, roof, chimney, small kitchen on the right, front garden, vegetable beds on the lower left and enclosing low bamboo fence. Work the inn naturally into these details. Add a small faded wooden sign reading exactly 「宿」 by the entrance, a short faded indigo noren across the doorway, two modest potted plants, a few neatly placed slippers under the eaves. Put a short bamboo clothesline with two simple hand towels against the right side of the house, well away from the walkway. Daytime with the same neutral overcast/sunlit village illumination; no scene-wide orange grading.\nImportant entrance alignment in the 272x216 reference coordinates: make the main doorway centered at x=147 (54% of image width), at the front wall, with the last stone step around y=148 (69% height). A worn stone-and-earth approach must lead straight down from those steps through an OPEN gate in the front low fence centered at x=147, y=183, joining the existing horizontal dirt road at y=203. This central approach and the left/right passage outside the fence must be visibly unobstructed; place pots, laundry and all luggage to the SIDES. This is a small real village guesthouse, not a hotel or shop. No characters, no HUD, no map markers, no extra buildings, no new water, no flags, no neon.\nConstraints: preserve all outer-edge road/grass/trees, camera, building extent and materials. Keep all roof pixels inside the original roof outline, do not enlarge the building. Only revise the facade, small inn features and courtyard/fence gate within the house district. Retain the vegetable patch and garden's everyday feel. The result must blend with the supplied original when scaled back into the same village crop. Opaque painted background, no transparency, no border or margin.",
+    "Use case: precise-object-edit.\nInput image is the edit target: the small old fishing inn just designed.\nMake ONE precise architectural correction for the game's fixed entrance. Move the FRONT DOOR, its indigo noren, small gabled porch, and the complete three-stone stair flight to the RIGHT, replacing the current large illuminated window. Their center must lie 54 percent across the ENTIRE image width (x=760 on this 1407-wide image), not at the current x=600. Make the former door area into a modest timber window, moving the 「宿」 board and two potted plants along with the doorway. No second door.\nThe open gate in the LOW FRONT GARDEN FENCE must also move to center x=760 (54% of full width), at the same depth/height as now. Fill the old gap with matching fence. A clear worn-earth and stone approach must run straight from the new stairs down through the new gate to the front horizontal road, with no pot, fence or vegetable bed crossing it.\nKeep everything else unchanged: full image framing and aspect ratio, outside road and grass, main roof silhouette and chimney, right-side laundry, left vegetable patch, weathered dense SFC pixel art style, palette, daylight, building scale. No characters or UI. This is a realignment, not a redesign. Opaque painted background."
+  ],
+  "notes": "Raw selected PNG is preserved unchanged. First draft had the entrance too far left; the second edit aligns the facade and open gate to the existing farmhouse approach. Runtime placement is measured independently of the reference crop."
+}

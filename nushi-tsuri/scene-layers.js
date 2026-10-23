@@ -17,10 +17,12 @@
   const world = {
     id:'world', source:'assets/terrain-world-v54.png',
     underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],coherentGrade:true,
-    // Only the shop district is replaced. The unedited village master remains
-    // the source of every road, shoreline and building outside this polygon.
+    // District edits share the original village master and its native scale.
+    // Every pixel outside their explicit outlines remains the existing village.
     edits:[{id:'sam-shop-front',source:'assets/village-sam-v251-3.png',to:[1120,405,272,216],
-      clip:[[1151,509],[1184,490],[1184,443],[1236,443],[1265,438],[1329,443],[1350,506],[1355,589],[1327,604],[1151,601]]}],
+      clip:[[1151,509],[1184,490],[1184,443],[1236,443],[1265,438],[1329,443],[1350,506],[1355,589],[1327,604],[1151,601]]},
+      {id:'fishing-inn-front',source:'assets/village-inn-v251-4.png',to:[120,48,272,216],
+        clip:[[136,169],[176,169],[176,110],[193,76],[277,68],[288,80],[332,77],[334,102],[351,110],[351,142],[382,139],[388,167],[382,225],[365,244],[304,248],[137,248]]}],
     waterColorMasks:[[[0,680],[145,680],[294,700],[461,735],[584,775],[663,790],[740,790],[740,864],[0,864]]],
     parts:[
       box('meadow','grass',0,0,1536,864,vegetation),
@@ -65,6 +67,9 @@
       box('village-board','props',771,437,22,40),
       box('sam-bait-chest','props',1200,575,23,16,{parent:'sam-shop'}),
       box('sam-front-pail','props',1224,579,14,14,{parent:'sam-shop'}),
+      box('inn-noren','props',264,146,25,13,{parent:'farmhouse'}),
+      box('inn-doorstep','rocks',263,177,21,17,{parent:'farmhouse'}),
+      box('inn-laundry','props',337,151,28,23,{parent:'farmhouse'}),
       box('beach-umbrella','props',418,650,32,35),
       box('west-boat','props',957,784,71,41),
       box('middle-boat','props',1118,704,69,39),
