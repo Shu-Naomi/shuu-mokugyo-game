@@ -50,7 +50,9 @@ jobs:
           </fontconfig>
           FONT_CONFIG
           fc-cache -f
-          fc-match -f '%{family}\n' 'sans-serif:lang=ja' | grep -F 'Noto Sans CJK JP'
+          fc-scan --format '%{family}\n' /usr/local/share/fonts/noto-ci/NotoSansCJKjp-Regular.otf | grep -F 'Noto Sans CJK JP'
+          fc-match -f '%{family}\n' 'sans-serif:lang=ja'
+          fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check only published files and the three public route conditions
         run: |
           node - <<'JS' 2>&1 | tee sam-public-results.log
