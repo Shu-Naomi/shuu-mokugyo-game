@@ -512,14 +512,14 @@
 #dogCare .dog-care-tabs{padding:2px 8px;gap:6px}
 #dogCare .dog-care-tabs button{min-height:44px;padding:4px 6px;font-size:13px}
 #dogCare .dog-care-content{display:grid;grid-template-columns:minmax(0,44%) minmax(0,1fr);gap:8px;min-height:0;min-width:0;padding:3px 8px 6px;overflow:hidden}
-#dogCare .dog-care-hero{display:flex;position:relative;min-height:0;min-width:0;margin:0;padding:0;border:0;background:none;overflow:hidden}
+#dogCare .dog-care-hero{display:grid;grid-template-rows:minmax(0,1fr) 20px;gap:3px;position:relative;min-height:0;min-width:0;margin:0;padding:0;border:0;background:none;overflow:hidden}
 #dogCare .dog-care-stage{min-height:0;height:100%;width:100%;box-sizing:border-box}
-#dogCare .dog-care-stage-label{top:4px;left:4px;max-width:calc(100% - 8px);font-size:11px;line-height:15px;padding:2px 4px}
-#dogCare .dog-care-best{position:absolute;bottom:4px;right:6px;margin:0;padding:2px 4px;background:#0b2235e8;border-radius:3px;font-size:11px;line-height:14px;pointer-events:none}
+#dogCare .dog-care-stage-label{position:static;grid-row:2;max-width:100%;min-width:0;font-size:11px;line-height:15px;padding:2px 4px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;box-sizing:border-box}
+#dogCare .dog-care-best{position:static;flex:0 0 auto;margin:0;padding:2px 5px;border-radius:3px;font-size:11px;line-height:14px;color:#b4d7df;text-align:right;pointer-events:none}
 #dogCare .dog-care-catch-button{min-width:124px;min-height:44px;font-size:13px}
 #dogCare .dog-care-catch-button small{font-size:11px}
 #dogCare .dog-care-details{display:flex;flex-direction:column;min-width:0;min-height:0;gap:5px}
-#dogCare .dog-care-profile{flex:0 0 auto;min-width:0;max-height:43%;overflow:auto;padding:0 3px 3px;box-sizing:border-box;scrollbar-width:thin}
+#dogCare .dog-care-profile{align-self:stretch;flex:0 0 auto;min-width:0;max-height:43%;overflow:auto;padding:0 3px 3px;box-sizing:border-box;scrollbar-width:thin}
 #dogCare .dog-care-name-row{display:flex;align-items:baseline;gap:7px;min-width:0}
 #dogCare .dog-care-name-row h3{order:-1;flex-shrink:0;font-size:16px;line-height:20px}
 #dogCare .dog-care-name-row small{font-size:12px;line-height:17px;color:#b7d5d6}
@@ -579,4 +579,4 @@
 #locationInterior.compact-inn #locationAction small{font-size:12px}
 #locationInterior.compact-inn .compact-scene-dialogue{grid-column:1/-1;grid-row:2;position:relative;inset:auto;min-height:36px;max-height:84px;overflow:auto;margin:0;padding:6px 10px;box-sizing:border-box;border:0;border-top:1px solid #bba16b;box-shadow:none;background:#2e3927;color:#f5ecd2;overscroll-behavior:contain;scrollbar-width:thin}
 #locationInterior.compact-inn .compact-scene-dialogue .location-dialogue{display:block;-webkit-line-clamp:unset;margin:0;padding:0;overflow:visible;max-height:none;font-size:13px;line-height:18px;color:inherit}
-@media(min-height:501px){#locationInterior.compact-inn .location-layout{grid-template-columns:minmax(280px,39%) minmax(0,1fr)!important}#dogCare .dog-care-content{grid-template-columns:minmax(0,49%) minmax(0,1fr)}#dogCare .dog-care-profile{max-height:35%}#dogCare .dog-care-card{min-height:60px}#dogCare .dog-care-profile p{font-size:13px;line-height:19px}}
+@media(min-height:501px){#locationInterior.compact-inn{inset:auto!important;top:50%!important;left:50%!important;transform:translate(-50%,-50%);width:min(1100px,96%);height:420px;max-height:calc(100% - 24px);box-sizing:border-box}#locationInterior.compact-inn .location-layout{grid-template-columns:minmax(280px,39%) minmax(0,1fr)!important}#dogCare .dog-care-content{grid-template-columns:minmax(0,49%) minmax(0,1fr)}#dogCare .dog-care-profile{max-height:35%}#dogCare .dog-care-card{min-height:60px}#dogCare .dog-care-profile p{font-size:13px;line-height:19px}}
