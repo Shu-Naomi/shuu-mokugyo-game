@@ -44,24 +44,20 @@ test('feeding keeps food at the mouth until eaten, then moves the empty hand awa
   }finally{app.dispose();}
 });
 
-test('petting approaches and strokes the crown, lifts for the return and withdraws smoothly',()=>{
-  const app=boot(),w=app.window,crown={x:144,y:40};
+test('petting gently moves the intact head and ears and returns to its original pose',()=>{
+  const app=boot(),w=app.window;
   try{
-    let previous,strokes=0;
-    for(let i=0;i<=240;i++){
-      const hand=w.dogCarePetHand(crown,i/240);
-      if(previous)assert.ok(Math.hypot(hand.x-previous.x,hand.y-previous.y)<9,'no hand teleport');
-      if(hand.phase==='stroke'){
-        assert.ok(hand.x>=crown.x&&hand.x<=crown.x+18);
-        assert.ok(hand.y>=crown.y-5.01&&hand.y<=crown.y-2.99);strokes++;
+    const ctx=w.document.createElement('canvas').getContext('2d');
+    for(const dog of ['shuu','riku','grey']){
+      let first,previous,last,min=Infinity,max=-Infinity;
+      for(let i=0;i<=216;i++){
+        const crown=w.drawDogCareCloseup(ctx,dog,'pet',i/216,10000+i*3600/216).crown;
+        if(previous)assert.ok(Math.hypot(crown.x-previous.x,crown.y-previous.y)<1,'no head jump');
+        first||=crown;last=crown;previous=crown;min=Math.min(min,crown.x);max=Math.max(max,crown.x);
       }
-      previous=hand;
+      assert.ok(max-min>4&&max-min<12,dog+' small reaction');
+      assert.ok(Math.hypot(last.x-first.x,last.y-first.y)<.001,dog+' returns to rest');
     }
-    assert.ok(strokes>100);
-    for(const progress of [0,1]){
-      const hand=w.dogCarePetHand(crown,progress);
-      assert.ok(hand.y<-40,'hand enters and exits above the scene');
-      assert.ok(hand.x>crown.x,'approach comes from above/right');
-    }
+    assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

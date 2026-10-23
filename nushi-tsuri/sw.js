@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-care-inn-ui-251-5";
+const CACHE_NAME = "nushi-tsuri-v251-pet-reaction-251-6";
 const CORE_ASSETS = [
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",

@@ -2,7 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs'),{verifyFrames}=require('./care-inn-frame-checks.cjs');
 const click=(w,q)=>{const button=w.document.querySelector(q);assert.ok(button,q);assert.equal(button.disabled,false,q);button.click();};
 
-test('all 651 dog/animation samples keep one small rigid hand above the eyes',async()=>{const result=await verifyFrames();assert.equal(result.frames,651);});
+test('all 651 dog/animation samples show only the original dog reaction and hearts',async()=>{const result=await verifyFrames();assert.equal(result.frames,651);});
 
 test('inn selection and rearrangement preserve native controls, cooking, overnight and saves',()=>{
  const app=boot({...seed(),items:{wildGreens:2}}),w=app.window;
