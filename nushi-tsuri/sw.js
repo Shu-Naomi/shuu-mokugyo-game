@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-funa-gold-251-8";
+const CACHE_NAME = "nushi-tsuri-v251-names-251-9";
 const CORE_ASSETS = [
   "./aquarium-mutations.js?v=251-8",
   "./assets/aquarium-funa-gold-v251-8.png",
@@ -62,8 +62,8 @@ const CORE_ASSETS = [
   "./assets/fish-dojo-v220.png",
   "./assets/fish-isaki-v220.png",
   "./assets/aquarium-isaki-adult-v230.png",
-  "./player-options.js?v=246-1",
-  "./player-options.css?v=246-1",
+  "./player-options.js?v=251-9",
+  "./player-options.css?v=251-9",
   "./cast-tackle.css?v=247-1",
   "./assets/fish-iwana-v219.png",
   "./assets/fish-amago-v219.png",
@@ -79,7 +79,7 @@ const CORE_ASSETS = [
   "./index.html",
   "./item-categories.css?v=217-1",
   "./pet-life.js?v=251-8",
-  "./pet-life-ui.js?v=251-8",
+  "./pet-life-ui.js?v=251-9",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
   "./fishing-duel.js?v=251-1",

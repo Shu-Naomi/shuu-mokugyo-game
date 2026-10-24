@@ -12,11 +12,8 @@ module.exports=async function audioFish(url,mobile=false,options={}){
  const settings=()=>value('JSON.parse(localStorage.getItem("nushi-inugoya-options-v1"))');
  async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v251/);}
  async function optionsOpen(){await press('#menu');await press('[data-field-menu-target="options"]');await page.locator('#options.open').waitFor();}
- async function slider(id,from,to){
-  const r=await page.locator(id).boundingBox(),a={x:r.x+8+(r.width-16)*from,y:r.y+r.height/2},b={x:r.x+8+(r.width-16)*to,y:a.y};
-  if(cdp){await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{...a,id:1}]});for(let i=1;i<=8;i++)await cdp.send('Input.dispatchTouchEvent',{type:'touchMove',touchPoints:[{x:a.x+(b.x-a.x)*i/8,y:a.y,id:1}]});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});}
-  else{await page.mouse.move(a.x,a.y);await page.mouse.down();await page.mouse.move(b.x,b.y,{steps:8});await page.mouse.up();}
- }
+ const slider=(id,from,to)=>require('./browser-range-input.cjs')(page,id,from,to,cdp);
+
  try{
   await page.goto(url,{waitUntil:'domcontentloaded'});await press('#titleOptions');assert.equal(await page.locator('#optionsBgmVolume').inputValue(),'45');assert.equal(await page.locator('#optionsSeVolume').inputValue(),'80');
   const bounds=await page.locator('#options').evaluate(el=>{const r=el.getBoundingClientRect();return {fits:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,inputs:[...el.querySelectorAll('input[type=range]')].map(e=>{const b=e.getBoundingClientRect();return b.height>=44&&b.left>=r.left&&b.right<=r.right;})};});assert.ok(bounds.fits&&bounds.inputs.every(Boolean));

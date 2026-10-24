@@ -13,9 +13,14 @@
   const split=value=>typeof Intl.Segmenter==='function'
     ? Array.from(new Intl.Segmenter('ja',{granularity:'grapheme'}).segment(value),p=>p.segment)
     : Array.from(value);
-  function clean(value){return typeof value==='string'?value.normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u202a-\u202e\u2066-\u2069]/g,'').trim():'';}
-  function name(value){return split(clean(value)).slice(0,12).join('')||'旅人';}
-  function validName(value){const parts=split(clean(value));return parts.length>0&&parts.length<=12;}
+  const defaultDogNames=Object.freeze({shuu:'シュウ',riku:'リク',grey:'Grey'});
+  function clean(value){return typeof value==='string'?value.normalize('NFC').replace(/[\u0000-\u001f\u007f-\u009f\u200b\u200e\u200f\u202a-\u202e\u2060\u2066-\u2069]/g,'').trim():'';}
+  const visible=value=>/[^\p{White_Space}\p{Cf}\p{M}]/u.test(value);
+  function displayName(value,fallback){const text=split(clean(value)).slice(0,12).join('');return visible(text)?text:fallback;}
+  function name(value){return displayName(value,'旅人');}
+  function validName(value){const text=clean(value),parts=split(text);return visible(text)&&parts.length>0&&parts.length<=12;}
+  function dogNames(value){return Object.fromEntries(Object.entries(defaultDogNames).map(([id,fallback])=>[id,displayName(value&&typeof value==='object'&&!Array.isArray(value)&&Object.hasOwn(value,id)?value[id]:null,fallback)]));}
+  function dogName(state,id){const key=Object.hasOwn(defaultDogNames,id)?id:'riku';return dogNames(state?.dogNames)[key];}
   const gender=value=>value==='girl'?'girl':'boy';
   function create(getStorage=()=>globalThis.localStorage){
     function read(){try{return normalize(JSON.parse(getStorage().getItem(key)));}catch(_){return {...defaults};}}
@@ -60,5 +65,5 @@
     function cancelAll(){for(const container of running.keys())cancel(container);}
     return {start,finish,cancel,cancelAll};
   }
-  return {key,speeds,labels,defaults,normalize,split,name,validName,gender,create,typer};
+  return {key,speeds,labels,defaults,normalize,split,name,validName,defaultDogNames,dogNames,dogName,gender,create,typer};
 });

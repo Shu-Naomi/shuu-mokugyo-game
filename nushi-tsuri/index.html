@@ -6437,7 +6437,7 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
-    <link rel="stylesheet" href="player-options.css?v=246-1" />
+    <link rel="stylesheet" href="player-options.css?v=251-9" />
     <link rel="stylesheet" href="cast-tackle.css?v=247-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
@@ -6653,7 +6653,7 @@
               <span class="field-menu-icon" aria-hidden="true">🐕</span>
               <span class="field-menu-label">犬と遊ぶ<small>好感度・お世話</small></span>
             </button>
-            <button type="button" data-field-menu-target="options"><span class="field-menu-icon" aria-hidden="true">⚙</span><span class="field-menu-label">オプション<small>名前・セリフ・セーブ削除</small></span></button>
+            <button type="button" data-field-menu-target="options"><span class="field-menu-icon" aria-hidden="true">⚙</span><span class="field-menu-label">オプション<small>名前・お気に入り・音量</small></span></button>
             <button type="button" data-field-menu-target="saveSlots">
               <span class="field-menu-icon" aria-hidden="true">💾</span>
               <span class="field-menu-label">セーブ選択へ<small>保存して冒険を切り替える</small></span>
@@ -7274,14 +7274,19 @@
       <header class="options-heading"><div><small>星降る湖</small><h2 id="optionsTitle">オプション</h2></div><button id="optionsClose" type="button">閉じる</button></header>
       <div class="options-body">
         <p id="optionsNotice" role="status" aria-live="polite"></p>
+        <section class="options-group options-identity" aria-labelledby="optionsNamesTitle"><h3 id="optionsNamesTitle">名前・お気に入り</h3><p id="optionsIdentity"></p>
+          <nav id="optionsNameTargets" class="options-name-targets" aria-label="名前を変える相手"></nav>
+          <form class="options-name-form" id="optionsNameForm"><label for="optionsPlayerName">主人公の名前（1〜12文字）</label><input id="optionsPlayerName" type="text" maxlength="512" autocomplete="off" enterkeyhint="done" /><button id="optionsRename" type="submit">名前を変更</button></form>
+          <form class="options-name-form" id="optionsDogNameForm" hidden><label id="optionsDogNameLabel" for="optionsDogName">ワンコの名前（1〜12文字）</label><input id="optionsDogName" type="text" maxlength="512" autocomplete="off" enterkeyhint="done" /><button id="optionsDogRename" type="submit">名前を変更</button></form>
+          <div class="options-favorite"><b>お気に入りの犬</b><div id="optionsFavoriteDogs" class="options-favorite-dogs" role="group" aria-label="お気に入りの犬"></div></div>
+          <p class="options-names-help">何度でも変更できるよ。お気に入りは連れ歩く子。お留守番中なら、そのまま家で待っているよ。</p>
+        </section>
+
         <section class="options-group"><h3>音量</h3>
           <div class="options-volume"><label for="optionsBgmVolume">BGM</label><input id="optionsBgmVolume" type="range" min="0" max="100" step="1" aria-describedby="optionsAudioHelp" /><output id="optionsBgmValue" for="optionsBgmVolume"></output></div>
           <div class="options-volume"><label for="optionsSeVolume">SE・環境音</label><input id="optionsSeVolume" type="range" min="0" max="100" step="1" aria-describedby="optionsAudioHelp" /><output id="optionsSeValue" for="optionsSeVolume"></output></div>
           <p id="optionsAudioHelp">SEにはジングル・水音・犬の声も含むよ。0%で消音。この端末の、両方の冒険に共通する設定だよ。</p>
           <div class="options-audio-actions"><button id="optionsSoundToggle" type="button"></button><button id="optionsAudioPreview" type="button">ジングルを試す</button></div>
-        </section>
-        <section class="options-group"><h3>主人公</h3><p id="optionsIdentity"></p>
-          <form class="options-name-form" id="optionsNameForm"><label for="optionsPlayerName">名前（12文字まで・何度でも変更できるよ）</label><input id="optionsPlayerName" type="text" maxlength="48" autocomplete="off" /><button id="optionsRename" type="submit">名前を変更</button></form>
         </section>
         <section class="options-group"><h3>セリフ送り速度</h3><p>会話と、冒頭の物語に反映するよ。表示途中でもう一度押すと、全文が出るよ。</p>
           <div class="options-speeds" role="group" aria-label="セリフ送り速度"><button type="button" data-text-speed="slow">ゆっくり</button><button type="button" data-text-speed="normal">ふつう</button><button type="button" data-text-speed="fast">はやい</button><button type="button" data-text-speed="instant">一度に表示</button></div>
@@ -7295,7 +7300,7 @@
         <button id="optionsDeletedReturn" type="button" hidden>セーブ選択画面へ戻る</button>
       </div>
     </section>
-    <script src="player-options.js?v=246-1"></script>
+    <script src="player-options.js?v=251-9"></script>
     <script src="fortune-capsules.js?v=187-1"></script>
     <script src="music-tracks.js?v=205-1"></script>
     <script src="soundscape.js?v=186-1"></script>
@@ -7306,7 +7311,7 @@
     <script src="pet-life.js?v=251-8"></script>
     <script src="aquarium-life.js?v=251-8"></script>
     <script src="compact-ui.js?v=251-5"></script>
-    <script src="pet-life-ui.js?v=251-8"></script>
+    <script src="pet-life-ui.js?v=251-9"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -8027,21 +8032,21 @@
         },
         dogProfileData = {
           shuu: {
-            name: "シュウ",
+            get name() { return dogName("shuu"); },
             icon: "🐕",
             role: "案内・調査役",
             forageSpecialty: "虫・ミミズ",
             greeting: "気になるものを一緒に調べよう。",
           },
           riku: {
-            name: "リク",
+            get name() { return dogName("riku"); },
             icon: "🐕‍🦺",
             role: "釣り・実働担当",
             forageSpecialty: "木の実・植物",
             greeting: "今日も元気に釣りへ行こう！",
           },
           grey: {
-            name: "Grey",
+            get name() { return dogName("grey"); },
             icon: "🐶",
             role: "万能・システム補助",
             forageSpecialty: "水辺・埋まった物",
@@ -8360,7 +8365,7 @@
             reward: { money: 380, rumor: "river" },
           },
           greyShrimpRice: {
-            category: "料理", kind: "delivery", client: "Greyの飼い主",
+            category: "料理", kind: "delivery", get client(){return `${dogName("grey")}の飼い主`;},
             icon: "🍚", title: "小エビごはんの包み",
             request: "『散歩帰りに香る、小エビのごはんを一つ頼むよ』",
             storage: "preparedMeals", itemId: "shrimpRice", amount: 1,
@@ -8384,7 +8389,7 @@
             reward: { money: 280, items: { apple: 1 } },
           },
           rikuTreeNuts: {
-            category: "採集", kind: "delivery", client: "リクの飼い主",
+            category: "採集", kind: "delivery", get client(){return `${dogName("riku")}の飼い主`;},
             icon: "🌰", title: "木の実のおすそ分け",
             request: "『散歩道で拾った木の実を三つ分けてほしいな』",
             storage: "dogTreats", itemId: "treeNut", amount: 3,
@@ -8416,9 +8421,9 @@
             reward: { money: 300, baits: { river: 2 } },
           },
           greySmallShrimp: {
-            category: "採集", kind: "delivery", client: "Greyの飼い主",
+            category: "採集", kind: "delivery", get client(){return `${dogName("grey")}の飼い主`;},
             icon: "🦐", title: "水辺の小エビ調査",
-            request: "『Greyが気にしていた小エビを二匹調べたいんだ』",
+            get request(){return `『${dogName("grey")}が気にしていた小エビを二匹調べたいんだ』`;},
             storage: "baits", itemId: "smallShrimp", amount: 2,
             itemName: "小エビ",
             reward: { money: 360, dogTreats: { samBiscuit: 2 } },
@@ -12641,6 +12646,7 @@
         s.selectedRod = "bamboo";
       if (!dogProfileData[s.dog]) s.dog = "riku";
       s.dogFollowing = s.dogFollowing !== false;
+      s.dogNames = ShuPlayerOptions.dogNames(s.dogNames);
       if (!s.dogAffinity || typeof s.dogAffinity !== "object" ||
           Array.isArray(s.dogAffinity)) s.dogAffinity = {};
       for (const id of dogIds)
@@ -13357,8 +13363,8 @@
             ? "✓ 完了"
             : template.kind === "catch" ? "報酬を受け取る" : "納品する";
           return `<article class="quest-card${stateClass}">` +
-            `<div class="quest-card-client"><span>${template.icon} ${template.client}</span><span>${template.category}</span></div>` +
-            `<h3>${template.title}</h3><p class="quest-card-request">${template.request}</p>` +
+            `<div class="quest-card-client"><span>${template.icon} ${ShuLakeStory.escape(template.client)}</span><span>${template.category}</span></div>` +
+            `<h3>${template.title}</h3><p class="quest-card-request">${ShuLakeStory.escape(template.request)}</p>` +
             `<div class="quest-card-status"><span>必要</span><b>${questRequirementLabel(entry, template)}</b></div>` +
             `<div class="quest-card-reward"><span>お礼</span><b>${questRewardPreview(template.reward)}</b></div>` +
             `<button data-complete-quest="${entry.id}"${ready ? "" : " disabled"}>${actionLabel}</button>` +
@@ -18417,8 +18423,8 @@
         else if (spot) cast(spot);
         else log(`${dogName()}が辺りの匂いを確かめた。`);
       }
-      function dogName() {
-        return { shuu: "シュウ", riku: "リク", grey: "Grey" }[s.dog] || "リク";
+      function dogName(id = s.dog) {
+        return ShuPlayerOptions.dogName(s, id);
       }
       function totalBaitCount() {
         return Object.values(s.baits).reduce((total, count) =>
@@ -18440,13 +18446,13 @@
       function dogRescueReward() {
         if (s.dog === "shuu") {
           return {
-            message: "シュウが夢中で土を掘り、ミミズを3匹見つけた！",
+            message: `${dogName("shuu")}が夢中で土を掘り、ミミズを3匹見つけた！`,
             grant() { s.baits.worm += 3; },
           };
         }
         if (s.dog === "grey") {
           return {
-            message: "Greyが土の中から落とし物の40円とミミズ2匹を見つけた！",
+            message: `${dogName("grey")}が土の中から落とし物の40円とミミズ2匹を見つけた！`,
             grant() {
               s.baits.worm += 2;
               s.money += 40;
@@ -18454,7 +18460,7 @@
           };
         }
         return {
-          message: "リクが水辺の土を掘り、川虫を2匹見つけた！ 次の魚が止まりやすくなる！",
+          message: `${dogName("riku")}が水辺の土を掘り、川虫を2匹見つけた！ 次の魚が止まりやすくなる！`,
           grant() {
             s.baits.river += 2;
             s.selectedBait = "river";
@@ -19389,7 +19395,7 @@
         $("#dogCareDogs").innerHTML = dogIds.map((id) => {
           const dog = dogProfileData[id];
           const points = s.dogAffinity[id] || 0;
-          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${dog.name}　${Math.floor(points/100)}/20</button>`;
+          return `<button data-dog-care-id="${id}" class="${id === dogId ? "active" : ""}" aria-pressed="${id === dogId}" ${busy ? "disabled" : ""}>${dog.icon} ${ShuLakeStory.escape(dog.name)}　${Math.floor(points/100)}/20</button>`;
         }).join("");
         $("#dogCareRole").textContent =
           `${profile.role}／採集：${profile.forageSpecialty}`;
@@ -23229,7 +23235,7 @@
             ${fishdexTackleHistory(f)}
           </section>
           <section class="fishdex-panel wide fishdex-shuu-note">
-            <h3>🐕 シュウの釣りメモ</h3>
+            <h3>🐕 ${ShuLakeStory.escape(dogName("shuu"))}の釣りメモ</h3>
             <p>${data.tip}</p>
           </section>
         </div>`;
@@ -23315,7 +23321,7 @@
             selected.id,
           );
         $("#log").innerHTML =
-          s.log.map((x) => `<div class="item">${x}</div>`).join("") ||
+          s.log.map((x) => `<div class="item">${ShuLakeStory.escape(x)}</div>`).join("") ||
           "まだ記録はない。";
       }
       fortuneCapsules = ShuFortuneCapsules.create({
@@ -23372,7 +23378,7 @@
         }
         ctx.restore();
       }
-      petUi = ShuPetUI.create({state:s,initialFish:loadedSaveSlot.data?.petLife?.fish,identityStorageKey:saveSlots.keyFor(activeSaveSlot),catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
+      petUi = ShuPetUI.create({state:s,initialFish:loadedSaveSlot.data?.petLife?.fish,identityStorageKey:saveSlots.keyFor(activeSaveSlot),catalog:petCatalog,get dogs(){return dogIds.map(id=>({id,name:dogName(id)}));},playerName:()=>s.playerName,
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
         changed:()=>{const saved=save();render();return saved;},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
@@ -23411,14 +23417,55 @@
         const count=Object.values(state.caught||{}).reduce((sum,n)=>sum+Math.max(0,Math.floor(Number(n)||0)),0);
         return `${ShuPlayerOptions.name(state.playerName)} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女":"男"} · ${gameClockAt(minutes).dayIndex+1}日目 · ${Math.max(0,Math.floor(Number(state.money)||0))}円 · 釣果${count}匹`;
       }
+      let identityTarget="player";
+      const composingNames=new Set();
+      function renderIdentityOptions(state,editable,id) {
+        const e=ShuLakeStory.escape;
+        $("#optionsIdentity").textContent=editable?`セーブ${id} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女の主人公":"男の主人公"}（性別は固定）`:"新しい冒険の名前と性別は、最初の選択画面で決めよう。";
+        $("#optionsNameTargets").innerHTML=["player",...dogIds].map(target=>{
+          const name=target==="player"?"主人公":ShuPlayerOptions.dogName(state,target),original=ShuPlayerOptions.defaultDogNames[target];
+          return `<button type="button" data-name-target="${target}" aria-pressed="${target===identityTarget}" ${editable?"":"disabled"} title="${e(name)}"><span>${e(name)}</span>${original&&name!==original?`<small>最初の名前：${e(original)}</small>`:""}</button>`;
+        }).join("");
+        $("#optionsNameForm").hidden=identityTarget!=="player";
+        $("#optionsDogNameForm").hidden=identityTarget==="player";
+        $("#optionsPlayerName").value=ShuPlayerOptions.name(state.playerName);
+        $("#optionsDogName").value=ShuPlayerOptions.dogName(state,identityTarget);
+        $("#optionsDogNameLabel").textContent=`${ShuPlayerOptions.defaultDogNames[identityTarget]||"ワンコ"}の名前（1〜12文字）`;
+        for(const selector of ["#optionsPlayerName","#optionsRename","#optionsDogName","#optionsDogRename"])$(selector).disabled=!editable;
+        $("#optionsFavoriteDogs").innerHTML=dogIds.map(dog=>`<button type="button" data-favorite-dog="${dog}" aria-pressed="${dog===state.dog}" ${editable?"":"disabled"} title="${e(ShuPlayerOptions.dogName(state,dog))}">${dogProfileData[dog].icon}<span>${e(ShuPlayerOptions.dogName(state,dog))}</span></button>`).join("");
+      }
+      // Only the chosen slot's display names and existing companion ID change.
+      // Saving comes first so a failed write leaves the running identity intact.
+      function changeAdventureIdentity(change) {
+        if(saveSuppressed||pendingSaveDeletion)return false;
+        const id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
+        if(!saved.ok||(!gameStarted&&!saved.exists))return false;
+        const previous=Object.fromEntries(Object.keys(change).map(key=>[key,s[key]]));
+        let ok;
+        if(gameStarted){Object.assign(s,change);ok=save();if(!ok)Object.assign(s,previous);}
+        else {ok=saveSlots.write(id,{...saved.data,...change});if(ok&&id===activeSaveSlot)Object.assign(s,change);}
+        if(!ok){$("#optionsNotice").textContent=("dog" in change?"お気に入り":"名前")+"を保存できなかったよ。もう一度試してね。";return false;}
+        if(gameStarted){ensureDogImage();render();renderIdleStatus();drawHomeDogs(true);}
+        else renderSaveSlotSelection(true);
+        renderOptions();return true;
+      }
+      function renameAdventureCharacter(target,value) {
+        if(saveSuppressed)return false;
+        if(pendingSaveDeletion){$("#optionsNotice").textContent="先に、セーブ削除の確認を終えてね。";return false;}
+        if(!ShuPlayerOptions.validName(value)){$("#optionsNotice").textContent="名前は1〜12文字で入れてね。空欄では変更しないよ。";return false;}
+        if(target!=="player"&&!dogIds.includes(target))return false;
+        const id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id),state=gameStarted?s:saved.data;
+        if(!state)return false;
+        const name=ShuPlayerOptions.name(value),change=target==="player"?{playerName:name}:{dogNames:{...ShuPlayerOptions.dogNames(state.dogNames),[target]:name}};
+        if(!changeAdventureIdentity(change))return false;
+        $("#optionsNotice").textContent=`名前を「${name}」に変更したよ。`;return true;
+      }
       function renderOptions() {
         renderAudioOptions();
         const id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
         const state=gameStarted?s:saved.data||{};
         const editable=gameStarted||(saved.ok&&saved.exists);
-        $("#optionsIdentity").textContent=editable?`セーブ${id} · ${ShuPlayerOptions.gender(state.avatar)==="girl"?"女の主人公":"男の主人公"}（性別は固定）`:"新しい冒険の名前と性別は、最初の選択画面で決めよう。";
-        $("#optionsPlayerName").value=ShuPlayerOptions.name(state.playerName);
-        $("#optionsPlayerName").disabled=$("#optionsRename").disabled=!editable;
+        renderIdentityOptions(state,editable,id);
         for(const button of document.querySelectorAll("[data-text-speed]"))button.setAttribute("aria-pressed",String(button.dataset.textSpeed===textSpeed));
         $("#optionsSaveList").innerHTML=[1,2].map(id=>{
           const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable";
@@ -23428,7 +23475,7 @@
       }
       function openOptions() {
         if(saveSuppressed||battle||rescueInProgress||forageDiscoveryInProgress||playerHomeState.transitioning||document.querySelector(".modal.open"))return false;
-        optionsReturnFocus=document.activeElement;
+        optionsReturnFocus=document.activeElement;identityTarget="player";composingNames.clear();
         releaseHeldInputs();hideFieldMenu();hideIdleStatus();pendingSaveDeletion=null;
         $("#optionsNotice").textContent="";$("#optionsDeleteConfirmation").hidden=true;
         $("#options").classList.add("open");renderOptions();
@@ -23487,20 +23534,23 @@
         if(!fishEscapeJingle.play()){$("#optionsNotice").textContent="音を準備できなかったよ。もう一度試してね。";clearJingleFocus();}
         else $("#optionsNotice").textContent=audioOptions.seVolume===0?"SEが0%なので、ジングルは消音中だよ。":"この音量でジングルが鳴るよ。";
       };
-      $("#optionsNameForm").onsubmit=event=>{
-        event.preventDefault();if(saveSuppressed)return;
-        if(pendingSaveDeletion){$("#optionsNotice").textContent="先に、セーブ削除の確認を終えてね。";return;}
-        const value=$("#optionsPlayerName").value,id=gameStarted?activeSaveSlot:selectedSaveSlot,saved=saveSlots.read(id);
-        if(!ShuPlayerOptions.validName(value)){$("#optionsNotice").textContent="名前は1〜12文字で入れてね。";return;}
-        if(!saved.ok||(!gameStarted&&!saved.exists))return;
-        const name=ShuPlayerOptions.name(value),previous=s.playerName;
-        let ok;
-        if(gameStarted){s.playerName=name;ok=save();if(!ok)s.playerName=previous;}
-        else {ok=saveSlots.write(id,{...saved.data,playerName:name});if(ok&&id===activeSaveSlot)s.playerName=name;}
-        if(!ok){$("#optionsNotice").textContent="名前を保存できなかったよ。もう一度試してね。";return;}
-        renderOptions();renderIdleStatus();if(!gameStarted)renderSaveSlotSelection(true);
-        $("#optionsNotice").textContent=`名前を「${name}」に変更したよ。`;
+      for(const [form,input,target] of [["#optionsNameForm","#optionsPlayerName",()=>"player"],["#optionsDogNameForm","#optionsDogName",()=>identityTarget]]) {
+        $(input).addEventListener("compositionstart",()=>composingNames.add(input));
+        $(input).addEventListener("compositionend",()=>composingNames.delete(input));
+        $(input).addEventListener("keydown",event=>{if(event.key==="Enter"&&(event.isComposing||event.keyCode===229||composingNames.has(input)))event.preventDefault();});
+        $(form).onsubmit=event=>{event.preventDefault();if(!composingNames.has(input))renameAdventureCharacter(target(),$(input).value);};
+      }
+      $("#optionsNameTargets").onclick=event=>{
+        const button=event.target.closest("[data-name-target]");if(!button||button.disabled)return;
+        identityTarget=button.dataset.nameTarget;renderOptions();$(identityTarget==="player"?"#optionsPlayerName":"#optionsDogName").focus({preventScroll:true});
       };
+      $("#optionsFavoriteDogs").onclick=event=>{
+        const button=event.target.closest("[data-favorite-dog]");if(!button||button.disabled||!dogIds.includes(button.dataset.favoriteDog))return;
+        if(pendingSaveDeletion){$("#optionsNotice").textContent="先に、セーブ削除の確認を終えてね。";return;}
+        const id=button.dataset.favoriteDog;
+        if(changeAdventureIdentity({dog:id})){ $("#optionsNotice").textContent=`お気に入りを「${dogNameForOptions(id)}」に変更したよ。`;document.querySelector(`[data-favorite-dog="${id}"]`).focus({preventScroll:true}); }
+      };
+      function dogNameForOptions(id){const saved=saveSlots.read(gameStarted?activeSaveSlot:selectedSaveSlot);return ShuPlayerOptions.dogName(gameStarted?s:saved.data,id);}
       document.querySelectorAll("[data-text-speed]").forEach(button=>button.onclick=()=>{
         if(saveSuppressed)return;
         if(!playerOptions.write(button.dataset.textSpeed)){$("#optionsNotice").textContent="セリフの設定を保存できなかったよ。もう一度試してね。";return;}
@@ -23572,7 +23622,10 @@
           }
           button.querySelector("small").textContent = text;
         }
-        for (const b of document.querySelectorAll("[data-dog]")) b.classList.toggle("active", b.dataset.dog === titleDog);
+        for (const b of document.querySelectorAll("[data-dog]")) {
+          b.classList.toggle("active", b.dataset.dog === titleDog);
+          b.textContent=`${dogProfileData[b.dataset.dog].icon} ${ShuPlayerOptions.dogName(selected.ok&&selected.exists?selected.data:{},b.dataset.dog)}`;
+        }
         for (const b of document.querySelectorAll("[data-avatar]")) {
           b.classList.toggle("active", b.dataset.avatar === titleAvatar);
           b.setAttribute("aria-pressed",String(b.dataset.avatar===titleAvatar));b.disabled=selected.exists||!selected.ok;

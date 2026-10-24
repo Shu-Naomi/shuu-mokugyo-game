@@ -206,6 +206,7 @@
       if(!P.selectTank(s,tank))return;
       feeding=null;focus=false;zoom=false;panel=null;rehomeId=null;moveTank=null;message="";restoreFocus=true;panelReturn="tanks";changed();render();
     }
+    function contestName(a){return a.kind!=="fish"?ctx.dogs.find(d=>d.id===(a.subject||a.participant))?.name||a.name:a.name;}
     function contest(){
       if(s.petLife.contest)return contestStage();
       const p=s.petLife,c=P.courses.find(c=>c.id===course),today=ctx.day();
@@ -221,11 +222,11 @@
         <div class="pet-course-options">${P.courses.map(c=>`<button data-pet-course="${c.id}" aria-pressed="${course===c.id}"><b>${c.name}</b><small>参加費 ${c.fee}円</small></button>`).join("")}</div>
         <p>${guide}</p><p class="pet-note">観客評価は±5点ほど。初級・中級の村人と犬は毎回変わり、上級では強豪の相棒に挑むよ。同点は同順位。各種目・各コースに一日1回。優勝賞金${c.prize}円、2位${Math.floor(c.prize*.5)}円、3位${Math.floor(c.prize*.25)}円。</p>
         ${s.tournament?'<p class="pet-note">釣り大会の終了後に参加できるよ。</p>':""}${btn("enter",entered?"今日は参加済み":`${c.name}に参加する · ${c.fee}円`,entered||!participant||s.money<c.fee||!!s.tournament)}
-        ${last?`<section class="pet-contest-result" aria-label="前回のコンテスト結果">${root.ShuEventCeremony.markup({kind:last.kind,rank:last.rank,subject:lastSubject})}<div class="pet-result-detail"><small>${P.kinds[last.kind]}・${P.courses.find(c=>c.id===last.course).name}／${last.day+1}日目</small><h3>${esc(last.name)} · ${last.score}点</h3><p>${esc(last.detail)}</p>${last.marks.length?`<ol class="pet-trick-results">${last.marks.map((ok,i)=>`<li style="--delay:${i*.2}s">${last.commands?.[i]||P.TRICKS[i]} ${ok?"○":"△"}</li>`).join("")}</ol>`:""}${standingTable(last)}<b>賞金 ${last.reward}円 · 受け取り済み</b><p class="pet-note">${last.rank===1?"アスアル「丁寧なお世話が実ったわね。おめでとう」":"アスアル「積み重ねはちゃんと力になる。また一緒に挑戦しましょう」"}</p></div></section>`:""}`;
+        ${last?`<section class="pet-contest-result" aria-label="前回のコンテスト結果">${root.ShuEventCeremony.markup({kind:last.kind,rank:last.rank,subject:lastSubject})}<div class="pet-result-detail"><small>${P.kinds[last.kind]}・${P.courses.find(c=>c.id===last.course).name}／${last.day+1}日目</small><h3>${esc(contestName(last))} · ${last.score}点</h3><p>${esc(last.detail)}</p>${last.marks.length?`<ol class="pet-trick-results">${last.marks.map((ok,i)=>`<li style="--delay:${i*.2}s">${last.commands?.[i]||P.TRICKS[i]} ${ok?"○":"△"}</li>`).join("")}</ol>`:""}${standingTable(last)}<b>賞金 ${last.reward}円 · 受け取り済み</b><p class="pet-note">${last.rank===1?"アスアル「丁寧なお世話が実ったわね。おめでとう」":"アスアル「積み重ねはちゃんと力になる。また一緒に挑戦しましょう」"}</p></div></section>`:""}`;
     }
     function standingTable(a){
       if(!a.judges?.length)return "";
-      const rows=[{owner:"あなた",dog:a.name,score:a.score},...a.judges].sort((a,b)=>b.score-a.score);
+      const rows=[{owner:ctx.playerName?.()||"あなた",dog:contestName(a),score:a.score},...a.judges].sort((a,b)=>b.score-a.score);
       return `<ol class="pet-standings" aria-label="審査順位">${rows.map(row=>`<li><b>${1+rows.filter(r=>r.score>row.score).length}位</b><span>${esc(row.owner)} · ${esc(row.dog)}</span><strong>${row.score}点</strong></li>`).join("")}</ol>`;
     }
     function contestStage(){
@@ -234,13 +235,13 @@
       const cue=reacting?(contestCue.success?"やった！":"あれれ…"):
         a.phase==="entrance"?"いっしょに、いこう！":a.phase==="judging"?"観客の審査を待とう":trick?"どの芸を指示する？":"いつもの仲良しな姿を見せよう";
       return `<div class="pet-stage-heading"><b>${P.kinds[a.kind]} · ${c.name}</b><small>参加費は支払い済み。閉じても続きを再開できるよ。</small></div>
-        <div class="pet-live-stage ${fish?"fish-exhibition":"dog-exhibition"} ${a.phase==="entrance"?"is-entrance":""} ${reacting?contestCue.success?"is-cheering":"is-puzzled":""}" aria-label="${esc(a.name)}のステージ">
+        <div class="pet-live-stage ${fish?"fish-exhibition":"dog-exhibition"} ${a.phase==="entrance"?"is-entrance":""} ${reacting?contestCue.success?"is-cheering":"is-puzzled":""}" aria-label="${esc(contestName(a))}のステージ">
           <div class="pet-stage-curtain"></div><div class="pet-stage-lamps"><i></i><i></i><i></i><i></i></div>
           <div class="pet-stage-audience">${["gen","mina","take","haru"].map((id,i)=>`<canvas width="96" height="128" data-tournament-portrait="${id}" aria-hidden="true" style="--spectator:${i}"></canvas>`).join("")}</div>
-          <div class="pet-stage-floor"></div>${fish?`<div class="pet-stage-aquarium"><div class="pet-stage-fish" data-contest-fish="${a.subject}"></div><div class="pet-stage-gravel"></div></div>`:`<canvas class="pet-stage-dog" width="144" height="128" data-contest-dog="${a.subject}" aria-label="${esc(a.name)}"></canvas>`}
-          <div class="pet-stage-reaction ${reacting&&!contestCue.success?"is-sweating":""}" role="status">${reacting&&!contestCue.success?"〰〰　💧":esc(cue)}</div><strong class="pet-stage-name">${esc(a.name)}</strong>
+          <div class="pet-stage-floor"></div>${fish?`<div class="pet-stage-aquarium"><div class="pet-stage-fish" data-contest-fish="${a.subject}"></div><div class="pet-stage-gravel"></div></div>`:`<canvas class="pet-stage-dog" width="144" height="128" data-contest-dog="${a.subject}" aria-label="${esc(contestName(a))}"></canvas>`}
+          <div class="pet-stage-reaction ${reacting&&!contestCue.success?"is-sweating":""}" role="status">${reacting&&!contestCue.success?"〰〰　💧":esc(cue)}</div><strong class="pet-stage-name">${esc(contestName(a))}</strong>
         </div>
-        <p class="pet-stage-direction">${a.phase==="entrance"?`${esc(a.name)}が舞台へ入場。観客に挨拶しよう。`:a.phase==="judging"?"演技が終わった！観客の拍手と審査点を見て、結果発表へ。":trick?"ひとつずつ声をかけよう。成功率は芸の習熟度で決まるよ。":fish?a.detail:"呼びかけると相棒が近寄り、しっぽを振って応える。なつき度を観客が見守っている。"}</p>
+        <p class="pet-stage-direction">${a.phase==="entrance"?`${esc(contestName(a))}が舞台へ入場。観客に挨拶しよう。`:a.phase==="judging"?"演技が終わった！観客の拍手と審査点を見て、結果発表へ。":trick?"ひとつずつ声をかけよう。成功率は芸の習熟度で決まるよ。":fish?a.detail:"呼びかけると相棒が近寄り、しっぽを振って応える。なつき度を観客が見守っている。"}</p>
         ${trick&&a.phase!=="entrance"?`<div class="pet-trick-commands" role="group" aria-label="犬に芸を指示">${P.TRICKS.map(t=>{const index=a.commands.indexOf(t);return `<button data-pet-trick="${t}" ${index>=0||a.phase!=="performance"?"disabled":""}><b>${t}${index>=0?` ${a.marks[index]?"○":"△"}`:""}</b><span class="pet-proficiency"><i style="width:${a.chance*100}%"></i></span><small>習熟 · 成功率 ${Math.round(a.chance*100)}%</small></button>`;}).join("")}</div>`:""}
         <div class="pet-contest-rivals" aria-label="ほかの参加者">${a.judges.map(j=>`<article><canvas width="96" height="128" ${["liao","asual","dancer"].includes(j.art)?`data-rival-art="${j.art}"`:`data-tournament-portrait="${j.art}"`} aria-hidden="true"></canvas>${fish?"":`<canvas width="80" height="72" data-contest-dog="${j.dogArt}" aria-hidden="true"></canvas>`}<span><b>${esc(j.owner)}${fish?"":` ＆ ${esc(j.dog)}`}</b><small>${fish?"飼育魚の出品者":esc(j.breed)}${a.phase==="judging"?` · 審査 ${j.score}点`:""}</small></span></article>`).join("")}</div>
         ${a.phase==="performance"&&trick?`<p>${a.commands.length}/5の芸を披露したよ。</p>`:btn("contest-next",a.phase==="entrance"?"舞台に立つ":a.phase==="performance"?fish?"泳ぎと成長を披露する":"相棒を呼んで応える": "審査結果を発表する")}`;
