@@ -130,3 +130,11 @@ test('two adventure slots persist independent seeds and do not write into the ot
  const second=boot(null,undefined,{start:false,url:'http://localhost/nushi-tsuri/?saveSlot=2',storage:{[saveKey]:saved,[saveKey+'-slot2']:seed()}});
  try{second.window.crypto.getRandomValues=bytes=>{bytes.fill(2);return bytes;};second.window.document.querySelector('#start').click();assert.deepEqual(JSON.parse(second.window.localStorage.getItem(saveKey)),saved);assert.equal(JSON.parse(second.window.localStorage.getItem(saveKey+'-slot2')).petLife.mutationSeed,'02'.repeat(16));assert.deepEqual(second.errors,[]);}finally{second.dispose();}
 });
+test('the first seed checkpoint resumes the opening even if all following save writes fail',()=>{
+ const a=boot(null,undefined,{start:false,keepIntro:true}),w=a.window,proto=w.Storage.prototype,set=proto.setItem;let snapshot,writes=0;
+ try{
+  proto.setItem=function(key,value){if(key===saveKey){if(++writes>1)throw Error('quota after first checkpoint');snapshot=JSON.parse(value);}return set.call(this,key,value);};
+  w.document.querySelector('#start').click();assert.ok(M.validSeed(snapshot.petLife.mutationSeed));assert.equal(snapshot.lakeStory.introPending,true);assert.equal(snapshot.lakeStory.introSeen,false);
+ }finally{proto.setItem=set;a.dispose();}
+ const b=boot(snapshot,undefined,{keepIntro:true});try{assert.equal(b.window.document.querySelector('#lakeIntro').classList.contains('open'),true);assert.deepEqual(b.errors,[]);}finally{b.dispose();}
+});

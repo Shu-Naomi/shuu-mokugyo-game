@@ -23608,6 +23608,8 @@
         $("#activeSaveSlot").textContent = `セーブ${activeSaveSlot}`;
         $("#title").classList.remove("active");
         $("#game").classList.add("active");
+        // The first durable seed checkpoint must also resume a new opening.
+        if(!loadedSaveSlot.exists&&!s.lakeStory.introSeen)s.lakeStory.introPending=true;
         ShuAquariumMutations.prepare(s);
         save();
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex))save();
