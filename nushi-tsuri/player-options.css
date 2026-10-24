@@ -31,3 +31,21 @@
 @media(max-width:540px){.options-volume{grid-template-columns:98px minmax(60px,1fr) 44px;gap:8px}}
 @media(max-height:560px){.game-options{inset:8px!important;width:min(780px,calc(100vw - 16px))!important;height:calc(100dvh - 16px)!important}.options-heading{padding:8px 14px}.options-heading h2{font-size:20px}.options-body{padding:10px 14px;gap:12px}.options-group{padding:12px}.player-name-choice{margin:6px auto}.title h1{font-size:clamp(26px,5vw,40px)}.title h2{font-size:18px;margin:4px 0}.title .title-box{padding:10px 16px 18px}}
 @media(max-width:540px){.options-speeds{grid-template-columns:repeat(2,minmax(0,1fr))}.options-save-list{grid-template-columns:1fr}.options-name-form{grid-template-columns:1fr}.game-options{width:calc(100vw - 16px)!important;inset:8px!important;height:calc(100dvh - 16px)!important}}
+/* Slot-local names share one editor so all four characters fit on a phone. */
+.options-identity .options-name-targets{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0}
+.options-name-targets button{min-width:0;height:44px;padding:3px 8px;line-height:17px}
+.options-name-targets span,.options-name-targets small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.options-name-targets small{font-size:10px;line-height:12px}
+.options-name-targets [aria-pressed=true],.options-favorite-dogs [aria-pressed=true]{background:linear-gradient(#fff0b4,#d99a43);color:#332517;border-color:#ffe3a1}
+.options-identity .options-name-form{gap:4px 8px}
+.options-identity input[type=text]{font-size:16px}
+.options-favorite{display:grid;grid-template-columns:auto minmax(0,1fr);gap:10px;align-items:center;margin-top:9px}
+.options-favorite>b{font-size:13px}
+.options-favorite-dogs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;min-width:0}
+.options-favorite-dogs button{display:flex;align-items:center;justify-content:center;gap:5px;min-width:0;height:44px;padding:4px 8px}
+.options-favorite-dogs span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.options-identity .options-names-help{font-size:11px;line-height:15px;margin:7px 0 0}
+#dogCare .dog-care-tabs button{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#dogCare .dog-care-name-row h3{min-width:0;flex-shrink:1;overflow-wrap:anywhere}
+@media(max-height:560px) and (min-width:541px){.options-identity{padding:9px 12px}.options-identity h3{font-size:16px;margin:0 0 4px}.options-identity #optionsIdentity{margin:3px 0;font-size:12px;line-height:17px}.options-identity .options-name-targets{margin:5px 0}.options-identity .options-names-help{margin-top:5px}.options-favorite{margin-top:6px}}
+@media(max-width:540px){.options-favorite{grid-template-columns:1fr;gap:4px}.options-name-targets button{padding:3px}.options-favorite-dogs button{padding:4px}}
