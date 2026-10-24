@@ -82,9 +82,10 @@
         acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
         fedDay:int(f.fedDay,-1,day),changedDay:int(f.changedDay,-1,day),
         water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,day+1),
-        generation,sex:sexOf(f),mutation:M.normalize(f.mutation,!(old.version>=6))};
+        generation,sex:sexOf(f)};
       fish.stars=int(f.stars??starLevel(fish),1,5);
       fish.xp=int(f.xp??fish.careDays*10,0,1083);fish.level=fishLevel(fish.xp);
+      fish.mutation=M.normalize(f.mutation,!(old.version>=6));
       normalizeGrowth(fish,f.growthHistory,fish.lastDay);
       return [fish];
     });
@@ -130,7 +131,7 @@
       const parents=old.version>=6&&/^pet-\d+$/.test(e.parents?.mother)&&/^pet-\d+$/.test(e.parents?.father)
         ?{mother:e.parents.mother,father:e.parents.father}:null;
       eggs.push({uid:e.uid,species:e.species,tank,laidDay,hatchDay:int(e.hatchDay,laidDay+1,laidDay+7),generation:int(e.generation,1,20),water:int(e.water??100,0,100),
-        mutation:M.normalize(e.mutation,!(old.version>=6)),parents});
+        parents,mutation:M.normalize(e.mutation,!(old.version>=6))});
     }
     const legendTanks=Object.fromEntries(LEGEND_TANKS.map(t=>[t.key,catalog.some(f=>isLegend(f)&&legendTank(f)===t.id&&state.caught?.[f.id]>0)]));
     const legendClaims=Object.fromEntries(catalog.filter(isLegend).filter(f=>state.caught?.[f.id]>0).map(f=>[f.id,record(old.legendClaims)[f.id]===true||(f.id==="nushi"&&old.nushiClaimed===true)||placed.some(a=>a.species===f.id)]));

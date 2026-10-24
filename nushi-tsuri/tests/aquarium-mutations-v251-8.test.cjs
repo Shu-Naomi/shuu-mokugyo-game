@@ -50,6 +50,12 @@ test('real three-day breeding stores exactly one result and its parents, includi
   assert.equal(c.count(),1);assert.deepEqual(copy(s.petLife.eggs[0].mutation),saved.petLife.eggs[0].mutation);
  }
 });
+test('v6 fish and eggs keep their serialized field order across normalization and reload',()=>{
+ const bought=pair();P.acquire(bought,'funa',catalog,0,1);
+ const boughtBytes=JSON.stringify(bought.petLife.fish);P.normalize(bought,catalog,dogs,0);assert.equal(JSON.stringify(bought.petLife.fish),boughtBytes);
+ const s=pair();lay(s);const eggBytes=JSON.stringify(s.petLife.eggs);P.normalize(s,catalog,dogs,3);assert.equal(JSON.stringify(s.petLife.eggs),eggBytes);
+ P.sync(s,catalog,5);const fishBytes=JSON.stringify(s.petLife.fish);P.normalize(s,catalog,dogs,5);assert.equal(JSON.stringify(s.petLife.fish),fishBytes);
+});
 test('reloading the same pre-spawn save recreates exactly the same gold or normal egg',()=>{
  for(const seed of [GOLD_SEED,NORMAL_SEED]){
   const s=pair(seed);for(let day=0;day<2;day++){careDay(s,day);P.sync(s,catalog,day+1);}careDay(s,2);

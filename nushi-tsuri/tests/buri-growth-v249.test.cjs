@@ -79,9 +79,12 @@ test('legacy shop Buri keep their 24cm birth size, growth, eggs and adult breedi
   const s=pair(length);s.petLife.fish.forEach(f=>{f.bornSize=2400;});
   s.petLife.eggs=[{uid:'egg-1',species:'buri',tank:0,laidDay:0,hatchDay:3,generation:1,water:100}];s.petLife.nextEggId=2;
   if(length===8000)s.petLife.breeding={'0:buri':{days:2,lastDay:0,mother:'pet-2',father:'pet-1'}};
-  const before=copy(s);P.normalize(s,catalog,['shuu'],0);assert.deepEqual(s,before);
+  s.petLife.version=5;
+  const expected=copy(s);expected.petLife.version=6;
+  expected.petLife.eggs[0].parents=null;expected.petLife.eggs[0].mutation={checked:true,kind:'normal',ruleVersion:0};
+  P.normalize(s,catalog,['shuu'],0);assert.deepEqual(s,expected);
   care(s,0);assert.equal(s.petLife.fish[0].bornSize,2400);assert.equal(s.petLife.fish[0].length,length+300);
-  assert.deepEqual(s.petLife.eggs[0],before.petLife.eggs[0]);assert.equal(s.petLife.eggs.length,length===8000?2:1);
+  assert.deepEqual(s.petLife.eggs[0],expected.petLife.eggs[0]);assert.equal(s.petLife.eggs.length,length===8000?2:1);
  }
  assert.equal(P.purchaseSize(catalog[1]),catalog[1].start);
 });

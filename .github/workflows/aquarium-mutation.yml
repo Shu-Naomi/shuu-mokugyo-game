@@ -68,7 +68,7 @@ jobs:
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check draw boundaries, save compatibility and unchanged aquarium behavior
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
+        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
       - name: Exercise golden hatching, discovery, care, growth, moving and resume on three screens
         env:
           AQUARIUM_MUTATION_PUBLIC_URL: ${{ inputs.public_url }}
