@@ -193,3 +193,6 @@
  .pet-aquarium .pet-gauge-track{grid-column:1 / -1;grid-row:2;height:6px;box-sizing:border-box}
  .pet-profile-meta{gap:0;line-height:15px}
 }
+@media(max-height:380px){
+ .pet-aquarium .pet-tank-info{padding:3px 6px;gap:1px}
+}
