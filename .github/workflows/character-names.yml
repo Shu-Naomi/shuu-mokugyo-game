@@ -9,6 +9,8 @@ on:
       - 'nushi-tsuri/player-options.css'
       - 'nushi-tsuri/sw.js'
       - 'nushi-tsuri/tests/*character-names*'
+      - 'nushi-tsuri/tests/browser-range-input.cjs'
+      - 'nushi-tsuri/tests/browser-v246.audio-fish.cjs'
       - '.github/workflows/character-names.yml'
   workflow_dispatch:
     inputs:
