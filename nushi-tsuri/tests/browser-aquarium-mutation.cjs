@@ -26,11 +26,15 @@ module.exports=async function mutationUI(url,screen){
   assert.equal(await page.locator('.pet-discovery').count(),0);assert.equal(await page.locator('[data-pet-mutation="gold"]').count(),0,'egg does not reveal its colour');await fits();await shot('egg');
   await night();assert.equal(await page.evaluate(()=>s.petLife.eggs.length),1);
   await night();assert.equal((await child()).mutation.kind,'gold');
+  // Selecting a specimen intentionally clears the transient care message.
+  // Observe the hatch notice before that next player action.
+  assert.equal(await page.locator('.pet-discovery').isVisible(),true);
+  if(height===366)assert.equal(await page.locator('.pet-discovery').evaluate(e=>getComputedStyle(e).animationName),'none');
+  await shot('discovery');
   await press('.pet-fish-roster [data-pet-inspect="pet-6"]');await page.waitForSelector('[data-pet-card-art="pet-6"] canvas[data-art-variant="funaGold"]');
   await page.waitForFunction(()=>{const c=document.querySelector('[data-pet-card-art="pet-6"] canvas');return c&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((x,i)=>i%4===3&&x>128);});
-  assert.match(await page.locator('[data-pet-size-rank]').innerText(),/黄金.*稚魚/);assert.equal(await page.locator('.pet-discovery').isVisible(),true);
+  assert.match(await page.locator('[data-pet-size-rank]').innerText(),/黄金.*稚魚/);
   const announced=await page.evaluate(()=>s.petLife.mutationDiscoveries);assert.equal(announced.length,1);assert.equal(announced[0].notified,true);assert.equal(announced[0].firstUid,'pet-6');const fry=await child();const fryLayout=await fits();await shot('gold-fry');
-  if(height===366)assert.equal(await page.locator('.pet-discovery').evaluate(e=>getComputedStyle(e).animationName),'none');
   await press('.pet-fish-roster [data-pet-inspect="pet-4"]');assert.equal(await page.locator('.pet-profile-identity').innerText(),'性別不明 · 世代不明');await shot('legacy');
   await press('.pet-fish-roster [data-pet-inspect="pet-5"]');assert.equal(await page.locator('[data-pet-card-art="pet-5"] canvas').getAttribute('data-art-variant'),'moroko');
   await press('.pet-fish-roster [data-pet-inspect="pet-6"]');await press('[data-pet-action="records"]');assert.match(await page.locator('.pet-discoveries').innerText(),/黄金のフナ/);await shot('discovery-record');await press('.pet-sheet [data-pet-action="panel-close"]');
