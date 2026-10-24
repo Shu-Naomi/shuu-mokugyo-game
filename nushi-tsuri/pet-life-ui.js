@@ -27,7 +27,9 @@
   }
   function create(ctx){
     const P=root.ShuPetLife,s=ctx.state,esc=value=>String(value??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"})[c]);
-    const missingIdentities=legacyIdentities(ctx),identity=f=>identityLabels(f,missingIdentities.get(f.uid));
+    const M=root.ShuAquariumMutations,missingIdentities=legacyIdentities(ctx),identity=f=>identityLabels(f,missingIdentities.get(f.uid));
+    const goldTag=f=>M.isGold(f)?'<span class="pet-mutation-label" data-pet-mutation="gold">黄金</span>':'';
+    let announcing=false;
     const modal=document.createElement("section");
     modal.id="petLifeModal";modal.className="modal pet-life-modal";modal.setAttribute("role","dialog");
     modal.setAttribute("aria-modal","true");modal.setAttribute("aria-labelledby","petLifeTitle");ctx.parent.append(modal);
@@ -55,13 +57,22 @@
     }
     function pause(){cancelAnimationFrame(frame);frame=0;}
     function stop(){pause();feeding=null;rehomeId=null;buybackId=null;clearTimeout(toastTimer);toastTimer=0;ctx.stopFeedSound?.();}
-    function changed(){ctx.changed();}
+    function changed(){return ctx.changed();}
+    function announceDiscovery(){
+      if(announcing||!live()||mode!=="aquarium")return;
+      announcing=true;const notices=M.acknowledge(s,changed);announcing=false;
+      if(notices.length){message="黄金のフナを発見！ 希少色の記録に残したよ。";render();}
+    }
+    function discoveryRecords(){
+      const found=s.petLife.mutationDiscoveries?.find(d=>d.species==='funa'&&d.kind==='gold');
+      return found?`<section class="pet-discoveries" aria-label="希少色の発見記録"><h4>希少色の発見記録</h4><p>黄金のフナ <small>初発見：${found.firstDay+1}日目 · #${found.firstUid.slice(4)}</small></p></section>`:'';
+    }
     function open(view="aquarium"){
       if(!ctx.canOpen())return false;
       ctx.close();mode=view;zoom=false;focus=false;message="";tab="fish";buybackId=null;buybackTank=null;rehomeId=null;panel=null;moveTank=null;
       if(s.petLife.contest){mode="shop";tab="contests";kind=s.petLife.contest.kind;course=s.petLife.contest.course;participant=s.petLife.contest.participant;}
       if(view==="shop")message="アスアル「育てる時間も、立派な楽しみよ。クラウドと一緒に待っていたわ」";
-      P.sync(s,ctx.catalog,ctx.day());render();ctx.open(modal.id);start();return true;
+      P.sync(s,ctx.catalog,ctx.day());render();ctx.open(modal.id);start();announceDiscovery();return true;
     }
     function header(){
       return `<header class="pet-heading"><div><small>${mode==="aquarium"?"MY LITTLE AQUARIUM":"ASUAL'S PET HOUSE"}</small><h2 id="petLifeTitle">${mode==="aquarium"?"持ち歩き飼育水槽":"アスアルのペットショップ"}</h2></div><span class="pet-money">${s.money.toLocaleString("ja-JP")}円</span>${btn("close","閉じる")}</header>`;
@@ -151,9 +162,9 @@
             <div class="pet-glass"></div>${group.length||eggs.length?`<div class="pet-scale" style="width:${dims.rulerCm/dims.widthCm*100}%">${dims.rulerCm}cm</div><span class="pet-tank-width">水槽幅 ${dims.widthCm}cm</span><div class="pet-tank-caption">${group.length}匹 · ${water}<small>${f?`${P.displayName(f,ctx.catalog)} ${P.cm(f.length)}cm · ${sizeLabel(f)}`:""}</small></div>`:`<div class="pet-empty">${icon("fish")}<h3>ここで、魚との暮らしを。</h3><p>アスアルから魚を迎えよう。</p>${control("shop","魚を迎える","shop")}</div>`}
           </div>`}
           <aside class="pet-tank-info" aria-label="選んだ魚の状態">
-            <div class="pet-fish-roster" role="group" aria-label="この水槽の魚を選んで拡大">${group.map(a=>`<button data-pet-inspect="${a.uid}" aria-pressed="${a.uid===p.selected}" aria-label="${esc(fishName(a))}、${P.cm(a.length)}cm、${esc(sizeLabel(a))}、${identity(a).sexText}、${identity(a).generation}" title="${esc(fishName(a))} · ${P.cm(a.length)}cm · ${identity(a).sexText} · ${identity(a).generation}"><span class="pet-roster-art" data-pet-card-art="${a.uid}"></span><small data-pet-identity="${a.uid}">#${a.uid.slice(4)} ${identity(a).sex} ${identity(a).generation}${P.lifeStage(a,ctx.catalog)==="fry"?' <em>稚</em>':""}</small></button>`).join("")}</div>
+            <div class="pet-fish-roster" role="group" aria-label="この水槽の魚を選んで拡大">${group.map(a=>`<button data-pet-inspect="${a.uid}" aria-pressed="${a.uid===p.selected}" aria-label="${esc(fishName(a))}、${P.cm(a.length)}cm、${esc(sizeLabel(a))}、${identity(a).sexText}、${identity(a).generation}、${M.label(a)}" title="${esc(fishName(a))} · ${P.cm(a.length)}cm · ${identity(a).sexText} · ${identity(a).generation}"><span class="pet-roster-art" data-pet-card-art="${a.uid}"></span><small data-pet-identity="${a.uid}">#${a.uid.slice(4)} ${identity(a).sex} ${identity(a).generation}${M.isGold(a)?" 黄金":""}${P.lifeStage(a,ctx.catalog)==="fry"?' <em>稚</em>':""}</small></button>`).join("")}</div>
             ${f?`<div class="pet-profile-portrait"><span data-pet-card-art="${f.uid}"></span></div><h3>${esc(fishName(f))}<small>Lv.${f.level}</small></h3>
-              <div class="pet-profile-length"><strong>${P.cm(f.length)}<small>cm</small></strong><div class="pet-profile-meta"><span class="pet-profile-identity">${identity(f).sexText} · ${identity(f).generation}</span><span data-pet-size-rank>${sizeLabel(f)}</span></div></div>
+              <div class="pet-profile-length"><strong>${P.cm(f.length)}<small>cm</small></strong><div class="pet-profile-meta"><span class="pet-profile-identity">${identity(f).sexText} · ${identity(f).generation}</span><span data-pet-size-rank>${goldTag(f)}${M.isGold(f)?" · ":""}${M.isGold(f)?sizeLabel(f).replace("（繁殖限定）",""):sizeLabel(f)}</span></div></div>
               <div class="pet-vitals">${gauge("元気",f.health,"heart")}${gauge("水質",f.water,"water")}</div>
               <div class="pet-xp-line" title="経験値 ${f.xp}/${f.level>=20?'MAX':nextXP}"><span>成長経験</span><span class="pet-xp-track" role="progressbar" aria-label="次のレベルまでの経験値" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${Math.round(xp)}"><i style="width:${xp}%"></i></span><small>${f.level>=20?'MAX':`${f.xp}/${nextXP}`}</small></div>`:`<div class="pet-empty-profile">${icon("tank")}<b>${water==="空き"?"空き水槽":water}</b><small>魚を迎えると、ここに体調が出るよ。</small></div>`}
           </aside>
@@ -178,10 +189,10 @@
       const titles={tanks:"水槽を選ぶ",records:"この子の記録",manage:"お引越し・託す",help:"水槽の育て方"};
       let body="";
       if(panel==="tanks")body=`<div class="pet-tank-cards">${P.tankIds(s).map(t=>tankCard(t)).join("")}</div><footer class="pet-tank-footer"><span>全${s.petLife.fish.length}/${P.totalCapacity(s)}匹 · 通常水槽${s.petLife.unlockedTanks}/6槽</span>${control("legend-shop","ぬしの飼育","fish")}${control("shop","水槽・魚を迎える","shop")}</footer>`;
-      else if(panel==="help")body=`<div class="pet-help-cards"><article>${icon("feed")}<h3>毎日のお世話</h3><p>エサは1匹に1食。水質40%以上で毎日食べると、翌日1〜5cm成長するよ。</p><small>エサ +6XP / 水換え +4XP · 一日一回</small></article><article>${icon("fish")}<h3>卵から、小さな稚魚へ</h3><p>成魚のオスとメスを、水質60%以上・元気70%以上で3日育てると卵を産むよ。2〜4日で孵化。空きは卵が予約するよ。</p></article><article>${icon("expand")}<h3>全体と一匹を見比べる</h3><p>魚や写真をタッチすると一匹を観察できるよ。個別表示も体長で大きさが変わる。小さい子は見やすさを補助しているよ。</p></article><article>${icon("tank")}<h3>ぬし専用の水槽</h3><p>釣ったぬしを魚種ごとに一匹、無料で迎えられるよ。淡水と海水は別々に8匹まで。ぬしは繁殖・買い取りの対象外。</p>${control("legend-shop","ぬしの飼育を相談","shop")}</article><article>${icon("shop")}<h3>買い取りの相談</h3><p>買い取りできる体長、お世話3日以上、元気60%以上が目安。アスアルの店で、水槽と個体を選んでね。</p>${control("shop","アスアルのお店へ","shop")}</article></div>`;
+      else if(panel==="help")body=`<div class="pet-help-cards"><article>${icon("fish")}<h3>黄金のフナ</h3><p>生まれる子が3代目以降のフナなら、卵1組につき0.1%で黄金の子が生まれるよ。色による能力や価格の差はないよ。</p><small>初めて孵化した黄金の子に水槽で会うと、発見の記録が残るよ。</small></article><article>${icon("feed")}<h3>毎日のお世話</h3><p>エサは1匹に1食。水質40%以上で毎日食べると、翌日1〜5cm成長するよ。</p><small>エサ +6XP / 水換え +4XP · 一日一回</small></article><article>${icon("fish")}<h3>卵から、小さな稚魚へ</h3><p>成魚のオスとメスを、水質60%以上・元気70%以上で3日育てると卵を産むよ。2〜4日で孵化。空きは卵が予約するよ。</p></article><article>${icon("expand")}<h3>全体と一匹を見比べる</h3><p>魚や写真をタッチすると一匹を観察できるよ。個別表示も体長で大きさが変わる。小さい子は見やすさを補助しているよ。</p></article><article>${icon("tank")}<h3>ぬし専用の水槽</h3><p>釣ったぬしを魚種ごとに一匹、無料で迎えられるよ。淡水と海水は別々に8匹まで。ぬしは繁殖・買い取りの対象外。</p>${control("legend-shop","ぬしの飼育を相談","shop")}</article><article>${icon("shop")}<h3>買い取りの相談</h3><p>買い取りできる体長、お世話3日以上、元気60%以上が目安。アスアルの店で、水槽と個体を選んでね。</p>${control("shop","アスアルのお店へ","shop")}</article></div>`;
       else if(f){
         const tabs=`<nav class="pet-sheet-tabs" aria-label="個体の情報">${["records","manage"].map(t=>`<button data-pet-panel-tab="${t}" aria-pressed="${panel===t}">${t==="records"?"成長の記録":"お引越し・託す"}</button>`).join("")}</nav>`;
-        if(panel==="records")body=`${tabs}<div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b>${P.cm(f.length)}cm · ${sizeLabel(f)}</b><small>${esc(appearance(f).label)}</small></div></div><div class="pet-stats"><span>レベル <b>Lv.${f.level}</b></span><span>経験値 <b>${f.xp}/${f.level>=20?"MAX":P.xpForLevel(f.level+1)}</b></span><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>生まれた体長 <b>${P.cm(f.bornSize)}cm</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>1日の成長 <b>${P.cm(P.dailyGrowth(spec(f.species)))}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>お世話 <b>${f.careDays}日</b></span><span>性別 <b>${identity(f).sexText}</b></span><span>世代・星 <b>${identity(f).generation} ${"★".repeat(f.stars)}</b></span></div>`;
+        if(panel==="records")body=`${tabs}<div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b>${P.cm(f.length)}cm · ${sizeLabel(f)}</b><small>${esc(appearance(f).label)}</small></div></div><div class="pet-stats"><span>レベル <b>Lv.${f.level}</b></span><span>経験値 <b>${f.xp}/${f.level>=20?"MAX":P.xpForLevel(f.level+1)}</b></span><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>生まれた体長 <b>${P.cm(f.bornSize)}cm</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>1日の成長 <b>${P.cm(P.dailyGrowth(spec(f.species)))}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>お世話 <b>${f.careDays}日</b></span><span>性別 <b>${identity(f).sexText}</b></span><span>世代・星 <b>${identity(f).generation} ${"★".repeat(f.stars)}</b></span><span>色の記録 <b>${M.label(f)}</b></span></div>${discoveryRecords()}`;
         else{
           const targets=P.tankIds(s).filter(t=>t!==f.tank&&P.canHouse(s,f.species,ctx.catalog,t));if(!targets.includes(moveTank))moveTank=targets[0]??null;
           body=`${tabs}<div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b>${P.cm(f.length)}cm · ${P.tankLabel(f.tank)}</b></div></div><h3>お引越し先</h3><div class="pet-tank-cards pet-move-cards">${targets.map(t=>tankCard(t,true)).join("")||'<p class="pet-note">同じ水の種類で、空きのある水槽が必要だよ。</p>'}</div>${control("move","この魚を移す","tank",!targets.length)}${!P.isLegend(spec(f.species))?`<section class="pet-rehome">${rehomeId===f.uid?`<p>${esc(fishName(f))}（${P.cm(f.length)}cm）をアスアルに託す？ 水槽からいなくなり、元には戻せないよ。返金はないよ。</p>${btn("rehome-confirm","この魚を託す")}${btn("rehome-cancel","やめる")}`:control("rehome","アスアルに託す","shop")}</section>`:'<p class="pet-note">ぬしは専用水槽で大切に育てよう。託す操作はできないよ。</p>'}`;
@@ -198,7 +209,7 @@
     function contest(){
       if(s.petLife.contest)return contestStage();
       const p=s.petLife,c=P.courses.find(c=>c.id===course),today=ctx.day();
-      const choices=kind==="fish"?p.fish.map(f=>({id:f.uid,name:`${fishName(f)} · ${P.cm(f.length)}cm · Lv.${f.level} · ${identity(f).generation} ★${f.stars}`})) : ctx.dogs;
+      const choices=kind==="fish"?p.fish.map(f=>({id:f.uid,name:`${fishName(f)} · ${P.cm(f.length)}cm · Lv.${f.level} · ${identity(f).generation}${M.isGold(f)?" · 黄金":""} ★${f.stars}`})) : ctx.dogs;
       if(!choices.some(a=>a.id===participant))participant=choices[0]?.id||"";
       const entered=p.entries[`${kind}:${course}`]===today;
       const last=p.lastResult;
@@ -235,10 +246,11 @@
         ${a.phase==="performance"&&trick?`<p>${a.commands.length}/5の芸を披露したよ。</p>`:btn("contest-next",a.phase==="entrance"?"舞台に立つ":a.phase==="performance"?fish?"泳ぎと成長を披露する":"相棒を呼んで応える": "審査結果を発表する")}`;
     }
     function render(){
+      const previousScroll=modal.querySelector('.pet-fish-roster')?.scrollLeft||0;
       root.ShuCompactUI?.release(modal);
       if(focus&&!P.residents(s).some(a=>a.uid===s.petLife.selected))focus=false;
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",mode==="aquarium"&&zoom);modal.classList.toggle("pet-aquarium",mode==="aquarium");
-      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
+      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message ${message.startsWith('黄金のフナ')?'pet-discovery':''}" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
       ctx.paintRivals();ctx.paintVillagers?.();
       paintContest();
       if(mode==="aquarium")for(const f of P.residents(s))ctx.prepareFish?.(f.species);
@@ -247,12 +259,20 @@
         const f=s.petLife.fish.find(a=>a.uid===el.dataset.petCardArt);if(f){ctx.prepareFish?.(f.species);ctx.drawFish(el,f.species,0,null,f);}
       }
       paintSpecimens();
+      const roster=modal.querySelector('.pet-fish-roster'),selectedCard=roster?.querySelector('[aria-pressed="true"]');
+      if(roster&&selectedCard){
+        roster.scrollLeft=previousScroll;
+        const r=roster.getBoundingClientRect(),b=selectedCard.getBoundingClientRect();
+        if(b.left<r.left)roster.scrollLeft+=b.left-r.left;
+        else if(b.right>r.right)roster.scrollLeft+=b.right-r.right;
+      }
       root.ShuCompactUI?.pet(modal,{enabled:mode==="shop"&&!s.petLife.contest,tab,buybackTank,food:s.petLife.food,onLayout:paintSpecimens});
       clearTimeout(toastTimer);if(message)toastTimer=setTimeout(()=>{message="";modal.querySelector(".pet-message")?.setAttribute("hidden","");},4500);
       if(panel)modal.querySelector('.pet-sheet [data-pet-action="panel-close"]')?.focus({preventScroll:true});
       else if(restoreFocus){restoreFocus=false;(modal.querySelector(`[data-pet-action="${panelReturn}"]`)||modal.querySelector('[data-pet-action="tanks"]'))?.focus({preventScroll:true});}
       if(live())start();
       ctx.presentationChanged?.();
+      announceDiscovery();
     }
     function paintSpecimens(){
       for(const el of modal.querySelectorAll("[data-pet-specimen]")){

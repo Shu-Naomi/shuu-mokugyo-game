@@ -1,5 +1,5 @@
 /* Shared physical scale and deterministic swim/feeding poses; no save mutations. */
-(function(root,factory){const api=factory(typeof module==='object'&&module.exports?require('./pet-life.js'):root.ShuPetLife);if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife){
+(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M){
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
@@ -72,6 +72,7 @@
     const spec=catalog.find(s=>s.id===fish?.species);
     const fry=!!spec&&fish.origin==='bred'&&fish.generation>0&&fish.length<spec.min;
     const stage=PetLife?.growthStage(fish);
+    if(M.isGold(fish))return {kind:'base',strength:0,fry,gold:true,adultIsaki:false,artId:'funaGold',label:fry?'黄金色のフナの稚魚':'黄金色のフナ',key:`funa:gold:${fry?1:0}`};
     if(stage)return {kind:'buri',strength:0,fry,adultIsaki:false,artId:stage.art,label:`${stage.name}の姿 · ${stage.alias}`,key:`buri:${stage.id}:${stage.art}`};
     const kind=fish?.species==='nijimasu'?'parr':fish?.species==='isaki'?'stripes':'base';
     // Qualitative growth changes follow aquarium observations. These fade
@@ -85,7 +86,7 @@
     if(!look)return;
     const w=context.canvas.width,h=context.canvas.height;
     context.save();context.globalCompositeOperation='source-atop';
-    if(look.fry){context.globalAlpha=.13;context.fillStyle='#d2f0df';context.fillRect(0,0,w,h);}
+    if(look.fry&&!look.gold){context.globalAlpha=.13;context.fillStyle='#d2f0df';context.fillRect(0,0,w,h);}
     const sideways=pose?.yaw===undefined?1:Math.abs(Math.cos(pose.yaw));
     context.globalAlpha=look.strength*.64*sideways;context.fillStyle='#283943';
     if(look.kind==='parr')for(let i=0;i<8;i++){

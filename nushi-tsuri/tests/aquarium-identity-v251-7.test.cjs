@@ -33,12 +33,12 @@ test('five roster choices and the always visible profile agree on sex, generatio
  }finally{a.dispose();}
 });
 
-test('missing legacy identity remains unknown after the unchanged game save and resume, without adding game fields',()=>{
+test('missing legacy identity remains unknown after the unchanged game save and resume, without adding identity provenance to game fields',()=>{
  const a=boot(fixture()),w=open(a);let saved,storage;try{
   click(w,'.pet-fish-roster [data-pet-inspect="pet-34"]');assert.equal(profile(w),'性別不明 · 世代不明');
   saved=JSON.parse(w.localStorage.getItem(saveKey));storage=displayStorage(w);
-  assert.equal(saved.petLife.version,5);assert.equal(saved.petLife.fish.find(f=>f.uid==='pet-34').sex,'female');
-  assert.equal(Object.keys(saved.petLife.fish[0]).some(k=>/identity|unknown|mutation/i.test(k)),false);
+  assert.equal(saved.petLife.version,6);assert.equal(saved.petLife.fish.find(f=>f.uid==='pet-34').sex,'female');
+  assert.equal(Object.keys(saved.petLife.fish[0]).some(k=>/identity|unknown/i.test(k)),false);
  }finally{a.dispose();}
  const b=boot(saved,undefined,{storage}),v=open(b);try{
   assert.equal(profile(v),'性別不明 · 世代不明');assert.deepEqual(read(v,'s.petLife.fish'),saved.petLife.fish);

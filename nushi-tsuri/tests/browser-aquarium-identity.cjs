@@ -42,7 +42,7 @@ module.exports=async function identityUI(url,screen){
   await press('.pet-fish-roster [data-pet-inspect="pet-34"]');await press('[data-pet-action="records"]');
   assert.match(await page.locator('.pet-stats').innerText(),/性別\s*性別不明.*世代・星\s*世代不明/s);await shot('legacy-records');await press('.pet-sheet [data-pet-action="panel-close"]');
   assert.deepEqual(await snapshot(),before);
-  const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);assert.equal(saved.petLife.version,5);
+  const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);assert.equal(saved.petLife.version,6);
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual(await snapshot(),before);assert.equal(await page.locator('.pet-profile-identity').innerText(),'性別不明 · 世代不明');await fits();await shot('legacy-resumed');
   // Existing care operations still apply once to the same five fish and survive resume.
   await press('[data-pet-action="feed"]');assert.equal(await page.evaluate(()=>s.petLife.food),before.food-5);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);
