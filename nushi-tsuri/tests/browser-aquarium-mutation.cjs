@@ -36,7 +36,9 @@ module.exports=async function mutationUI(url,screen){
   assert.match(await page.locator('[data-pet-size-rank]').innerText(),/黄金.*稚魚/);
   const announced=await page.evaluate(()=>s.petLife.mutationDiscoveries);assert.equal(announced.length,1);assert.equal(announced[0].notified,true);assert.equal(announced[0].firstUid,'pet-6');const fry=await child();const fryLayout=await fits();await shot('gold-fry');
   await press('.pet-fish-roster [data-pet-inspect="pet-4"]');assert.equal(await page.locator('.pet-profile-identity').innerText(),'性別不明 · 世代不明');await shot('legacy');
-  await press('.pet-fish-roster [data-pet-inspect="pet-5"]');assert.equal(await page.locator('[data-pet-card-art="pet-5"] canvas').getAttribute('data-art-variant'),'moroko');
+  await press('.pet-fish-roster [data-pet-inspect="pet-5"]');
+  const normalVariants=await page.locator('[data-pet-card-art="pet-5"] canvas').evaluateAll(canvases=>canvases.map(c=>c.dataset.artVariant));
+  assert.ok(normalVariants.length>=1);assert.ok(normalVariants.every(id=>id==='moroko'),'all views of the ordinary fish keep its own artwork');
   await press('.pet-fish-roster [data-pet-inspect="pet-6"]');await press('[data-pet-action="records"]');assert.match(await page.locator('.pet-discoveries').innerText(),/黄金のフナ/);await shot('discovery-record');await press('.pet-sheet [data-pet-action="panel-close"]');
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual((await child()).mutation,fry.mutation);assert.equal(await page.locator('.pet-discovery').count(),0,'saved notice never repeats');
   const days=await page.evaluate(()=>Math.ceil((petCatalog.find(f=>f.id==='funa').start-s.petLife.fish.find(f=>f.uid==='pet-6').length)/ShuPetLife.dailyGrowth(petCatalog.find(f=>f.id==='funa'))));
