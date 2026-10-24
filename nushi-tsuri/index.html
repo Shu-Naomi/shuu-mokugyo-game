@@ -6433,7 +6433,7 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
-    <link rel="stylesheet" href="pet-life.css?v=251-7" />
+    <link rel="stylesheet" href="pet-life.css?v=251-8" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
@@ -7302,10 +7302,11 @@
     <script src="ui-feedback.js?v=187-1"></script>
     <script src="weather.js?v=169-1"></script>
     <script src="event-ceremony.js?v=186-1"></script>
-    <script src="pet-life.js?v=250-1"></script>
-    <script src="aquarium-life.js?v=251-1"></script>
+    <script src="aquarium-mutations.js?v=251-8"></script>
+    <script src="pet-life.js?v=251-8"></script>
+    <script src="aquarium-life.js?v=251-8"></script>
     <script src="compact-ui.js?v=251-5"></script>
-    <script src="pet-life-ui.js?v=251-7"></script>
+    <script src="pet-life-ui.js?v=251-8"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -7330,7 +7331,7 @@
     <script src="save-slots.js?v=218-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=251-1"></script>
-    <script src="fish-art.js?v=250-1"></script>
+    <script src="fish-art.js?v=251-8"></script>
     <script src="tackle-art.js?v=191-1"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
@@ -12798,7 +12799,9 @@
           waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
-      ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave});
+      // The title stays read-only. Persist the draw seed on Start, before
+      // catching up any breeding days that can create new eggs.
+      ShuPetLife.normalize(s,petCatalog,dogIds,gameClockAt(s.gameMinutes).dayIndex,{legacy:hadStoredSave,deferSync:true});
       function petDailyMessage(state = s) {
         const today=gameClockAt(state.gameMinutes).dayIndex,p=state.petLife,messages=[];
         const birth=p?.lastBirth;
@@ -12971,6 +12974,7 @@
         if (!gameStarted || saveSuppressed || pendingSaveDeletion?.id===activeSaveSlot) return false;
         try {
           if (!saveSlots.write(activeSaveSlot, s)) throw Error("Save failed");
+          ShuAquariumMutations.confirmSaved(s);
           $("#saveStatus").hidden = true;
           return true;
         } catch (_) {
@@ -17712,7 +17716,7 @@
         drawPetScene();
       }
       function render() {
-        if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
+        if(gameStarted&&ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
         const coast=s.mapRegion==="coast", mountain=ShuMountain.isRegion(s.mapRegion),offshore=s.mapRegion===ShuOffshore.id;
         const mapElement=$("#map");
         mapElement.classList.toggle("coast",coast);
@@ -23371,7 +23375,7 @@
       petUi = ShuPetUI.create({state:s,initialFish:loadedSaveSlot.data?.petLife?.fish,identityStorageKey:saveSlots.keyFor(activeSaveSlot),catalog:petCatalog,dogs:dogIds.map(id=>({id,name:dogProfileData[id].name})),
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
-        changed:()=>{save();render();},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
+        changed:()=>{const saved=save();render();return saved;},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
         presentationChanged:()=>{eventCeremonies?.sync();syncSceneSound();},
         feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
@@ -23604,6 +23608,11 @@
         $("#activeSaveSlot").textContent = `セーブ${activeSaveSlot}`;
         $("#title").classList.remove("active");
         $("#game").classList.add("active");
+        // The first durable seed checkpoint must also resume a new opening.
+        if(!loadedSaveSlot.exists&&!s.lakeStory.introSeen)s.lakeStory.introPending=true;
+        ShuAquariumMutations.prepare(s);
+        save();
+        if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex))save();
         render();
         armDogIdle();
         scheduleIdleStatus(750);
@@ -23932,7 +23941,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=251-7").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=251-8").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
