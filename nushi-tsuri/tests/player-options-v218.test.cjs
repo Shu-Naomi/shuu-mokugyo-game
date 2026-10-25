@@ -1,6 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const Options=require('../player-options.js'),Slots=require('../save-slots.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
+const enter=require('./title-test-flow.cjs');
 const click=(w,id)=>w.document.querySelector(id).click();
 const input=(w,id,value)=>{const el=w.document.querySelector(id);el.value=value;el.dispatchEvent(new w.Event('input',{bubbles:true}));};
 const rename=(w,value)=>{input(w,'#optionsPlayerName',value);w.document.querySelector('#optionsNameForm').dispatchEvent(new w.Event('submit',{cancelable:true}));};
@@ -10,7 +11,7 @@ const secondKey=Slots.keys[2];
 test('new adventures choose a name and gender, save once, and keep gender after unlimited renames and resume',()=>{
  const app=boot(null,undefined,{start:false}),w=app.window;let saved;
  try{
-  input(w,'#titlePlayerName','直美');click(w,'[data-avatar="girl"]');click(w,'#start');click(w,'#lakeIntroSkip');
+  enter(w,{avatar:'girl',name:'直美'});click(w,'#lakeIntroSkip');
   assert.equal(read(w,'s.playerName'),'直美');assert.equal(read(w,'s.avatar'),'girl');
   assert.ok(w.openOptions());const original=read(w,'({money:s.money,baits:s.baits,caught:s.caught,dog:s.dog})');
   for(const value of ['なおみ','星の旅人','直美♡']){rename(w,value);assert.equal(read(w,'s.playerName'),value);assert.equal(read(w,'s.avatar'),'girl');}
@@ -26,9 +27,9 @@ test('legacy gender is fixed, preview is read only, empty drafts and named secon
  try{
   const raw=w.localStorage.getItem(saveKey);assert.equal(w.document.querySelector('[data-avatar="boy"]').disabled,true);
   click(w,'[data-avatar="boy"]');assert.equal(w.localStorage.getItem(saveKey),raw);w.navigateToSaveSlot=url=>target=url;
-  click(w,'[data-save-slot="2"]');input(w,'#titlePlayerName','イワナ子');click(w,'[data-avatar="girl"]');
-  click(w,'[data-save-slot="1"]');click(w,'[data-save-slot="2"]');assert.equal(w.document.querySelector('#titlePlayerName').value,'イワナ子');
-  click(w,'#start');assert.equal(w.localStorage.getItem(saveKey),raw);assert.equal(w.localStorage.getItem(secondKey),null);assert.equal(Slots.launchSettings(new URL(target).search).playerName,'イワナ子');
+  click(w,'#titleNew');click(w,'[data-save-slot="2"]');click(w,'#titleSlotsNext');input(w,'#titlePlayerName','イワナ子');click(w,'[data-avatar="girl"]');
+  click(w,'[data-title-panel="character"] [data-title-back]');click(w,'[data-save-slot="2"]');click(w,'#titleSlotsNext');assert.equal(w.document.querySelector('#titlePlayerName').value,'イワナ子');
+  click(w,'#titleCharacterNext');click(w,'#titleDogsNext');click(w,'#start');assert.equal(w.localStorage.getItem(saveKey),raw);assert.equal(w.localStorage.getItem(secondKey),null);assert.equal(Slots.launchSettings(new URL(target).search).playerName,'イワナ子');
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const app2=boot(old,undefined,{url:target});try{assert.equal(read(app2.window,'s.playerName'),'イワナ子');assert.equal(read(app2.window,'s.avatar'),'girl');assert.equal(app2.window.localStorage.getItem(saveKey),JSON.stringify(old));}finally{app2.dispose();}
@@ -47,7 +48,7 @@ test('name validation handles graphemes and markup safely, and a storage failure
 
 test('title options rename an existing second adventure without touching its gender or active save',()=>{
  const other={...seed(),playerName:'旧名',avatar:'girl',money:9876},app=boot(seed(),undefined,{start:false,storage:{[secondKey]:other}}),w=app.window;
- try{const raw=w.localStorage.getItem(saveKey);click(w,'[data-save-slot="2"]');click(w,'#titleOptions');rename(w,'新名');w.closeOptions();const changed=JSON.parse(w.localStorage.getItem(secondKey));assert.equal(changed.playerName,'新名');assert.equal(changed.avatar,'girl');assert.equal(changed.money,9876);assert.equal(w.localStorage.getItem(saveKey),raw);assert.match(w.document.querySelector('[data-save-slot="2"] small').textContent,/新名/);assert.deepEqual(app.errors,[]);}finally{app.dispose();}
+ try{const raw=w.localStorage.getItem(saveKey);click(w,'#titleContinue');click(w,'[data-save-slot="2"]');click(w,'#titleOptions');rename(w,'新名');w.closeOptions();const changed=JSON.parse(w.localStorage.getItem(secondKey));assert.equal(changed.playerName,'新名');assert.equal(changed.avatar,'girl');assert.equal(changed.money,9876);assert.equal(w.localStorage.getItem(saveKey),raw);assert.match(w.document.querySelector('[data-save-slot="2"] small').textContent,/新名/);assert.deepEqual(app.errors,[]);}finally{app.dispose();}
 });
 
 test('real dialogue speed reveals text, a second advance completes it before changing pages, and close cancels stale callbacks',async()=>{

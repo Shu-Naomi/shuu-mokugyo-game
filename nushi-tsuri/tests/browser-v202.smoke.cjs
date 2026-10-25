@@ -86,7 +86,7 @@ async function smoke(url,screenshots=true){
     if(screenshot&&screenshots)console.log('NUSHI_SCREENSHOT '+region+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:72})).toString('base64'));
   }
   async function start(){
-    await page.locator('#start').click();
+    await require('./browser-start-adventure.cjs')(page,false);
     await page.locator('#game.active').waitFor({state:'visible'});
     assert.match(await page.locator('.hud').innerText(),/v251/);
   }
@@ -140,7 +140,7 @@ async function touchSmoke(url){
     const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
     await page.goto(url,{waitUntil:'domcontentloaded'});
     assert.equal(await page.locator('.landscape-warning').isVisible(),true,'portrait phone asks for landscape');
-    await page.setViewportSize({width:844,height:390});await page.locator('#start').tap();
+    await page.setViewportSize({width:844,height:390});await require('./browser-start-adventure.cjs')(page,true);
     await page.locator('#game.active').waitFor({state:'visible'});
     assert.match(await page.locator('.hud').innerText(),/v251/);
     const position=()=>page.locator('#player').evaluate(el=>({
@@ -162,7 +162,7 @@ async function touchSmoke(url){
     await page.locator('#action').tap();
     assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),'峠の池');
     const savedPosition=await road.position();await page.reload({waitUntil:'domcontentloaded'});
-    await page.locator('#start').tap();assert.deepEqual(await road.position(),savedPosition);
+    await require('./browser-start-adventure.cjs')(page,true);assert.deepEqual(await road.position(),savedPosition);
     assert.equal(await page.locator('#mountainPixels').getAttribute('aria-label'),'峠の池');
     await road.context.close();
 
@@ -202,7 +202,7 @@ async function storySmoke(url,mobile){
     assert.ok(Object.values(result).every(Boolean),'readable journal layout '+JSON.stringify(result));
   }
   try{
-    await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');const before=await snapshot();
+    await page.goto(url,{waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);const before=await snapshot();
     await press('#menu');await press('[data-field-menu-target="story"]');
     assert.match(await page.locator('#lakeStoryPage').innerText(),/祖父の手帳/);
     assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),1,'no future boss spoilers');
@@ -218,7 +218,7 @@ async function storySmoke(url,mobile){
     // pagehide saves the live game: install the fixture in that live state
     // first so reload cannot overwrite it with the earlier one-page journal.
     await page.evaluate(saved=>{s.caught=saved.caught;s.fishCatchRecords=saved.fishCatchRecords;delete s.lakeStory;save();},finished);
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');const finishedBefore=await snapshot();
+    await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);const finishedBefore=await snapshot();
     await press('#menu');await press('[data-field-menu-target="story"]');
     assert.equal(await page.locator('#lakeStoryIndex [data-story-page]').count(),10);
     await press('#lakeStoryIndex [data-story-page="stream"]');
@@ -231,7 +231,7 @@ async function storySmoke(url,mobile){
     console.log('STORY_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
     if(mobile)await press('#lakeStoryClose');else await page.keyboard.press('Escape');
     assert.equal(await snapshot(),finishedBefore,'reading awards no extra catch or money');
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');
+    await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
     assert.equal(await page.evaluate(()=>ShuLakeStory.completed(s)),true,'ending read status survives reload');
     await page.evaluate(()=>open('record'));await press('#fishdexStoryOffer');await press('#lakeStoryClose');
     assert.ok(await page.locator('#record').isVisible(),'returns to archive');
@@ -259,26 +259,24 @@ async function saveSlotSmoke(url,mobile){
     await Promise.all([page.waitForEvent('domcontentloaded'),press('[data-field-menu-target="saveSlots"]')]);
     await page.locator('#title.active').waitFor({state:'visible'});
   }
-  async function launch(slot){
-    const current=Number(new URL(page.url()).searchParams.get('saveSlot')||1);
-    if(current!==slot)await Promise.all([page.waitForEvent('domcontentloaded'),press('#start')]);
-    else await press('#start');
+  async function launch(slot,options={}){
+    await require('./browser-start-adventure.cjs')(page,mobile,{slot,...options});
     await playing(slot);
   }
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
-    await press('[data-save-slot="2"]');await press('[data-avatar="girl"]');await press('[data-dog="grey"]');
+    await press('#titleNew');await press('[data-save-slot="2"]');
     assert.equal(await stored(saveKey),oldBytes);assert.equal(await stored(secondKey),null);
     const layout=await page.locator('.title-box').evaluate(box=>({inside:box.getBoundingClientRect().top>=-1&&box.getBoundingClientRect().bottom<=innerHeight+1,horizontal:box.scrollWidth<=box.clientWidth+1,cards:[...box.querySelectorAll('[data-save-slot]')].every(b=>b.getBoundingClientRect().width>90)}));
     assert.ok(Object.values(layout).every(Boolean),'save cards fit '+JSON.stringify(layout));
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
-    await launch(2);assert.equal(await stored(saveKey),oldBytes);
+    await press('[data-title-panel="slots"] [data-title-back]');await launch(2,{avatar:'girl',dog:'grey'});assert.equal(await stored(saveKey),oldBytes);
     await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
     const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
     await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
-    await selection();await press('[data-save-slot="1"]');await launch(1);
+    await selection();await launch(1);
     assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await stored(secondKey),secondBytes);
-    await page.evaluate(()=>{s.money=11111;save();});await selection();await press('[data-save-slot="2"]');await launch(2);
+    await page.evaluate(()=>{s.money=11111;save();});await selection();await launch(2);
     assert.equal(await page.evaluate(()=>s.money),8888);assert.equal(await page.evaluate(()=>s.items.fishBento),4);
     const discovery=await page.evaluate(()=>{const cycle=ensureForageCycle(),point=foragePointData.find(p=>!cycle.harvested.includes(p.id));delete cycle.active[point.id];const before=s.baits.shell,amount=ShuPetLife.forageCount(s,s.dog);startDogForageDiscovery(point,'shell');return {id:point.id,before,amount};});
     await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:10000});
@@ -288,8 +286,8 @@ async function saveSlotSmoke(url,mobile){
     await page.reload({waitUntil:'domcontentloaded'});await launch(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     await selection(); // On the title page, pagehide must preserve damaged data.
     await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
-    assert.equal(await page.locator('#start').isDisabled(),true);assert.equal(await page.locator('#saveSlotNotice').isVisible(),true);
-    await press('[data-save-slot="1"]');await launch(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
+    await press('#titleContinue');assert.equal(await page.locator('[data-save-slot="2"]').isDisabled(),true);assert.equal(await stored(secondKey),'{broken');await press('[data-title-panel="slots"] [data-title-back]');
+    await launch(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
     assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,dogPickup:true,corruptProtected:true,errors}));
   }finally{await browser.close();}
 }
@@ -302,7 +300,7 @@ async function audioSmoke(url,mobile){
   const page=await context.newPage();page.on('pageerror',error=>errors.push(error.message));
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});
-    await page.locator('#start')[mobile?'tap':'click']();
+    await require('./browser-start-adventure.cjs')(page,mobile);
     await page.locator('#soundToggle')[mobile?'tap':'click']();
     await page.waitForFunction(()=>backgroundMusic.stats().playing==='map-spring');
     assert.equal(await page.evaluate(()=>gameAudio.context.state),'running','gesture unlocks real Web Audio');

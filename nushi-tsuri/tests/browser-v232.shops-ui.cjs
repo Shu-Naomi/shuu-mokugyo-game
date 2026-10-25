@@ -23,7 +23,7 @@ module.exports=async function shopsUI(url,mobile=false,options={}){
    layouts.push({name,scope,...data,corners});console.log('V232_UI_SCREEN '+name+' '+JSON.stringify({...data,corners}));
    return data;
   }
-  await page.goto(url,{waitUntil:'load'});await plain('#start');if(await page.locator('#lakeIntroSkip').isVisible())await plain('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await plain('#lakeIntroSkip');
   await plain('#menu');await plain('[data-field-menu-target="items"]');await shot('bag-food-initial','#inventory');const before=await snapshot();
   for(const id of ['food','ingredients','dogTreats','dogToys','parts','collection','offerings']){await plain('[data-inventory-category="'+id+'"]');assert.deepEqual(await snapshot(),before);}
   await plain('[data-inventory-category="food"]');await shot('bag-food','#inventory');
@@ -49,7 +49,7 @@ module.exports=async function shopsUI(url,mobile=false,options={}){
   await page.evaluate(()=>openVehicleShop());await shot('boat-shop','#vehicleShop');const boatMoney=await page.evaluate(()=>s.money);await press('[data-buy-vehicle="tarai"]');assert.equal(await page.evaluate(()=>s.money),boatMoney-600);assert.equal(await page.evaluate(()=>s.equipment.vehicle),'tarai');const ownBoat=await snapshot();await press('[data-buy-vehicle="tarai"]');assert.equal(await page.evaluate(()=>s.money),ownBoat.money);await shot('boat-owned','#vehicleShop');await plain('#vehicleShop [data-close]');
   await page.evaluate(()=>petUi.open('shop'));await shot('asual-fish','#petLifeModal');await plain('[data-pet-tab="supplies"]');await shot('asual-supplies','#petLifeModal');const petMoney=await page.evaluate(()=>s.money),food=await page.evaluate(()=>s.petLife.food);await press('[data-pet-action="food-1"]');assert.equal(await page.evaluate(()=>s.money),petMoney-100);assert.equal(await page.evaluate(()=>s.petLife.food),food+10);
   await plain('[data-pet-tab="buyback"]');await shot('asual-tanks','#petLifeModal');await press('[data-pet-buyback-tank="1"]');await shot('asual-specimens','#petLifeModal');await press('[data-pet-buyback="pet-28"]');await shot('asual-confirm','#petLifeModal');const sale=await snapshot();await plain('[data-pet-action="buyback-cancel"]');assert.deepEqual(await snapshot(),sale);await plain('[data-pet-action="close"]');
-  const saved=await snapshot();await page.reload({waitUntil:'load'});await plain('#start');assert.deepEqual(await snapshot(),saved);
+  const saved=await snapshot();await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await snapshot(),saved);
   for(const l of layouts){assert.ok(l.rect.y>=0&&l.rect.y+l.rect.h<=viewport.height+1,'frame inside screen '+l.name);assert.ok(l.scroll<=1,'whole frame scroll '+l.name+' '+l.scroll);for(const b of l.bodies)assert.ok(b.scroll<=1,'body scroll '+l.name+' '+JSON.stringify(b));for(const b of l.buttons){assert.ok(b.h>=44&&b.w>=44,'44px action '+l.name+' '+JSON.stringify(b));assert.ok(b.x>=0&&b.x+b.w<=viewport.width+1&&b.y>=0&&b.y+b.h<=viewport.height+1&&b.insideCard,'action visible '+l.name+' '+JSON.stringify(b));}}
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V232_SHOPS_UI_PASS '+JSON.stringify({mobile,viewport,dpr:options.dpr||1,screens:layouts.length,readOnly:true,carefulPayments:true,saved:true,errors,failed}));
  }finally{await context.close();await browser.close();}

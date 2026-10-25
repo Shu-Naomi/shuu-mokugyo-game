@@ -13,7 +13,7 @@ module.exports=async function memories(url,mobile=false){
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  const resources=()=>page.evaluate(()=>({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,memories:s.catchMemories}));
  try{
-  await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
   await press('#menu');await press('[data-field-menu-target="record"]');await press('[data-fishdex-id="funa"]');
   const before=await resources(),summary=page.locator('.fishdex-memories > summary');
   assert.ok((await summary.boundingBox()).height>=42,'touch target');
@@ -30,7 +30,7 @@ module.exports=async function memories(url,mobile=false){
   if(!mobile){await summary.focus();await page.keyboard.press('Space');assert.equal(await page.locator('.fishdex-memories').evaluate(el=>el.open),false);await page.keyboard.press('Enter');assert.equal(await page.locator('.fishdex-memories').evaluate(el=>el.open),true);}
   await press('[data-fishdex-id="starNushi"]');assert.equal(await page.locator('.fishdex-memories').count(),0);assert.match(await page.locator('#fishdexDetail').innerText(),/未発見/);
   await press('[data-fishdex-id="funa"]');await press('.fishdex-close');assert.deepEqual(await resources(),before);
-  await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await resources(),before);
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await resources(),before);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V229_MEMORIES_PASS '+JSON.stringify({mobile,first:true,best:true,reloaded:true,resourcesUnchanged:true,errors,failed}));
  }finally{await context.close();await browser.close();}

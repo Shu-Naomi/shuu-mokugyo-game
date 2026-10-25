@@ -22,6 +22,16 @@
       if(!read(value).ok)return false;
       try{getStorage().setItem(keyFor(value),JSON.stringify(data));return true;}catch(_){return false;}
     }
+    function writeNew(value,data){
+      // Final empty-slot guard: never overwrite a save created while the title was open.
+      try{const storage=getStorage(),key=keyFor(value);if(storage.getItem(key)!==null)return false;
+        storage.setItem(key,JSON.stringify(data));return true;}catch(_){return false;}
+    }
+    function writeIfUnchanged(value,data,expectedRaw){
+      if(typeof expectedRaw!=='string'||!read(value).ok)return false;
+      try{const storage=getStorage(),key=keyFor(value);if(storage.getItem(key)!==expectedRaw)return false;
+        storage.setItem(key,JSON.stringify(data));return true;}catch(_){return false;}
+    }
     function remember(value){
       const id=slot(value);if(!id)return false;
       try{getStorage().setItem(lastSlotKey,String(id));return true;}catch(_){return false;}
@@ -38,11 +48,11 @@
         storage.removeItem(key);return storage.getItem(key)===null;
       }catch(_){return false;}
     }
-    return {read,write,remember,initial,keyFor,capture,remove};
+    return {read,write,writeNew,writeIfUnchanged,remember,initial,keyFor,capture,remove};
   }
   function titleUrl(href,value){
     const url=new URL(href);url.searchParams.set('saveSlot',String(slot(value)||1));
-    for(const name of ['play','avatar','dog','playerName'])url.searchParams.delete(name);
+    for(const name of ['play','avatar','dog','playerName','newGame'])url.searchParams.delete(name);
     return url.href;
   }
   function launchUrl(href,value,options={}){

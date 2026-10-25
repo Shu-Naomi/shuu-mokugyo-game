@@ -9,7 +9,7 @@ module.exports=async function characterNames(url,screen){
   await context.addInitScript(({key,key2,one,two})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(one));if(!localStorage.getItem(key2))localStorage.setItem(key2,JSON.stringify(two));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key,key2,one:fixture(),two:fixture(2)});
   page=await context.newPage();const cdp=mobile?await context.newCDPSession(page):null,press=q=>page.locator(q)[mobile?'tap':'click'](),shot=name=>page.screenshot({path:path.join(dir,`${width}x${height}-${name}.png`)});
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
-  async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');}
+  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');}
   async function options(){await press('#menu');await press('[data-field-menu-target="options"]');}
   async function rename(target,name){await press(`[data-name-target="${target}"]`);const hero=target==='player';await page.locator(hero?'#optionsPlayerName':'#optionsDogName').fill(name);await press(hero?'#optionsRename':'#optionsDogRename');}
   const progress=()=>page.evaluate(()=>{const a=JSON.parse(JSON.stringify(s));delete a.playerName;delete a.dogNames;delete a.dog;return a;});

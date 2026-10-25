@@ -2,6 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const Slots=require('../save-slots.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const secondKey=Slots.keys[2],metaKey=Slots.lastSlotKey;
+const enter=require('./title-test-flow.cjs');
 const click=(w,selector)=>{const b=w.document.querySelector(selector);assert.ok(b,selector);assert.equal(b.disabled,false);b.click();};
 const state=w=>read(w,'({money:s.money,hp:s.hp,caught:s.caught,baits:s.baits,items:s.items,dog:s.dog,avatar:s.avatar,affinity:s.dogAffinity,story:s.lakeStory,pets:s.petLife,clock:s.gameMinutes})');
 
@@ -10,10 +11,10 @@ test('selecting and previewing either adventure cannot write or normalize its st
   const app=boot(old,undefined,{start:false,storage:{[secondKey]:second}}),w=app.window;
   try{
     const original=w.localStorage.getItem(saveKey),other=w.localStorage.getItem(secondKey);
-    assert.equal(w.document.querySelector('#start').textContent,'セーブ1の続きへ');
+    click(w,'#titleContinue');assert.equal(w.document.querySelector('#titleResume').disabled,false);
     assert.match(w.document.querySelector('[data-save-slot="2"] small').textContent,/9876円.*釣果9匹/);
     click(w,'[data-save-slot="2"]');assert.equal(w.document.querySelector('[data-dog="grey"]').classList.contains('active'),true);
-    assert.equal(w.document.querySelector('[data-avatar="girl"]').disabled,true);click(w,'[data-dog="riku"]');
+    assert.equal(w.document.querySelector('[data-avatar="girl"]').disabled,true);w.document.querySelector('[data-dog="riku"]').click();
     w.dispatchEvent(new w.Event('pagehide'));w.document.dispatchEvent(new w.Event('visibilitychange'));
     assert.equal(w.save(),false);assert.equal(w.localStorage.getItem(saveKey),original);assert.equal(w.localStorage.getItem(secondKey),other);
     click(w,'[data-save-slot="1"]');assert.equal(w.document.querySelector('[data-dog="shuu"]').classList.contains('active'),true);
@@ -26,7 +27,7 @@ test('a new second adventure starts fresh with chosen companions and leaves the 
   let target;
   try{
     const w=first.window,original=w.localStorage.getItem(saveKey);w.navigateToSaveSlot=url=>target=url;
-    click(w,'[data-save-slot="2"]');click(w,'[data-avatar="girl"]');click(w,'[data-dog="grey"]');click(w,'#start');
+    enter(w,{slot:2,avatar:'girl',dog:'grey'});
     assert.equal(w.localStorage.getItem(saveKey),original);assert.equal(w.localStorage.getItem(secondKey),null);
     assert.equal(new URL(target).searchParams.get('saveSlot'),'2');assert.deepEqual(Slots.launchSettings(new URL(target).search),{play:true,playerName:'旅人',avatar:'girl',dog:'grey'});
     assert.deepEqual(first.errors,[]);
@@ -79,9 +80,9 @@ test('an explicit slot choice wins over last-played metadata and unrelated URL p
 test('corrupt legacy saves are protected on title, unload and a new second adventure',()=>{
   const damaged='{broken',app=boot(null,undefined,{start:false,storage:{[saveKey]:damaged}}),w=app.window;
   try{
-    assert.equal(w.document.querySelector('#start').disabled,true);assert.equal(w.document.querySelector('#saveSlotNotice').hidden,false);
+    assert.equal(w.document.querySelector('#start').disabled,true);click(w,'#titleContinue');assert.equal(w.document.querySelector('#saveSlotNotice').hidden,false);
     w.dispatchEvent(new w.Event('pagehide'));assert.equal(w.localStorage.getItem(saveKey),damaged);
-    click(w,'[data-save-slot="2"]');assert.equal(w.document.querySelector('#start').disabled,false);assert.equal(w.localStorage.getItem(saveKey),damaged);
+    click(w,'#titleNew');click(w,'[data-save-slot="2"]');assert.equal(w.document.querySelector('#titleSlotsNext').disabled,false);assert.equal(w.localStorage.getItem(saveKey),damaged);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
   const second=boot(null,undefined,{url:'http://localhost/nushi-tsuri/?saveSlot=2',storage:{[saveKey]:damaged}});

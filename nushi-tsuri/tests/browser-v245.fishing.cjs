@@ -19,7 +19,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
   async function openTackle(){await press('#action');assert.equal(await value('battle?.phase'),'prep');await press('#wait');await page.locator('#tackle.open').waitFor();}
   try{
    await page.clock.install({time:new Date('2026-10-19T00:00:00Z')});await page.clock.pauseAt('2026-10-19T00:00:01Z');
-   await page.goto(url,{waitUntil:'load'});await press('#start');await page.clock.runFor(240);
+   await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);
    if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    assert.match(await page.locator('.hud').innerText(),/v251/);
    if(mode==='gauge'){
@@ -142,7 +142,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     assert.ok(runTravel>.01,'escaping fish scroll the water in the opposite direction');
     assert.ok(longestPullMs>=1400,'the randomized opening provides a useful pull after a 600 ms response');
    }
-   await page.reload({waitUntil:'load'});await press('#start');await page.clock.runFor(240);assert.deepEqual(await snapshot(),after);
+   await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);assert.deepEqual(await snapshot(),after);
    assert.equal(await value('s.fightMode'),mode);assert.equal(await value('s.fishingMethod'),'lure');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    // A second natural hook: ignoring the running fish must actually break.
    if(mode==='nushi'){

@@ -11,7 +11,7 @@ module.exports=async function identityUI(url,screen){
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
   const shot=async name=>page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});
   const snapshot=()=>page.evaluate(()=>({fish:s.petLife.fish,eggs:s.petLife.eggs,money:s.money,food:s.petLife.food,time:s.gameMinutes,caught:s.caught}));
-  async function enter(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');}
+  async function enter(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');}
   async function fits(){
    const layout=await page.evaluate(()=>{
     const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};},sidebar=document.querySelector('.pet-tank-info'),content=document.querySelector('.pet-content');

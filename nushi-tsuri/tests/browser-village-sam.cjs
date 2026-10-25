@@ -11,7 +11,7 @@ module.exports=async function villageSam(url,mobile=false,options={}){
  const state=()=>value('({x:s.x,y:s.y,direction:s.direction})');
  const progress=()=>value('({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
  const shot=name=>page.screenshot({path:path.join(dir,viewport.width+'x'+viewport.height+'-'+name+'.png')});
- async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}await page.waitForFunction(()=>document.querySelector('#worldPixels').style.backgroundImage==='none');await page.evaluate(()=>{Math.random=()=>.999999;});}
+ async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}await page.waitForFunction(()=>document.querySelector('#worldPixels').style.backgroundImage==='none');await page.evaluate(()=>{Math.random=()=>.999999;});}
  async function walkTo(target){
   const route=await page.evaluate(target=>{
    const queue=[{x:s.x,y:s.y,d:s.direction,path:[]}],seen=new Set([s.x+','+s.y+','+s.direction]);

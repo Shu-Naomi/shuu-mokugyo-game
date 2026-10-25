@@ -16,7 +16,7 @@ module.exports=async function categories(url,mobile=false){
   assert.deepEqual(panels,[id],scope+' shows only the selected kind');
  }
  try{
-  await page.goto(url,{waitUntil:'load'});await press('#start');await bag();const before=await stock();
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await bag();const before=await stock();
   for(const category of ['food','ingredients','dogTreats','dogToys','parts','collection','offerings']){
    await press(`[data-inventory-category="${category}"]`);await selected('inventory',category);assert.equal(await stock(),before);
    const bounds=await page.locator(`[data-inventory-category="${category}"]`).boundingBox();assert.ok(bounds.height>=44,'category touch target');
@@ -50,7 +50,7 @@ module.exports=async function categories(url,mobile=false){
   await press('[data-location-category="recipes"]');await selected('location','recipes');await press('#locationInterior [data-cook-recipe="bigFishPlate"]');
   assert.equal(await page.evaluate(()=>s.cookingIngredients.fishFillet),1);assert.equal(await page.evaluate(()=>s.items.wildGreens),1);
   await press('[data-location-category="meals"]');await selected('location','meals');await press('#locationInterior [data-eat-prepared-meal="bigFishPlate"]');
-  const saved=await stock();await page.reload({waitUntil:'load'});await press('#start');assert.equal(await stock(),saved);await bag();await press('[data-inventory-category="dogToys"]');assert.match(await page.locator('#inventoryCategory-dogToys').innerText(),/ゴムボール/);
+  const saved=await stock();await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.equal(await stock(),saved);await bag();await press('[data-inventory-category="dogToys"]');assert.match(await page.locator('#inventoryCategory-dogToys').innerText(),/ゴムボール/);
   if(mobile){await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.landscape-warning').isVisible(),true);await page.setViewportSize(viewport);await selected('inventory','dogToys');}
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V217_ITEM_CATEGORIES_PASS '+JSON.stringify({mobile,bagCategories:9,shopCategories:6,foodAndIngredients:true,sharedStock:true,bulkPurchase:true,cooking:true,reload:true,bagLayout,errors,failed}));
