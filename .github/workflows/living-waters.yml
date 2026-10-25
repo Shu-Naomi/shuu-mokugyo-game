@@ -14,7 +14,7 @@ concurrency:
 jobs:
   layout:
     runs-on: ubuntu-latest
-    timeout-minutes: 20
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: nushi-tsuri/tests
@@ -26,7 +26,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: npx playwright install --with-deps chromium
-      - run: sudo apt-get install -y fonts-noto-cjk
+      - name: Install pinned Japanese UI fonts
+        run: bash install-ci-fonts.sh
       - run: node browser-life-ui-evidence.cjs
       - run: node browser-shore-ui-evidence.cjs
       - run: node browser-inventory-ui-evidence.cjs
