@@ -23644,7 +23644,7 @@
         }
         if(isNew){
           const validated=ShuTitleFlow.choices(choices,ShuPlayerOptions);if(!validated)return false;
-          Object.assign(s,validated);
+          Object.assign(s,validated,{dogNames:ShuPlayerOptions.dogNames()});
           if(!s.lakeStory.introSeen)s.lakeStory.introPending=true;
         }
         startSaveExpectedRaw=capture.raw;

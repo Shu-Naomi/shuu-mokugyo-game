@@ -55,6 +55,10 @@ test('new adventure reloads a previously loaded slot deleted by another tab and 
  const b=boot(null,undefined,{url:target}),v=b.window;
  try{assert.equal(read(v,'gameStarted'),true);assert.equal(read(v,'s.playerName'),'新しい冒険');assert.equal(read(v,'s.avatar'),'girl');assert.equal(read(v,'s.dog'),'grey');assert.equal(read(v,'s.money'),300);assert.deepEqual(read(v,'s.caught'),{});assert.equal(v.eval('s.extra'),undefined);assert.equal(read(v,'s.dogAffinity.shuu'),0);assert.deepEqual(b.errors,[]);}finally{b.dispose();}
 });
+test('new adventure discards title name edits to an adventure subsequently deleted by another tab',()=>{
+ const a=boot(null,undefined,{start:false}),w=a.window;
+ try{w.localStorage.setItem(saveKey,JSON.stringify({...seed(),dogNames:{shuu:'古い犬',riku:'昔の犬',grey:'前の犬'}}));w.openOptions();assert.equal(w.renameAdventureCharacter('shuu','変更した犬'),true);w.closeOptions();w.localStorage.removeItem(saveKey);enter(w,{name:'新しい人'});assert.equal(read(w,'gameStarted'),true);assert.equal(read(w,'s.playerName'),'新しい人');assert.deepEqual(read(w,'s.dogNames'),O.defaultDogNames);assert.deepEqual(JSON.parse(w.localStorage.getItem(saveKey)).dogNames,O.defaultDogNames);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
+});
 test('new-game navigation stops at an occupied slot; legacy Continue retains identity and upbringing',()=>{
  const old={...seed(),avatar:'girl',playerName:'先客',dog:'grey',dogNames:{shuu:'こむぎ',riku:'風太',grey:'夜空'},dogFollowing:false,dogTricks:{shuu:321,riku:123,grey:456},extra:{keep:1}},url='http://localhost/nushi-tsuri/?play=1&newGame=1&playerName=新人&avatar=boy&dog=shuu';
  const a=boot(old,undefined,{start:false,url}),w=a.window;
