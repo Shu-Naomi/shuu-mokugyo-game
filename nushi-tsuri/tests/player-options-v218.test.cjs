@@ -55,8 +55,8 @@ test('real dialogue speed reveals text, a second advance completes it before cha
  const app=boot(null,undefined,{textSpeed:'slow',keepIntro:true}),w=app.window;
  try{
   const paper=w.document.querySelector('#lakeIntroPaper');assert.equal(paper.dataset.dialogueReading,'true');assert.ok(paper.querySelector('p').textContent.length<10);
-  click(w,'#lakeIntroNext');assert.equal(w.document.querySelector('#lakeIntroProgress').textContent,'1 / 5');assert.match(paper.textContent,/片付けを済ませたら/);
-  click(w,'#lakeIntroNext');assert.equal(w.document.querySelector('#lakeIntroProgress').textContent,'2 / 5');
+  click(w,'#lakeIntroNext');assert.equal(w.document.querySelector('#lakeIntroProgress').textContent,`1 / ${w.ShuLakeIntro.pages.length}`);assert.match(paper.textContent,/遺品整理/);
+  click(w,'#lakeIntroNext');assert.equal(w.document.querySelector('#lakeIntroProgress').textContent,`2 / ${w.ShuLakeIntro.pages.length}`);
   click(w,'#lakeIntroSkip');assert.equal(paper.hasAttribute('data-dialogue-reading'),false);
   w.openOptions();click(w,'[data-text-speed="instant"]');assert.match(w.document.querySelector('#optionsTextPreview').textContent,/どの魚に会えるかな/);
   assert.equal(JSON.parse(w.localStorage.getItem(Options.key)).textSpeed,'instant');

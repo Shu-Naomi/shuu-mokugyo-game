@@ -6435,7 +6435,7 @@
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="pet-life.css?v=251-8" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
-    <link rel="stylesheet" href="lake-intro.css?v=215-1" />
+    <link rel="stylesheet" href="lake-intro.css?v=252-2" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
@@ -6916,14 +6916,14 @@
         </section>
         <section class="modal lake-intro-modal" id="lakeIntro" role="dialog" aria-modal="true" aria-labelledby="lakeIntroTitle" tabindex="-1">
           <header class="lake-intro-header">
-            <div><h2 id="lakeIntroTitle">旅のはじまり</h2><p id="lakeIntroProgress" aria-live="polite">1 / 5</p></div>
+            <div><h2 id="lakeIntroTitle">旅のはじまり</h2><p id="lakeIntroProgress" aria-live="polite">1 / 16</p></div>
             <button id="lakeIntroSkip" type="button">物語を飛ばす</button>
           </header>
           <div class="lake-intro-page">
             <div class="lake-intro-picture"><canvas id="lakeIntroPicture" width="320" height="180" role="img"></canvas></div>
             <article class="lake-intro-paper" id="lakeIntroPaper" tabindex="0" aria-live="polite"></article>
           </div>
-          <footer class="lake-intro-footer"><span>自分のペースで、頁をめくる。</span><div class="lake-intro-navigation"><button id="lakeIntroPrevious" type="button">前の頁</button><button id="lakeIntroNext" type="button">次の頁</button></div></footer>
+          <footer class="lake-intro-footer"><span id="lakeIntroHint" role="status">タップで全文、そのあと次の頁へ。</span><div class="lake-intro-navigation"><button id="lakeIntroPrevious" type="button">前の頁</button><button id="lakeIntroNext" type="button">次の頁</button></div></footer>
         </section>
         <section class="modal lake-story-modal" id="lakeStory" role="dialog" aria-modal="true" aria-labelledby="lakeStoryTitle" tabindex="-1">
           <header class="lake-story-header">
@@ -7357,8 +7357,8 @@
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-story.js?v=227-1"></script>
-    <script src="lake-intro.js?v=216-1"></script>
+    <script src="lake-intro.js?v=252-2"></script>
+    <script src="lake-story.js?v=252-2"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
@@ -23075,20 +23075,28 @@
       let lakeStoryReturn = null;
       let lakeIntroIndex = 0, lakeIntroReplay = false, lakeIntroReturn = null;
       function renderLakeIntro() {
-        dialogueTyper.cancel($("#lakeIntroPaper"));
+        const paper=$("#lakeIntroPaper");dialogueTyper.cancel(paper);
         const page=ShuLakeIntro.pages[lakeIntroIndex],e=ShuLakeStory.escape;
         $("#lakeIntroProgress").textContent=`${lakeIntroIndex+1} / ${ShuLakeIntro.pages.length}`;
-        $("#lakeIntroPaper").innerHTML=`<small>${e(page.speaker)}</small><h3>${e(page.title)}</h3>${ShuLakeIntro.text(page,dogName()).map(p=>`<p>${e(p)}</p>`).join("")}`;
-        $("#lakeIntroPaper").scrollTop=0;
-        dialogueTyper.start($("#lakeIntroPaper"),[...$("#lakeIntroPaper").querySelectorAll("p")].map(p=>p.firstChild),textSpeed);
-        $("#lakeIntroPicture").setAttribute("aria-label",page.title+"のドット絵");
-        ShuLakeIntro.paint($("#lakeIntroPicture"),page.scene,()=>{
+        paper.dataset.voice=["{player}","{dog}","サム"].includes(page.speaker)?"dialogue":"narration";
+        paper.innerHTML=`<small>${e(ShuLakeIntro.speaker(page,s))}</small><h3>${e(page.title)}</h3>${ShuLakeIntro.text(page,s).map(p=>`<p>${e(p)}</p>`).join("")}`;
+        paper.scrollTop=0;
+        paper.onclick=()=>dialogueTyper.finish(paper);
+        dialogueTyper.start(paper,[...paper.querySelectorAll("p")].map(p=>p.firstChild),textSpeed);
+        const canvas=$("#lakeIntroPicture"),identity=ShuLakeIntro.cast(s);
+        canvas.dataset.avatar=identity.avatar;canvas.dataset.dog=identity.dog;
+        canvas.setAttribute("aria-label",page.scene==="cling"?`${identity.player}に${identity.companion}が寄り添うドット絵`:`${page.title}のドット絵`);
+        const redraw=()=>{
           if($("#lakeIntro").classList.contains("open")&&ShuLakeIntro.pages[lakeIntroIndex]===page)
-            ShuLakeIntro.paint($("#lakeIntroPicture"),page.scene);
-        });
+            ShuLakeIntro.paint(canvas,page.scene,redraw,s);
+        };
+        ShuLakeIntro.paint(canvas,page.scene,redraw,s);
         $("#lakeIntroPrevious").disabled=lakeIntroIndex===0;
         $("#lakeIntroNext").textContent=lakeIntroIndex===ShuLakeIntro.pages.length-1?"村へ出かける":"次の頁";
-        if(!lakeIntroReplay){s.lakeStory.introPage=lakeIntroIndex;save();}
+        let stored=true;
+        if(!lakeIntroReplay){ShuLakeIntro.checkpoint(s.lakeStory,lakeIntroIndex);stored=save();}
+        $("#lakeIntroHint").textContent=stored?"タップで全文、そのあと次の頁へ。":"会話の続きは未保存。空き容量を確認してね。";
+        $("#lakeIntroHint").toggleAttribute("data-unsaved",!stored);
       }
       function openLakeIntro(replay=false) {
         if(battle||playerHomeState.transitioning)return false;
@@ -23096,7 +23104,7 @@
         if(current&&(!replay||current.id!=="lakeStory"))return false;
         lakeIntroReturn=current?.id||null;lakeIntroReplay=replay;
         if(current)current.classList.remove("open");
-        lakeIntroIndex=replay?0:s.lakeStory.introPage;
+        lakeIntroIndex=replay?0:ShuLakeIntro.progress(s.lakeStory).introPage;
         if(!replay)s.lakeStory.introPending=true;
         releaseHeldInputs();open("lakeIntro");renderLakeIntro();
         $(".controls").inert=true;$(".controls").setAttribute("aria-hidden","true");
@@ -23107,7 +23115,11 @@
         dialogueTyper.cancel($("#lakeIntroPaper"));
         $("#lakeIntro").classList.remove("open");releaseHeldInputs();
         $(".controls").inert=false;$(".controls").removeAttribute("aria-hidden");
-        if(!lakeIntroReplay){s.lakeStory.introSeen=true;s.lakeStory.introPending=false;s.lakeStory.introPage=0;save();}
+        if(!lakeIntroReplay){
+          s.lakeStory.introSeen=true;s.lakeStory.introPending=false;ShuLakeIntro.checkpoint(s.lakeStory,0);
+          const stored=save();
+          showRescueToast(stored?ShuLakeIntro.objective:"物語の完了は未保存。今の続きはこの画面に残っているよ。",6000);
+        }
         const target=lakeIntroReturn;lakeIntroReturn=null;lakeIntroReplay=false;
         if(target){open(target);$("#lakeStoryReplayIntro").focus({preventScroll:true});}
         else{scheduleIdleStatus(450);scheduleFieldMenu();$("#menu").focus({preventScroll:true});}
@@ -23657,7 +23669,7 @@
         $("#title").classList.remove("active");$("#game").classList.add("active");
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex))save();
         render();armDogIdle();scheduleIdleStatus(750);scheduleFieldMenu();
-        log(loadedSaveSlot.exists?"星降る湖で、旅の続きを始めた。":"祖父の手帳を開いた。三匹と暮らす一日が始まる。");
+        log(loadedSaveSlot.exists?"星降る湖で、旅の続きを始めた。":"祖父の遺品を整理するため、星降る湖の村へ戻ってきた。");
         maybePresentTournament();
         if(s.tournament?.recoveredCast){showRescueToast("投げた途中で再開した一投は回収済み。残り投数から続けよう。",4200);s.tournament.recoveredCast=false;save();}
         if((!loadedSaveSlot.exists&&!s.lakeStory.introSeen)||s.lakeStory.introPending)openLakeIntro();
@@ -23954,7 +23966,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-2").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

@@ -16,22 +16,22 @@ module.exports=async function run(url,mobile=false){
  }
  try{
   await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile,{dog:'grey'});await visible();await containment();
-  const before=await resources();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');
+  const before=await resources();assert.equal(await page.locator('#lakeIntroProgress').innerText(),`1 / ${await page.evaluate(()=>ShuLakeIntro.pages.length)}`);
   await page.keyboard.press('ArrowRight');await page.keyboard.press('z');assert.equal(await resources(),before);
-  await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/祖父|手帳/);
-  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'2 / 5');
-  await page.locator('#lakeIntroNext').click();await containment();assert.match(await page.locator('#lakeIntroPaper').innerText(),/サミュエル|研究を続け/);
+  await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/じいちゃん|湖/);
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),`2 / ${await page.evaluate(()=>ShuLakeIntro.pages.length)}`);
+  while(await page.evaluate(()=>ShuLakeIntro.pages[lakeIntroIndex].id)!=='sam')await page.locator('#lakeIntroNext').click();await containment();assert.match(await page.locator('#lakeIntroPaper').innerText(),/釣具屋のサム|釣り仲間/);
   await page.waitForFunction(()=>{const c=document.querySelector('#lakeIntroPicture'),d=c.getContext('2d').getImageData(0,0,320,180).data,colors=new Set();for(let i=0;i<d.length;i+=4*7)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>500;});
-  await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/三匹|Grey/);await containment();
+  while(await page.evaluate(()=>ShuLakeIntro.pages[lakeIntroIndex].id)!=='cling')await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/くぅん|Grey/);await containment();
   await page.waitForTimeout(350);
   console.log('V215_INTRO_SCREENSHOT '+JSON.stringify({mobile,scene:'puppies',base64:(await page.screenshot({type:'jpeg',quality:82})).toString('base64')}));
-  await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/この子たちのため|一攫千金/);assert.equal(await page.locator('#lakeIntroNext').innerText(),'村へ出かける');
+  while(await page.evaluate(()=>lakeIntroIndex)!==await page.evaluate(()=>ShuLakeIntro.pages.length-1))await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/家と三匹|サムの店/);assert.equal(await page.locator('#lakeIntroNext').innerText(),'村へ出かける');
   await page.locator('#lakeIntroNext').click();await page.locator('#lakeIntro.open').waitFor({state:'hidden'});assert.equal(await resources(),before);
   assert.equal(await page.locator('.controls').evaluate(el=>el.inert),false);assert.equal(await page.evaluate(()=>s.lakeStory.introSeen),true);
   await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.equal(await page.locator('#lakeIntro.open').count(),0);
   await page.locator('#menu').click();await page.locator('[data-field-menu-target="story"]').click();
   const story=await page.evaluate(()=>JSON.stringify(s.lakeStory));assert.match(await page.locator('#lakeStoryPage').innerText(),/祖父の手帳/);
-  await page.locator('#lakeStoryReplayIntro').click();await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');
+  await page.locator('#lakeStoryReplayIntro').click();await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),`1 / ${await page.evaluate(()=>ShuLakeIntro.pages.length)}`);
   await page.keyboard.press('Escape');await page.locator('#lakeStory.open').waitFor({state:'visible'});
   assert.equal(await page.evaluate(()=>JSON.stringify(s.lakeStory)),story);assert.equal(await resources(),before);
   assert.equal(await page.locator('#lakeStoryReplayIntro').evaluate(el=>document.activeElement===el),true);
@@ -75,6 +75,6 @@ module.exports=async function run(url,mobile=false){
   console.log('V215_FISH_ART_SCREENSHOT '+JSON.stringify({mobile,base64:nativeFish.preview}));
   delete nativeFish.preview;
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-  console.log('V215_STORY_OPENING_PASS '+JSON.stringify({mobile,pages:5,resume:true,skip:true,replay:true,secondSlot:true,resourcesPreserved:true,largeFishChance:[.14,.25],mealReload:true,nativeFish,errors,failed}));
+  console.log('V215_STORY_OPENING_PASS '+JSON.stringify({mobile,pages:16,resume:true,skip:true,replay:true,secondSlot:true,resourcesPreserved:true,largeFishChance:[.14,.25],mealReload:true,nativeFish,errors,failed}));
  }finally{await browser.close();}
 };
