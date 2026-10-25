@@ -15,11 +15,11 @@ module.exports=async function run(url,mobile=false){
   assert.equal(await page.locator('.controls').evaluate(el=>el.inert),true);
  }
  try{
-  await page.goto(url,{waitUntil:'load'});await page.locator('[data-dog="grey"]').click();await page.locator('#start').click();await visible();await containment();
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile,{dog:'grey'});await visible();await containment();
   const before=await resources();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');
   await page.keyboard.press('ArrowRight');await page.keyboard.press('z');assert.equal(await resources(),before);
   await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/祖父|手帳/);
-  await page.reload({waitUntil:'load'});await page.locator('#start').click();await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'2 / 5');
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'2 / 5');
   await page.locator('#lakeIntroNext').click();await containment();assert.match(await page.locator('#lakeIntroPaper').innerText(),/サミュエル|研究を続け/);
   await page.waitForFunction(()=>{const c=document.querySelector('#lakeIntroPicture'),d=c.getContext('2d').getImageData(0,0,320,180).data,colors=new Set();for(let i=0;i<d.length;i+=4*7)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>500;});
   await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/三匹|Grey/);await containment();
@@ -28,7 +28,7 @@ module.exports=async function run(url,mobile=false){
   await page.locator('#lakeIntroNext').click();assert.match(await page.locator('#lakeIntroPaper').innerText(),/この子たちのため|一攫千金/);assert.equal(await page.locator('#lakeIntroNext').innerText(),'村へ出かける');
   await page.locator('#lakeIntroNext').click();await page.locator('#lakeIntro.open').waitFor({state:'hidden'});assert.equal(await resources(),before);
   assert.equal(await page.locator('.controls').evaluate(el=>el.inert),false);assert.equal(await page.evaluate(()=>s.lakeStory.introSeen),true);
-  await page.reload({waitUntil:'load'});await page.locator('#start').click();assert.equal(await page.locator('#lakeIntro.open').count(),0);
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.equal(await page.locator('#lakeIntro.open').count(),0);
   await page.locator('#menu').click();await page.locator('[data-field-menu-target="story"]').click();
   const story=await page.evaluate(()=>JSON.stringify(s.lakeStory));assert.match(await page.locator('#lakeStoryPage').innerText(),/祖父の手帳/);
   await page.locator('#lakeStoryReplayIntro').click();await visible();assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');
@@ -37,7 +37,7 @@ module.exports=async function run(url,mobile=false){
   assert.equal(await page.locator('#lakeStoryReplayIntro').evaluate(el=>document.activeElement===el),true);
   const second=await context.newPage(),first=JSON.stringify(seed());second.on('pageerror',e=>errors.push(e.message));
   await second.goto(url,{waitUntil:'load'});await second.evaluate(({key,first})=>{localStorage.setItem(key,first);localStorage.removeItem(key+'-slot2');},{key:saveKey,first});
-  await second.reload({waitUntil:'load'});await second.locator('[data-save-slot="2"]').click();await second.locator('#start').click();await second.locator('#lakeIntro.open').waitFor({state:'visible'});
+  await second.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(second,mobile,{slot:2});await second.locator('#lakeIntro.open').waitFor({state:'visible'});
   await second.locator('#lakeIntroSkip').click();assert.equal(await second.evaluate(key=>localStorage.getItem(key),saveKey),first);
   assert.equal(await second.evaluate(key=>JSON.parse(localStorage.getItem(key+'-slot2')).lakeStory.introSeen,saveKey),true);
   await second.evaluate(()=>{s.cookingIngredients.fishFillet=1;s.items.wildGreens=1;openLocationInterior('diner');});
@@ -48,7 +48,7 @@ module.exports=async function run(url,mobile=false){
   await second.locator('#locationInterior [data-location-category="meals"]').click();
   await pressProduct(second,'#locationInterior [data-eat-prepared-meal="bigFishPlate"]',mobile);
   const fed=await sizeChance();assert.equal(fed.large+fed.giant,2500);await pressProduct(second,'#locationInterior [data-compact-guide]',mobile);assert.equal(await second.locator('.compact-sheet .cooking-kitchen-status').isVisible(),true);assert.match(await second.locator('.compact-sheet .cooking-kitchen-status').innerText(),/14%→25%/);await pressProduct(second,'[data-compact-sheet-close]',mobile);
-  await second.reload({waitUntil:'load'});await second.locator('#start').click();const restored=await sizeChance();assert.equal(restored.large+restored.giant,2500);
+  await second.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(second,mobile);const restored=await sizeChance();assert.equal(restored.large+restored.giant,2500);
   const nativeFish=await second.evaluate(async()=>{
    const Art=ShuFishArt,images=new Map(),ids=['suzuki','kurodai','moroko','ayu'],canvas=document.createElement('canvas');
    canvas.width=448;canvas.height=224;const ctx=canvas.getContext('2d'),review=document.createElement('canvas');review.width=448*5;review.height=224*ids.length;

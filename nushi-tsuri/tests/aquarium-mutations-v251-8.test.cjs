@@ -116,31 +116,31 @@ test('the title is read-only and Start saves a seed before catching up an eligib
  const a=boot(initial,undefined,{start:false}),w=a.window;
  try{
   assert.equal(w.localStorage.getItem(saveKey),JSON.stringify(initial));assert.equal(read(w,'s.petLife.eggs.length'),0);
-  w.crypto.getRandomValues=bytes=>{bytes.fill(1);return bytes;};w.document.querySelector('#start').click();
+  w.crypto.getRandomValues=bytes=>{bytes.fill(1);return bytes;};require('./title-test-flow.cjs')(w);
   const saved=JSON.parse(w.localStorage.getItem(saveKey));assert.equal(saved.petLife.version,6);assert.equal(saved.petLife.mutationSeed,'01'.repeat(16));assert.equal(saved.petLife.eggs.length,1);assert.equal(saved.petLife.eggs[0].mutation.checked,true);assert.equal(read(w,'fish.length'),60);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
-test('a failed first seed save never draws, leaves the stored adventure intact and cannot reroll the unjudged egg later',()=>{
+test('a failed first seed save blocks entry and spawning, preserves the stored adventure and retries with the same seed',()=>{
  const initial={...seed(),gameMinutes:3*1440+360,petLife:copy(pair().petLife)};initial.petLife.version=5;delete initial.petLife.mutationSeed;
  for(const f of initial.petLife.fish){f.length=4000;f.lastDay=2;f.fedDay=2;f.changedDay=2;}initial.petLife.breeding={'0:funa':{days:2,lastDay:2,mother:'pet-2',father:'pet-1'}};
  const a=boot(initial,undefined,{start:false}),w=a.window,proto=w.Storage.prototype,set=proto.setItem;
  try{
-  proto.setItem=function(key,value){if(key===saveKey)throw Error('quota');return set.call(this,key,value);};w.document.querySelector('#start').click();
-  assert.equal(w.localStorage.getItem(saveKey),JSON.stringify(initial));assert.equal(read(w,'s.petLife.eggs[0].mutation.checked'),false);assert.equal(w.document.querySelector('#saveStatus').hidden,false);
-  proto.setItem=set;assert.equal(w.eval('save()'),true);const mutation=read(w,'s.petLife.eggs[0].mutation');w.eval('ShuPetLife.sync(s,petCatalog,3)');assert.deepEqual(read(w,'s.petLife.eggs[0].mutation'),mutation);assert.deepEqual(a.errors,[]);
+  proto.setItem=function(key,value){if(key===saveKey)throw Error('quota');return set.call(this,key,value);};require('./title-test-flow.cjs')(w);
+  assert.equal(w.localStorage.getItem(saveKey),JSON.stringify(initial));assert.equal(read(w,'s.petLife.eggs.length'),0);assert.equal(read(w,'gameStarted'),false);const prepared=read(w,'s.petLife.mutationSeed');assert.equal(w.document.querySelector('#saveStatus').hidden,false);
+  proto.setItem=set;require('./title-test-flow.cjs')(w);assert.equal(read(w,'s.petLife.mutationSeed'),prepared);assert.equal(read(w,'s.petLife.eggs[0].mutation.checked'),true);const mutation=read(w,'s.petLife.eggs[0].mutation');w.eval('ShuPetLife.sync(s,petCatalog,3)');assert.deepEqual(read(w,'s.petLife.eggs[0].mutation'),mutation);assert.deepEqual(a.errors,[]);
  }finally{proto.setItem=set;a.dispose();}
 });
 test('two adventure slots persist independent seeds and do not write into the other adventure',()=>{
  const first=boot(seed(),undefined,{start:false});let saved;
- try{first.window.crypto.getRandomValues=bytes=>{bytes.fill(1);return bytes;};first.window.document.querySelector('#start').click();saved=JSON.parse(first.window.localStorage.getItem(saveKey));assert.equal(saved.petLife.mutationSeed,'01'.repeat(16));}finally{first.dispose();}
+ try{first.window.crypto.getRandomValues=bytes=>{bytes.fill(1);return bytes;};require('./title-test-flow.cjs')(first.window);saved=JSON.parse(first.window.localStorage.getItem(saveKey));assert.equal(saved.petLife.mutationSeed,'01'.repeat(16));}finally{first.dispose();}
  const second=boot(null,undefined,{start:false,url:'http://localhost/nushi-tsuri/?saveSlot=2',storage:{[saveKey]:saved,[saveKey+'-slot2']:seed()}});
- try{second.window.crypto.getRandomValues=bytes=>{bytes.fill(2);return bytes;};second.window.document.querySelector('#start').click();assert.deepEqual(JSON.parse(second.window.localStorage.getItem(saveKey)),saved);assert.equal(JSON.parse(second.window.localStorage.getItem(saveKey+'-slot2')).petLife.mutationSeed,'02'.repeat(16));assert.deepEqual(second.errors,[]);}finally{second.dispose();}
+ try{second.window.crypto.getRandomValues=bytes=>{bytes.fill(2);return bytes;};require('./title-test-flow.cjs')(second.window);assert.deepEqual(JSON.parse(second.window.localStorage.getItem(saveKey)),saved);assert.equal(JSON.parse(second.window.localStorage.getItem(saveKey+'-slot2')).petLife.mutationSeed,'02'.repeat(16));assert.deepEqual(second.errors,[]);}finally{second.dispose();}
 });
 test('the first seed checkpoint resumes the opening even if all following save writes fail',()=>{
  const a=boot(null,undefined,{start:false,keepIntro:true}),w=a.window,proto=w.Storage.prototype,set=proto.setItem;let snapshot,writes=0;
  try{
   proto.setItem=function(key,value){if(key===saveKey){if(++writes>1)throw Error('quota after first checkpoint');snapshot=JSON.parse(value);}return set.call(this,key,value);};
-  w.document.querySelector('#start').click();assert.ok(M.validSeed(snapshot.petLife.mutationSeed));assert.equal(snapshot.lakeStory.introPending,true);assert.equal(snapshot.lakeStory.introSeen,false);
+  require('./title-test-flow.cjs')(w);assert.ok(M.validSeed(snapshot.petLife.mutationSeed));assert.equal(snapshot.lakeStory.introPending,true);assert.equal(snapshot.lakeStory.introSeen,false);
  }finally{proto.setItem=set;a.dispose();}
  const b=boot(snapshot,undefined,{keepIntro:true});try{assert.equal(b.window.document.querySelector('#lakeIntro').classList.contains('open'),true);assert.deepEqual(b.errors,[]);}finally{b.dispose();}
 });

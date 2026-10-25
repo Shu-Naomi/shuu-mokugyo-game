@@ -13,7 +13,7 @@ module.exports=async function motionAndCoast(url,mobile){
   page.on('response',r=>{if(r.status()>=400&&/fish-art|fishing-duel|\/assets\/fish-/.test(r.url()))failedAssets.push(r.status()+' '+r.url());});
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   try{
-    await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');await press('#action');
+    await page.goto(url,{waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');
     assert.equal(await page.evaluate(()=>battle.phase),'prep');await press('#pull');
     await page.evaluate(()=>{Math.random=()=>.999999;battle.cast=85;});await press('#pull');
     await page.waitForFunction(()=>battle?.phase==='wait');
@@ -93,7 +93,7 @@ module.exports=async function motionAndCoast(url,mobile){
     assert.equal(result.phase,'landing',JSON.stringify(result));assert.ok(result.retrieval>=.999);assert.ok(result.ten<100);
     await page.waitForFunction(()=>s.caught.coastNushi===1&&battle===null);
     assert.equal(await page.evaluate(()=>s.baits.shrimp),38,'two real casts consume two baits');
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');
+    await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
     assert.equal(await page.evaluate(()=>s.caught.coastNushi),1,'sea boss persists after reload');
     assert.deepEqual(errors,[]);assert.deepEqual(failedAssets,[]);
     console.log('V214_MOTION_AND_COAST_SMOKE_PASS '+JSON.stringify({mobile,poses:poses.length,smoothFrames,seaBoss:result,reload:true,errors}));

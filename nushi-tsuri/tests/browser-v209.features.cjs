@@ -40,7 +40,7 @@ module.exports=async function features(url,mobile){
     },target),true,'reachable home '+target);
   }
   try{
-    await page.goto(url,{waitUntil:'domcontentloaded'});await press('#start');
+    await page.goto(url,{waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
     // Material-specific dishes are made and eaten through the kitchen UI.
     await page.evaluate(()=>openLocationInterior('diner'));
     await press('#locationInterior [data-location-category="recipes"]');
@@ -57,7 +57,7 @@ module.exports=async function features(url,mobile){
     assert.equal(await page.evaluate(()=>s.hp),55);await press('#locationInterior [data-eat-prepared-meal="madaiUshiojiru"]');
     assert.equal(await page.evaluate(()=>s.hp),90);assert.equal(await page.evaluate(()=>mealEffectBonus('dogDiscovery')),.35);
     await screenshot('COOKING');await press('#locationInterior [data-close]');
-    await page.reload({waitUntil:'domcontentloaded'});await press('#start');
+    await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
     assert.equal(await page.evaluate(()=>s.hp),90);assert.equal(await page.evaluate(()=>s.preparedMeals.madaiUshiojiru),0);
     assert.equal(await page.evaluate(()=>mealEffectBonus('dogDiscovery')),.35);
     // Reach a roaming dog and open its care screen with the field A button.
@@ -140,7 +140,7 @@ module.exports=async function features(url,mobile){
     await press('#dogCareTakeFishing');assert.equal(await page.evaluate(()=>s.dog),'riku');
     assert.equal(await page.locator('[data-home-dog]').count(),3);await walkHome('riku');await press('#action');
     await press('#dogCareStayHome');assert.equal(await page.evaluate(()=>s.dogFollowing),false);
-    assert.equal(await page.locator('[data-home-dog]').count(),3);await page.reload({waitUntil:'domcontentloaded'});await press('#start');
+    assert.equal(await page.locator('[data-home-dog]').count(),3);await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
     assert.equal(await page.evaluate(()=>s.dogFollowing),false);assert.equal(await page.locator('#dog').isVisible(),false);
     await enterHome();await walkHome('riku');await press('#action');await press('#dogCareTakeFishing');
     await walkHome('door');await press('#action');await settle();

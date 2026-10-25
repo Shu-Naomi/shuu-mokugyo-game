@@ -10,7 +10,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=exp=>page.evaluate(exp),shot=name=>page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  const settings=()=>value('JSON.parse(localStorage.getItem("nushi-inugoya-options-v1"))');
- async function start(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v251/);}
+ async function start(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');assert.match(await page.locator('.hud').innerText(),/v251/);}
  async function optionsOpen(){await press('#menu');await press('[data-field-menu-target="options"]');await page.locator('#options.open').waitFor();}
  const slider=(id,from,to)=>require('./browser-range-input.cjs')(page,id,from,to,cdp);
 

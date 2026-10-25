@@ -8,7 +8,7 @@ module.exports=async function waterAndFish(url,mobile=false){
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);
-  await page.locator('#start')[mobile?'tap':'click']();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();
+  await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();
   return {context,page,press:q=>page.locator(q)[mobile?'tap':'click']()};
  }
  const state=extra=>({...seed(),hp:100,maxHp:100,gameMinutes:420,soundEnabled:false,ownedRods:['bamboo','clearStream','shoreReed'],selectedRod:'clearStream',
@@ -68,7 +68,7 @@ module.exports=async function waterAndFish(url,mobile=false){
     assert.deepEqual(await page.evaluate(id=>({caught:s.caught[id],fillet:s.cookingIngredients.fishFillet}),id),{caught:before.caught+1,fillet:before.fillet+1});
     assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),spot);
    }
-   await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await page.evaluate(()=>['ugui','oikawa','kawahagi'].map(id=>s.caught[id])),[1,1,1]);
+   await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>['ugui','oikawa','kawahagi'].map(id=>s.caught[id])),[1,1,1]);
    assert.equal(await page.evaluate(()=>fish.length),60);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V221_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:await page.evaluate(()=>fish.length),saved:true,errors,failed}));

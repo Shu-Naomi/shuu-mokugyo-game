@@ -1,0 +1,63 @@
+/* A compact lakeside postcard and one task at a time. Existing sprite sheets stay untouched. */
+#title{background:#152e38;padding:max(12px,env(safe-area-inset-top)) max(14px,env(safe-area-inset-right)) max(12px,env(safe-area-inset-bottom)) max(14px,env(safe-area-inset-left));box-sizing:border-box}
+#title .title-box{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);width:min(1060px,100%);height:min(570px,100%);max-height:100%;padding:0;overflow:hidden;border:4px double #eed49b;border-radius:14px;background:#273e43;box-shadow:0 0 0 4px #312a25,0 18px 45px #0006;text-align:left}
+.title-scene{position:relative;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;overflow:hidden;min-width:0;padding:42px 16px 28px;background:linear-gradient(#132d4366,#132d4310 50%,#243b30aa),url('assets/cast-lake-night-v77.jpg') center/cover;image-rendering:pixelated;border-right:2px solid #c6ad78;text-align:center}
+.title-scene::after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 0 0 42px #0c243779}
+.title-brand{position:relative;z-index:1;text-shadow:1px 2px #152c34}
+.title-brand>small{font-size:13px;letter-spacing:.22em;color:#f5dfae}
+#title h1{font-size:clamp(32px,5.2vw,64px);line-height:1.2;margin:12px 0;color:#ffe8aa;text-shadow:3px 3px #392d39}
+#title .title-brand p{font-size:13px;margin:8px 0;color:#fff0cf}
+.title-scene-dogs{position:relative;margin-top:auto;display:flex;align-items:end;justify-content:center;width:100%;z-index:1}
+.title-dog-art{display:block;width:94px;height:94px;background-size:400% 300%;background-position:0 0;background-repeat:no-repeat;image-rendering:pixelated;flex:none}
+.title-dog-art.shuu{background-image:url('assets/shuu-walk.png?v=12')}.title-dog-art.riku{background-image:url('assets/riku-walk.png?v=12')}.title-dog-art.grey{background-image:url('assets/grey-walk.png?v=12')}
+.title-scene-caption{position:relative;z-index:1;padding-top:10px;color:#ffe8b9;font-size:12px}
+.title-pages{min-width:0;min-height:0;overflow:auto;overscroll-behavior:contain;display:flex;flex-direction:column;justify-content:center;padding:26px 28px;color:#f2eddb;background:linear-gradient(135deg,#354b4c,#243c41)}
+#title [hidden]{display:none!important}
+#title h2{font-size:24px;line-height:1.35;margin:0 0 16px;color:#ffe4ac;overflow-wrap:anywhere}
+.title-eyebrow{display:block;font-size:12px;letter-spacing:.13em;color:#ced8bd;margin-bottom:9px}
+.title-menu nav{display:grid;gap:14px}
+#title button{font:inherit;min-height:46px;padding:9px 14px;border:2px solid #bca270;border-radius:8px;background:linear-gradient(#f8e6ba,#d8ba83);color:#3b3128;box-shadow:0 3px 0 #152e35;touch-action:manipulation;cursor:pointer}
+#title button:disabled{opacity:.5;cursor:default}
+#title button:focus-visible,#title input:focus-visible{outline:3px solid #fff1bc;outline-offset:3px}
+#title .title-menu button{width:100%;display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:bold;font-size:18px;text-align:left;padding:13px 18px;min-height:62px}
+.title-menu button small{font-size:11px;font-weight:normal;color:#64523d}
+.title-step-heading{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+#title .title-step-heading h2{margin:0;font-size:20px}.title-step-heading h2 small{display:block;font-size:11px;letter-spacing:.16em;color:#c7d4be;margin-bottom:3px}
+#title .title-step-heading>button{flex:none;font-size:13px;padding:6px 12px;background:#29464b;color:#f4e3bd}
+#title .title-help{margin:9px 0;font-size:12px;line-height:1.5;color:#d9dfca;overflow-wrap:anywhere}
+#title .save-slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
+#title .save-slot{min-height:90px;padding:10px;background:#203a40;color:#efeed8;border-color:#8b9a80;font-size:14px;overflow-wrap:anywhere}
+#title .save-slot small{font-size:11px;line-height:1.5;font-weight:normal;margin-top:4px}
+#title .save-slot[aria-pressed=true]:not(:disabled){background:#f5dfad;color:#3b3128;border-color:#ffe7b0;outline:2px solid #ffe7b0}
+#title .avatar-select{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:10px 0}
+#title .avatar-select button{display:flex;align-items:center;justify-content:center;gap:9px;padding:5px 10px;min-height:62px;font-size:14px}
+.title-avatar-art{display:block;width:26px;height:48px;flex:none;background-size:300% 100%;background-position:0 0;background-repeat:no-repeat;image-rendering:pixelated}
+.title-avatar-art.boy{background-image:url('assets/player-boy.png')}.title-avatar-art.girl{background-image:url('assets/player-girl.png')}
+#title [aria-pressed=true].active{border-color:#fff0bc;outline:2px solid #fff0bc;background:#eec98a;color:#352c24}
+#title .player-name-choice{max-width:none;margin:10px 0;font-size:13px;gap:5px}
+#title input[type=text]{min-height:46px;font-size:16px;padding:8px 10px;background:#1b353d;border-color:#acba98}
+#title .dog-select{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:10px 0}
+#title .dog-select button{min-width:0;display:flex;flex-direction:column;align-items:center;padding:6px 3px;background:#26434a;color:#f4e6c8;border-color:#879e8c}
+#title .dog-select .title-dog-art{width:86px;height:86px;max-width:100%}
+.dog-select strong{max-width:100%;overflow-wrap:anywhere;font-size:15px}.dog-select small{font-size:11px;line-height:1.5;margin:5px 0;text-align:center}
+#title .dog-select [aria-pressed=true]{background:#e7ce9d;color:#352c24}
+.title-actions{display:flex;justify-content:flex-end;gap:10px;margin-top:12px}.title-actions>button{flex:1;min-width:0}
+#title .title-actions>button:first-child:not(:last-child){background:#29464b;color:#f1e5cd;font-size:13px}
+.title-confirm{display:grid;gap:12px;margin:20px 0}.title-confirm>div{padding:10px 14px;border:1px solid #89987c;border-radius:8px;background:#203a40}.title-confirm dt{font-size:11px;color:#c9d5ba}.title-confirm dd{margin:4px 0 0;font-size:18px;overflow-wrap:anywhere}
+#title .title-later{margin:18px 0 0;font-size:11px;line-height:1.5;color:#d0d9c0;text-align:center}
+#title #saveSlotNotice{margin:8px 0 0;font-size:12px;line-height:1.5;color:#ffe3a8}
+@media(max-height:560px){
+ #title{padding:10px 14px}#title .title-box{height:100%;grid-template-columns:minmax(0,.85fr) minmax(0,1.25fr)}
+ .title-scene{padding:24px 10px 18px}#title h1{font-size:clamp(30px,5vw,44px);margin:8px 0}.title-brand>small{font-size:11px}#title .title-brand p{font-size:11px}.title-scene-dogs .title-dog-art{width:76px;height:76px}.title-scene-caption{font-size:11px}
+ .title-pages{padding:14px 18px}#title h2{font-size:20px;margin-bottom:10px}.title-menu nav{gap:10px}#title .title-menu button{min-height:50px;padding:8px 14px;font-size:16px}.title-eyebrow{margin-bottom:5px;font-size:11px}
+ #title .title-step-heading{margin-bottom:6px}#title .title-step-heading h2{font-size:18px}.title-step-heading h2 small{font-size:10px;margin-bottom:2px}
+ #title .title-help{margin:6px 0;font-size:11px;line-height:1.4}#title .title-later{margin-top:10px;font-size:10px}
+ #title .avatar-select{margin:6px 0;gap:8px}#title .avatar-select button{min-height:48px;font-size:13px}.title-avatar-art{height:34px;width:21px}
+ #title .player-name-choice{margin:6px 0;font-size:12px;gap:3px}#title input[type=text]{padding:6px 9px}
+ #title .dog-select{gap:8px;margin:6px 0}#title .dog-select .title-dog-art{width:68px;height:68px}.dog-select small{font-size:10px;line-height:1.3;margin:3px 0}.dog-select strong{font-size:14px}
+ .title-actions{margin-top:8px;gap:8px}#title .save-slots{margin:8px 0;gap:8px}#title .save-slot{min-height:78px;font-size:13px;padding:7px 9px}
+ .title-confirm{margin:10px 0;gap:8px}.title-confirm>div{padding:7px 10px}.title-confirm dd{font-size:16px}
+}
+@media(max-width:600px){#title .title-box{grid-template-columns:1fr}.title-scene{display:none}.title-pages{padding:14px}#title h2{font-size:20px}}
+
+#title .title-menu #titleOptions{margin:0;min-height:50px;padding:9px 18px;font-size:16px}#title .title-menu #titleOptions small{color:#e0d9ba}

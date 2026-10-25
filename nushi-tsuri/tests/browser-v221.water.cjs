@@ -13,7 +13,7 @@ module.exports=async function castingWater(url,mobile=false){
    const page=await context.newPage(),press=q=>page.locator(q)[mobile?'tap':'click']();
    page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().includes('/nushi-tsuri/'))failed.push(r.url());});
    try{
-    await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+    await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
     assert.equal(await page.evaluate(()=>s.mapRegion),sample.region,'saved fishing region is ready');
     const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:sample.type});
     for(const direction of route.path){

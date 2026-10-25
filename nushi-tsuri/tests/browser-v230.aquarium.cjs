@@ -13,7 +13,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
   const press=q=>pressProduct(page,q,mobile);
-  await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
   await press('#action');assert.equal(await page.locator('#petLifeModal.open').count(),1);
   return {context,page,press};
  }
@@ -72,7 +72,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    assert.match(await page.locator('.pet-tank-current').innerText(),/淡水ぬし総合水槽.*4\/8/s);
    assert.equal(await page.locator('[data-pet-action="rehome"]').count(),0);await screenshot(page,'freshwater-legend-tank');
    await press('[data-pet-action="tanks"]');await press('[data-pet-tank="7"]');assert.match(await page.locator('.pet-tank-current').innerText(),/海水ぬし総合水槽.*1\/8/s);
-   const saved=await snap(page);await page.reload({waitUntil:'load'});await press('#start');await press('#action');assert.deepEqual(await snap(page),saved);
+   const saved=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');assert.deepEqual(await snap(page),saved);
    console.log('V230_SHOP_AND_LEGENDS_PASS '+JSON.stringify({mobile,oldSave:true,exactUid:true,cancel:true,portraits:widths,adultPixels:actual,waterPools:true,reload:true,errors,failed}));
   }finally{await context.close();}
   const bred=await open({...seed(),gameMinutes:500,money:50000,soundEnabled:false,x:199,y:36,caught:{moroko:1}});
@@ -88,7 +88,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    await page.waitForFunction(()=>Number(document.querySelector('#petInspectFish')?.dataset.specimenLength)>0);
    const tinyWidth=await page.locator('#petInspectFish').evaluate(el=>parseFloat(el.style.width));assert.ok(tinyWidth>=14);
    assert.match(await page.locator('[data-pet-size-rank]').innerText(),/稚魚（繁殖限定）/);await screenshot(page,'bred-fry');
-   const newborn=await snap(page);await page.reload({waitUntil:'load'});await press('#start');await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snap(page),newborn);
+   const newborn=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snap(page),newborn);
    for(let i=0;i<4;i++)await day();const grown=await page.evaluate(uid=>s.petLife.fish.find(f=>f.uid===uid),fry.uid);assert.ok(grown.length>fry.length);
    assert.equal(await page.evaluate(uid=>ShuPetLife.lifeStage(s.petLife.fish.find(f=>f.uid===uid),petCatalog),fry.uid),'juvenile');
    assert.deepEqual(await page.evaluate(()=>s.caught),{moroko:1});

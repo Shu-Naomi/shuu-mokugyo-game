@@ -26,7 +26,7 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
    for(const b of layout.buttons){assert.ok(b.visible&&b.height>=44&&b.x>=0&&b.x+b.width<=viewport.width+1&&b.y>=0&&b.y+b.height<=viewport.height+1,'pinned accessible action '+JSON.stringify(b));}
    return layout;
   }
-  await page.goto(url,{waitUntil:'load'});await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');
   await page.waitForFunction(()=>[...document.querySelectorAll('[data-pet-card-art="pet-28"] canvas')].some(c=>{const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<a.length;i+=4)if(a[i]>100)n++;return n>3000;}));
   const overview=await fit();assert.equal(await page.locator('.pet-fish-roster canvas').count(),4);assert.equal(await page.locator('.pet-stats').count(),0);assert.equal(await page.locator('#petFishSelect,#petMoveTank').count(),0);await shot('overview');
   const before=await snapshot();await press('[data-pet-action="records"]');assert.match(await page.locator('.pet-stats').innerText(),/生まれた体長.*14\.00cm.*成長.*10\.00cm/s);
@@ -43,7 +43,7 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
   await press('[data-pet-action="rehome"]');assert.match(await page.locator('.pet-rehome').innerText(),/マダイ #32/);await press('[data-pet-action="rehome-cancel"]');assert.deepEqual(await snapshot(),beforeMove);
   await press('[data-pet-move-target="4"]');await press('[data-pet-action="move"]');assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);
   const moved=await snapshot();assert.deepEqual(moved.fish,beforeMove.fish.map(f=>f.uid==='pet-32'?{...f,tank:4}:f));assert.equal(moved.money,beforeMove.money);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);await fit();
-  const saved=await snapshot();await page.reload({waitUntil:'load'});await press('#start');await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snapshot(),saved);assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);await fit();
+  const saved=await snapshot();await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snapshot(),saved);assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);await fit();
   const eggs=await page.evaluate(()=>s.petLife.eggs);await press('[data-pet-action="tanks"]');
   assert.match(await page.locator('[data-pet-tank="3"]').innerText(),/淡水.*卵1/s);assert.match(await page.locator('[data-pet-tank="5"]').innerText(),/海水.*卵1/s);await shot('egg-cards');
   for(const [tank,water,label] of [[3,'淡水','fresh'],[5,'海水','salt']]){

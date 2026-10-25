@@ -20,7 +20,7 @@ module.exports=async function boatCharacters(url,mobile=false){
   }
   const signature=()=>page.locator('#boatVisual').evaluate(art);
   try{
-    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await press('#start');
+    await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await require('./browser-start-adventure.cjs')(page,mobile);
     await page.waitForFunction(()=>{
       const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;
       for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>6500;
@@ -76,7 +76,7 @@ module.exports=async function boatCharacters(url,mobile=false){
         console.log('V226_BOAT_MOTION '+JSON.stringify({mobile,avatar,direction:'right',frames:[catchPose,pull,recovery,calls.at(-1)]}));
       }
       await page.evaluate(()=>save());const saved=await page.evaluate(()=>({x:s.x,y:s.y,hp:s.hp,minutes:s.gameMinutes,avatar:s.avatar,vehicle:s.equipment.vehicle}));
-      await page.reload({waitUntil:'load'});await press('#start');
+      await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);
       assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y,hp:s.hp,minutes:s.gameMinutes,avatar:s.avatar,vehicle:s.equipment.vehicle})),saved);
       await page.waitForFunction(()=>{const c=document.querySelector('#boatVisual'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<d.length;i+=4)if(d[i]>100)n++;return n>3500;});
       assert.ok((await signature()).colors>500,'saved hero decodes with fine detail again');

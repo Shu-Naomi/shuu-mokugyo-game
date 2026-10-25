@@ -25,11 +25,11 @@ module.exports=async function optionsAndStream(url,mobile=false){
  try{
   await page.goto(url,{waitUntil:'load'});
   assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),true);
-  await press('[data-save-slot="2"]');await page.locator('#titlePlayerName').fill('直美');await press('[data-avatar="girl"]');
-  for(const selector of ['#titlePlayerName','[data-avatar="girl"]','#start','#titleOptions']){
+  await press('#titleNew');await press('[data-save-slot="2"]');await press('#titleSlotsNext');await page.locator('#titlePlayerName').fill('直美');await press('[data-avatar="girl"]');
+  for(const selector of ['#titlePlayerName','[data-avatar="girl"]','#titleCharacterNext']){
    const b=await page.locator(selector).boundingBox();assert.ok(b.height>=44,selector+' touch size');
   }
-  await screenshot('new-player');await press('#start');await page.locator('#lakeIntro.open').waitFor({state:'visible'});
+  await screenshot('new-player');await press('#titleCharacterNext');await press('#titleDogsNext');await press('#start');await page.locator('#lakeIntro.open').waitFor({state:'visible'});
   assert.equal(await page.evaluate(()=>s.playerName),'直美');assert.equal(await page.evaluate(()=>s.avatar),'girl');assert.equal(await stored(saveKey),JSON.stringify(original));
   await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');assert.match(await page.locator('#lakeIntroPaper').innerText(),/元の暮らしへ帰る/);
   await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),'2 / 5');await press('#lakeIntroSkip');
@@ -40,7 +40,7 @@ module.exports=async function optionsAndStream(url,mobile=false){
   assert.equal(JSON.parse(await stored(Options.key)).textSpeed,'fast');await screenshot('options');
   await press('[data-delete-save="1"]');assert.equal(await page.locator('#optionsDeleteConfirm').isDisabled(),true);assert.match(await page.locator('#optionsDeleteSummary').innerText(),/昔の冒険/);await screenshot('delete-confirm');
   await press('#optionsDeleteCancel');assert.equal(await stored(saveKey),JSON.stringify(original));await press('#optionsClose');
-  await page.reload({waitUntil:'load'});assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),true);await press('#start');assert.equal(await page.evaluate(()=>s.playerName),'直美♡');assert.equal(await page.evaluate(()=>s.avatar),'girl');
+  await page.reload({waitUntil:'load'});assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),true);await require('./browser-start-adventure.cjs')(page,mobile);assert.equal(await page.evaluate(()=>s.playerName),'直美♡');assert.equal(await page.evaluate(()=>s.avatar),'girl');
   // Cast from the real stream bank, selecting a positive Iwana roll without
   // relying on species ordering. No catch record unlock is supplied.
   await page.evaluate(()=>{
@@ -55,7 +55,7 @@ module.exports=async function optionsAndStream(url,mobile=false){
   await openOptions();await press('[data-delete-save="1"]');await page.locator('#optionsDeleteCheck').check();await press('#optionsDeleteConfirm');assert.equal(await stored(saveKey),null);assert.ok(await stored(Slots.keys[2]));
   await press('[data-delete-save="2"]');await page.locator('#optionsDeleteCheck').check();await press('#optionsDeleteConfirm');await page.locator('#title.active').waitFor({state:'visible'});
   await page.waitForTimeout(850);assert.equal(await stored(Slots.keys[2]),null);assert.equal(JSON.parse(await stored(Options.key)).textSpeed,'fast');
-  await page.reload({waitUntil:'load'});assert.equal(await stored(Slots.keys[2]),null);assert.equal(await page.locator('#titlePlayerName').isDisabled(),false);assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),false);
+  await page.reload({waitUntil:'load'});assert.equal(await stored(Slots.keys[2]),null);await press('#titleNew');await press('#titleSlotsNext');assert.equal(await page.locator('#titlePlayerName').isDisabled(),false);assert.equal(await page.locator('[data-avatar="boy"]').isDisabled(),false);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V218_PLAYER_OPTIONS_STREAM_PASS '+JSON.stringify({mobile,identity:true,genderFixed:true,speed:true,deleteIsolation:true,noResurrection:true,iwana:true,errors}));
  }finally{await context.close();await browser.close();}
 };

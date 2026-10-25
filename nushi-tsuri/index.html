@@ -6437,6 +6437,7 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=215-1" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
+    <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
     <link rel="stylesheet" href="cast-tackle.css?v=247-1" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
@@ -6450,31 +6451,56 @@
     <div class="landscape-warning">
       📱 スマホを横向きにしてね<br />星降る湖が広がるよ
     </div>
-    <section id="title" class="screen title active">
+    <section id="title" class="screen title active" aria-label="星降る湖 タイトル">
       <div class="title-box">
-        <small>犬小屋釣行記</small>
-        <h1>ぬし釣り犬小屋</h1>
-        <h2>星降る湖</h2>
-        <p>祖父の手帳と三匹の子犬。星降る湖で、暮らしを始めよう。</p>
-        <div class="save-slots" role="group" aria-label="冒険のセーブを選ぶ">
-          <button class="save-slot" data-save-slot="1" aria-pressed="true" disabled><b>セーブ1</b><small></small></button>
-          <button class="save-slot" data-save-slot="2" aria-pressed="false" disabled><b>セーブ2</b><small></small></button>
-        </div>
-        <p class="save-note">選んだ冒険だけに自動セーブするよ。</p>
-        <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
-        <label class="player-name-choice" for="titlePlayerName">主人公の名前（12文字まで）<input id="titlePlayerName" type="text" maxlength="48" value="旅人" autocomplete="off" aria-describedby="identityNote" /></label>
-        <p class="identity-note" id="identityNote">名前はあとから何度でも変更できるよ。性別は、この冒険では変更できないよ。</p>
-        <div class="avatar-select" role="group" aria-label="主人公の性別を選ぶ">
-          <button data-avatar="boy">🧢 男の主人公</button>
-          <button data-avatar="girl">🧢 女の主人公</button>
-        </div>
-        <div class="dog-select" aria-label="同行するワンコ">
-          <button data-dog="shuu">🐕 シュウ</button>
-          <button data-dog="riku">🐕‍🦺 リク</button>
-          <button data-dog="grey">🐕 Grey</button>
-        </div>
-        <button id="start" disabled>湖へ行く</button><br />
-        <button id="titleOptions" type="button">オプション</button>
+        <aside class="title-scene" aria-label="星空と湖畔の風景">
+          <div class="title-brand"><small>犬小屋釣行記</small><h1>星降る湖</h1><p>釣り糸の先に、あたらしい毎日。</p></div>
+          <div class="title-scene-dogs" aria-hidden="true"><i class="title-dog-art shuu"></i><i class="title-dog-art riku"></i><i class="title-dog-art grey"></i></div>
+          <small class="title-scene-caption">三匹と、湖のある暮らし。</small>
+        </aside>
+        <main class="title-pages">
+          <div data-title-panel="menu" class="title-menu">
+            <small class="title-eyebrow">ようこそ、星降る湖へ</small><h2>冒険をはじめよう</h2>
+            <nav aria-label="タイトルメニュー"><button id="titleNew" type="button">はじめから<small>新しい冒険をつくる</small></button><button id="titleContinue" type="button">つづきから<small>保存した冒険を再開</small></button><button id="titleOptions" type="button">設定<small>音量・文字の速さなど</small></button></nav>
+          </div>
+          <div data-title-panel="slots" hidden>
+            <div class="title-step-heading"><h2 id="titleSlotHeading">冒険のつづき</h2><button type="button" data-title-back>戻る</button></div>
+            <p class="title-help" id="titleSlotHelp"></p>
+            <div class="save-slots" role="group" aria-label="冒険のセーブを選ぶ">
+              <button type="button" class="save-slot" data-save-slot="1" aria-pressed="true"><b>セーブ1</b><small></small></button>
+              <button type="button" class="save-slot" data-save-slot="2" aria-pressed="false"><b>セーブ2</b><small></small></button>
+            </div>
+            <p class="title-help" id="titleEmptyNote" role="status"></p>
+            <div class="title-actions"><button type="button" id="titleSlotsSettings">設定</button><button type="button" id="titleSlotsNext">主人公を決める</button><button type="button" id="titleResume">この冒険を再開</button></div>
+          </div>
+          <div data-title-panel="character" hidden>
+            <div class="title-step-heading"><h2><small>01 / 03</small>主人公を決めよう</h2><button type="button" data-title-back>戻る</button></div>
+            <form id="titleCharacterForm">
+              <div class="avatar-select" role="group" aria-label="主人公の性別を選ぶ"><button type="button" data-avatar="boy"><i class="title-avatar-art boy" aria-hidden="true"></i>男の主人公</button><button type="button" data-avatar="girl"><i class="title-avatar-art girl" aria-hidden="true"></i>女の主人公</button></div>
+              <label class="player-name-choice" for="titlePlayerName">名前（1〜12文字）<input id="titlePlayerName" type="text" maxlength="512" value="旅人" autocomplete="off" autocapitalize="off" spellcheck="false" enterkeyhint="next" aria-describedby="identityNote saveSlotNotice" /></label>
+              <p class="title-help" id="identityNote">性別は、この冒険では変更できないよ。</p>
+              <div class="title-actions"><button type="button" data-title-cancel>キャンセル</button><button type="submit" id="titleCharacterNext">犬を選ぶ</button></div>
+            </form>
+          </div>
+          <div data-title-panel="dogs" hidden>
+            <div class="title-step-heading"><h2><small>02 / 03</small>お気に入りの犬</h2><button type="button" data-title-back>戻る</button></div>
+            <div class="dog-select" role="group" aria-label="お気に入りの犬を1匹選ぶ">
+              <button type="button" data-dog="shuu"><i class="title-dog-art shuu" aria-hidden="true"></i><strong>シュウ</strong><small>気になるものを<br />一緒に調べよう。</small></button>
+              <button type="button" data-dog="riku"><i class="title-dog-art riku" aria-hidden="true"></i><strong>リク</strong><small>今日も元気に<br />釣りへ行こう！</small></button>
+              <button type="button" data-dog="grey"><i class="title-dog-art grey" aria-hidden="true"></i><strong>Grey</strong><small>困ったときは<br />何でも任せて。</small></button>
+            </div>
+            <p class="title-help">選ばなかった犬も、村で一緒に暮らしているよ。</p>
+            <div class="title-actions"><button type="button" data-title-cancel>キャンセル</button><button type="button" id="titleDogsNext">内容を確認</button></div>
+          </div>
+          <div data-title-panel="confirm" hidden>
+            <div class="title-step-heading"><h2><small>03 / 03</small>この仲間で出かける？</h2><button type="button" data-title-back>戻る</button></div>
+            <dl class="title-confirm"><div><dt>主人公</dt><dd id="titleConfirmIdentity"></dd></div><div><dt>お気に入り</dt><dd id="titleConfirmDog"></dd></div></dl>
+            <p class="title-help" id="titleConfirmSlot"></p>
+            <div class="title-actions"><button type="button" data-title-cancel>キャンセル</button><button type="button" id="start" disabled>冒険開始</button></div>
+          </div>
+          <p class="title-later">名前と犬は後からでも変更できます。</p>
+          <p class="save-note" id="saveSlotNotice" role="status" hidden></p>
+        </main>
       </div>
     </section>
     <section id="game" class="screen game">
@@ -7333,7 +7359,8 @@
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-story.js?v=227-1"></script>
     <script src="lake-intro.js?v=216-1"></script>
-    <script src="save-slots.js?v=218-1"></script>
+    <script src="save-slots.js?v=252-1"></script>
+    <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=251-1"></script>
     <script src="fish-art.js?v=251-8"></script>
@@ -7349,8 +7376,10 @@
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
       const loadedSaveSlot = saveSlots.read(activeSaveSlot);
-      let selectedSaveSlot = activeSaveSlot, titleAvatar = "boy", titleDog = "riku", titlePlayerName = "旅人", gameStarted = false, saveSuppressed = false;
-      const titleDrafts = new Map(), playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
+      let selectedSaveSlot = activeSaveSlot, gameStarted = false, saveSuppressed = false, titleFlow = null;
+      const initialSaveCapture = saveSlots.capture(activeSaveSlot);
+      let newAdventurePending = !loadedSaveSlot.exists, startSaveExpectedRaw;
+      const playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
       let textSpeed = playerOptions.read().textSpeed, pendingSaveDeletion = null, optionsReturnFocus = null;
       let audioOptions = playerOptions.read();
       const $ = (s) => document.querySelector(s),
@@ -12979,7 +13008,11 @@
         saveTimer = 0;
         if (!gameStarted || saveSuppressed || pendingSaveDeletion?.id===activeSaveSlot) return false;
         try {
-          if (!saveSlots.write(activeSaveSlot, s)) throw Error("Save failed");
+          const written=newAdventurePending?saveSlots.writeNew(activeSaveSlot,s):startSaveExpectedRaw!==undefined
+            ?saveSlots.writeIfUnchanged(activeSaveSlot,s,startSaveExpectedRaw):saveSlots.write(activeSaveSlot,s);
+          if(!written)throw Error("Save failed");
+          newAdventurePending = false;
+          startSaveExpectedRaw = undefined;
           ShuAquariumMutations.confirmSaved(s);
           $("#saveStatus").hidden = true;
           return true;
@@ -23598,111 +23631,38 @@
         navigateToSaveSlot(ShuSaveSlots.titleUrl(location.href, activeSaveSlot));
         return true;
       }
-      function renderSaveSlotSelection(refreshChoices = false) {
-        const selected = saveSlots.read(selectedSaveSlot);
-        if (refreshChoices) {
-          const state = selected.ok && selected.exists ? selected.data : titleDrafts.get(selectedSaveSlot) || {};
-          titlePlayerName = ShuPlayerOptions.name(state.playerName);
-          $("#titlePlayerName").value = titlePlayerName;
-          titleAvatar = ["boy","girl"].includes(state.avatar) ? state.avatar : "boy";
-          titleDog = dogProfileData[state.dog] ? state.dog : "riku";
+      function renderSaveSlotSelection() { titleFlow?.render(); }
+      function startTitleAdventure({slot, isNew, choices}) {
+        if(gameStarted||saveSuppressed)return false;
+        const selected=saveSlots.read(slot),capture=saveSlots.capture(slot);
+        if(!selected.ok||!capture.ok||(isNew?selected.exists:!selected.exists))return false;
+        // A changed save must be loaded afresh, never replaced by the stale state behind the title.
+        if(slot!==activeSaveSlot||(!isNew&&capture.raw!==initialSaveCapture.raw)){
+          const url=new URL(ShuSaveSlots.launchUrl(location.href,slot,isNew?choices:{}));
+          if(isNew)url.searchParams.set('newGame','1');
+          navigateToSaveSlot(url.href);return true;
         }
-        for (const button of document.querySelectorAll("[data-save-slot]")) {
-          const id = Number(button.dataset.saveSlot), saved = saveSlots.read(id);
-          button.setAttribute("aria-pressed", String(id === selectedSaveSlot));
-          button.disabled = !saved.ok;
-          let text = "空き · 新しい冒険を始める";
-          if (!saved.ok) text = saved.error === "invalid" ? "読み込めないデータ · 上書きを停止" : "保存データにアクセスできない";
-          else if (saved.exists) {
-            const state = saved.data, minutes = Number.isFinite(state.gameMinutes) ? state.gameMinutes : legacyTimeToGameMinutes(state.time);
-            const day = gameClockAt(minutes).dayIndex + 1;
-            const money = Math.max(0, Math.floor(Number(state.money) || 0));
-            const catches = Object.values(state.caught || {}).reduce((sum,count) => sum + Math.max(0,Math.floor(Number(count) || 0)),0);
-            text = `${ShuPlayerOptions.name(state.playerName)} · ${day}日目 · ${money}円 · 釣果${catches}匹`;
-          }
-          button.querySelector("small").textContent = text;
+        if(isNew){
+          const validated=ShuTitleFlow.choices(choices,ShuPlayerOptions);if(!validated)return false;
+          Object.assign(s,validated);
+          if(!s.lakeStory.introSeen)s.lakeStory.introPending=true;
         }
-        for (const b of document.querySelectorAll("[data-dog]")) {
-          b.classList.toggle("active", b.dataset.dog === titleDog);
-          b.textContent=`${dogProfileData[b.dataset.dog].icon} ${ShuPlayerOptions.dogName(selected.ok&&selected.exists?selected.data:{},b.dataset.dog)}`;
-        }
-        for (const b of document.querySelectorAll("[data-avatar]")) {
-          b.classList.toggle("active", b.dataset.avatar === titleAvatar);
-          b.setAttribute("aria-pressed",String(b.dataset.avatar===titleAvatar));b.disabled=selected.exists||!selected.ok;
-        }
-        $("#titlePlayerName").disabled=selected.exists||!selected.ok;
-        $("#identityNote").textContent=selected.exists?"この冒険の性別は固定だよ。名前はオプションで何度でも変更できるよ。":"名前はあとから何度でも変更できるよ。性別は、この冒険では変更できないよ。";
-        $("#start").disabled = !selected.ok || (!selected.exists && !ShuPlayerOptions.validName($("#titlePlayerName").value));
-        $("#start").textContent = selected.exists ? `セーブ${selectedSaveSlot}の続きへ` : `セーブ${selectedSaveSlot}で始める`;
-        $("#saveSlotNotice").hidden = selected.ok;
-        $("#saveSlotNotice").textContent = selected.ok ? "" : "このセーブは読み込めないので、上書きせず保護しているよ。もう一方のセーブを選んでね。";
-      }
-      document.querySelectorAll("[data-save-slot]").forEach(button => button.onclick = () => {
-        if (gameStarted || !saveSlots.read(Number(button.dataset.saveSlot)).ok) return;
-        if(!saveSlots.read(selectedSaveSlot).exists)titleDrafts.set(selectedSaveSlot,{avatar:titleAvatar,dog:titleDog,playerName:$("#titlePlayerName").value});
-        selectedSaveSlot = Number(button.dataset.saveSlot);
-        renderSaveSlotSelection(true);
-      });
-      $("#start").onclick = () => {
-        const selected=saveSlots.read(selectedSaveSlot);
-        if (gameStarted || saveSuppressed || !selected.ok) return;
-        if(!selected.exists&&!ShuPlayerOptions.validName($("#titlePlayerName").value))return;
-        titlePlayerName=ShuPlayerOptions.name(selected.exists?selected.data.playerName:$("#titlePlayerName").value);
-        if (selectedSaveSlot !== activeSaveSlot) {
-          navigateToSaveSlot(ShuSaveSlots.launchUrl(location.href, selectedSaveSlot, {avatar:titleAvatar,dog:titleDog,playerName:titlePlayerName}));
-          return;
-        }
-        gameStarted = true;
-        if(s.dog!==titleDog)s.dogFollowing=true;
-        s.avatar = selected.exists ? ShuPlayerOptions.gender(selected.data.avatar) : titleAvatar;
-        s.playerName=titlePlayerName;s.dog = titleDog;
-        ensureAvatarImages(); ensureDogImage();
-        saveSlots.remember(activeSaveSlot);
-        $("#activeSaveSlot").textContent = `セーブ${activeSaveSlot}`;
-        $("#title").classList.remove("active");
-        $("#game").classList.add("active");
-        // The first durable seed checkpoint must also resume a new opening.
-        if(!loadedSaveSlot.exists&&!s.lakeStory.introSeen)s.lakeStory.introPending=true;
+        startSaveExpectedRaw=capture.raw;
         ShuAquariumMutations.prepare(s);
-        save();
+        gameStarted=true;
+        // Commit a new adventure only into an empty slot, before entering the game or spawning eggs.
+        if(!save()){gameStarted=false;return false;}
+        ensureAvatarImages();ensureDogImage();saveSlots.remember(activeSaveSlot);
+        $("#activeSaveSlot").textContent=`セーブ${activeSaveSlot}`;
+        $("#title").classList.remove("active");$("#game").classList.add("active");
         if(ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex))save();
-        render();
-        armDogIdle();
-        scheduleIdleStatus(750);
-        scheduleFieldMenu();
+        render();armDogIdle();scheduleIdleStatus(750);scheduleFieldMenu();
         log(loadedSaveSlot.exists?"星降る湖で、旅の続きを始めた。":"祖父の手帳を開いた。三匹と暮らす一日が始まる。");
         maybePresentTournament();
-        if (s.tournament?.recoveredCast) {
-          showRescueToast("投げた途中で再開した一投は回収済み。残り投数から続けよう。", 4200);
-          s.tournament.recoveredCast = false;
-          save();
-        }
-        if ((!loadedSaveSlot.exists&&!s.lakeStory.introSeen)||s.lakeStory.introPending) openLakeIntro();
-      };
-      document.querySelectorAll("[data-dog]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.dog === s.dog);
-        b.onclick = () => {
-          if (!gameStarted) { titleDog = b.dataset.dog; renderSaveSlotSelection(); return; }
-          s.dog = b.dataset.dog;
-          s.dogFollowing = true;
-          ensureDogImage();
-          document
-            .querySelectorAll("[data-dog]")
-            .forEach((x) => x.classList.toggle("active", x === b));
-          render();
-          armDogIdle();
-          save();
-        };
-      });
-      document.querySelectorAll("[data-avatar]").forEach((b) => {
-        b.classList.toggle("active", b.dataset.avatar === s.avatar);
-        b.onclick = () => {
-          if(gameStarted||saveSlots.read(selectedSaveSlot).exists)return;
-          titleAvatar = b.dataset.avatar; renderSaveSlotSelection();
-        };
-      });
-      $("#titlePlayerName").oninput=()=>{titlePlayerName=$("#titlePlayerName").value;renderSaveSlotSelection();};
-      $("#titleOptions").onclick=openOptions;
+        if(s.tournament?.recoveredCast){showRescueToast("投げた途中で再開した一投は回収済み。残り投数から続けよう。",4200);s.tournament.recoveredCast=false;save();}
+        if((!loadedSaveSlot.exists&&!s.lakeStory.introSeen)||s.lakeStory.introPending)openLakeIntro();
+        return true;
+      }
       function stopMoving() {
         clearInterval(moveHoldInterval);
         moveHoldInterval = 0;
@@ -23897,7 +23857,7 @@
           // or the fishing scene underneath it.
           return;
         }
-        if (nativeInput) return;
+        if (!gameStarted || nativeInput) return;
         // Focused controls activate through their native click; don't also
         // route Enter to the field action underneath the button.
         if (e.key === "Enter" && e.target?.closest?.("button, a") && e.target.id !== "pull") return;
@@ -23994,21 +23954,20 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=251-8").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-1").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
-      renderSaveSlotSelection(true);
-      const launchSaveSlot = ShuSaveSlots.launchSettings(location.search);
-      if (launchSaveSlot.play) {
-        if (!loadedSaveSlot.exists) {
-          if(launchSaveSlot.avatar)titleAvatar=launchSaveSlot.avatar;
-          if(launchSaveSlot.playerName)$("#titlePlayerName").value=titlePlayerName=ShuPlayerOptions.name(launchSaveSlot.playerName);
+      titleFlow=ShuTitleFlow.create({element:$("#title"),slots:saveSlots,options:ShuPlayerOptions,initialSlot:activeSaveSlot,
+        selectSlot:id=>{selectedSaveSlot=id;},summary:optionsSlotSummary,start:startTitleAdventure,settings:openOptions});
+      const launchSaveSlot=ShuSaveSlots.launchSettings(location.search);
+      if(launchSaveSlot.play){
+        const requestedNew=new URLSearchParams(location.search).get('newGame')==='1';
+        history.replaceState(null,"",ShuSaveSlots.titleUrl(location.href,activeSaveSlot));
+        if(requestedNew&&loadedSaveSlot.exists){titleFlow.openSlots('new');titleFlow.notice('保存先に冒険が見つかったので、上書きせず止めたよ。');}
+        else if(!startTitleAdventure({slot:activeSaveSlot,isNew:!loadedSaveSlot.exists,choices:{avatar:launchSaveSlot.avatar||'boy',dog:launchSaveSlot.dog||'riku',playerName:launchSaveSlot.playerName||'旅人'}})){
+          titleFlow.notice('開始できなかったよ。保存先と空き容量を確認してね。');
         }
-        if (launchSaveSlot.dog) titleDog = launchSaveSlot.dog;
-        renderSaveSlotSelection();
-        history.replaceState(null, "", ShuSaveSlots.titleUrl(location.href, activeSaveSlot));
-        $("#start").click();
       }
     </script>
   </body>

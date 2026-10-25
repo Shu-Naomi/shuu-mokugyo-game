@@ -6,7 +6,7 @@ const server=http.createServer((req,res)=>{try{const p=new URL(req.url,'http://l
   const context=await browser.newContext({viewport,deviceScaleFactor:dpr,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage(),errors=[],failed=[];
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:{...seed(),hp:100,soundEnabled:false,gameMinutes:600}});
-  try{await page.goto('http://127.0.0.1:'+server.address().port+'/nushi-tsuri/');await page.locator('#start')[mobile?'tap':'click']();if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();await run(page,mobile,viewport);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);}
+  try{await page.goto('http://127.0.0.1:'+server.address().port+'/nushi-tsuri/');await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();await run(page,mobile,viewport);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);}
   finally{await context.close();}
  }}finally{await browser.close();server.closeAllConnections();await new Promise(r=>server.close(r));}
 })().catch(e=>{console.error(e);process.exitCode=1;});

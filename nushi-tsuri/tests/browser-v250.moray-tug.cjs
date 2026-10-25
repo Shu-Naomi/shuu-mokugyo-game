@@ -10,7 +10,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
  const press=q=>page.locator(q)[mobile?'tap':'click'](),shot=name=>page.screenshot({path:path.join(dir,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  let held=false,button;
  async function hold(value){if(value===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:value?'touchStart':'touchEnd',touchPoints:value?[{x:button.x,y:button.y,id:1}]:[]});else if(value){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=value;}
- async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
+ async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
  try{
   await page.clock.install({time:new Date('2026-10-21T12:00:00Z')});await page.clock.pauseAt('2026-10-21T12:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   for(const id of ['utsubo','hiramasa','kanpachi']){

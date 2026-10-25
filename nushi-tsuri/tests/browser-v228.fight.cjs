@@ -26,7 +26,7 @@ module.exports=async function fightControls(url,mobile=false){
   }
   try{
    await page.clock.install({time:new Date('2026-10-09T06:00:00Z')});await page.clock.pauseAt('2026-10-09T06:00:01Z');
-   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await press('#start');
+   await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await require('./browser-start-adventure.cjs')(page,mobile);
    await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
    const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type:wet?'wetMarsh':'lake'});
    async function fieldReady(){
@@ -89,7 +89,7 @@ module.exports=async function fightControls(url,mobile=false){
    assert.deepEqual(outcome.savedMemories,outcome.memories);
    if(mode==='nushi')assert.ok(warningCount>0);if(id==='namazu'&&mode==='nushi')assert.deepEqual([...observed].sort(),['pulling','slack','warning']);
    assert.equal(await page.locator('#catchCard').evaluate(e=>e.classList.contains('show')),true);
-   await shot('caught');await page.reload({waitUntil:'load'});await press('#start');await page.clock.runFor(240);
+   await shot('caught');await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);
    assert.equal(await page.evaluate(id=>s.caught[id],id),1);
    assert.deepEqual(await page.evaluate(id=>s.catchMemories[id],id),outcome.memories);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);

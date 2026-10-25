@@ -11,7 +11,7 @@ module.exports=async function mutationUI(url,screen){
   },{key:saveKey,state:fixture()});
   page=await context.newPage();const press=q=>page.locator(q)[mobile?'tap':'click'](),shot=name=>page.screenshot({path:path.join(dir,`${width}x${height}-${name}.png`)});
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
-  async function enter(){await press('#start');if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');}
+  async function enter(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');}
   const child=()=>page.evaluate(()=>s.petLife.fish.find(f=>f.uid==='pet-6'));
   async function night(){await press('[data-pet-action="close"]');await page.evaluate(()=>{sleepUntilNextMorning(s);save();render();});await press('#action');await press('[data-pet-action="aquarium"]');}
   async function fits(){const d=await page.evaluate(()=>{

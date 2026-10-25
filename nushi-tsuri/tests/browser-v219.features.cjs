@@ -25,7 +25,7 @@ module.exports=async function streamAndCast(url,mobile=false){
   },type,{timeout:20000});
  }
  try{
-  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await press('#start');
+  await page.goto(url,{waitUntil:'load'});assert.match(await page.locator('.hud').innerText(),/v251/);await require('./browser-start-adventure.cjs')(page,mobile);
   if(await page.locator('#lakeIntro.open').isVisible())await press('#lakeIntroSkip');
   await press('#action');assert.equal(await page.evaluate(()=>battle?.phase),'prep');assert.equal(await page.evaluate(()=>battle.mountainType),'stream');await painted('stream');
   await press('#wait');await page.locator('#tackle.open').waitFor({state:'visible'});const before=await stock();
@@ -67,7 +67,7 @@ module.exports=async function streamAndCast(url,mobile=false){
    await page.evaluate(()=>{caught();caught();hideCatchCard();save();});assert.equal(await page.evaluate(id=>s.caught[id],id),1);
    assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),'mountain-stream-mid');
   }
-  await page.reload({waitUntil:'load'});await press('#start');assert.deepEqual(await page.evaluate(()=>[s.caught.amago,s.caught.kajika]),[1,1]);assert.equal(await page.evaluate(()=>s.selectedHook),'small');
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>[s.caught.amago,s.caught.kajika]),[1,1]);assert.equal(await page.evaluate(()=>s.selectedHook),'small');
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V219_STREAM_CAST_PASS '+JSON.stringify({mobile,castCategories:5,landscapes:4,regions:6,newSpecies:2,equipmentSaved:true,stockPreserved:true,signatures,errors,failed}));
  }finally{await context.close();await browser.close();}
 };

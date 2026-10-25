@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v251-names-251-9";
+const CACHE_NAME = "nushi-tsuri-v252-title-252-1";
 const CORE_ASSETS = [
+  "./title-flow.js?v=252-1",
+  "./title-flow.css?v=252-1",
   "./aquarium-mutations.js?v=251-8",
   "./assets/aquarium-funa-gold-v251-8.png",
   "./assets/village-sam-v251-3.png",
@@ -94,7 +96,7 @@ const CORE_ASSETS = [
   "./lake-intro.js?v=216-1",
   "./lake-intro.css?v=215-1",
   "./lake-story.css?v=206-1",
-  "./save-slots.js?v=218-1",
+  "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
   "./fish-art.js?v=251-8",

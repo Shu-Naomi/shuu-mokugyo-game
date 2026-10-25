@@ -8,7 +8,7 @@ module.exports=async function shoreShop(url,mobile=false,options={}){
  const page=await context.newPage(),errors=[],failed=[],press=q=>page.locator(q)[mobile?'tap':'click'](),value=exp=>page.evaluate(exp),shot=name=>page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const snapshot=()=>page.evaluate(()=>JSON.parse(JSON.stringify({money:s.money,time:s.gameMinutes,hp:s.hp,baits:s.baits,caught:s.caught,fish:s.petLife.fish})));
- async function start(){await press('#start');await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
+ async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}assert.match(await page.locator('.hud').innerText(),/v251/);}
  async function begin(){await press('#wait');await press('#beginCast');await page.evaluate(()=>{clearInterval(timer);timer=0;battle.cast=50;});}
  async function finishFlight(){for(let i=0;i<40&&await value('battle?.phase')==='cast-flight';i++)await page.clock.runFor(40);assert.equal(await value('battle.phase'),'wait');}
  const casts=[];
