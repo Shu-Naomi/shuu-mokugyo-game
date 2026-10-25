@@ -23637,7 +23637,7 @@
         const selected=saveSlots.read(slot),capture=saveSlots.capture(slot);
         if(!selected.ok||!capture.ok||(isNew?selected.exists:!selected.exists))return false;
         // A changed save must be loaded afresh, never replaced by the stale state behind the title.
-        if(slot!==activeSaveSlot||(!isNew&&capture.raw!==initialSaveCapture.raw)){
+        if(slot!==activeSaveSlot||capture.raw!==initialSaveCapture.raw){
           const url=new URL(ShuSaveSlots.launchUrl(location.href,slot,isNew?choices:{}));
           if(isNew)url.searchParams.set('newGame','1');
           navigateToSaveSlot(url.href);return true;

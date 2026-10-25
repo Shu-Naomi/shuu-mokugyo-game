@@ -49,6 +49,12 @@ test('Continue reloads a save changed after title load instead of writing stale 
  const a=boot(seed(),undefined,{start:false}),w=a.window;let target;
  try{w.navigateToSaveSlot=url=>{target=url;};const raw=JSON.stringify({...seed(),money:99999,dog:'grey',playerName:'最新'});w.localStorage.setItem(saveKey,raw);enter(w);assert.ok(target);assert.equal(new URL(target).searchParams.get('play'),'1');assert.equal(read(w,'gameStarted'),false);assert.equal(w.localStorage.getItem(saveKey),raw);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
 });
+test('new adventure reloads a previously loaded slot deleted by another tab and starts with fresh progress',()=>{
+ const old={...seed(),playerName:'削除された冒険',money:99999,extra:{old:true}},a=boot(old,undefined,{start:false}),w=a.window;let target;
+ try{w.navigateToSaveSlot=url=>{target=url;};w.localStorage.removeItem(saveKey);enter(w,{avatar:'girl',name:'新しい冒険',dog:'grey'});assert.ok(target);assert.equal(read(w,'gameStarted'),false);assert.equal(w.localStorage.getItem(saveKey),null);const u=new URL(target);assert.equal(u.searchParams.get('newGame'),'1');assert.equal(u.searchParams.get('playerName'),'新しい冒険');assert.deepEqual(a.errors,[]);}finally{a.dispose();}
+ const b=boot(null,undefined,{url:target}),v=b.window;
+ try{assert.equal(read(v,'gameStarted'),true);assert.equal(read(v,'s.playerName'),'新しい冒険');assert.equal(read(v,'s.avatar'),'girl');assert.equal(read(v,'s.dog'),'grey');assert.equal(read(v,'s.money'),300);assert.deepEqual(read(v,'s.caught'),{});assert.equal(v.eval('s.extra'),undefined);assert.equal(read(v,'s.dogAffinity.shuu'),0);assert.deepEqual(b.errors,[]);}finally{b.dispose();}
+});
 test('new-game navigation stops at an occupied slot; legacy Continue retains identity and upbringing',()=>{
  const old={...seed(),avatar:'girl',playerName:'先客',dog:'grey',dogNames:{shuu:'こむぎ',riku:'風太',grey:'夜空'},dogFollowing:false,dogTricks:{shuu:321,riku:123,grey:456},extra:{keep:1}},url='http://localhost/nushi-tsuri/?play=1&newGame=1&playerName=新人&avatar=boy&dog=shuu';
  const a=boot(old,undefined,{start:false,url}),w=a.window;
