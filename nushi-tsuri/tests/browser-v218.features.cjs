@@ -31,8 +31,8 @@ module.exports=async function optionsAndStream(url,mobile=false){
   }
   await screenshot('new-player');await press('#titleCharacterNext');await press('#titleDogsNext');await press('#start');await page.locator('#lakeIntro.open').waitFor({state:'visible'});
   assert.equal(await page.evaluate(()=>s.playerName),'直美');assert.equal(await page.evaluate(()=>s.avatar),'girl');assert.equal(await stored(saveKey),JSON.stringify(original));
-  await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),'1 / 5');assert.match(await page.locator('#lakeIntroPaper').innerText(),/元の暮らしへ帰る/);
-  await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),'2 / 5');await press('#lakeIntroSkip');
+  await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),`1 / ${await page.evaluate(()=>ShuLakeIntro.pages.length)}`);assert.match(await page.locator('#lakeIntroPaper').innerText(),/遺品整理/);
+  await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntroProgress').innerText(),`2 / ${await page.evaluate(()=>ShuLakeIntro.pages.length)}`);await press('#lakeIntroSkip');
   await openOptions();await containment();await rename('なおみ');await rename('直美♡');assert.equal(await page.evaluate(()=>s.avatar),'girl');assert.equal(await stored(saveKey),JSON.stringify(original));
   await press('[data-text-speed="slow"]');const slow=await page.locator('#optionsTextPreview').textContent();await page.waitForTimeout(150);const later=await page.locator('#optionsTextPreview').textContent();assert.ok(later.length>slow.length&&later.length<30,'slow speed reveals progressively');
   await press('[data-text-speed="instant"]');assert.match(await page.locator('#optionsTextPreview').innerText(),/どの魚に会えるかな/);

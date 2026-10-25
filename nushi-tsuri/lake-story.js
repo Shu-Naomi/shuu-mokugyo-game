@@ -1,7 +1,7 @@
 /* v206: an optional lakeside story, grounded in visits and actual catch records. */
-(function(root,factory){const api=factory();if(typeof module==="object"&&module.exports)module.exports=api;
+(function(root,factory){const api=factory(typeof module==="object"&&module.exports?require("./lake-intro.js"):root.ShuLakeIntro);if(typeof module==="object"&&module.exports)module.exports=api;
   if(root)root.ShuLakeStory=api;
-})(typeof globalThis!=="undefined"?globalThis:this,function(){
+})(typeof globalThis!=="undefined"?globalThis:this,function(Intro){
   "use strict";
   const regions=["stream","mountainPond","mountainMarsh","coast","cave","wetland"];
   const caught=(s,id)=>Number.isFinite(Number(s.caught?.[id]))&&Number(s.caught[id])>0;
@@ -11,8 +11,8 @@
     {id:"arrival",title:"祖父の手帳",place:"星降る湖",art:null,when:()=>true,speaker:"サム",
       quote:"道具は貸せても、君が聞く水の音までは貸せんからの。自分の一冊にしておいで。",
       paragraphs:["祖父の遺品を整理しに来たはずが、三匹の子犬と、この村で暮らすことになった。机には、祖父が伝説のヌシを追っていた手帳がある。",
-        "『星降る湖』。祖父が長く暮らしたその場所を、自分はまだよく知らない。サムは、残された頁を自分の一冊にしておいでと言った。",
-        "外では{dog}が鼻を上げ、風の匂いを追っている。今日はまず、いつもの岸から一投。祖父の記録の先には、まだ白い頁が残されている。"]},
+        "『星降る湖』。幼い頃、祖父と何度も釣りをした湖にも、まだ知らない魚と暮らしがある。サムは、残された頁を自分の一冊にしておいでと言った。",
+        "外では{dog}が鼻を上げ、風の匂いを追っている。まずは家と三匹の暮らしを落ち着かせよう。祖父の記録の先には、まだ白い頁が残されている。"]},
     {id:"stream",title:"木の橋の向こう",place:"星見渓流",art:"assets/mountain-world-v201.png",when:s=>visited(s,"stream"),speaker:"釣り宿の主人",
       quote:"山から帰った人は、足音で分かるんだよ。みんな少しゆっくり歩くようになる。",
       paragraphs:["村の北口を抜けると、湖で聞いていた風が流水の音へ変わった。木の橋の下を、泡が一本の白い線になって流れていく。",
@@ -82,9 +82,9 @@
       const region=regionForSpot(record?.last?.spotId);if(region)visits[region]=true;
     }
     for(const [id,region] of [["streamNushi","stream"],["coastNushi","coast"],["caveNushi","cave"]])if(caught(state,id))visits[region]=true;
-    state.lakeStory={version:1,visited:visits,read:[],selected:"arrival",introSeen:old.introSeen===true,
+    state.lakeStory={version:2,visited:visits,read:[],selected:"arrival",introSeen:old.introSeen===true,
       introPending:old.introPending===true&&old.introSeen!==true,
-      introPage:Number.isInteger(old.introPage)?Math.max(0,Math.min(4,old.introPage)):0};
+      ...Intro.progress(old)};
     const available=new Set(chapters(state).map(p=>p.id));
     state.lakeStory.read=[...new Set(Array.isArray(old.read)?old.read:[])].filter(id=>available.has(id));
     state.lakeStory.selected=available.has(old.selected)?old.selected:"arrival";return state.lakeStory;

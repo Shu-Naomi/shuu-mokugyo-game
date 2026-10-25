@@ -1,0 +1,81 @@
+name: Opening story and saved dialogue
+on:
+  push:
+    branches: [main, codex/opening-story-v252-2]
+    paths:
+      - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/pet-life-ui.js'
+      - 'nushi-tsuri/player-options.js'
+      - 'nushi-tsuri/player-options.css'
+      - 'nushi-tsuri/sw.js'
+      - 'nushi-tsuri/title-flow.*'
+      - 'nushi-tsuri/lake-intro.*'
+      - 'nushi-tsuri/lake-story.js'
+      - 'nushi-tsuri/save-slots.js'
+      - 'nushi-tsuri/tests/*opening*'
+      - 'nushi-tsuri/tests/lake-intro-v215.test.cjs'
+      - 'nushi-tsuri/tests/lake-story-v206.test.cjs'
+      - 'nushi-tsuri/tests/browser-start-adventure.cjs'
+      - 'nushi-tsuri/tests/install-ci-fonts.sh'
+      - 'nushi-tsuri/tests/game-harness.cjs'
+      - 'nushi-tsuri/tests/browser-range-input.cjs'
+      - 'nushi-tsuri/tests/browser-v246.audio-fish.cjs'
+      - '.github/workflows/opening-story.yml'
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: Optional published game URL for the same focused interaction checks
+        type: string
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: opening-story-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  opening:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Set ownership of this container checkout
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - name: Install pinned Japanese Noto fonts
+        run: bash install-ci-fonts.sh
+      - name: Check story checkpoints, names, old saves and existing game data
+        if: ${{ !inputs.public_url }}
+        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
+      - name: Exercise the opening, three favorite dogs, renames and resume on three screens
+        env:
+          OPENING_STORY_PUBLIC_URL: ${{ inputs.public_url }}
+        run: node browser-opening-story-evidence.cjs 2>&1 | tee opening-story-browser.log
+      - name: Wait for the published runtime to match the merged source
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        run: node opening-story-public-source.cjs 2>&1 | tee opening-story-public-source.log
+      - name: Exercise the published opening on the same three screens
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          OPENING_STORY_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-2
+        run: node browser-opening-story-evidence.cjs 2>&1 | tee opening-story-public-browser.log
+      - name: Preserve focused browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-story-evidence
+          path: |
+            nushi-tsuri/tests/opening-story-*.log
+            nushi-tsuri/tests/opening-story-evidence/
+          retention-days: 14
+          if-no-files-found: warn
