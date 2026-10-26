@@ -41,6 +41,7 @@
   #lakeIntroHint { max-width: 14em; font-size: 11px; }
 }
 @media (max-height:400px) {
+  .lake-intro-page { grid-template-columns: minmax(0,1.5fr) minmax(264px,1fr); }
   .lake-intro-paper { padding: 8px 12px; }
   .lake-intro-paper[data-voice="dialogue"] h3 { margin: 6px 0 8px; }
 }
