@@ -1,7 +1,7 @@
 name: Opening story and saved dialogue
 on:
   push:
-    branches: [main, codex/opening-story-v252-2]
+    branches: [main, codex/opening-story-v252-2, codex/opening-presentation-271]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
@@ -56,19 +56,37 @@ jobs:
         run: bash install-ci-fonts.sh
       - name: Check story checkpoints, names, old saves and existing game data
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
+        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs opening-presentation-271.test.cjs cast-cancel-269.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
       - name: Exercise the opening, three favorite dogs, renames and resume on three screens
         env:
           OPENING_STORY_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-opening-story-evidence.cjs 2>&1 | tee opening-story-browser.log
+      - name: Capture page motion, three reunions, cancellation and reduced motion
+        env:
+          OPENING_PRESENTATION_PUBLIC_URL: ${{ inputs.public_url }}
+        run: node browser-opening-presentation-evidence.cjs 2>&1 | tee opening-motion-browser.log
+      - name: Protect empty bait, lure fishing and return controls from PR 270
+        env:
+          CAST_CANCEL_PUBLIC_URL: ${{ inputs.public_url }}
+        run: node browser-cast-cancel-evidence.cjs 2>&1 | tee opening-cast-cancel-browser.log
       - name: Wait for the published runtime to match the merged source
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         run: node opening-story-public-source.cjs 2>&1 | tee opening-story-public-source.log
       - name: Exercise the published opening on the same three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          OPENING_STORY_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-2
+          OPENING_STORY_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-4
         run: node browser-opening-story-evidence.cjs 2>&1 | tee opening-story-public-browser.log
+      - name: Capture the published page motion and three reunions
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          OPENING_PRESENTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-4
+        run: node browser-opening-presentation-evidence.cjs 2>&1 | tee opening-motion-public-browser.log
+      - name: Check published bait and lure controls
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          CAST_CANCEL_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-4
+        run: node browser-cast-cancel-evidence.cjs 2>&1 | tee opening-cast-cancel-public-browser.log
       - name: Preserve focused browser evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -77,5 +95,9 @@ jobs:
           path: |
             nushi-tsuri/tests/opening-story-*.log
             nushi-tsuri/tests/opening-story-evidence/
+            nushi-tsuri/tests/opening-motion-*.log
+            nushi-tsuri/tests/opening-motion-evidence/
+            nushi-tsuri/tests/opening-cast-cancel-*.log
+            nushi-tsuri/tests/cast-cancel-evidence/
           retention-days: 14
           if-no-files-found: warn

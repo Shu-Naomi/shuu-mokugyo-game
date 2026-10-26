@@ -6435,7 +6435,7 @@
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="pet-life.css?v=251-8" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
-    <link rel="stylesheet" href="lake-intro.css?v=252-2" />
+    <link rel="stylesheet" href="lake-intro.css?v=252-4" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
@@ -7358,7 +7358,7 @@
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-2"></script>
+    <script src="lake-intro.js?v=252-4"></script>
     <script src="lake-story.js?v=252-2"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
@@ -23106,23 +23106,22 @@
       }
       let lakeStoryReturn = null;
       let lakeIntroIndex = 0, lakeIntroReplay = false, lakeIntroReturn = null;
+      let lakeIntroPresentation = null;
       function renderLakeIntro() {
+        lakeIntroPresentation?.cancel();
         const paper=$("#lakeIntroPaper");dialogueTyper.cancel(paper);
         const page=ShuLakeIntro.pages[lakeIntroIndex],e=ShuLakeStory.escape;
+        $("#lakeIntroTitle").textContent=page.title;
         $("#lakeIntroProgress").textContent=`${lakeIntroIndex+1} / ${ShuLakeIntro.pages.length}`;
         paper.dataset.voice=["{player}","{dog}","サム"].includes(page.speaker)?"dialogue":"narration";
-        paper.innerHTML=`<small>${e(ShuLakeIntro.speaker(page,s))}</small><h3>${e(page.title)}</h3>${ShuLakeIntro.text(page,s).map(p=>`<p>${e(p)}</p>`).join("")}`;
+        paper.innerHTML=`<small>${e(ShuLakeIntro.speaker(page,s))}</small>${ShuLakeIntro.text(page,s).map(p=>`<p>${e(p)}</p>`).join("")}`;
         paper.scrollTop=0;
         paper.onclick=()=>dialogueTyper.finish(paper);
         dialogueTyper.start(paper,[...paper.querySelectorAll("p")].map(p=>p.firstChild),textSpeed);
         const canvas=$("#lakeIntroPicture"),identity=ShuLakeIntro.cast(s);
         canvas.dataset.avatar=identity.avatar;canvas.dataset.dog=identity.dog;
         canvas.setAttribute("aria-label",page.scene==="cling"?`${identity.player}に${identity.companion}が寄り添うドット絵`:`${page.title}のドット絵`);
-        const redraw=()=>{
-          if($("#lakeIntro").classList.contains("open")&&ShuLakeIntro.pages[lakeIntroIndex]===page)
-            ShuLakeIntro.paint(canvas,page.scene,redraw,s);
-        };
-        ShuLakeIntro.paint(canvas,page.scene,redraw,s);
+        lakeIntroPresentation=ShuLakeIntro.present(canvas,page,s);
         $("#lakeIntroPrevious").disabled=lakeIntroIndex===0;
         $("#lakeIntroNext").textContent=lakeIntroIndex===ShuLakeIntro.pages.length-1?"村へ出かける":"次の頁";
         let stored=true;
@@ -23144,6 +23143,7 @@
       }
       function finishLakeIntro() {
         if(!$("#lakeIntro").classList.contains("open"))return false;
+        lakeIntroPresentation?.cancel();lakeIntroPresentation=null;
         dialogueTyper.cancel($("#lakeIntroPaper"));
         $("#lakeIntro").classList.remove("open");releaseHeldInputs();
         $(".controls").inert=false;$(".controls").removeAttribute("aria-hidden");
@@ -24000,7 +24000,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-3").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-4").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
