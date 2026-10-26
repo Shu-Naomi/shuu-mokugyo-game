@@ -1,5 +1,8 @@
 #tackle { padding: 0; overflow: hidden; }
 .world:has(#fishScene.active.surface-casting) .field-notices>.hint{visibility:hidden}
+#cancelCastPreparation { position:absolute; z-index:7; top:4px; right:4%; min-height:44px; }
+#cancelCastPreparation[hidden], #cancelTacklePreparation[hidden] { display:none; }
+#world:has(.modal.open) #cancelCastPreparation { visibility:hidden; }
 #tackle.open { display: flex; flex-direction: column; }
 .cast-tackle-heading { display:flex; gap:12px; align-items:center; padding:9px 12px; flex:none; }
 .cast-tackle-heading h2 { flex:1; margin:0; font-size:1.08rem; }
@@ -19,7 +22,8 @@
 #tackle .hook-options { grid-template-columns:repeat(3,minmax(0,1fr)); overflow:visible; }
 #tackle .rod-option { min-height:68px; grid-template-columns:30px minmax(0,1fr); }
 #tackle .rod-display-art { width:30px; height:57px; }
-.cast-tackle-footer { flex:none; padding:8px 12px; border-top:1px solid #56716f; }
+.cast-tackle-footer { display:flex; justify-content:space-between; gap:10px; flex:none; padding:8px 12px; border-top:1px solid #56716f; }
+#cancelTacklePreparation { min-height:44px; }
 #beginCast { position:static; min-height:44px; box-shadow:none; }
 #castBaitHint { margin:0 0 8px; color:#c5e0d6; }
 .cast-surface.art-mountain::before { content:none; }

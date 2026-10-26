@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-opening-252-2";
+const CACHE_NAME = "nushi-tsuri-v252-cast-cancel-252-3";
 const CORE_ASSETS = [
   "./title-flow.js?v=252-1",
   "./title-flow.css?v=252-1",
@@ -66,7 +66,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-isaki-adult-v230.png",
   "./player-options.js?v=251-9",
   "./player-options.css?v=251-9",
-  "./cast-tackle.css?v=247-1",
+  "./cast-tackle.css?v=252-3",
   "./assets/fish-iwana-v219.png",
   "./assets/fish-amago-v219.png",
   "./assets/fish-kajika-v219.png",
