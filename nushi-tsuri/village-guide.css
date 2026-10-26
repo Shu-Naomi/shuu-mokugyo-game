@@ -1,0 +1,10 @@
+/* Keep the optional reminder beside the existing field notices. */
+#villageGuideOpen{pointer-events:auto;min-height:44px;max-width:min(100%,620px);display:flex;align-items:center;gap:12px;padding:5px 10px;border:2px solid #c1a36a;border-radius:8px;background:#183a32ed;color:#fff0c6;font-size:13px;text-align:left;line-height:1.4;box-shadow:0 2px 4px #0005;}
+#villageGuideOpen[hidden],#villageGuideMapGoal[hidden],#villageGuideMute[hidden]{display:none;}
+#villageGuideOpen small{flex:none;color:#ffe1a0;border-left:1px solid #b09b70;padding-left:10px;}
+.world.field-menu-active #villageGuideOpen{display:none;}
+#villageGuideMapGoal{margin:3px 0 0;color:#fff0c6;font-size:13px;line-height:1.35;max-width:36em;overflow-wrap:anywhere;}
+#fieldGuide .field-guide-actions{display:flex;gap:8px;flex:none;}
+#villageGuideMute{padding:4px 10px;font-size:14px!important;}
+#villageGuideJournal{min-height:44px;}
+@media(max-height:420px){#villageGuideOpen{font-size:12px;gap:8px;}#villageGuideMapGoal{font-size:12px;max-width:32em;}#fieldGuide .field-guide-actions{gap:5px;}}

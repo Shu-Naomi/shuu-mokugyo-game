@@ -6433,6 +6433,7 @@
     </style>
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
+    <link rel="stylesheet" href="village-guide.css?v=252-5" />
     <link rel="stylesheet" href="pet-life.css?v=251-8" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-intro.css?v=252-4" />
@@ -6649,6 +6650,7 @@
         </div>
         <div id="areaFade" class="area-fade" aria-hidden="true"></div>
         <div class="field-notices" id="fieldNotices">
+          <button id="villageGuideOpen" type="button" hidden><span id="villageGuideGoal"></span><small>案内</small></button>
           <div class="hint" id="hint">湖・川・海の水辺なら、どこでもAで釣れる。</div>
           <button id="tournamentHud" class="tournament-hud" aria-label="大会ビクを開く" hidden></button>
           <div class="rescue-toast" id="rescueToast" role="status" aria-live="assertive"></div>
@@ -6908,7 +6910,7 @@
           </div>
         </div>
         <section class="modal field-guide-modal" id="fieldGuide" role="dialog" aria-modal="true" aria-labelledby="fieldGuideTitle">
-          <header class="field-guide-heading"><div><h2 id="fieldGuideTitle">水辺の案内</h2><span id="fieldGuideRegion"></span></div><button id="fieldGuideClose" type="button" data-close>図鑑へ戻る</button></header>
+          <header class="field-guide-heading"><div><h2 id="fieldGuideTitle">水辺の案内</h2><span id="fieldGuideRegion"></span><p id="villageGuideMapGoal" hidden></p></div><div class="field-guide-actions"><button id="villageGuideMute" type="button" hidden>案内をしまう</button><button id="fieldGuideClose" type="button" data-close>図鑑へ戻る</button></div></header>
           <div class="field-guide-body">
             <div id="fieldGuideMap" role="img"><div id="fieldGuideMapArt"><div id="fieldGuideBuildings"></div><svg id="fieldGuideOverlay" viewBox="0 0 240 135" aria-hidden="true"></svg><span id="fieldGuideLegend"></span></div></div>
             <nav class="field-guide-catalog" aria-label="水辺と暮らしの場所"><div id="fieldGuidePlaces"></div><div class="field-guide-pagination"><button id="fieldGuidePrevious" type="button" aria-label="前の案内へ">‹ 前</button><span id="fieldGuidePage" aria-live="polite"></span><button id="fieldGuideNext" type="button" aria-label="次の案内へ">次 ›</button></div></nav>
@@ -6929,7 +6931,7 @@
         <section class="modal lake-story-modal" id="lakeStory" role="dialog" aria-modal="true" aria-labelledby="lakeStoryTitle" tabindex="-1">
           <header class="lake-story-header">
             <div><h2 id="lakeStoryTitle">湖の手帳</h2><p id="lakeStoryStatus"></p></div>
-            <div class="lake-story-actions"><button id="lakeStoryReplayIntro" type="button">旅のはじまりを読む</button><button id="lakeStoryClose">手帳を閉じる</button></div>
+            <div class="lake-story-actions"><button id="villageGuideJournal" type="button">村の暮らし</button><button id="lakeStoryReplayIntro" type="button">旅のはじまりを読む</button><button id="lakeStoryClose">手帳を閉じる</button></div>
           </header>
           <div class="lake-story-layout">
             <nav class="lake-story-index" id="lakeStoryIndex" aria-label="旅の思い出"></nav>
@@ -7359,6 +7361,7 @@
     <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-intro.js?v=252-4"></script>
+    <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
@@ -12085,7 +12088,7 @@
       let activeTournamentNpcId = null, tournamentNpcAtlas = null, tournamentTalkCursor = 0;
       const tournamentNpcLastLines = new Map();
       let worldLife = null;
-      let fieldGuideView = null;
+      let fieldGuideView = null, fieldGuideReturn = null, villageGuideMapOpen = false;
       let activeRivalId = null, rivalTalkReturn = null;
       let rivalDogReaction = null, rivalDogAnimation = 0, rivalDogLastSound = -Infinity;
       const rivalDogGreetingTurns = new Map();
@@ -13004,6 +13007,7 @@
       s.avatar = ShuPlayerOptions.gender(s.avatar);
       s.playerName = ShuPlayerOptions.name(s.playerName);
       ShuLakeStory.normalize(s);
+      if(Object.hasOwn(s,"villageGuide"))s.villageGuide=ShuVillageGuide.normalize(s.villageGuide);
       function save() {
         clearTimeout(saveTimer);
         saveTimer = 0;
@@ -15868,7 +15872,7 @@
             playerHomeState.x = spawn.x;
             playerHomeState.y = spawn.y;
             s.direction = spawn.direction;
-            if (targetArea === "interior") initializeHomeDogs();
+            if (targetArea === "interior") { initializeHomeDogs();recordVillageGuide("home"); }
           }
           render();
           requestAnimationFrame(() => {
@@ -17402,6 +17406,7 @@
         }
       }
       function prepareSurfaceCastScene() {
+        renderVillageGuideReminder();
         if (!battle) return;
         const profile = rodCastProfile(s.selectedRod, battle.practice);
         const zone = battle.waterZone || "lake";
@@ -17912,6 +17917,7 @@
         renderPlayerHome();
         renderPixelScenery();
         ShuCompactUI.refresh(s.money);
+        renderVillageGuideReminder();
         scheduleSave();
       }
       function renderIdleStatus() {
@@ -19609,7 +19615,7 @@
         if(dogCareIsBusy())return false;
         const gained=ShuPetLife.pet(s,dogId,gameClockAt(s.gameMinutes).dayIndex);
         dogCareStatusMessage=`${dogProfileData[dogId].name}をナデナデ♡ ${gained?`なつき度＋${gained}`:"今日はもうたっぷり仲良くなったね"}`;
-        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("pet",dogId,null,3600);save();return true;
+        playGameAudioSample("dogPetBark",{restart:true});setDogCareScene("pet",dogId,null,3600);recordVillageGuide("dog",dogId);save();return true;
       }
       function trainDogCare() {
         const dogId=dogCareSelectedId;
@@ -22990,6 +22996,7 @@
       $("#offshoreFerryGo").onclick=takeOffshoreFerry;
       $("#offshoreFerryCancel").onclick=close;
       function endBattle() {
+        if(battle?.baitCommitted||(battle?.practice&&!["prep","cast"].includes(battle.phase)))recordVillageGuide("fishing");
         stopFishEscapeAudio();
         stopBattleFishArt();
         if (battle?.tournamentCast && s.tournament) {
@@ -23021,6 +23028,9 @@
         modal.style.transform = id === "tournamentTalk" ? "none"
           : `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
+        if(id==="store")recordVillageGuide("sam");
+        if(id==="lakeStory"&&playerHomeState.area==="interior")recordVillageGuide("notebook");
+        renderVillageGuideReminder();
         revealModalDialogue(modal);
         if (id === "tournamentTalk") {
           releaseHeldInputs();
@@ -23077,12 +23087,19 @@
         renderRivals();
         syncSceneSound();
         hideStarFortuneReveal({ rerender: false });
-        if(closingFieldGuide){open("record");$("#fishdexFieldGuide").focus({preventScroll:true});return;}
+        if(closingFieldGuide){
+          const target=fieldGuideReturn;fieldGuideReturn=null;villageGuideMapOpen=false;
+          if(target){open(target.id);$(target.focus).focus({preventScroll:true});return;}
+          if(playerHomeIsActive())renderPlayerHome();
+          renderVillageGuideReminder();scheduleIdleStatus(450);scheduleFieldMenu();
+          $($("#villageGuideOpen").hidden?"#menu":"#villageGuideOpen").focus({preventScroll:true});return;
+        }
         if(storyTarget){
           if(storyTarget==="store")renderSamShop();
           open(storyTarget);$(storyTarget==="store"?"#samStoryOffer":"#fishdexStoryOffer").focus({preventScroll:true});
           return;
         }
+        renderVillageGuideReminder();
         if(closingStory)$("#menu").focus({preventScroll:true});
         if (returnToShop) { renderSamShop(); open("store"); return; }
         if (playerHomeIsActive()) {
@@ -23155,7 +23172,7 @@
         const target=lakeIntroReturn;lakeIntroReturn=null;lakeIntroReplay=false;
         if(target){open(target);$("#lakeStoryReplayIntro").focus({preventScroll:true});}
         else{scheduleIdleStatus(450);scheduleFieldMenu();$("#menu").focus({preventScroll:true});}
-        syncSceneSound();return true;
+        renderVillageGuideReminder();syncSceneSound();return true;
       }
       function openLakeStory(id = null, from = null) {
         if (battle || playerHomeState.transitioning || $("#catchCard").classList.contains("show")) return false;
@@ -23345,11 +23362,45 @@
             `<strong>${known ? `×${count}` : "未発見"}</strong></div>`;
         }).join("");
       }
-      function openFieldGuide() {
-        close();releaseHeldInputs();
+      function villageGuidePlaces() {
+        return ShuVillageGuide.places({
+          home:{x:(PLAYER_HOME_MAP_ENTRY.left+PLAYER_HOME_MAP_ENTRY.right)/2,y:(PLAYER_HOME_MAP_ENTRY.top+PLAYER_HOME_MAP_ENTRY.bottom)/2},
+          sam:{x:(samShopInteractionBounds.left+samShopInteractionBounds.right)/2,y:samShopApproachBounds.bottom},
+          practice:{x:practicePondBounds.entryX,y:practicePondBounds.entryY},
+        });
+      }
+      function renderVillageGuideReminder() {
+        const button=$("#villageGuideOpen"),goal=ShuVillageGuide.goal(s);
+        button.hidden=!ShuVillageGuide.visible(s)||!gameStarted||s.mapRegion!=="village"||Boolean(battle)||
+          playerHomeState.transitioning||rescueInProgress||forageDiscoveryInProgress||Boolean(document.querySelector(".modal.open"))||$("#catchCard").classList.contains("show");
+        if($("#villageGuideGoal").textContent!==goal.text)$("#villageGuideGoal").textContent=goal.text;
+      }
+      function recordVillageGuide(event,id) {
+        if(!ShuVillageGuide.record(s,event,id))return false;
+        save();renderVillageGuideReminder();return true;
+      }
+      function openVillageGuide() {
+        if(battle||playerHomeState.transitioning||$("#lakeIntro").classList.contains("open"))return false;
+        return openFieldGuide({guide:true});
+      }
+      function renderVillageGuideMap() {
+        const goal=ShuVillageGuide.goal(s),known=ShuVillageGuide.valid(s);
+        $("#villageGuideMapGoal").hidden=!villageGuideMapOpen;
+        $("#villageGuideMapGoal").textContent=s.mapRegion==="village"?goal.text:"寄り道も自由だよ。村へ戻ったら、家やサムの店へ。";
+        $("#villageGuideMute").hidden=!villageGuideMapOpen||!known;
+        $("#villageGuideMute").textContent=s.villageGuide?.enabled?"案内をしまう":"案内を表示";
+      }
+      function openFieldGuide(options={}) {
+        const current=document.querySelector(".modal.open"),source=current?.id;
+        if(source==="lakeStory")current.classList.remove("open");else close();
+        releaseHeldInputs();
+        fieldGuideReturn=source==="record"?{id:"record",focus:"#fishdexFieldGuide"}:source==="lakeStory"?{id:"lakeStory",focus:"#villageGuideJournal"}:null;
+        villageGuideMapOpen=options.guide===true;
         fieldGuideView ||= ShuFieldGuide.create({element:$("#fieldGuide"),life:ShuWorldLife});
-        fieldGuideView.show(ShuFieldGuide.model({...s,home:playerHomeIsActive()},{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}));
-        open("fieldGuide");$("#fieldGuideClose").focus({preventScroll:true});
+        fieldGuideView.show(ShuFieldGuide.model({...s,home:playerHomeIsActive()},{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon,villagePlaces:villageGuidePlaces()}));
+        if(villageGuideMapOpen&&s.mapRegion==="village")fieldGuideView.select(ShuVillageGuide.goal(s).place);
+        $("#fieldGuideClose").textContent=source==="record"?"図鑑へ戻る":source==="lakeStory"?"手帳へ戻る":"散策に戻る";
+        renderVillageGuideMap();open("fieldGuide");$("#fieldGuideClose").focus({preventScroll:true});return true;
       }
       function renderRecord() {
         const filteredFish = fish.filter((f) => fishdexFilter === "all" ||
@@ -23688,7 +23739,7 @@
         }
         if(isNew){
           const validated=ShuTitleFlow.choices(choices,ShuPlayerOptions);if(!validated)return false;
-          Object.assign(s,validated,{dogNames:ShuPlayerOptions.dogNames()});
+          Object.assign(s,validated,{dogNames:ShuPlayerOptions.dogNames(),villageGuide:ShuVillageGuide.create()});
           if(!s.lakeStory.introSeen)s.lakeStory.introPending=true;
         }
         startSaveExpectedRaw=capture.raw;
@@ -23792,6 +23843,12 @@
       $("#menu").onclick = toggleFieldMenu;
       $("#fieldMenuClose").onclick = hideFieldMenu;
       $("#fishdexFieldGuide").onclick = openFieldGuide;
+      $("#villageGuideOpen").onclick=openVillageGuide;
+      $("#villageGuideJournal").onclick=openVillageGuide;
+      $("#villageGuideMute").onclick=()=>{
+        if(!ShuVillageGuide.valid(s))return;
+        s.villageGuide.enabled=!s.villageGuide.enabled;save();renderVillageGuideMap();renderVillageGuideReminder();
+      };
       document.querySelectorAll("[data-field-menu-target]").forEach((button) =>
         button.onclick = () => openFieldMenuTarget(button.dataset.fieldMenuTarget),
       );
@@ -24000,7 +24057,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-4").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-5").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

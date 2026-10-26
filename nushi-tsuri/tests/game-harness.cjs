@@ -4,9 +4,9 @@ const path = require("node:path");
 const { JSDOM, VirtualConsole } = require("jsdom");
 // Load the same local scene modules/styles the browser loads, without HTTP.
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8")
-  .replace(/<script src="((?:field-guide|world-life|fish-additions|compact-ui|catch-memories|player-options|title-flow|fish-art|save-slots|lake-(?:story|intro)|regional-nushi|nushi-atlas|fishing-duel|underwater-camera|nushi-presentation|ui-feedback|event-ceremony|fortune-capsules|aquarium-(?:life|mutations)|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|offshore-island|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+  .replace(/<script src="((?:field-guide|village-guide|world-life|fish-additions|compact-ui|catch-memories|player-options|title-flow|fish-art|save-slots|lake-(?:story|intro)|regional-nushi|nushi-atlas|fishing-duel|underwater-camera|nushi-presentation|ui-feedback|event-ceremony|fortune-capsules|aquarium-(?:life|mutations)|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|offshore-island|mountain-region|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
-  .replace(/<link rel="stylesheet" href="((?:field-guide|offshore-island|compact-ui|catch-memories|cast-tackle|player-options|title-flow|item-categories|save-slots|lake-(?:story|intro)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+  .replace(/<link rel="stylesheet" href="((?:field-guide|village-guide|offshore-island|compact-ui|catch-memories|cast-tackle|player-options|title-flow|item-categories|save-slots|lake-(?:story|intro)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
 const saveKey = "nushi-inugoya-v2";
 const seed = () => ({
