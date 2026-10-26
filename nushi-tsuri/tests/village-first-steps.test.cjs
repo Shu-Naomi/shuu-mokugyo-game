@@ -37,7 +37,7 @@ test('old adventures and an old pending opening never acquire or force the new g
 });
 test('real home entry, notebook and three existing dogs save milestones without distributing supplies or switching favorite',async()=>{
  const a=boot(fresh({dog:'grey',dogNames:{shuu:'こむぎ',riku:'風太',grey:'夜空'}})),w=a.window;let saved;
- try{const before=stock(w);await enterHome(w);assert.equal(read(w,'s.villageGuide.home'),true);assert.equal(Guide.goal(read(w,'s')).id,'notebook');w.openLakeStory();assert.equal(read(w,'s.villageGuide.notebook'),true);w.close();w.stopHomeDogAnimation();
+ try{const before=stock(w);await enterHome(w);assert.equal(read(w,'s.villageGuide.home'),true);assert.equal(w.document.querySelector('#villageGuideOpen').hidden,false,'reminder returns after the normal doorway fade');assert.equal(Guide.goal(read(w,'s')).id,'notebook');w.openLakeStory();assert.equal(read(w,'s.villageGuide.notebook'),true);w.close();w.stopHomeDogAnimation();
   for(const id of ['shuu','riku','grey']){walkHome(w,`!nearbyPlayerHomeEvent(area,p.x,p.y)&&nearbyHomeDog(p.x,p.y)?.dogId==='${id}'`);w.action();assert.equal(w.eval('dogCareSelectedId'),id);click(w,'#dogCarePet');assert.ok(read(w,'s.villageGuide.dogs').includes(id));w.close();w.stopHomeDogAnimation();}
   const after=stock(w);assert.deepEqual(after.money,before.money);assert.deepEqual(after.baits,before.baits);assert.deepEqual(after.ownedRods,before.ownedRods);assert.equal(after.dog,'grey');assert.equal(after.time,before.time);assert.deepEqual(after.names,before.names);assert.equal(Guide.goal(read(w,'s')).id,'sam');w.save();saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}

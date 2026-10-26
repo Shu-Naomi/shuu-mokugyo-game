@@ -24,7 +24,7 @@
  function goal(state){
   if(!valid(state))return {id:'home',place:'village-home',text:'家・三匹・サムの店。順番は自由だよ。'};
   const g=state.villageGuide;
-  if(!g.home)return {id:'home',place:'village-home',text:'まずは左の祖父の家へ。寄り道もOK。'};
+  if(!g.home)return {id:'home',place:'village-home',text:'村の西端、祖父の家へ。寄り道もOK。'};
   if(!g.notebook)return {id:'notebook',place:'village-home',text:'家でメニュー → 湖の手帳を開こう。'};
   if(g.dogs.length<dogs.length)return {id:'dogs',place:'village-home',text:`三匹をナデナデしてみよう（${g.dogs.length}/3）。`};
   if(!g.sam)return {id:'sam',place:'village-sam',text:'村の東、港の北にあるサムの釣具屋へ。'};

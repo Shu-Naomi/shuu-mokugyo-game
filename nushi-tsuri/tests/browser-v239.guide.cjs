@@ -14,7 +14,7 @@ module.exports=async function guide(page,mobile,viewport){
   const before=await snapshot(),stored=await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2'));
   if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');assert.ok(await page.locator('#fishdexFilters').evaluate(n=>[...n.querySelectorAll('button')].every(b=>{const r=b.getBoundingClientRect();return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&r.width>=44;})),'all habitat filters and guide actions stay visible');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
   assert.equal(await page.locator('#record.open').count(),0);await fit();
-  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind,notes:e.notes.filter(n=>n.id).map(n=>n.id)})));
+  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon,villagePlaces:villageGuidePlaces()}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind,notes:e.notes.filter(n=>n.id).map(n=>n.id)})));
   let seen=0;
   do{
    const ids=await page.locator('[data-guide-place]').evaluateAll(bs=>bs.map(b=>b.dataset.guidePlace));assert.ok(ids.length>0&&ids.length<=3);
