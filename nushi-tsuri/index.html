@@ -6439,7 +6439,7 @@
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
-    <link rel="stylesheet" href="cast-tackle.css?v=247-1" />
+    <link rel="stylesheet" href="cast-tackle.css?v=252-3" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
@@ -6838,6 +6838,7 @@
             <button id="pull">A<br /><small>投げる</small></button
             ><button id="wait">B<br /><small>やめる</small></button>
           </div>
+          <button id="cancelCastPreparation" type="button" hidden>フィールドへ戻る</button>
         </div>
         <div class="catch-card" id="catchCard" aria-live="polite">
           <div class="catch-special-fx" id="catchSpecialFx" aria-hidden="true">
@@ -7237,7 +7238,7 @@
               <section id="castTackle-fight" data-cast-tackle-page="fight" hidden><h3>水中ファイト方式</h3><div id="castFightOptions"></div></section>
             </div>
           </div>
-          <footer class="cast-tackle-footer"><button id="beginCast">この仕掛けで釣る</button></footer>
+          <footer class="cast-tackle-footer"><button id="cancelTacklePreparation" type="button" hidden>フィールドへ戻る</button><button id="beginCast">この仕掛けで釣る</button></footer>
         </div>
         <div class="modal dog-care-modal" id="dogCare" aria-label="ワンコずのお世話">
           <div class="dog-care-shell">
@@ -17823,14 +17824,14 @@
         if(coast)boatHud.textContent=`${s.boatActive?(s.equipment.vehicle==="canoe"?"🛶":"🛁"):"🏝"} ${s.hp}/${s.maxHp}`;
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
-        s.rod = rodData[s.selectedRod].name;
+        s.rod = (rodData[s.selectedRod]?.name || "竿未装備");
         s.power = ShuFishing.rod(s,s.selectedRod,rodData).power;
         const hudBaitArt=$("#hudBaitArt");
         if(hudBaitArt.dataset.bait!==s.selectedBait){
           hudBaitArt.innerHTML=ShuTackleArt.icon(s.selectedBait);
           hudBaitArt.dataset.bait=s.selectedBait;
         }
-        $("#bait").textContent = `${baitData[s.selectedBait].name}×${s.bait}`;
+        $("#bait").textContent = `${(baitData[s.selectedBait]?.name || "餌未選択")}×${s.bait}`;
         $("#rod").textContent = s.rod;
         $("#time").textContent = gameClockLabel(sceneGameMinutes()) + (s.tournament ? "（大会固定）" : "");
         renderTournamentHud();
@@ -17929,10 +17930,10 @@
         $("#statusHp").textContent = `${s.hp} / ${s.maxHp}`;
         $("#statusHp").style.setProperty("--hp", `${hpPercent}%`);
         $("#statusHp").classList.toggle("low", hpPercent <= 35);
-        $("#statusRod").textContent = rodData[s.selectedRod].name;
+        $("#statusRod").textContent = (rodData[s.selectedRod]?.name || "竿未装備");
         syncRodDisplayArt("#statusRodArt");
         $("#statusBait").textContent =
-          `${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait] || 0} · ${ShuTackle.hooks[s.selectedHook].name}`;
+          `${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait] || 0} · ${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`;
         $("#statusDog").textContent = s.dogFollowing ? dogName() : "みんな家でお留守番";
         const activeMeal = activeMealEntry();
         $("#statusMeal").textContent = activeMeal
@@ -18722,9 +18723,12 @@
           showRescueToast(`大会の釣り場は${ShuTournament.definition(s.tournament).venue}。大会ビクで残り投数を確認できるよ。`);
           return;
         }
-        if (s.fishingMethod!=="lure" && (s.baits[s.selectedBait] || 0) < 1 && canReceiveDogRescue()) {
-          rescue();
-          return;
+        if (!hasFishingBait() && !hasUsableLureTackle()) {
+          const message = "餌がないため、釣りができません。サムの店で補充しよう。";
+          if (canReceiveDogRescue()) rescue();
+          log(message);
+          showRescueToast(message);
+          return false;
         }
         hideIdleStatus();
         hideFieldMenu();
@@ -18773,11 +18777,48 @@
         $("#wait").innerHTML = "B<br><small>仕掛け変更</small>";
         renderTournamentHud();
       }
+      function hasFishingBait() {
+        return Object.keys(baitData).some(id => (s.baits[id] || 0) > 0);
+      }
+      function hasUsableLureTackle() {
+        return s.ownedRods.includes("lureRod") && (s.lures.silverSpoon || 0) > 0;
+      }
+      function fishingPreparationProblem() {
+        if (battle?.practice) return "";
+        if (!rodData[s.selectedRod] || !s.ownedRods.includes(s.selectedRod))
+          return "釣り竿が未装備です。仕掛け変更で所持している竿を選ぼう。";
+        if (s.fishingMethod === "lure") {
+          if (s.selectedRod !== "lureRod") return "ルアー釣りにはルアーロッドが必要です。仕掛け変更で装備しよう。";
+          if (!hasUsableLureTackle()) return "使えるスプーンルアーがありません。仕掛け変更か、フィールドへ戻れます。";
+        } else {
+          if (!baitData[s.selectedBait] || !ShuTackle.hooks[s.selectedHook] || !ShuTackle.allowed(s.selectedBait, s.selectedHook))
+            return "餌とハリの組み合わせを確認しよう。仕掛け変更か、フィールドへ戻れます。";
+          if ((s.baits[s.selectedBait] || 0) < 1) return hasFishingBait()
+            ? "選んだ餌がありません。仕掛け変更で手持ちの餌を選ぼう。"
+            : hasUsableLureTackle()
+              ? "餌がありません。仕掛け変更でルアー釣りを選べます。"
+              : "餌がないため、釣りができません。フィールドへ戻って補充しよう。";
+        }
+        return "";
+      }
+      // Leaving preparation never depends on bait, ownership or a valid setup.
+      function cancelFishingPreparation() {
+        if (battle?.phase !== "prep") return false;
+        releaseHeldInputs();
+        close();
+        endBattle();
+        log("釣りの準備をやめた。エサと時間は使っていない。");
+        $("#action").focus({preventScroll:true});
+        return true;
+      }
       function renderFishingPreparation() {
+        const preparing = battle?.phase === "prep" && !battle.practice;
+        $("#cancelCastPreparation").hidden = !preparing;
+        $("#cancelTacklePreparation").hidden = !preparing;
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${s.fishingMethod==="lure"?"銀のスプーンルアー":`${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait]||0}／${ShuTackle.hooks[s.selectedHook].name}`}／${rodData[s.selectedRod].name}／${ShuFishing.modes[s.fightMode]}`;
+          fishingPreparationProblem() || `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${s.fishingMethod==="lure"?"銀のスプーンルアー":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0}／${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`}／${(rodData[s.selectedRod]?.name || "竿未装備")}／${ShuFishing.modes[s.fightMode]}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
@@ -19959,7 +20000,7 @@
           `<button data-pick-hook="${id}" class="hook-option ${s.selectedHook === id ? "selected" : ""}" aria-pressed="${s.selectedHook === id}" ${ShuTackle.allowed(s.selectedBait,id)?"":"disabled title=\"星湖の秘餌はハリ大のみ\""}>` +
           `<i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i>` +
           `<span><b>${hook.name}</b><small>${hook.role}</small></span></button>`).join("");
-        const rodMarkup = s.ownedRods.map(id =>
+        const rodMarkup = s.ownedRods.filter(id => rodData[id]).map(id =>
           `<button data-pick-rod="${id}" class="rod-option ${s.selectedRod === id ? "selected" : ""}">` +
           `${rodDisplayMarkup(id)}<span>${rodData[id].name}${s.rodLevels[id]?` ＋${s.rodLevels[id]}`:""}<small>${ShuFishing.roles[id]} · ${s.rodCopies[id]||1}本</small></span></button>`).join("");
         for (const id of ["#baitOptions", "#inventoryBaitOptions"])
@@ -19968,10 +20009,12 @@
           $(id).innerHTML = hookMarkup;
         for (const id of ["#rodOptions", "#inventoryRodOptions"])
           $(id).innerHTML = rodMarkup;
-        $("#equipmentRod").textContent = rodData[s.selectedRod].name;
-        const summary = `装備中：${rodData[s.selectedRod].name} ＋ ${s.fishingMethod==="lure"?"銀のスプーンルアー":`${baitData[s.selectedBait].name} ×${s.baits[s.selectedBait]||0} ＋ ${ShuTackle.hooks[s.selectedHook].name}`} ／ ${ShuFishing.modes[s.fightMode]}`;
+        $("#equipmentRod").textContent = (rodData[s.selectedRod]?.name || "竿未装備");
+        const summary = `装備中：${(rodData[s.selectedRod]?.name || "竿未装備")} ＋ ${s.fishingMethod==="lure"?"銀のスプーンルアー":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0} ＋ ${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`} ／ ${ShuFishing.modes[s.fightMode]}`;
         for (const id of ["#inventoryTackleSummary", "#castTackleSummary"])
           $(id).textContent = summary;
+        const preparationProblem = battle?.phase === "prep" ? fishingPreparationProblem() : "";
+        if (preparationProblem) $("#castTackleSummary").textContent = `${preparationProblem} ${summary}`;
         for(const id of ["#inventoryTackleSummary"]){
           let panel=$(id).nextElementSibling;
           if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
@@ -20018,34 +20061,17 @@
         if (focusAttribute) [...$("#tackle").querySelectorAll(`[${focusAttribute}]`)].find(button => button.getAttribute(focusAttribute) === focusValue)?.focus({preventScroll:true});
       }
       function beginFishing() {
-        if(s.fishingMethod==="lure"&&s.selectedRod!=="lureRod"&&!battle?.practice){$("#battleMsg").textContent="スプーンにはルアーロッドを装備しよう。Bで仕掛け変更できるよ。";return false;}
+        if (battle?.phase !== "prep") return false;
+        const problem = fishingPreparationProblem();
+        if (problem) {
+          $("#battleMsg").textContent = problem;
+          if ($("#tackle").classList.contains("open")) renderTackle();
+          showRescueToast(problem);
+          return false;
+        }
         const practice = Boolean(battle?.practice);
         const tutorial = Boolean(battle?.tutorial);
         const practiceBait = battle?.bait || "paste";
-        if (!practice) {
-          s.bait = s.baits[s.selectedBait] || 0;
-          if (s.fishingMethod!=="lure" && s.bait < 1) {
-            if (canReceiveDogRescue()) {
-              stopCastingWaterSound(.1);
-              battle = null;
-              $("#fishScene").classList.remove("active", "practice-fishing");
-              rescue();
-            } else if (totalBaitCount() > 0) {
-              renderTackle();
-              open("tackle");
-              showRescueToast("使えるエサを選んでから釣りを始めよう。");
-            } else {
-              stopCastingWaterSound(.1);
-              battle = null;
-              $("#fishScene").classList.remove("active", "practice-fishing");
-              close();
-              renderSamShop();
-              open("store");
-              showRescueToast("エサがない！ サムの店でエサを買おう。");
-            }
-            return;
-          }
-        }
         wakeDog();
         hideCatchCard();
         resetBattleFeedback();
@@ -20184,9 +20210,13 @@
       function commitCastResources() {
         if (!battle || battle.practice || battle.baitCommitted) return true;
         const baitId = battle.bait || s.selectedBait;
-        if(battle.method==="lure"&&!(s.lures[battle.lure]>0)){lose("スプーンルアーがないため竿を戻した。");return false;}
+        if(battle.method==="lure"&&!(s.lures[battle.lure]>0)){
+          const message="スプーンルアーがありません。Bでフィールドへ戻れます。";
+          $("#battleMsg").textContent=message;showRescueToast(message);return false;
+        }
         if (battle.method!=="lure" && (s.baits[baitId] || 0) < 1) {
-          lose("投げる直前にエサがないことへ気づき、竿を戻した。");
+          const message="餌がないため投げられません。Bでフィールドへ戻れます。";
+          $("#battleMsg").textContent=message;showRescueToast(message);
           return false;
         }
         if (s.tournament) {
@@ -23066,6 +23096,8 @@
       }
       function backAction() {
         if(ShuCompactUI.hasSheet()){ShuCompactUI.closeSheet();return;}
+        if (battle?.phase === "prep" && !document.querySelector(".modal.open"))
+          return cancelFishingPreparation();
         if (fieldMenuIsOpen()) hideFieldMenu();
         else close();
       }
@@ -23773,6 +23805,8 @@
       $("#pull").onlostpointercapture = releaseBattleAction;
       $("#wait").onclick = wait;
       $("#beginCast").onclick = beginFishing;
+      $("#cancelCastPreparation").onclick = cancelFishingPreparation;
+      $("#cancelTacklePreparation").onclick = cancelFishingPreparation;
       $("#tournamentTalkMore").onclick = () => {if(!dialogueTyper.finish($("#tournamentTalkLine")))renderTournamentTalk(true);};
       $("#tournamentOffer").onclick = openTournament;
       $("#rivalGuideOffer").onclick = () => { close(); renderRivalGuide(); open("rivalGuide"); };
@@ -23890,7 +23924,7 @@
         }
         if (e.key === "x" || e.key === "Escape") {
           uiFeedback.cue("back", e);
-          battle ? wait() : backAction();
+          e.key === "Escape" && battle?.phase === "prep" ? backAction() : battle ? wait() : backAction();
           e.preventDefault();
         }
         if (e.key.toLowerCase() === "m" && !battle) {
@@ -23966,7 +24000,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-2").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-3").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

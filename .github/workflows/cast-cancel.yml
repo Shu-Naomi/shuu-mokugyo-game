@@ -1,0 +1,76 @@
+name: Cast cancellation and empty bait
+on:
+  push:
+    branches: [main, codex/fix-cast-cancel-269]
+    paths:
+      - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/sw.js'
+      - 'nushi-tsuri/cast-tackle.css'
+      - 'nushi-tsuri/fishing-duel.js'
+      - 'nushi-tsuri/tackle-balance.js'
+      - 'nushi-tsuri/save-slots.js'
+      - 'nushi-tsuri/tests/*cast-cancel*'
+      - 'nushi-tsuri/tests/ui-fish-sync.test.cjs'
+      - 'nushi-tsuri/tests/stream-ui-v219.test.cjs'
+      - 'nushi-tsuri/tests/browser-start-adventure.cjs'
+      - 'nushi-tsuri/tests/install-ci-fonts.sh'
+      - 'nushi-tsuri/tests/game-harness.cjs'
+      - '.github/workflows/cast-cancel.yml'
+  workflow_dispatch:
+    inputs:
+      public_url:
+        description: Optional published game URL for the same focused interaction checks
+        type: string
+        required: false
+permissions:
+  contents: read
+concurrency:
+  group: cast-cancel-${{ github.ref_name }}
+  cancel-in-progress: false
+jobs:
+  cancel:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - name: Set ownership of this container checkout
+        run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - name: Install pinned Japanese Noto fonts
+        run: bash install-ci-fonts.sh
+      - name: Check supply guards, cancellation, equipment, saved games and cast accounting
+        if: ${{ !inputs.public_url }}
+        run: node --test --test-concurrency=2 cast-cancel-269.test.cjs ui-fish-sync.test.cjs stream-ui-v219.test.cjs tackle-balance-v191.test.cjs playability-v180.test.cjs tournament.test.cjs save-slots-v207.test.cjs service-worker.test.cjs 2>&1 | tee cast-cancel-unit.log
+      - name: Exercise empty bait, field return, last-bait casts, lure tackle and saved games on three screens
+        env:
+          CAST_CANCEL_PUBLIC_URL: ${{ inputs.public_url }}
+        run: node browser-cast-cancel-evidence.cjs 2>&1 | tee cast-cancel-browser.log
+      - name: Wait for the published runtime to match the merged source
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        run: node cast-cancel-public-source.cjs 2>&1 | tee cast-cancel-public-source.log
+      - name: Exercise published cancellation and supplies on the same three screens
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          CAST_CANCEL_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-3
+        run: node browser-cast-cancel-evidence.cjs 2>&1 | tee cast-cancel-public-browser.log
+      - name: Preserve focused browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cast-cancel-evidence
+          path: |
+            nushi-tsuri/tests/cast-cancel-*.log
+            nushi-tsuri/tests/cast-cancel-evidence/
+          retention-days: 14
+          if-no-files-found: warn
