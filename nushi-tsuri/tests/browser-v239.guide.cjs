@@ -4,7 +4,7 @@ module.exports=async function guide(page,mobile,viewport){
  const initial=await page.evaluate(()=>JSON.parse(JSON.stringify(s))),snapshot=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,rod:s.selectedRod,bait:s.selectedBait,hook:s.selectedHook,x:s.x,y:s.y,region:s.mapRegion,direction:s.direction}));
  let places=0;
  async function fit(){
-  const result=await page.locator('#fieldGuide').evaluate(n=>{const r=n.getBoundingClientRect(),art=n.querySelector('#fieldGuideMapArt').getBoundingClientRect(),note=n.querySelector('#fieldGuideNote'),buttons=[...n.querySelectorAll('button')].filter(b=>!b.disabled);
+  const result=await page.locator('#fieldGuide').evaluate(n=>{const r=n.getBoundingClientRect(),art=n.querySelector('#fieldGuideMapArt').getBoundingClientRect(),note=n.querySelector('#fieldGuideNote'),buttons=[...n.querySelectorAll('button')].filter(b=>!b.disabled&&b.getClientRects().length);
    return {visible:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,ratio:art.width/art.height,
     controls:buttons.every(b=>{const p=b.getBoundingClientRect();return p.height>=43.9&&p.width>=43.9&&p.left>=r.left&&p.right<=r.right+1&&p.top>=r.top&&p.bottom<=r.bottom+1;}),note:note.scrollHeight<=note.clientHeight+1,overlap:n.querySelector('.field-guide-footer').getBoundingClientRect().top>=n.querySelector('.field-guide-pagination').getBoundingClientRect().bottom-1};});
   assert.ok(result.visible&&result.controls&&result.note&&result.overlap&&result.scroll<=1,JSON.stringify(result));assert.ok(Math.abs(result.ratio-16/9)<.04,JSON.stringify(result));
