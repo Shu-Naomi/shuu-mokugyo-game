@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-cast-cancel-252-3";
+const CACHE_NAME = "nushi-tsuri-v252-opening-presentation-252-4";
 const CORE_ASSETS = [
   "./title-flow.js?v=252-1",
   "./title-flow.css?v=252-1",
@@ -93,8 +93,8 @@ const CORE_ASSETS = [
   "./mountain-region.js?v=248-2",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-2",
-  "./lake-intro.css?v=252-2",
+  "./lake-intro.js?v=252-4",
+  "./lake-intro.css?v=252-4",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",

@@ -1,0 +1,9 @@
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),run=require('./browser-opening-presentation.cjs');
+const root=path.resolve(__dirname,'..'),types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
+const screens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875},{width:1280,height:1024,mobile:false,dpr:1}];
+const selected=process.argv.length>2?screens.filter(s=>process.argv.slice(2).some(arg=>arg===String(s.width)||arg===`${s.width}x${s.height}`)):screens;
+if(!selected.length)throw Error('Specify a supported screen width or widthxheight: 1280x720, 844x390, 820x366, 1280x1024');
+const server=http.createServer((req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',f=path.resolve(root,p);if(!f.startsWith(root+path.sep)||!fs.statSync(f).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(f).pipe(res);}catch{res.writeHead(404);res.end();}});
+(async()=>{if(process.env.OPENING_PRESENTATION_PUBLIC_URL){for(const screen of selected)await run(process.env.OPENING_PRESENTATION_PUBLIC_URL,screen);return;}
+ await new Promise(r=>server.listen(0,'127.0.0.1',r));try{for(const screen of selected)await run('http://127.0.0.1:'+server.address().port+'/nushi-tsuri/',screen);}finally{await new Promise(r=>server.close(r));}
+})().catch(error=>{console.error(error);process.exitCode=1;});
