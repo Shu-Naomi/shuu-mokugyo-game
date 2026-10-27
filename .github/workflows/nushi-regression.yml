@@ -17,8 +17,13 @@ concurrency:
   cancel-in-progress: true
 jobs:
   test:
+    name: test (${{ matrix.shard }}/4)
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
     defaults:
       run:
         working-directory: nushi-tsuri/tests
@@ -30,7 +35,7 @@ jobs:
       - name: Install audio decoder
         run: sudo apt-get update && sudo apt-get install -y ffmpeg
       - run: npm install --no-audit --no-fund
-      - run: node --test --test-concurrency=2 *.test.cjs
+      - run: node --test --test-concurrency=2 --test-shard=${{ matrix.shard }}/4 *.test.cjs
 
   browser:
     runs-on: ubuntu-latest
