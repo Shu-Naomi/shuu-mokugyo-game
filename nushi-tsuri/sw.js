@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-opening-presentation-252-4";
+const CACHE_NAME = "nushi-tsuri-v252-village-guide-252-5";
 const CORE_ASSETS = [
+  "./village-guide.js?v=252-5",
+  "./village-guide.css?v=252-5",
   "./title-flow.js?v=252-1",
   "./title-flow.css?v=252-1",
   "./aquarium-mutations.js?v=251-8",

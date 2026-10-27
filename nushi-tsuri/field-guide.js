@@ -37,6 +37,7 @@
    water('lake','星降る湖',{x:118,y:33},data.lakePolygon,'lake-');
    water('river','民家川',{x:88,y:109},null,'river-');
    water('sea','潮見浜・港',{x:195,y:122},null,'sea-');
+   if(Array.isArray(data.villagePlaces))entries.push(...data.villagePlaces);
    if(data.offshore)entries.push({id:'village-ferry',kind:'exit',name:'潮風島への漁船',point:data.offshore.harbor,notes:[{text:'船長タツにAで相談。潮風島へ往復800円・片道1時間。帰りもこの漁船で戻れるよ。'}]});
   }
   return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/terrain-world-v54.png'),
@@ -72,7 +73,7 @@
   function renderNotes(){
    const entry=current.entries[selected],lines=entry.notes.length?entry.notes:[{text:'水辺に向いてAで釣る。エサ・ハリ・投げる距離を変えて探ろう。'}],pages=Math.ceil(lines.length/PAGE_SIZE),note=find('fieldGuideNote');note.replaceChildren();
    for(const line of lines.slice(notePage*PAGE_SIZE,(notePage+1)*PAGE_SIZE)){const n=doc.createElement('span');n.textContent=line.text;if(line.id)n.dataset.guideFish=line.id;note.append(n);}
-   find('fieldGuideNoteLabel').textContent=entry.kind==='water'&&entry.notes.length?'この水辺の新顔':'旅のメモ';
+   find('fieldGuideNoteLabel').textContent=entry.kind==='water'&&entry.notes.some(n=>n.id)?'この水辺の新顔':'旅のメモ';
    const next=find('fieldGuideNotesNext');next.hidden=pages===1;next.disabled=pages===1;next.textContent=`次の魚 ${notePage+1} / ${pages}`;next.setAttribute('aria-label',`次の魚の案内、${notePage+1} / ${pages}ページ`);
   }
   find('fieldGuideNotesNext').onclick=()=>{notePage=(notePage+1)%Math.ceil(current.entries[selected].notes.length/PAGE_SIZE);renderNotes();};

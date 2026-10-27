@@ -134,9 +134,11 @@ test('hint, creel and long notices flow in one column and scroll together outsid
   try{
     w.showRescueToast('🎣 星湖名手挑戦開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。',4200);
     const stack=w.document.querySelector('#fieldNotices');
-    assert.deepEqual([...stack.children].map(e=>e.id),['hint','tournamentHud','rescueToast']);
+    const notices=[...stack.children].filter(child=>!child.hidden);
+    assert.deepEqual(notices.map(e=>e.id),['hint','tournamentHud','rescueToast']);
+    assert.equal(w.document.querySelector('#villageGuideOpen').hidden,true,'an existing adventure does not start the optional village guide');
     assert.equal(w.getComputedStyle(stack).flexDirection,'column');
-    for(const child of stack.children)assert.equal(w.getComputedStyle(child).position,'static');
+    for(const child of notices)assert.equal(w.getComputedStyle(child).position,'static');
     assert.equal(w.document.querySelector('#idleStatus').parentElement.contains(stack),true);
     w.document.querySelector('#world').scrollLeft=125;w.document.querySelector('#world').scrollTop=77;
     w.positionTournamentHud();assert.equal(stack.style.transform,'translate(125px, 77px)');

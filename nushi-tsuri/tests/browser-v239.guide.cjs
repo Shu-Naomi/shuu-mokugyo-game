@@ -4,7 +4,7 @@ module.exports=async function guide(page,mobile,viewport){
  const initial=await page.evaluate(()=>JSON.parse(JSON.stringify(s))),snapshot=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,rod:s.selectedRod,bait:s.selectedBait,hook:s.selectedHook,x:s.x,y:s.y,region:s.mapRegion,direction:s.direction}));
  let places=0;
  async function fit(){
-  const result=await page.locator('#fieldGuide').evaluate(n=>{const r=n.getBoundingClientRect(),art=n.querySelector('#fieldGuideMapArt').getBoundingClientRect(),note=n.querySelector('#fieldGuideNote'),buttons=[...n.querySelectorAll('button')].filter(b=>!b.disabled);
+  const result=await page.locator('#fieldGuide').evaluate(n=>{const r=n.getBoundingClientRect(),art=n.querySelector('#fieldGuideMapArt').getBoundingClientRect(),note=n.querySelector('#fieldGuideNote'),buttons=[...n.querySelectorAll('button')].filter(b=>!b.disabled&&b.getClientRects().length);
    return {visible:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,ratio:art.width/art.height,
     controls:buttons.every(b=>{const p=b.getBoundingClientRect();return p.height>=43.9&&p.width>=43.9&&p.left>=r.left&&p.right<=r.right+1&&p.top>=r.top&&p.bottom<=r.bottom+1;}),note:note.scrollHeight<=note.clientHeight+1,overlap:n.querySelector('.field-guide-footer').getBoundingClientRect().top>=n.querySelector('.field-guide-pagination').getBoundingClientRect().bottom-1};});
   assert.ok(result.visible&&result.controls&&result.note&&result.overlap&&result.scroll<=1,JSON.stringify(result));assert.ok(Math.abs(result.ratio-16/9)<.04,JSON.stringify(result));
@@ -14,7 +14,7 @@ module.exports=async function guide(page,mobile,viewport){
   const before=await snapshot(),stored=await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2'));
   if(await page.locator('#fieldMenu').getAttribute('aria-hidden')!=='false')await press('#menu');await press('[data-field-menu-target="record"]');assert.ok(await page.locator('#fishdexFilters').evaluate(n=>[...n.querySelectorAll('button')].every(b=>{const r=b.getBoundingClientRect();return r.height>=44&&r.top>=0&&r.bottom<=innerHeight&&r.width>=44;})),'all habitat filters and guide actions stay visible');await press('#fishdexFieldGuide');await page.locator('#fieldGuide.open').waitFor();
   assert.equal(await page.locator('#record.open').count(),0);await fit();
-  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind,notes:e.notes.filter(n=>n.id).map(n=>n.id)})));
+  const entries=await page.evaluate(()=>ShuFieldGuide.model(s,{mountain:ShuMountain,coast:ShuCoast,offshore:ShuOffshore,life:ShuWorldLife,additions:ShuFishAdditions,baits:baitData,hooks:ShuTackle.hooks,lakePolygon:lakeWaterPolygon,villagePlaces:villageGuidePlaces()}).entries.map(e=>({id:e.id,name:e.name,kind:e.kind,notes:e.notes.filter(n=>n.id).map(n=>n.id)})));
   let seen=0;
   do{
    const ids=await page.locator('[data-guide-place]').evaluateAll(bs=>bs.map(b=>b.dataset.guidePlace));assert.ok(ids.length>0&&ids.length<=3);
