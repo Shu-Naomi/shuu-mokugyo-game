@@ -1,0 +1,56 @@
+name: Grandfather fishing notebook
+on:
+  push:
+    branches: [main]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/lake-research.*', 'nushi-tsuri/lake-story.*', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*lake-research*', 'nushi-tsuri/tests/game-harness.cjs', 'nushi-tsuri/tests/opening-story-public-source.cjs', '.github/workflows/grandfather-notes.yml']
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/lake-research.*', 'nushi-tsuri/lake-story.*', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*lake-research*', 'nushi-tsuri/tests/game-harness.cjs', 'nushi-tsuri/tests/opening-story-public-source.cjs', '.github/workflows/grandfather-notes.yml']
+permissions:
+  contents: read
+concurrency:
+  group: grandfather-notes-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  notebook:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Check knowledge, legacy saves, story and village navigation
+        run: node --test --test-concurrency=2 lake-research.test.cjs lake-story-v206.test.cjs village-first-steps.test.cjs opening-story-v252-2.test.cjs field-guide-v239.test.cjs service-worker.test.cjs 2>&1 | tee lake-research-unit.log
+      - name: Read the notebook on three screens
+        run: node browser-lake-research-evidence.cjs 2>&1 | tee lake-research-browser.log
+      - name: Wait for the published source to match
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: node opening-story-public-source.cjs 2>&1 | tee lake-research-public-source.log
+      - name: Read the published notebook on three screens
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          LAKE_RESEARCH_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-6
+        run: node browser-lake-research-evidence.cjs 2>&1 | tee lake-research-public-browser.log
+      - name: Preserve notebook evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: grandfather-notes-evidence
+          path: |
+            nushi-tsuri/tests/lake-research-*.log
+            nushi-tsuri/tests/lake-research-evidence/
+            nushi-tsuri/tests/opening-story-evidence/public-source.json
+          retention-days: 14
+          if-no-files-found: warn

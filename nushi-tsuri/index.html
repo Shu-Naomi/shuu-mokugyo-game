@@ -6436,6 +6436,7 @@
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
     <link rel="stylesheet" href="pet-life.css?v=251-8" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
+    <link rel="stylesheet" href="lake-research.css?v=252-6" />
     <link rel="stylesheet" href="lake-intro.css?v=252-4" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
@@ -6933,9 +6934,24 @@
             <div><h2 id="lakeStoryTitle">湖の手帳</h2><p id="lakeStoryStatus"></p></div>
             <div class="lake-story-actions"><button id="villageGuideJournal" type="button">村の暮らし</button><button id="lakeStoryReplayIntro" type="button">旅のはじまりを読む</button><button id="lakeStoryClose">手帳を閉じる</button></div>
           </header>
-          <div class="lake-story-layout">
+          <nav class="lake-journal-tabs" aria-label="手帳の種類">
+            <button id="lakeStoryMemories" type="button" aria-pressed="true" aria-controls="lakeStoryReading">旅の記録</button>
+            <button id="lakeStoryResearch" type="button" aria-pressed="false" aria-controls="lakeResearchPanel">祖父の釣り帳</button>
+          </nav>
+          <div class="lake-story-layout" id="lakeStoryReading">
             <nav class="lake-story-index" id="lakeStoryIndex" aria-label="旅の思い出"></nav>
             <article class="lake-story-page" id="lakeStoryPage" aria-labelledby="lakeStoryPageTitle" tabindex="0"></article>
+          </div>
+          <div id="lakeResearchPanel" hidden>
+            <nav class="lake-research-index" aria-label="祖父の覚え書き">
+              <button id="lakeResearchBasics" type="button" aria-pressed="true">釣りの基本</button>
+              <button id="lakeResearchClues" type="button" aria-pressed="false">ヌシの記録</button>
+              <label for="lakeResearchHabitat">水辺で探す<select id="lakeResearchHabitat"></select></label>
+              <label for="lakeResearchFish">魚の覚え書き<select id="lakeResearchFish"></select></label>
+            </nav>
+            <article id="lakeResearchArticle" aria-labelledby="lakeResearchTitle" tabindex="0">
+              <h3 id="lakeResearchTitle">祖父の釣り帳</h3><div id="lakeResearchDetail"></div>
+            </article>
           </div>
         </section>
         <div class="modal shop-modal" id="store">
@@ -7363,6 +7379,7 @@
     <script src="lake-intro.js?v=252-4"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
+    <script src="lake-research.js?v=252-6"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
@@ -12089,6 +12106,7 @@
       const tournamentNpcLastLines = new Map();
       let worldLife = null;
       let fieldGuideView = null, fieldGuideReturn = null, villageGuideMapOpen = false;
+      let lakeJournalMode = "story", lakeResearchView = null;
       let activeRivalId = null, rivalTalkReturn = null;
       let rivalDogReaction = null, rivalDogAnimation = 0, rivalDogLastSound = -Infinity;
       const rivalDogGreetingTurns = new Map();
@@ -23180,6 +23198,7 @@
         if (document.querySelector(".modal.open") && !["record","store"].includes(from)) return false;
         if (from) close();
         lakeStoryReturn = ["record","store"].includes(from) ? from : null;
+        lakeJournalMode = "story";
         const available = ShuLakeStory.chapters(s);
         const selected = available.find(p=>p.id===id)?.id ||
           (id ? s.lakeStory.selected : ShuLakeStory.unread(s)[0]?.id) || s.lakeStory.selected;
@@ -23187,6 +23206,17 @@
         save(); open("lakeStory"); return true;
       }
       function renderLakeStory(id = s.lakeStory.selected) {
+        const research=lakeJournalMode==="research";
+        $("#lakeStoryReading").hidden=research;$("#lakeResearchPanel").hidden=!research;
+        $("#lakeStoryMemories").setAttribute("aria-pressed",String(!research));
+        $("#lakeStoryResearch").setAttribute("aria-pressed",String(research));
+        if(research){
+          $("#lakeStoryStatus").textContent="祖父が残した、水辺と仕掛けの覚え書き";
+          lakeResearchView ||= ShuLakeResearch.create($("#lakeResearchPanel"));
+          lakeResearchView.show(ShuLakeResearch.model(s,{fish,encyclopedia:fishEncyclopediaData,
+            baits:baitData,rods:rodData,tackle:ShuTackle,legendary:ShuRegional.legendary,finalReady:ShuRegional.finalReady}));
+          return;
+        }
         const available=ShuLakeStory.chapters(s),page=available.find(p=>p.id===id)||available[0];
         ShuLakeStory.markRead(s,page.id);save();
         const e=ShuLakeStory.escape,index=available.indexOf(page),left=ShuLakeStory.unread(s).length;
@@ -23809,6 +23839,8 @@
       $("#samStoryOffer").onclick = () => openLakeStory(null,"store");
       $("#lakeStoryClose").onclick = closeLakeStory;
       $("#lakeStoryReplayIntro").onclick=()=>openLakeIntro(true);
+      $("#lakeStoryMemories").onclick=()=>{lakeJournalMode="story";renderLakeStory();};
+      $("#lakeStoryResearch").onclick=()=>{lakeJournalMode="research";renderLakeStory();};
       $("#lakeIntroSkip").onclick=finishLakeIntro;
       $("#lakeIntroNext").onclick=()=>{
         if(!$("#lakeIntro").classList.contains("open"))return;
@@ -23828,7 +23860,7 @@
       };
       $("#lakeStory").onkeydown = event => {
         if(event.key!=="Tab")return;
-        const controls=[...$("#lakeStory").querySelectorAll("button:not(:disabled), article[tabindex]")];
+        const controls=[...$("#lakeStory").querySelectorAll("button:not(:disabled), select:not(:disabled), article[tabindex]")].filter(n=>!n.closest("[hidden]"));
         const first=controls[0],last=controls[controls.length-1];
         if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}
         else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
@@ -24058,7 +24090,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-5").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-6").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
