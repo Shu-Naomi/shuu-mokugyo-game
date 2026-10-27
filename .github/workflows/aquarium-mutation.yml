@@ -1,7 +1,7 @@
-name: Funa golden mutation pilot
+name: Rare aquarium colours
 on:
   push:
-    branches: [main, codex/funa-gold-mutation-v251-8]
+    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
@@ -10,6 +10,7 @@ on:
       - 'nushi-tsuri/aquarium-life.js'
       - 'nushi-tsuri/fish-art.js'
       - 'nushi-tsuri/assets/aquarium-funa-gold-v251-8.png'
+      - 'nushi-tsuri/assets/aquarium-koi-gold-v252-9.png'
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/sw.js'
       - 'nushi-tsuri/tests/*aquarium-mutation*'
@@ -68,18 +69,18 @@ jobs:
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check draw boundaries, save compatibility and unchanged aquarium behavior
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
-      - name: Exercise golden hatching, discovery, care, growth, moving and resume on three screens
+        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutations-koi.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
+      - name: Exercise golden hatching, discovery, care, growth, moving and resume for both colours on three screens
         env:
           AQUARIUM_MUTATION_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-browser.log
       - name: Wait for the published runtime to match the merged source
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         run: node aquarium-mutation-public-source.cjs 2>&1 | tee aquarium-mutation-public-source.log
-      - name: Exercise the published aquarium on the same three screens
+      - name: Exercise the published aquarium on both colours on the same three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=251-8
+          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-9
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-public-browser.log
       - name: Preserve focused browser evidence
         if: always()

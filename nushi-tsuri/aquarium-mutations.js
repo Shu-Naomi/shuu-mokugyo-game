@@ -6,6 +6,8 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(root){
   'use strict';
   const VERSION=6,RULE_VERSION=1,DENOMINATOR=1000,WORD_LIMIT=4294967000;
+  const goldForms=Object.freeze({funa:Object.freeze({name:'フナ',artId:'funaGold'}),koi:Object.freeze({name:'コイ',artId:'koiGold'})});
+  const goldForm=species=>typeof species==='string'&&Object.hasOwn(goldForms,species)?goldForms[species]:null;
   const ready=new WeakMap(),validSeed=seed=>typeof seed==='string'&&/^[a-f0-9]{32}$/.test(seed);
   const id=value=>typeof value==='string'&&/^[a-zA-Z0-9_-]{1,48}$/.test(value);
   const uint=value=>Number.isInteger(value)&&value>=0&&value<=0xffffffff;
@@ -16,7 +18,7 @@
       return {checked:false,kind:'normal',ruleVersion:value.ruleVersion,reason:value.reason};
     return value.checked===true?{checked:true,kind:value.kind,ruleVersion:value.ruleVersion}:normal();
   }
-  const isGold=fish=>fish?.species==='funa'&&fish.mutation?.checked===true&&fish.mutation.kind==='gold';
+  const isGold=fish=>!!goldForm(fish?.species)&&fish.mutation?.checked===true&&fish.mutation.kind==='gold';
   const label=fish=>isGold(fish)?'黄金':fish?.mutation?.kind&&fish.mutation.kind!=='normal'?'未対応の色':'通常色';
   function createSeed(){
     try{
@@ -82,7 +84,7 @@
     }
   }
   function draw(state,egg,hash=hashWords){
-    if(egg.species!=='funa'||!Number.isInteger(egg.generation)||egg.generation<2||egg.generation>20)return normal(RULE_VERSION);
+    if(!goldForm(egg.species)||!Number.isInteger(egg.generation)||egg.generation<2||egg.generation>20)return normal(RULE_VERSION);
     const rule=state.petLife.mutationRuleVersion??RULE_VERSION;
     if(rule!==RULE_VERSION)return {checked:false,kind:'normal',ruleVersion:rule,reason:'unsupported-rule'};
     if(!seedIsSaved(state))return {checked:false,kind:'normal',ruleVersion:RULE_VERSION,reason:'seed-unavailable'};
@@ -98,15 +100,15 @@
   function discover(p,fish,day){
     if(!isGold(fish))return;
     p.mutationDiscoveries||=[];
-    if(!p.mutationDiscoveries.some(d=>d.species==='funa'&&d.kind==='gold'))
-      p.mutationDiscoveries.push({species:'funa',kind:'gold',firstUid:fish.uid,firstDay:day,notified:false});
+    if(!p.mutationDiscoveries.some(d=>d.species===fish.species&&d.kind==='gold'))
+      p.mutationDiscoveries.push({species:fish.species,kind:'gold',firstUid:fish.uid,firstDay:day,notified:false});
   }
   function acknowledge(state,persist){
-    const pending=(state.petLife?.mutationDiscoveries||[]).filter(d=>d.species==='funa'&&d.kind==='gold'&&!d.notified);
+    const pending=(state.petLife?.mutationDiscoveries||[]).filter(d=>goldForm(d.species)&&d.kind==='gold'&&!d.notified);
     if(!pending.length)return [];
     for(const d of pending)d.notified=true;
     try{if(persist()===true)return pending.map(d=>({...d}));}catch{}
     for(const d of pending)d.notified=false;return [];
   }
-  return Object.freeze({VERSION,RULE_VERSION,DENOMINATOR,WORD_LIMIT,normal,normalize,isGold,label,validSeed,createSeed,prepare,acceptStored,confirmSaved,seedIsSaved,hashWords,ticket,draw,normalizeDiscoveries,discover,acknowledge});
+  return Object.freeze({VERSION,RULE_VERSION,DENOMINATOR,WORD_LIMIT,goldForm,normal,normalize,isGold,label,validSeed,createSeed,prepare,acceptStored,confirmSaved,seedIsSaved,hashWords,ticket,draw,normalizeDiscoveries,discover,acknowledge});
 });
