@@ -1,0 +1,63 @@
+{
+  "version": "252-9",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-koi-gold-v252-9.png",
+  "source": "assets/fish-lake-v208.png",
+  "sourceSha256": "d15babca220116e0d0c04bf4fed6b667d373b237f7c3f9cd64c4ebe9c87dd119",
+  "referenceBoxes": [
+    [
+      20,
+      638,
+      335,
+      146
+    ],
+    [
+      390,
+      640,
+      306,
+      149
+    ],
+    [
+      736,
+      640,
+      261,
+      157
+    ],
+    [
+      1075,
+      642,
+      163,
+      140
+    ],
+    [
+      32,
+      793,
+      267,
+      151
+    ],
+    [
+      348,
+      795,
+      255,
+      149
+    ],
+    [
+      625,
+      810,
+      301,
+      129
+    ],
+    [
+      948,
+      813,
+      286,
+      129
+    ]
+  ],
+  "referencePreparation": "At native scale, center each source pose in a 384x512 cell, four columns by two rows. Source bytes unchanged.",
+  "rawGeneratedImage": "exec-26f03b31-536f-4fef-bb17-dde09f1fc8b4.png",
+  "output": "1536x1024 transparent PNG; copied without modification",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent 8-frame sprite atlas for an existing Japanese fishing game. Input image is the edit target, showing 8 poses of ONE existing common carp (koi), arranged in 4 columns by 2 rows. Create a GOLDEN rare-color variant of exactly this same common carp. Change only scales, skin and fins to distinctly bright metallic yellow gold, luminous pale-gold belly, ochre shadows, restrained cream-gold highlights; preserve dark eyes and short barbels. The reference is bronze: the new variant must read clearly brighter, yellow gold rather than brown or orange. Preserve all eight poses in order, anatomy, silhouette, fin placement, head locations, open mouth in final frame, relative sizes, and original grid cell centers. Same 1536 by 1024 composition. Each fish centered in its 384 by 512 cell with ample transparent spacing. Detailed retro-game pixel-inspired illustration matching original rendering. Clean alpha edges without the reference's stray red/yellow background fringe. Actual transparent background. Exactly 8 fish poses, no extra fish, no new accessories, no sparkles, no halo or glow outside the fish, no water, no text, no grid, no ground shadow or backdrop. Common carp with short natural fins, not a fancy goldfish. Keep the second row facing left except the final open-mouth right-facing frame.",
+  "recovery": "The prior unsaved local image could not be recovered after the work directory reverted. This image was regenerated from the same ordinary Koi reference; all verification was rerun for the restored implementation."
+}

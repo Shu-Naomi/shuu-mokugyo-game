@@ -61,11 +61,11 @@
     function announceDiscovery(){
       if(announcing||!live()||mode!=="aquarium")return;
       announcing=true;const notices=M.acknowledge(s,changed);announcing=false;
-      if(notices.length){message="黄金のフナを発見！ 希少色の記録に残したよ。";render();}
+      if(notices.length){message=`${notices.map(d=>'黄金の'+M.goldForm(d.species).name).join('と')}を発見！ 希少色の記録に残したよ。`;render();}
     }
     function discoveryRecords(){
-      const found=s.petLife.mutationDiscoveries?.find(d=>d.species==='funa'&&d.kind==='gold');
-      return found?`<section class="pet-discoveries" aria-label="希少色の発見記録"><h4>希少色の発見記録</h4><p>黄金のフナ <small>初発見：${found.firstDay+1}日目 · #${found.firstUid.slice(4)}</small></p></section>`:'';
+      const found=s.petLife.mutationDiscoveries?.filter(d=>M.goldForm(d.species)&&d.kind==='gold')||[];
+      return found.length?`<section class="pet-discoveries" aria-label="希少色の発見記録"><h4>希少色の発見記録</h4>${found.map(d=>`<p>黄金の${M.goldForm(d.species).name} <small>初発見：${d.firstDay+1}日目 · #${esc(d.firstUid.slice(4))}</small></p>`).join('')}</section>`:'';
     }
     function open(view="aquarium"){
       if(!ctx.canOpen())return false;
@@ -189,7 +189,7 @@
       const titles={tanks:"水槽を選ぶ",records:"この子の記録",manage:"お引越し・託す",help:"水槽の育て方"};
       let body="";
       if(panel==="tanks")body=`<div class="pet-tank-cards">${P.tankIds(s).map(t=>tankCard(t)).join("")}</div><footer class="pet-tank-footer"><span>全${s.petLife.fish.length}/${P.totalCapacity(s)}匹 · 通常水槽${s.petLife.unlockedTanks}/6槽</span>${control("legend-shop","ぬしの飼育","fish")}${control("shop","水槽・魚を迎える","shop")}</footer>`;
-      else if(panel==="help")body=`<div class="pet-help-cards"><article>${icon("fish")}<h3>黄金のフナ</h3><p>生まれる子が3代目以降のフナなら、卵1組につき0.1%で黄金の子が生まれるよ。色による能力や価格の差はないよ。</p><small>初めて孵化した黄金の子に水槽で会うと、発見の記録が残るよ。</small></article><article>${icon("feed")}<h3>毎日のお世話</h3><p>エサは1匹に1食。水質40%以上で毎日食べると、翌日1〜5cm成長するよ。</p><small>エサ +6XP / 水換え +4XP · 一日一回</small></article><article>${icon("fish")}<h3>卵から、小さな稚魚へ</h3><p>成魚のオスとメスを、水質60%以上・元気70%以上で3日育てると卵を産むよ。2〜4日で孵化。空きは卵が予約するよ。</p></article><article>${icon("expand")}<h3>全体と一匹を見比べる</h3><p>魚や写真をタッチすると一匹を観察できるよ。個別表示も体長で大きさが変わる。小さい子は見やすさを補助しているよ。</p></article><article>${icon("tank")}<h3>ぬし専用の水槽</h3><p>釣ったぬしを魚種ごとに一匹、無料で迎えられるよ。淡水と海水は別々に8匹まで。ぬしは繁殖・買い取りの対象外。</p>${control("legend-shop","ぬしの飼育を相談","shop")}</article><article>${icon("shop")}<h3>買い取りの相談</h3><p>買い取りできる体長、お世話3日以上、元気60%以上が目安。アスアルの店で、水槽と個体を選んでね。</p>${control("shop","アスアルのお店へ","shop")}</article></div>`;
+      else if(panel==="help")body=`<div class="pet-help-cards"><article>${icon("fish")}<h3>黄金のフナとコイ</h3><p>生まれる子が3代目以降のフナかコイなら、卵1組につき0.1%で黄金の子が生まれるよ。色による能力や価格の差はないよ。</p><small>初めて孵化した黄金の子に水槽で会うと、発見の記録が残るよ。</small></article><article>${icon("feed")}<h3>毎日のお世話</h3><p>エサは1匹に1食。水質40%以上で毎日食べると、翌日1〜5cm成長するよ。</p><small>エサ +6XP / 水換え +4XP · 一日一回</small></article><article>${icon("fish")}<h3>卵から、小さな稚魚へ</h3><p>成魚のオスとメスを、水質60%以上・元気70%以上で3日育てると卵を産むよ。2〜4日で孵化。空きは卵が予約するよ。</p></article><article>${icon("expand")}<h3>全体と一匹を見比べる</h3><p>魚や写真をタッチすると一匹を観察できるよ。個別表示も体長で大きさが変わる。小さい子は見やすさを補助しているよ。</p></article><article>${icon("tank")}<h3>ぬし専用の水槽</h3><p>釣ったぬしを魚種ごとに一匹、無料で迎えられるよ。淡水と海水は別々に8匹まで。ぬしは繁殖・買い取りの対象外。</p>${control("legend-shop","ぬしの飼育を相談","shop")}</article><article>${icon("shop")}<h3>買い取りの相談</h3><p>買い取りできる体長、お世話3日以上、元気60%以上が目安。アスアルの店で、水槽と個体を選んでね。</p>${control("shop","アスアルのお店へ","shop")}</article></div>`;
       else if(f){
         const tabs=`<nav class="pet-sheet-tabs" aria-label="個体の情報">${["records","manage"].map(t=>`<button data-pet-panel-tab="${t}" aria-pressed="${panel===t}">${t==="records"?"成長の記録":"お引越し・託す"}</button>`).join("")}</nav>`;
         if(panel==="records")body=`${tabs}<div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b>${P.cm(f.length)}cm · ${sizeLabel(f)}</b><small>${esc(appearance(f).label)}</small></div></div><div class="pet-stats"><span>レベル <b>Lv.${f.level}</b></span><span>経験値 <b>${f.xp}/${f.level>=20?"MAX":P.xpForLevel(f.level+1)}</b></span><span>元気 <b>${f.health}%</b></span><span>水質 <b>${f.water}%</b></span><span>生まれた体長 <b>${P.cm(f.bornSize)}cm</b></span><span>成長 <b>＋${P.cm(f.length-f.bornSize)}cm</b></span><span>1日の成長 <b>${P.cm(P.dailyGrowth(spec(f.species)))}cm</b></span><span>一緒に <b>${today-f.acquiredDay+1}日目</b></span><span>お世話 <b>${f.careDays}日</b></span><span>性別 <b>${identity(f).sexText}</b></span><span>世代・星 <b>${identity(f).generation} ${"★".repeat(f.stars)}</b></span><span>色の記録 <b>${M.label(f)}</b></span></div>${discoveryRecords()}`;
@@ -251,7 +251,7 @@
       root.ShuCompactUI?.release(modal);
       if(focus&&!P.residents(s).some(a=>a.uid===s.petLife.selected))focus=false;
       pause();P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-zoomed",mode==="aquarium"&&zoom);modal.classList.toggle("pet-aquarium",mode==="aquarium");
-      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message ${message.startsWith('黄金のフナ')?'pet-discovery':''}" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
+      modal.innerHTML=`<div class="pet-shell">${header()}<p class="pet-message ${message.startsWith('黄金の')?'pet-discovery':''}" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="aquarium"?tank():shop()}</div></div>`;
       ctx.paintRivals();ctx.paintVillagers?.();
       paintContest();
       if(mode==="aquarium")for(const f of P.residents(s))ctx.prepareFish?.(f.species);

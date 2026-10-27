@@ -72,7 +72,7 @@
     const spec=catalog.find(s=>s.id===fish?.species);
     const fry=!!spec&&fish.origin==='bred'&&fish.generation>0&&fish.length<spec.min;
     const stage=PetLife?.growthStage(fish);
-    if(M.isGold(fish))return {kind:'base',strength:0,fry,gold:true,adultIsaki:false,artId:'funaGold',label:fry?'黄金色のフナの稚魚':'黄金色のフナ',key:`funa:gold:${fry?1:0}`};
+    if(M.isGold(fish)){const form=M.goldForm(fish.species);return {kind:'base',strength:0,fry,gold:true,adultIsaki:false,artId:form.artId,label:`黄金色の${form.name}${fry?'の稚魚':''}`,key:`${fish.species}:gold:${fry?1:0}`};}
     if(stage)return {kind:'buri',strength:0,fry,adultIsaki:false,artId:stage.art,label:`${stage.name}の姿 · ${stage.alias}`,key:`buri:${stage.id}:${stage.art}`};
     const kind=fish?.species==='nijimasu'?'parr':fish?.species==='isaki'?'stripes':'base';
     // Qualitative growth changes follow aquarium observations. These fade
