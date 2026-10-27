@@ -26,7 +26,10 @@ module.exports=async function research(url,screen){
   await page.evaluate(()=>{window.researchPointers=[];document.addEventListener('pointerdown',e=>researchPointers.push({id:e.target.closest('button,select')?.id,type:e.pointerType}));});
   const otherRaw=await page.evaluate(k=>localStorage.getItem(k),other);
   await menu('story');await press('#lakeStoryResearch');await page.evaluate(()=>document.fonts.ready);
-  await fits('research basics');await shot('basics');
+  await fits('research basics');
+  const basicFit=await page.locator('#lakeResearchArticle').evaluate(n=>({height:n.clientHeight,scroll:n.scrollHeight}));
+  assert.ok(basicFit.scroll<=basicFit.height+1,'basics should fit on one page '+JSON.stringify(basicFit));
+  await shot('basics');
   const before=await value('s'),raw=await page.evaluate(k=>localStorage.getItem(k),key);
   assert.equal(await page.locator('#lakeResearchFish option').count(),55);
   await change('lakeResearchHabitat','sea');await change('lakeResearchFish','buri');
