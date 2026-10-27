@@ -1,7 +1,7 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-grandfather-notes-252-6";
+const CACHE_NAME = "nushi-tsuri-v252-grandfather-notes-252-7";
 const CORE_ASSETS = [
-  "./lake-research.js?v=252-6",
+  "./lake-research.js?v=252-7",
   "./lake-research.css?v=252-6",
   "./village-guide.js?v=252-5",
   "./village-guide.css?v=252-5",

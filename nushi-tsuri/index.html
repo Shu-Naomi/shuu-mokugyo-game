@@ -7379,7 +7379,7 @@
     <script src="lake-intro.js?v=252-4"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
-    <script src="lake-research.js?v=252-6"></script>
+    <script src="lake-research.js?v=252-7"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
@@ -24090,7 +24090,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-6").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-7").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

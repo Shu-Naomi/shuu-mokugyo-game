@@ -41,7 +41,7 @@ jobs:
       - name: Read the published notebook on three screens
         if: ${{ github.ref == 'refs/heads/main' }}
         env:
-          LAKE_RESEARCH_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-6
+          LAKE_RESEARCH_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-7
         run: node browser-lake-research-evidence.cjs 2>&1 | tee lake-research-public-browser.log
       - name: Preserve notebook evidence
         if: always()
