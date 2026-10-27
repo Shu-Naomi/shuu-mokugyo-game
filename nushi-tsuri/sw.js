@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-grandfather-notes-252-7";
+const CACHE_NAME = "nushi-tsuri-v252-fish-market-walk-252-8";
 const CORE_ASSETS = [
+  "./assets/player-girl-front-walk-v252-8.png",
+  "./assets/village-fishmarket-v252-8.png",
   "./lake-research.js?v=252-7",
   "./lake-research.css?v=252-6",
   "./village-guide.js?v=252-5",
@@ -97,7 +99,7 @@ const CORE_ASSETS = [
   "./mountain-region.js?v=248-2",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-4",
+  "./lake-intro.js?v=252-8",
   "./lake-intro.css?v=252-4",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
@@ -169,11 +171,11 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=247-1",
   "./pixel-scenes.css?v=240-1",
-  "./scene-layers.js?v=251-4",
+  "./scene-layers.js?v=252-8",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
-  "./layered-scenery.js?v=251-4",
-  "./scenery-worker.js?v=251-4",
+  "./layered-scenery.js?v=252-8",
+  "./scenery-worker.js?v=252-8",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",

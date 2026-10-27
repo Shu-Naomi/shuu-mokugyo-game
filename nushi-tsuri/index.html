@@ -7376,7 +7376,7 @@
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=248-2"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-4"></script>
+    <script src="lake-intro.js?v=252-8"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
     <script src="lake-research.js?v=252-7"></script>
@@ -7391,8 +7391,8 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=251-4"></script>
-    <script src="layered-scenery.js?v=251-4"></script>
+    <script src="scene-layers.js?v=252-8"></script>
+    <script src="layered-scenery.js?v=252-8"></script>
     <script>
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
@@ -12956,6 +12956,7 @@
       }
       const playerImages = {},
         playerWalkImages = {},
+        playerFrontWalkImages = {},
         dogImages = {},
         playerImageSources = {
           boy: "assets/player-boy.png",
@@ -12976,6 +12977,8 @@
         if (!playerWalkImages[avatar])
           playerWalkImages[avatar] =
             loadPlayerImage(playerWalkSources[avatar]);
+        if (avatar === "girl" && !playerFrontWalkImages.girl)
+          playerFrontWalkImages.girl = loadPlayerImage("assets/player-girl-front-walk-v252-8.png");
       }
       function ensureDogImage(dog = s.dog) {
         if (!dogImages[dog])
@@ -17651,7 +17654,13 @@
         const direction = ["left", "right"].includes(facingDirection)
           ? "side"
           : facingDirection === "up" ? "up" : "down";
-        const walkImage = playerWalkImages?.[s.avatar];
+        // The original girl's two front cells repeat the same leading leg.
+        // Use the corrected opposite strides only here; all other poses keep
+        // their existing atlas. A late image load can still use the old sheet.
+        const frontWalk = direction === "down" && s.avatar === "girl"
+          ? playerFrontWalkImages.girl : null;
+        const walkImage = frontWalk?.complete && frontWalk.naturalWidth
+          ? frontWalk : playerWalkImages?.[s.avatar];
         // The front- and rear-facing standing cells both have a deliberately
         // broad boot stance. Flashing either one between strides reads as
         // bow-legged, so hold each real straight-on stride for two beats.
@@ -24090,7 +24099,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-7").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-8").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
