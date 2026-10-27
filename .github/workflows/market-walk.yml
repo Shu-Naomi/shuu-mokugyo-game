@@ -1,0 +1,55 @@
+name: Fish market and front walking
+on:
+  push:
+    branches: [main]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/lake-intro.js', 'nushi-tsuri/scene-layers.js', 'nushi-tsuri/layered-scenery.js', 'nushi-tsuri/scenery-worker.js', 'nushi-tsuri/sw.js', 'nushi-tsuri/assets/*v252-8.png', 'nushi-tsuri/tests/*market*', '.github/workflows/market-walk.yml']
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/lake-intro.js', 'nushi-tsuri/scene-layers.js', 'nushi-tsuri/layered-scenery.js', 'nushi-tsuri/scenery-worker.js', 'nushi-tsuri/sw.js', 'nushi-tsuri/assets/*v252-8.png', 'nushi-tsuri/tests/*market*', '.github/workflows/market-walk.yml']
+permissions:
+  contents: read
+concurrency:
+  group: market-walk-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  market-walk:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Check opposite strides, district bounds, existing shops and legacy saves
+        run: node --test --test-concurrency=4 market-walk-v252-8.test.cjs village-sam-redesign.test.cjs village-inn-redesign.test.cjs weather.test.cjs layered-scenery.test.cjs pixel-world.test.cjs lake-intro-v215.test.cjs opening-presentation-271.test.cjs opening-story-v252-2.test.cjs 2>&1 | tee market-unit-results.log
+      - name: Walk, enter the market and resume on three screens
+        run: node browser-market-walk-evidence.cjs 2>&1 | tee market-browser-results.log
+      - name: Wait for the published source to match
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: node market-walk-public-source.cjs 2>&1 | tee market-public-source.log
+      - name: Walk the published village on three screens
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          MARKET_WALK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-8
+        run: node browser-market-walk-evidence.cjs 2>&1 | tee market-public-browser-results.log
+      - name: Preserve walking and market evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: market-walk-evidence
+          path: |
+            nushi-tsuri/tests/market-*.log
+            nushi-tsuri/tests/market-walk-evidence/
+          retention-days: 14
+          if-no-files-found: warn

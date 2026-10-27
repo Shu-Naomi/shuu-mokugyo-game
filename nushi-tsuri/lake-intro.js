@@ -62,6 +62,7 @@
   const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',
     sam:'assets/sam-sprites-v199.webp',boy:'assets/player-boy.png',girl:'assets/player-girl.png',
     boyWalk:'assets/player-boy-walk-v35-final.png',girlWalk:'assets/player-girl-walk-v35-final.png',
+    girlFrontWalk:'assets/player-girl-front-walk-v252-8.png',
     shuu:'assets/shuu-walk.png',riku:'assets/riku-walk.png',grey:'assets/grey-walk.png'};
   const ids=['shuu','riku','grey'],images=new Map();
   const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*(3-2*x);};
@@ -113,7 +114,8 @@
     ctx.drawImage(im,col*size,row*size,size,h,Math.round(dog.x-center*scale),Math.round(dog.y-paws[dog.id][row][col]*scale-dog.nuzzle),35,h*scale);
   }
   function drawPlayer(ctx,actor,avatar,redraw,village){
-    let im=actor.walking?image(art[avatar+'Walk'],redraw):null;const walking=Boolean(im);im=im||image(art[avatar],redraw);if(!im)return;
+    const walkSource=avatar==='girl'&&actor.direction==='down'?art.girlFrontWalk:art[avatar+'Walk'];
+    let im=actor.walking?(image(walkSource,redraw)||image(art[avatar+'Walk'],redraw)):null;const walking=Boolean(im);im=im||image(art[avatar],redraw);if(!im)return;
     const column=actor.direction==='down'?0:actor.direction==='up'?2:1,fw=im.naturalWidth/3,fh=im.naturalHeight/(walking?2:1),height=village?39:57,width=height*fw/fh;
     ctx.save();ctx.translate(Math.round(actor.x),Math.round(actor.y));if(actor.direction==='right')ctx.scale(-1,1);
     ctx.drawImage(im,column*fw,walking?(actor.frame<2?0:fh):0,fw,fh,-width/2,-height,width,height);ctx.restore();

@@ -1,0 +1,33 @@
+{
+  "mode": "built-in image_gen edit",
+  "girl": {
+    "references": [
+      "assets/player-girl-walk-v35-final.png",
+      "assets/player-boy-walk-v35-final.png"
+    ],
+    "asset": "assets/player-girl-front-walk-v252-8.png",
+    "prompt": "Use case: precise-object-edit.\nAsset type: transparent pixel-art walk sprite sheet for an existing cozy SFC-style fishing RPG.\nInput image 1 is the EDIT TARGET, the existing red-capped girl 3-column x 2-row walking atlas. Input image 2 is a supporting reference ONLY for clearly opposite left/right leg strides, not for her identity or clothing.\nFix the two FRONT-facing walking sprites in the LEFT column of image 1: currently both put the same leg forward. Keep the upper-left pose with her anatomical LEFT leg (viewer right) forward. Make the lower-left pose the opposite step, her anatomical RIGHT leg (viewer left) forward, the left foot back. Give the knees and boots a clear, natural walking silhouette; alternate arms naturally. Keep the same red backward cap, short brown hair, friendly face, red shirt and red fishing vest, brown shorts, dark socks, brown boots, pouch fixed on her anatomical left hip (viewer right).\nPreserve her identity, proportions, colors, tiny crisp pixel clusters, transparent background, existing 3-by-2 grid and per-cell framing. Preserve both side-facing sprites in the middle column and both back-facing sprites in the right column as closely as possible. Do not mirror her whole torso or move her pouch. The feet must visibly alternate. No extra characters, no floor, no shadow outside her, no grid lines, no text or border. All six characters fully inside their original cell. Same portrait atlas aspect ratio as input1; precise equal 3-column/2-row cells. True alpha transparency.",
+    "note": "Use only the front column. Raw original preserved; side/rear/idle poses keep the existing originals."
+  },
+  "market": {
+    "reference": "assets/terrain-world-v54.png",
+    "referenceCrop": [
+      912,
+      520,
+      224,
+      168
+    ],
+    "placement": [
+      912,
+      532,
+      224,
+      168
+    ],
+    "asset": "assets/village-fishmarket-v252-8.png",
+    "prompts": [
+      "Use case: precise-object-edit.\nAsset type: one exterior district painting for the existing detailed SFC-era Japanese fishing RPG 星降る湖.\nInput image1 is the EDIT TARGET, the original village master (1536x864). Please return ONLY the rectangular FISH MARKET DISTRICT cropped from x=912,y=520,width=224,height=168, enlarged with the exact same 4:3 framing. This is the dark-tiled two-part fishmonger building in the lower-right, immediately LEFT of SAM's fishing shop and just ABOVE the harbor and boat-rental building. Do NOT edit SAM, the inn, other buildings, water or harbor.\nPrimary request: refine this SAME long-established working fishmonger's exterior so it feels naturally lived in. Preserve the existing weathered charcoal roof silhouette, two connected wood shop volumes, original walls, footprint, camera and scale. Add a small faded indigo/teal noren over the front doorway and an aged fish-pictogram sign, a low side counter with a few bright silver whole fish on white crushed ice, an old wooden ice chest, compact stacked crates and a small handcart TUCKED AGAINST THE RIGHT-SIDE loading wall. Wet dark wood, salt wear, careful fish-scale highlights, dense tiny crisp SFC pixel clusters, restrained ochre/olive/cool grey village palette.\nPrecise fixed doorway alignment in the 224x168 district: center front doorway at x=112 (50% across), doorstep ending at y=140 (83% down). This corresponds to master x=1024,y=660. Keep the doorway and the straight approach below it completely clear. Keep all props within the original building footprint, from about x=25 to196,y=25 to136 of the district; put loading props beside the right wall rather than across the doorway. The stone road along the bottom and east/right edge is the working harbor delivery route: retain its full width and all stone pixels, no crates or carts in that lane.\nKeep the exact outer crop edge textures and original daylight. Retain the original master roof extent and recognizable existing fishmonger, not a bigger new building or a generic modern seafood shop. No characters, HUD, arrows, labels, border, watermarks, new water or extra buildings. The only readable sign may be the small single character 「魚」. Output the cropped district only, opaque painted background, high-resolution but authentic tiny pixel clusters so it blends when scaled to 224x168.",
+      "Use case: precise-object-edit.\nInput image1 (224x168) is the EXACT EDIT TARGET and exact final framing. Input image2 is a STYLE/DETAIL reference only, from a previous draft whose framing and doorway were wrong.\nReturn a high resolution 4:3 rendition of image1's SAME fishmonger district with identical building and road positioning. Do not zoom in, reframe or change camera angle. Preserve the exact roof outline in image1, including roof height and the two attached volumes, and the exact outer grass and stone road edge positions.\nImprove only this same facade and its existing tightly placed shop props with the detail/palette of image2: weathered timber, small fish-pictogram board, faded indigo noren, silver fish on crushed ice at a low LEFT-side counter; old ice chest, stacked crates and small handcart tucked at the RIGHT loading wall. Same crisp dense SFC pixel art and neutral daylight. No larger building.\nMOST IMPORTANT GEOMETRY: In the 224x168 reference coordinates, the single main doorway must be centered at x=112 (50% across the whole image) and its small stone doorstep must end at y=140 (83.33% down the whole image). Keep a clear worn stone approach from that door straight to the bottom road. Keep ALL props within x=25..196,y=25..136 of image1. The entire east stone lane at x>=200 and bottom road at y>=144 must remain empty and retain their original stone layout. No fish boxes, cart, barrel, rope or signs in those lanes or in front of the door. Building bottom and cart at <=y140.\nDo not edit the original crop's outer border road/grass pixels or add water/piers. The previous draft image2 put its doorstep too high in the frame; do not copy its composition. Exact input1 composition and geometry override the style reference. No characters, UI, arrows or labels. Only a small 「魚」 character may appear on the shop's noren. Opaque background, no border."
+    ],
+    "note": "First draft was a framing reference only. The selected second raw PNG is used with measured placement and the existing building outline. Source and completed districts preserved."
+  }
+}
