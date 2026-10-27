@@ -32,6 +32,8 @@ module.exports=async function research(url,screen){
   await shot('basics');
   const before=await value('s'),raw=await page.evaluate(k=>localStorage.getItem(k),key);
   assert.equal(await page.locator('#lakeResearchFish option').count(),55);
+  const firstFish=await page.locator('#lakeResearchFish').inputValue();await page.locator('#lakeResearchFish').focus();
+  assert.equal(await page.locator('#lakeResearchTitle').textContent(),await value('fish.find(f=>f.id==='+JSON.stringify(firstFish)+').name'));
   await change('lakeResearchHabitat','sea');await change('lakeResearchFish','buri');
   assert.equal(await page.locator('#lakeResearchTitle').textContent(),'ブリ');
   const original=await value('fishEncyclopediaData.buri');

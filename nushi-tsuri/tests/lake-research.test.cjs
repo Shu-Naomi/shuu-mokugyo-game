@@ -57,6 +57,16 @@ test('reading, filtering and selecting an uncaught fish changes no saved game st
   assert.deepEqual(read(w,'s'),before);assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });
+test('focusing the already selected first fish opens its notes without needing a different selection',()=>{
+ const app=boot(),w=app.window;
+ try{
+  w.openLakeStory();click(w,'lakeStoryResearch');const before=read(w,'s'),select=value(w,'lakeResearchFish'),first=select.value;
+  select.focus();assert.equal(value(w,'lakeResearchTitle').textContent,model(w).fish.find(f=>f.id===first).name);
+  click(w,'lakeResearchBasics');select.dispatchEvent(new w.Event('pointerdown',{bubbles:true}));
+  assert.equal(value(w,'lakeResearchTitle').textContent,model(w).fish.find(f=>f.id===first).name);
+  assert.deepEqual(read(w,'s'),before);assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
 test('the map returns to the same research page, while close and B still return to Sam or the fishdex',()=>{
  const app=boot(),w=app.window;
  try{

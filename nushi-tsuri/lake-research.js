@@ -92,6 +92,9 @@
   find('lakeResearchClues').onclick=()=>{section='clues';render();};
   find('lakeResearchHabitat').onchange=event=>{habitat=event.target.value;populate();section='fish';render();};
   find('lakeResearchFish').onchange=event=>{selected=event.target.value;section='fish';render();};
+  const readSelected=()=>{section='fish';render();};
+  find('lakeResearchFish').onfocus=readSelected;
+  find('lakeResearchFish').addEventListener('pointerdown',readSelected);
   return {show(model){current=model;find('lakeResearchHabitat').replaceChildren(...Object.entries(habitats).map(([id,name])=>{
    const option=node('option',name);option.value=id;return option;}));
    find('lakeResearchHabitat').value=habitat;populate();render();}};
