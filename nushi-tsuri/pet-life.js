@@ -1,6 +1,6 @@
 /* Persistent pet specimens. Growth uses game days and integer 0.01 cm units. */
-(function(root,factory){const api=factory(typeof module==="object"&&module.exports?require('./aquarium-mutations.js'):root.ShuAquariumMutations);if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
-})(typeof globalThis!=="undefined"?globalThis:this,function(M){
+(function(root,factory){const api=factory(typeof module==="object"&&module.exports?require('./aquarium-mutations.js'):root.ShuAquariumMutations,typeof module==="object"&&module.exports?require('./pet-notebook.js'):root.ShuPetNotebook);if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
+})(typeof globalThis!=="undefined"?globalThis:this,function(M,N){
   "use strict";
   const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6,TANK_CAPACITY=5,BREED_DAYS=3;
   const TRICKS=["お手","おかわり","チンチン","伏せ","ハイタッチ"];
@@ -148,7 +148,7 @@
       selected:placed.some(f=>f.uid===old.selected)?old.selected:placed[0]?.uid||null,
       selectedTank:selectedFish?.tank??int(old.selectedTank??placed[0]?.tank??0,0,7),
       nushiClaimed:old.nushiClaimed===true||specimens.some(f=>f.species==="nushi"),dogDaily,entries,best,lastResult};
-    if(!deferSync)sync(state,catalog,day);for(const t of tankIds(state))shareWater(state,t);
+    N?.normalize(state,catalog,day);if(!deferSync)sync(state,catalog,day);for(const t of tankIds(state))shareWater(state,t);
     if(!selectTank(state,state.petLife.selectedTank))selectTank(state,0);return state.petLife;
   }
   function sync(state,catalog,day){
@@ -213,6 +213,7 @@
       M.discover(p,child,day);
       p.lastBirth={uid,species:egg.species,tank:egg.tank,day};changed=true;
     }
+    if(N?.observe(state,catalog,day))changed=true;
     return changed;
   }
   const selected=state=>state.petLife.fish.find(f=>f.uid===state.petLife.selected)||null;
@@ -257,6 +258,7 @@
       fedDay:-1,changedDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1,mutation:M.normal()};
     f.sex=sexOf(f);p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);
     normalizeGrowth(f,[],day);
+    if(!isLegend(spec))N?.grant(state,catalog,day);N?.observe(state,catalog,day);
     clearBreeding(p,tank,species);if(isLegend(spec))p.legendClaims[species]=true;if(species==="nushi")p.nushiClaimed=true;
     return {ok:true,message:`${displayName(f,catalog)}（${cm(f.length)}cm）を飼育水槽へ迎えた。`,fish:f};
   }
