@@ -239,3 +239,18 @@
 .pet-notebook-empty{padding:12px;color:#d7dfce}
 @media(max-height:500px){.pet-notebook-layout{grid-template-columns:140px minmax(0,1fr);gap:8px}.pet-notebook .pet-content{padding:4px 10px}.pet-notebook-view{gap:4px}.pet-notebook-toolbar{font-size:11px}.pet-notebook-page{padding:6px 10px}.pet-notebook-species button{min-height:44px;padding:4px 7px;font-size:12px}.pet-notebook-species small{font-size:10px}.pet-notebook-page>header h3{font-size:15px}.pet-notebook-page>header p{font-size:11px}.pet-notebook-portrait{width:110px;height:56px}.pet-notebook-specimen{gap:8px;margin:6px 0}.pet-notebook-specimen h4{font-size:13px}.pet-notebook-specimen strong{font-size:20px}.pet-notebook-stats>span{padding:6px}.pet-notebook-caption{font-size:10px}}
 @media(max-width:600px){.pet-notebook-layout{grid-template-columns:110px minmax(0,1fr)}.pet-notebook-page>header{display:block}.pet-notebook-portrait{width:70px;height:50px}.pet-notebook-specimen{align-items:flex-start}.pet-notebook-stats{grid-template-columns:1fr}.field-menu.has-pet-notebook{width:min(340px,78vw)}}
+/* Explicit individual naming keeps the notebook and tank behind the editor inert. */
+.pet-notebook-tools{display:flex;align-items:center;gap:6px;flex-shrink:0}
+.pet-notebook-toolbar>span,.pet-notebook-specimen>div:last-child{min-width:0}
+.pet-notebook-specimen h4,.pet-record-hero h3,.pet-buyback-detail h3{overflow-wrap:anywhere}
+.pet-life-modal [data-pet-name]{min-height:44px}
+.pet-sheet-body>[data-pet-name]{margin-bottom:10px}
+.pet-name-layer{position:absolute;inset:0;z-index:1100;display:grid;place-items:center;padding:12px;box-sizing:border-box;background:#081925db}
+.pet-name-dialog{width:min(480px,100%);max-height:100%;overflow:auto;box-sizing:border-box;display:grid;gap:8px;padding:12px 16px;border:2px solid #d9bd78;border-radius:10px;background:#1c3c49;color:#e6ecdb;box-shadow:0 8px 30px #061520b3}
+.pet-name-dialog h3,.pet-name-dialog p{margin:0;overflow-wrap:anywhere}.pet-name-dialog h3{font-size:18px;color:#ffe3a2}
+.pet-name-dialog p{font-size:12px;line-height:1.5}.pet-name-dialog label{display:grid;gap:4px;font-size:12px}
+.pet-name-dialog input{width:100%;min-width:0;min-height:44px;box-sizing:border-box;padding:6px 10px;font:16px sans-serif;color:#fff0c1;background:#102b3a;border:1px solid #e2c77f;border-radius:5px}
+.pet-name-dialog input:focus{outline:2px solid #f8df97;outline-offset:2px}
+.pet-name-actions{display:flex;gap:8px}.pet-name-actions button{flex:1;min-height:44px}
+#petNameError{color:#ffd1b8}
+@media(max-height:400px){.pet-name-layer{padding:6px}.pet-name-dialog{gap:6px;padding:8px 12px}.pet-name-dialog h3{font-size:16px}.pet-name-dialog p{font-size:11px}}

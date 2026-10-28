@@ -1,7 +1,7 @@
 name: Aquarium colours and notebook
 on:
   push:
-    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook]
+    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook, codex/fish-nicknames-v252-11]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
@@ -16,6 +16,7 @@ on:
       - 'nushi-tsuri/sw.js'
       - 'nushi-tsuri/tests/*aquarium-mutation*'
       - 'nushi-tsuri/tests/*pet-notebook*'
+      - 'nushi-tsuri/tests/*pet-nicknames*'
       - '.github/workflows/aquarium-mutation.yml'
   workflow_dispatch:
     inputs:
@@ -71,12 +72,12 @@ jobs:
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check draw boundaries, save compatibility and unchanged aquarium behavior
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutations-koi.test.cjs pet-notebook.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
+        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutations-koi.test.cjs pet-notebook.test.cjs pet-nicknames.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
       - name: Exercise golden hatching, discovery, care, growth, moving and resume for both colours on three screens
         env:
           AQUARIUM_MUTATION_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-browser.log
-      - name: Exercise notebook gift, current fish, old saves and retained pages on three screens
+      - name: Exercise notebook gift, fish nicknames, old saves and retained pages on three screens
         env:
           PET_NOTEBOOK_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-pet-notebook-evidence.cjs 2>&1 | tee pet-notebook-browser.log
@@ -86,12 +87,12 @@ jobs:
       - name: Exercise the published aquarium on both colours on the same three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-10
+          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-11
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-public-browser.log
-      - name: Exercise the published notebook on three screens
+      - name: Exercise the published notebook and fish nicknames on three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          PET_NOTEBOOK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-10
+          PET_NOTEBOOK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-11
         run: node browser-pet-notebook-evidence.cjs 2>&1 | tee pet-notebook-public-browser.log
       - name: Preserve focused browser evidence
         if: always()
