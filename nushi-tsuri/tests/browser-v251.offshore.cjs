@@ -18,8 +18,8 @@ module.exports=async function offshore(url,mobile=false,options={}){
   // Plan from the shipped collision function; execute every step through
   // actual directional buttons. Never assign the player's map or position.
   const route=await page.evaluate(target=>{
-   const radius=target.radius||3,key=p=>`${p.x},${p.y},${p.d}`,first={x:s.x,y:s.y,d:s.direction,path:[]},queue=[first],seen=new Set([key(first)]);
-   for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<=radius&&(!target.direction||p.d===target.direction)&&(!target.id||ShuOffshore.fishingWater(p.x,p.y,p.d)?.type===target.id))return p.path;
+   const radius=target.radius||3,fishingArea=Object.hasOwn(ShuOffshore.names,target.id),key=p=>`${p.x},${p.y},${p.d}`,first={x:s.x,y:s.y,d:s.direction,path:[]},queue=[first],seen=new Set([key(first)]);
+   for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<=radius&&(!target.direction||p.d===target.direction)&&(!fishingArea||ShuOffshore.fishingWater(p.x,p.y,p.d)?.type===target.id))return p.path;
     for(const d of ['left','right','up','down']){const n={...ShuWorldLife.moveTarget(p.x,p.y,d,4,ShuOffshore.walkable),d},k=key(n);if(!seen.has(k)){seen.add(k);queue.push({...n,path:[...p.path,d]});}}
    }throw Error('No island path '+JSON.stringify(target));
   },target);
