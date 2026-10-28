@@ -1,12 +1,13 @@
-name: Rare aquarium colours
+name: Aquarium colours and notebook
 on:
   push:
-    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation]
+    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
       - 'nushi-tsuri/aquarium-mutations.js'
       - 'nushi-tsuri/pet-life.js'
+      - 'nushi-tsuri/pet-notebook.js'
       - 'nushi-tsuri/aquarium-life.js'
       - 'nushi-tsuri/fish-art.js'
       - 'nushi-tsuri/assets/aquarium-funa-gold-v251-8.png'
@@ -14,6 +15,7 @@ on:
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/sw.js'
       - 'nushi-tsuri/tests/*aquarium-mutation*'
+      - 'nushi-tsuri/tests/*pet-notebook*'
       - '.github/workflows/aquarium-mutation.yml'
   workflow_dispatch:
     inputs:
@@ -69,19 +71,28 @@ jobs:
           fc-match -f '%{family}\n' 'Noto Sans CJK JP' | grep -F 'Noto Sans CJK JP'
       - name: Check draw boundaries, save compatibility and unchanged aquarium behavior
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutations-koi.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
+        run: node --test --test-concurrency=2 aquarium-mutations-v251-8.test.cjs aquarium-mutations-koi.test.cjs pet-notebook.test.cjs aquarium-mutation-render.test.cjs aquarium-identity-v251-7.test.cjs aquarium-ui-v231.test.cjs aquarium-breeding-v188.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs buri-growth-v249.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee aquarium-mutation-unit.log
       - name: Exercise golden hatching, discovery, care, growth, moving and resume for both colours on three screens
         env:
           AQUARIUM_MUTATION_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-browser.log
+      - name: Exercise notebook gift, current fish, old saves and retained pages on three screens
+        env:
+          PET_NOTEBOOK_PUBLIC_URL: ${{ inputs.public_url }}
+        run: node browser-pet-notebook-evidence.cjs 2>&1 | tee pet-notebook-browser.log
       - name: Wait for the published runtime to match the merged source
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         run: node aquarium-mutation-public-source.cjs 2>&1 | tee aquarium-mutation-public-source.log
       - name: Exercise the published aquarium on both colours on the same three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-9
+          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-10
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-public-browser.log
+      - name: Exercise the published notebook on three screens
+        if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
+        env:
+          PET_NOTEBOOK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-10
+        run: node browser-pet-notebook-evidence.cjs 2>&1 | tee pet-notebook-public-browser.log
       - name: Preserve focused browser evidence
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
@@ -90,5 +101,7 @@ jobs:
           path: |
             nushi-tsuri/tests/aquarium-mutation-*.log
             nushi-tsuri/tests/aquarium-mutation-evidence/
+            nushi-tsuri/tests/pet-notebook-*.log
+            nushi-tsuri/tests/pet-notebook-evidence/
           retention-days: 14
           if-no-files-found: warn
