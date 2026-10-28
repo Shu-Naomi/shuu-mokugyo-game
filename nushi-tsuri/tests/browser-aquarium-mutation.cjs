@@ -43,12 +43,12 @@ module.exports=async function mutationUI(url,screen,variant=defaultFixture){
   const normalVariants=await page.locator('[data-pet-card-art="pet-5"] canvas').evaluateAll(canvases=>canvases.map(c=>c.dataset.artVariant));
   assert.ok(normalVariants.length>=1);assert.ok(normalVariants.every(id=>id==='moroko'),'all views of the ordinary fish keep its own artwork');
   await press(`.pet-fish-roster [data-pet-inspect="${childUid}"]`);await press('[data-pet-action="records"]');assert.match(await page.locator('.pet-discoveries').innerText(),new RegExp(title));if(variant.previousDiscovery)assert.match(await page.locator('.pet-discoveries').innerText(),/黄金のフナ/);await shot('discovery-record');await press('.pet-sheet [data-pet-action="panel-close"]');
-  if(kind==='albino'){
+  if(variant.notebook||kind==='albino'){
    await press('[data-pet-action="close"]');if(!await page.locator('#fieldMenu').evaluate(e=>e.classList.contains('show')))await press('#menu');await press('#petNotebookMenu');
    await press(`[data-notebook-species="${species}"]`);await press(`[data-notebook-fish="${childUid}"]`);
-   assert.match(await page.locator('.pet-notebook-page').innerText(),new RegExp(title));assert.equal(await page.locator(`[data-notebook-fish="${childUid}"] [data-pet-mutation="albino"]`).innerText(),'白化');
-   await press(`[data-pet-name="${childUid}"]`);await page.locator('#petNickname').fill('しらたま');await press('[data-pet-action="nickname-save"]');
-   assert.equal((await child()).nickname,'しらたま');assert.match(await page.locator('.pet-notebook-specimen').innerText(),/しらたま/);await shot('albino-notebook');
+   assert.match(await page.locator('.pet-notebook-page').innerText(),new RegExp(title));assert.equal(await page.locator(`[data-notebook-fish="${childUid}"] [data-pet-mutation="${kind}"]`).innerText(),label);
+   await press(`[data-pet-name="${childUid}"]`);await page.locator('#petNickname').fill(variant.nickname||'しらたま');await press('[data-pet-action="nickname-save"]');
+   assert.equal((await child()).nickname,variant.nickname||'しらたま');assert.match(await page.locator('.pet-notebook-specimen').innerText(),new RegExp(variant.nickname||'しらたま'));await shot(kind+'-notebook');
   }
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual((await child()).mutation,fry.mutation);assert.equal(await page.locator('.pet-discovery').count(),0,'saved notice never repeats');
   const days=await page.evaluate(({species,childUid})=>Math.ceil((petCatalog.find(f=>f.id===species).start-s.petLife.fish.find(f=>f.uid===childUid).length)/ShuPetLife.dailyGrowth(petCatalog.find(f=>f.id===species))),{species,childUid});
