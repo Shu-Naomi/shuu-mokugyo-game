@@ -10,7 +10,7 @@ function counted(){let draws=0;const root={ShuAquariumMutations:{...M,draw(...ar
 test('Koi shares the exact generation and 1/1000 boundaries while existing Funa ticket and rule versions stay fixed',()=>{
  const s=pair();let wins=0,calls=0;for(let n=0;n<1000;n++)wins+=M.draw(s,egg(),()=>[n]).kind==='gold';assert.equal(wins,1);
  const hash=()=>{calls++;return [0];};for(const generation of [undefined,null,-1,0,1,1.5,21])assert.equal(M.draw(s,{...egg(),generation},hash).kind,'normal');
- for(const species of ['moroko','dojo','nushi','__proto__','toString']){assert.equal(M.draw(s,egg(2,species),hash).kind,'normal');assert.equal(M.goldForm(species),null);}
+ for(const species of ['moroko','kajika','nushi','__proto__','toString']){assert.equal(M.draw(s,egg(2,species),hash).kind,'normal');assert.equal(M.goldForm(species),null);}
  assert.equal(calls,0);for(const species of ['funa','koi'])for(const g of [2,20])assert.equal(M.draw(s,egg(g,species),hash).kind,'gold');assert.equal(calls,4);
  assert.equal(M.ticket('00000000000000000000000000000403',egg(2,'funa')),0);assert.equal(M.ticket(seed,egg()),0);assert.equal(M.VERSION,6);assert.equal(M.RULE_VERSION,1);
 });

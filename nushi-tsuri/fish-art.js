@@ -43,6 +43,7 @@
   // Aquarium age variants are drawings of the same species, never extra
   // encounter or encyclopedia entries.
   const aquarium=Object.freeze({
+    dojoAlbino:{...native.dojo,asset:'assets/aquarium-dojo-albino-v252-15.png',boxes:[[21,52,350,93],[391,53,287,92],[701,54,258,91],[979,56,253,97],[1252,54,257,102],[33,208,321,103],[391,207,282,110],[701,209,248,115],[981,210,242,117],[1256,208,242,122],[50,371,274,129],[403,369,233,132],[731,373,130,128],[991,369,186,131],[1265,369,219,132],[39,539,289,128],[379,540,272,126],[672,543,275,118],[955,538,266,128],[1235,538,268,127],[17,711,317,103],[341,712,320,104],[649,717,308,102],[946,718,293,98],[1228,719,298,96],[20,872,348,102]]},
     unagiAlbino:{asset:'assets/aquarium-unagi-albino-v252-14.png',boxes:[[11,221,400,84],[453,181,281,154],[882,176,166,162],[1287,184,154,147],[54,671,260,153],[396,710,362,94],[781,718,376,85],[1167,724,360,87]],heads:[[.985,.65],[.96,.90],[.78,.92],[.50,.93],[.03,.78],[.015,.72],[.015,.65],[.985,.64]]},
     medakaGold:{asset:'assets/aquarium-medaka-gold-v252-13.png',boxes:[[16,190,354,131],[413,178,325,156],[822,164,275,185],[1228,154,232,204],[52,650,284,207],[413,680,328,151],[792,690,336,133],[1184,678,320,150]],heads:[[.99,.65],[.98,.70],[.82,.72],[.50,.72],[.18,.72],[.02,.70],[.01,.65],[.99,.60]],continuousBody:true},
     namazuAlbino:{asset:'assets/aquarium-namazu-albino-v252-12.png',boxes:[[18,200,413,139],[448,184,350,174],[858,176,284,184],[1275,171,203,200],[33,676,331,163],[397,684,356,160],[792,704,371,118],[1199,690,317,151]],heads:[[.90,.65],[.87,.70],[.82,.74],[.50,.76],[.14,.62],[.13,.67],[.08,.63],[.94,.56]]},
@@ -77,6 +78,8 @@
   // Keep the source pixels intact while preventing an accidental reverse turn.
   const turnCells={dojo:{10:11,11:13}};
   const mirroredTurns={kurodai:{23:1},wakasagi:Object.fromEntries(Array.from({length:12},(_,i)=>[13+i,11-i])),dojo:Object.fromEntries([13,11,9,8,7,6,5,4,3,2,1,0].map((cell,i)=>[13+i,cell]))};
+  // The albino loach uses the same authored turn sequence as its ordinary form.
+  turnCells.dojoAlbino=turnCells.dojo;mirroredTurns.dojoAlbino=mirroredTurns.dojo;
   function pose(id,cells,frame){
     const clock=Math.max(0,Number(frame)||0),index=Math.floor(clock);
     if(cells===7||cells===5){
