@@ -242,7 +242,7 @@
 /* Explicit individual naming keeps the notebook and tank behind the editor inert. */
 .pet-notebook-tools{display:flex;align-items:center;gap:6px;flex-shrink:0}
 .pet-notebook .pet-shell{position:relative}
-.pet-notebook .pet-message{position:absolute;z-index:920;left:25%;right:18px;bottom:32px;min-height:0;box-sizing:border-box;padding:8px 10px;border:1px solid #cfb879;border-radius:6px;background:#234c50f2;box-shadow:0 3px 9px #07192580;font-size:12px;line-height:1.5;overflow-wrap:anywhere;pointer-events:none}
+.pet-notebook .pet-message{position:absolute;z-index:920;left:55%;right:18px;bottom:32px;min-height:0;box-sizing:border-box;padding:8px 10px;border:1px solid #cfb879;border-radius:6px;background:#234c50f2;box-shadow:0 3px 9px #07192580;font-size:12px;line-height:1.5;overflow-wrap:anywhere;pointer-events:none}
 .pet-notebook .pet-message[hidden]{display:none}
 .pet-notebook-toolbar>span,.pet-notebook-specimen>div:last-child{min-width:0}
 .pet-notebook-specimen h4,.pet-record-hero h3,.pet-buyback-detail h3{overflow-wrap:anywhere}
