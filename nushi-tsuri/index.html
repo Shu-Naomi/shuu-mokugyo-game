@@ -6434,7 +6434,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="pet-life.css?v=252-10" />
+    <link rel="stylesheet" href="pet-life.css?v=252-11" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
     <link rel="stylesheet" href="lake-intro.css?v=252-4" />
@@ -7355,10 +7355,10 @@
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="aquarium-mutations.js?v=252-9"></script>
     <script src="pet-notebook.js?v=252-10"></script>
-    <script src="pet-life.js?v=252-10"></script>
+    <script src="pet-life.js?v=252-11"></script>
     <script src="aquarium-life.js?v=252-9"></script>
     <script src="compact-ui.js?v=251-5"></script>
-    <script src="pet-life-ui.js?v=252-10"></script>
+    <script src="pet-life-ui.js?v=252-11"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -24103,7 +24103,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-10").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-11").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

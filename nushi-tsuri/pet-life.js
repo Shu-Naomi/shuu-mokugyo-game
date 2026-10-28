@@ -1,6 +1,6 @@
 /* Persistent pet specimens. Growth uses game days and integer 0.01 cm units. */
-(function(root,factory){const api=factory(typeof module==="object"&&module.exports?require('./aquarium-mutations.js'):root.ShuAquariumMutations,typeof module==="object"&&module.exports?require('./pet-notebook.js'):root.ShuPetNotebook);if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
-})(typeof globalThis!=="undefined"?globalThis:this,function(M,N){
+(function(root,factory){const api=factory(typeof module==="object"&&module.exports?require('./aquarium-mutations.js'):root.ShuAquariumMutations,typeof module==="object"&&module.exports?require('./pet-notebook.js'):root.ShuPetNotebook,typeof module==="object"&&module.exports?require('./player-options.js'):root.ShuPlayerOptions);if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
+})(typeof globalThis!=="undefined"?globalThis:this,function(M,N,O){
   "use strict";
   const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6,TANK_CAPACITY=5,BREED_DAYS=3;
   const TRICKS=["お手","おかわり","チンチン","伏せ","ハイタッチ"];
@@ -45,6 +45,18 @@
   ].map(Object.freeze));
   const growthStage=f=>f?.species==="buri"?BURI_STAGES.findLast(a=>num(f.length)>=a.min):null;
   const displayName=(f,catalog)=>growthStage(f)?.name||catalog.find(a=>a.id===f?.species)?.name||"魚";
+  // Share the adventure's twelve-grapheme rules; identity always stays in uid.
+  const nickname=f=>typeof f?.nickname==="string"&&f.nickname.length<=512&&O?.validName(f.nickname)?O.name(f.nickname):"";
+  const individualName=(f,catalog)=>nickname(f)||displayName(f,catalog);
+  const storedContestName=value=>value.length<=512&&O?.validName(value)?O.name(value):value.slice(0,40);
+  function renameFish(state,uid,value){
+    const f=state.petLife.fish.find(a=>a.uid===uid);
+    if(!f)return {ok:false,message:"名前を付ける魚が見つからないよ。"};
+    if(typeof value!=="string"||value.length>512||value.trim()!==""&&!O?.validName(value))return {ok:false,message:"愛称は1〜12文字で入れてね。空欄で保存すると魚種名の表示に戻るよ。"};
+    const next=value.trim()===""?"":O.name(value),previous=f.nickname,changed=next?previous!==next:Object.hasOwn(f,"nickname");
+    if(next)f.nickname=next;else delete f.nickname;
+    return {ok:true,changed,previous,nickname:next};
+  }
   const maturityLength=spec=>spec?.id==="buri"?8000:spec?.start||Infinity;
   function normalizeGrowth(f,history,day){
     const current=growthStage(f);if(!current)return;
@@ -86,6 +98,7 @@
       fish.stars=int(f.stars??starLevel(fish),1,5);
       fish.xp=int(f.xp??fish.careDays*10,0,1083);fish.level=fishLevel(fish.xp);
       fish.mutation=M.normalize(f.mutation,!(old.version>=6));
+      const name=nickname(f);if(name)fish.nickname=name;
       normalizeGrowth(fish,f.growthHistory,fish.lastDay);
       return [fish];
     });
@@ -97,7 +110,7 @@
     const best=Object.fromEntries(Object.entries(record(old.best)).filter(([k])=>validKey(k)).map(([k,v])=>[k,int(v,0,100)]));
     const last=record(old.lastResult);
     const lastResult=kinds[last.kind]&&courses.some(c=>c.id===last.course)&&typeof last.name==="string"
-      ? {kind:last.kind,course:last.course,name:last.name.slice(0,40),day:int(last.day,0,day),score:int(last.score,0,100),
+      ? {kind:last.kind,course:last.course,name:storedContestName(last.name),day:int(last.day,0,day),score:int(last.score,0,100),
         subject:(last.kind==="fish"?catalog.some(f=>f.id===last.subject):dogIds.includes(last.subject))?last.subject:null,
         rank:int(last.rank,1,4),reward:int(last.reward,0,1600),marks:Array.isArray(last.marks)?last.marks.slice(0,5).map(Boolean):[],
         detail:typeof last.detail==="string"?last.detail.slice(0,160):"",
@@ -266,7 +279,7 @@
     const p=state.petLife,index=p.fish.findIndex(f=>f.uid===uid),f=p.fish[index];
     if(!f||isLegend(catalog.find(s=>s.id===f.species)))return {ok:false,message:"ぬしは一度だけ迎えられる大切な一匹だよ。総合水槽で育てよう。"};
     sync(state,catalog,day);p.fish.splice(index,1);clearBreeding(p,f.tank,f.species);selectTank(state,p.selectedTank);
-    return {ok:true,message:`${displayName(f,catalog)} #${f.uid.slice(4)}をアスアルに託した。水槽に空きができたよ。`};
+    return {ok:true,message:`${individualName(f,catalog)} #${f.uid.slice(4)}をアスアルに託した。水槽に空きができたよ。`};
   }
   function buyTank(state){
     const p=state.petLife,next=p.unlockedTanks;
@@ -294,7 +307,7 @@
     if(!Number.isFinite(state.money))return {ok:false,message:"所持金を確認できないよ。"};
     p.fish.splice(index,1);clearBreeding(p,f.tank,f.species);selectTank(state,p.selectedTank);
     state.money+=quote.price;
-    return {ok:true,price:quote.price,message:`${displayName(f,catalog)} #${f.uid.slice(4)}をアスアルが${quote.price}円で買い取ったよ。`};
+    return {ok:true,price:quote.price,message:`${individualName(f,catalog)} #${f.uid.slice(4)}をアスアルが${quote.price}円で買い取ったよ。`};
   }
   function care(state,uid,action,day,catalog){
     sync(state,catalog,day);const p=state.petLife,f=p.fish.find(f=>f.uid===uid);
@@ -359,7 +372,7 @@
     if(a.kind==="fish"?!catalog.some(f=>f.id===a.subject):!dogIds.includes(a.participant))return null;
     const commands=(Array.isArray(a.commands)?a.commands:[]).filter(v=>TRICKS.includes(v)).slice(0,5);
     if(new Set(commands).size!==commands.length)return null;
-    return {kind:a.kind,course:a.course,participant:String(a.participant).slice(0,24),subject:String(a.subject).slice(0,24),name:String(a.name||"相棒").slice(0,40),day:int(a.day,0,day),phase:a.phase,
+    return {kind:a.kind,course:a.course,participant:String(a.participant).slice(0,24),subject:String(a.subject).slice(0,24),name:storedContestName(String(a.name||"相棒")),day:int(a.day,0,day),phase:a.phase,
       baseScore:int(a.baseScore,0,100),chance:clamp(a.chance,0,.95),detail:String(a.detail||"").slice(0,160),audience:int(a.audience,-5,5),judges:normalizeJudges(a.judges),
       rolls:Array.from({length:5},(_,i)=>clamp(a.rolls?.[i],0,.999999999)),marks:(Array.isArray(a.marks)?a.marks:[]).slice(0,commands.length).map(Boolean),commands};
   }
@@ -390,7 +403,7 @@
     if(!Number.isFinite(state.money)||state.money<c.fee)return {ok:false,message:`参加費${c.fee}円が必要だよ。`};
     sync(state,catalog,day);
     const stats=kind==="fish"?fishScore(f):{score:Math.round(state.dogAffinity[participant]/20),detail:`なつき度 ${Math.round(state.dogAffinity[participant]/20)}/100点`};
-    const session={kind,course:courseId,participant,subject:kind==="fish"?f.species:dog.id,name:kind==="fish"?displayName(f,catalog):dog.name,
+    const session={kind,course:courseId,participant,subject:kind==="fish"?f.species:dog.id,name:kind==="fish"?individualName(f,catalog):dog.name,
       day,phase:"entrance",baseScore:stats.score,detail:stats.detail,chance:kind==="tricks"?trickChance(state,participant):0,
       audience:Math.floor(clamp(random(),0,.999999999)*11)-5,judges:contestants(courseId,random),
       rolls:kind==="tricks"?Array.from({length:5},()=>clamp(random(),0,.999999999)):[],marks:[],commands:[]};
@@ -428,6 +441,6 @@
     return advanceContest(state);
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,nickname,individualName,renameFish,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });
