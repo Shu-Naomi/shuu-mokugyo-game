@@ -199,6 +199,7 @@
 
 /* A per-fish atlas supplies gold; these labels and one gentle notice do not tint fish or water. */
 .pet-mutation-label{color:#ffdf7d;font-size:12px;font-weight:700}
+.pet-mutation-label[data-pet-mutation="albino"]{color:#ffe5e3}
 .pet-discovery{border-color:#e4bd59!important;background:#273c36!important;box-shadow:0 0 12px #e4bd5933;animation:pet-discovery-in .2s ease-out}
 .pet-discoveries{margin-top:10px;padding:10px;border:1px solid #b89c55;border-radius:10px;background:#273c36}
 .pet-discoveries h4,.pet-discoveries p{margin:0 0 4px}.pet-discoveries h4{font-size:13px;color:#ffdf7d}.pet-discoveries small{display:block;font-size:12px}
