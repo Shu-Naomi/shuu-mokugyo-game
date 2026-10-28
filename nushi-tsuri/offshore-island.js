@@ -26,7 +26,10 @@
   function inside(x,y,poly){let hit=false;for(let i=0,j=poly.length-1;i<poly.length;j=i++){const [a,b]=poly[i],[c,d]=poly[j];if((b>y)!==(d>y)&&x<(c-a)*(y-b)/(d-b)+a)hit=!hit;}return hit;}
   function distance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/length)):0;return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
   const near=(a,b,r=6)=>Number.isFinite(a.x)&&Number.isFinite(a.y)&&Math.hypot(a.x-b.x,a.y-b.y)<=r;
-  const walkable=(x,y)=>Number.isFinite(x)&&Number.isFinite(y)&&x>=2&&x<=238&&y>=2&&y<=133&&(platforms.some(p=>inside(x,y,p))||trails.some(p=>p.slice(1).some((b,i)=>distance(x,y,p[i],b)<=2.4)));
+  // The dock approach and eastern tidal path need extra steering room for
+  // directional/touch input. Keep the western ledges and cliff routes tight.
+  const trailClearances=[3.2,2.4,2.4,3.8,2.4,2.4];
+  const walkable=(x,y)=>Number.isFinite(x)&&Number.isFinite(y)&&x>=2&&x<=238&&y>=2&&y<=133&&(platforms.some(p=>inside(x,y,p))||trails.some((p,index)=>p.slice(1).some((b,i)=>distance(x,y,p[i],b)<=trailClearances[index])));
   const water=(x,y)=>Number.isFinite(x)&&Number.isFinite(y)&&x>=2&&x<=238&&y>=2&&y<=133&&!inside(x,y,land)&&!walkable(x,y);
   const names={cove:'潮風島・入り江',west:'潮風島・西の磯',east:'潮風島・東の潮目'};
   const areaAt=(x,y)=>x<85?'west':x>165?'east':'cove';
