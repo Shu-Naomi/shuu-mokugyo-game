@@ -1,0 +1,63 @@
+{
+  "version": "252-12",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-namazu-albino-v252-12.png",
+  "assetSha256": "b015b03737002ea79ed0cf72d33e717d794b951b17757db2e249649e461fd54d",
+  "source": "assets/fish-stream-v208.png",
+  "sourceSha256": "5517537d4766432e5278aa62fee5ec44cac8c292cf33ad17b0ff780cb747ce8c",
+  "referenceBoxes": [
+    [
+      26,
+      681,
+      363,
+      107
+    ],
+    [
+      403,
+      667,
+      291,
+      140
+    ],
+    [
+      720,
+      663,
+      242,
+      147
+    ],
+    [
+      1043,
+      653,
+      169,
+      158
+    ],
+    [
+      38,
+      807,
+      268,
+      136
+    ],
+    [
+      323,
+      812,
+      300,
+      138
+    ],
+    [
+      643,
+      840,
+      309,
+      91
+    ],
+    [
+      968,
+      831,
+      271,
+      110
+    ]
+  ],
+  "referencePreparation": "At native scale, center each source pose in a 384x512 cell, four columns by two rows. Source bytes unchanged.",
+  "rawGeneratedImage": "exec-366d7a92-6d81-4e88-b233-2fc75bce146a.png",
+  "output": "1536x1024 transparent PNG; copied without modification",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent 8-frame sprite atlas for an existing Japanese fishing game. The input is the edit target: eight poses of ONE ordinary Japanese catfish (namazu), four columns by two rows on a 1536x1024 canvas. Make an ALBINO rare-colour variant of this same catfish. Change the brown mottled skin and fins to warm pearl ivory and pale cream, a faint blush pink belly and translucent pink-cream fin membranes, soft warm-grey shading so the body remains clearly modeled, and small ruby-red eyes with a pinpoint light reflection. Keep it natural, readable and gentle. Preserve the broad flat catfish head, wide mouth, all long fine barbels, anatomy, silhouette, fin positions, head locations and all eight poses in exactly their order and cell centers. Do not turn it into a scaled carp. Final frame is right-facing with mouth open; second row other frames face left. Match the detailed retro-game pixel-inspired illustration of the reference. Exactly 8 poses, 4 columns by 2 rows, each centered in its 384x512 cell with ample clear spacing. Clean alpha edges: remove the reference's stray red/yellow fringe. Actual transparent background; no red halo, no sparkles, no glow, no water, no text, no grid, no shadow or backdrop. Preserve thin whiskers and their transparent spaces; white body must not become a flat silhouette."
+}
