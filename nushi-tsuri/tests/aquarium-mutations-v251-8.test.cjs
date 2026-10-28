@@ -30,7 +30,7 @@ test('one of the 1000 accepted tickets wins; rejection sampling removes the 32-b
 test('gold Funa and Koi children in generation 2 through 20 are eligible, without waiting for both parents to reach generation 2',()=>{
  const s=pair();let calls=0;const hash=()=>{calls++;return [0];};
  for(const generation of [undefined,null,-1,0,1,1.5,21])assert.equal(M.draw(s,{...egg(),generation},hash).kind,'normal');
- for(const species of ['dojo','moroko','nushi'])assert.equal(M.draw(s,egg(2,species),hash).kind,'normal');
+ for(const species of ['kajika','moroko','nushi'])assert.equal(M.draw(s,egg(2,species),hash).kind,'normal');
  assert.equal(calls,0);assert.equal(M.draw(s,egg(2),hash).kind,'gold');assert.equal(M.draw(s,egg(20),hash).kind,'gold');assert.equal(M.draw(s,egg(2,'koi'),hash).kind,'gold');assert.equal(M.draw(s,egg(20,'koi'),hash).kind,'gold');assert.equal(calls,4);
  assert.equal(lay(pair(GOLD_SEED,1,0)).generation,2);assert.equal(lay(pair(NORMAL_SEED,0,0)).generation,1);assert.equal(lay(pair(NORMAL_SEED,19,20)).generation,20);
 });
