@@ -22,7 +22,7 @@ module.exports=async function notebookUI(url,screen,scenario){
    assert.equal(await page.evaluate(()=>s.money),before.money-await page.evaluate(()=>petCatalog.find(f=>f.id==='funa').price));
    await pressProduct(page,'[data-pet-buy="nijimasu"]',mobile);await press('[data-pet-action="notebook"]');await painted();await layout();await shot('first-page');
    await press('[data-notebook-species="funa"]');assert.match(await page.locator('.pet-notebook-specimen').innerText(),/フナ/);await press('[data-pet-action="notebook-back"]');
-   await press('[data-pet-action="aquarium"]');await press('[data-pet-inspect="pet-1"]');await press('[data-pet-action="records"]');await press('[data-pet-panel-tab="manage"]');await press('[data-pet-action="rehome"]');await press('[data-pet-action="rehome-confirm"]');
+   await press('[data-pet-action="aquarium"]');await press('.pet-fish-roster [data-pet-inspect="pet-1"]');await press('[data-pet-action="records"]');await press('[data-pet-panel-tab="manage"]');await press('[data-pet-action="rehome"]');await press('[data-pet-action="rehome-confirm"]');
    await press('[data-pet-action="close"]');await menuBook();await press('[data-notebook-species="funa"]');assert.match(await page.locator('.pet-notebook-empty').innerText(),/ページ.*残って/);await layout();await shot('species-kept');
   }else{
    assert.equal(await page.evaluate(()=>s.money),before.money);await press('[data-pet-action="aquarium"]');
