@@ -1,0 +1,63 @@
+{
+  "version": "252-13",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-medaka-gold-v252-13.png",
+  "assetSha256": "9165c2e18519311d9eee51931864cf903a094a131cac7364fe34c41febb1be76",
+  "source": "assets/fish-medaka-v227.png",
+  "sourceSha256": "345540dd3998b807d2d316534def3ba83c3153e74852be0e25cb608b172d1f04",
+  "referenceBoxes": [
+    [
+      34,
+      235,
+      391,
+      141
+    ],
+    [
+      467,
+      224,
+      353,
+      167
+    ],
+    [
+      878,
+      214,
+      295,
+      197
+    ],
+    [
+      1244,
+      194,
+      251,
+      225
+    ],
+    [
+      45,
+      617,
+      308,
+      216
+    ],
+    [
+      386,
+      643,
+      357,
+      161
+    ],
+    [
+      770,
+      649,
+      366,
+      139
+    ],
+    [
+      1170,
+      646,
+      346,
+      151
+    ]
+  ],
+  "referencePreparation": "All source poses scaled uniformly to 90%, centered in 384x512 cells, four columns by two rows. Original source bytes unchanged.",
+  "rawGeneratedImage": "exec-37eb95ed-3503-456c-937c-afe85434a2df.png",
+  "output": "1536x1024 transparent PNG; copied without modification",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent 8-frame sprite atlas for an existing Japanese fishing game. Input image is the edit target, eight poses of ONE existing medaka (Japanese ricefish), four columns by two rows on a 1536x1024 canvas. Create a GOLDEN rare-colour variant of exactly this same medaka. Change only its silver/bronze scales, skin and fins to luminous warm yellow-gold, a pale cream-gold belly, honey-gold shadows and restrained bright scale highlights. It must read distinctly gold rather than brown, orange or albino. Preserve its large dark eyes, small upward-facing mouth, small natural fins, compact ricefish anatomy, all eight silhouettes and poses in order, relative sizes and original cell centers. Preserve the left-facing second row except the final right-facing open-mouth pose. Match the detailed retro-game pixel-inspired illustration of the reference. Same 1536x1024 composition, each fish centered within its 384x512 cell. Exactly 8 fish poses. Actual transparent background, clean alpha edges without the reference's stray red/yellow fringe. Keep transparent spaces around fins. No fancy goldfish tail, no barbels, no added accessories, no sparkles, no halo or outer glow, no water, no text, no grid, no ground shadow or backdrop."
+}

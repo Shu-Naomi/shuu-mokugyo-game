@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),run=require('./browser-aquarium-mutation.cjs');
 const root=path.resolve(__dirname,'..'),types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
-const variants=[require('./aquarium-mutation-fixture.cjs'),require('./aquarium-mutation-koi-fixture.cjs'),require('./aquarium-mutation-namazu-fixture.cjs')];
+const variants=[require('./aquarium-mutation-fixture.cjs'),require('./aquarium-mutation-koi-fixture.cjs'),require('./aquarium-mutation-namazu-fixture.cjs'),require('./aquarium-mutation-medaka-fixture.cjs')];
 const allScreens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}];
 const screens=process.argv[2]?allScreens.filter(s=>s.width===Number(process.argv[2])):allScreens;
 const server=http.createServer((req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',f=path.resolve(root,p);if(!f.startsWith(root+path.sep)||!fs.statSync(f).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(f)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(f).pipe(res);}catch{res.writeHead(404);res.end();}});
