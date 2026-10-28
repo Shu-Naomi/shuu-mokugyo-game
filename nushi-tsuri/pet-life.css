@@ -220,14 +220,14 @@
 .pet-notebook-layout{display:grid;grid-template-columns:180px minmax(0,1fr);gap:10px;min-height:0}
 .pet-notebook-species{overflow:auto;display:flex;flex-direction:column;gap:6px;min-height:0;scrollbar-gutter:stable;padding:2px}
 .pet-notebook-species button{flex-shrink:0;min-height:54px;text-align:left;padding:6px 10px;border:1px solid #76908a;background:#223e4b;color:#e8e8cc}
-.pet-notebook-species button[aria-pressed="true"]{border-color:#f5d57b;background:#40514a;box-shadow:inset 3px 0 #f5d57b}
+.pet-notebook-species button[aria-pressed="true"]{border-color:#f5d57b;background:#40514a;color:#fff1c7;box-shadow:inset 3px 0 #f5d57b}
 .pet-notebook-species b,.pet-notebook-species small{display:block}.pet-notebook-species small{font-size:11px;margin-top:3px}
 .pet-notebook-page{min-width:0;min-height:0;overflow:auto;padding:10px 14px;border:1px solid #a49d70;border-radius:8px;background:#203b46;scrollbar-gutter:stable}
 .pet-notebook-page h3,.pet-notebook-page h4{margin:0 0 4px;color:#ffe3a2}.pet-notebook-page p{margin:4px 0;font-size:12px;line-height:1.5}
 .pet-notebook-page>header{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
 .pet-notebook-roster{display:flex;gap:6px;overflow:auto;margin:8px 0;padding:2px;min-width:0}
 .pet-notebook-roster button{flex:0 0 90px;min-height:52px;padding:3px 8px;background:#2a4a50;color:#f1ebc8;border:1px solid #668e86}
-.pet-notebook-roster button[aria-pressed="true"]{border-color:#f6db9e;background:#455951}
+.pet-notebook-roster button[aria-pressed="true"]{border-color:#f6db9e;background:#455951;color:#fff1c7}
 .pet-notebook-roster [data-pet-card-art]{display:block;height:24px}.pet-notebook-roster canvas{height:24px;max-width:100%;object-fit:contain}
 .pet-notebook-roster b{font-size:12px;white-space:nowrap}
 .pet-notebook-specimen{display:flex;gap:14px;align-items:center;margin:8px 0 10px}
