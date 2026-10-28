@@ -6,6 +6,18 @@ const copy=x=>JSON.parse(JSON.stringify(x));
 const {runFight}=require('./nushi-playability-v228.cjs');
 const snapshot=w=>read(w,'({region:s.mapRegion,x:s.x,y:s.y,money:s.money,minutes:s.gameMinutes,boat:s.boatActive,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife})');
 
+test('the eastern shimaaji path allows lateral steering without opening cliffs or sea',()=>{
+ const a=[172,46],b=[181,51],length=Math.hypot(b[0]-a[0],b[1]-a[1]);
+ const middle=[(a[0]+b[0])/2,(a[1]+b[1])/2],perpendicular=[-(b[1]-a[1])/length,(b[0]-a[0])/length];
+ // A player who steers slightly off the path center must not hit an invisible wall.
+ for(const sign of [-1,1]){
+  const x=middle[0]+sign*3.25*perpendicular[0],y=middle[1]+sign*3.25*perpendicular[1];
+  assert.equal(I.walkable(x,y),true,'east passage edge '+sign);
+ }
+ for(const blocked of [[2,2],[238,133],[132,10],[103,35],[170,75]])assert.equal(I.walkable(...blocked),false,'off-trail sea/cliff '+blocked);
+ assert.equal(I.fishingWater(218,55,'right')?.type,'east');
+});
+
 test('the painted paths connect the landing, all fishing platforms, shelter and lighthouse without water walking',()=>{
  const targets=[...I.fishingPoints,I.rest,I.lighthouse],seen=new Set([`${I.entry.x},${I.entry.y}`]),queue=[I.entry];let index=0;
  while(index<queue.length){const p=queue[index++];for(const d of ['left','right','up','down']){const n=Life.moveTarget(p.x,p.y,d,4,I.walkable),key=`${n.x},${n.y}`;if(!seen.has(key)){seen.add(key);queue.push(n);}}}
