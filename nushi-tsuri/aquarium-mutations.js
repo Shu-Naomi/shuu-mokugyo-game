@@ -11,6 +11,7 @@
     koi:Object.freeze({name:'コイ',kind:'gold',label:'黄金',title:'黄金のコイ',appearance:'黄金色のコイ',artId:'koiGold'}),
     namazu:Object.freeze({name:'ナマズ',kind:'albino',label:'白化',title:'白化ナマズ',appearance:'白化ナマズ',artId:'namazuAlbino'}),
     medaka:Object.freeze({name:'メダカ',kind:'gold',label:'黄金',title:'黄金のメダカ',appearance:'黄金色のメダカ',artId:'medakaGold'}),
+    unagi:Object.freeze({name:'ウナギ',kind:'albino',label:'白化',title:'白化ウナギ',appearance:'白化ウナギ',artId:'unagiAlbino'}),
   });
   const speciesForm=species=>typeof species==='string'&&Object.hasOwn(forms,species)?forms[species]:null;
   const form=(species,kind)=>{const f=speciesForm(species);return f?.kind===kind?f:null;};

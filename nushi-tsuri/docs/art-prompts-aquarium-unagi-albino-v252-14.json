@@ -1,0 +1,63 @@
+{
+  "version": "252-14",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-unagi-albino-v252-14.png",
+  "assetSha256": "39d36126286a9b8889237133a50dfd459a5481ba4606ad871bd9c9207d801224",
+  "source": "assets/fish-stream-v208.png",
+  "sourceSha256": "5517537d4766432e5278aa62fee5ec44cac8c292cf33ad17b0ff780cb747ce8c",
+  "referenceBoxes": [
+    [
+      30,
+      1006,
+      359,
+      67
+    ],
+    [
+      430,
+      958,
+      239,
+      131
+    ],
+    [
+      777,
+      957,
+      141,
+      144
+    ],
+    [
+      1064,
+      963,
+      129,
+      125
+    ],
+    [
+      67,
+      1102,
+      207,
+      118
+    ],
+    [
+      318,
+      1122,
+      302,
+      79
+    ],
+    [
+      635,
+      1144,
+      316,
+      69
+    ],
+    [
+      972,
+      1142,
+      264,
+      71
+    ]
+  ],
+  "referencePreparation": "At native scale, center all eight source poses in 384x512 cells, four columns by two rows. Original source bytes unchanged.",
+  "rawGeneratedImage": "exec-ed3578f0-ed02-470b-ae70-9f4b23f0da76.png",
+  "output": "1536x1024 transparent PNG; copied without modification",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent 8-frame sprite atlas for an existing Japanese fishing game. Input is the edit target: eight poses of ONE existing Japanese eel (unagi), four columns by two rows on a 1536x1024 canvas. Create an ALBINO rare-colour variant of exactly this same eel. Change only brown mottled skin and fins to warm pearl ivory, a pale cream back, faint blush pink belly and translucent cream-pink fin membranes, soft warm-grey shadows preserving body volume, and small ruby-red eyes with a tiny reflection. Preserve its exceptionally long slender continuous eel body, small pectoral fins, long dorsal/anal fin edge, tapering tail, head and mouth, all eight poses in order, all curves, relative sizes and original cell centers. Top row turns from right-facing side through curled three-quarter to front. Second row turns back to left-facing side except the last right-facing open-mouth pose. Same 1536x1024 composition; each fish centered in its 384x512 cell with clear spacing. Detailed retro-game pixel-inspired illustration matching the original. Exactly 8 poses. Actual transparent background, clean alpha edges without stray red/yellow fringe. No barbels or whiskers, no scales, no thick catfish body, no accessories, no sparkles, no halo, no outer glow, no water, no text, no grid, no ground shadow or backdrop. Keep the long tail and fin edges distinct from empty alpha."
+}
