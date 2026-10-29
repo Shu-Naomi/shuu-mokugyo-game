@@ -7373,7 +7373,7 @@
       </div>
     </section>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="offshore-island.js?v=252-17"></script>
+    <script src="offshore-island.js?v=252-18"></script>
     <script src="world-life.js?v=251-2"></script>
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=248-2"></script>
@@ -24103,7 +24103,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-17").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-18").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

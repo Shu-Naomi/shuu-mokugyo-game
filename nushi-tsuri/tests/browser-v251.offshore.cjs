@@ -38,7 +38,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
   await press('#action');await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'offshore');assert.equal(await value('s.money'),original.money-800);assert.equal(await value('s.gameMinutes'),original.time+60);assert.equal(await value('s.boatActive'),false);
   await page.waitForFunction(()=>{const p=document.querySelector('#offshorePixels').getContext('2d').getImageData(0,0,1672,941).data;return p[0]!==20||p[1]!==92||p[2]!==124;});await shot('island-arrival');
   for(const [x,y]of collision.blocked)assert.equal(await page.evaluate(([x,y])=>ShuOffshore.walkable(x,y),[x,y]),false,'blocked terrain '+x+','+y);
-  for(const target of collision.floors){await walkTo(target);if(['beach-middle','quay-right','east-low-path','lighthouse-west','reported-road'].includes(target.id))await shot('floor-'+target.id);}
+  for(const target of collision.floors){await walkTo(target);if(['beach-middle','quay-right','east-low-path','lighthouse-west','reported-road','wide-west-reported','wide-west-inner-lane','wide-west-lower-lane'].includes(target.id))await shot('floor-'+target.id);}
   for(const edge of collision.verges){
    await walkTo({id:edge.id,x:edge.x,y:edge.y,radius:.4});
    for(let n=0;n<5;n++){
@@ -48,7 +48,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
     if(edge.max!==undefined)assert.ok(at[edge.axis]<=edge.max,edge.id+' southern boundary');
     assert.notDeepEqual(at,{x:edge.blocked[0],y:edge.blocked[1]},edge.id+' blocked ground');
    }
-   if(['reported-bushes','western-forest','lighthouse-rock'].includes(edge.id))await shot('verge-'+edge.id);
+   if(['reported-bushes','western-forest','lighthouse-rock','wide-west-forest-edge'].includes(edge.id))await shot('verge-'+edge.id);
   }
   await walkTo(I.rest);await shot('rest-shelter');await walkTo(I.lighthouse);await shot('lighthouse');
   for(const [id,area,bait,hook,distance,mode]of [['akahata','cove','smallShrimp','medium',20,'nushi'],['ishigakidai','west','shell','large',50,'gauge'],['shimaaji','east','shrimp','large',50,'nushi']]){

@@ -4,7 +4,7 @@ function withinEdge(point,edge){
  if(edge.min!==undefined)assert.ok(point[edge.axis]>=edge.min,edge.id+' crossed the painted northern/western edge');
  if(edge.max!==undefined)assert.ok(point[edge.axis]<=edge.max,edge.id+' crossed the painted southern edge');
 }
-test('the reported bushes and six neighboring off-road landmarks are blocked while the painted road remains open',()=>{
+test('the old off-road landmarks and the new wide western bend stop at the painted forest boundary',()=>{
  for(const p of verges){
   assert.equal(I.walkable(p.x,p.y),true,p.id+' road');assert.equal(I.walkable(...p.blocked),false,p.id+' obstacle');
   const end=L.moveTarget(p.x,p.y,p.direction,40,I.walkable);withinEdge(end,p);assert.ok(Math.hypot(end.x-p.x,end.y-p.y)<3,p.id+' leaves the road');
