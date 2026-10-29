@@ -7,7 +7,7 @@ function withinEdge(point,edge){
 test('the old off-road landmarks and the new wide western bend stop at the painted forest boundary',()=>{
  for(const p of verges){
   assert.equal(I.walkable(p.x,p.y),true,p.id+' road');assert.equal(I.walkable(...p.blocked),false,p.id+' obstacle');
-  const end=L.moveTarget(p.x,p.y,p.direction,40,I.walkable);withinEdge(end,p);assert.ok(Math.hypot(end.x-p.x,end.y-p.y)<3,p.id+' leaves the road');
+  const end=L.moveTarget(p.x,p.y,p.direction,40,I.walkable);withinEdge(end,p);assert.ok(I.walkable(end.x,end.y),p.id+' stopped on the painted road');
  }
 });
 test('repeated real game direction inputs stop at each independently identified road edge without changing travel resources',()=>{
