@@ -8,7 +8,13 @@ module.exports=async function offshore(url,mobile=false,options={}){
  const page=await context.newPage(),cdp=mobile?await context.newCDPSession(page):null,errors=[],failed=[],results=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)failed.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>{const v=eval(q);return v===undefined?null:JSON.parse(JSON.stringify(v));},q);
- const shot=name=>page.screenshot({path:path.join(directory,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
+ const shot=async name=>{
+  // The virtual gameplay clock does not finish CSS movement transitions.
+  // Capture the settled foot position rather than a frame still sliding
+  // from the previous location while the camera has already moved.
+  await page.locator('#player').evaluate(n=>Promise.all(n.getAnimations().filter(a=>Number.isFinite(a.effect?.getComputedTiming().endTime)).map(a=>a.finished.catch(()=>{}))));
+  return page.screenshot({path:path.join(directory,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
+ };
  const snapshot=()=>value('({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction,money:s.money,time:s.gameMinutes,hp:s.hp,caught:s.caught,records:s.fishCatchRecords,memories:s.catchMemories,baits:s.baits,equipment:s.equipment,pet:s.petLife})');
  let held=false,button,walked=0,lastFightTrace=[];
  async function hold(on){if(on===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:on?'touchStart':'touchEnd',touchPoints:on?[{x:button.x,y:button.y,id:1}]:[]});else if(on){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=on;}
