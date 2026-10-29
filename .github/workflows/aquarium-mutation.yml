@@ -1,7 +1,7 @@
 name: Aquarium colours and notebook
 on:
   push:
-    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook, codex/fish-nicknames-v252-11, codex/namazu-albino-v252-12, codex/medaka-gold-v252-13, codex/unagi-albino-v252-14, codex/dojo-albino-v252-15, codex/offshore-collision-v252-16]
+    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook, codex/fish-nicknames-v252-11, codex/namazu-albino-v252-12, codex/medaka-gold-v252-13, codex/unagi-albino-v252-14, codex/dojo-albino-v252-15, codex/offshore-collision-v252-16, codex/offshore-ground-boundaries-v252-17]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
@@ -91,12 +91,12 @@ jobs:
       - name: Exercise the published aquarium on all six rare fish on the same three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-16
+          AQUARIUM_MUTATION_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-17
         run: node browser-aquarium-mutation-evidence.cjs 2>&1 | tee aquarium-mutation-public-browser.log
       - name: Exercise the published notebook and fish nicknames on three screens
         if: ${{ github.ref == 'refs/heads/main' && !inputs.public_url }}
         env:
-          PET_NOTEBOOK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-16
+          PET_NOTEBOOK_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-17
         run: node browser-pet-notebook-evidence.cjs 2>&1 | tee pet-notebook-public-browser.log
       - name: Preserve focused browser evidence
         if: always()

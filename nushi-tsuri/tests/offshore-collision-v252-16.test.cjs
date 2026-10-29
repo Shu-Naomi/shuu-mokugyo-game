@@ -47,5 +47,5 @@ test('all three fishing shores and service landmarks remain reachable and the fr
 test('the original map painting stays unchanged and the HTML and offline cache select the repaired collision module',()=>{
  const root=path.resolve(__dirname,'..'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
  assert.equal(sha('assets/offshore-world-v251.png'),'58cb82c22b3ae8cc4b10b4ba6e72720d206458b8b2f7e9f2abb2ef2c7e17b9c9');
- for(const file of ['index.html','sw.js'])assert.match(fs.readFileSync(path.join(root,file),'utf8'),/offshore-island\.js\?v=252-16/);
+ for(const file of ['index.html','sw.js'])assert.match(fs.readFileSync(path.join(root,file),'utf8'),/offshore-island\.js\?v=252-17/);
 });
