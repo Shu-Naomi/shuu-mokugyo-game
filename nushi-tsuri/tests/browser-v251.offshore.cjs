@@ -34,7 +34,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
   for(const [x,y]of collision.blocked)assert.equal(await page.evaluate(([x,y])=>ShuOffshore.walkable(x,y),[x,y]),false,'blocked terrain '+x+','+y);
   for(const target of collision.floors){await walkTo(target);if(['beach-middle','quay-right','east-low-path','lighthouse-west','reported-road'].includes(target.id))await shot('floor-'+target.id);}
   for(const edge of collision.verges){
-   await walkTo({...edge,radius:.4});
+   await walkTo({id:edge.id,x:edge.x,y:edge.y,radius:.4});
    for(let n=0;n<5;n++){
     await press('[data-move="'+edge.direction+'"]');await page.clock.runFor(50);walked++;
     const at=await value('({x:s.x,y:s.y})');
