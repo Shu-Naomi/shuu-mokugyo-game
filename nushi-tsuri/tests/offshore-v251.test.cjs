@@ -58,7 +58,7 @@ for(const mode of ['gauge','nushi'])test('island fish use their real shore, norm
 test('exclusive fish do not leak to the mainland, while their island guide and offline assets are complete',()=>{
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
  for(const [id,area]of cases){const d=F.definitions.find(f=>f.id===id);assert.ok(d.locations.includes(I.name));assert.ok(F.pools[`offshore-${area}-mid`][id]>0);for(const [spot,weights]of Object.entries(F.pools))if(!spot.startsWith('offshore-'))assert.ok(!weights[id],id+' excluded from '+spot);assert.notEqual(A.species[id].asset,A.species[d.base].asset);assert.ok(sw.includes(A.species[id].asset));}
- for(const a of Object.values(I.assets))assert.ok(sw.includes(a));assert.ok(sw.includes('./offshore-island.js?v=251-1'));assert.ok(sw.includes('./offshore-island.css?v=251-2'));
+ for(const a of Object.values(I.assets))assert.ok(sw.includes(a));assert.ok(sw.includes('./offshore-island.js?v=252-16'));assert.ok(sw.includes('./offshore-island.css?v=251-2'));
  const a=boot({...seed(),mapRegion:I.id,...I.entry});try{const w=a.window,before=snapshot(w);w.open('record');w.document.querySelector('#fishdexFieldGuide').click();assert.equal(w.document.querySelector('#fieldGuideRegion').textContent,I.name);assert.equal(w.document.querySelectorAll('[data-guide-place]').length,3);assert.deepEqual(snapshot(w),before);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
 });
 

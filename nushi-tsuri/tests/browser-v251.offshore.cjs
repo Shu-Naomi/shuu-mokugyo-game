@@ -1,5 +1,5 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
-const {seed,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js');
+const {seed,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),collision=require('./offshore-collision-fixture.cjs');
 module.exports=async function offshore(url,mobile=false,options={}){
  const viewport=options.viewport||(mobile?{width:844,height:390}:{width:1280,height:720}),directory=path.join(__dirname,'browser-evidence-v251');fs.mkdirSync(directory,{recursive:true});
  const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:options.dpr||1,locale:'ja-JP',serviceWorkers:'block'});
@@ -18,19 +18,21 @@ module.exports=async function offshore(url,mobile=false,options={}){
   // Plan from the shipped collision function; execute every step through
   // actual directional buttons. Never assign the player's map or position.
   const route=await page.evaluate(target=>{
-   const key=p=>`${p.x},${p.y},${p.d}`,first={x:s.x,y:s.y,d:s.direction,path:[]},queue=[first],seen=new Set([key(first)]);
-   for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<=3&&(!target.direction||p.d===target.direction)&&(!target.id||ShuOffshore.fishingWater(p.x,p.y,p.d)?.type===target.id))return p.path;
+   const radius=target.radius||3,fishingArea=Object.hasOwn(ShuOffshore.names,target.id),key=p=>`${p.x},${p.y},${p.d}`,first={x:s.x,y:s.y,d:s.direction,path:[]},queue=[first],seen=new Set([key(first)]);
+   for(let i=0;i<queue.length;i++){const p=queue[i];if(Math.hypot(p.x-target.x,p.y-target.y)<=radius&&(!target.direction||p.d===target.direction)&&(!fishingArea||ShuOffshore.fishingWater(p.x,p.y,p.d)?.type===target.id))return p.path;
     for(const d of ['left','right','up','down']){const n={...ShuWorldLife.moveTarget(p.x,p.y,d,4,ShuOffshore.walkable),d},k=key(n);if(!seen.has(k)){seen.add(k);queue.push({...n,path:[...p.path,d]});}}
    }throw Error('No island path '+JSON.stringify(target));
   },target);
-  for(const d of route){await press('[data-move="'+d+'"]');await page.clock.runFor(50);walked++;}
-  assert.equal(await value('s.mapRegion'),'offshore');assert.ok(await page.evaluate(t=>Math.hypot(s.x-t.x,s.y-t.y)<=3,target));await page.clock.runFor(400);
+  for(const d of route){const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,ShuOffshore.walkable),d);await press('[data-move="'+d+'"]');await page.clock.runFor(50);assert.deepEqual(await value('({x:s.x,y:s.y})'),expected,'actual directional movement '+d);walked++;}
+  assert.equal(await value('s.mapRegion'),'offshore');assert.ok(await page.evaluate(t=>Math.hypot(s.x-t.x,s.y-t.y)<=(t.radius||3),target));await page.clock.runFor(400);
  }
  try{
   await page.clock.install({time:new Date('2026-10-22T03:00:00Z')});await page.clock.pauseAt('2026-10-22T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   assert.equal(await value('s.equipment.vehicle'),null);const original=await snapshot();await press('#action');await fitFerry();await shot('harbor-fare');await press('#offshoreFerryCancel');assert.deepEqual(await snapshot(),original);
   await press('#action');await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'offshore');assert.equal(await value('s.money'),original.money-800);assert.equal(await value('s.gameMinutes'),original.time+60);assert.equal(await value('s.boatActive'),false);
   await page.waitForFunction(()=>{const p=document.querySelector('#offshorePixels').getContext('2d').getImageData(0,0,1672,941).data;return p[0]!==20||p[1]!==92||p[2]!==124;});await shot('island-arrival');
+  for(const [x,y]of collision.blocked)assert.equal(await page.evaluate(([x,y])=>ShuOffshore.walkable(x,y),[x,y]),false,'blocked terrain '+x+','+y);
+  for(const target of collision.floors){await walkTo(target);if(['beach-middle','quay-right','east-low-path','lighthouse-west'].includes(target.id))await shot('floor-'+target.id);}
   await walkTo(I.rest);await shot('rest-shelter');await walkTo(I.lighthouse);await shot('lighthouse');
   for(const [id,area,bait,hook,distance,mode]of [['akahata','cove','smallShrimp','medium',20,'nushi'],['ishigakidai','west','shell','large',50,'gauge'],['shimaaji','east','shrimp','large',50,'nushi']]){
    const point=I.fishingPoints.find(p=>p.id===area);await walkTo(point);await shot(area+'-fishing-platform');await press('#action');assert.equal(await value('battle.offshoreType'),area);
@@ -52,7 +54,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
    assert.equal(await value('battle?.phase'),'landing',id+' actual landing');await hold(false);if(mode==='nushi')assert.ok(warnings>0);await page.clock.runFor(1600);assert.equal(await value('s.caught.'+id),caughtBefore+1);assert.equal(await value('s.baits.'+bait),baitBefore-1);assert.equal(await value('s.fishCatchRecords.'+id+'.last.spotId'),spot);await shot(id+'-caught');await page.evaluate(()=>hideCatchCard());results.push({id,area,mode,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
   }
   const onIsland=await snapshot();await page.reload({waitUntil:'domcontentloaded'});await start();assert.deepEqual(await snapshot(),onIsland);assert.equal(await value('fish.length'),60);await walkTo(I.entry);await press('#action');await fitFerry();assert.match(await page.locator('#offshoreFerryNote').innerText(),/追加料金なし/);await shot('paid-return');const beforeReturn=await snapshot();await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'village');assert.equal(await value('s.money'),beforeReturn.money);assert.equal(await value('s.gameMinutes'),beforeReturn.time+60);assert.deepEqual(await value('s.caught'),beforeReturn.caught);await shot('returned-to-harbor');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-  console.log('V251_OFFSHORE_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,roundTripFare:800,departureOnce:true,cancelFree:true,noPersonalBoat:true,walked,visited:['shelter','lighthouse','cove','west','east'],results,islandSaveReload:true,freeReturn:true,catchRecordsPreserved:true,errors:0,httpErrors:0}));
+  console.log('V251_OFFSHORE_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,roundTripFare:800,departureOnce:true,cancelFree:true,noPersonalBoat:true,walked,visited:['shelter','lighthouse','cove','west','east'],repairedFloors:collision.floors.map(p=>p.id),blockedTerrain:collision.blocked.length,actualMovementChecked:true,results,islandSaveReload:true,freeReturn:true,catchRecordsPreserved:true,errors:0,httpErrors:0}));
  }catch(error){
   await shot('failure').catch(()=>{});const state=await value('({region:s.mapRegion,x:s.x,y:s.y,log:s.log.slice(0,4),phase:battle?.phase,tension:battle?.ten})').catch(()=>null);
   fs.writeFileSync(path.join(directory,'failure-'+viewport.width+'.json'),JSON.stringify({error:error.stack,state,lastFightTrace,errors,failed},null,2));console.error('V251_FAILURE '+JSON.stringify({state,lastFightTrace}));throw error;

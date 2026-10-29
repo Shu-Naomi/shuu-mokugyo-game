@@ -1,11 +1,12 @@
-const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),run=require('./browser-v251.offshore.cjs');
+const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),crypto=require('node:crypto'),run=require('./browser-v251.offshore.cjs');
 const root=path.resolve(__dirname,'..'),width=Number(process.env.V251_WIDTH||1280),height=Number(process.env.V251_HEIGHT||720),mobile=process.env.V251_TOUCH==='1',dpr=Number(process.env.V251_DPR||1),options={viewport:{width,height},dpr};
 const server=http.createServer((req,res)=>{try{const p=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',f=path.resolve(root,p);if(!f.startsWith(root+path.sep)||!fs.statSync(f).isFile())throw Error('path');const type={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'}[path.extname(f)]||'application/octet-stream';res.writeHead(200,{'Content-Type':type,'Cache-Control':'no-store'});fs.createReadStream(f).pipe(res);}catch{res.writeHead(404);res.end();}});
 (async()=>{await new Promise(r=>server.listen(0,'127.0.0.1',r));try{
  await run('http://127.0.0.1:'+server.address().port+'/nushi-tsuri/',mobile,options);
  if(process.env.NUSHI_PUBLIC_GAMEPLAY==='1'){
-  const url='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=251';let ready=false;
-  for(let attempt=0;attempt<60;attempt++){const response=await fetch(url,{cache:'no-store'}),html=await response.text();if(response.ok&&html.includes('<span>v251</span>')){ready=true;break;}await new Promise(r=>setTimeout(r,2000));}
-  if(!ready)throw Error('Pages has not published v251');await run(url,mobile,{...options,public:true});
+  const url='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-16',files=['index.html','offshore-island.js','sw.js'],sha=data=>crypto.createHash('sha256').update(data).digest('hex'),expected=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),pending=new Set(files),matched=[],deadline=Date.now()+6*60*1000;
+  while(pending.size&&Date.now()<deadline){for(const file of [...pending])try{const target=new URL(file,url);target.searchParams.set('offshore-source',process.env.GITHUB_SHA||expected.get(file));const response=await fetch(target,{cache:'no-store',signal:AbortSignal.timeout(15000)});if(response.ok&&sha(Buffer.from(await response.arrayBuffer()))===expected.get(file)){pending.delete(file);matched.push({file,sha256:expected.get(file)});}}catch(error){console.log('OFFSHORE_PUBLIC_SOURCE_WAIT '+file+' '+error.name);}if(pending.size)await new Promise(r=>setTimeout(r,2000));}
+  fs.mkdirSync(path.join(__dirname,'browser-evidence-v251'),{recursive:true});fs.writeFileSync(path.join(__dirname,'browser-evidence-v251',width+'x'+height+'-public-source.json'),JSON.stringify({commit:process.env.GITHUB_SHA,matched,pending:[...pending]},null,2));
+  if(pending.size)throw Error('Published island source differs: '+[...pending].join(', '));console.log('OFFSHORE_PUBLIC_SOURCE_PASS '+matched.length);await run(url,mobile,{...options,public:true});
  }
  }finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

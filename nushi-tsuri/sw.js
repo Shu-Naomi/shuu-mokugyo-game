@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-dojo-albino-252-15";
+const CACHE_NAME = "nushi-tsuri-v252-offshore-collision-252-16";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -18,7 +18,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-dojo-albino-v252-15.png",
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
-  "./offshore-island.js?v=251-1",
+  "./offshore-island.js?v=252-16",
   "./offshore-island.css?v=251-2",
   "./assets/offshore-world-v251.png",
   "./assets/offshore-ferry-v251.png",

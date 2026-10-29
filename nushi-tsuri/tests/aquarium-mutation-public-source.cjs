@@ -1,7 +1,7 @@
 // Run after merging: compare the deployed runtime with this exact checkout.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
-const files=['index.html','pet-notebook.js','aquarium-mutations.js','pet-life-ui.js','pet-life.css','sw.js','pet-life.js','aquarium-life.js','fish-art.js','save-slots.js','compact-ui.js','assets/aquarium-funa-gold-v251-8.png','assets/aquarium-koi-gold-v252-9.png','assets/aquarium-namazu-albino-v252-12.png','assets/aquarium-medaka-gold-v252-13.png','assets/aquarium-unagi-albino-v252-14.png','assets/aquarium-dojo-albino-v252-15.png'];
+const files=['index.html','offshore-island.js','pet-notebook.js','aquarium-mutations.js','pet-life-ui.js','pet-life.css','sw.js','pet-life.js','aquarium-life.js','fish-art.js','save-slots.js','compact-ui.js','assets/aquarium-funa-gold-v251-8.png','assets/aquarium-koi-gold-v252-9.png','assets/aquarium-namazu-albino-v252-12.png','assets/aquarium-medaka-gold-v252-13.png','assets/aquarium-unagi-albino-v252-14.png','assets/aquarium-dojo-albino-v252-15.png'];
 const sha=data=>crypto.createHash('sha256').update(data).digest('hex');
 (async()=>{
  const expected=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),pending=new Set(files),matched=[];
