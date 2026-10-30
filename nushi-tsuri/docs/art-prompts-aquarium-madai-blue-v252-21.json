@@ -1,0 +1,114 @@
+{
+  "version": "252-21",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-madai-blue-v252-21.png",
+  "assetSha256": "da1e4780dfcc5e6004e68e62dfec3a357a13a890112240bc61f03b94db304ee4",
+  "source": "assets/fish-coastal-v208.png",
+  "sourceSha256": "37473bcfbafde82e06307404aa9b59b8842821e0ddbb2a514c5eae80836df66d",
+  "referencePreparation": "Unchanged source pixels cropped into eight separate reference cells; not a delivered game asset.",
+  "referenceBoxes": [
+    [
+      37,
+      179,
+      311,
+      154
+    ],
+    [
+      444,
+      174,
+      264,
+      165
+    ],
+    [
+      862,
+      175,
+      197,
+      163
+    ],
+    [
+      1246,
+      176,
+      197,
+      161
+    ],
+    [
+      77,
+      696,
+      230,
+      145
+    ],
+    [
+      455,
+      687,
+      242,
+      163
+    ],
+    [
+      806,
+      696,
+      308,
+      145
+    ],
+    [
+      1217,
+      696,
+      255,
+      144
+    ]
+  ],
+  "sourceBoxes": [
+    [
+      38,
+      635,
+      311,
+      154
+    ],
+    [
+      391,
+      632,
+      264,
+      165
+    ],
+    [
+      736,
+      637,
+      197,
+      163
+    ],
+    [
+      1020,
+      635,
+      197,
+      161
+    ],
+    [
+      68,
+      800,
+      230,
+      145
+    ],
+    [
+      381,
+      788,
+      242,
+      163
+    ],
+    [
+      646,
+      807,
+      308,
+      145
+    ],
+    [
+      975,
+      808,
+      255,
+      144
+    ]
+  ],
+  "rawGeneratedImage": "exec-dcd1223b-31d7-4d06-9a92-1d0a04300878.png",
+  "output": "1536x1024 transparent PNG; 1785401 bytes; copied without pixel modification",
+  "rendering": "Eight measured alpha boxes, lower-lip anchor for the open mouth, and the existing uniform 0.85 per-cell scale for the larger left three-quarter pose. Existing 97-position turn interpolation; no pixel edits or background/CSS colour filter.",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent eight-pose sprite atlas for the existing Japanese fishing game Starfall Lake. Input image is the edit target and anatomical/pose reference: the SAME red sea bream (madai) in eight authored poses, arranged on a 1536x1024 canvas in four columns and two rows. Create its rare fantasy BLUE-SCALE colour variant, called Sourin Madai. Change the red/coral pigmentation to lustrous azure-silver scales, a deep cobalt-blue back and spiny dorsal fin, paler silver-white belly, blue-grey translucent fins and a few small turquoise glints within the scales. Keep natural dark pupils and warm gold iris rims, recognizable sea-bream head and cheek plates, compact deep oval body, forked tail, long spiny dorsal fin, scale texture and restrained retro-game pixel-inspired illustrative detail. Preserve EXACTLY all eight poses, their cell positions, relative proportions and sizes: top row full right side, turning right, near-front right, front face; bottom row near-front left, turning left, full left side, and full right side with mouth clearly open. The open-mouth last pose must remain visibly distinct from the first closed-mouth pose. Preserve head/mouth locations within each fish and enough space around every fin. Same 1536x1024 composition and same four-by-two layout with generous empty gaps. Remove all red and magenta edge fringes, stray neighbouring fin fragments and backdrop from the reference. This must be a truly transparent PNG background, with clean alpha around individual fish, NOT a black or white rectangle and NOT a drawn checkerboard. Keep shadows and highlights inside the fish. Exactly eight fish, no extra fish, no other species, no labels, no text, no grid, no water, no props, no glowing aura, no particles or accessories. Do not transform it into a carp, tuna, salmon or fantasy dragon; preserve the original madai anatomy. Fantasy rare pigmentation only."
+}

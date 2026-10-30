@@ -37,6 +37,7 @@ module.exports=async function mutationUI(url,screen,variant=defaultFixture){
   await press(`.pet-fish-roster [data-pet-inspect="${childUid}"]`);await page.waitForSelector(`[data-pet-card-art="${childUid}"] canvas[data-art-variant="${artId}"]`);
   await page.waitForFunction(uid=>{const c=document.querySelector(`[data-pet-card-art="${uid}"] canvas`);return c&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((x,i)=>i%4===3&&x>128);},childUid);
   assert.match(await page.locator('[data-pet-size-rank]').innerText(),new RegExp(label+'.*稚魚'));
+  if(variant.labelColor)assert.equal(await page.locator(`[data-pet-size-rank] [data-pet-mutation="${kind}"]`).evaluate(e=>getComputedStyle(e).color),variant.labelColor);
   const announced=await page.evaluate(()=>s.petLife.mutationDiscoveries);assert.equal(announced.length,discoveryCount);const found=announced.find(d=>d.species===species);assert.equal(found.notified,true);assert.equal(found.firstUid,childUid);const fry=await child();const fryLayout=await fits();await shot(kind+'-fry');
   await press('.pet-fish-roster [data-pet-inspect="pet-4"]');assert.equal(await page.locator('.pet-profile-identity').innerText(),'性別不明 · 世代不明');await shot('legacy');
   await press('.pet-fish-roster [data-pet-inspect="pet-5"]');
