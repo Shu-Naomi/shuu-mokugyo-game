@@ -56,7 +56,7 @@ test('the real aquarium and notebook show blue Madai, its alias and all six prio
   for(const record of variant.fixture().petLife.mutationDiscoveries)assert.deepEqual(read(w,`s.petLife.mutationDiscoveries.find(d=>d.species==="${record.species}")`),record);
   w.eval('ShuPetLife.renameFish(s,"pet-12","あおしお");petUi.open("notebook")');w.document.querySelector('[data-notebook-species="madai"]').click();w.document.querySelector('[data-notebook-fish="pet-12"]').click();
   assert.match(w.document.querySelector('.pet-notebook-page').textContent,/あおしお/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/蒼鱗マダイ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-12"] [data-pet-mutation]').textContent,'蒼鱗');assert.equal(read(w,'fish.length'),60);
-  w.eval('petUi.open("help")');assert.match(w.document.querySelector('.pet-help-cards').textContent,/マダイは蒼鱗/);assert.deepEqual(a.errors,[]);
+  w.eval('petUi.open("aquarium")');w.document.querySelector('[data-pet-action="help"]').click();assert.match(w.document.querySelector('.pet-help-cards').textContent,/マダイは蒼鱗/);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('unknown or wrong-species Madai colours survive normalization and safely use ordinary artwork',()=>{
