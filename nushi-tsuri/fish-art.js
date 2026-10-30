@@ -43,6 +43,7 @@
   // Aquarium age variants are drawings of the same species, never extra
   // encounter or encyclopedia entries.
   const aquarium=Object.freeze({
+    madaiBlue:{asset:'assets/aquarium-madai-blue-v252-21.png',boxes:[[18,180,352,189],[454,172,308,202],[875,172,234,207],[1245,171,244,210],[43,637,312,194],[421,633,305,204],[774,651,368,192],[1179,648,333,193]],heads:[[.985,.62],[.985,.68],[.98,.75],[.5,.78],[.02,.72],[.015,.65],[.015,.62],[.985,.66]],scales:{4:.85}},
     dojoAlbino:{...native.dojo,asset:'assets/aquarium-dojo-albino-v252-15.png',boxes:[[21,52,350,93],[391,53,287,92],[701,54,258,91],[979,56,253,97],[1252,54,257,102],[33,208,321,103],[391,207,282,110],[701,209,248,115],[981,210,242,117],[1256,208,242,122],[50,371,274,129],[403,369,233,132],[731,373,130,128],[991,369,186,131],[1265,369,219,132],[39,539,289,128],[379,540,272,126],[672,543,275,118],[955,538,266,128],[1235,538,268,127],[17,711,317,103],[341,712,320,104],[649,717,308,102],[946,718,293,98],[1228,719,298,96],[20,872,348,102]]},
     unagiAlbino:{asset:'assets/aquarium-unagi-albino-v252-14.png',boxes:[[11,221,400,84],[453,181,281,154],[882,176,166,162],[1287,184,154,147],[54,671,260,153],[396,710,362,94],[781,718,376,85],[1167,724,360,87]],heads:[[.985,.65],[.96,.90],[.78,.92],[.50,.93],[.03,.78],[.015,.72],[.015,.65],[.985,.64]]},
     medakaGold:{asset:'assets/aquarium-medaka-gold-v252-13.png',boxes:[[16,190,354,131],[413,178,325,156],[822,164,275,185],[1228,154,232,204],[52,650,284,207],[413,680,328,151],[792,690,336,133],[1184,678,320,150]],heads:[[.99,.65],[.98,.70],[.82,.72],[.50,.72],[.18,.72],[.02,.70],[.01,.65],[.99,.60]],continuousBody:true},
@@ -56,7 +57,7 @@
   const sprites={...species,...aquarium};
   const assets=id=>[sprites[id].asset];
   const projection=()=>1;
-  // A few loach originals use a larger drawing scale. Normalize both axes
+  // A few authored poses use a larger drawing scale. Normalize both axes
   // together, preserving their anatomy while keeping the same individual.
   const cellScale=(id,cell)=>native[id]?.scales?.[cell]||1;
   const cellAsset=id=>sprites[id].asset;
