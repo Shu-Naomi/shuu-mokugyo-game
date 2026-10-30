@@ -8,4 +8,5 @@ function fixture(){const s=base.fixture(),p=s.petLife;p.mutationSeed=mutationSee
  s.petNotebook.species=[...new Set(p.fish.map(f=>f.species))].map(id=>({id,firstRecordedDay:base.day-4}));
  return s;
 }
-module.exports={fixture,day:base.day,mutationSeed,species:'madai',name:'マダイ',kind:'blue',label:'蒼鱗',title:'蒼鱗マダイ',artId:'madaiBlue',hatchDays:3,childUid:'pet-12',previousDiscovery:true,notebook:true,nickname:'あおしお',labelColor:'rgb(177, 231, 255)'};
+// Normalization moves the legacy freshwater fish to tank 1; tank 3 stays empty for the sea-water child.
+module.exports={fixture,day:base.day,mutationSeed,species:'madai',name:'マダイ',kind:'blue',label:'蒼鱗',title:'蒼鱗マダイ',artId:'madaiBlue',hatchDays:3,childUid:'pet-12',moveTank:3,previousDiscovery:true,notebook:true,nickname:'あおしお',labelColor:'rgb(177, 231, 255)'};
