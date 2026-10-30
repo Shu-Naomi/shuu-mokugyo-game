@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-madai-blue-252-21";
+const CACHE_NAME = "nushi-tsuri-v252-kamatsuka-albino-252-22";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -9,7 +9,7 @@ const CORE_ASSETS = [
   "./village-guide.css?v=252-5",
   "./title-flow.js?v=252-1",
   "./title-flow.css?v=252-1",
-  "./aquarium-mutations.js?v=252-21",
+  "./aquarium-mutations.js?v=252-22",
   "./assets/aquarium-funa-gold-v251-8.png",
   "./assets/aquarium-koi-gold-v252-9.png",
   "./assets/aquarium-namazu-albino-v252-12.png",
@@ -17,6 +17,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-unagi-albino-v252-14.png",
   "./assets/aquarium-dojo-albino-v252-15.png",
   "./assets/aquarium-madai-blue-v252-21.png",
+  "./assets/aquarium-kamatsuka-albino-v252-22.png",
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
   "./offshore-island.js?v=252-20",
@@ -94,7 +95,7 @@ const CORE_ASSETS = [
   "./item-categories.css?v=217-1",
   "./pet-life.js?v=252-11",
   "./pet-notebook.js?v=252-10",
-  "./pet-life-ui.js?v=252-21",
+  "./pet-life-ui.js?v=252-22",
   "./assets/aquarium-interior-v214.webp",
   "./tackle-balance.js?v=227-1",
   "./fishing-duel.js?v=251-1",
@@ -112,7 +113,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=252-21",
+  "./fish-art.js?v=252-22",
   "./assets/fish-suzuki-v216.png",
   "./assets/fish-kurodai-v216.png",
   "./assets/fish-moroko-v215.png",

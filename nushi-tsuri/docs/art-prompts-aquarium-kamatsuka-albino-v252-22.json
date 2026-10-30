@@ -1,0 +1,64 @@
+{
+  "version": "252-22",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-kamatsuka-albino-v252-22.png",
+  "assetSha256": "136f2d4a60dcaad0726688676de88e73e1cde7a3ecfcae00560e1ce8d1baa620",
+  "source": "assets/fish-kamatsuka-v227.png",
+  "sourceSha256": "b0bcd287942620961eb0c99852a01e38c923301b1df7c90765932170e3e0eeeb",
+  "rawGeneratedImage": "exec-cf3e7962-c1b0-4019-abdd-156563b884d5.png",
+  "output": "1536x1024 RGBA PNG; 1795422 bytes; copied without pixel modification",
+  "referencePreparation": "The unchanged original eight-pose atlas was viewed and passed directly as the edit target. No reference crops or pixel modifications.",
+  "rendering": "Eight alpha silhouettes measured independently. Preserve ordinary Kamatsuka mouth anchors, continuous-body interpolation and physical scale. Existing 97-position turns and three mouth positions; no pixel edits or CSS colour filters.",
+  "boxes": [
+    [
+      10,
+      191,
+      421,
+      188
+    ],
+    [
+      454,
+      179,
+      395,
+      216
+    ],
+    [
+      897,
+      146,
+      265,
+      269
+    ],
+    [
+      1215,
+      114,
+      283,
+      316
+    ],
+    [
+      30,
+      614,
+      328,
+      264
+    ],
+    [
+      366,
+      626,
+      378,
+      236
+    ],
+    [
+      756,
+      650,
+      391,
+      191
+    ],
+    [
+      1168,
+      648,
+      358,
+      184
+    ]
+  ],
+  "prompt": "Use case: precise-object-edit. Asset type: eight-pose transparent fish sprite atlas for the existing Japanese fishing game Starfall Lake. Input image is the edit target and anatomical/pose reference: the SAME kamatsuka fish (Japanese gudgeon) drawn in eight distinct authored poses, in four columns and two rows on a 1536x1024 canvas. Create its rare ALBINO colour variant. Change brown/black pigmentation into pearly ivory-white and very pale blush pink, with restrained cream scale shading, subtle pale pink fin rays and gills, translucent pale fins and small natural ruby-pink eyes with a darker central pupil. Preserve tiny mouth barbels, elongated tapering body, short single triangular dorsal fin, forked tail, realistic Japanese gudgeon head and downturned mouth, and existing detailed retro-game pixel-inspired illustrative style. Preserve EXACTLY the eight orientations and each fish's relative position, overall size and body proportions: top row full right side, turning right, near-front right, front face; bottom row near-front left, turning left, full left side, full right side with mouth visibly OPEN. The open-mouth final fish must remain distinct. Preserve body depth and length per pose, mouth/head locations, and generous empty gaps between fish. Change pigmentation only; do not change species, pose or silhouette, and do not enlarge front-facing fish. Eliminate all brown/backdrop/glow/shadow BETWEEN and AROUND the eight fish: truly transparent PNG with clean alpha and no colour fringes around fins and barbels. Keep volume, scale texture and shadow inside each fish so white fish remain readable over blue aquarium water; not flat white silhouettes. Exactly eight fish, no other species, no text, no grid, no props, no water, no particles, no aura, no drawn checkerboard. Output 1536x1024, four columns and two rows, real transparency."
+}
