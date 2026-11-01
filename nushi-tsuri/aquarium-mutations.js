@@ -14,6 +14,7 @@
     unagi:Object.freeze({name:'ウナギ',kind:'albino',label:'白化',title:'白化ウナギ',appearance:'白化ウナギ',artId:'unagiAlbino'}),
     dojo:Object.freeze({name:'ドジョウ',kind:'albino',label:'白化',title:'白化ドジョウ',appearance:'白化ドジョウ',artId:'dojoAlbino'}),
     kamatsuka:Object.freeze({name:'カマツカ',kind:'albino',label:'白化',title:'白化カマツカ',appearance:'白化カマツカ',artId:'kamatsukaAlbino'}),
+    raigyo:Object.freeze({name:'ライギョ',kind:'albino',label:'白化',title:'白化ライギョ',appearance:'白化ライギョ',artId:'raigyoAlbino'}),
     madai:Object.freeze({name:'マダイ',kind:'blue',label:'蒼鱗',title:'蒼鱗マダイ',appearance:'蒼鱗マダイ',artId:'madaiBlue'}),
   });
   const speciesForm=species=>typeof species==='string'&&Object.hasOwn(forms,species)?forms[species]:null;

@@ -56,7 +56,7 @@ test('the real aquarium and notebook show albino Kamatsuka, its alias and all se
   for(const record of variant.fixture().petLife.mutationDiscoveries)assert.deepEqual(read(w,`s.petLife.mutationDiscoveries.find(d=>d.species==="${record.species}")`),record);
   w.eval('ShuPetLife.renameFish(s,"pet-13","しらすな");petUi.open("notebook")');w.document.querySelector('[data-notebook-species="kamatsuka"]').click();w.document.querySelector('[data-notebook-fish="pet-13"]').click();
   assert.match(w.document.querySelector('.pet-notebook-page').textContent,/しらすな/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/白化カマツカ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-13"] [data-pet-mutation]').textContent,'白化');assert.equal(read(w,'fish.length'),60);
-  w.eval('petUi.open("aquarium")');w.document.querySelector('[data-pet-action="help"]').click();assert.match(w.document.querySelector('.pet-help-cards').textContent,/ドジョウ・カマツカは白化/);assert.deepEqual(a.errors,[]);
+  w.eval('petUi.open("aquarium")');w.document.querySelector('[data-pet-action="help"]').click();assert.match(w.document.querySelector('.pet-help-cards').textContent,/ドジョウ・カマツカ・ライギョは白化/);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('unknown or wrong-species Kamatsuka colours survive normalization and safely use ordinary artwork',()=>{
