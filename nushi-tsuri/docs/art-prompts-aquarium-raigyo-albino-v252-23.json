@@ -1,0 +1,63 @@
+{
+  "version": "252-23",
+  "method": "built-in image_gen",
+  "use_case": "precise-object-edit",
+  "asset": "assets/aquarium-raigyo-albino-v252-23.png",
+  "assetSha256": "ae670f73f1350b623f3f15b11f44c81223b53826b4835208a7cf49b297933784",
+  "source": "assets/fish-raigyo-v227.png",
+  "sourceSha256": "ddda38f0e0a0ee709aea43636c9d443ec911b6f73dfd9addb30037fc06b76716",
+  "rawGeneratedImage": "exec-c9d259b1-c7d1-424a-bfbd-9b965f11fe1e.png",
+  "output": "1536x1024 RGBA PNG; 1892137 bytes; copied without pixel modification",
+  "boxes": [
+    [
+      9,
+      236,
+      471,
+      157
+    ],
+    [
+      499,
+      217,
+      372,
+      195
+    ],
+    [
+      889,
+      197,
+      320,
+      234
+    ],
+    [
+      1237,
+      181,
+      281,
+      255
+    ],
+    [
+      24,
+      642,
+      313,
+      235
+    ],
+    [
+      337,
+      649,
+      363,
+      206
+    ],
+    [
+      704,
+      680,
+      449,
+      160
+    ],
+    [
+      1160,
+      683,
+      361,
+      160
+    ]
+  ],
+  "rendering": "Alpha >=8 plus one pixel margin; same eight poses, mouth anchors, continuous-body interpolation and physical scale as ordinary raigyo; no pixel edits or CSS filters.",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent eight-pose fish sprite atlas for the existing Japanese fishing game Starfall Lake. The input image is the edit target: the SAME Japanese snakehead fish (raigyo), eight poses arranged in four columns and two rows on a 1536x1024 canvas. Create one rare ALBINO colour variant. Change dark brown/black pigmentation to pearly ivory white with very pale blush-pink scale shading, delicate pale pink gills and fin rays, translucent fins, and small ruby-pink eyes with dark red pupils. Keep internal shading and detailed pixel-inspired retro game illustration so the white body has volume over blue aquarium water. Preserve the original snakehead anatomy: long thick tapering body, broad flattened head, large mouth, very long continuous dorsal fin, long anal fin and rounded tail, without barbels. Preserve EXACTLY all eight original positions, orientations, relative physical sizes, body proportions and mouth locations. Top row: full right side, turning right, near-front right, directly front. Bottom row: near-front left, turning left, full left side, full right side with visibly OPEN mouth. The final mouth-open pose must remain distinct. Change pigmentation only; do not change species, pose, silhouette or enlarge the front-facing fish. Exactly eight isolated fish with generous empty gaps. Remove ALL background, glow and cast shadows around and between fish: true transparent alpha, no drawn checkerboard, no dark backdrop, no grey rectangles, no colour fringes. No water, plants, props, labels, text, grid, border or extra fish. Output 1536x1024 transparent RGBA PNG, four columns and two rows."
+}
