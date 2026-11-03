@@ -4,7 +4,7 @@
  'use strict';
  const art = {"buildings":[[117,9,548,455],[849,72,631,397],[54,503,767,464],[920,513,579,474]],"doorX":[.51,.71,.52,.48],"residents":[[[155,16,150,312],[506,16,166,312],[872,16,173,312],[1234,16,148,311]],[[154,353,135,320],[512,353,179,320],[857,353,183,320],[1243,353,128,320]],[[140,693,151,315],[508,693,184,315],[863,693,186,315],[1231,693,153,313]]]};
  const buildings=[
-  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:160,y:66,w:16,h:12,sprite:1,route:[[160,68],[160,66]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
+  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:162,y:65.5,w:13.5,h:10.5,sprite:1,route:[[166,69],[164,67],[162,65.5]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
   {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:44,w:13,h:10,sprite:0,route:[[194,44],[190,44]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
   {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
@@ -68,7 +68,7 @@
   function paintResident(record,pose){const im=image('village-residents');if(im.complete&&im.naturalWidth)drawResident(record.canvas,im,record.definition.sprite,pose);}
   function roads(){
    const canvas=document.createElement('canvas');canvas.className='world-life-roads';canvas.width=1536;canvas.height=864;layer.prepend(canvas);const ctx=canvas.getContext('2d');ctx.scale(6.4,6.4);ctx.lineJoin='round';ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
-   for(const b of buildings.filter(b=>b.region===region)){ctx.beginPath();b.route.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();ctx.strokeStyle='#b1936066';ctx.lineWidth=2.2;ctx.stroke();ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
+   for(const b of buildings.filter(b=>b.region===region && b.id!=='stream-shop')){ctx.beginPath();b.route.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.stroke();ctx.strokeStyle='#b1936066';ctx.lineWidth=2.2;ctx.stroke();ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
    }
   }
   function render(now=performance.now(),force=false){

@@ -175,8 +175,9 @@ async function touchSmoke(url){
     await cave.context.close();
 
     const rail=await openStream({x:112,y:72}),r=rail.leg;
-    await r('up',1,112,70);await r('up',1,112,70);
-    await r('left',8,80,70);await r('right',17,148,70);
+    // Widened v252-31 bridge deck stops at its painted north rail, y=69.
+    await r('up',1,112,69);await r('up',1,112,69);
+    await r('left',8,80,69);await r('right',17,148,69);
     await rail.context.close();
     assert.deepEqual(errors,[],'touchscreen runtime errors');
     console.log('TOUCH_SMOKE_PASS '+JSON.stringify({viewport:'844x390',rotatedPhone:true,taps,paintedRoads:['entrance','west bank','cave'],bridgeBanks:2,saveReloads:1,errors}));
