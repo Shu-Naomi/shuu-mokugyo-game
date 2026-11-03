@@ -8,7 +8,7 @@ async function run(url,screen){
  const context=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,locale:'ja-JP',serviceWorkers:'block'});
  const errors=[],failures=[];
  try{
- await context.addInitScript(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:saveKey,state:{...seed(),mapRegion:'stream',x:168,y:69,direction:'up',soundEnabled:false}});
+ await context.addInitScript(({key,state})=>localStorage.setItem(key,JSON.stringify(state)),{key:saveKey,state:{...seed(),soundEnabled:false}});
  const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(url))failures.push(r.url());});
  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);
  await page.evaluate(()=>{
@@ -17,8 +17,9 @@ async function run(url,screen){
    battle.nextMood=ShuFishing.beginWindow(battle,battle.mood,520,Date.now());drawBattle();
  });
  for(const [label,wear] of [['stable',0],['loose',.4],['danger',.8]]){
-   await page.evaluate(wear=>{battle.nushiHookWear=wear;syncNushiFightCue();},wear);
-   const cue=await page.locator('#battleMsg').textContent();
+   await page.evaluate(wear=>{battle.nushiHookWear=wear;drawBattle();},wear);
+   assert.ok(await page.locator('#nushiCue').isVisible());
+   const cue=await page.locator('#nushiCue').textContent();
    assert.ok(cue.includes('針：'+({stable:'安定',loose:'緩みかけ',danger:'危険'}[label])));
    await page.screenshot({path:path.join(directory,width+'x'+height+'-'+label+'.png')});
  }

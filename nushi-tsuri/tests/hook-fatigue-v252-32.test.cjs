@@ -61,7 +61,7 @@ test('runtime displays hook condition only in nushi and starts fresh each battle
  const app=boot({...seed(),fightMode:'nushi'}),w=app.window;
  try{
   w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();startFight();battle.nushiHookWear=.8;drawBattle()');
-  assert.match(w.document.querySelector('#battleMsg').textContent,/針：危険/);
+  assert.match(w.document.querySelector('#nushiCue').textContent,/針：危険/);
   assert.equal(read(w,'battle.nushiHookLost'),false);
   w.eval('battle.fightMode="gauge";battle.nushiHookWear=.8;drawBattle()');
   assert.equal(w.document.querySelector('#fishScene').dataset.nushiPhase,undefined);

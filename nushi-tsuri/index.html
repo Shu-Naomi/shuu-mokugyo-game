@@ -22781,7 +22781,7 @@
         if(battle.fightMode==="nushi"){
           const phase=$("#fishScene").dataset.nushiPhase;
           const cue={slack:"糸が緩んだ · Aで引く",pulling:"引けている · 顔を振ったら離す",warning:"顔を振って抵抗！ Aを離す",running:"逃走中 · Aを離して待つ",leap:"エラ洗い！ Aを離す"}[phase]||"魚の動きを見よう";
-          const text=`${battle.f.name} · 水面まで ${meters}m\n${cue}`;
+          const text=`${battle.f.name} · 水面まで ${meters}m\n${cue}\n針：${ShuFishing.hookState(battle)}`;
           if($("#nushiCue").textContent!==text)$("#nushiCue").textContent=text;
         }
         $("#ten").style.width = Math.min(100, battle.ten) + "%";
