@@ -7377,7 +7377,7 @@
     <script src="compact-ui.js?v=252-28"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=251-1"></script>
+    <script src="fishing-duel.js?v=252-32"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -22548,6 +22548,7 @@
             battle.y - battle.surfaceY,
           );
           const landingRadius = ShuRegional.legendary(battle.f.id) ? 11 : 7;
+          if (battle.fightMode==="nushi"&&battle.nushiHookLost) return breakFishingLine("ピンッ……針が外れた！");
           if (battle.ten >= 100) return breakFishingLine("糸が切れた……");
           if (battle.retrieval >= 0.999 && arrival <= landingRadius)
             return surfaceCatch();
@@ -22617,6 +22618,10 @@
         battle.nushiYielded = false;
         battle.nushiRunTicks = 0;
         battle.nushiStrain = 0;
+        battle.nushiHookWear = 0;
+        battle.nushiHookWindow = null;
+        battle.nushiHookCharged = false;
+        battle.nushiHookLost = false;
         battle.escapeSpeed = 0;
         battle.nextMood = 0;
         battle.signatureCycle = 0;
@@ -22802,11 +22807,11 @@
         const messages={
           slack:battle.reeling?"Aをいったん離し、糸の緩みを見て引き直そう。":"糸が緩んだ。Aを押して魚を引こう。",
           pulling:"魚を引けている。顔を振り始めたらAを離そう。",
-          warning:"顔を激しく振って抵抗！無理に引くと糸が切れる。Aを離そう。",
+          warning:"顔を激しく振って抵抗！無理に引くと針が緩み、糸も切れる。Aを離そう。",
           running:"魚が走っている。Aを離していなし、糸が緩むのを待とう。"};
         const tension=battle.ten>=85?"糸が切れそう！ ":battle.ten>=65?"！テンション高め。 ":"";
         const recovery=phase!=="warning"&&battle.gillRecovery>0?battle.recoveryMessage+" ":"";
-        setIconText($("#battleMsg"), battle.ten >= 85 ? UiExtraArt.get("warning") : "", tension+recovery+messages[phase]);
+        setIconText($("#battleMsg"), battle.ten >= 85 ? UiExtraArt.get("warning") : "", "針："+ShuFishing.hookState(battle)+"。 "+tension+recovery+messages[phase]);
       }
       function syncBattleFishLine() {
         if(!battle||battle.phase!=="fight")return;
@@ -22957,7 +22962,7 @@
         scene.classList.add("line-broken");scene.dataset.nushiPhase="escaped";
         $("#linePath").setAttribute("d","");clearWaterFx();
         $("#pull").parentElement.inert=true;
-        const caption=$("#fishEscapeCaption");caption.hidden=false;caption.textContent="糸が切れた……";
+        const caption=$("#fishEscapeCaption");caption.hidden=false;caption.textContent=battle.nushiHookLost?"ピンッ……針が外れた！":"糸が切れた……";
         stopFightReelSound();stopGameAudioSample("fishGillWash");
         setGillWashAudioFocus(true);syncSceneSound();syncFishEscapeAudio();
         vibrate([35,25,75]);startBattleFishArt();
@@ -22975,7 +22980,8 @@
         animateFishBody({calm:false,danger:false},pose.speed,1.65);
         $("#battleFish").style.opacity=String(pose.opacity);
         const caption=$("#fishEscapeCaption");
-        if(caption.textContent!==pose.caption)caption.textContent=pose.caption;
+        const escapeCaption=battle.nushiHookLost&&pose.caption==="糸が切れた……"?"ピンッ……針が外れた！":pose.caption;
+        if(caption.textContent!==escapeCaption)caption.textContent=escapeCaption;
         advanceUnderwaterTravel();renderBattleFish();renderUnderwaterTravel();syncFishEscapeAudio();
       }
       function lose(t) {
@@ -24193,7 +24199,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-31").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-32").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
