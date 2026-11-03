@@ -342,7 +342,7 @@
   // image decode cannot repaint a new room/depth/time or an already left scene.
   function createController({loadImage,canvasFactory=makeCanvas,buildScene=prepare,requestFrame,cancelFrame,
     now=()=>performance.now(),visible=canvas=>canvas.isConnected&&!!canvas.getClientRects().length,
-    isHidden=()=>document.hidden,reducedMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches,
+    animationVisible=()=>true,isHidden=()=>document.hidden,reducedMotion=()=>matchMedia('(prefers-reduced-motion: reduce)').matches,
     createMotionCanvas,createForegroundCanvas=()=>null,onError=()=>{}}) {
     const sessions=new Map(),images=new Map(),prepared=new Map();
     let frame=null,lastPaint=0,disposed=false;
@@ -352,7 +352,7 @@
       const promise=Promise.resolve().then(()=>loadImage(url)).catch(error=>{images.delete(url);throw error;});
       images.set(url,promise);trim(images,6);return promise;
     };
-    const active=()=>[...sessions.values()].filter(s=>s.scene&&visible(s.canvas));
+    const active=()=>[...sessions.values()].filter(s=>s.scene&&visible(s.canvas)&&animationVisible(s.canvas));
     function stop() {if(frame!==null)cancelFrame(frame);frame=null;}
     function wake() {
       if(disposed||isHidden()||frame!==null||reducedMotion()||!active().some(s=>s.scene.parts.some(p=>p.motion||p.effect)))return;
@@ -432,7 +432,19 @@
       if(reducedMotion()){stop();for(const s of sessions.values())if(s.scene)motion(s.overlay,s.scene,0,{reducedMotion:true});}
       else wake();
     }
-    return {paint,refresh,wake,stop,dispose,syncMotion,stats:()=>({sessions:sessions.size,images:images.size,prepared:prepared.size,frame})};
+    function syncVisibility(){stop();wake();}
+    return {paint,refresh,wake,stop,dispose,syncMotion,syncVisibility,stats:()=>({sessions:sessions.size,images:images.size,prepared:prepared.size,frame})};
+  }
+  // Layout visibility also controls cache lifetime. A covered scene must keep
+  // its prepared layers so returning to it can resume without decoding again.
+  function animationVisible(canvas) {
+    const doc=canvas.ownerDocument;
+    if(!doc)return true;
+    if(canvas.id==='worldPixels'&&(doc.querySelector('#playerHomeArea.active')||doc.querySelector('#fishScene.active')))return false;
+    // Gauge/lure travel samples these opacity:0 layers into another canvas.
+    // Only nushi-water replaces them with an independent painted background.
+    if(canvas.id==='underwaterPixels'&&doc.querySelector('#fishScene.nushi-water'))return false;
+    return true;
   }
   let browserController;
   function browserBuilder() {
@@ -447,7 +459,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=252-8');
+            worker=new Worker('scenery-worker.js?v=252-29');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }
@@ -470,7 +482,7 @@
   function browser() {
     if(browserController)return browserController;
     browserController=createController({
-      buildScene:browserBuilder(),
+      buildScene:browserBuilder(),animationVisible,
       loadImage:url=>new Promise((resolve,reject)=>{const img=new Image();img.onload=()=>resolve(img);img.onerror=()=>reject(new Error('Scenery could not load: '+url));img.src=url;}),
       requestFrame:callback=>requestAnimationFrame(callback),cancelFrame:id=>cancelAnimationFrame(id),
       createMotionCanvas:canvas=>{
@@ -488,5 +500,5 @@
     addEventListener('pagehide',()=>browserController.stop());addEventListener('pageshow',()=>browserController.wake());
     return browserController;
   }
-  return {partition,assembleSource,prepare,compose,motion,foreground,createController,paint:(canvas,id,env)=>browser().paint(canvas,id,env),refresh:canvas=>browser().refresh(canvas),assets:Data.assets};
+  return {partition,assembleSource,prepare,compose,motion,foreground,createController,animationVisible,syncVisibility:()=>browserController?.syncVisibility(),paint:(canvas,id,env)=>browser().paint(canvas,id,env),refresh:canvas=>browser().refresh(canvas),assets:Data.assets};
 });

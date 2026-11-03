@@ -2,17 +2,12 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { boot, read } = require("./game-harness.cjs");
 
-function setup(surface) {
+function setup(surface, initialFish = null) {
   const app = boot(), { window } = app;
-  if (surface === "battle") window.eval(`
-    cast(fishingSpots[0]); beginFishing(); clearInterval(timer);
-    battle.cast=50; launchSurfaceCast(); settleSurfaceCast();
-    startFight(); clearInterval(timer); finishHookReveal();
-  `);
   const element = window.document.querySelector(surface === "battle" ? "#battleFish" : "#catchFish");
   window.eval(`fishAtlasCanvas($("#${element.id}"))`);
   const canvas = element.querySelector("canvas"), context = canvas.getContext("2d");
-  let pixels = null;
+  let pixels = null, paintCount = 0;
   context.clearRect = () => { pixels = null; };
   context.drawImage = (image) => { pixels = image.src; };
   // The DOM harness has no bitmap pixels. Record a successful public draw,
@@ -20,9 +15,18 @@ function setup(surface) {
   const draw = window.ShuFishArt.draw;
   window.ShuFishArt = { ...window.ShuFishArt, draw: (...args) => {
     const painted = draw(...args);
-    if (painted && args[0] === context) pixels = args[1].src;
+    if (painted && args[0] === context) { pixels = args[1].src; paintCount++; }
     return painted;
   } };
+  // Observe the first real paint too. If the opening fish already matches a
+  // later requested frame, exact-key deduplication correctly reuses those
+  // pixels instead of painting again after a late-installed spy.
+  if (surface === "battle") window.eval(`
+    cast(fishingSpots[0]); beginFishing(); clearInterval(timer);
+    battle.cast=50; launchSurfaceCast(); settleSurfaceCast();
+    if (${JSON.stringify(initialFish)}) battle.f=fish.find(f=>f.id===${JSON.stringify(initialFish)});
+    startFight(); clearInterval(timer); finishHookReveal();
+  `);
   function render(id, step = 0) {
     // Both real fight/catch entry points reuse the element and reset its class.
     if (element.dataset.testFish !== id) {
@@ -50,7 +54,7 @@ function setup(surface) {
     delete window.testDelayedFishImage;
     return () => { ready = true; image.dispatchEvent(new window.Event("load")); };
   }
-  return { ...app, element, canvas, render, delayed, pixels: () => pixels };
+  return { ...app, element, canvas, render, delayed, pixels: () => pixels, paintCount: () => paintCount };
 }
 
 function assertSingleMebaru(app, label) {
@@ -67,6 +71,25 @@ function assertSingleMebaru(app, label) {
     assert.ok(style.display === "none" || style.visibility === "hidden" || style.opacity === "0", label);
   }
 }
+
+test("the fixture observes an already-painted opening fish even when its next frame is deduplicated", () => {
+  for (const initialFish of ["funa", "mebaru"]) {
+    const app = setup("battle", initialFish);
+    try {
+      const expected = initialFish === "funa" ? /fish-lake-v208\.png$/ : /fish-reef-v208\.png$/;
+      assert.match(app.pixels(), expected, "the observer includes the opening paint");
+      const key = app.canvas.dataset.artPaintKey, count = app.paintCount();
+      assert.ok(count > 0);
+      app.render(initialFish);
+      assert.equal(app.canvas.dataset.artPaintKey, key);
+      assert.equal(app.paintCount(), count, "an identical frame remains deduplicated");
+      assert.match(app.pixels(), expected, "the previously observed bitmap remains visible");
+      app.render("funa");
+      assert.match(app.pixels(), /fish-lake-v208\.png$/);
+      assert.deepEqual(app.errors, []);
+    } finally { app.dispose(); }
+  }
+});
 
 test("mebaru replaces every previous species in both battle and catch without another fish behind it", () => {
   for (const surface of ["battle", "catch"]) {

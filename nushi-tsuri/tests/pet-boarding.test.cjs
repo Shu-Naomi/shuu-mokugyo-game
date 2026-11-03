@@ -113,5 +113,5 @@ test('all changed boarding modules have matching fresh cache URLs',()=>{
  const fs=require('node:fs'),path=require('node:path'),html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
  for(const file of ['pet-life.js','pet-life.css','pet-notebook.js']){assert.ok(html.includes(file+'?v=252-27'),file);assert.ok(sw.includes(file+'?v=252-27'),file);}
  assert.ok(html.includes('pet-life-ui.js?v=252-28'));assert.ok(sw.includes('pet-life-ui.js?v=252-28'));
- assert.match(sw,/nushi-tsuri-v252-pixel-items-252-28/);
+ assert.match(sw,/nushi-tsuri-v252-render-efficiency-252-29/);
 });
