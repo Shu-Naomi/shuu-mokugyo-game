@@ -20,14 +20,14 @@
     const book=state.petNotebook,ids=new Set(catalog.map(f=>f.id)),seen=new Set(book.species.filter(row=>row&&typeof row.id==='string').map(row=>row.id));let changed=false;
     // A discovery is explicit historical evidence. Its original first day stays
     // in mutationDiscoveries; this ledger says when the notebook recorded it.
-    for(const f of [...(state.petLife?.fish||[]),...(state.petLife?.mutationDiscoveries||[])]){
+    for(const f of [...(state.petLife?.fish||[]),...(state.petLife?.boarded||[]),...(state.petLife?.mutationDiscoveries||[])]){
       const id=f.species;if(!ids.has(id)||seen.has(id))continue;seen.add(id);
       book.species.push({id,firstRecordedDay:Math.max(book.receivedDay,dayOf(day))});changed=true;
     }
     return changed;
   }
   function canReceive(state,catalog){
-    return !state.petNotebook&&(state.petLife?.fish||[]).some(f=>catalog.some(s=>s.id===f.species&&!s.legendary&&s.id!=='nushi'));
+    return !state.petNotebook&&[...(state.petLife?.fish||[]),...(state.petLife?.boarded||[])].some(f=>catalog.some(s=>s.id===f.species&&!s.legendary&&s.id!=='nushi'));
   }
   function grant(state,catalog,day,source='purchase'){
     // An unknown future notebook is kept intact, never replaced by this version.

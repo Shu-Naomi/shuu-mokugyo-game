@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-aquarium-scenery-252-25";
+const CACHE_NAME = "nushi-tsuri-v252-fish-boarding-252-27";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -95,9 +95,9 @@ const CORE_ASSETS = [
   "./",
   "./index.html",
   "./item-categories.css?v=217-1",
-  "./pet-life.js?v=252-11",
-  "./pet-notebook.js?v=252-10",
-  "./pet-life-ui.js?v=252-25",
+  "./pet-life.js?v=252-27",
+  "./pet-notebook.js?v=252-27",
+  "./pet-life-ui.js?v=252-27",
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
@@ -149,7 +149,7 @@ const CORE_ASSETS = [
   "./tackle-art.js?v=191-1",
   "./aquarium-life.js?v=252-12",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=252-25",
+  "./pet-life.css?v=252-27",
   "./rival-anglers.js?v=199-1",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=180-1",
