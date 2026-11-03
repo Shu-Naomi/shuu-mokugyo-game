@@ -6454,6 +6454,7 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
     <link rel="stylesheet" href="lake-intro.css?v=252-4" />
+    <link rel="stylesheet" href="timed-rest.css?v=252-32" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
@@ -6686,6 +6687,7 @@
               <span class="field-menu-icon" aria-hidden="true">✦</span>
               <span class="field-menu-label">湖の手帳<small>旅の思い出を読む</small></span>
             </button>
+            <button id="lakeCampMenu" type="button" data-field-menu-target="lakeCamp" hidden><span class="field-menu-icon" aria-hidden="true">☾</span><span class="field-menu-label">湖畔でキャンプ<small>指定した時刻まで休む</small></span></button>
             <button id="petNotebookMenu" type="button" data-field-menu-target="petNotebook" hidden><span class="field-menu-icon" aria-hidden="true">▤</span><span class="field-menu-label">育成ノート<small>育てた魚種・いまの一匹</small></span></button>
             <button type="button" data-field-menu-target="items">
               <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="ui:bag" aria-hidden="true"></span></span>
@@ -7126,10 +7128,25 @@
                 <span id="locationActionLabel">話を聞く</span>
                 <small id="locationActionCost">A</small>
               </button>
+              <button id="locationTimedRest" type="button" hidden>時刻を選んで休む</button>
               <small class="location-note" id="locationNote"></small>
             </div>
             <section class="fortune-reveal" id="fortuneReveal" role="dialog" aria-modal="true" aria-labelledby="fortuneRevealTitle" tabindex="-1" hidden></section>
           </div>
+        </div>
+        <div class="modal" id="timedRest" role="dialog" aria-modal="true" aria-labelledby="timedRestTitle">
+          <section class="timed-rest-panel">
+            <h2 id="timedRestTitle">時刻を選んで休む</h2>
+            <div id="timedRestChooser">
+              <p id="timedRestDescription"></p>
+              <label for="timedRestTime">起きる時刻</label> <input type="time" id="timedRestTime" value="06:00" required />
+              <p id="timedRestPreview" aria-live="polite"></p>
+              <div class="timed-rest-actions"><button id="timedRestStart" type="button">この時刻まで休む</button><button id="timedRestCancel" type="button">戻る</button></div>
+            </div>
+            <button class="timed-rest-film" id="timedRestFilm" type="button" hidden aria-label="演出をスキップして釣り場へ戻る">
+              <canvas id="timedRestCanvas" width="320" height="160" aria-hidden="true"></canvas><span id="timedRestClock"></span><span>タップで釣り場へ戻る</span>
+            </button>
+          </section>
         </div>
         <div class="modal shop-modal" id="vehicleShop">
           <div class="vehicle-shop-shell">
@@ -7374,7 +7391,7 @@
     <script src="pet-life.js?v=252-27"></script>
     <script src="fish-motion.js?v=252-30"></script>
     <script src="aquarium-life.js?v=252-30"></script>
-    <script src="compact-ui.js?v=252-28"></script>
+    <script src="compact-ui.js?v=252-32"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
@@ -7396,6 +7413,7 @@
     <script src="mountain-region.js?v=252-31"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-intro.js?v=252-8"></script>
+    <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
     <script src="lake-research.js?v=252-7"></script>
@@ -15510,6 +15528,7 @@
         $("#locationAction").hidden = interior.service === false ||
           Boolean(interior.goods?.length);
         $("#locationNote").textContent = interior.note;
+        $("#locationTimedRest").hidden = id !== "farmhouse";
         renderLocationGoods();
         open("locationInterior");
         return true;
@@ -17252,6 +17271,47 @@
         ShuCompactUI.vehicle($("#vehicleShop"),{money:s.money,owned:()=>s.ownedVehicles,equipped:()=>s.equipment.vehicle,art:compactItemArt});
         open("vehicleShop");
       }
+      let timedRestSession = null, timedRestPresentation = null;
+      function canCampAtLake() {
+        if(s.mapRegion !== "village" || playerHomeIsActive() || s.tournament) return false;
+        const spot = nearbyFishingSpot();
+        return Boolean(spot && (spot.waterZone || spot.zone) === "lake");
+      }
+      function updateTimedRestPreview() {
+        if(!timedRestSession || timedRestSession.committed)return;
+        const target = ShuTimedRest.targetMinute(s.gameMinutes,$("#timedRestTime").value);
+        $("#timedRestStart").disabled = target === null;
+        $("#timedRestPreview").textContent = target === null ? "起きる時刻を選んでね。" : `${Math.floor(target / 1440) > Math.floor(s.gameMinutes / 1440) ? "翌日" : "今日"} ${ShuTimedRest.label(target)}まで、${Math.floor((target-s.gameMinutes)/60)}時間${(target-s.gameMinutes)%60}分休む。`;
+      }
+      function openTimedRest(kind) {
+        if(timedRestSession || battle || s.tournament || (kind === "camp" && !canCampAtLake()) || (kind === "inn" && activeLocationId !== "farmhouse"))return false;
+        releaseHeldInputs();close();
+        timedRestSession = {kind,committed:false};
+        $("#timedRestTitle").textContent = kind === "inn" ? "釣り宿でひと休み" : "湖畔のキャンプ";
+        $("#timedRestDescription").textContent = kind === "inn" ? "宿で指定時刻まで休み、体力を全回復する。" : "この釣り場で、ワンコと指定時刻まで待つ。体力や持ち物は変わらない。";
+        $("#timedRestTime").value = "06:00";
+        $("#timedRestChooser").hidden = false;$("#timedRestFilm").hidden = true;
+        updateTimedRestPreview();open("timedRest");$("#timedRestTime").focus({preventScroll:true});return true;
+      }
+      function finishTimedRest() {
+        const presentation=timedRestPresentation;timedRestPresentation=null;
+        timedRestSession=null;presentation?.finish();
+        if($("#timedRest").classList.contains("open"))close();
+        $("#menu").focus({preventScroll:true});
+      }
+      function beginTimedRest() {
+        const session=timedRestSession;if(!session || session.committed || !$("#timedRest").classList.contains("open"))return false;
+        const from=s.gameMinutes,to=ShuTimedRest.targetMinute(from,$("#timedRestTime").value);if(to===null)return false;
+        session.committed=true; // Acquire the one-use action before changing game state.
+        advanceGameTime(s,to-from);
+        if(session.kind === "inn"){s.hp=s.maxHp;s.calmBonus=Math.max(s.calmBonus,1);}
+        log(`${session.kind === "inn" ? "湖畔の釣り宿" : "湖畔のキャンプ"}で${ShuTimedRest.label(from)}から${gameClockLabel(to)}まで休んだ。${petDailyMessage()}`);
+        render();save();
+        $("#timedRestChooser").hidden=true;$("#timedRestFilm").hidden=false;$("#timedRestFilm").focus({preventScroll:true});
+        const presentation=ShuTimedRest.present($("#timedRestCanvas"),{kind:session.kind,dog:s.dog,from,to,onFrame:value=>{$("#timedRestClock").textContent=`${ShuTimedRest.label(from)} → ${value} / ${ShuTimedRest.label(to)}`;},onFinish:finishTimedRest});
+        timedRestPresentation=presentation.snapshot().active?presentation:null;
+        return true;
+      }
       function useLocationService() {
         if (!activeLocationId || !locationInteriors[activeLocationId]) return;
         if (activeLocationId === "farmhouse") {
@@ -17867,6 +17927,7 @@
         drawPetScene();
       }
       function render() {
+        $("#lakeCampMenu").hidden = !canCampAtLake();
         const hasPetNotebook=ShuPetNotebook.owned(s);$("#petNotebookMenu").hidden=!hasPetNotebook;$("#fieldMenu").classList.toggle("has-pet-notebook",hasPetNotebook);
         if(gameStarted&&ShuPetLife.sync(s,petCatalog,gameClockAt(s.gameMinutes).dayIndex) && petUi?.active)petUi.render();
         const coast=s.mapRegion==="coast", mountain=ShuMountain.isRegion(s.mapRegion),offshore=s.mapRegion===ShuOffshore.id;
@@ -18124,6 +18185,7 @@
         hideFieldMenu();
         if (target === "record") open("record");
         else if (target === "story") openLakeStory();
+        else if (target === "lakeCamp") openTimedRest("camp");
         else if (target === "petNotebook") petUi.open("notebook");
         else if (target === "tackle") openInventory("tackle");
         else if (target === "items") openInventory("items");
@@ -23173,6 +23235,7 @@
         renderPixelScenery();
       }
       function close() {
+        if(timedRestSession){const presentation=timedRestPresentation;timedRestPresentation=null;timedRestSession=null;presentation?.finish();}
         ShuCompactUI.closeSheet(false);
         if ($("#options").classList.contains("open")) return closeOptions();
         dialogueTyper.cancelAll();
@@ -24011,6 +24074,16 @@
       $("#tournamentBody").onclick = handleTournamentAction;
       $("#practiceOffer").onclick = () => openPracticePond({ fromShop: true });
       $("#locationAction").onclick = useLocationService;
+      $("#locationTimedRest").onclick = () => openTimedRest("inn");
+      $("#timedRestTime").oninput = updateTimedRestPreview;
+      $("#timedRestStart").onclick = beginTimedRest;
+      $("#timedRestCancel").onclick = () => {const kind=timedRestSession?.kind;finishTimedRest();if(kind==="inn")openLocationInterior("farmhouse");};
+      $("#timedRestFilm").onclick = finishTimedRest;
+      $("#timedRest").addEventListener("keydown",event=>{
+        if(event.key!=="Tab")return;
+        const controls=[...$("#timedRest").querySelectorAll("button:not(:disabled),input")].filter(el=>!el.closest("[hidden]")),first=controls[0],last=controls.at(-1);
+        if(event.shiftKey && document.activeElement===first){event.preventDefault();last.focus();}else if(!event.shiftKey && document.activeElement===last){event.preventDefault();first.focus();}
+      });
       $("#aquariumFishSelect").onchange = updateAquariumPlaceButton;
       $("#aquariumPlaceFish").onclick = () => placeAquariumFish($("#aquariumFishSelect").value);
       $("#dogCarePet").onclick = petDogCare;
@@ -24193,7 +24266,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-31").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-32").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
