@@ -4,12 +4,12 @@ const root=path.resolve(__dirname,'..'),dir=path.join(__dirname,'opening-review'
 async function run(url){
  fs.mkdirSync(dir,{recursive:true});
  const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});const results=[];
- try{for(const [width,height,dog]of [[844,390,'shuu'],[820,366,'riku'],[390,844,'grey']]){
-  const errors=[],httpErrors=[],context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,serviceWorkers:'block'}),page=await context.newPage();
+ try{for(const [width,height,dog]of [[844,390,'shuu'],[820,366,'riku'],[896,414,'grey']]){
+  const errors=[],httpErrors=[],context=await browser.newContext({viewport:{width,height},isMobile:true,hasTouch:true,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage();
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().includes('/nushi-tsuri/'))httpErrors.push(`${r.status()} ${r.url()}`);});
   const tap=q=>page.locator(q).tap(),shot=name=>page.screenshot({path:path.join(dir,`${width}-${name}.png`),animations:'disabled'});
   const state=()=>page.evaluate(()=>({clock:s.gameMinutes,hp:s.hp,money:s.money,baits:s.baits,x:s.x,y:s.y}));
-  const fit=async()=>{for(const selector of ['#timedRestTitle','#timedRestTime','#timedRestStart','#timedRestCancel']){const box=await page.locator(selector).boundingBox();assert.ok(box&&box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1,`${selector} clipped: ${JSON.stringify(box)}`);if(selector!=='#timedRestTitle')assert.ok(box.height>=44);}};
+  const fit=async()=>{assert.equal(await page.locator('#timedRestTitle').evaluate(el=>getComputedStyle(el).color),'rgb(52, 45, 36)');for(const selector of ['#timedRestTitle','#timedRestTime','#timedRestStart','#timedRestCancel']){const box=await page.locator(selector).boundingBox();assert.ok(box&&box.x>=0&&box.y>=0&&box.x+box.width<=width+1&&box.y+box.height<=height+1,`${selector} clipped: ${JSON.stringify(box)}`);if(selector!=='#timedRestTitle')assert.ok(box.height>=44);}};
   try{
    await page.clock.install({time:new Date('2026-11-04T00:00:00Z')});await page.clock.pauseAt('2026-11-04T00:00:01Z');await page.goto(url,{waitUntil:'load'});
    await require('./browser-start-adventure.cjs')(page,true,{slot:1,avatar:'girl',dog,name:'旅人'});await tap('#lakeIntroSkip');
@@ -30,7 +30,7 @@ async function run(url){
    await page.emulateMedia({reducedMotion:'reduce'});await tap('#menu');await tap('#lakeCampMenu');await tap('#timedRestStart');assert.equal(await page.locator('#timedRest.open').count(),0);assert.equal(await page.evaluate(()=>timedRestPresentation),null);
    // Reload must retain the committed clock, never replay or advance the rest.
    const saved=await page.evaluate(()=>s.gameMinutes);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,true,{slot:1,isNew:false});assert.equal(await page.evaluate(()=>s.gameMinutes),saved);assert.equal(await page.locator('#timedRest.open').count(),0);
-   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({width,height,dog,point,tapSkip:true,repeatedCommit:true,oneSecondAutoReturn:true,cancel:true,close:true,pagehide:true,simulatedHidden:true,reducedMotion:true,reload:true,errors,httpErrors});console.log('TIMED_REST_PASS '+JSON.stringify(results.at(-1)));
+   await page.setViewportSize({width:390,height:844});assert.equal(await page.locator('.landscape-warning').isVisible(),true);await shot('portrait-guard');await page.setViewportSize({width,height});assert.equal(await page.evaluate(()=>s.gameMinutes),saved);assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({width,height,dog,point,tapSkip:true,repeatedCommit:true,oneSecondAutoReturn:true,cancel:true,close:true,pagehide:true,simulatedHidden:true,reducedMotion:true,reload:true,errors,httpErrors});console.log('TIMED_REST_PASS '+JSON.stringify(results.at(-1)));
   }catch(error){await shot('failure').catch(()=>{});throw error;}finally{await context.close();}
  }}finally{await browser.close();fs.writeFileSync(path.join(dir,'results.json'),JSON.stringify(results,null,2));}
 }
