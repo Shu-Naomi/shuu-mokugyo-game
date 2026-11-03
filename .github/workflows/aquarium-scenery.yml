@@ -1,7 +1,7 @@
 name: Aquarium water scenery
 on:
   push:
-    branches: [codex/aquarium-scenery-v252-25]
+    branches: [main, codex/aquarium-scenery-v252-25]
   pull_request:
     branches: [main]
     paths:
@@ -20,7 +20,7 @@ concurrency:
 jobs:
   scenery:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 30
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --shm-size=1gb
@@ -61,6 +61,15 @@ jobs:
       - name: Check water theme routing and retained aquarium behavior
         run: node --test --test-concurrency=2 aquarium-scenery-v252-25.test.cjs aquarium-ui-v231.test.cjs aquarium-inspection-v190.test.cjs aquarium-breeding-v188.test.cjs service-worker.test.cjs
       - name: Exercise scenery on desktop and two landscape phones
+        run: node browser-aquarium-scenery-v252-25.cjs
+      - name: Verify the published scenery matches this merged checkout
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: node aquarium-scenery-public-source-v252-25.cjs
+      - name: Exercise the published aquarium scenery
+        if: ${{ github.ref == 'refs/heads/main' }}
+        env:
+          AQUARIUM_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/?v=252-25
+          AQUARIUM_SCENERY_EVIDENCE_DIR: aquarium-scenery-evidence/public
         run: node browser-aquarium-scenery-v252-25.cjs
       - name: Preserve aquarium scenery evidence
         if: always()
