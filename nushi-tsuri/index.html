@@ -6453,7 +6453,7 @@
     <link rel="stylesheet" href="pet-life.css?v=252-27" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
-    <link rel="stylesheet" href="lake-intro.css?v=252-storybook-1" />
+    <link rel="stylesheet" href="lake-intro.css?v=252-34" />
     <link rel="stylesheet" href="timed-rest.css?v=252-32" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
@@ -7412,7 +7412,7 @@
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=252-31"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-storybook-1"></script>
+    <script src="lake-intro.js?v=252-34"></script>
     <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
@@ -24266,7 +24266,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-storybook-1").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-34").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
