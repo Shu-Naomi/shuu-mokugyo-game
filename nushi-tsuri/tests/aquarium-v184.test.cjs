@@ -44,7 +44,9 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
   assert.ok(biting>0);
   const resumed=poseAt(started+3.8);
   assert.ok(Math.abs(previous.x-resumed.x)<1e-8&&Math.abs(previous.y-resumed.y)<1e-8,'smooth position on release');
-  assert.deepEqual({...previous,x:resumed.x,y:resumed.y},resumed,'feeding leaves no animation state behind');
+  // Continuous phases expose sub-ulp differences between 380*.01 and 3.8.
+  assert.ok(Math.abs(previous.swimFrame-resumed.swimFrame)<1e-9,'feeding preserves continuous tail phase');
+  assert.deepEqual({...previous,x:resumed.x,y:resumed.y,swimFrame:resumed.swimFrame},resumed,'feeding leaves no animation state behind');
  }
 });
 

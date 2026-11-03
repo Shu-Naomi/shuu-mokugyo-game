@@ -1,8 +1,9 @@
 (function(root,factory){
-  const api=factory(typeof module==='object'&&module.exports?require('./fish-additions.js'):root.ShuFishAdditions);
+  const node=typeof module==='object'&&module.exports;
+  const api=factory(node?require('./fish-additions.js'):root.ShuFishAdditions,node?require('./fish-motion.js'):root.ShuFishMotion);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.ShuFishArt=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(Additions){
+})(typeof globalThis!=='undefined'?globalThis:this,function(Additions,Motion){
   'use strict';
   // Generated artwork is cropped by the actual silhouette, not an assumed
   // grid. Some source drawings deliberately cross a nominal cell boundary.
@@ -91,7 +92,9 @@
       const from=Math.floor(heading),to=Math.min(6,from+1),mix=heading-from;
       if(native[id]?.dense){
         const authored=heading*4,a=Math.floor(authored),b=Math.min(24,a+1);
-        const cell=Math.round(authored),mirror=mirroredTurns[id]?.[cell];
+        // The final side matches the mirrored cruising original exactly.
+        // Otherwise the last authored side can jump when CSS resumes swimming.
+        const cell=Math.round(authored),mirror=cell===24?0:mirroredTurns[id]?.[cell];
         return {cell:mirror??turnCells[id]?.[cell]??cell,heading,flip:mirror!==undefined,jaw:0,
           target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
             .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],
@@ -174,7 +177,41 @@
     }
     scales[id]=scale;return scale;
   }
-  const meshes=new WeakMap(),turnCache=new Map(),imageKeys=new WeakMap();let nextImageKey=0;
+  const meshes=new WeakMap(),rasterCache=new Map(),imageKeys=new WeakMap(),outputs=new WeakMap();let nextImageKey=0;
+  const counters={builds:0,hits:0,reuses:0,outputs:0,paints:0};
+  const RASTER_LIMIT=48;
+  function rasterKey(image,id,pose){
+    if(!imageKeys.has(image))imageKeys.set(image,++nextImageKey);
+    return imageKeys.get(image)+':'+id+':'+pose;
+  }
+  function reserveRaster(ctx,key){
+    let raster;
+    if(rasterCache.size>=RASTER_LIMIT){
+      const oldest=rasterCache.keys().next().value;raster=rasterCache.get(oldest);rasterCache.delete(oldest);
+      raster.data.data.fill(0);counters.reuses++;
+    }else{
+      const data=ctx.createImageData(448,224);
+      raster={data,words:new Uint32Array(data.data.buffer,data.data.byteOffset,448*224),top:new Int16Array(448),bottom:new Int16Array(448)};
+    }
+    counters.builds++;rasterCache.set(key,raster);return raster;
+  }
+  function cachedRaster(key){
+    const raster=rasterCache.get(key);
+    if(raster){counters.hits++;rasterCache.delete(key);rasterCache.set(key,raster);}
+    return raster;
+  }
+  function finishRaster(raster){
+    raster.left=448;raster.right=0;
+    for(let x=0;x<448;x++){
+      let top=224,bottom=-1;
+      for(let y=0;y<224;y++)if(raster.data.data[(y*448+x)*4+3]){top=Math.min(top,y);bottom=y;}
+      raster.top[x]=top;raster.bottom[x]=bottom;
+      if(bottom>=top){raster.left=Math.min(raster.left,x);raster.right=Math.max(raster.right,x);}
+    }
+    return raster;
+  }
+  function metrics(){return {...counters,cachedRasters:rasterCache.size,rasterLimit:RASTER_LIMIT};}
+
   function cellMesh(ctx,image,id,cell,flip=false){
     const isolated=isolatedCell(ctx,image,id,cell);
     let cache=meshes.get(image);if(!cache){cache=new Map();meshes.set(image,cache);}
@@ -193,20 +230,25 @@
     cache.set(key,result);return result;
   }
   function mesh(ctx,image,id,heading){const p=pose(id,7,heading);return cellMesh(ctx,image,id,p.cell,p.flip);}
-  function paintTurn(ctx,image,id,p,resolveImage,resistanceBend=0){
+  function turnRaster(ctx,image,id,p,resolveImage,resistanceBend=0){
     // One inverse-mapped raster keeps every destination pixel tied to one
     // original. Overlapping drawImage strips and translucent whole-fish
     // blends duplicated eyes, fins and scales in the intermediate headings.
-    if(!imageKeys.has(image))imageKeys.set(image,++nextImageKey);
     const heading=Math.round(p.heading*16)/16,bendAmount=Math.round(clamp(resistanceBend,-1.6,1.6)*8)/8;
-    const key=imageKeys.get(image)+':'+id+':'+heading+':'+bendAmount;
-    let tile=turnCache.get(key);
-    if(!tile){
+    if(heading===0&&bendAmount===0)return bodyRaster(ctx,image,id,pose(id,7,0),resolveImage);
+    if(heading===6&&bendAmount===0){
+      const key=rasterKey(image,id,'left-side'),cached=cachedRaster(key);if(cached)return cached;
+      const source=bodyRaster(ctx,image,id,pose(id,8,0),resolveImage),raster=reserveRaster(ctx,key);
+      for(let y=0;y<224;y++)for(let x=0;x<448;x++)raster.words[y*448+x]=source.words[y*448+447-x];
+      return finishRaster(raster);
+    }
+    const key=rasterKey(image,id,'turn:'+heading+':'+bendAmount);
+    let raster=cachedRaster(key);
+    if(!raster){
       const q=pose(id,7,heading),aPose=pose(id,7,q.from),bPose=pose(id,7,q.to);
       const a=mesh(ctx,native[id]?resolveImage(cellAsset(id,aPose.cell)):image,id,q.from);
       const b=mesh(ctx,native[id]?resolveImage(cellAsset(id,bPose.cell)):image,id,q.to);
-      tile=ctx.canvas.ownerDocument?.createElement('canvas')||new ctx.canvas.constructor(448,224);
-      tile.width=448;tile.height=224;const painter=tile.getContext('2d'),pixels=painter.createImageData(448,224);
+      raster=reserveRaster(ctx,key);const pixels=raster.data;
       const t=q.mix,m=t<.5?a:b,h=m.head[0],tx=q.target[0]*448,ty=q.target[1]*224;
       const width=lerp(a.width,b.width,t),angle=heading/6*Math.PI;
       const leftExtent=lerp(a.head[0]*a.width,b.head[0]*b.width,t);
@@ -223,7 +265,7 @@
         const left=Math.pow(Math.max(0,(u-h)/Math.max(.001,1-h)),1.6);
         const rear=lerp(left,right,(1+Math.cos(angle))/2);
         // A yaw bend is projected through the slightly elevated camera only
-        // during a turn. Normal tail beats never shift any row vertically.
+        // during a turn, independently of the continuous tail-beat phase.
         return {x:-width*.05*Math.sin(angle)*Math.cos(angle)*rear,
           y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear+
             bendAmount*Math.min(18,width*.06)*rear*rear};
@@ -251,65 +293,52 @@
           pixels.data[to]=m.pixels[from];pixels.data[to+1]=m.pixels[from+1];pixels.data[to+2]=m.pixels[from+2];pixels.data[to+3]=m.pixels[from+3];
         }
       }
-      painter.putImageData(pixels,0,0);
-      if(turnCache.size>=48){
-        const oldest=turnCache.keys().next().value,expired=turnCache.get(oldest);
-        expired.width=1;expired.height=1;turnCache.delete(oldest);
-      }
-      turnCache.set(key,tile);
+      finishRaster(raster);
     }
-    ctx.drawImage(tile,0,0);
+    return raster;
   }
-  function paint(ctx,image,id,p,alpha=1,resolveImage){
+  function bodyRaster(ctx,image,id,p,resolveImage){
     if(native[id])image=resolveImage(cellAsset(id,p.cell));
-    const originalImage=image,isolated=isolatedCell(ctx,image,id,p.cell),box=isolated.box,head=sourceHead(id,p.cell,p.flip),scale=scaleFor(id)*cellScale(id,p.cell);
-    image=isolated.image;
-    const width=box[2]*scale*projection(id,p.cell),height=box[3]*scale,x=p.target[0]*448-head[0]*width,y=p.target[1]*224-head[1]*height;
-    ctx.save();ctx.globalAlpha=alpha;
-    if(p.flip){ctx.translate(448,0);ctx.scale(-1,1);}
-    const dx=p.flip?448-x-width:x;
-    if(id==='utsubo'||!p.beat||p.heading!==undefined){ctx.drawImage(image,...box,dx,y,width,height);ctx.restore();return;}
-    // Sample each pixel once. Thin overlapping strips left vertical seams and
-    // blurred the scale pattern, particularly when enlarged on a phone.
-    const warp=u=>u+.035*Math.sin(p.beat-u*1.3)*Math.pow(Math.max(0,(.7-u)/.7),2);
-    const m=cellMesh(ctx,originalImage,id,p.cell),pixels=ctx.createImageData(448,224);
-    let u=0;
-    for(let x=Math.max(0,Math.ceil(dx+warp(0)*width));x<Math.min(448,Math.ceil(dx+width));x++){
-      let low=u,high=1;
-      for(let n=0;n<12;n++){const middle=(low+high)/2;if(dx+warp(middle)*width<x+.5)low=middle;else high=middle;}
-      u=x+.5>=dx+.7*width?(x+.5-dx)/width:(low+high)/2;
-      const sourceX=Math.min(m.image.width-1,Math.floor(u*m.image.width));
-      if(m.bottom[sourceX]<=m.top[sourceX])continue;
-      const top=y+m.top[sourceX]/m.image.height*height,bottom=y+m.bottom[sourceX]/m.image.height*height;
-      for(let py=Math.max(0,Math.ceil(top));py<Math.min(224,Math.ceil(bottom));py++){
-        const sourceY=Math.min(m.image.height-1,Math.max(0,Math.floor((py+.5-y)/height*m.image.height)));
-        const from=(sourceY*m.image.width+sourceX)*4,to=(py*448+x)*4;
-        pixels.data[to]=m.pixels[from];pixels.data[to+1]=m.pixels[from+1];pixels.data[to+2]=m.pixels[from+2];pixels.data[to+3]=m.pixels[from+3];
+    const key=rasterKey(image,id,'body:'+p.cell+':'+!!p.flip+':'+p.target.join(','));
+    const cached=cachedRaster(key);if(cached)return cached;
+    const m=cellMesh(ctx,image,id,p.cell,p.flip),raster=reserveRaster(ctx,key);
+    const width=m.width,height=m.height,dx=p.target[0]*448-m.head[0]*width,dy=p.target[1]*224-m.head[1]*height;
+    for(let x=Math.max(0,Math.ceil(dx));x<Math.min(448,Math.ceil(dx+width));x++){
+      const sx=Math.min(m.image.width-1,Math.max(0,Math.floor((x+.5-dx)/width*m.image.width)));
+      if(m.bottom[sx]<=m.top[sx])continue;
+      const top=dy+m.top[sx]/m.image.height*height,bottom=dy+m.bottom[sx]/m.image.height*height;
+      for(let y=Math.max(0,Math.ceil(top));y<Math.min(224,Math.ceil(bottom));y++){
+        const sy=Math.min(m.image.height-1,Math.max(0,Math.floor((y+.5-dy)/height*m.image.height)));
+        const from=(sy*m.image.width+sx)*4,to=(y*448+x)*4;
+        raster.data.data[to]=m.pixels[from];raster.data.data[to+1]=m.pixels[from+1];
+        raster.data.data[to+2]=m.pixels[from+2];raster.data.data[to+3]=m.pixels[from+3];
       }
     }
-    ctx.putImageData(pixels,0,0);
-    ctx.restore();
+    return finishRaster(raster);
   }
-  function undulateMoray(ctx,p,phase){
-    // Move one intact raster column at a time, with a fixed face and lip.
-    // The generic swimmer's horizontal squeeze made this long body pulse
-    // like rubber. A travelling wave now grows toward the trailing tail.
-    const pixels=ctx.getImageData(0,0,448,224),out=ctx.createImageData(448,224);
-    const from=new Uint32Array(pixels.data.buffer),to=new Uint32Array(out.data.buffer);
-    const heading=p.heading===undefined?0:p.heading/6*Math.PI;
-    const facing=Math.cos(heading),head=p.target[0]*448;
-    const span=Math.max(1,facing>=0?head-22:426-head);
-    for(let x=0;x<448;x++){
-      let top=224,bottom=-1;
-      for(let y=0;y<224;y++)if(pixels.data[(y*448+x)*4+3]>0){top=Math.min(top,y);bottom=y;}
-      if(bottom<top)continue;
-      const rear=clamp((facing>=0?head-x:x-head)/span,0,1);
-      const weight=Math.pow(clamp((rear-.2)/.8,0,1),1.3);
-      const wave=13*weight*Math.abs(facing)*Math.sin(phase-rear*Math.PI*2.2);
-      const shift=Math.round(clamp(wave,2-top,221-bottom));
-      for(let y=top;y<=bottom;y++)to[(y+shift)*448+x]=from[y*448+x];
+  function paintSwimming(ctx,raster,id,p,phase){
+    let output=outputs.get(ctx);
+    if(!output){const data=ctx.createImageData(448,224);output={data,words:new Uint32Array(data.data.buffer,data.data.byteOffset,448*224)};outputs.set(ctx,output);counters.outputs++;}
+    output.words.fill(0);
+    const heading=p.heading===undefined?0:p.heading/6*Math.PI,head=p.target[0]*448;
+    const facing=Math.cos(heading),side=Math.abs(facing),front=1-side;
+    const span=Math.max(1,facing>=0?head-raster.left-.5:raster.right+.5-head),profile=Motion.profile(id);
+    // One source column per destination column, no translucent overlays, scale
+    // squeezing or frame readback. The face collar remains fixed for the hook.
+    // The shallow camera projects lateral tail beats slightly vertically; the
+    // whole fish never pitches or bobs as a substitute for spine movement.
+    for(let x=raster.left;x<=raster.right;x++){
+      const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
+      const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
+      const wave=profile.amplitude*weight*side*Math.sin(phase-rear*profile.wave);
+      // At the frontal heading the tail is behind the body. Only the outer
+      // paired fin columns flutter; the lip and central torso retain volume.
+      const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
+      const top=raster.top[x],bottom=raster.bottom[x];if(bottom<top)continue;
+      const shift=Math.round(clamp(wave+fin,2-top,221-bottom));
+      for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+x];
     }
-    ctx.putImageData(out,0,0);
+    ctx.putImageData(output.data,0,0);counters.paints++;
   }
   function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
     if(!sprites[id])return false;
@@ -318,17 +347,10 @@
     if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
       p.heading!==undefined&&(!resolveImage(cellAsset(id,pose(id,7,p.from).cell))||!resolveImage(cellAsset(id,pose(id,7,p.to).cell)))))return false;
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
-    if(p.heading!==undefined){
-      try{paintTurn(ctx,image,id,p,resolveImage,motion?.resistanceBend||0);}catch{paint(ctx,image,id,p,1,resolveImage);}
-    }else if(cells===3&&p.jaw===1){
-      if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
-      paint(ctx,image,id,p,1,resolveImage);
-    }else{
-      if(motion?.swimFrame!==undefined)p.beat=motion.swimFrame/8*Math.PI*2;
-      paint(ctx,image,id,p,1,resolveImage);
-    }
-    if(id==='utsubo')undulateMoray(ctx,p,motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
+    const raster=p.heading!==undefined?turnRaster(ctx,image,id,p,resolveImage,motion?.resistanceBend||0):bodyRaster(ctx,image,id,p,resolveImage);
+    const phase=(motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
+    paintSwimming(ctx,raster,id,p,phase);
     return true;
   }
-  return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets});
+  return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
 });
