@@ -5,6 +5,9 @@ on:
   pull_request:
     branches: [main]
     paths: ['nushi-tsuri/**', '.github/workflows/timed-rest.yml']
+concurrency:
+  group: timed-rest-${{ github.head_ref || github.ref_name }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
