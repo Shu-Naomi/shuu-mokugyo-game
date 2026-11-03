@@ -1,0 +1,14 @@
+#timedRest { z-index: 58; align-items: center; justify-content: center; padding: 12px; }
+#timedRest.open { display: flex; }
+.timed-rest-panel { width: min(620px, 100%); max-height: 100%; overflow: auto; background: #f4e7c5; color: #342d24; border: 3px solid #796244; border-radius: 12px; padding: 14px; box-sizing: border-box; }
+.timed-rest-panel h2 { margin: 0 0 8px; font-size: 20px; }
+.timed-rest-panel p { margin: 8px 0; }
+.timed-rest-panel button,.timed-rest-panel input { min-height: 44px; font: inherit; }
+.timed-rest-actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
+.timed-rest-panel input { background: #fffaf0; color: #342d24; border: 1px solid #796244; padding: 0 8px; }
+.timed-rest-film { display: block; width: 100%; padding: 0; background: #172d36; color: #fff2cc; border: 0; border-radius: 6px; overflow: hidden; }
+.timed-rest-film canvas { display: block; width: 100%; height: min(160px, 35vh); object-fit: contain; image-rendering: pixelated; }
+.timed-rest-film span { display: block; padding: 6px; }
+#timedRest [hidden] { display: none !important; }
+#locationTimedRest { min-height: 44px; margin-top: 8px; }
+@media (max-height: 450px) { .timed-rest-panel { padding: 10px; } .timed-rest-panel h2 { font-size: 17px; } .timed-rest-panel p { margin: 5px 0; } }
