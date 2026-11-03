@@ -7372,7 +7372,8 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="aquarium-life.js?v=252-12"></script>
+    <script src="fish-motion.js?v=252-30"></script>
+    <script src="aquarium-life.js?v=252-30"></script>
     <script src="compact-ui.js?v=252-28"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=227-1"></script>
@@ -7402,7 +7403,7 @@
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=251-1"></script>
-    <script src="fish-art.js?v=252-24"></script>
+    <script src="fish-art.js?v=252-30"></script>
     <script src="tackle-art.js?v=252-28"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -16706,7 +16707,7 @@
         }
         const pose = aquariumFishPose(id, aquariumElapsed, homeAquariumLength());
         const cells = fishSwimFrameCounts[id] || 8;
-        const frame = (aquariumElapsed / (pose.bottomDweller ? .24 : .18)) % cells;
+        const frame = ShuFishMotion.phase(id,aquariumElapsed,ShuAquariumLife.gait(id).speed,pose.bottomDweller) % cells;
         const [width, height] = fishFrameFallbackSizes[id] || [320, 160];
         const selectors = ["#homeAquariumFish"];
         if ($("#aquariumModal").classList.contains("open")) selectors.push("#aquariumPreviewFish");
@@ -24192,7 +24193,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-29").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-30").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

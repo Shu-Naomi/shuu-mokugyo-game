@@ -81,7 +81,9 @@ test('inspection spends most of its time swimming and turns at the ends, respect
     const poses=Array.from({length:300},(_,i)=>Life.inspection(id,i*.1));
     assert.ok(poses.filter(p=>p.spriteMode==='swim').length>poses.length*.6);
     assert.ok(poses.some(p=>p.spriteMode==='turn'&&p.turnFrame===2));
-    assert.ok(new Set(poses.filter(p=>p.spriteMode==='swim').map(p=>p.swimFrame%8)).size===8);
+    const phases=poses.filter(p=>p.spriteMode==='swim').map(p=>p.swimFrame%8);
+    assert.equal(new Set(phases.map(Math.floor)).size,8,'covers the full tail cycle');
+    assert.ok(phases.some(p=>!Number.isInteger(p)),'the cycle interpolates between its original poses');
     for(let i=1;i<poses.length;i++)assert.ok(Math.abs(poses[i].x-poses[i-1].x)<1,'no teleport while turning');
     assert.deepEqual(Life.inspection(id,0,true),Life.inspection(id,100,true));
   }
