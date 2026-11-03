@@ -7414,7 +7414,7 @@
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
     <script src="scene-layers.js?v=252-8"></script>
-    <script src="layered-scenery.js?v=252-8"></script>
+    <script src="layered-scenery.js?v=252-29"></script>
     <script>
       function uiArt(key) {
         const [kind, id] = key.split(":");
@@ -11851,8 +11851,9 @@
           clearStandaloneFishFrame(element);
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${fishId}${aquariumLook?`|${aquariumLook.key}`:''}`;
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
+          if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
           if(canvas.width!==448)canvas.width=448;
           if(canvas.height!==224)canvas.height=224;
           if(changed)canvas.getContext('2d').clearRect(0,0,448,224);
@@ -11864,10 +11865,11 @@
           const sources=ShuFishArt.assets(artId).map(resolveImage);
           canvas.dataset.artVariant=artId;
           const paint=()=>{
-            if(canvas.dataset.atlasKey!==key||sources.some(source=>!source.naturalWidth))return;
+            if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend});
+            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
+            canvas.dataset.artPaintKey=key;
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
             source.addEventListener('load',paint,{once:true});if(source.decode)source.decode().then(paint).catch(()=>{});
@@ -12370,10 +12372,13 @@
         playerHomeTransitionTimer = 0,
         homeDogAnimationTimer = 0,
         homeDogLastTime = null,
+        homeDogLastPaintAt = null,
         homeDogs = [],
         aquariumAnimationTimer = 0,
         aquariumElapsed = 0,
         aquariumLastTime = null,
+        aquariumLastPaintAt = null,
+        aquariumCovered = false,
         aquariumRenderedFishId = null,
         playerHomeState = {
           area: null,
@@ -15071,6 +15076,7 @@
           paintSurfaceScenery();
           paintUnderwaterScenery(battle.waterZone || "lake", battle.depth || "shallow", battle.f?.id === "hirame");
         }
+        ShuScenery.syncVisibility();
       }
       function renderPixelCast(now = Date.now()) {
         const canvas = $("#castActor");
@@ -15807,6 +15813,11 @@
           }
         }
       }
+      const HOME_VISUAL_INTERVAL = 1000 / 30;
+      function nextHomeVisualTime(previous, now) {
+        return previous === null ? now : previous +
+          Math.max(1, Math.floor((now - previous + .001) / HOME_VISUAL_INTERVAL)) * HOME_VISUAL_INTERVAL;
+      }
       function homeDogAnimationCanRun() {
         return playerHomeState.area === "interior" && !playerHomeState.transitioning &&
           !document.hidden && !battle && !document.querySelector(".modal.open") &&
@@ -15816,6 +15827,7 @@
         if (homeDogAnimationTimer) cancelAnimationFrame(homeDogAnimationTimer);
         homeDogAnimationTimer = 0;
         homeDogLastTime = null;
+        homeDogLastPaintAt = null;
         $("#homeDogs").classList.add("paused");
       }
       function animateHomeDogs(now) {
@@ -15823,9 +15835,14 @@
         if (!homeDogAnimationCanRun()) { stopHomeDogAnimation(); return; }
         if (homeDogLastTime !== null) advanceHomeDogs((now - homeDogLastTime) / 1000);
         homeDogLastTime = now;
-        drawHomeDogs();
-        const hint = playerHomeHint();
-        if ($("#hint").textContent !== hint) $("#hint").textContent = hint;
+        // Movement retains its elapsed-time clock; only DOM/canvas painting
+        // is bounded on high-refresh displays.
+        if (homeDogLastPaintAt === null || now - homeDogLastPaintAt + .001 >= HOME_VISUAL_INTERVAL) {
+          homeDogLastPaintAt = nextHomeVisualTime(homeDogLastPaintAt, now);
+          drawHomeDogs();
+          const hint = playerHomeHint();
+          if ($("#hint").textContent !== hint) $("#hint").textContent = hint;
+        }
         homeDogAnimationTimer = requestAnimationFrame(animateHomeDogs);
       }
       function renderHomeDogs() {
@@ -16575,6 +16592,16 @@
         cancelAnimationFrame(aquariumAnimationTimer);
         aquariumAnimationTimer = 0;
         aquariumLastTime = null;
+        aquariumLastPaintAt = null;
+      }
+      function homeAquariumCoveredByOptions() {
+        const options = $("#options");
+        if (!options.classList.contains("open")) return false;
+        const tank = $("#homeAquarium").getBoundingClientRect(), box = options.getBoundingClientRect();
+        // Settings is opaque, but narrow desktop settings may leave the tank
+        // visible beside it. Stay inside its rounded corners and border too.
+        return tank.width > 0 && tank.height > 0 && tank.left >= box.left + 16 &&
+          tank.right <= box.right - 16 && tank.top >= box.top + 16 && tank.bottom <= box.bottom - 16;
       }
       function renderHomeAquarium() {
         const indoors = playerHomeState.area === "interior";
@@ -16595,7 +16622,8 @@
           $(selector).setAttribute("aria-label", name ? `${name}が1匹泳ぐ水槽` : "空の水槽");
         for (const selector of ["#homeAquariumFish", "#aquariumPreviewFish"])
           $(selector).hidden = !id;
-        if (!indoors || !id || document.hidden) {
+        aquariumCovered = indoors && homeAquariumCoveredByOptions();
+        if (!indoors || !id || document.hidden || aquariumCovered) {
           stopAquariumAnimation();
           return;
         }
@@ -16605,7 +16633,7 @@
       }
       function advanceAquariumAnimation(now) {
         aquariumAnimationTimer = 0;
-        if (!aquariumRenderedFishId || playerHomeState.area !== "interior" || document.hidden) {
+        if (!aquariumRenderedFishId || playerHomeState.area !== "interior" || document.hidden || aquariumCovered) {
           stopAquariumAnimation();
           return;
         }
@@ -16614,7 +16642,10 @@
         if (aquariumLastTime !== null)
           aquariumElapsed += Math.min(50, Math.max(0, now - aquariumLastTime)) / 1000;
         aquariumLastTime = now;
-        drawAquariumFish();
+        if (aquariumLastPaintAt === null || now - aquariumLastPaintAt + .001 >= HOME_VISUAL_INTERVAL) {
+          aquariumLastPaintAt = nextHomeVisualTime(aquariumLastPaintAt, now);
+          drawAquariumFish();
+        }
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
@@ -16661,7 +16692,7 @@
           ? Number.isFinite(pose.yaw)?pose.yaw/Math.PI*6:[0,2,3,4,6][pose.turnFrame||0]
           : pose.turnFrame) : swimFrame % cells;
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
-        const key = `${id}:${turning ? "turn" : "swim"}:${frame}${look?`:${look.key}`:''}`;
+        const key = `${id}:${turning ? "turn" : "swim"}:${frame}:${swimFrame}${look?`:${look.key}:${pose?.yaw??''}`:''}`;
         if (element.dataset.aquariumFrame !== key) {
           drawFishAtlasFrame(element, asset, cells, frame, id,look,{...pose,swimFrame});
           element.dataset.aquariumFrame = key;
@@ -17827,6 +17858,7 @@
         }
       }
       function advancePetSceneFrame() {
+        if (document.hidden) return;
         if (companionReaction !== "pet") return;
         const scene = $("#petScene");
         if (!scene?.classList.contains("active")) return;
@@ -19278,6 +19310,7 @@
           : "黄色い枠へ来るまで待つ";
       }
       function drawDogCareScene(now = Date.now()) {
+        if (document.hidden) return false;
         const canvas = $("#dogCareSceneCanvas");
         if (!canvas) return false;
         const ctx = canvas.getContext("2d");
@@ -22096,7 +22129,9 @@
           (battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase));
         const nushi=battle.fightMode==="nushi"&&active;
         const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const sceneryChanged=scene.classList.contains("nushi-water")!==nushi;
         scene.classList.toggle("nushi-water",nushi);
+        if(sceneryChanged)ShuScenery.syncVisibility();
         if(!active||!scene.clientWidth||!scene.clientHeight||(!nushi&&(source.dataset.travelReady!=="true"||reduced))){
           scene.classList.remove("underwater-travel");return;
         }
@@ -23705,7 +23740,8 @@
         $("#optionsNotice").textContent="";$("#optionsDeleteConfirmation").hidden=true;
         $("#options").classList.add("open");renderOptions();
         $("#game").inert=$("#title").inert=true;
-        $("#optionsClose").focus({preventScroll:true});syncSceneSound();return true;
+        $("#optionsClose").focus({preventScroll:true});syncSceneSound();
+        renderHomeAquarium();renderHomeDogs();return true;
       }
       function closeOptions() {
         if(saveSuppressed)return false;
@@ -23715,7 +23751,7 @@
         $("#game").inert=$("#title").inert=false;
         if(!gameStarted)renderSaveSlotSelection(true);
         const target=gameStarted?$("#menu"):optionsReturnFocus||$("#titleOptions");target.focus({preventScroll:true});
-        syncSceneSound();if(gameStarted){scheduleIdleStatus(450);scheduleFieldMenu();}return true;
+        syncSceneSound();if(gameStarted){renderHomeAquarium();renderHomeDogs();scheduleIdleStatus(450);scheduleFieldMenu();}return true;
       }
       function beginSaveDeletion(id) {
         if(saveSuppressed||![1,2].includes(id))return false;
@@ -24156,7 +24192,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-28").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-29").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

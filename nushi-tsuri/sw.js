@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-pixel-items-252-28";
+const CACHE_NAME = "nushi-tsuri-v252-render-efficiency-252-29";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -193,8 +193,8 @@ const CORE_ASSETS = [
   "./scene-layers.js?v=252-8",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
-  "./layered-scenery.js?v=252-8",
-  "./scenery-worker.js?v=252-8",
+  "./layered-scenery.js?v=252-29",
+  "./scenery-worker.js?v=252-29",
   "./assets/terrain-world-v54.png",
   "./assets/layered-v163/world-underlay.png",
   "./assets/player-home-exterior-v160.webp",
