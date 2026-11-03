@@ -26,7 +26,7 @@ module.exports=async function run(url,mobile=false){
    const src=getComputedStyle(el).backgroundImage.match(/url\(["']?(.*?)["']?\)/)[1],image=new Image();image.src=src;await image.decode();
    return {src,width:image.naturalWidth,height:image.naturalHeight};
   });
-  assert.match(background.src,/aquarium-interior-v214\.webp/);assert.equal(background.width,1672);assert.equal(background.height,941);
+  assert.match(background.src,/aquarium-fresh-v252-25\.webp/);assert.equal(background.width,1672);assert.equal(background.height,941);
   await page.locator('#petTankStage .pet-fish-target[aria-pressed=true]').click();
   await page.waitForSelector('#petInspectStage');assert.equal(await page.locator('#petInspectStage .pet-aquarium-scenery').count(),1);
   await page.locator('[data-pet-action="focus-close"]').click();await page.locator('[data-pet-action="zoom"]').click();
