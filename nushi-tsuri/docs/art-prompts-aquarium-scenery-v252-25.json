@@ -1,0 +1,26 @@
+{
+  "version": "252-25",
+  "generated_at": "2026-11-03",
+  "assets": [
+    {
+      "theme": "salt",
+      "asset": "assets/aquarium-salt-v252-25.webp",
+      "method": "Built-in image_gen; PNG converted to lossless WebP without resizing or editing pixels",
+      "prompt": "Use case: stylized-concept. Create a production game background: marine aquarium interior, wide 16:9 landscape, opaque full-bleed raster. Natural, very precise handcrafted SFC-style pixel art, crisp controlled pixel clusters and dithering, rich detail but NOT photorealistic or painterly. Front view through aquarium glass, submerged with subtly rippled water surface near top, restrained dark-blue/turquoise water. At left and right edges and bottom corners: believable porous reef rocks, modest natural branching and plate corals in muted ochre, terracotta, dusty lavender, sage; small pale sand bed along bottom. Avoid neon rainbow coral. Middle 65% of width and 65% of height is a clear dark teal open swimming area, with gentle low contrast depth, unobstructed. Bottom center a quiet smooth medium-tone sand opening so bottom fish visible. Natural asymmetrical aquascape, no symmetry. Detailed attractive substrate, rock texture and tiny coral branches confined to edges. Absolutely no fish, animals, silhouettes of fish, plants resembling fish, text, labels, UI, frames, decoration toys, strong bloom, blur, smooth photographic texture. User asked natural and precise pixel art. Fish sprites added later must remain readable, including gold and white fish. Save the resulting project asset to local generated image output and return local path if supported.",
+      "sha256": "3bc930639e4e9507af59259151d5de199391010042510a4dc542bfa67add19b8",
+      "bytes": 1640342,
+      "width": 1672,
+      "height": 941
+    },
+    {
+      "theme": "fresh",
+      "asset": "assets/aquarium-fresh-v252-25.webp",
+      "method": "Built-in image_gen; PNG converted to lossless WebP without resizing or editing pixels",
+      "prompt": "Use case: stylized-concept. Production freshwater aquarium background for Japanese fishing pixel game, wide16:9, opaque full bleed. Companion of a natural marine aquarium scene: very precise handcrafted SFC-style pixel art, crisp fine pixel clusters and deliberate dithering, rich natural texture but NOT photo or painterly. Front view submerged aquarium, fine water surface reflection across narrow top. Deep subdued green-teal water with quiet soft depth, not bright or cloudy. At left and right outer margins and bottom corners: natural fine-leaved aquatic plants, long vallisneria leaves, small broad aquatic leaves, dark weathered driftwood and rounded mossy stones; realistic asymmetry and varied heights, plants rise along edges. Middle65% width and65% height clear dark green-teal open water, unobstructed for fish sprites. Bottom center quiet mid-tone fine gravel/sand with sparse small pebbles, detailed edges only. Elegant tranquil freshwater aquascape. Natural greens olive/emerald with muted browns, no neon. Absolutely no fish, animals, text, labels, UI, tank stand, decorative toys, busy central plants, photographic blur, bloom, smooth CGI. Fish added later must remain visible including gold/white/bottom-dwelling fish. Natural precise pixel art requested by user, visual precision not giant crude pixels.",
+      "sha256": "02d03f153d5fc4f1b332c00a4048c0e80a2b89ba0492a63dff2cbeee22778ab3",
+      "bytes": 1790724,
+      "width": 1672,
+      "height": 941
+    }
+  ]
+}

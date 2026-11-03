@@ -184,6 +184,7 @@
     function tank(){
       const p=s.petLife,group=P.residents(s),eggs=P.eggsIn(s),f=P.selected(s),today=ctx.day(),hungry=group.filter(a=>a.fedDay!==today);
       const dims=root.ShuAquariumLife.dimensions(group,ctx.catalog),water=tankWater();
+      const waterTheme=water==="海水"?"salt":water==="淡水"?"fresh":"empty";
       const levelStart=f?P.xpForLevel(f.level):0,nextXP=f?P.xpForLevel(f.level+1):1,xp=f?.level>=20?100:f?Math.max(0,Math.min(100,(f.xp-levelStart)/(nextXP-levelStart)*100)):0;
       const eggText=eggs.length?`卵${eggs.length}組 · あと${Math.min(...eggs.map(e=>Math.max(0,e.hatchDay-today)))}日`:"";
       const grown=p.lastGrowth?.day===today&&group.find(a=>a.uid===p.lastGrowth.uid);
@@ -197,10 +198,10 @@
           ${control("zoom",zoom?"拡大を戻す":"水槽を拡大","expand",!group.length,'class="pet-square"')}
         </div>
         <div class="pet-tank-layout">
-          ${focus&&f?`<div id="petInspectStage" class="aquarium-tank pet-tank-stage pet-inspect-stage" role="img" aria-label="${esc(fishName(f))}を拡大表示。${P.cm(f.length)}cm、${sizeLabel(f)}。魚種ごとの最大体長を基準にした個別表示">
+          ${focus&&f?`<div id="petInspectStage" data-water-theme="${waterTheme}" class="aquarium-tank pet-tank-stage pet-inspect-stage" role="img" aria-label="${esc(fishName(f))}を拡大表示。${P.cm(f.length)}cm、${sizeLabel(f)}。魚種ごとの最大体長を基準にした個別表示">
             <div class="pet-aquarium-scenery" aria-hidden="true"></div><div class="pet-water-light"></div><div id="petInspectFish" class="aquarium-fish pet-inspect-fish" aria-hidden="true"></div><div class="pet-glass"></div>
             <div class="pet-inspect-caption"><strong>一匹を観察</strong><small>${P.cm(f.length)}cm · ${sizeLabel(f)}</small></div>
-          </div>`:`<div id="petTankStage" class="aquarium-tank pet-tank-stage" role="group" aria-label="${esc(group.length?group.map(fishName).join("、"):"空き水槽")}、${group.length}匹が泳ぐ飼育水槽">
+          </div>`:`<div id="petTankStage" data-water-theme="${waterTheme}" class="aquarium-tank pet-tank-stage" role="group" aria-label="${esc(group.length?group.map(fishName).join("、"):"空き水槽")}、${group.length}匹が泳ぐ飼育水槽">
             <div class="pet-aquarium-scenery" aria-hidden="true"></div><div class="pet-water-light"></div>${Array.from({length:5},(_,i)=>`<i class="pet-bubble" style="--bubble:${i}"></i>`).join("")}
             ${eggs.map((egg,i)=>`<div class="pet-eggs egg-${["yamame","nijimasu"].includes(egg.species)?"gravel":"plant"}" style="--egg-slot:${i}" role="img" aria-label="${esc(spec(egg.species).name)}の卵、孵化まであと${Math.max(0,egg.hatchDay-today)}日"><i></i><i></i><i></i><i></i><i></i></div>`).join("")}
             ${group.map(a=>`<div class="aquarium-fish pet-resident" data-pet-fish="${a.uid}" aria-hidden="true"></div><button class="pet-fish-target" data-pet-inspect="${a.uid}" aria-label="${esc(fishName(a))}を拡大する" aria-pressed="${a.uid===p.selected}"><svg class="pet-fish-arrow" width="12" height="16" viewBox="0 0 12 16" aria-hidden="true"><path d="M4 1h4v7h3l-5 7-5-7h3z" fill="#ffe59a" stroke="#14333d" stroke-width="1.5" stroke-linejoin="round"/></svg></button><i class="pet-pellet" data-pet-pellet="${a.uid}"></i>`).join("")}
