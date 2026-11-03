@@ -1,0 +1,63 @@
+name: Natural fish swimming
+on:
+  push:
+    branches: [main, codex/fish-motion-v252-30]
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml']
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: fish-swimming-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  swimming:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          fetch-depth: 2
+      - run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Verify volume, motion, fixed lips, variants, cache and retained behavior
+        run: node --test --test-concurrency=2 fish-swimming-v252-30.test.cjs fish-motion-v213.test.cjs fish-raster-v214.test.cjs fish-turn-v216.test.cjs fight-moray-v250.test.cjs fish-render-transitions.test.cjs render-efficiency.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs
+      - name: Fetch the exact read-only comparison baseline
+        run: git cat-file -e a67f76b6e7072478a098d25ba3200fff9b39f4d4 || git fetch --depth=1 origin a67f76b6e7072478a098d25ba3200fff9b39f4d4
+      - name: Render temporal before/after contact sheets and allocation trace
+        run: node fish-swimming-evidence.cjs
+      - name: Exercise native five-fish tank, full inspection turns and touch layout
+        run: node browser-fish-swimming.cjs
+      - name: Check the deployed runtime after merge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node fish-swimming-public-source.cjs
+      - name: Exercise the deployed game
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node browser-fish-swimming.cjs
+        env:
+          FISH_SWIM_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/
+          FISH_SWIM_EVIDENCE_DIR: public-fish-swimming-evidence
+      - name: Preserve clips, contact sheets and measurements
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: fish-swimming-evidence
+          path: |
+            nushi-tsuri/tests/fish-swimming-evidence/
+            nushi-tsuri/tests/public-fish-swimming-evidence/
+          retention-days: 14
+          if-no-files-found: warn

@@ -1,5 +1,5 @@
 /* Shared physical scale and deterministic swim/feeding poses; no save mutations. */
-(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M){
+(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations,node?require('./fish-motion.js'):root.ShuFishMotion);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M,Motion){
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
@@ -56,7 +56,7 @@
     const yaw=reduced?0:Math.PI*(right?turnProgress:1-turnProgress);
     return {...orientation(yaw),x:reduced?50:44+12*(right?progress:1-progress),
       y:reduced?43:43+Math.sin(seconds*.8)*1.4*swim.bob,
-      swimFrame:reduced?0:Math.floor(seconds*swim.speed/(bottom(id)?.24:.18))};
+      swimFrame:reduced?0:Motion.phase(id,seconds,swim.speed,bottom(id))};
   }
   // A common reference for a species, rather than fitting every specimen to
   // the same box. Small fish retain a readable minimum; the whole tank keeps
@@ -133,7 +133,7 @@
       }
       x=clamp(x,minX,maxX);y=clamp(y,h/2+height*.08,floor-h/2);
       return {uid:f.uid,species:f.species,x,y,width:w,height:h,...orientation(yaw),depth,bite,food,bottomDweller:bottom(f.species),
-        swimFrame:reduced?0:Math.floor(seconds*swim.speed/(bottom(f.species)?.24:.18))};
+        swimFrame:reduced?0:Motion.phase(f.species,seconds,swim.speed,bottom(f.species),i*1.618)};
     });
     // A small vertical separation gives passing fish room without teleporting x.
     for(let i=0;i<poses.length;i++)for(let j=0;j<i;j++){
