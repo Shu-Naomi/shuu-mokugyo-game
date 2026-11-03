@@ -43,6 +43,7 @@
   // Aquarium age variants are drawings of the same species, never extra
   // encounter or encyclopedia entries.
   const aquarium=Object.freeze({
+    tanagoGold:{...native.tanago,asset:'assets/aquarium-tanago-gold-v252-24.png',boxes:[[19,128,440,274],[499,115,353,297],[910,125,267,300],[1258,123,247,302],[27,592,273,293],[345,591,321,284],[694,615,417,256],[1146,615,375,257]]},
     raigyoAlbino:{...native.raigyo,asset:'assets/aquarium-raigyo-albino-v252-23.png',boxes:[[9,236,471,157],[499,217,372,195],[889,197,320,234],[1237,181,281,255],[24,642,313,235],[337,649,363,206],[704,680,449,160],[1160,683,361,160]]},
     kamatsukaAlbino:{...native.kamatsuka,asset:'assets/aquarium-kamatsuka-albino-v252-22.png',boxes:[[10,191,421,188],[454,179,395,216],[897,146,265,269],[1215,114,283,316],[30,614,328,264],[366,626,378,236],[756,650,391,191],[1168,648,358,184]]},
     madaiBlue:{asset:'assets/aquarium-madai-blue-v252-21.png',boxes:[[18,180,352,189],[454,172,308,202],[875,172,234,207],[1245,171,244,210],[43,637,312,194],[421,633,305,204],[774,651,368,192],[1179,648,333,193]],heads:[[.985,.62],[.985,.68],[.98,.75],[.5,.78],[.02,.72],[.015,.65],[.015,.62],[.985,.66]],scales:{4:.85}},

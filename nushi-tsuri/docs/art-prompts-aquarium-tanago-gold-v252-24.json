@@ -1,0 +1,10 @@
+{
+  "version": "252-24",
+  "method": "built-in image_gen",
+  "asset": "assets/aquarium-tanago-gold-v252-24.png",
+  "source": "assets/fish-tanago-v227.png",
+  "prompt": "Use case: precise-object-edit. Asset type: transparent eight-pose fish sprite atlas for Japanese fishing game Starfall Lake. Edit target: attached existing tanago (Japanese bitterling) sprite sheet. Create a rare GOLDEN tanago colour variant. Change the silver/lilac body scales into warm luminous gold and amber with cream-gold belly, retain fine shaded scale texture and a subtle darker flank marking so it remains the same species. Dark pupils and golden eyes. NOT a flat yellow silhouette. Preserve EXACTLY all eight poses, positions, proportions, thin deep oval body, pointed fins, forked tail, mouth locations, and relative physical sizes. Top row right side, turning right, near-front right, front. Bottom row near-front left, turning left, full left side, full right side open mouth. Exactly eight separated fish, generous transparent gaps. Remove ALL gray/black backdrop and glow from source: true transparent alpha around every fish, no shadows, no checkerboard drawn, no text, no water, no extra elements. Retro detailed pixel-inspired illustration matching source. Output 1536x1024 RGBA, four columns two rows.",
+  "assetSha256": "1c5eecf47509f950ecf47fb7b31fa6de730632b033de54d367bbc68d92ac24fd",
+  "sourceSha256": "8c55e2fd1b816ea5d180f87a6adc0f4bca11b325d6e3a7b6ed68be81a95545ba",
+  "rendering": "Generated PNG copied without pixel changes; alpha >=8 plus one pixel margin; native tanago pose mapping, mouth anchors and continuous body retained."
+}
