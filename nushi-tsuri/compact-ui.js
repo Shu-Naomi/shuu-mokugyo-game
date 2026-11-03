@@ -120,6 +120,7 @@
     const dock=add(panel,el('footer','compact-quantity-dock'),d);move(stock.querySelector('.quantity-picker'),dock,d);move(panel.querySelector('#locationAction'),dock,d);dock.hidden=!dock.querySelector('.quantity-picker')&&scope.querySelector('#locationAction')?.hidden;
     if(ctx.id==='farmhouse'){
       scope.classList.add('compact-inn');
+      move(panel.querySelector('#locationTimedRest'),dock,d);
       const heading=panel.querySelector('.compact-window-heading'),visual=scope.querySelector('.location-visual');
       add(visual,el('h3','inn-scene-title',clean(heading.querySelector('h2'))),d);
       suppress(heading.querySelector('h2'),d);suppress(heading.querySelector('.compact-wallet'),d);
