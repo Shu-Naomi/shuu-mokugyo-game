@@ -1,6 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-valley-paths-252-31";
+const CACHE_NAME = "nushi-tsuri-v252-timed-rest-252-32";
 const CORE_ASSETS = [
+  "./timed-rest.js?v=252-32",
+  "./timed-rest.css?v=252-32",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
   "./lake-research.js?v=252-7",
@@ -59,7 +61,7 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=252-28",
+  "./compact-ui.js?v=252-32",
   "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
