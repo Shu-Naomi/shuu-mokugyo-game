@@ -6453,7 +6453,7 @@
     <link rel="stylesheet" href="pet-life.css?v=252-27" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
-    <link rel="stylesheet" href="lake-intro.css?v=252-4" />
+    <link rel="stylesheet" href="lake-intro.css?v=252-34" />
     <link rel="stylesheet" href="timed-rest.css?v=252-32" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
@@ -6943,7 +6943,7 @@
             <button id="lakeIntroSkip" type="button">物語を飛ばす</button>
           </header>
           <div class="lake-intro-page">
-            <div class="lake-intro-picture"><canvas id="lakeIntroPicture" width="320" height="180" role="img"></canvas></div>
+            <div class="lake-intro-picture"><canvas id="lakeIntroPicture" width="640" height="360" role="img"></canvas></div>
             <article class="lake-intro-paper" id="lakeIntroPaper" tabindex="0" aria-live="polite"></article>
           </div>
           <footer class="lake-intro-footer"><span id="lakeIntroHint" role="status">タップで全文、そのあと次の頁へ。</span><div class="lake-intro-navigation"><button id="lakeIntroPrevious" type="button">前の頁</button><button id="lakeIntroNext" type="button">次の頁</button></div></footer>
@@ -7412,7 +7412,7 @@
     <script src="field-guide.js?v=251-1"></script>
     <script src="mountain-region.js?v=252-31"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-8"></script>
+    <script src="lake-intro.js?v=252-34"></script>
     <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-2"></script>
@@ -24266,7 +24266,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-32").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-34").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();

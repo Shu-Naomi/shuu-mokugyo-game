@@ -1,0 +1,213 @@
+{
+  "method": "Built-in image_gen; no fallback API. Source PNGs preserved outside repository; runtime assets nearest-neighbor resized to 640x360 then lossless WebP.",
+  "art_direction": "Warm, crisp SFC pixel-art storybook. Existing cast appearance and approved concept reference. Initial same-plane standing comparison established Sam approximately 1.2 times protagonist height with approximately equal head size. Reverse camera faces south entrance; chest left, dog beds right. Table moved during clearing, per user acceptance.",
+  "base_prompt": "Production 16:9 SFC pixel-art opening. Preserve warm timber home identity, single south-center entrance seen from reverse camera, chest to left of doorway, three dog beds to right. Same-scale heads, Sam only 1.18 times protagonist standing height. Rich amber light, crisp pixel clusters, earthy palette. No text, borders or overlays.",
+  "variant_prompts": {
+    "call": "Protagonist seated at table left, holding open diary pages flat with both hands, looking up at Sam beside half-open door right. Preserve camera and floor path.",
+    "refusal": "Only protagonist pose changes: closed aged brown diary held against chest with both hands, lean back slightly, politely reluctant expression.",
+    "nose": "Only add small orange Shiba nose/head peeking around left edge of half-open door at floor level. Body hidden.",
+    "threshold": "Exactly three puppies cross same threshold toward foreground protagonist: orange Shiba blue collar, black-white collie green bandanna, black-tan Shiba purple collar.",
+    "cling": "Selected dog presses nose to shorts hem beside stool; remaining two stand along same doorway-to-stool floor path. Protagonist looks down warmly, holds diary at chest.",
+    "boy": "Replace only protagonist with navy backward cap, short dark hair, teal shirt, beige fishing vest, navy shorts, white socks and brown boots; same pose and geometry.",
+    "diary": "Overhead closeup aged fish diary on same table; blue cloth, white flowers, fish mug and brown cup. Bare hands cropped before sleeves, gender neutral. Sepia fish and cabin diagrams, abstract illegible writing.",
+    "diary-turn": "Only right leaf curls upward toward spine with underside and shadow; fixed book, hands and background.",
+    "diary-settled": "Next spread after leaf turns left and lies flat: fin and weed diagram left; lake, mountains and small fish research notes right. Same book geometry, hands and background. Renderer may clip only right page to keep left unchanged."
+  },
+  "assets": [
+    {
+      "key": "standing",
+      "file": "assets/opening-storybook-standing-v1.webp",
+      "source_generation_id": "7388acb6-c246-49ec-a9e0-83766dad8a4e",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-call",
+      "file": "assets/opening-storybook-girl-call-v1.webp",
+      "source_generation_id": "146d4e46-0a70-42a6-b161-f145b872c136",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-call",
+      "file": "assets/opening-storybook-boy-call-v1.webp",
+      "source_generation_id": "fbced6c4-96e8-4505-aa17-79b5559d41ed",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-refusal",
+      "file": "assets/opening-storybook-girl-refusal-v1.webp",
+      "source_generation_id": "3f7965d1-2e35-4bcd-8cb9-40c92c735415",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-refusal",
+      "file": "assets/opening-storybook-boy-refusal-v1.webp",
+      "source_generation_id": "a3bc4a74-399c-4e5d-b599-d1dff1451572",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-nose",
+      "file": "assets/opening-storybook-girl-nose-v1.webp",
+      "source_generation_id": "8851185e-03c9-4de0-ad13-11d10a958212",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-nose",
+      "file": "assets/opening-storybook-boy-nose-v1.webp",
+      "source_generation_id": "c6835efc-be3f-44b1-964d-47a1672d944b",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-threshold",
+      "file": "assets/opening-storybook-girl-threshold-v1.webp",
+      "source_generation_id": "2114bada-a5b3-454e-bf00-04580e401907",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-threshold",
+      "file": "assets/opening-storybook-boy-threshold-v1.webp",
+      "source_generation_id": "ec1929e2-9c70-456d-8d8b-e6f4904b2577",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-cling-shuu",
+      "file": "assets/opening-storybook-girl-cling-shuu-v1.webp",
+      "source_generation_id": "4bb932b0-0527-4b59-8489-0a2effe3d823",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-cling-shuu",
+      "file": "assets/opening-storybook-boy-cling-shuu-v1.webp",
+      "source_generation_id": "5d170f8c-02ca-4293-93b0-c5a58a7b7b27",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-cling-grey",
+      "file": "assets/opening-storybook-girl-cling-grey-v1.webp",
+      "source_generation_id": "99587550-6724-45c2-802d-51e66b14d693",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "girl-cling-riku",
+      "file": "assets/opening-storybook-girl-cling-riku-v1.webp",
+      "source_generation_id": "497c0396-9fe8-474d-bfbf-918dcccb8a88",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "diary",
+      "file": "assets/opening-storybook-diary-v1.webp",
+      "source_generation_id": "71ac0ca5-151d-4859-a1fb-a07e099fb541",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "diary-turn",
+      "file": "assets/opening-storybook-diary-turn-v1.webp",
+      "source_generation_id": "bd933d42-d474-45d1-8deb-261bd4c8d970",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-cling-riku",
+      "file": "assets/opening-storybook-boy-cling-riku-v1.webp",
+      "source_generation_id": "fe56d718-c5bf-4098-be53-40984683b84f",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "boy-cling-grey",
+      "file": "assets/opening-storybook-boy-cling-grey-v1.webp",
+      "source_generation_id": "9b949b6f-32c3-44ee-90b0-fab1b8605b8a",
+      "size": [
+        640,
+        360
+      ]
+    },
+    {
+      "key": "diary-settled",
+      "file": "assets/opening-storybook-diary-settled-v1.webp",
+      "source_generation_id": "e2f4570d-60d0-4762-86a3-87f926bcb8fe",
+      "size": [
+        640,
+        360
+      ]
+    }
+  ],
+  "suggested_regions_640x360": {
+    "nose": [
+      420,
+      149,
+      17,
+      30
+    ],
+    "threshold": [
+      356,
+      151,
+      93,
+      49
+    ],
+    "cling_head": [
+      232,
+      259,
+      40,
+      37
+    ],
+    "cling_tail": [
+      274,
+      272,
+      22,
+      20
+    ],
+    "diary_curl": [
+      315,
+      43,
+      214,
+      260
+    ]
+  },
+  "validation": "Inspected all generated images. Both genders and all three selected-companion cling variants present; chosen puppy is at clothing hem, exactly three puppies in group frames. All final assets readable at 640x360."
+}

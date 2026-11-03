@@ -49,13 +49,14 @@ test('front correction leaves standing, side, rear and boy poses on their existi
  }finally{a.dispose();}
 });
 
-test('the introduction uses the same corrected front strides and retains the other girl directions',()=>{
+test('the storybook accepts bare canvases and legacy direction poses without reintroducing walking sprites',()=>{
  const a=boot({...seed(),avatar:'girl'}),w=a.window,calls=[];
  try{
   const ctx=new Proxy({drawImage(...args){calls.push(args);}}, {get:(o,k)=>k in o?o[k]:()=>{}}),canvas={getContext:()=>ctx};
   for(const direction of ['down','up','left']){
    calls.length=0;w.ShuLakeIntro.paint(canvas,'village',()=>{},{avatar:'girl'},{scene:'village',player:{x:100,y:100,direction,walking:true,frame:2},dogs:[],fade:0});
-   const src=calls.at(-1)[0].src;assert.match(src,direction==='down'?/front-walk-v252-8/:/girl-walk-v35-final/);
+   assert.equal(calls.length,1);assert.equal(calls[0][0].src,w.ShuLakeIntro.art.village);
+   assert.equal(canvas.width,640);assert.equal(canvas.height,360);
   }
   assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}

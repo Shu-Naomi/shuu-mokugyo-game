@@ -1,6 +1,24 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-timed-rest-252-32";
+const CACHE_NAME = "nushi-tsuri-v252-storybook-252-34";
 const CORE_ASSETS = [
+  "./assets/opening-storybook-diary-v1.webp",
+  "./assets/opening-storybook-diary-turn-v1.webp",
+  "./assets/opening-storybook-diary-settled-v1.webp",
+  "./assets/opening-storybook-boy-call-v1.webp",
+  "./assets/opening-storybook-boy-refusal-v1.webp",
+  "./assets/opening-storybook-boy-nose-v1.webp",
+  "./assets/opening-storybook-boy-threshold-v1.webp",
+  "./assets/opening-storybook-girl-call-v1.webp",
+  "./assets/opening-storybook-girl-refusal-v1.webp",
+  "./assets/opening-storybook-girl-nose-v1.webp",
+  "./assets/opening-storybook-girl-threshold-v1.webp",
+  "./assets/opening-storybook-boy-cling-shuu-v1.webp",
+  "./assets/opening-storybook-boy-cling-riku-v1.webp",
+  "./assets/opening-storybook-boy-cling-grey-v1.webp",
+  "./assets/opening-storybook-girl-cling-shuu-v1.webp",
+  "./assets/opening-storybook-girl-cling-riku-v1.webp",
+  "./assets/opening-storybook-girl-cling-grey-v1.webp",
+
   "./timed-rest.js?v=252-32",
   "./timed-rest.css?v=252-32",
   "./assets/player-girl-front-walk-v252-8.png",
@@ -113,8 +131,8 @@ const CORE_ASSETS = [
   "./mountain-region.js?v=252-31",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-8",
-  "./lake-intro.css?v=252-4",
+  "./lake-intro.js?v=252-34",
+  "./lake-intro.css?v=252-34",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",
