@@ -1,5 +1,12 @@
 name: Opening story and saved dialogue
 on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nushi-tsuri/lake-intro.*'
+      - 'nushi-tsuri/assets/opening-storybook-*'
+      - 'nushi-tsuri/tests/*opening*'
+      - '.github/workflows/opening-story.yml'
   push:
     branches: [main, codex/opening-story-v252-2, codex/opening-presentation-271]
     paths:
@@ -10,6 +17,7 @@ on:
       - 'nushi-tsuri/sw.js'
       - 'nushi-tsuri/title-flow.*'
       - 'nushi-tsuri/lake-intro.*'
+      - 'nushi-tsuri/assets/opening-storybook-*'
       - 'nushi-tsuri/lake-story.js'
       - 'nushi-tsuri/save-slots.js'
       - 'nushi-tsuri/tests/*opening*'
@@ -56,12 +64,12 @@ jobs:
         run: bash install-ci-fonts.sh
       - name: Check story checkpoints, names, old saves and existing game data
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs opening-presentation-271.test.cjs cast-cancel-269.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
+        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs opening-presentation-271.test.cjs opening-storybook-assets.test.cjs cast-cancel-269.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
       - name: Exercise the opening, three favorite dogs, renames and resume on three screens
         env:
           OPENING_STORY_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-opening-story-evidence.cjs 2>&1 | tee opening-story-browser.log
-      - name: Capture page motion, three reunions, cancellation and reduced motion
+      - name: Replay storybook pages, both avatars, cancellation and reduced motion
         env:
           OPENING_PRESENTATION_PUBLIC_URL: ${{ inputs.public_url }}
         run: node browser-opening-presentation-evidence.cjs 2>&1 | tee opening-motion-browser.log
@@ -97,6 +105,7 @@ jobs:
             nushi-tsuri/tests/opening-story-evidence/
             nushi-tsuri/tests/opening-motion-*.log
             nushi-tsuri/tests/opening-motion-evidence/
+            nushi-tsuri/tests/storybook-evidence/
             nushi-tsuri/tests/opening-cast-cancel-*.log
             nushi-tsuri/tests/cast-cancel-evidence/
           retention-days: 14

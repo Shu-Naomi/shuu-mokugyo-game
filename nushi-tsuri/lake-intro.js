@@ -59,120 +59,97 @@
   function text(page,state){return page.paragraphs.map(line=>substitute(line,state));}
   function speaker(page,state){return substitute(page.speaker,state);}
   const objective='まずは家と三匹の様子を見てみよう。道具の相談はサムの店へ。';
-  const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',
-    sam:'assets/sam-sprites-v199.webp',boy:'assets/player-boy.png',girl:'assets/player-girl.png',
-    boyWalk:'assets/player-boy-walk-v35-final.png',girlWalk:'assets/player-girl-walk-v35-final.png',
-    girlFrontWalk:'assets/player-girl-front-walk-v252-8.png',
-    shuu:'assets/shuu-walk.png',riku:'assets/riku-walk.png',grey:'assets/grey-walk.png'};
-  const ids=['shuu','riku','grey'],images=new Map();
-  const clamp=x=>Math.max(0,Math.min(1,x)),ease=x=>{x=clamp(x);return x*x*(3-2*x);};
-  const durations={arrival:.45,memory:.55,notebook:.75,researcher:.5,wish:.5,sam:1.1,invitation:.55,refusal:.45,push:.8,retort:.4,puppies:1.6,cling:1.15,care:.35,decision:.4,welcome:.35,'first-day':.55};
+  // Storybook paintings share one south-door camera. Dialogue/save identifiers above
+  // are deliberately unchanged: a visual revision must never migrate the story.
+  const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp'};
+  const images=new Map(),failed=new Set(),ids=['shuu','riku','grey'];
+  const clamp=x=>Math.max(0,Math.min(1,x));
+  const durations={arrival:.7,memory:.7,notebook:1.25,researcher:1.25,wish:1.25,sam:.9,invitation:.9,refusal:.8,push:.8,retort:.8,puppies:1.1,cling:1.1,care:.8,decision:.8,welcome:.8,'first-day':.7};
   function pageFor(value){return typeof value==='object'?value:pages[byId[value]]||pages.find(p=>p.scene===value)||pages[0];}
-  // Presentation only: no clock, RNG, progress, identity or inventory is changed.
+  function panelFor(value,state={}){
+    const p=pageFor(value),c=cast(state);
+    if(p.scene==='village')return 'village';
+    if(p.id==='arrival')return 'home';
+    if(p.scene==='notebook')return 'diary';
+    const action={sam:'call',invitation:'call',refusal:'refusal',push:'refusal',retort:'nose',puppies:'threshold'}[p.id];
+    return c.avatar+'-'+(action||'cling-'+c.dog);
+  }
+  function sourceFor(panel){return art[panel]||'assets/opening-storybook-'+panel+'-v1.webp';}
+  // Regions use the 640 × 360 painting coordinate system. Only this small area
+  // can move; the camera, doorway, people and dogs never slide as whole sprites.
+  function regionFor(panel){
+    if(panel==='diary')return {kind:'turn',region:[315,43,214,260]};
+    if(panel==='home')return {kind:'light',region:[250,100,95,35]};
+    if(panel==='village')return {kind:'light',region:[250,120,90,28]};
+    if(panel.includes('cling'))return {kind:'breath',region:[232,259,40,37]};
+    if(panel.endsWith('threshold'))return {kind:'breath',region:[356,151,93,49]};
+    if(panel.endsWith('nose'))return {kind:'breath',region:[420,149,17,30]};
+    if(panel.endsWith('refusal'))return {kind:'breath',region:[189,220,34,34]};
+    return {kind:'page',region:[150,233,43,28]};
+  }
   function pose(value,seconds=Infinity,state={}){
-    const page=pageFor(value),c=cast(state),duration=durations[page.id]||.5,t=Math.max(0,Math.min(duration,Number(seconds)||0)),p=ease(t/duration);
-    const group=['puppies','cling','care','decision','welcome'].includes(page.id),favorite=[c.dog,...ids.filter(id=>id!==c.dog)];
-    const player={x:page.scene==='village'?161:136,y:page.scene==='village'?151:148,direction:group||['sam','invitation','refusal','push','retort'].includes(page.id)?'right':'down',walking:false,frame:Math.floor(t*7)%4};
-    if(page.id==='refusal'){player.x=136-4*p;player.walking=t<duration;}
-    if(page.id==='push'||page.id==='retort')player.x=132;
-    if(page.id==='retort'&&t<.3)player.x+=Math.round(Math.sin(t*30)*1.5);
-    let sam=null;
-    if(page.scene==='sam'||group){
-      sam={x:218,y:145,direction:'left',moving:false};
-      if(page.id==='sam'){sam.x=166+52*p;sam.y=177-32*p;sam.direction=t<duration?'right':'left';sam.moving=t<duration;}
-      if(page.id==='push'){sam.x=218-12*p;sam.moving=t<duration;}
-      if(page.id==='retort'){sam.x=206;sam.direction=t<.2?'left':'down';}
-      if(group){sam.x=page.id==='puppies'?206+30*p:236;sam.y=142;sam.direction='left';sam.moving=page.id==='puppies'&&t<duration;}
-    }
-    const dogs=group?favorite.map((id,i)=>{
-      let x=[189,225,265][i],moving=false;
-      if(page.id==='puppies'){
-        const travel=clamp((t-i*.22)/1.12);x=(340+i*20)+(x-340-i*20)*ease(travel);moving=travel<1;
-      }else if(i===0){x=page.id==='cling'?189-35*ease(t/.78):154;moving=page.id==='cling'&&t<.78;}
-      return {id,x,y:151+(i===1?-1:0),direction:'left',moving,frame:moving?Math.floor(t*8)%4:1,
-        nuzzle:page.id==='cling'&&i===0&&t>.78?Math.max(0,Math.sin((t-.78)/.37*Math.PI)):0};
-    }):[];
-    return {id:page.id,scene:page.scene,kind:page.scene==='notebook'?'paper':group?'reunion':page.scene==='sam'?'conversation':'paper',
-      duration,elapsed:t,settled:t>=duration,player,sam,dogs,favorite:c.dog,
-      bookOpen:page.id==='notebook'?.12+.88*ease(t/.65):1,
-      pageTurn:['researcher','wish'].includes(page.id)?1-p:0,fade:Math.max(0,1-t/.28)*.22};
+    const page=pageFor(value),c=cast(state),panel=panelFor(page,state),duration=durations[page.id],
+      elapsed=Number.isFinite(seconds)?Math.max(0,Math.min(duration,seconds)):duration;
+    return {id:page.id,scene:page.scene,panel,avatar:c.avatar,favorite:c.dog,duration,elapsed,settled:elapsed>=duration,
+      animation:{...regionFor(panel),progress:elapsed/duration}};
   }
   function image(src,redraw){
-    let result=images.get(src);
-    if(!result){result=new Image();images.set(src,result);result.src=src;}
-    if(!result.complete)result.onload=redraw;
-    return result.complete&&result.naturalWidth?result:null;
+    let im=images.get(src);
+    if(!im){im=new Image();images.set(src,im);im.onload=redraw;im.onerror=()=>{failed.add(src);redraw();};im.src=src;}
+    else if(!im.complete){im.onload=redraw;im.onerror=()=>{failed.add(src);redraw();};}
+    return im.complete&&im.naturalWidth?im:null;
   }
-  // Use the existing home walk-sheet paw anchors so feet stay on the floor.
-  const paws={shuu:[[293,283,283,295],[289,283,283,289],[293,286,286,294]],
-    riku:[[357,342,342,353],[288,286,286,291],[230,222,222,230]],
-    grey:[[300,296,296,300],[299,299,299,300],[299,294,294,300]]};
-  function drawDog(ctx,dog,redraw){
-    const im=image(art[dog.id],redraw);if(!im)return;
-    const size=dog.id==='riku'?362:320,col={down:0,left:1,right:2,up:3}[dog.direction],row=dog.moving?[0,1,2,1][dog.frame]:1;
-    const h=dog.id==='riku'&&row===1?size-12:size,scale=35/size,center=dog.id==='riku'?[215,199,162,150][col]:size/2;
-    ctx.drawImage(im,col*size,row*size,size,h,Math.round(dog.x-center*scale),Math.round(dog.y-paws[dog.id][row][col]*scale-dog.nuzzle),35,h*scale);
-  }
-  function drawPlayer(ctx,actor,avatar,redraw,village){
-    const walkSource=avatar==='girl'&&actor.direction==='down'?art.girlFrontWalk:art[avatar+'Walk'];
-    let im=actor.walking?(image(walkSource,redraw)||image(art[avatar+'Walk'],redraw)):null;const walking=Boolean(im);im=im||image(art[avatar],redraw);if(!im)return;
-    const column=actor.direction==='down'?0:actor.direction==='up'?2:1,fw=im.naturalWidth/3,fh=im.naturalHeight/(walking?2:1),height=village?39:57,width=height*fw/fh;
-    ctx.save();ctx.translate(Math.round(actor.x),Math.round(actor.y));if(actor.direction==='right')ctx.scale(-1,1);
-    ctx.drawImage(im,column*fw,walking?(actor.frame<2?0:fh):0,fw,fh,-width/2,-height,width,height);ctx.restore();
-  }
-  function drawSam(ctx,actor,redraw){
-    const im=image(art.sam,redraw);if(!im)return;
-    const side=actor.direction!=='down',bounds=side?[608,83,298,885]:[147,79,399,884],height=66,width=height*bounds[2]/bounds[3];
-    const bob=actor.moving?Math.floor(actor.x/4)%2:0;
-    ctx.save();ctx.translate(Math.round(actor.x),Math.round(actor.y-bob));if(actor.direction==='left')ctx.scale(-1,1);
-    ctx.drawImage(im,...bounds,-width/2,-height,width,height);ctx.restore();
-  }
-  function drawNotebook(ctx,model){
-    ctx.fillStyle='#55614b';ctx.fillRect(0,0,320,180);ctx.fillStyle='#796044';for(let y=0;y<180;y+=18)ctx.fillRect(0,y,320,2);
-    ctx.fillStyle='#3b2d26';ctx.fillRect(53,35,220,120);ctx.fillRect(58,155,208,5);
-    ctx.fillStyle='#997847';ctx.fillRect(50,30,220,122);
-    ctx.save();ctx.translate(154,0);ctx.scale(model.bookOpen,1);ctx.translate(-154,0);
-    ctx.fillStyle='#d9c69c';ctx.fillRect(58,33,94,111);ctx.fillRect(156,33,106,111);
-    ctx.fillStyle='#f3e7c5';ctx.fillRect(60,36,89,104);ctx.fillRect(158,36,102,104);
-    ctx.fillStyle='#b8a477';ctx.fillRect(149,34,7,108);
-    ctx.fillStyle='#dfd1ae';for(let y=56;y<131;y+=15){ctx.fillRect(72,y,64,1);ctx.fillRect(171,y,75,1);}
-    ctx.fillStyle='#847556';for(let y=55;y<78;y+=9)ctx.fillRect(73,y,49+(y%3)*5,1);
-    // Small pixel field sketches and a dotted route among the old research notes.
-    ctx.fillStyle='#697568';for(const [i,w]of [4,8,12,14,12,8,4].entries())ctx.fillRect(98-w/2,88+i*2,w,1);
-    ctx.fillRect(105,91,4,6);ctx.fillRect(95,92,1,1);
-    for(let y=116;y<132;y+=6)ctx.fillRect(74,y,53,1);
-    ctx.fillStyle='#718576';for(const [x,y]of [[180,64],[202,78],[192,96],[231,111]]){ctx.fillRect(x,y,3,3);ctx.fillRect(x+5,y+2,10,1);}
-    if(model.pageTurn>0){ctx.fillStyle='#e5d4ac';const width=Math.round(101*model.pageTurn);ctx.fillRect(158,36,width,104);ctx.fillStyle='#fff1cd';ctx.fillRect(158+width-3,36,3,104);}
-    ctx.restore();ctx.fillStyle='#4a3730';ctx.fillRect(275,28,4,136);ctx.fillStyle='#bba475';ctx.fillRect(279,30,2,128);ctx.fillRect(274,131,6,23);
-  }
-  function paint(canvas,scene,redraw=()=>{},state={},model=pose(scene,Infinity,state)){
-    const ctx=canvas.getContext('2d'),c=cast(state);ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,320,180);
-    ctx.fillStyle='#173f45';ctx.fillRect(0,0,320,180);
-    if(model.scene==='notebook')drawNotebook(ctx,model);
-    else{
-      const source=image(model.scene==='village'?art.village:art.home,redraw);
-      if(source)ctx.drawImage(source,0,0,source.naturalWidth,source.naturalHeight,0,0,320,180);
-      else{ctx.fillStyle='#5b7652';ctx.fillRect(0,88,320,92);ctx.fillStyle='#507f8b';ctx.fillRect(38,63,210,47);ctx.fillStyle='#c3aa72';ctx.fillRect(146,101,16,79);}
-      const actors=[{y:model.player.y,draw:()=>drawPlayer(ctx,model.player,c.avatar,redraw,model.scene==='village')}];
-      if(model.sam)actors.push({y:model.sam.y,draw:()=>drawSam(ctx,model.sam,redraw)});
-      for(const dog of model.dogs)actors.push({y:dog.y,draw:()=>drawDog(ctx,dog,redraw)});
-      actors.sort((a,b)=>a.y-b.y).forEach(a=>a.draw());
-      if(model.dogs.length){ctx.fillStyle='#9a764c';ctx.fillRect(model.player.x+7,model.player.y-27,8,11);ctx.fillStyle='#e6d5a7';ctx.fillRect(model.player.x+9,model.player.y-26,5,8);}
+  function paint(canvas,value,redraw=()=>{},state={},model=pose(value,Infinity,state)){
+    if(canvas.width!==640)canvas.width=640;if(canvas.height!==360)canvas.height=360;
+    const ctx=canvas.getContext('2d'),src=sourceFor(model.panel),im=image(src,redraw);
+    ctx.imageSmoothingEnabled=false;ctx.fillStyle='#211912';ctx.fillRect(0,0,640,360);
+    canvas.dataset.panel=model.panel;canvas.dataset.artState=im?'ready':failed.has(src)?'error':'loading';
+    canvas.dataset.region=model.animation.region.join(',');
+    if(!im){
+      ctx.fillStyle='#d7c09a';ctx.font='16px sans-serif';ctx.textAlign='center';
+      ctx.fillText(failed.has(src)?'絵を読み込めませんでした。次の頁へ進めます。':'絵をひらいています…',320,180);
+      return;
     }
-    if(model.fade){ctx.fillStyle=`rgba(40,31,25,${model.fade})`;ctx.fillRect(0,0,320,180);}
+    ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight,0,0,640,360);
+    const {kind,region,progress}=model.animation;
+    if(kind==='turn'){
+      const curled=image(art.diaryTurn,redraw),settled=image(art.diarySettled,redraw);
+      if(!curled||!settled){canvas.dataset.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
+      // The leaf rises, crosses the old notes, and reveals a different settled
+      // page. Only the paper region changes; hands, binding and table stay put.
+      const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
+      ctx.save();ctx.beginPath();ctx.rect(...region);ctx.clip();
+      ctx.globalAlpha=smooth(progress*2);ctx.drawImage(curled,0,0,curled.naturalWidth,curled.naturalHeight,0,0,640,360);
+      if(progress>.5){ctx.globalAlpha=smooth((progress-.5)*2);ctx.drawImage(settled,0,0,settled.naturalWidth,settled.naturalHeight,0,0,640,360);}
+      ctx.restore();return;
+    }
+    // A single, finite, edge-feathered local deformation: the leaf lifts then
+    // settles, or a puppy takes one small breath. No looping or whole-image pan.
+    const pulse=Math.sin(Math.PI*clamp(progress))**2;if(pulse<.001)return;
+    const [x,y,w,h]=region;
+    if(kind==='light'){
+      ctx.save();ctx.globalAlpha=.08*pulse;ctx.fillStyle='#ffe6a0';ctx.fillRect(x,y,w,h);ctx.restore();return;
+    }
+    const sx=im.naturalWidth/640,sy=im.naturalHeight/360;
+    ctx.save();ctx.beginPath();ctx.rect(x,y,w,h);ctx.clip();
+    for(let row=0;row<h;row+=2){
+      const envelope=Math.sin(Math.PI*row/h),lift=Math.round(pulse*envelope*(kind==='page'?3:1));
+      ctx.drawImage(im,x*sx,(y+row+lift)*sy,w*sx,2*sy,x,y+row,w,2);
+    }
+    ctx.restore();
   }
-  // One short, cancellable RAF sequence. Page navigation never waits for it.
+  // One short, cancellable RAF sequence. Loading and user-paced navigation do
+  // not advance dialogue, save progress, change RNG, or alter game resources.
   function present(canvas,value,state={},options={}){
-    const page=pageFor(value),c=cast(state),doc=canvas.ownerDocument,env=doc?.defaultView||globalThis;
+    const page=pageFor(value),doc=canvas.ownerDocument,env=doc?.defaultView||globalThis;
     const clock=options.clock||{now:()=>env.performance.now(),request:fn=>env.requestAnimationFrame(fn),cancel:id=>env.cancelAnimationFrame(id)};
-    const media=options.media||env.matchMedia?.('(prefers-reduced-motion: reduce)'),duration=durations[page.id]||.5;
+    const media=options.media||env.matchMedia?.('(prefers-reduced-motion: reduce)'),duration=durations[page.id];
     let live=true,handle=0,start=null,elapsed=media?.matches?duration:0,finished=Boolean(media?.matches),last=-Infinity;
-    const needed=page.scene==='notebook'?[]:[page.scene==='village'?art.village:art.home,art[c.avatar],
-      ...(['sam','puppies','cling'].includes(page.scene)?[art.sam]:[]),...(['puppies','cling'].includes(page.scene)?ids.map(id=>art[id]):[])];
-    const ready=()=>needed.every(src=>{const im=images.get(src);return im?.complete&&im.naturalWidth;});
+    const src=sourceFor(panelFor(page,state)),needed=page.scene==='notebook'?[src,art.diaryTurn,art.diarySettled]:[src];
+    const ready=()=>needed.every(source=>{const im=images.get(source);return Boolean(im?.complete&&im.naturalWidth)||failed.has(source);});
     const cancelFrame=()=>{if(handle)clock.cancel(handle);handle=0;};
     function draw(now){
-      const model=pose(page,elapsed,state);paint(canvas,page.scene,redraw,state,model);last=now;
+      paint(canvas,page,redraw,state,pose(page,elapsed,state));last=now;
       canvas.dataset.step=page.id;canvas.dataset.motion=finished||elapsed>=duration?'still':start===null?'loading':'running';
     }
     function schedule(){if(live&&!doc?.hidden&&!finished&&start!==null&&elapsed<duration&&!handle)handle=clock.request(tick);}
@@ -190,12 +167,10 @@
     function visibility(){if(doc.hidden){finished=true;elapsed=duration;cancelFrame();}else redraw();}
     const motion=()=>{if(media.matches)settle();};
     doc?.addEventListener('visibilitychange',visibility);media?.addEventListener?.('change',motion);
-    // Warm the same existing sprites before the reunion, including on resume.
-    for(const src of [art.home,art.village,art.sam,art[c.avatar],art[c.avatar+'Walk'],...ids.map(id=>art[id])])image(src,redraw);
-    redraw();
+    for(const source of needed)image(source,redraw);redraw();
     return {cancel(){if(!live)return;live=false;cancelFrame();doc?.removeEventListener('visibilitychange',visibility);media?.removeEventListener?.('change',motion);
-      for(const im of images.values())if(im.onload===redraw)im.onload=null;canvas.dataset.motion='stopped';},
+      for(const im of images.values())if(im.onload===redraw){im.onload=null;im.onerror=null;}canvas.dataset.motion='stopped';},
       snapshot:()=>({active:live,scheduled:Boolean(handle),elapsed,pose:pose(page,elapsed,state)})};
   }
-  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,pose,paint,present};
+  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,panelFor,sourceFor,regionFor,pose,paint,present};
 });
