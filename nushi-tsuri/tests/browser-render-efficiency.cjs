@@ -152,6 +152,8 @@ async function run(url, screen) {
     assert.equal(await page.evaluate(() => document.querySelector('#fishScene').classList.contains('nushi-water')), true);
     const nushi = await sample(300);
     assert.equal(nushi.canvas['motion:worldPixels'] || 0, 0); assert.equal(nushi.canvas['motion:underwaterPixels'] || 0, 0);
+    // The fixture freezes battle RAF; settle its line after the final pose.
+    await page.evaluate(() => syncBattleFishLine());
     await shot('nushi'); checks.push({name: 'nushi', ...nushi});
     await page.evaluate(() => {battle.fightMode = 'gauge'; battle.method = 'lure'; renderUnderwaterTravel();});
     const lureState = await page.evaluate(() => ({nushi: document.querySelector('#fishScene').classList.contains('nushi-water'),
@@ -160,7 +162,7 @@ async function run(url, screen) {
     assert.equal(lureState.nushi, false); assert.equal(lureState.composite, true); assert.equal(lureState.opacity, '0');
     assert.equal(lureState.animationVisible, true); assert.equal(lureState.scenery, 'gauge');
     const lure = await sample(300); assert.ok(lure.canvas['motion:underwaterPixels'] > 0, 'opacity-zero layer still feeds the visible lure composite');
-    await page.evaluate(() => renderUnderwaterTravel()); await shot('lure'); checks.push({name: 'lure', ...lureState, ...lure});
+    await page.evaluate(() => {renderUnderwaterTravel(); syncBattleFishLine();}); await shot('lure'); checks.push({name: 'lure', ...lureState, ...lure});
     await page.evaluate(() => endBattle());
     const afterFishing = await sample(300); assert.ok(afterFishing.canvas['motion:worldPixels'] > 0);
     assert.deepEqual(errors, []); assert.deepEqual(assetFailures, []);
