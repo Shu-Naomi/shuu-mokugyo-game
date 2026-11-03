@@ -47,8 +47,8 @@
   function sourceArt(n){return n.querySelector(':scope > i,.shop-item-art,.rod-display-art,.pet-fish-thumb,.pet-specimen-window,svg.pixel-item-icon,svg.tackle-pixel-icon');}
   function samCategoryArt(id){
     if(id==='bait'||id==='lures')return root.ShuTackleArt?.icon(id==='bait'?'worm':'silverSpoon')||'';
-    const paths={rods:[['#493322','M17 1h3v3h-2v4h-2v4h-2v4h-2v5H7v-4h3v-4h3V9h2V5h2z'],['#c18b48','M17 3h1v4h-2v4h-2v4h-2v4h-2v-2h1v-4h2V9h2V5h2z'],['#899b91','M20 3h1v12h-2v3h-4v-2h3v-3h2z']],hands:[['#544535','M5 3h3v5h1V2h3v6h1V3h3v6h1V5h3v11h-2v5H8v-4H5l-3-5V9h3z'],['#d7ba7b','M6 5h1v5h3V4h1v6h3V5h1v6h3V7h1v8h-2v4H9v-4H7l-3-4h2z']],dogTreats:[['#63412b','M7 3h3v3h4V3h3v2h3v4h-3v6h3v4h-3v2h-3v-3h-4v3H7v-2H4v-4h3V9H4V5h3z'],['#dfbb78','M7 5h2v3h6V5h2v2h1v1h-3v8h3v1h-1v2h-2v-3H9v3H7v-2H6v-1h3V8H6V7h1z']],dogToys:[['#374a36','M8 3h8v2h3v3h2v8h-2v3h-3v2H8v-2H5v-3H3V8h2V5h3z'],['#a2b85a','M8 5h8v2h3v9h-3v3H8v-3H5V8h3z'],['#ede6b5','M7 7h2v3H7zM9 10h2v4H9zM11 14h3v2h-3zM14 16h3v2h-3z']]};
-    return '<svg class="sam-pixel-icon" viewBox="0 0 24 24" shape-rendering="crispEdges" aria-hidden="true">'+(paths[id]||[]).map(([fill,d])=>'<path fill="'+fill+'" d="'+d+'"/>').join('')+'</svg>';
+    if(id==='rods')return root.UiExtraArt?.get('fishingRod')||'';
+    return root.ItemObjectArt?.get({hands:'gloves',dogTreats:'samBiscuit',dogToys:'rubberBall'}[id])||'';
   }
   function catalog(node,opts={}){
     const scope=node.closest('.compact-window');if(!scope)return;
