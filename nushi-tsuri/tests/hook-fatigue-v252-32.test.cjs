@@ -15,7 +15,7 @@ test('all supported fish have longer endurance, with distinct species values and
   assert.equal(F.fatigue({...fish(id),nushiRunTicks:F.endurance[id]}),1);
  }
  assert.ok(F.endurance.medaka<F.endurance.koi);
- assert.ok(F.endurance.koi<F.endurance.starNushi);
+ assert.ok(F.endurance.streamNushi<F.endurance.starNushi);
  assert.notEqual(F.endurance.yamame,F.endurance.iwana);
 });
 test('fatigue advances only on active run steps, not slack or reading the cue',()=>{

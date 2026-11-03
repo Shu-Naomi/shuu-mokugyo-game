@@ -120,7 +120,9 @@
   // Game tuning, not biological endurance estimates. Every species lasts
   // longer than the former shared 100 ticks; strength and swimming style both
   // matter. Progress starts after a fresh reserve, then fades gradually.
-  const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,legendary:420,pelagic:360,reefRunner:280};
+  // Boss force already makes missed ground costly; a lower base avoids
+  // multiplying their fight length while still exceeding old endurance.
+  const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,legendary:60,pelagic:360,reefRunner:280};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*40)])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
