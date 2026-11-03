@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-render-efficiency-252-29";
+const CACHE_NAME = "nushi-tsuri-v252-valley-paths-252-31";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -48,7 +48,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=251-1",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=251-2",
+  "./world-life.js?v=252-31",
   "./fish-additions.js?v=251-1",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -108,7 +108,7 @@ const CORE_ASSETS = [
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=248-2",
+  "./mountain-region.js?v=252-31",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
   "./lake-intro.js?v=252-8",
@@ -129,7 +129,7 @@ const CORE_ASSETS = [
   "./assets/fish-coastal-v208.png",
   "./assets/fish-legendary-v208.png",
 
-  "./assets/mountain-world-v201.png",
+  "./assets/mountain-world-v252-31.png",
   "./assets/pass-pond-v202.png",
   "./assets/pass-marsh-v202.png",
   "./assets/cave-lake-v202.png",

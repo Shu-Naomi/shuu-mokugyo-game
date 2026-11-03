@@ -5,13 +5,13 @@
 })(typeof globalThis !== "undefined" ? globalThis : this, function (Life) {
   "use strict";
   const width = 240, height = 135;
-  const asset = "assets/mountain-world-v201.png";
+  const asset = "assets/mountain-world-v252-31.png";
   const villageGate = { left:116, right:132, top:2, bottom:10 };
   const returnGate = { left:146, right:158, top:125, bottom:133 };
   const entry = { x:152, y:128, direction:"up" };
   const villageReturn = { x:124, y:8, direction:"down" };
-  const bridge = { left:87, right:140, top:69.5, bottom:74.5 };
-  // Traced against the finished painting, in the same 240 x 135 world units
+  const bridge = { left:87, right:140, top:69, bottom:75.5 };
+  // v252-31: widened dirt and bridge traced against the finished painting, in the same 240 x 135 world units
   // as the village. The deck covers the stream; the waterfall and cliffs do not.
   const waters = {
     stream: [[129,2],[139,2],[132,13],[123,21],[133,26],[136,33],
@@ -54,7 +54,9 @@
     { id:"cave", x:219, y:30, name:"岩窟の入口", message:"岩窟の奥から、かすかな水音が聞こえる。" },
   ];
   const regions={
-    stream:{asset,name:"星見渓流",waters,trails,trailRadius:4.5,treeBases,bridges:[bridge],entry,returnGate,landmarks},
+    stream:{asset,name:"星見渓流",waters,trails,trailRadius:5.2,treeBases,bridges:[bridge],entry,returnGate,landmarks,
+      // Level interior of the shop terrace; the retaining wall stays outside.
+      clearings:[[[150,66],[151,64],[155,61],[163,60],[169,61],[170,64],[165,67],[155,68]]]},
     mountainPond:{asset:"assets/pass-pond-v202.png",name:"峠の池",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       // v241: independently measured shoreline and dirt centreline in the
@@ -168,6 +170,7 @@
     if(onBridge(x,y,region))return true;
     if(waterType(x,y,region))return false;
     if(Life?.access(x,y,region))return true;
+    if(data.clearings?.some(polygon=>inside(x,y,polygon)))return true;
     if(inRect(x,y,data.returnGate))return true;
     if(data.trails.some((path,trail)=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadii?.[trail]??data.trailRadius??4))))return true;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
