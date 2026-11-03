@@ -1,0 +1,43 @@
+name: Opening and rest review
+on:
+  push:
+    branches: [fix/opening-rest-motion]
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/opening-rest-review.yml']
+permissions:
+  contents: read
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: e85ae855d10c0899799b2e40477bd46c205ac135
+          path: before
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund && npm install --no-save --no-package-lock playwright@1.63.0 && npx playwright install --with-deps chromium
+        working-directory: nushi-tsuri/tests
+      - run: bash install-ci-fonts.sh
+        working-directory: nushi-tsuri/tests
+      - name: Replay original sixteen scenes on landscape mobile
+        run: node browser-opening-review.cjs
+        working-directory: nushi-tsuri/tests
+        env:
+          OPENING_ROOT: ../../before/nushi-tsuri
+          OPENING_OUTPUT: opening-review/before
+      - name: Replay current sixteen scenes on landscape mobile
+        run: node browser-opening-review.cjs
+        working-directory: nushi-tsuri/tests
+        env:
+          OPENING_OUTPUT: opening-review/after
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: opening-rest-review
+          path: nushi-tsuri/tests/opening-review/
+          retention-days: 14
