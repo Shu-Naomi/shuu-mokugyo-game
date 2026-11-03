@@ -54,6 +54,6 @@ test('selected rest does not modify another save slot and tournament rest is rej
 
 test('rest sources and service-worker registration share the fresh release',()=>{
  const fs=require('node:fs'),path=require('node:path'),html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
- for(const file of ['timed-rest.js','timed-rest.css','compact-ui.js']){assert.ok(html.includes(file+'?v=252-32'));assert.ok(sw.includes(file+'?v=252-32'));}
- assert.ok(html.includes('serviceWorker.register("./sw.js?v=252-32")'));assert.ok(sw.includes('nushi-tsuri-v252-timed-rest-252-32'));
+ for(const file of ['timed-rest.js','timed-rest.css','compact-ui.js']){const url=html.match(new RegExp(file.replace('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url);assert.ok(sw.includes(url));}
+ const release=html.match(/serviceWorker\.register\("\.\/sw\.js\?v=([0-9-]+)"\)/)?.[1],cache=sw.match(/const CACHE_NAME = "([^"]+)";/)?.[1];assert.ok(release);assert.ok(cache?.endsWith('-'+release));
 });
