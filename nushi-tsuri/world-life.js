@@ -3,9 +3,11 @@
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
  const art = {"buildings":[[117,9,548,455],[849,72,631,397],[54,503,767,464],[920,513,579,474]],"doorX":[.51,.71,.52,.48],"residents":[[[155,16,150,312],[506,16,166,312],[872,16,173,312],[1234,16,148,311]],[[154,353,135,320],[512,353,179,320],[857,353,183,320],[1243,353,128,320]],[[140,693,151,315],[508,693,184,315],[863,693,186,315],[1231,693,153,313]]]};
+ // v252-35: size the valley buildings against their door openings, not roof
+ // height. Keep door anchors on the south edge; collision uses these same sizes.
  const buildings=[
-  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:162,y:65.5,w:13.5,h:10.5,sprite:1,route:[[166,69],[164,67],[162,65.5]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
-  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:44,w:13,h:10,sprite:0,route:[[194,44],[190,44]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
+  {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:166,y:66.5,w:29,h:23,sprite:1,route:[[170,70],[168,68],[166,66.5]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
+  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:40,w:28,h:23,sprite:0,route:[[196,44],[193,42],[190,40]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
   {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
   {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
