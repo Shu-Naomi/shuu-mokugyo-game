@@ -100,11 +100,15 @@
     return im.complete&&im.naturalWidth?im:null;
   }
   function paint(canvas,value,redraw=()=>{},state={},model=pose(value,Infinity,state)){
+    // Standalone callers may use an OffscreenCanvas or an older sprite pose.
+    // Normalize that input to the current still, without reviving choreography.
+    if(!model?.panel||!model?.animation)model=pose(value,Infinity,state);
+    const data=canvas.dataset||{};
     if(canvas.width!==640)canvas.width=640;if(canvas.height!==360)canvas.height=360;
     const ctx=canvas.getContext('2d'),src=sourceFor(model.panel),im=image(src,redraw);
     ctx.imageSmoothingEnabled=false;ctx.fillStyle='#211912';ctx.fillRect(0,0,640,360);
-    canvas.dataset.panel=model.panel;canvas.dataset.artState=im?'ready':failed.has(src)?'error':'loading';
-    canvas.dataset.region=model.animation.region.join(',');
+    data.panel=model.panel;data.artState=im?'ready':failed.has(src)?'error':'loading';
+    data.region=model.animation.region.join(',');
     if(!im){
       ctx.fillStyle='#d7c09a';ctx.font='16px sans-serif';ctx.textAlign='center';
       ctx.fillText(failed.has(src)?'絵を読み込めませんでした。次の頁へ進めます。':'絵をひらいています…',320,180);
@@ -114,7 +118,7 @@
     const {kind,region,progress}=model.animation;
     if(kind==='turn'){
       const curled=image(art.diaryTurn,redraw),settled=image(art.diarySettled,redraw);
-      if(!curled||!settled){canvas.dataset.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
+      if(!curled||!settled){data.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
       // The leaf rises, crosses the old notes, and reveals a different settled
       // page. Only the paper region changes; hands, binding and table stay put.
       const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
