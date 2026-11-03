@@ -146,6 +146,6 @@ test('real pet UI shows individual level, eggs, staged dog tricks with success/f
     assert.match(w.document.querySelector('.pet-trick-results').textContent,/お手.*おかわり.*チンチン.*伏せ.*ハイタッチ/s);
     click(w,'[data-pet-action="close"]');w.eval('s.gameMinutes+=1440;s.dogTricks.shuu=0;petUi.open("shop")');click(w,'[data-pet-tab="contests"]');
     w.Math.random=()=>.9;click(w,'[data-pet-action="enter"]');click(w,'[data-pet-action="contest-next"]');click(w,'[data-pet-trick="お手"]');
-    assert.ok(w.document.querySelector('.is-puzzled'));assert.match(w.document.querySelector('.pet-stage-reaction').textContent,/〰/);assert.equal(read(w,'s.petLife.contest.marks[0]'),false);assert.deepEqual(app.errors,[]);
+    assert.ok(w.document.querySelector('.is-puzzled'));assert.match(w.document.querySelector('.pet-stage-reaction').textContent,/あれれ/);assert.ok(w.document.querySelector('.pet-stage-reaction svg[aria-hidden="true"]'));assert.equal(read(w,'s.petLife.contest.marks[0]'),false);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

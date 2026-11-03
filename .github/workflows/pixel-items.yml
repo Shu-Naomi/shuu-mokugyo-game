@@ -1,0 +1,53 @@
+name: Pixel item and UI art
+on:
+  push:
+    branches: [main, codex/icon-renewal]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/*art.js', 'nushi-tsuri/compact-ui.js', 'nushi-tsuri/pet-life-ui.js', 'nushi-tsuri/sw.js', 'nushi-tsuri/assets/ui-*-v252-28.svg', 'nushi-tsuri/tests/*pixel*', 'nushi-tsuri/tests/item-art*', 'nushi-tsuri/tests/tackle-art*', 'nushi-tsuri/tests/game-harness.cjs', '.github/workflows/pixel-items.yml']
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/index.html', 'nushi-tsuri/*art.js', 'nushi-tsuri/compact-ui.js', 'nushi-tsuri/pet-life-ui.js', 'nushi-tsuri/sw.js', 'nushi-tsuri/assets/ui-*-v252-28.svg', 'nushi-tsuri/tests/*pixel*', 'nushi-tsuri/tests/item-art*', 'nushi-tsuri/tests/tackle-art*', 'nushi-tsuri/tests/game-harness.cjs', '.github/workflows/pixel-items.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: pixel-items-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  pixel-art:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Check artwork, item flows, accessibility, saves and offline cache
+        run: node --test --test-concurrency=2 item-art*.test.cjs item-object-art*.test.cjs tackle-art-detail.test.cjs ui-extra-art.test.cjs ui-pixel-art.test.cjs pixel-icon-integration.test.cjs pixel-ui-regressions.test.cjs tackle-balance-v191.test.cjs cooking-v208.test.cjs cooking-size-v215.test.cjs inventory-distance-v248.test.cjs pet-boarding.test.cjs fishing-pet-v200.test.cjs service-worker.test.cjs
+      - name: Exercise desktop and landscape-phone views
+        run: |
+          node browser-pixel-icons-v252-28.cjs
+          node browser-inventory-ui-evidence.cjs
+      - name: Verify published assets match merged commit
+        if: ${{ github.ref == 'refs/heads/main' }}
+        run: node pixel-icons-public-source-v252-28.cjs
+      - name: Preserve browser evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: pixel-icons-evidence
+          path: |
+            nushi-tsuri/tests/pixel-icons-evidence/
+            nushi-tsuri/tests/browser-evidence-v248/
+          retention-days: 14
+          if-no-files-found: warn

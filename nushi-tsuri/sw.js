@@ -1,5 +1,5 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-fish-boarding-252-27";
+const CACHE_NAME = "nushi-tsuri-v252-pixel-items-252-28";
 const CORE_ASSETS = [
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
@@ -59,7 +59,7 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=251-5",
+  "./compact-ui.js?v=252-28",
   "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
@@ -97,7 +97,7 @@ const CORE_ASSETS = [
   "./item-categories.css?v=217-1",
   "./pet-life.js?v=252-27",
   "./pet-notebook.js?v=252-27",
-  "./pet-life-ui.js?v=252-27",
+  "./pet-life-ui.js?v=252-28",
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
@@ -146,7 +146,14 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-v197.webp",
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
-  "./tackle-art.js?v=191-1",
+  "./tackle-art.js?v=252-28",
+  "./item-art.js?v=252-28",
+  "./item-object-art.js?v=252-28",
+  "./ui-pixel-art.js?v=252-28",
+  "./ui-extra-art.js?v=252-28",
+  "./assets/ui-lantern-v252-28.svg",
+  "./assets/ui-paw-v252-28.svg",
+  "./assets/ui-heart-v252-28.svg",
   "./aquarium-life.js?v=252-12",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-27",

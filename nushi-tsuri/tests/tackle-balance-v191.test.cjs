@@ -112,18 +112,18 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
   const originals=selector=>[...w.document.querySelectorAll(selector)].filter(n=>!n.closest('.compact-row-art,.sam-category-icon')).length;
   try{w.eval('openInventory("items")');
     for(const selector of ['#inventory [data-pick-bait]','#inventory [data-pick-hook]','#inventory [data-fishing-method="lure"]'])for(const button of w.document.querySelectorAll(selector))assert.ok(button.closest('.compact-product').querySelector('.compact-row-art .tackle-pixel-icon'),selector);
-    assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .tackle-pixel-icon').length,2);
-    assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .tackle-pixel-icon').length,2);
+    assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .pixel-item-icon').length,2);
+    assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .item-object-pixel-icon').length,2);
     for(const id of ['bait','lures','tackle'])assert.equal(w.document.querySelector('#inventoryCategory-'+id),null,'the old duplicate shelf is gone');
     w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),7);
-    w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .tackle-pixel-icon').length,2);
+    w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .item-object-pixel-icon').length,2);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });
 
 test('release references and offline cache contain both pixel and balance modules',()=>{
   const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const [id,version] of [['tackle-balance','227-1'],['tackle-art','191-1']]){
+  for(const [id,version] of [['tackle-balance','227-1'],['tackle-art','252-28']]){
     assert.ok(html.includes(`${id}.js?v=${version}`));assert.ok(sw.includes(`./${id}.js?v=${version}`));
   }
 });

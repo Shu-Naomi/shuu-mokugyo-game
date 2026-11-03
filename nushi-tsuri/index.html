@@ -659,7 +659,10 @@
         font-weight: 900;
       }
       .shop:after {
-        content: "🏮";
+        content: "";
+        width: 24px; height: 32px;
+        background: url("assets/ui-lantern-v252-28.svg") center / contain no-repeat;
+        image-rendering: pixelated;
         position: absolute;
         right: -16px;
         top: 15%;
@@ -1848,7 +1851,10 @@
         filter: drop-shadow(0 1px 0 #1d5060) drop-shadow(0 0 5px #60e2ff);
       }
       .forage-sparkle.dog-found::after {
-        content: "🐾";
+        content: "";
+        width: 9px; height: 9px;
+        background: url("assets/ui-paw-v252-28.svg") center / contain no-repeat;
+        image-rendering: pixelated;
         right: -5px;
         bottom: -4px;
         font-size: 8px;
@@ -2553,8 +2559,16 @@
         filter: none;
         opacity: .78;
       }
+      .ui-inline-art { display: inline-flex; align-items: center; vertical-align: middle; }
+      .ui-inline-art svg { width: 1.15em; height: 1.15em; flex: none; }
+      .hud .ui-inline-art { padding: 0; border: 0; border-radius: 0; background: none; }
+      #soundToggle .pixel-item-icon { width: 1.35em; height: 1.35em; }
+      .dog-frisbees svg, .dog-hearts svg { width: 1em; height: 1em; flex: none; }
+      .dog-hearts .white svg { filter: grayscale(1) brightness(1.6); }
+      .dog-hearts .gold svg { filter: sepia(1) saturate(1.6) hue-rotate(350deg) brightness(1.25); }
       .pixel-item-icon {
-        display: block;
+        display: inline-block;
+        vertical-align: middle;
         width: 24px;
         height: 24px;
         flex: 0 0 24px;
@@ -6292,7 +6306,7 @@
       .rival-dog[data-rival="chappie"] { width: 3.1%; }
       .rival-dog .tournament-npc-label { display: none; }
       .rival-dog.nearby .tournament-npc-label { display: block; }
-      .rival-dog::after { content: "♥"; position: absolute; top: -18%; left: 42%; color: #ffb3a7; text-shadow: 1px 1px #633a3a; font-size: clamp(12px, 1.3vw, 19px); opacity: var(--greeting-heart, 0); transform: translateY(calc(var(--greeting-heart, 0) * -6px)); }
+      .rival-dog::after { content: ""; position: absolute; top: -18%; left: 42%; width: clamp(12px, 1.3vw, 19px); height: clamp(12px, 1.3vw, 19px); background: url("assets/ui-heart-v252-28.svg") center / contain no-repeat; image-rendering: pixelated; opacity: var(--greeting-heart, 0); transform: translateY(calc(var(--greeting-heart, 0) * -6px)); }
       .world.talking .controls { visibility: hidden; pointer-events: none; }
       .world.talking .controls button { pointer-events: none; }
       .world.talking .tournament-npc-label { display: none; }
@@ -6451,7 +6465,7 @@
   </head>
   <body>
     <div class="landscape-warning">
-      📱 スマホを横向きにしてね<br />星降る湖が広がるよ
+      <span class="ui-inline-art" data-ui-art="extra:phone" aria-hidden="true"></span> スマホを横向きにしてね<br />星降る湖が広がるよ
     </div>
     <section id="title" class="screen title active" aria-label="星降る湖 タイトル">
       <div class="title-box">
@@ -6507,11 +6521,11 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span>v251</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden>⚠ 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
-        ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">☀️ 晴れ</span><span>💰 <b id="money">300</b>円</span
+        <b>星降る湖</b><span>v251</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
-        ><span id="boatHud" hidden></span><span class="grow">🎣 <b id="rod">竹の竿</b></span
-        ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る">🔊</button
+        ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
+        ><button id="soundToggle" class="sound-toggle" type="button" aria-label="音を切る" aria-pressed="true" title="音を切る"></button
         ><button id="menu" type="button" aria-controls="fieldMenu" aria-expanded="false">メニュー</button>
       </header>
       <main class="world" id="world">
@@ -6606,7 +6620,7 @@
           <i class="pixel-prop prop-log detail-log" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-a" aria-hidden="true"></i>
           <i class="pixel-prop prop-garden detail-garden-b" aria-hidden="true"></i>
-          <div class="pet-shop-marker" aria-label="アスアルのペットショップ">🐟 アスアルの店</div>
+          <div class="pet-shop-marker" aria-label="アスアルのペットショップ"><span class="ui-inline-art" data-ui-art="tackle:liveMinnow" aria-hidden="true"></span> アスアルの店</div>
           <div id="questBoardMarker" class="quest-board-marker" aria-hidden="true"></div>
           <div id="forageLayer" class="forage-layer" aria-hidden="true"></div>
           <div id="tournamentNpcLayer" class="tournament-npc-layer" aria-label="湖畔の大会参加者" hidden></div>
@@ -6663,7 +6677,7 @@
           </header>
           <nav aria-label="冒険メニュー">
             <button type="button" data-field-menu-target="record">
-              <span class="field-menu-icon" aria-hidden="true">📖</span>
+              <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="ui:book" aria-hidden="true"></span></span>
               <span class="field-menu-label">図鑑<small>魚の記録・水辺の案内</small></span>
             </button>
             <button type="button" data-field-menu-target="story">
@@ -6672,20 +6686,20 @@
             </button>
             <button id="petNotebookMenu" type="button" data-field-menu-target="petNotebook" hidden><span class="field-menu-icon" aria-hidden="true">▤</span><span class="field-menu-label">育成ノート<small>育てた魚種・いまの一匹</small></span></button>
             <button type="button" data-field-menu-target="items">
-              <span class="field-menu-icon" aria-hidden="true">🎒</span>
+              <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="ui:bag" aria-hidden="true"></span></span>
               <span class="field-menu-label">持ち物・装備<small>道具・仕掛け・身支度</small></span>
             </button>
             <button type="button" data-field-menu-target="quests">
-              <span class="field-menu-icon" aria-hidden="true">📌</span>
+              <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="ui:pin" aria-hidden="true"></span></span>
               <span class="field-menu-label">依頼掲示板<small id="questMenuStatus">今日の依頼 0/3</small></span>
             </button>
             <button type="button" data-field-menu-target="dog">
-              <span class="field-menu-icon" aria-hidden="true">🐕</span>
+              <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="extra:dogShuu" aria-hidden="true"></span></span>
               <span class="field-menu-label">犬と遊ぶ<small>好感度・お世話</small></span>
             </button>
             <button type="button" data-field-menu-target="options"><span class="field-menu-icon" aria-hidden="true">⚙</span><span class="field-menu-label">オプション<small>名前・お気に入り・音量</small></span></button>
             <button type="button" data-field-menu-target="saveSlots">
-              <span class="field-menu-icon" aria-hidden="true">💾</span>
+              <span class="field-menu-icon" aria-hidden="true"><span class="ui-inline-art" data-ui-art="ui:save" aria-hidden="true"></span></span>
               <span class="field-menu-label">セーブ選択へ<small>保存して冒険を切り替える</small></span>
             </button>
           </nav>
@@ -6739,7 +6753,7 @@
             <i></i><i></i><i></i><i></i><i></i><i></i>
             <i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
-          <div class="fisher">🧑‍🌾🎣</div>
+          <div class="fisher"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span></div>
           <div class="practice-badge" id="practiceBadge">SAM'S TRY POND　練習中</div>
           <svg
             class="line-svg"
@@ -6867,7 +6881,7 @@
             </div>
           </div>
           <div class="catch-copy">
-            <span id="catchBadge">🎣 GET!</span>
+            <span id="catchBadge"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> GET!</span>
             <strong id="catchTitle"></strong>
             <small id="catchDetail"></small>
             <button class="catch-close" id="catchClose">A　つづける</button>
@@ -6989,11 +7003,11 @@
               <button id="samStoryOffer" class="lake-story-return">湖の手帳を読む</button>
               <div class="rival-shop-actions"><button id="rivalGuideOffer">名手と相棒犬の紹介</button><button id="chappieTalk">チャッピーに挨拶</button></div>
               <button class="shop-practice" id="tournamentOffer">
-                <span>🎣 サムの釣り大会</span><small id="tournamentOfferStatus">フナ大会 受付中</small>
+                <span><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> サムの釣り大会</span><small id="tournamentOfferStatus">フナ大会 受付中</small>
               </button>
               <div class="shop-tabs" role="tablist" aria-label="サムの店の売り場">
-                <button class="active" data-sam-shop-tab="tackle" role="tab" aria-controls="samTackleWindow" aria-selected="true">🎣 釣具</button>
-                <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false">🧤 装備・雑貨</button>
+                <button class="active" data-sam-shop-tab="tackle" role="tab" aria-controls="samTackleWindow" aria-selected="true"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> 釣具</button>
+                <button data-sam-shop-tab="goods" role="tab" aria-controls="samGoodsWindow" aria-selected="false"><span class="ui-inline-art" data-ui-art="object:gloves" aria-hidden="true"></span> 装備・雑貨</button>
               </div>
               <div class="sam-shop-window active" id="samTackleWindow" data-sam-shop-panel="tackle" role="tabpanel">
                 <nav class="item-category-strip sam-category-strip" id="samTackleCategories" aria-label="釣具の種類"></nav>
@@ -7050,15 +7064,15 @@
                   </div>
                   <div class="grid shop-goods">
                     <button data-buy-rod="youngBamboo">
-                      <span><b>🎣 若竹の竿</b><small>力18・制御1.08</small></span>
+                      <span><b><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> 若竹の竿</b><small>力18・制御1.08</small></span>
                       <strong><em data-sam-price>5000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                     <button data-buy-rod="clearStream">
-                      <span><b>🎣 清流の竿</b><small>力22・制御1.2</small></span>
+                      <span><b><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> 清流の竿</b><small>力22・制御1.2</small></span>
                       <strong><em data-sam-price>15000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                     <button data-buy-rod="moroko">
-                      <span><b>🎣 ホンモロコ竿</b><small>力30・制御1.35</small></span>
+                      <span><b><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> ホンモロコ竿</b><small>力30・制御1.35</small></span>
                       <strong><em data-sam-price>50000円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                   </div>
@@ -7078,7 +7092,7 @@
                   </div>
                   <div class="grid shop-goods">
                     <button data-buy-hand="gloves">
-                      <span><b>🧤 釣り手袋</b><small>危険魚の棘を防ぐ</small></span>
+                      <span><b><span class="ui-inline-art" data-ui-art="object:gloves" aria-hidden="true"></span> 釣り手袋</b><small>危険魚の棘を防ぐ</small></span>
                       <strong><em>900円</em><small data-sam-stock>未購入</small></strong>
                     </button>
                   </div>
@@ -7087,7 +7101,7 @@
                 <p class="sam-window-note">特別なおやつとおもちゃは星みくじ限定。好感度が上がるのは、ワンコ一匹につきゲーム内一日「おやつ一個＋遊び一回」まで。</p>
               </div>
               <button class="shop-practice" id="practiceOffer">
-                <span id="practiceOfferTitle">🎓 サムの試し釣り</span>
+                <span id="practiceOfferTitle"><span class="ui-inline-art" data-ui-art="extra:graduation" aria-hidden="true"></span> サムの試し釣り</span>
                 <small id="practiceOfferStatus">初回講習</small>
               </button>
             </div>
@@ -7143,9 +7157,9 @@
             <div class="inventory-content">
               <section class="inventory-panel active" data-inventory-panel="items">
                 <div class="inventory-items-toolbar">
-                <button class="pet-tank-link" id="openPetAquarium">🐟 飼育水槽</button>
+                <button class="pet-tank-link" id="openPetAquarium"><span class="ui-inline-art" data-ui-art="tackle:liveMinnow" aria-hidden="true"></span> 飼育水槽</button>
                 <div class="inventory-vitals">
-                  <span>❤️ 体力</span>
+                  <span><span class="ui-inline-art" data-ui-art="extra:heart" aria-hidden="true"></span> 体力</span>
                   <div class="inventory-hp-meter"><i id="inventoryHpFill"></i></div>
                   <b id="inventoryHpText">100 / 100</b>
                 </div>
@@ -7162,21 +7176,21 @@
                 <h3>主人公の装備</h3>
                 <div class="equipment-list">
                   <div class="equipment-row">
-                    <span>🎣 釣り竿</span><div class="equipment-rod-current"><i class="rod-display-art equipment-preview" id="equipmentRodArt" aria-hidden="true"></i><b id="equipmentRod">竹の竿</b></div>
+                    <span><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> 釣り竿</span><div class="equipment-rod-current"><i class="rod-display-art equipment-preview" id="equipmentRodArt" aria-hidden="true"></i><b id="equipmentRod">竹の竿</b></div>
                     <small>タックル画面で変更できる。</small>
                   </div>
                   <div class="equipment-row">
-                    <span>🧤 手装備</span><b id="equipmentHands">なし</b>
+                    <span><span class="ui-inline-art" data-ui-art="object:gloves" aria-hidden="true"></span> 手装備</span><b id="equipmentHands">なし</b>
                     <small>釣り手袋は危険魚の棘から手を守る。</small>
                     <div class="equipment-options" id="handEquipmentOptions"></div>
                   </div>
                   <div class="equipment-row">
-                    <span>🛶 乗り物</span><b id="equipmentVehicle">なし</b>
+                    <span><span class="ui-inline-art" data-ui-art="object:canoe" aria-hidden="true"></span> 乗り物</span><b id="equipmentVehicle">なし</b>
                     <small>装備して港の桟橋でA。出航後の移動に体力を使う。</small>
                     <div class="equipment-options" id="vehicleEquipmentOptions"></div>
                   </div>
                   <div class="equipment-row">
-                    <span>🐕 同行</span><b id="equipmentDog">リク</b>
+                    <span><span class="ui-inline-art" data-ui-art="extra:dogShuu" aria-hidden="true"></span> 同行</span><b id="equipmentDog">リク</b>
                     <small>今いっしょに歩いている相棒。</small>
                   </div>
                 </div>
@@ -7205,7 +7219,7 @@
         <div class="modal quest-board-modal" id="questBoard" aria-label="星降る湖の依頼掲示板">
           <div class="quest-board-shell">
             <header class="quest-board-heading">
-              <div><small>STARFALL DAILY REQUESTS</small><h2>📌 星降る湖 依頼掲示板</h2></div>
+              <div><small>STARFALL DAILY REQUESTS</small><h2><span class="ui-inline-art" data-ui-art="ui:pin" aria-hidden="true"></span> 星降る湖 依頼掲示板</h2></div>
               <button class="close" data-close>閉じる</button>
             </header>
             <div class="quest-board-summary">
@@ -7296,8 +7310,8 @@
                 <p id="dogCareMessage" aria-live="polite">今日は何をして遊ぼう？</p>
               </div>
             <div class="dog-care-body">
-              <section><h3>🍪 おやつ<small>犬ごとに一日1個</small></h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
-              <section><h3>🎾 おもちゃ<small>好感度は一日1回</small></h3><div class="dog-care-grid" id="dogCareToys"></div></section>
+              <section><h3><span class="ui-inline-art" data-ui-art="object:samBiscuit" aria-hidden="true"></span> おやつ<small>犬ごとに一日1個</small></h3><div class="dog-care-grid" id="dogCareTreats"></div></section>
+              <section><h3><span class="ui-inline-art" data-ui-art="object:rubberBall" aria-hidden="true"></span> おもちゃ<small>好感度は一日1回</small></h3><div class="dog-care-grid" id="dogCareToys"></div></section>
             </div>
               </div>
             </div>
@@ -7357,8 +7371,8 @@
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
     <script src="aquarium-life.js?v=252-12"></script>
-    <script src="compact-ui.js?v=251-5"></script>
-    <script src="pet-life-ui.js?v=252-27"></script>
+    <script src="compact-ui.js?v=252-28"></script>
+    <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=227-1"></script>
     <script src="fishing-duel.js?v=251-1"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -7387,7 +7401,11 @@
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=251-1"></script>
     <script src="fish-art.js?v=252-24"></script>
-    <script src="tackle-art.js?v=191-1"></script>
+    <script src="tackle-art.js?v=252-28"></script>
+    <script src="item-art.js?v=252-28"></script>
+    <script src="item-object-art.js?v=252-28"></script>
+    <script src="ui-pixel-art.js?v=252-28"></script>
+    <script src="ui-extra-art.js?v=252-28"></script>
     <script src="rival-anglers.js?v=199-1"></script>
     <script src="tournament-npcs.js?v=180-1"></script>
     <script src="tournament.js?v=180-1"></script>
@@ -7396,6 +7414,25 @@
     <script src="scene-layers.js?v=252-8"></script>
     <script src="layered-scenery.js?v=252-8"></script>
     <script>
+      function uiArt(key) {
+        const [kind, id] = key.split(":");
+        return kind === "ui" ? UiPixelArt.get(id) : kind === "extra" ? UiExtraArt.get(id)
+          : kind === "object" ? ItemObjectArt.get(id) : kind === "tackle" ? ShuTackleArt.icon(id) : "";
+      }
+      function setIconText(node, art, text) {
+        const key = art + "\0" + text;
+        if (node._pixelTextKey === key && node.textContent === text && (!art || node.querySelector("svg"))) return;
+        node._pixelTextKey = key;
+        node.replaceChildren();
+        if (art) { const icon = document.createElement("span"); icon.className = "ui-inline-art"; icon.setAttribute("aria-hidden", "true"); icon.innerHTML = art; node.append(icon); }
+        node.append(document.createTextNode(text));
+      }
+      document.querySelectorAll("[data-ui-art]").forEach(node => { node.innerHTML = uiArt(node.dataset.uiArt); });
+      document.querySelectorAll("[data-field-menu-target]").forEach(button => {
+        const id = { record:"ui:book", story:"ui:book", petNotebook:"ui:book", items:"ui:bag", quests:"ui:pin", dog:"extra:dogShuu", options:"extra:gear", saveSlots:"ui:save" }[button.dataset.fieldMenuTarget];
+        const icon = button.querySelector(".field-menu-icon");
+        if (id && icon) icon.innerHTML = uiArt(id);
+      });
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
       const loadedSaveSlot = saveSlots.read(activeSaveSlot);
@@ -8022,7 +8059,7 @@
         fieldItemData = {
           vegetableOnigiri: {
             name: "野菜おにぎり",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#271d1b" d="M6 1h4v1h2v3h1v2h1v8H2V7h1V5h1V3h2z"/><path fill="#fff1c7" d="M7 2h2v1h2v3h1v2h1v5H3V8h1V6h1V4h2z"/><path fill="#e5d69f" d="M5 7h1v1H5zm5-2h1v1h-1zM7 3h1v1H7z"/><path fill="#243d31" d="M5 10h6v4H5z"/><path fill="#39604a" d="M6 10h1v4H6z"/></svg>`,
+            icon: ItemArt.get("vegetableOnigiri"),
             heal: 25,
             price: 120,
             source: "みなと食堂",
@@ -8031,7 +8068,7 @@
           },
           fishBento: {
             name: "地魚弁当",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#34231c" d="M1 3h14v11H1z"/><path fill="#a65f35" d="M2 4h12v9H2z"/><path fill="#e6d08e" d="M3 5h5v3H3z"/><path fill="#f3eee0" d="M3 9h5v3H3z"/><path fill="#d65b42" d="M4 9h2v1H4z"/><path fill="#47794a" d="M9 5h4v3H9z"/><path fill="#d7973d" d="M9 9h4v3H9z"/><path fill="#f6c657" d="M10 10h2v1h-2z"/><path fill="#5f3827" d="M8 4h1v9H8z"/></svg>`,
+            icon: ItemArt.get("fishBento"),
             heal: 50,
             price: 180,
             source: "みなと食堂",
@@ -8040,7 +8077,7 @@
           },
           tomato: {
             name: "朝採れトマト",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#283b24" d="M7 1h2v2h3v2h-2v1H6V5H4V3h3z"/><path fill="#7e241f" d="M4 5h8v1h2v6h-2v2H4v-1H2V7h2z"/><path fill="#d94a32" d="M5 5h5v1h2v5h-2v2H5v-1H3V8h1V6h1z"/><path fill="#f27845" d="M5 7h2v2H5z"/><path fill="#a33127" d="M10 10h2v2h-2z"/></svg>`,
+            icon: ItemArt.get("tomato"),
             heal: 15,
             price: 80,
             source: "八百屋",
@@ -8049,7 +8086,7 @@
           },
           apple: {
             name: "湖畔りんご",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#4a2e1e" d="M8 1h2v4H8z"/><path fill="#326c36" d="M10 2h3v1h1v2h-4z"/><path fill="#812820" d="M4 5h3v1h2V5h3v1h2v6h-2v2H4v-1H2V7h2z"/><path fill="#d84532" d="M5 5h2v1h3V5h2v2h1v4h-2v2H5v-1H3V8h1V6h1z"/><path fill="#f17a4c" d="M5 7h2v3H5z"/><path fill="#a32e26" d="M10 10h2v2h-2z"/></svg>`,
+            icon: ItemArt.get("apple"),
             heal: 30,
             price: 140,
             source: "八百屋",
@@ -8058,14 +8095,14 @@
           },
           wildGreens: {
             name: "山菜",
-            icon: "🌿",
+            icon: ItemArt.get("wildGreens"),
             price: 0,
             source: "野山で採集",
             use: "ingredient",
           },
           offeringDaikon: {
             name: "奉納だいこん",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#275432" d="M7 1h2v4H7zM4 2h3v2H5v2H3V4h1zm5 1h4v2h-2v2H9z"/><path fill="#b7ad8b" d="M5 5h7v3h-1v3h-1v2H8v2H6v-3H5v-2H4V7h1z"/><path fill="#f1e8c8" d="M6 5h5v3h-1v3H9v2H7v-2H6V9H5V7h1z"/><path fill="#d5c9a7" d="M7 7h1v4H7z"/></svg>`,
+            icon: ItemArt.get("offeringDaikon"),
             price: 100,
             source: "八百屋",
             shop: "yaoya",
@@ -8074,7 +8111,7 @@
           },
           starGrapes: {
             name: "星ぶどう",
-            icon: `<svg class="pixel-item-icon" viewBox="0 0 16 16" shape-rendering="crispEdges" aria-hidden="true"><path fill="#315934" d="M7 1h2v3H7zM9 2h4v2h-2v2H8V4h1z"/><path fill="#3d275e" d="M5 5h6v1h2v5h-2v2H9v2H7v-2H5v-2H3V7h2z"/><path fill="#714aa0" d="M6 5h2v2H6zm3 1h2v2H9zM4 8h2v2H4zm3 0h2v2H7zm3 1h2v2h-2zm-4 2h2v2H6zm3 1h2v2H9z"/><path fill="#a877c4" d="M6 5h1v1H6zM4 8h1v1H4zm3 0h1v1H7z"/></svg>`,
+            icon: ItemArt.get("starGrapes"),
             price: 240,
             source: "八百屋",
             shop: "yaoya",
@@ -8085,21 +8122,21 @@
         dogProfileData = {
           shuu: {
             get name() { return dogName("shuu"); },
-            icon: "🐕",
+            icon: UiExtraArt.get("dogShuu"),
             role: "案内・調査役",
             forageSpecialty: "虫・ミミズ",
             greeting: "気になるものを一緒に調べよう。",
           },
           riku: {
             get name() { return dogName("riku"); },
-            icon: "🐕‍🦺",
+            icon: UiExtraArt.get("dogRiku"),
             role: "釣り・実働担当",
             forageSpecialty: "木の実・植物",
             greeting: "今日も元気に釣りへ行こう！",
           },
           grey: {
             get name() { return dogName("grey"); },
-            icon: "🐶",
+            icon: UiExtraArt.get("dogGrey"),
             role: "万能・システム補助",
             forageSpecialty: "水辺・埋まった物",
             greeting: "困った時は何でも任せて。",
@@ -8107,60 +8144,60 @@
         },
         dogCareData = {
           samBiscuit: {
-            name: "サム印ビスケット", icon: "🍪", type: "treat",
+            name: "サム印ビスケット", icon: ItemObjectArt.get("samBiscuit"), type: "treat",
             price: 300, affection: 3, samShop: true,
             desc: "毎日あげられる素朴なおやつ。",
           },
           lakeFishJerky: {
-            name: "湖魚ジャーキー", icon: "🐟", type: "treat",
+            name: "湖魚ジャーキー", icon: ItemObjectArt.get("lakeFishJerky"), type: "treat",
             price: 700, affection: 6, samShop: true,
             desc: "湖の魚を香ばしく乾かしたごほうび。",
           },
           treeNut: {
-            name: "木の実", icon: "🌰", type: "treat",
+            name: "木の実", icon: ItemObjectArt.get("treeNut"), type: "treat",
             affection: 2, foraged: true,
             desc: "森や草地で拾える、ワンコずの素朴なおやつ。",
           },
           mushroom: {
-            name: "キノコ", icon: "🍄", type: "treat",
+            name: "キノコ", icon: ItemObjectArt.get("mushroom"), type: "treat",
             affection: 3, foraged: true,
             desc: "夜の森で見つけやすい、香りのよい犬用キノコ。",
           },
           nutFishJerky: {
-            name: "木の実香る魚ジャーキー", icon: "🍖", type: "treat",
+            name: "木の実香る魚ジャーキー", icon: ItemArt.get("nutFishJerky"), type: "treat",
             affection: 5, crafted: true,
             desc: "木の実と魚の切り身を合わせた、手作りのごほうび。",
           },
           rubberBall: {
-            name: "ゴムボール", icon: "🎾", type: "toy",
+            name: "ゴムボール", icon: ItemObjectArt.get("rubberBall"), type: "toy",
             price: 1200, affection: 4, samShop: true,
             action: "ボール投げ", motion: "catch",
             desc: "丈夫で何度でも遊べる定番のおもちゃ。わんこキャッチ対応。",
           },
           tugRope: {
-            name: "ひっぱりロープ", icon: "🪢", type: "toy",
+            name: "ひっぱりロープ", icon: ItemObjectArt.get("tugRope"), type: "toy",
             price: 2200, affection: 6, samShop: true,
             action: "ひっぱりっこ", motion: "tug",
             desc: "一緒に力比べができる丈夫なロープ。",
           },
           stardustCookie: {
-            name: "星くずクッキー", icon: "🌟", type: "treat",
+            name: "星くずクッキー", icon: ItemObjectArt.get("stardustCookie"), type: "treat",
             affection: 10, gacha: true,
             desc: "星みくじだけで手に入る特別なクッキー。",
           },
           moonlightJerky: {
-            name: "月光ジャーキー", icon: "🌙", type: "treat",
+            name: "月光ジャーキー", icon: ItemObjectArt.get("moonlightJerky"), type: "treat",
             affection: 14, gacha: true,
             desc: "月明かりのように香る、とっておきのごほうび。",
           },
           starFrisbee: {
-            name: "星空フリスビー", icon: "🥏", type: "toy",
+            name: "星空フリスビー", icon: ItemObjectArt.get("starFrisbee"), type: "toy",
             affection: 12, gacha: true,
             action: "フリスビー", motion: "catch",
             desc: "星みくじ限定。夜空みたいに光る円盤。わんこキャッチ対応。",
           },
           squeakyNushi: {
-            name: "鳴くヌシ人形", icon: "🐉", type: "toy",
+            name: "鳴くヌシ人形", icon: ItemObjectArt.get("squeakyNushi"), type: "toy",
             affection: 9, gacha: true,
             action: "ヌシ人形遊び", motion: "pounce",
             desc: "かじるとキュッと鳴るヌシのぬいぐるみ。",
@@ -8168,35 +8205,35 @@
         },
         forageData = {
           worm: {
-            name: "ミミズ", icon: "🪱", category: "虫",
+            name: "ミミズ", icon: ItemObjectArt.get("worm"), category: "虫",
             destination: "bait", destinationId: "worm", rarity: 1,
           },
           grasshopper: {
-            name: "バッタ", icon: "🦗", category: "虫",
+            name: "バッタ", icon: ItemObjectArt.get("grasshopper"), category: "虫",
             destination: "bait", destinationId: "grasshopper", rarity: 1,
           },
           treeNut: {
-            name: "木の実", icon: "🌰", category: "植物",
+            name: "木の実", icon: ItemObjectArt.get("treeNut"), category: "植物",
             destination: "dogTreat", destinationId: "treeNut", rarity: 1,
           },
           shell: {
-            name: "貝", icon: "🐚", category: "水辺素材",
+            name: "貝", icon: ItemObjectArt.get("shell"), category: "水辺素材",
             destination: "bait", destinationId: "shell", rarity: 1,
           },
           mushroom: {
-            name: "キノコ", icon: "🍄", category: "植物",
+            name: "キノコ", icon: ItemObjectArt.get("mushroom"), category: "植物",
             destination: "dogTreat", destinationId: "mushroom", rarity: 2,
           },
           crab: {
-            name: "カニ", icon: "🦀", category: "水辺素材",
+            name: "カニ", icon: ItemObjectArt.get("crab"), category: "水辺素材",
             destination: "bait", destinationId: "crab", rarity: 2,
           },
           wildGreens: {
-            name: "山菜", icon: "🌿", category: "植物",
+            name: "山菜", icon: ItemArt.get("wildGreens"), category: "植物",
             destination: "item", destinationId: "wildGreens", rarity: 1,
           },
           smallShrimp: {
-            name: "小エビ", icon: "🦐", category: "水辺素材",
+            name: "小エビ", icon: ItemObjectArt.get("smallShrimp"), category: "水辺素材",
             destination: "bait", destinationId: "smallShrimp", rarity: 2,
           },
         },
@@ -8255,62 +8292,62 @@
         },
         cookingIngredientData = {
           fishFillet: {
-            name: "魚の切り身（調理分）", icon: "🐟",
+            name: "魚の切り身（調理分）", icon: ItemArt.get("fishFillet"),
             desc: "釣った魚を売る時に、一切れだけ調理用に残したもの。",
           },
           shirogisuFillet: {
-            name: "シロギスの切り身", icon: "🐟",
+            name: "シロギスの切り身", icon: ItemArt.get("shirogisuFillet"),
             desc: "シロギスの釣果から一切れ。天ぷらや、いつもの魚料理に。",
           },
           ayuFillet: {
-            name: "アユの切り身", icon: "🐟",
+            name: "アユの切り身", icon: ItemArt.get("ayuFillet"),
             desc: "アユの釣果から一切れ。塩焼きや、いつもの魚料理に。",
           },
           madaiFillet: {
-            name: "マダイの切り身", icon: "🐟",
+            name: "マダイの切り身", icon: ItemArt.get("madaiFillet"),
             desc: "マダイの釣果から一切れ。潮汁や、いつもの魚料理に。",
           },
         },
         preparedMealData = {
           bigFishPlate: {
-            name: "魚と山菜の大物定食", icon: "🍱",
+            name: "魚と山菜の大物定食", icon: ItemArt.get("bigFishPlate"),
             effect: "largeFishChance", bonus: .11,
             effectLabel: "大・巨大が出やすくなる（フナ14%→25%）",
           },
           shellSoup: {
-            name: "貝と魚の浜汁", icon: "🍲",
+            name: "貝と魚の浜汁", icon: ItemArt.get("shellSoup"),
             effect: "tensionResistance", bonus: .08,
             effectLabel: "糸のテンション上昇 −8%",
           },
           mountainPlate: {
-            name: "キノコ山菜焼き", icon: "🥘",
+            name: "キノコ山菜焼き", icon: ItemArt.get("mountainPlate"),
             effect: "rareForage", bonus: .2,
             effectLabel: "珍しい採集物の抽選率 ＋20%",
           },
           shrimpRice: {
-            name: "小エビの炊き込み飯", icon: "🍚",
+            name: "小エビの炊き込み飯", icon: ItemArt.get("shrimpRice"),
             effect: "dogDiscovery", bonus: .35,
             effectLabel: "犬の隠し採集発見率 ＋35%",
           },
           shirogisuTempura: {
-            name: "シロギスの天ぷら", icon: "🍤", heal:30,
+            name: "シロギスの天ぷら", icon: ItemArt.get("shirogisuTempura"), heal:30,
             effect: "tensionResistance", bonus:.08,
             effectLabel: "体力＋30／糸のテンション上昇 −8%",
           },
           ayuShioyaki: {
-            name: "アユの塩焼き", icon: "🐟", heal:25,
+            name: "アユの塩焼き", icon: ItemArt.get("ayuShioyaki"), heal:25,
             effect: "rareForage", bonus:.2,
             effectLabel: "体力＋25／珍しい採集物の抽選率 ＋20%",
           },
           madaiUshiojiru: {
-            name: "マダイの潮汁", icon: "🍲", heal:35,
+            name: "マダイの潮汁", icon: ItemArt.get("madaiUshiojiru"), heal:35,
             effect: "dogDiscovery", bonus:.35,
             effectLabel: "体力＋35／犬の隠し採集発見率 ＋35%",
           },
         },
         cookingRecipeData = {
           bigFishPlate: {
-            name: "魚と山菜の大物定食", icon: "🍱",
+            name: "魚と山菜の大物定食", icon: ItemArt.get("bigFishPlate"),
             ingredients: [
               { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
               { storage: "items", id: "wildGreens", name: "山菜", amount: 1 },
@@ -8319,7 +8356,7 @@
             resultLabel: "食事／大・巨大の合計確率＋11ポイント",
           },
           nutFishJerky: {
-            name: "木の実香る魚ジャーキー", icon: "🍖",
+            name: "木の実香る魚ジャーキー", icon: ItemArt.get("nutFishJerky"),
             ingredients: [
               { storage: "dogTreats", id: "treeNut", name: "木の実", amount: 1 },
               { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
@@ -8328,7 +8365,7 @@
             resultLabel: "犬のおやつ／好感度＋5",
           },
           shellSoup: {
-            name: "貝と魚の浜汁", icon: "🍲",
+            name: "貝と魚の浜汁", icon: ItemArt.get("shellSoup"),
             ingredients: [
               { storage: "baits", id: "shell", name: "貝", amount: 1 },
               { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
@@ -8337,7 +8374,7 @@
             resultLabel: "食事／テンション上昇−8%",
           },
           mountainPlate: {
-            name: "キノコ山菜焼き", icon: "🥘",
+            name: "キノコ山菜焼き", icon: ItemArt.get("mountainPlate"),
             ingredients: [
               { storage: "dogTreats", id: "mushroom", name: "キノコ", amount: 1 },
               { storage: "items", id: "wildGreens", name: "山菜", amount: 1 },
@@ -8346,7 +8383,7 @@
             resultLabel: "食事／珍しい採集率＋20%",
           },
           shrimpRice: {
-            name: "小エビの炊き込み飯", icon: "🍚",
+            name: "小エビの炊き込み飯", icon: ItemArt.get("shrimpRice"),
             ingredients: [
               { storage: "baits", id: "smallShrimp", name: "小エビ", amount: 1 },
               { storage: "cookingIngredients", id: "fishFillet", name: "魚の切り身", amount: 1 },
@@ -8355,7 +8392,7 @@
             resultLabel: "食事／犬の発見率＋35%",
           },
           shirogisuTempura: {
-            name: "シロギスの天ぷら", icon:"🍤",
+            name: "シロギスの天ぷら", icon: ItemArt.get("shirogisuTempura"),
             ingredients:[
               {storage:"cookingIngredients",id:"shirogisuFillet",name:"シロギスの切り身",amount:1},
               {storage:"items",id:"wildGreens",name:"山菜",amount:1},
@@ -8364,7 +8401,7 @@
             resultLabel:"食事／体力＋30・テンション上昇−8%",
           },
           ayuShioyaki: {
-            name:"アユの塩焼き",icon:"🐟",
+            name:"アユの塩焼き",icon: ItemArt.get("ayuShioyaki"),
             ingredients:[
               {storage:"cookingIngredients",id:"ayuFillet",name:"アユの切り身",amount:1},
               {storage:"items",id:"wildGreens",name:"山菜",amount:1},
@@ -8373,7 +8410,7 @@
             resultLabel:"食事／体力＋25・珍しい採集率＋20%",
           },
           madaiUshiojiru: {
-            name:"マダイの潮汁",icon:"🍲",
+            name:"マダイの潮汁",icon: ItemArt.get("madaiUshiojiru"),
             ingredients:[
               {storage:"cookingIngredients",id:"madaiFillet",name:"マダイの切り身",amount:1},
               {storage:"baits",id:"shell",name:"貝",amount:1},
@@ -8402,7 +8439,7 @@
         dailyQuestTemplateData = {
           dinerShellSoup: {
             category: "料理", kind: "delivery", client: "みなと食堂のおかみ",
-            icon: "🍲", title: "浜汁を一杯",
+            icon: ItemArt.get("shellSoup"), title: "浜汁を一杯",
             request: "『今日は貝のだしが利いた魚料理が食べたいね』",
             storage: "preparedMeals", itemId: "shellSoup", amount: 1,
             itemName: "貝と魚の浜汁",
@@ -8410,7 +8447,7 @@
           },
           innMountainPlate: {
             category: "料理", kind: "delivery", client: "湖畔の釣り宿",
-            icon: "🥘", title: "山の香りの夕膳",
+            icon: ItemArt.get("mountainPlate"), title: "山の香りの夕膳",
             request: "『キノコと山菜の一皿を、泊まり客へ出したいんだ』",
             storage: "preparedMeals", itemId: "mountainPlate", amount: 1,
             itemName: "キノコ山菜焼き",
@@ -8418,7 +8455,7 @@
           },
           greyShrimpRice: {
             category: "料理", kind: "delivery", get client(){return `${dogName("grey")}の飼い主`;},
-            icon: "🍚", title: "小エビごはんの包み",
+            icon: ItemArt.get("shrimpRice"), title: "小エビごはんの包み",
             request: "『散歩帰りに香る、小エビのごはんを一つ頼むよ』",
             storage: "preparedMeals", itemId: "shrimpRice", amount: 1,
             itemName: "小エビの炊き込み飯",
@@ -8426,7 +8463,7 @@
           },
           samNutJerky: {
             category: "料理", kind: "delivery", client: "サム",
-            icon: "🍖", title: "手作りおやつの試食",
+            icon: ItemArt.get("nutFishJerky"), title: "手作りおやつの試食",
             request: "『木の実入りの犬のおやつを作ってみてくれんか』",
             storage: "dogTreats", itemId: "nutFishJerky", amount: 1,
             itemName: "木の実香る魚ジャーキー",
@@ -8434,7 +8471,7 @@
           },
           yaoyaMushroom: {
             category: "採集", kind: "delivery", client: "八百屋",
-            icon: "🍄", title: "香りのよいキノコ",
+            icon: ItemObjectArt.get("mushroom"), title: "香りのよいキノコ",
             request: "『夜の森で採れるキノコを二つ見せておくれ』",
             storage: "dogTreats", itemId: "mushroom", amount: 2,
             itemName: "キノコ",
@@ -8442,7 +8479,7 @@
           },
           rikuTreeNuts: {
             category: "採集", kind: "delivery", get client(){return `${dogName("riku")}の飼い主`;},
-            icon: "🌰", title: "木の実のおすそ分け",
+            icon: ItemObjectArt.get("treeNut"), title: "木の実のおすそ分け",
             request: "『散歩道で拾った木の実を三つ分けてほしいな』",
             storage: "dogTreats", itemId: "treeNut", amount: 3,
             itemName: "木の実",
@@ -8450,7 +8487,7 @@
           },
           marketShells: {
             category: "採集", kind: "delivery", client: "港の魚屋",
-            icon: "🐚", title: "浜の貝を仕入れたい",
+            icon: ItemObjectArt.get("shell"), title: "浜の貝を仕入れたい",
             request: "『夕方の浜で拾える貝を二つ持ってきてくれ』",
             storage: "baits", itemId: "shell", amount: 2,
             itemName: "貝",
@@ -8458,7 +8495,7 @@
           },
           samCrabs: {
             category: "採集", kind: "delivery", client: "サム",
-            icon: "🦀", title: "岩陰のカニ",
+            icon: ItemObjectArt.get("crab"), title: "岩陰のカニ",
             request: "『クロダイ用に元気なカニを二匹頼むぞ』",
             storage: "baits", itemId: "crab", amount: 2,
             itemName: "カニ",
@@ -8466,7 +8503,7 @@
           },
           innWildGreens: {
             category: "採集", kind: "delivery", client: "湖畔の釣り宿",
-            icon: "🌿", title: "朝膳の山菜",
+            icon: ItemArt.get("wildGreens"), title: "朝膳の山菜",
             request: "『明日の朝膳に使う山菜を二束お願いね』",
             storage: "items", itemId: "wildGreens", amount: 2,
             itemName: "山菜",
@@ -8474,7 +8511,7 @@
           },
           greySmallShrimp: {
             category: "採集", kind: "delivery", get client(){return `${dogName("grey")}の飼い主`;},
-            icon: "🦐", title: "水辺の小エビ調査",
+            icon: ItemObjectArt.get("smallShrimp"), title: "水辺の小エビ調査",
             get request(){return `『${dogName("grey")}が気にしていた小エビを二匹調べたいんだ』`;},
             storage: "baits", itemId: "smallShrimp", amount: 2,
             itemName: "小エビ",
@@ -8482,42 +8519,42 @@
           },
           marketAji: {
             category: "釣り", kind: "catch", client: "港の魚屋",
-            icon: "🐟", title: "今日のマアジ",
+            icon: ShuTackleArt.icon("liveMinnow"), title: "今日のマアジ",
             request: "『潮見浜でマアジを二匹釣ってきてくれ』",
             fishId: "aji", amount: 2,
             reward: { money: 400, rumor: "sea" },
           },
           largeFuna: {
             category: "釣り", kind: "catch", client: "湖畔の釣り宿",
-            icon: "🎣", title: "大きなフナの話",
+            icon: ShuTackleArt.icon("float"), title: "大きなフナの話",
             request: "『大サイズ以上のフナを一匹、釣った話を聞かせておくれ』",
             fishId: "funa", minTier: "large", amount: 1,
             reward: { money: 650, rumor: "lake" },
           },
           dinerAyu: {
             category: "釣り", kind: "catch", client: "みなと食堂のおかみ",
-            icon: "🐟", title: "川のアユ便り",
+            icon: ShuTackleArt.icon("liveMinnow"), title: "川のアユ便り",
             request: "『今日の川でアユを一匹釣って、様子を教えておくれ』",
             fishId: "ayu", amount: 1,
             reward: { money: 480, baits: { river: 1 }, rumor: "river" },
           },
           watermillYamame: {
             category: "釣り", kind: "catch", client: "水車小屋の住人",
-            icon: "💧", title: "流れのヤマメ",
+            icon: ShuTackleArt.icon("liveMinnow"), title: "流れのヤマメ",
             request: "『水車の下流にいるヤマメを一匹確かめてほしい』",
             fishId: "yamame", amount: 1,
             reward: { money: 560, rumor: "river" },
           },
           samNijimasu: {
             category: "釣り", kind: "catch", client: "サム",
-            icon: "🌈", title: "跳ねるニジマス",
+            icon: ShuTackleArt.icon("liveMinnow"), title: "跳ねるニジマス",
             request: "『流心のニジマスを一匹。跳び方を見てきてくれ』",
             fishId: "nijimasu", amount: 1,
             reward: { money: 700, baits: { liveMinnow: 1 }, rumor: "river" },
           },
           marketKasago: {
             category: "釣り", kind: "catch", client: "港の魚屋",
-            icon: "🐡", title: "岩陰のカサゴ",
+            icon: ShuTackleArt.icon("liveMinnow"), title: "岩陰のカサゴ",
             request: "『岩陰にいるカサゴを一匹釣ってきてくれ』",
             fishId: "kasago", amount: 1,
             reward: { money: 520, rumor: "sea" },
@@ -8530,57 +8567,57 @@
         ],
         lureData = {
           silverSpoon: {
-            name: "銀のスプーンルアー", icon: "🥄",
+            name: "銀のスプーンルアー", icon: ItemObjectArt.get("silverSpoon"),
             desc: "ルアーロッドで使う万能スプーン。バスやマス類を誘いやすい。", price: 600,
           },
           starMinnow: {
-            name: "星色ミノー", icon: "🐟",
+            name: "星色ミノー", icon: ItemObjectArt.get("starMinnow"),
             desc: "将来のルアー釣りで使える、星模様の小魚型ルアー。",
           },
         },
         rodPartData = {
           expeditionJoint: {
-            name: "遠征対応ジョイント", icon: "🔩",
+            name: "遠征対応ジョイント", icon: ItemObjectArt.get("expeditionJoint"),
             desc: "将来の新マップで、愛用竿一本を適用化するための追加パーツ。",
           },
         },
         fishdexCollectibleData = {
           moonScale: {
-            name: "月光の鱗標本", icon: "🌙", rarity: 3,
+            name: "月光の鱗標本", icon: ItemObjectArt.get("moonScale"), rarity: 3,
             lore: "月明かりを受けると淡く光る、古い魚の鱗標本。",
           },
           ancientFloat: {
-            name: "古い星形ウキ", icon: "⭐", rarity: 2,
+            name: "古い星形ウキ", icon: ItemObjectArt.get("ancientFloat"), rarity: 2,
             lore: "星降る湖で昔使われていた、小さな星形のウキ。",
           },
           rainbowStone: {
-            name: "虹色の川石", icon: "🌈", rarity: 2,
+            name: "虹色の川石", icon: ItemObjectArt.get("rainbowStone"), rarity: 2,
             lore: "民家川の流れに磨かれ、七色に反射する丸石。",
           },
           glassHook: {
-            name: "硝子の釣り針", icon: "🪝", rarity: 4,
+            name: "硝子の釣り針", icon: ItemObjectArt.get("glassHook"), rarity: 4,
             lore: "実用品とは思えないほど繊細な、透明の古い釣り針。",
           },
           tideCoin: {
-            name: "潮騒の古銭", icon: "🪙", rarity: 3,
+            name: "潮騒の古銭", icon: ItemObjectArt.get("tideCoin"), rarity: 3,
             lore: "星見港の砂から見つかった、波紋模様の古い硬貨。",
           },
           nushiSketch: {
-            name: "ヌシの古写し", icon: "📜", rarity: 5,
+            name: "ヌシの古写し", icon: ItemObjectArt.get("nushiSketch"), rarity: 5,
             lore: "湖のヌシらしき巨大な影を描いた、作者不明の古い写し。",
           },
         },
         handEquipmentData = {
           gloves: {
             name: "釣り手袋",
-            icon: "🧤",
+            icon: ItemObjectArt.get("gloves"),
             price: 900,
             protection: 1,
           },
         },
         vehicleData = {
-          tarai: { name: "タライ", icon: "🛁", price: 600 },
-          canoe: { name: "ボート", icon: "🛶", price: 3500 },
+          tarai: { name: "タライ", icon: ItemObjectArt.get("tarai"), price: 600 },
+          canoe: { name: "ボート", icon: ItemObjectArt.get("canoe"), price: 3500 },
         },
         fishAssets = {
           moroko: "assets/fish-moroko-v125.png",
@@ -13124,7 +13161,7 @@
       function activeMealStatusLabel(state = s) {
         const meal = activeMealEntry(state);
         return meal
-          ? `${meal.icon} ${meal.name}（${gameClockLabel(meal.expiresAt)}まで）`
+          ? `${meal.name}（${gameClockLabel(meal.expiresAt)}まで）`
           : "なし";
       }
       function cookRecipe(recipeId) {
@@ -13400,7 +13437,7 @@
         }
         const message = `「${template.title}」完了！ ${received.join("＋")}を受け取った。${clearBonus}`;
         log(message);
-        showRescueToast(`📌 ${message}`, clearBonus ? 4200 : 3000);
+        showRescueToast(message, clearBonus ? 4200 : 3000, UiPixelArt.get("pin"));
         vibrate(clearBonus ? [25, 35, 65, 40, 90] : [25, 35, 55]);
         renderQuestBoard();
         renderInventory();
@@ -13435,9 +13472,9 @@
           ? `<b>本日の全件達成済み！</b> また明日、新しい依頼が貼られる。`
           : `<b>全件達成：</b>200円＋サム印ビスケット×1`;
         const rumor = activeQuestRumor();
-        $("#questBoardRumor").textContent = rumor
-          ? `${rumor.icon} ${rumor.name}：${rumor.effectLabel}（${gameClockLabel(rumor.expiresAt)}まで）`
-          : "釣り場の噂：なし";
+        setIconText($("#questBoardRumor"), rumor ? UiExtraArt.get("wave") : "", rumor
+          ? ` ${rumor.name}：${rumor.effectLabel}（${gameClockLabel(rumor.expiresAt)}まで）`
+          : "釣り場の噂：なし");
         document.querySelectorAll("[data-complete-quest]").forEach((button) =>
           button.onclick = () => completeDailyQuest(button.dataset.completeQuest),
         );
@@ -14396,7 +14433,10 @@
         const button = $("#soundToggle");
         if (!button) return;
         const enabled = s.soundEnabled !== false;
-        button.textContent = enabled ? "🔊" : "🔇";
+        if (button.dataset.soundIcon !== String(enabled)) {
+          button.innerHTML = UiPixelArt.get(enabled ? "sound" : "muted");
+          button.dataset.soundIcon = String(enabled);
+        }
         button.classList.toggle("muted", !enabled);
         button.setAttribute("aria-pressed", String(enabled));
         button.setAttribute("aria-label", enabled ? "音を切る" : "音を入れる");
@@ -14947,11 +14987,12 @@
       function renderWeather() {
         const weather = ShuWeather.forecast(sceneGameMinutes());
         const badge = $("#weather");
-        badge.textContent = `${weather.icon} ${weather.label}`;
+        setIconText(badge, UiPixelArt.get(weather.id), ` ${weather.label}`);
         badge.dataset.weather = weather.id;
         badge.setAttribute("aria-label", `今日の天気：${weather.label}`);
         badge.title = `今日の天気：${weather.label}。日付が変わると天気も変わる。`;
-        $("#samWeatherHint").textContent = `${weather.icon} 今日の釣り日和 ${weather.hint}`;
+        const hint = $("#samWeatherHint");
+        setIconText(hint, UiPixelArt.get(weather.id), ` 今日の釣り日和 ${weather.hint}`);
         syncSceneSound();
       }
       function pixelWorldGeometry() {
@@ -15361,7 +15402,7 @@
         log(`${message} ${destination}`);
         vibrate([18, 28, 36]);
         render();
-        showRescueToast(`${item.icon} ${message}`, finder ? 3200 : 2800);
+        showRescueToast(message, finder ? 3200 : 2800, item.icon);
         save();
         return true;
       }
@@ -16214,8 +16255,8 @@
         hud.disabled = Boolean(battle);
         if (d) {
           const remainingCasts = ShuTournament.maxCasts(t) - t.casts;
-          hud.textContent = t.phase === "result" ? "🎣 大会結果を見る" :
-            `🎣 残り${ShuTournament.remaining(t)}分・${remainingCasts}投 ｜ ビク ${t.creel.length}/${d.capacity}`;
+          setIconText(hud, UiExtraArt.get("fishingRod"), t.phase === "result" ? " 大会結果を見る" :
+            ` 残り${ShuTournament.remaining(t)}分・${remainingCasts}投 ｜ ビク ${t.creel.length}/${d.capacity}`);
           hud.setAttribute("aria-label", `${hud.textContent}。大会ビクを開く`);
         }
         $("#tournamentOfferStatus").textContent = d ? "参加中 · ビクを見る" : "フナ大会・名手挑戦 受付中";
@@ -16268,7 +16309,7 @@
       function tournamentInventoryTrophies() {
         const owned = Object.values(ShuTournament.definitions).filter(d => s.tournamentRecords[d.id].wins > 0);
         return owned.map(d => `<div class="inventory-card"><i>${tournamentTrophyIcon()}</i><span><b>${d.trophyName}</b><br><small>${d.name} · 優勝${s.tournamentRecords[d.id].wins}回</small></span><strong>獲得済み</strong></div>`).join("") ||
-          `<div class="inventory-card inventory-empty"><i>🏆</i><span><b>大会トロフィーはまだない</b><br><small>サムの大会で優勝すると手に入る。</small></span></div>`;
+          `<div class="inventory-card inventory-empty"><i>${UiExtraArt.get("trophy")}</i><span><b>大会トロフィーはまだない</b><br><small>サムの大会で優勝すると手に入る。</small></span></div>`;
       }
       function renderTournament(view = tournamentView) {
         tournamentView = view;
@@ -16406,7 +16447,7 @@
           close();
           render();
           save();
-          showRescueToast(`🎣 ${definition.name}開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。`, 4200);
+          showRescueToast(`${definition.name}開始！ 湖へ向かおう。大会ビクで残り時間を確認できるよ。`, 4200, UiExtraArt.get("fishingRod"));
         } else if (action === "close") close();
         else if (!s.tournament && (action === "records" || action === "entry")) renderTournament(action);
         else if (action === "finish") finishTournamentResults();
@@ -16434,7 +16475,7 @@
         const birth=petDailyMessage();
         const message = `自分のベッドでぐっすり眠り、${gameClockLabel(s.gameMinutes)}に目を覚ました。体力が全回復した。${birth}`;
         log(message);
-        showRescueToast(`🛏️ 翌朝06:00まで休んだ。体力全回復！${birth?` 🐟 ${birth}`:""}`, birth?4200:2800);
+        showRescueToast(`翌朝06:00まで休んだ。体力全回復！${birth?` ${birth}`:""}`, birth?4200:2800, UiExtraArt.get("bed"));
         vibrate(20);
         render();
         save();
@@ -16841,7 +16882,7 @@
               ? owned ? "✓ 購入済み" : "何度でも遊べる"
               : `所持 ×${s.dogTreats[id] || 0}`;
             return `<button data-buy-dog-good="${id}" class="${owned ? "owned" : ""}" ${owned ? "disabled" : ""}>` +
-              `<span><b>${item.icon} ${item.name}</b><small>${item.desc}</small></span>` +
+              `<span class="shop-item-art">${item.icon}</span><span><b>${item.name}</b><small>${item.desc}</small></span>` +
               `<strong><em>${item.price}円</em><small data-sam-stock>${stock}</small></strong></button>`;
           }).join("");
         holder.innerHTML = [["dogTreats", "treat", "犬のおやつ"], ["dogToys", "toy", "犬のおもちゃ"]].map(([id, type, title]) =>
@@ -17857,7 +17898,7 @@
         const boatHud=$("#boatHud");
         boatHud.hidden=!(coast||offshore);
         if(offshore)boatHud.textContent=`潮風島 · 帰り支払い済み`;
-        if(coast)boatHud.textContent=`${s.boatActive?(s.equipment.vehicle==="canoe"?"🛶":"🛁"):"🏝"} ${s.hp}/${s.maxHp}`;
+        if(coast)setIconText(boatHud, s.boatActive ? ItemObjectArt.get(s.equipment.vehicle === "canoe" ? "canoe" : "tarai") : UiExtraArt.get("island"), ` ${s.hp}/${s.maxHp}`);
         $("#money").textContent = s.money;
         s.bait = s.baits[s.selectedBait] || 0;
         s.rod = (rodData[s.selectedRod]?.name || "竿未装備");
@@ -17881,9 +17922,7 @@
         $("#practiceOfferStatus").textContent = practiceComplete
           ? "自由練習"
           : "初回講習";
-        $("#practiceOfferTitle").textContent = practiceComplete
-          ? "🎣 サムの試し釣り"
-          : "🎓 サムの試し釣り";
+        setIconText($("#practiceOfferTitle"), UiExtraArt.get(practiceComplete ? "fishingRod" : "graduation"), " サムの試し釣り");
         setDialogue($("#shopDialogue"),practiceComplete
           ? "「道具の調子を確かめたくなったら、隣の池でまた一匹いこう」"
           : "「買う前に一本やってみるかい？ 隣の池ならワシが教えよう」");
@@ -17927,7 +17966,7 @@
           : tournamentNpc
           ? `${ShuTournamentNpcs.byId(tournamentNpc.id).name}がいる。Aで話しかける。`
           : foragePoint
-          ? "✨ 小さなキラキラがある。Aで拾う。"
+          ? "小さなキラキラがある。Aで拾う。"
           : nearPracticePond
           ? practiceComplete
             ? "サムの試し釣り池だ。Aで自由練習する。エサは減らない。"
@@ -17945,6 +17984,8 @@
                     : s.y > 104
                       ? "潮見浜と星見港だ。水辺のすぐそばで、水へ向いてAで釣る。"
                       : "湖・川・海の水辺のすぐそばで、水へ向いてAで釣れる。";
+        if (foragePoint && $("#hint").textContent === "小さなキラキラがある。Aで拾う。")
+          setIconText($("#hint"), UiExtraArt.get("sparkle"), " 小さなキラキラがある。Aで拾う。");
         renderPlayerHome();
         renderPixelScenery();
         ShuCompactUI.refresh(s.money);
@@ -17974,7 +18015,7 @@
         $("#statusDog").textContent = s.dogFollowing ? dogName() : "みんな家でお留守番";
         const activeMeal = activeMealEntry();
         $("#statusMeal").textContent = activeMeal
-          ? `${activeMeal.icon} ${activeMeal.name}`
+          ? `${activeMeal.name}`
           : "なし";
       }
       function hideIdleStatus() {
@@ -18505,10 +18546,11 @@
       function canReceiveDogRescue() {
         return s.dogFollowing && totalBaitCount() < 1 && s.money < baitData.worm.price;
       }
-      function showRescueToast(message, duration = 2600) {
+      function showRescueToast(message, duration = 2600, art = "") {
         const toast = $("#rescueToast");
         clearTimeout(rescueToastTimer);
         toast.textContent = message;
+        if (art) { const icon = document.createElement("span"); icon.innerHTML = art; icon.setAttribute("aria-hidden", "true"); toast.prepend(icon); }
         toast.classList.add("show");
         rescueToastTimer = setTimeout(() => {
           toast.classList.remove("show");
@@ -18579,7 +18621,7 @@
             rescueInProgress = false;
             log(reward.message);
             render();
-            showRescueToast(`🪱 ${reward.message}`);
+            showRescueToast(reward.message, 2600, ShuTackleArt.icon("worm"));
             armDogIdle();
             scheduleIdleStatus(3000);
             scheduleFieldMenu();
@@ -19514,13 +19556,13 @@
         $("#dogCareName").textContent = profile.name;
         $("#dogCareTier").textContent = dogAffinityTier(affinity);
         const gauge=ShuPetLife.dogGauge(affinity),tricks=ShuPetLife.dogGauge(s.dogTricks[dogId],ShuPetLife.TRICK_MAX);
-        $("#dogCarePoints").textContent = affinity===ShuPetLife.DOG_MAX?"MAX":`次の♡ ${gauge.progress}%`;
+        setIconText($("#dogCarePoints"), affinity===ShuPetLife.DOG_MAX ? "" : UiExtraArt.get("heart"), affinity===ShuPetLife.DOG_MAX ? "MAX" : ` 次の段階 ${gauge.progress}%`);
         $("#dogCareAffinityFill").style.width = `${gauge.progress}%`;
-        $("#dogCareHearts").innerHTML=gauge.hearts.map(color=>`<span class="${color}" aria-hidden="true">${color==="white"?"♡":"♥"}</span>`).join("");
+        $("#dogCareHearts").innerHTML=gauge.hearts.map(color=>`<span class="${color}" aria-hidden="true">${UiExtraArt.get("heart")}</span>`).join("");
         $("#dogCareHearts").setAttribute("aria-label",`なつき度 ${gauge.level}/20段階、金色${gauge.hearts.filter(c=>c==="gold").length}個、赤色${gauge.hearts.filter(c=>c==="red").length}個`);
-        $("#dogCareFrisbees").innerHTML=Array.from({length:10},(_,i)=>`<span class="${i<tricks.level?"earned":"unearned"}" aria-hidden="true">🥏</span>`).join("");
+        $("#dogCareFrisbees").innerHTML=Array.from({length:10},(_,i)=>`<span class="${i<tricks.level?"earned":"unearned"}" aria-hidden="true">${ItemObjectArt.get("starFrisbee")}</span>`).join("");
         $("#dogCareFrisbees").setAttribute("aria-label",`芸 ${tricks.level}/10段階`);
-        $("#dogCareTrickPoints").textContent=tricks.points===1000?"MAX":`次の🥏 ${tricks.progress}%`;
+        setIconText($("#dogCareTrickPoints"), tricks.points===1000 ? "" : ItemObjectArt.get("starFrisbee"), tricks.points===1000 ? "MAX" : ` 次の段階 ${tricks.progress}%`);
         $("#dogCareTrickFill").style.width=`${tricks.progress}%`;
         $("#dogCareTrain").disabled=busy||ShuPetLife.dogDay(s,dogId,gameClockAt(s.gameMinutes).dayIndex).trained||tricks.points===1000;
         $("#dogCareMessage").textContent = dogCareStatusMessage || profile.greeting;
@@ -19804,13 +19846,13 @@
         if(!compactInventoryRendering)renderCompactInventory();
       }
       const inventoryCategories = [
-        { id: "food", label: "食べ物", icon: "🍱", title: "食べ物・作り置き", hint: "体力を回復する食べ物と、翌朝まで効果が続く料理。" },
-        { id: "ingredients", label: "食材", icon: "🌿", title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
-        { id: "dogTreats", label: "犬のおやつ", icon: "🍪", title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
-        { id: "dogToys", label: "犬のおもちゃ", icon: "🎾", title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
-        { id: "parts", label: "保管釣具", icon: "🎣", title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とスプーンは「タックル」から選べるよ。" },
-        { id: "collection", label: "コレクション", icon: "🏆", title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
-        { id: "offerings", label: "奉納品", icon: "⛩️", title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
+        { id: "food", label: "食べ物", icon: ItemArt.get("fishBento"), title: "食べ物・作り置き", hint: "体力を回復する食べ物と、翌朝まで効果が続く料理。" },
+        { id: "ingredients", label: "食材", icon: ItemArt.get("wildGreens"), title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
+        { id: "dogTreats", label: "犬のおやつ", icon: ItemObjectArt.get("samBiscuit"), title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
+        { id: "dogToys", label: "犬のおもちゃ", icon: ItemObjectArt.get("rubberBall"), title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
+        { id: "parts", label: "保管釣具", icon: ShuTackleArt.icon("silverSpoon"), title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とスプーンは「タックル」から選べるよ。" },
+        { id: "collection", label: "コレクション", icon: ItemObjectArt.get("tideCoin"), title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
+        { id: "offerings", label: "奉納品", icon: ItemArt.get("offeringDaikon"), title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
       ];
       const samCategories = {
         tackle: [{id:"bait",label:"餌"},{id:"rods",label:"釣り竿"},{id:"lures",label:"ルアー"}],
@@ -19920,7 +19962,7 @@
             `<span><b>食事効果：${activeMeal.name}</b><br>` +
             `<small>${activeMeal.effectLabel}／${gameClockLabel(activeMeal.expiresAt)}まで</small></span>` +
             `<span class="inventory-purpose">発動中</span></div>`
-          : `<div class="inventory-card inventory-empty"><i>🍽️</i>` +
+          : `<div class="inventory-card inventory-empty"><i>${ItemArt.get("fishBento")}</i>` +
             `<span><b>食事効果はなし</b><br><small>料理を食べると次の朝06:00まで効果が続く。</small></span></div>`;
         const preparedMealMarkup = Object.entries(preparedMealData)
           .map(([id, meal]) => {
@@ -19937,27 +19979,27 @@
             `<div class="inventory-card"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>犬のおもちゃ／犬ごとに毎日1回</small></span>` +
             `<strong>所持</strong></div>`)
-          .join("") || `<div class="inventory-card inventory-empty"><i>🎾</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
+          .join("") || `<div class="inventory-card inventory-empty"><i>${ItemObjectArt.get("rubberBall")}</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
         const storedLureMarkup = Object.entries(lureData)
           .filter(([id]) => id !== "silverSpoon")
           .map(([id, item]) =>
-            `<div class="inventory-card" data-stored-lure="${id}"><i>${ShuTackleArt.icon(id)}</i>` +
+            `<div class="inventory-card" data-stored-lure="${id}"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
             `<strong>×${s.lures[id] || 0}</strong></div>`)
           .join("");
         const rodPartMarkup = Object.entries(rodPartData)
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${ShuTackleArt.icon(id)}</i>` +
+            `<div class="inventory-card"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
             `<strong>×${s.rodParts[id] || 0}</strong></div>`)
           .join("");
         const collectibleMarkup = Object.entries(fishdexCollectibleData)
           .filter(([id]) => (s.fishdexCollectibles[id] || 0) > 0)
           .map(([id, item]) =>
-            `<div class="inventory-card"><i>${ShuTackleArt.icon({ancientFloat:"float",glassHook:"hookMedium"}[id])||item.icon}</i>` +
+            `<div class="inventory-card"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>魚図鑑の収集棚に記録済み</small></span>` +
             `<strong>×${s.fishdexCollectibles[id]}</strong></div>`)
-          .join("") || `<div class="inventory-card inventory-empty"><i>📚</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
+          .join("") || `<div class="inventory-card inventory-empty"><i>${UiPixelArt.get("book")}</i><span><b>収集品はまだない</b><br><small>星みくじで見つかることがある。</small></span></div>`;
         const sharedIngredients = sharedCookingIngredients();
         const sharedMaterialMarkup = sharedIngredients.map(({storage, id, item}) =>
           `<div class="inventory-card"><i>${storage === "baits" ? ShuTackleArt.icon(id) : item.icon}</i>` +
@@ -20657,9 +20699,7 @@
         battle.turnRoll = 0;
         $("#fishScene").classList.add("gill-wash");
         $("#battleFish").classList.add("gill-wash");
-        $("#phaseLabel").textContent = isRainbowLeap
-          ? " 🌈 水面跳躍！"
-          : " 🌊 エラ洗い！";
+        setIconText($("#phaseLabel"), UiExtraArt.get(isRainbowLeap ? "rainbow" : "wave"), isRainbowLeap ? " 水面跳躍！" : " エラ洗い！");
         $("#battleMsg").textContent = isRainbowLeap
           ? "ニジマスが跳ぶ！Aを離すかBで糸を送れ！"
           : "水面へ来る！Aを離すかBで糸を送れ！";
@@ -20685,7 +20725,7 @@
             ? "水面跳躍をいなした！ニジマスが疲れた、今が巻き時！"
             : "エラ洗いをいなした！魚が疲れた、今が巻き時！";
           battle.calmBoost = Math.max(battle.calmBoost || 0, 1);
-          $("#phaseLabel").textContent = " ◎ 疲労";
+          setIconText($("#phaseLabel"), UiPixelArt.get("phaseTarget"), " 疲労");
         } else {
           battle.retrieval = clampBattle(
             battle.retrieval - (ShuRegional.legendary(battle.f.id) ? 0.07 : 0.04),
@@ -20695,7 +20735,7 @@
           battle.recoveryMessage = isRainbowLeap
             ? "跳躍に振り回され、ニジマスに距離を奪われた！"
             : "エラ洗いに振り回され、距離を奪われた！";
-          $("#phaseLabel").textContent = " ↔ 立て直し";
+          setIconText($("#phaseLabel"), UiPixelArt.get("phaseBoth"), " 立て直し");
         }
         battle.mood = rest;
         battle.calm = true;
@@ -20835,7 +20875,12 @@
         const stageLabel = ShuRegional.legendary(battle.f.id)
           ? ` 第${["壱", "弐", "参"][nushiStage - 1]}相・`
           : " ";
-        $("#phaseLabel").textContent = `${stageLabel}${selected.icon} ${selected.name}`;
+        const phaseIds = {"🌊":"wave", "⚠":"warning", "?":"question"};
+        const phaseShapes = {"⚡":"bolt", "◎":"phaseTarget", "▼":"phaseDown", "➜":"phaseRight", "↔":"phaseBoth", "▂":"phaseLow", "≋":"phaseWave", "〰":"phaseWave", "↗":"phaseDiagonal", "↘":"phaseDiagonal", "↙":"phaseDiagonal", "↶":"phaseTurn"};
+        const phaseArt = phaseIds[selected.icon] ? UiExtraArt.get(phaseIds[selected.icon]) : UiPixelArt.get(phaseShapes[selected.icon]);
+        setIconText($("#phaseLabel"), phaseArt, `${stageLabel}${selected.name}`);
+        const phaseSvg = $("#phaseLabel svg");
+        if (phaseSvg) { phaseSvg.style.transformOrigin = "center"; phaseSvg.style.transform = ({"↘":"rotate(90deg)", "↙":"rotate(180deg)"})[selected.icon] || ""; }
         $("#battleFish").classList.toggle("burst", Boolean(selected.danger));
         $("#fishScene").classList.toggle("water-rush", Boolean(selected.danger));
         const startedGillWash = maybeStartGillWash(selected);
@@ -20908,7 +20953,9 @@
         battle.vy = Math.min(Number(battle.vy) || 0, -2.6);
         battle.targetVy = Math.min(Number(battle.targetVy) || 0, -1.5);
         $("#battleFish").classList.remove("sand-grounded");
-        $("#phaseLabel").textContent = " ↖ 砂底から浮上";
+        setIconText($("#phaseLabel"), UiPixelArt.get("phaseDiagonal"), " 砂底から浮上");
+        const riseIcon = $("#phaseLabel svg");
+        if (riseIcon) { riseIcon.style.transformOrigin = "center"; riseIcon.style.transform = "rotate(-90deg)"; }
         battle.gillRecovery = Math.max(battle.gillRecovery || 0, 10);
         battle.recoveryMessage =
           "砂底から引き剥がした！このまま左上の水面へ寄せよう！";
@@ -21766,8 +21813,9 @@
           : specimen?.tierId === "giant"
             ? "giant"
             : "";
-        $("#catchBadge").textContent = badgeOverride ||
-          (ShuRegional.legendary(f.id) ? "🌟 LEGEND!" : "🎣 GET!");
+        const badge = badgeOverride || (ShuRegional.legendary(f.id) ? "🌟 LEGEND!" : "🎣 GET!");
+        const badgeArt = badge.startsWith("🎓") ? "graduation" : badge.startsWith("🌟") ? "sparkle" : "fishingRod";
+        setIconText($("#catchBadge"), UiExtraArt.get(badgeArt), badge.replace(/^(?:🎓|🌟|🎣)\s*/u, ""));
         $("#catchTitle").textContent = f.name;
         const detail = first
           ? `初釣果！ ＋${f.price}円`
@@ -22441,7 +22489,7 @@
           battle.ten = Math.min(battle.practice ? 88 : 110, battle.ten);
           const warning =
             battle.ten >= 85
-              ? "⚠ 糸が切れそう！ "
+              ? "糸が切れそう！ "
               : battle.ten >= 65
                 ? "！テンション高め。 "
                 : "";
@@ -22453,8 +22501,8 @@
             battle.gillRecovery--;
             $("#battleMsg").textContent = battle.recoveryMessage;
           } else {
-            $("#battleMsg").textContent =
-              warning + (battle.fightMode==="nushi"?(mood.calm?"糸がたわんだ。今が引く時！ ":"魚が走る！Aを離していなそう。 "):fishTakingLine) + (battle.reeling ? mood.hold : mood.loose);
+            setIconText($("#battleMsg"), battle.ten >= 85 ? UiExtraArt.get("warning") : "",
+              warning + (battle.fightMode==="nushi"?(mood.calm?"糸がたわんだ。今が引く時！ ":"魚が走る！Aを離していなそう。 "):fishTakingLine) + (battle.reeling ? mood.hold : mood.loose));
           }
           drawBattle();
           const arrival = Math.hypot(
@@ -22708,16 +22756,19 @@
         scene.dataset.nushiPhase=phase;
         if(phase==="leap")return;
         const stage=ShuRegional.legendary(battle.f.id)?` 第${["壱","弐","参"][(battle.nushiStage||1)-1]}相・`:" ";
-        const labels={slack:"◎ 糸の緩み",pulling:"↖ 引けている",warning:"⚠ 顔を振って抵抗",running:`➜ ${battle.mood.name}`};
-        $("#phaseLabel").textContent=stage+labels[phase];
+        const labels={slack:"糸の緩み",pulling:"引けている",warning:"顔を振って抵抗",running:battle.mood.name};
+        const phaseArt = phase === "warning" ? UiExtraArt.get("warning") : UiPixelArt.get({slack:"phaseTarget",pulling:"phaseDiagonal",running:"phaseRight"}[phase]);
+        setIconText($("#phaseLabel"), phaseArt, stage+labels[phase]);
+        const phaseSvg = $("#phaseLabel svg");
+        if (phaseSvg) { phaseSvg.style.transformOrigin = "center"; phaseSvg.style.transform = phase === "pulling" ? "rotate(-90deg)" : ""; }
         const messages={
           slack:battle.reeling?"Aをいったん離し、糸の緩みを見て引き直そう。":"糸が緩んだ。Aを押して魚を引こう。",
           pulling:"魚を引けている。顔を振り始めたらAを離そう。",
           warning:"顔を激しく振って抵抗！無理に引くと糸が切れる。Aを離そう。",
           running:"魚が走っている。Aを離していなし、糸が緩むのを待とう。"};
-        const tension=battle.ten>=85?"⚠ 糸が切れそう！ ":battle.ten>=65?"！テンション高め。 ":"";
+        const tension=battle.ten>=85?"糸が切れそう！ ":battle.ten>=65?"！テンション高め。 ":"";
         const recovery=phase!=="warning"&&battle.gillRecovery>0?battle.recoveryMessage+" ":"";
-        $("#battleMsg").textContent=tension+recovery+messages[phase];
+        setIconText($("#battleMsg"), battle.ten >= 85 ? UiExtraArt.get("warning") : "", tension+recovery+messages[phase]);
       }
       function syncBattleFishLine() {
         if(!battle||battle.phase!=="fight")return;
@@ -22955,9 +23006,9 @@
         const fishdexResult = updateFishdexCatchRecord(s, f, specimen, battle);
         ShuRegional.recordCatch(s,f.id,battle);
         const crownDetail = fishdexResult.newCrown === "tiny"
-          ? "👑 極小金冠！"
+          ? "極小金冠！"
           : fishdexResult.newCrown === "giant"
-            ? "👑 巨大金冠！"
+            ? "巨大金冠！"
             : "";
         const newSizeRecord = updateFishSizeRecord(s, specimen);
         if (specimen) {
@@ -22991,7 +23042,7 @@
           : `${spot.name}で${f.name}を釣り上げた！ ${salePrice}円獲得。${filletLog}`);
         const hazardDetail = resolveCatchHazard(f);
         const questDetail = questProgress.ready.length
-          ? " ・ 📌依頼達成！"
+          ? " ・ 依頼達成！"
           : "";
         if (questProgress.ready.length)
           log(`依頼「${questProgress.ready.join("／")}」の条件達成！ 掲示板で報酬を受け取ろう。`);
@@ -23294,8 +23345,8 @@
       function fishdexCrownsMarkup(f) {
         const crowns = s.fishCrowns?.[f.id] || {};
         return `<div class="fishdex-crowns">
-          <div class="fishdex-crown ${crowns.tiny ? "earned" : ""}"><b>👑</b> 極小金冠<br>${crowns.tiny ? "獲得済み" : "未獲得"}</div>
-          <div class="fishdex-crown ${crowns.giant ? "earned" : ""}"><b>👑</b> 巨大金冠<br>${crowns.giant ? "獲得済み" : "未獲得"}</div>
+          <div class="fishdex-crown ${crowns.tiny ? "earned" : ""}"><b>${UiExtraArt.get("crown")}</b> 極小金冠<br>${crowns.tiny ? "獲得済み" : "未獲得"}</div>
+          <div class="fishdex-crown ${crowns.giant ? "earned" : ""}"><b>${UiExtraArt.get("crown")}</b> 巨大金冠<br>${crowns.giant ? "獲得済み" : "未獲得"}</div>
         </div>`;
       }
       function fishdexMemoriesMarkup(f) {
@@ -23314,7 +23365,7 @@
           return `<article class="fishdex-memory-page" data-catch-memory="${kind}">
             <h3>${title}</h3><strong class="fishdex-memory-size">${(memory.hundredths/100).toFixed(2)}cm <small>（${e(tier?.label || "")}）</small></strong>
             <p class="fishdex-memory-place">${e(fishdexCatchLocation(memory))}</p>
-            <p class="fishdex-memory-date">${e(gameClockLabel(memory.gameMinutes))}<br>${weather ? `${weather.icon} ${e(weather.label)}` : "天気の記録なし"}</p>
+            <p class="fishdex-memory-date">${e(gameClockLabel(memory.gameMinutes))}<br>${weather ? `${UiPixelArt.get(weather.id)} ${e(weather.label)}` : "天気の記録なし"}</p>
             <dl class="fishdex-memory-facts"><dt>竿</dt><dd>${e(rodData[memory.rodId].name)}</dd>
               <dt>仕掛け</dt><dd>${e(rig)}</dd><dt>釣り方</dt><dd>${e(ShuFishing.modes[memory.fightMode])}</dd>
               <dt>相棒</dt><dd>${e(dogProfileData[memory.dogId]?.name || "記録なし")}</dd></dl>
@@ -23330,7 +23381,7 @@
         const stars = "★".repeat(data.rarity) + "☆".repeat(5 - data.rarity);
         const rods = data.rods
           .filter((id) => rodData[id])
-          .map((id) => `<span class="fishdex-chip">🎣 ${rodData[id].name}</span>`)
+          .map((id) => `<span class="fishdex-chip">${UiExtraArt.get("fishingRod")} ${rodData[id].name}</span>`)
           .join("");
         const baits = data.baits
           .filter((id) => baitData[id])
@@ -23373,7 +23424,7 @@
             ${fishdexTackleHistory(f)}
           </section>
           <section class="fishdex-panel wide fishdex-shuu-note">
-            <h3>🐕 ${ShuLakeStory.escape(dogName("shuu"))}の釣りメモ</h3>
+            <h3>${UiExtraArt.get("dogShuu")} ${ShuLakeStory.escape(dogName("shuu"))}の釣りメモ</h3>
             <p>${data.tip}</p>
           </section>
         </div>`;
@@ -23401,7 +23452,7 @@
           const known = count > 0;
           const stars = "★".repeat(item.rarity) + "☆".repeat(5 - item.rarity);
           return `<div class="fishdex-collectible ${known ? "known" : "unknown"}">` +
-            `<i>${known ? ShuTackleArt.icon({ancientFloat:"float",glassHook:"hookMedium"}[id])||item.icon : "❔"}</i><span><b>${known ? item.name : "？？？？"}</b>` +
+            `<i>${known ? item.icon : UiExtraArt.get("question")}</i><span><b>${known ? item.name : "？？？？"}</b>` +
             `<small>${known ? `${stars}　${item.lore}` : "星みくじから見つかる収集品"}</small></span>` +
             `<strong>${known ? `×${count}` : "未発見"}</strong></div>`;
         }).join("");
@@ -24103,7 +24154,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-25").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-28").catch(() => {});
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
