@@ -261,3 +261,25 @@
 .pet-name-actions{display:flex;gap:8px}.pet-name-actions button{flex:1;min-height:44px}
 #petNameError{color:#ffd1b8}
 @media(max-height:400px){.pet-name-layer{padding:6px}.pet-name-dialog{gap:6px;padding:8px 12px}.pet-name-dialog h3{font-size:16px}.pet-name-dialog p{font-size:11px}}
+/* Free fish boarding is a reversible, UID-specific move, separate from sales. */
+.pet-boarding-intro{padding:12px 14px;border:1px solid #809e88;border-radius:8px;background:#24464a;color:#dcebdc}
+.pet-boarding-intro h3{margin:0 0 6px;color:#ffe5a5;font-size:17px}.pet-boarding-intro h3 span{display:inline-block;margin-left:8px;padding:3px 7px;border:1px solid #bfd2a0;border-radius:5px;background:#38594c;color:#f5efbe;font-size:12px}
+.pet-boarding-intro p,.pet-boarding-hint{margin:5px 0;font-size:12px;line-height:1.65;overflow-wrap:anywhere}
+.pet-boarding-switch{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}.pet-boarding-switch button{flex:1;min-width:130px}
+.pet-boarding-species{display:flex;flex-wrap:wrap;gap:6px;max-height:116px;overflow:auto;padding:2px;margin-bottom:8px;overscroll-behavior:contain}
+#petLifeModal .pet-boarding-species button{min-height:44px;display:flex;align-items:center;gap:7px;padding:6px 10px;background:#234252;color:#e0e9dc;border:1px solid #6d938c}
+#petLifeModal .pet-boarding-species button[aria-pressed=true]{background:#45634f;color:#fff2bf;border-color:#e4c985}.pet-boarding-species b{font-size:12px;color:#f7dea7;white-space:nowrap}
+.pet-boarding-fish{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:4px 0 10px}
+.pet-boarding-fish article{min-width:0;display:flex;flex-direction:column;gap:7px;padding:12px;background:#203c4c;border:1px solid #7e9d91;border-radius:9px}
+.pet-boarding-fish h4{margin:0;color:#ffe4a6;font-size:15px;overflow-wrap:anywhere}.pet-boarding-fish p{margin:0;font-size:12px;line-height:1.5}.pet-boarding-fish small{font-size:12px;line-height:1.6;color:#cfdfd3;overflow-wrap:anywhere}.pet-boarding-fish button{margin-top:auto}
+.pet-boarding-badge{display:inline-block;padding:2px 6px;margin:2px 4px 2px 0;border:1px solid #8bb4ad;border-radius:4px;background:#2a5154;color:#d5f2de;font-size:11px;line-height:1.4;white-space:nowrap}
+.pet-boarding-detail{display:grid;grid-template-columns:minmax(150px,1fr) minmax(0,1.7fr);gap:16px;padding:15px;background:#203b4a;border:1px solid #7b9690;border-radius:10px}
+.pet-boarding-detail>*{min-width:0}.pet-boarding-detail h3{margin:0 0 7px;color:#ffe4a6;font-size:18px;overflow-wrap:anywhere}.pet-boarding-detail p{margin:8px 0;font-size:12px;line-height:1.6;overflow-wrap:anywhere}
+.pet-boarding-destination{display:grid;gap:6px;font-size:13px;color:#f5e4b6;margin-top:12px}.pet-boarding-destination select{width:100%;min-width:0}
+.pet-boarding-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+#petLifeModal .pet-boarding-switch button,#petLifeModal .pet-boarding-actions button,#petLifeModal .pet-boarding-fish button,#petLifeModal .pet-boarding-destination select{min-height:44px}
+#petLifeModal .pet-boarding-fish button:disabled{opacity:.65}.pet-boarding-detail :focus-visible,.pet-boarding-fish :focus-visible,.pet-boarding-switch :focus-visible,.pet-boarding-species :focus-visible{outline:2px solid #f8df97;outline-offset:2px}
+.pet-notebook-roster .pet-notebook-name{display:block;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:11px}.pet-notebook-roster .pet-boarding-badge{display:block;font-weight:normal;margin:2px 0;font-size:10px}
+@media(max-width:850px){.pet-boarding-fish{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:540px){.pet-boarding-fish,.pet-boarding-detail{grid-template-columns:1fr}.pet-boarding-intro{padding:10px}.pet-boarding-intro h3 span{margin-left:4px}.pet-boarding-detail{padding:12px}.pet-boarding-actions{flex-direction:column}.pet-boarding-species{max-height:106px}}
+@media(max-height:500px){.pet-boarding-intro{padding:8px 10px}.pet-boarding-intro p{font-size:11px}.pet-boarding-switch{margin:8px 0}.pet-boarding-species{max-height:58px}.pet-boarding-detail{gap:10px;padding:10px}.pet-boarding-detail .pet-specimen-window.is-large{height:150px}}

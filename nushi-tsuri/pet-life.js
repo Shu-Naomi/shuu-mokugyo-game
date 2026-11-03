@@ -2,7 +2,7 @@
 (function(root,factory){const api=factory(typeof module==="object"&&module.exports?require('./aquarium-mutations.js'):root.ShuAquariumMutations,typeof module==="object"&&module.exports?require('./pet-notebook.js'):root.ShuPetNotebook,typeof module==="object"&&module.exports?require('./player-options.js'):root.ShuPlayerOptions);if(typeof module==="object"&&module.exports)module.exports=api;else root.ShuPetLife=api;
 })(typeof globalThis!=="undefined"?globalThis:this,function(M,N,O){
   "use strict";
-  const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6,TANK_CAPACITY=5,BREED_DAYS=3;
+  const DOG_MAX=2000,TRICK_MAX=1000,CAPACITY=6,TANK_CAPACITY=5,BREED_DAYS=3,BOARDING_CAPACITY=2,MAX_FISH_ID=1e9;
   const TRICKS=["お手","おかわり","チンチン","伏せ","ハイタッチ"];
   const xpForLevel=level=>3*(level-1)**2;
   const fishLevel=xp=>Math.min(20,1+Math.floor(Math.sqrt(int(xp,0,1083)/3)));
@@ -49,8 +49,9 @@
   const nickname=f=>typeof f?.nickname==="string"&&f.nickname.length<=512&&O?.validName(f.nickname)?O.name(f.nickname):"";
   const individualName=(f,catalog)=>nickname(f)||displayName(f,catalog);
   const storedContestName=value=>value.length<=512&&O?.validName(value)?O.name(value):value.slice(0,40);
+  const allFish=state=>[...(state.petLife?.fish||[]),...(state.petLife?.boarded||[])];
   function renameFish(state,uid,value){
-    const f=state.petLife.fish.find(a=>a.uid===uid);
+    const f=allFish(state).find(a=>a.uid===uid);
     if(!f)return {ok:false,message:"名前を付ける魚が見つからないよ。"};
     if(typeof value!=="string"||value.length>512||value.trim()!==""&&!O?.validName(value))return {ok:false,message:"愛称は1〜12文字で入れてね。空欄で保存すると魚種名の表示に戻るよ。"};
     const next=value.trim()===""?"":O.name(value),previous=f.nickname,changed=next?previous!==next:Object.hasOwn(f,"nickname");
@@ -83,25 +84,37 @@
       state.dogTricks[id]=int(state.dogTricks[id],0,TRICK_MAX);
     }
     const used=new Set(),legendUsed=new Set();
-    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY*TANK_CAPACITY+LEGEND_CAPACITY*2).flatMap((f,index)=>{
+    const normalizeFish=(f,index,boarding=false)=>{
       const spec=catalog.find(s=>s.id===f?.species);
-      if(!spec||!/^pet-\d+$/.test(f.uid)||used.has(f.uid)||(isLegend(spec)&&(!(state.caught?.[spec.id]>0)||legendUsed.has(spec.id))))return [];
+      if(!spec||!/^pet-\d+$/.test(f.uid)||(!Number.isSafeInteger(Number(f.uid.slice(4)))||Number(f.uid.slice(4))>MAX_FISH_ID)||used.has(f.uid)||(isLegend(spec)&&(!(state.caught?.[spec.id]>0)||legendUsed.has(spec.id))))return [];
       used.add(f.uid);if(isLegend(spec))legendUsed.add(spec.id);
+      // A paused fish has one care boundary; repair malformed clocks without
+      // charging time spent in boarding on the next load or withdrawal.
+      const currentDay=boarding?int(f.lastDay??f.boardedDay,0,day):day;
       const generation=int(f.generation,0,20),bred=generation>0&&(f.origin==="bred"||old.version<5);
       const minimum=bred&&old.version>=5?frySize(spec):spec.id==="buri"&&f.origin==="shop"?purchaseSize(spec):spec.min||spec.start;
       const bornSize=int(f.bornSize,minimum,spec.max);
       const fish={uid:f.uid,species:spec.id,tank:isLegend(spec)?legendTank(spec):old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),origin:bred?"bred":isLegend(spec)?"legend":"shop",
-        acquiredDay:int(f.acquiredDay,0,day),lastDay:int(f.lastDay,0,day),
-        fedDay:int(f.fedDay,-1,day),changedDay:int(f.changedDay,-1,day),
-        water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,day+1),
+        acquiredDay:int(f.acquiredDay,0,currentDay),lastDay:boarding?currentDay:int(f.lastDay,0,currentDay),
+        fedDay:int(f.fedDay,-1,currentDay),changedDay:int(f.changedDay,-1,currentDay),
+        water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,currentDay+1),
         generation,sex:sexOf(f)};
       fish.stars=int(f.stars??starLevel(fish),1,5);
       fish.xp=int(f.xp??fish.careDays*10,0,1083);fish.level=fishLevel(fish.xp);
       fish.mutation=M.normalize(f.mutation,!(old.version>=6));
       const name=nickname(f);if(name)fish.nickname=name;
       normalizeGrowth(fish,f.growthHistory,fish.lastDay);
+      if(boarding)fish.boardedDay=currentDay;
       return [fish];
-    });
+    };
+    const specimens=(Array.isArray(old.fish)?old.fish:[]).slice(0,CAPACITY*TANK_CAPACITY+LEGEND_CAPACITY*2).flatMap((f,index)=>normalizeFish(f,index));
+    const boarded=[],boardedCounts=new Map();
+    for(const f of Array.isArray(old.boarded)?old.boarded:[]){
+      if((boardedCounts.get(f?.species)||0)>=BOARDING_CAPACITY)continue;
+      const fish=normalizeFish(f,0,true)[0];if(!fish)continue;
+      boarded.push(fish);boardedCounts.set(fish.species,(boardedCounts.get(fish.species)||0)+1);
+      if(boarded.length>=catalog.length*BOARDING_CAPACITY)break;
+    }
     const daily=record(old.dogDaily),dogDaily=Object.fromEntries(dogIds.map(id=>[id,{
       day:int(daily[id]?.day,-1,day),pets:int(daily[id]?.pets,0,3),trained:daily[id]?.trained===true,
     }]));
@@ -133,7 +146,7 @@
     }).filter(([key,value])=>!key.endsWith(":buri")||[value?.mother,value?.father].every(uid=>placed.some(f=>f.uid===uid&&f.species==="buri"&&f.tank===Number(key[0])&&f.length>=8000))).map(([key,value])=>[key,{days:int(value?.days,0,BREED_DAYS),lastDay:int(value?.lastDay,0,day),
       mother:typeof value?.mother==="string"?value.mother.slice(0,24):"",father:typeof value?.father==="string"?value.father.slice(0,24):""}]));
     const birth=record(old.lastBirth);
-    const lastBirth=catalog.some(f=>f.id===birth.species)&&placed.some(f=>f.uid===birth.uid)
+    const lastBirth=catalog.some(f=>f.id===birth.species)&&[...placed,...boarded].some(f=>f.uid===birth.uid)
       ? {uid:birth.uid,species:birth.species,tank:int(birth.tank,0,CAPACITY-1),day:int(birth.day,0,day)}:null;
     const eggIds=new Set(),eggs=[];
     for(const e of Array.isArray(old.eggs)?old.eggs:[]){
@@ -147,20 +160,20 @@
         parents,mutation:M.normalize(e.mutation,!(old.version>=6))});
     }
     const legendTanks=Object.fromEntries(LEGEND_TANKS.map(t=>[t.key,catalog.some(f=>isLegend(f)&&legendTank(f)===t.id&&state.caught?.[f.id]>0)]));
-    const legendClaims=Object.fromEntries(catalog.filter(isLegend).filter(f=>state.caught?.[f.id]>0).map(f=>[f.id,record(old.legendClaims)[f.id]===true||(f.id==="nushi"&&old.nushiClaimed===true)||placed.some(a=>a.species===f.id)]));
+    const legendClaims=Object.fromEntries(catalog.filter(isLegend).filter(f=>state.caught?.[f.id]>0).map(f=>[f.id,record(old.legendClaims)[f.id]===true||(f.id==="nushi"&&old.nushiClaimed===true)||[...placed,...boarded].some(a=>a.species===f.id)]));
     const selectedFish=placed.find(f=>f.uid===old.selected);
-    const growth=record(old.lastGrowth),grown=placed.find(f=>f.uid===growth.uid),from=BURI_STAGES.findIndex(a=>a.id===growth.from),to=BURI_STAGES.findIndex(a=>a.id===growth.to);
+    const growth=record(old.lastGrowth),grown=[...placed,...boarded].find(f=>f.uid===growth.uid),from=BURI_STAGES.findIndex(a=>a.id===growth.from),to=BURI_STAGES.findIndex(a=>a.id===growth.to);
     const lastGrowth=grown&&growthStage(grown)?.id===growth.to&&from>=0&&to>from&&Number.isInteger(growth.day)&&growth.day>=0&&growth.day<=day&&grown.growthHistory?.some(a=>a.stage===growth.to&&a.day===growth.day&&!a.initial)
       ? {uid:grown.uid,from:growth.from,to:growth.to,day:growth.day}:null;
     state.petLife={version:M.VERSION,mutationSeed:M.validSeed(old.mutationSeed)?old.mutationSeed:null,
       mutationRuleVersion:old.version>=6&&Number.isInteger(old.mutationRuleVersion)&&old.mutationRuleVersion>0&&old.mutationRuleVersion<=0xffffffff?old.mutationRuleVersion:M.RULE_VERSION,
       mutationDiscoveries:old.version>=6?M.normalizeDiscoveries(old.mutationDiscoveries,day):[],
-      fish:placed,food:int(old.food??10,0,99999),unlockedTanks:tankSlots,breeding,lastBirth,lastGrowth,eggs,legendTanks,legendClaims,
+      fish:placed,boardingVersion:1,boarded,food:int(old.food??10,0,99999),unlockedTanks:tankSlots,breeding,lastBirth,lastGrowth,eggs,legendTanks,legendClaims,
       nextEggId:Math.max(int(old.nextEggId,1),...eggs.map(e=>Number(e.uid.slice(4))+1)),contest:normalizeContest(old.contest,dogIds,placed,catalog,day),
-      nextId:Math.max(int(old.nextId,1),...specimens.map(f=>Number(f.uid.slice(4))+1)),
+      nextId:Math.max(int(old.nextId,1,MAX_FISH_ID+1),...[...specimens,...boarded].map(f=>Number(f.uid.slice(4))+1)),
       selected:placed.some(f=>f.uid===old.selected)?old.selected:placed[0]?.uid||null,
       selectedTank:selectedFish?.tank??int(old.selectedTank??placed[0]?.tank??0,0,7),
-      nushiClaimed:old.nushiClaimed===true||specimens.some(f=>f.species==="nushi"),dogDaily,entries,best,lastResult};
+      nushiClaimed:old.nushiClaimed===true||[...specimens,...boarded].some(f=>f.species==="nushi"),dogDaily,entries,best,lastResult};
     N?.normalize(state,catalog,day);if(!deferSync)sync(state,catalog,day);for(const t of tankIds(state))shareWater(state,t);
     if(!selectTank(state,state.petLife.selectedTank))selectTank(state,0);return state.petLife;
   }
@@ -213,7 +226,7 @@
       egg.mutation=M.draw(state,egg);p.eggs.push(egg);changed=true;
     }
     for(const egg of [...p.eggs]){
-      if(egg.hatchDay>day)continue;
+      if(egg.hatchDay>day||!Number.isInteger(p.nextId)||p.nextId>MAX_FISH_ID)continue;
       const group=residents(state,egg.tank);
       if(group.length>=TANK_CAPACITY)continue;
       const spec=catalog.find(s=>s.id===egg.species),uid=`pet-${p.nextId++}`;
@@ -256,6 +269,51 @@
     shareWater(state,tank);selectTank(state,tank);state.petLife.selected=uid;
     return {ok:true,message:`${tankLabel(tank)}へお引っ越しした。エサや成長の記録もそのままだよ。`};
   }
+  // A transfer is one save transaction. Rejected and failed saves restore all
+  // pet/egg/notebook changes made by sync, never just half of the move.
+  function boardingTransaction(state,work,persist){
+    const previous=JSON.parse(JSON.stringify(state.petLife)),hadNotebook=Object.hasOwn(state,"petNotebook"),notebook=hadNotebook&&state.petNotebook!==undefined?JSON.parse(JSON.stringify(state.petNotebook)):undefined;
+    const restore=()=>{state.petLife=previous;if(hadNotebook)state.petNotebook=notebook;else delete state.petNotebook;};
+    let result;
+    try{
+      result=work();
+      if(!result.ok){restore();return result;}
+      if(persist!==undefined&&(typeof persist!=="function"||persist()!==true))throw Error("Save failed");
+      return result;
+    }catch{
+      restore();return {ok:false,message:"保存できなかったよ。魚は元の場所にいるので、もう一度試してね。"};
+    }
+  }
+  function boardFish(state,uid,catalog,day,persist){
+    return boardingTransaction(state,()=>{
+      const p=state.petLife,f=p.fish.find(a=>a.uid===uid);
+      if(!f)return {ok:false,message:"預ける魚が水槽に見つからないよ。"};
+      if(p.contest?.kind==="fish"&&p.contest.participant===uid)return {ok:false,message:"品評会が終わってから、この子を預けよう。"};
+      p.boarded||=[];
+      if(p.boarded.some(a=>a.uid===uid))return {ok:false,message:"この子はすでにお預かり中だよ。"};
+      if(p.boarded.filter(a=>a.species===f.species).length>=BOARDING_CAPACITY)return {ok:false,message:"この魚種は2匹お預かり中だよ。通常色と希少色を合わせて2匹まで預けられるよ。"};
+      sync(state,catalog,day);
+      p.fish.splice(p.fish.indexOf(f),1);f.boardedDay=day;p.boarded.push(f);p.boardingVersion=1;
+      clearBreeding(p,f.tank,f.species);selectTank(state,p.selectedTank);
+      return {ok:true,message:`${individualName(f,catalog)} #${f.uid.slice(4)}を無料でお預かりしたよ。成長とお世話はお休み。いつでも迎えに来てね。`};
+    },persist);
+  }
+  function withdrawFish(state,uid,tank,catalog,day,persist){
+    return boardingTransaction(state,()=>{
+      const p=state.petLife,f=(p.boarded||[]).find(a=>a.uid===uid);
+      if(!f||p.fish.some(a=>a.uid===uid))return {ok:false,message:"お預かり中の魚が見つからないよ。"};
+      sync(state,catalog,day);
+      if(!canHouse(state,f.species,catalog,tank))return {ok:false,message:"同じ水の種類で、空きのある水槽を選ぼう。卵の分も空きが必要で、ぬしは専用水槽へ戻るよ。"};
+      // Shift only care clocks, not the real dates in the fish's history.
+      // Preserve -1 (never cared for), and a pending single-day ration.
+      const elapsed=Math.max(0,day-f.boardedDay);
+      for(const key of ["lastDay","fedDay","changedDay"])if(f[key]>=0)f[key]+=elapsed;
+      delete f.boardedDay;f.tank=tank;
+      p.boarded.splice(p.boarded.indexOf(f),1);p.fish.push(f);
+      clearBreeding(p,tank,f.species);shareWater(state,tank);selectTank(state,tank);p.selected=uid;
+      return {ok:true,message:`${individualName(f,catalog)} #${f.uid.slice(4)}が${tankLabel(tank)}へ帰ってきたよ。育てた記録もそのままだよ。`};
+    },persist);
+  }
   function acquire(state,species,catalog,day,tank=null){
     const p=state.petLife,spec=catalog.find(f=>f.id===species);
     if(!spec)return {ok:false,message:"この魚は迎えられない。"};
@@ -265,6 +323,7 @@
     if(tank===null)tank=[p.selectedTank,...tankIds(state)].find(t=>canHouse(state,species,catalog,t));
     if(!canHouse(state,species,catalog,tank))return {ok:false,message:isLegend(spec)?"このぬしは、同じ水のぬし専用総合水槽へ迎えよう。":"この水槽は満員か、水の種類が違うよ。通常水槽は1槽5匹まで迎えられる。"};
     if(!Number.isFinite(state.money)||state.money<spec.price)return {ok:false,message:`${spec.price}円が必要だよ。`};
+    if(!Number.isInteger(p.nextId)||p.nextId<1||p.nextId>MAX_FISH_ID)return {ok:false,message:"魚の個体番号が上限に達しているよ。いま育てている子は、そのまま大切にできるよ。"};
     state.money-=spec.price;
     const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):purchaseSize(spec);
     const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,origin:isLegend(spec)?"legend":"shop",acquiredDay:day,lastDay:day,
@@ -441,6 +500,6 @@
     return advanceContest(state);
   }
   const cm=v=>(v/100).toFixed(2);
-  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,nickname,individualName,renameFish,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+  return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,BOARDING_CAPACITY,allFish,boardFish,withdrawFish,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,nickname,individualName,renameFish,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });

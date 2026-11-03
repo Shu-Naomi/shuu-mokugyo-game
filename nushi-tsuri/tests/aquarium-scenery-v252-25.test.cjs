@@ -95,7 +95,8 @@ test('fresh and salt CSS assets preserve click-through scenery, fish layering an
   for(const file of ['pet-life.css','pet-life-ui.js']){
     const ref=html.match(new RegExp(`${file.replace('.','\\.')}\\?v=([^"']+)`));assert.ok(ref);
     assert.ok(sw.includes(`./${file}?v=${ref[1]}`),`${file} index/worker revisions agree`);
-    assert.equal(ref[1],'252-25',`${file} cache busts old routing/styles`);
+    const [major,minor]=ref[1].split('-').map(Number);
+    assert.ok(major>252||major===252&&minor>=25,`${file} cache revision keeps scenery or a later release`);
   }
   assert.match(css,/\.pet-inspect-fish\s*\{[^}]*z-index:\s*460/);
   assert.match(css,/\.pet-glass\s*\{[^}]*pointer-events:\s*none/);
