@@ -121,11 +121,12 @@
       if(!curled||!settled){data.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
       // The leaf rises, crosses the old notes, and reveals a different settled
       // page. Only the paper region changes; hands, binding and table stay put.
-      const smooth=t=>{t=clamp(t);return t*t*(3-2*t);};
-      ctx.save();ctx.beginPath();ctx.rect(...region);ctx.clip();
-      ctx.globalAlpha=smooth(progress*2);ctx.drawImage(curled,0,0,curled.naturalWidth,curled.naturalHeight,0,0,640,360);
-      if(progress>.5){ctx.globalAlpha=smooth((progress-.5)*2);ctx.drawImage(settled,0,0,settled.naturalWidth,settled.naturalHeight,0,0,640,360);}
-      ctx.restore();return;
+      // Crisp SFC-style held keyframes avoid transparent/doubled ink between
+      // drawings. The three poses remain readable even at landscape-phone size.
+      const frame=progress<.18?null:progress<.72?curled:settled;
+      if(frame){ctx.save();ctx.beginPath();ctx.rect(...region);ctx.clip();
+        ctx.drawImage(frame,0,0,frame.naturalWidth,frame.naturalHeight,0,0,640,360);ctx.restore();}
+      return;
     }
     // A single, finite, edge-feathered local deformation: the leaf lifts then
     // settles, or a puppy takes one small breath. No looping or whole-image pan.

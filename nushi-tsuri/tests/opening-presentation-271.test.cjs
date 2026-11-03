@@ -90,7 +90,13 @@ test('paint changes only its local region and settles into a stable still or the
   Intro.paint(canvas,id,()=>{},state,middle);const animated=ctx.getImageData(0,0,640,360).data;
   assert.ok(localChanges(animated,'middle')>0,`${id} has no localized motion`);
   Intro.paint(canvas,id,()=>{},state,end);const final=ctx.getImageData(0,0,640,360).data;
-  if(id==='notebook')assert.ok(localChanges(final,'final')>0,'diary must settle on the next page, not return to the first');
+  if(id==='notebook'){
+   assert.ok(localChanges(final,'final')>0,'diary must settle on the next page, not return to the first');
+   for(const [fraction,expected]of [[.2,animated],[.8,final]]){
+    Intro.paint(canvas,id,()=>{},state,Intro.pose(id,start.duration*fraction,state));
+    assert.deepEqual(ctx.getImageData(0,0,640,360).data,expected,'held pixel-art poses must not dissolve into doubled ink');
+   }
+  }
   else assert.deepEqual(final,first);
   Intro.paint(canvas,id,()=>{},state,end);assert.deepEqual(ctx.getImageData(0,0,640,360).data,final,'repainting the final still must be stable');
  }}finally{global.Image=previous;}
