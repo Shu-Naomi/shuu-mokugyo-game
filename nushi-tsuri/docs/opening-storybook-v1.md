@@ -1,6 +1,6 @@
 # Opening storybook
 
-This change is presentation-only. All sixteen page identifiers, lines, speakers, choices, and version-2 checkpoints are preserved. Text advances on the player's input, never on animation completion. Both protagonist appearances and all three favorite companions have their own reunion paintings.
+All sixteen page identifiers, speakers, choices, and version-2 checkpoints are preserved. The feedback revision changes only the puppies title to match the visible doorway and its narration opening to introduce the small footsteps before identifying the three dogs; all dialogue remains unchanged. Text advances on the player's input, never on animation completion. Both protagonist appearances and all three favorite companions have their own reunion paintings.
 
 ## Art direction
 
@@ -10,10 +10,19 @@ The diary is held down while the protagonist looks up. The refusal painting brin
 
 ## Rendering and accessibility
 
-Paintings render on a 640 × 360 canvas with nearest-neighbor sampling. Text lives in a separate grid cell; object-fit contain never crops the artwork. Each page has one small animation region and a finite 0.7–1.25 second presentation. There is no continuous loop or full-frame camera pan. Reduced-motion and backgrounding settle the scene immediately. Navigation cancels pending animation and late image callbacks. Loading does not block text navigation. Canvas data attributes expose page, panel, asset state, and animation region for integration tests.
+Paintings render on a 640 × 360 canvas with nearest-neighbor sampling. Text lives in a separate grid cell; object-fit contain never crops the artwork. Each page has one small animation region and a finite 0.7–1.25 second presentation. There is no continuous loop or full-frame camera pan. Reduced-motion and backgrounding settle the scene immediately. Navigation cancels pending animation and late image callbacks. A separate cancellable completion deadline, armed after all required paintings decode, guarantees the flat final diary pose even if animation-frame delivery stops. Reduced-motion, visibility changes and ordinary completion clear that deadline. Loading does not block text navigation. Canvas data attributes expose page, panel, asset state, and animation region for integration tests.
 
 ## Validation
 
-The unit tests retain exact dialogue-hash/save compatibility and check panel selection, animation bounds, state purity, cancellation, reduced motion, loading and backgrounding. Browser evidence replays every page for both avatars on desktop and landscape phones, tests previous/rapid advance/reload resume/skip/replay, checks selected companion names, confirms decoded artwork and distinct compositions, and asserts separate readable image/text/control bounds.
+The unit tests retain the original story hash after normalizing only the explicitly revised footsteps title and narration, and preserve save compatibility and check panel selection, animation bounds, state purity, cancellation, reduced motion, loading and backgrounding. Browser evidence replays every page for both avatars on desktop and landscape phones, tests previous/rapid advance/reload resume/skip/replay, checks selected companion names, confirms decoded artwork and distinct compositions, and asserts separate readable image/text/control bounds.
 
 The PR must not merge until browser replay screenshots have been visually inspected, all referenced assets have decoded, and required CI passes for the final head. No rest, fishing, or battle changes are included.
+
+## User feedback validation
+
+The first released scene drew the open diary for the viewer rather than the seated protagonist, and the retort reused a smiling expression. Corrected paintings must be visually inspected at desktop and landscape-phone size for both avatars. Changed artwork uses fresh asset URLs rather than relying on old cached names.
+
+The reported raised diary page matches the intermediate painting. The shipped final source is flat; a stalled RAF on the user's device has not been reproduced. Timing flags alone are not visual proof of completion: browser evidence must capture the actual starting, raised, and flat final pixels, plus reduced motion, interruption and re-entry.
+
+The browser matrix retains all 384 settled page/cast/screen cases. Supplementary interrupted diary sequences target both avatars at desktop 1280×720 and landscape phone 820×366; native-clock diary sequences run for both avatars on all four viewports. Review sheets reuse existing full UI captures and retain native canvas images, avoiding duplicate screenshots. Pull-request jobs allow 25 minutes for this expanded evidence. Main-branch jobs allow 45 minutes because they repeat the complete browser replay against the published site after verifying source parity.
+Evidence is uploaded as one artifact per viewport, keeping individual archives within the retrieval limit while retaining every capture.

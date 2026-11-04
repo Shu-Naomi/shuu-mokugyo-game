@@ -43,7 +43,7 @@ concurrency:
 jobs:
   opening:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: ${{ github.ref == 'refs/heads/main' && 45 || 25 }}
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --shm-size=1gb
@@ -105,8 +105,39 @@ jobs:
             nushi-tsuri/tests/opening-story-evidence/
             nushi-tsuri/tests/opening-motion-*.log
             nushi-tsuri/tests/opening-motion-evidence/
-            nushi-tsuri/tests/storybook-evidence/
             nushi-tsuri/tests/opening-cast-cancel-*.log
             nushi-tsuri/tests/cast-cancel-evidence/
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve storybook evidence at 1280x720
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-storybook-1280x720
+          path: nushi-tsuri/tests/storybook-evidence/1280x720-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve storybook evidence at 844x390
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-storybook-844x390
+          path: nushi-tsuri/tests/storybook-evidence/844x390-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve storybook evidence at 820x366
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-storybook-820x366
+          path: nushi-tsuri/tests/storybook-evidence/820x366-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve storybook evidence at 1280x1024
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-storybook-1280x1024
+          path: nushi-tsuri/tests/storybook-evidence/1280x1024-*
           retention-days: 14
           if-no-files-found: warn

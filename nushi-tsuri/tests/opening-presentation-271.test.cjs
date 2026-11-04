@@ -6,8 +6,12 @@ function clock(){let now=0,next=1;const queued=new Map();return {now:()=>now,req
 function media(matches=false){const listeners=new Set();return {matches,listeners,addEventListener:(_,fn)=>listeners.add(fn),removeEventListener:(_,fn)=>listeners.delete(fn),change(value){this.matches=value;for(const fn of listeners)fn();}};}
 const resources=w=>read(w,'({money:s.money,hp:s.hp,baits:s.baits,time:s.gameMinutes,caught:s.caught,petLife:s.petLife,dogs:s.dogAffinity,tricks:s.dogTricks,x:s.x,y:s.y,story:s.lakeStory})');
 
-test('the sixteen page IDs, titles, speakers, text and save schema remain exactly the approved story',()=>{
- assert.equal(crypto.createHash('sha256').update(JSON.stringify(Intro.pages)).digest('hex'),'4833cb22d203047953969256c81d36d7a7f5f502df44ff3ed3d7ebc5e2f0b5ca');assert.equal(Intro.version,2);
+test('only the requested footsteps setup changes; all other dialogue and save identifiers remain unchanged',()=>{
+ const puppies=Intro.pages.find(page=>page.id==='puppies');assert.equal(puppies.title,'戸口からの足音');
+ assert.equal(puppies.paragraphs[0],'戸口の方から、小さな足音が重なって聞こえた。祖父が世話をしていた三匹だ。');
+ const original=JSON.parse(JSON.stringify(Intro.pages));original.find(page=>page.id==='puppies').title='廊下からの足音';original.find(page=>page.id==='puppies').paragraphs[0]='足音の主は、祖父が世話をしていた三匹。';
+ assert.equal(crypto.createHash('sha256').update(JSON.stringify(original)).digest('hex'),'4833cb22d203047953969256c81d36d7a7f5f502df44ff3ed3d7ebc5e2f0b5ca','unrelated story changes need explicit review');
+ assert.equal(Intro.version,2);
  assert.deepEqual(Intro.progress({introVersion:2,introStep:'cling',introPage:0}),{introVersion:2,introStep:'cling',introPage:11});
 });
 test('each avatar and companion keeps its identity through every still composition',()=>{
@@ -121,6 +125,118 @@ test('notebook animation waits for all three paintings in every decode order',()
    decode(order[2]);assert.equal(time.queued.size,1);assert.equal(d.snapshot().elapsed,0);
    time.advance(600);assert.ok(d.snapshot().elapsed>0);assert.equal(c.dataset.motion,'running');
    time.advance(2000);assert.equal(time.queued.size,0);assert.equal(d.snapshot().pose.settled,true);assert.equal(c.dataset.motion,'still');
+   d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
+
+// Independent deadline doubles deliberately do not deliver RAF. The old tests
+// always advanced RAF successfully and could not catch a stranded raised leaf.
+function deadlines(){let id=0;const pending=new Map();return {pending,
+ set(fn,ms){const token=++id;pending.set(token,{fn,ms});return token;},
+ clear(token){pending.delete(token);},
+ fire(){const work=[...pending.values()];pending.clear();for(const item of work)item.fn();}
+};}
+function paintedSources(canvas){const sources=[];canvas.getContext('2d').drawImage=image=>sources.push(image.src);return sources;}
+test('every diary page reaches the completed source even when RAF stops after the raised frame',()=>{
+ for(const id of ['notebook','researcher','wish']){
+  const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(),sources=paintedSources(c);
+  try{
+   const before=resources(w),raw=w.localStorage.getItem(saveKey);
+   const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m});
+   assert.equal(timers.pending.size,1);assert.equal([...timers.pending.values()][0].ms,d.snapshot().pose.duration*1000);
+   time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);assert.equal(d.snapshot().pose.settled,false);
+   // No more animation-frame callbacks are delivered, only the deadline.
+   timers.fire();assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled,'deadline must actually paint completed artwork, not only set a state flag');
+   assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().pose.settled,true);assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
+   const count=sources.length;time.advance(5000);assert.equal(sources.length,count);assert.deepEqual(resources(w),before);assert.equal(w.localStorage.getItem(saveKey),raw);
+   d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
+test('normal RAF completion clears the deadline; cached diary pages start independent cancellable deadlines',()=>{
+ const a=boot(saved('notebook'),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines();
+ try{
+  let d=w.ShuLakeIntro.present(c,'notebook',read(w,'s'),{clock:time,timers,media:media()});
+  assert.equal(timers.pending.size,1);time.advance(2000);assert.equal(timers.pending.size,0);d.cancel();
+  for(const id of ['researcher','wish','notebook']){
+   d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:media()});
+   assert.equal(timers.pending.size,1);assert.equal(d.snapshot().elapsed,0);assert.equal(time.queued.size,1);
+   time.advance(550);const late=[...timers.pending.values()][0].fn;d.cancel();
+   assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);const sources=paintedSources(c);
+   late();assert.equal(sources.length,0,'an already-delivered timeout callback cannot repaint a cancelled page');
+  }
+  assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
+test('diary deadline waits for all image decodes and arms only once, including repeated decode callbacks',()=>{
+ for(const order of [[0,1,2],[0,2,1],[1,0,2],[1,2,0],[2,0,1],[2,1,0]]){
+  const a=boot(saved('notebook'),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),pending=[];
+  try{
+   w.Image=function(){this.complete=false;this.naturalWidth=0;this.naturalHeight=0;pending.push(this);};
+   const d=w.ShuLakeIntro.present(c,'notebook',read(w,'s'),{clock:time,timers,media:media()});
+   const names=[w.ShuLakeIntro.sourceFor('diary'),w.ShuLakeIntro.art.diaryTurn,w.ShuLakeIntro.art.diarySettled];
+   const images=order.map(i=>pending.find(im=>im.src===names[i]));
+   assert.equal(timers.pending.size,0);
+   for(const image of images.slice(0,2)){
+    Object.assign(image,{complete:true,naturalWidth:640,naturalHeight:360});image.onload();time.advance(3000);
+    assert.equal(timers.pending.size,0);assert.equal(d.snapshot().elapsed,0);
+   }
+   const last=images[2];Object.assign(last,{complete:true,naturalWidth:640,naturalHeight:360});last.onload();
+   assert.equal(timers.pending.size,1);const token=[...timers.pending.keys()][0];
+   for(const image of images)image.onload();assert.equal(timers.pending.size,1);assert.equal([...timers.pending.keys()][0],token,'decode notifications cannot restart the completion deadline');
+   const sources=paintedSources(c);timers.fire();assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);assert.equal(d.snapshot().pose.settled,true);
+   d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
+test('reduced motion and visibility interruption paint completed diary artwork without leaving deadlines behind',()=>{
+ for(const mode of ['initial-reduced','changed-reduced','hidden']){
+  const a=boot(saved('notebook'),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(mode==='initial-reduced'),sources=paintedSources(c);
+  try{
+   const d=w.ShuLakeIntro.present(c,'notebook',read(w,'s'),{clock:time,timers,media:m});
+   if(mode!=='initial-reduced'){
+    time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);
+    if(mode==='changed-reduced')m.change(true);
+    else{
+     Object.defineProperty(w.document,'hidden',{configurable:true,value:true});w.document.dispatchEvent(new w.Event('visibilitychange'));
+     assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
+     Object.defineProperty(w.document,'hidden',{configurable:true,value:false});w.document.dispatchEvent(new w.Event('visibilitychange'));
+    }
+   }
+   assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled,mode);assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
+   assert.equal(d.snapshot().pose.settled,true);const count=sources.length;m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
+   d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
+
+// Defensive adapter invariant: a retained callback must not undo settlement.
+// Native RAF cancellation normally prevents this late delivery; these cases do
+// not claim to reproduce the user's original browser freeze.
+for(const mode of ['reduced-motion','deadline'])test(`retained RAF callbacks cannot repaint after ${mode} settlement`,()=>{
+ for(const id of ['notebook','researcher','wish']){
+  const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(),sources=paintedSources(c);
+  try{
+   const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m}),duration=d.snapshot().pose.duration;
+   time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);
+   const [handle,late]=[...time.queued][0];assert.equal(typeof late,'function');
+   // Simulate a clock adapter having handed the callback to another queue,
+   // where cancellation cannot retract it. Keep its frame timestamp as well.
+   time.queued.delete(handle);
+   if(mode==='reduced-motion')m.change(true);
+   else{time.advance(duration*1000-time.now());timers.fire();}
+   assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+   const count=sources.length;
+   for(const timestamp of mode==='reduced-motion'?[650,550,duration*1000+250]:[550,duration*1000+250]){
+    late(timestamp);
+    assert.equal(sources.length,count,'a retained callback must not repaint after settlement');
+    assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+    assert.equal(d.snapshot().elapsed,duration);assert.equal(d.snapshot().pose.settled,true);
+    assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().scheduled,false);
+    assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
+   }
+   m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
    d.cancel();assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
  }
