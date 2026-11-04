@@ -21,32 +21,43 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
   // renderer regressions by asking the same implementation to verify itself.
   const result=await page.locator('#lakeIntroPicture').evaluate(async(canvas,frame)=>{
    const api=ShuLakeIntro,region=api.regionFor('diary').region,base=api.sourceFor('diary');
-   const source=frame==='start'?base:frame==='turn'?api.art.diaryTurn:api.art.diarySettled;
+   const source=frame==='completed'?api.art.diarySettled:base;
+   // Independent geometry, deliberately not read from the renderer exports.
+   const paper=[[134,92],[145,81],[264,77],[307,81],[324,88],[343,81],[462,77],[504,81],[518,94],[520,281],[513,295],[334,300],[324,303],[310,297],[139,297],[132,289]];
+   const hand=[[20,360],[30,332],[38,287],[46,255],[64,230],[85,216],[109,207],[119,202],[126,203],[130,210],[137,212],[143,220],[141,234],[132,253],[130,267],[139,264],[146,266],[151,273],[147,286],[140,301],[133,314],[120,330],[106,343],[99,360]];
+   const outline=(ctx,points)=>{ctx.beginPath();points.forEach(([x,y],i)=>ctx[i?'lineTo':'moveTo'](x,y));ctx.closePath();};
+   const mask=document.createElement('canvas');mask.width=640;mask.height=360;const maskCtx=mask.getContext('2d');outline(maskCtx,hand);maskCtx.fill();const handPixels=maskCtx.getImageData(0,0,640,360).data;
    const load=async src=>{const image=new Image();image.src=src;await image.decode();return image;};
    const expected=document.createElement('canvas');expected.width=canvas.width;expected.height=canvas.height;
    const ctx=expected.getContext('2d');ctx.imageSmoothingEnabled=false;
    const first=await load(base);ctx.drawImage(first,0,0,first.naturalWidth,first.naturalHeight,0,0,expected.width,expected.height);
    const initial=ctx.getImageData(0,0,expected.width,expected.height).data;
-   if(frame!=='start'){
-    const image=await load(source);ctx.save();ctx.beginPath();ctx.rect(...region);ctx.clip();
+   if(frame==='completed'){
+    ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
+    const image=await load(source);ctx.save();outline(ctx,paper);ctx.clip();
     ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight,0,0,expected.width,expected.height);ctx.restore();
+    ctx.save();outline(ctx,hand);ctx.clip();ctx.drawImage(first,0,0,expected.width,expected.height);ctx.restore();
+    ctx.restore();
    }
    const actual=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
    const reference=ctx.getImageData(0,0,expected.width,expected.height).data;
-   let mismatched=0,changed=0,outsideChanged=0,hash=2166136261;
+   let mismatched=0,changed=0,outsideChanged=0,handChanged=0,hash=2166136261;
    const [x,y,w,h]=region;
    for(let i=0;i<actual.length;i+=4){
     if(actual[i]!==reference[i]||actual[i+1]!==reference[i+1]||actual[i+2]!==reference[i+2]||actual[i+3]!==reference[i+3])mismatched++;
     if(actual[i]!==initial[i]||actual[i+1]!==initial[i+1]||actual[i+2]!==initial[i+2]||actual[i+3]!==initial[i+3]){
-     changed++;const px=i/4%canvas.width,py=Math.floor(i/4/canvas.width);
+     changed++;if(handPixels[i+3]===255)handChanged++;const px=i/4%canvas.width,py=Math.floor(i/4/canvas.width);
      if(px<x||px>=x+w||py<y||py>=y+h)outsideChanged++;
     }
     for(let c=0;c<4;c++)hash=Math.imul(hash^actual[i+c],16777619);
    }
-   return {frame,source,region,mismatched,changed,outsideChanged,hash:hash>>>0};
+   return {frame,source,region,mismatched,changed,outsideChanged,handChanged,turnPhase:canvas.dataset.turnPhase,leafEdgeX:Number(canvas.dataset.leafEdgeX),hash:hash>>>0};
   },frame);
-  assert.equal(result.mismatched,0,`${prefix}: actual ${frame} pixels do not match the independently decoded source: ${JSON.stringify(result)}`);
+  if(frame!=='turn')assert.equal(result.mismatched,0,`${prefix}: actual ${frame} pixels do not match the independently decoded source: ${JSON.stringify(result)}`);
   assert.equal(result.outsideChanged,0,'diary motion must leave hands, binding and table outside its region unchanged');
+  assert.equal(result.handChanged,0,'foreground hand polygon must remain unchanged');
+  if(frame==='turn'){assert.ok(result.changed>500);assert.ok(['rise','cross','settle'].includes(result.turnPhase));}
+  else assert.equal(result.turnPhase,frame==='start'?'start':'settled');
   if(frame!=='start')assert.ok(result.changed>0,`${frame} must be a genuinely different image`);
   return result;
  }

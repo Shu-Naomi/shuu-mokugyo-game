@@ -64,7 +64,7 @@
   const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp'};
   const images=new Map(),failed=new Set(),ids=['shuu','riku','grey'];
   const clamp=x=>Math.max(0,Math.min(1,x));
-  const durations={arrival:.7,memory:.7,notebook:1.25,researcher:1.25,wish:1.25,sam:.9,invitation:.9,refusal:.8,push:.8,retort:.8,puppies:1.1,cling:1.1,care:.8,decision:.8,welcome:.8,'first-day':.7};
+  const durations={arrival:.7,memory:.7,notebook:1.6,researcher:1.6,wish:1.6,sam:.9,invitation:.9,refusal:.8,push:.8,retort:.8,puppies:1.1,cling:1.1,care:.8,decision:.8,welcome:.8,'first-day':.7};
   function pageFor(value){return typeof value==='object'?value:pages[byId[value]]||pages.find(p=>p.scene===value)||pages[0];}
   function panelFor(value,state={}){
     const p=pageFor(value),c=cast(state);
@@ -79,7 +79,7 @@
   // Regions use the 640 × 360 painting coordinate system. Only this small area
   // can move; the camera, doorway, people and dogs never slide as whole sprites.
   function regionFor(panel){
-    if(panel==='diary')return {kind:'turn',region:[315,43,214,260]};
+    if(panel==='diary')return {kind:'turn',region:[128,15,394,288]};
     if(panel==='home')return {kind:'light',region:[250,100,95,35]};
     if(panel==='village')return {kind:'light',region:[250,120,90,28]};
     if(panel.includes('cling'))return {kind:'breath',region:[232,259,40,37]};
@@ -99,6 +99,56 @@
     if(!im){im=new Image();images.set(src,im);im.onload=redraw;im.onerror=()=>{failed.add(src);redraw();};im.src=src;}
     else if(!im.complete){im.onload=redraw;im.onerror=()=>{failed.add(src);redraw();};}
     return im.complete&&im.naturalWidth?im:null;
+  }
+  // The printed leaf is a small ruled surface, not three interchangeable stills.
+  // Integer columns and nearest-neighbour sampling keep the ink crisp at 12 fps.
+  // Its outer edge travels right -> spine -> left; the spine itself never moves.
+  function diaryLeaf(progress){
+    const t=clamp((progress-.08)/.84),angle=Math.PI*(t*t*(3-2*t));
+    const front=t<.5,span=Math.cos(angle)*(front?192:188),lift=Math.sin(angle)*64;
+    return {phase:progress<=.08?'start':progress>=.92?'settled':t<.42?'rise':t<.58?'cross':'settle',
+      front,edgeX:Math.round(324+span),lift:Math.round(lift),span};
+  }
+  // Follow the actual paper outline. Both forearms and the thumb/fingertips on
+  // the left page are foreground, so they are always restored from the base.
+  const diaryPaper=[[134,92],[145,81],[264,77],[307,81],[324,88],[343,81],[462,77],[504,81],[518,94],[520,281],[513,295],[334,300],[324,303],[310,297],[139,297],[132,289]];
+  const diaryHand=[[20,360],[30,332],[38,287],[46,255],[64,230],[85,216],[109,207],[119,202],[126,203],[130,210],[137,212],[143,220],[141,234],[132,253],[130,267],[139,264],[146,266],[151,273],[147,286],[140,301],[133,314],[120,330],[106,343],[99,360]];
+  function outline(ctx,points){ctx.beginPath();for(let i=0;i<points.length;i++)ctx[i?'lineTo':'moveTo'](...points[i]);ctx.closePath();}
+  function painting(ctx,im){ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight,0,0,640,360);}
+  function paintDiary(ctx,base,settled,progress,data){
+    const leaf=diaryLeaf(progress);data.turnPhase=leaf.phase;data.leafEdgeX=String(leaf.edgeX);
+    if(leaf.phase==='start')return;
+    ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
+    ctx.save();outline(ctx,diaryPaper);ctx.clip();
+    if(leaf.phase==='settled')painting(ctx,settled);
+    else {ctx.beginPath();ctx.rect(324,76,198,227);ctx.clip();painting(ctx,settled);}
+    ctx.restore();
+    if(leaf.phase!=='settled'){
+      // A hard-edged, narrow contact shadow, never a blurred/doubled fish layer.
+      ctx.save();outline(ctx,diaryPaper);ctx.clip();ctx.fillStyle='rgba(78,43,15,.18)';
+      outline(ctx,[[324,303],[leaf.edgeX,295-leaf.lift],[leaf.edgeX,299],[324,303]]);ctx.fill();ctx.restore();
+      const source=leaf.front?base:settled,sx=source.naturalWidth/640,sy=source.naturalHeight/360;
+      const width=leaf.front?192:188;
+      // Map the source paper's bowed top/bottom edges onto the lifted leaf.
+      // No full-frame scaling, alpha blend, bitmap allocation or per-pixel loop.
+      for(let col=0;col<width;col+=2){
+        const u=col/width,v=Math.min(1,(col+2)/width),a=Math.round(324+leaf.span*u),b=Math.round(324+leaf.span*v);
+        if(a===b)continue;
+        const middle=(u+v)/2,sourceX=leaf.front?324+col:324-col-2;
+        // The settled painting includes a foreground thumb at x134–151. Never
+        // print that hand onto the moving reverse; use unmarked parchment
+        // from the same page margin, without repeating a column of written ink.
+        const top=Math.round(88-10*Math.sin(middle*Math.PI*.8)),bottom=Math.round(303-8*middle);
+        const rise=Math.round(leaf.lift*Math.pow(middle,.75)),height=bottom-top;
+        if(!leaf.front&&sourceX<152){
+          ctx.drawImage(source,sourceX*sx,top*sy,2*sx,(203-top)*sy,Math.min(a,b),top-rise,Math.abs(b-a),203-top);
+          ctx.drawImage(source,144*sx,104*sy,2*sx,90*sy,Math.min(a,b),203-rise,Math.abs(b-a),bottom-203);
+        }else ctx.drawImage(source,sourceX*sx,top*sy,2*sx,height*sy,Math.min(a,b),top-rise,Math.abs(b-a),height);
+      }
+      // Keep an edge-on sheet readable for one pixel-art beat at the spine.
+      if(Math.abs(leaf.span)<5){ctx.fillStyle='#f3d68e';ctx.fillRect(322,24,3,279);}
+    }
+    ctx.save();outline(ctx,diaryHand);ctx.clip();painting(ctx,base);ctx.restore();ctx.restore();
   }
   function paint(canvas,value,redraw=()=>{},state={},model=pose(value,Infinity,state)){
     // Standalone callers may use an OffscreenCanvas or an older sprite pose.
@@ -120,13 +170,10 @@
     if(kind==='turn'){
       const curled=image(art.diaryTurn,redraw),settled=image(art.diarySettled,redraw);
       if(!curled||!settled){data.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
-      // The leaf rises, crosses the old notes, and reveals a different settled
-      // page. Only the paper region changes; hands, binding and table stay put.
-      // Crisp SFC-style held keyframes avoid transparent/doubled ink between
-      // drawings. The three poses remain readable even at landscape-phone size.
-      const frame=progress<.18?null:progress<.72?curled:settled;
-      if(frame){ctx.save();ctx.beginPath();ctx.rect(...region);ctx.clip();
-        ctx.drawImage(frame,0,0,frame.naturalWidth,frame.naturalHeight,0,0,640,360);ctx.restore();}
+      // All paintings stay decoded for the existing loading/completion contract.
+      // The curled illustration remains available as a reference, but motion now
+      // comes from one opaque textured leaf rather than holding that still.
+      paintDiary(ctx,im,settled,progress,data);
       return;
     }
     // A single, finite, edge-feathered local deformation: the leaf lifts then
@@ -187,5 +234,5 @@
       for(const im of images.values())if(im.onload===redraw){im.onload=null;im.onerror=null;}canvas.dataset.motion='stopped';},
       snapshot:()=>({active:live,scheduled:Boolean(handle),elapsed,pose:pose(page,elapsed,state)})};
   }
-  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,panelFor,sourceFor,regionFor,pose,paint,present};
+  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,panelFor,sourceFor,regionFor,diaryLeaf,diaryPaper,diaryHand,pose,paint,present};
 });
