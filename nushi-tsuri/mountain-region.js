@@ -6,6 +6,9 @@
   "use strict";
   const width = 240, height = 135;
   const asset = "assets/mountain-world-v252-31.png";
+  // Approved hillside redesign is composited only inside this region. The river,
+  // bridge, ponds and every pixel outside it retain the original painting.
+  const hillside = {asset:"assets/valley-hillside-v2.png",clip:[[145,0],[240,0],[240,45],[213,52],[190,63],[183,77],[140,77],[140,64],[134,59],[140,49],[145,42],[149,31],[148,20]]};
   const villageGate = { left:116, right:132, top:2, bottom:10 };
   const returnGate = { left:146, right:158, top:125, bottom:133 };
   const entry = { x:152, y:128, direction:"up" };
@@ -27,14 +30,14 @@
   const trails = [
     // Village road, bridge approach, and the east bank fork.
     [[150,133],[152,125],[154,119],[154,113],[156,105],[155,100],[152,94],[148,86],[147,77],[147,72],[139,72]],
-    [[139,72],[147,72],[156,68],[164,66],[172,65],[174,58],[177,52],[187,47],[194,44],[202,39],[211,34],[219,30]],
+    [[139,72],[147,72],[156,71],[171,70],[179,64],[181,58],[187,53],[194,47],[200,40],[207,35],[219,30]],
     // West-bank trail, pond shore and northern pass.
     [[87,72],[82,70],[79,68],[79,61],[79,55],[80,46],[80,39],[78,33],
       [75,26],[74,18],[71,10],[73,2]],
     [[79,69],[73,66],[64,64],[59,61],[56,58],[48,54],[39,53],[31,50],[24,46],[19,41],[20,35],[24,31]],
     [[24,31],[28,26],[43,24],[59,22],[71,25],[75,26]],
     // The ridge follows the painted switchback, rather than crossing a cliff.
-    [[211,34],[217,29],[212,24],[201,24],[190,24],[181,22],[173,18],[167,12],[158,7],[152,2]],
+    [[207,35],[202,29],[200,24],[194,20],[185,17],[175,15],[166,12],[158,7],[152,2]],
     // Marsh approach, with both banks reachable on foot.
     [[170,79],[165,86],[167,95],[170,102],[185,109],[198,114],[211,117],[221,111]],
     [[147,74],[158,76],[170,79],[185,78],[198,76],[216,78],[228,84],[231,96],[225,108],[221,111]],
@@ -45,7 +48,7 @@
   const treeBases=[
     {x:143.6,y:127.6,rx:2.1,ry:1.6}, {x:144,y:116,rx:2.2,ry:1.6},
     {x:137.1,y:95.4,rx:1.8,ry:1.4}, {x:164.5,y:81.5,rx:1.8,ry:1.4},
-    {x:180.7,y:62,rx:1.8,ry:1.4}, {x:55.6,y:56.2,rx:1.9,ry:1.5},
+    {x:55.6,y:56.2,rx:1.9,ry:1.5},
     {x:40.6,y:55.5,rx:1.8,ry:1.3}, {x:74.1,y:51.7,rx:1.8,ry:1.4},
     {x:73.3,y:73.6,rx:1.8,ry:1.5},
   ];
@@ -54,9 +57,14 @@
     { id:"cave", x:219, y:30, name:"岩窟の入口", message:"岩窟の奥から、かすかな水音が聞こえる。" },
   ];
   const regions={
-    stream:{asset,name:"星見渓流",waters,trails,trailRadius:5.2,treeBases,bridges:[bridge],entry,returnGate,landmarks,
+    stream:{asset,overlay:hillside,name:"星見渓流",waters,trails,trailRadius:5.2,treeBases,bridges:[bridge],entry,returnGate,landmarks,
       // Level interior of the shop terrace; the retaining wall stays outside.
-      clearings:[[[150,66],[151,64],[155,61],[163,60],[169,61],[170,64],[165,67],[155,68]]]},
+      trailRadii:[5.2,3.8,5.2,5.2,5.2,3.2,5.2,5.2,5.2],
+      clearings:[[[140,69],[145,62],[151,57],[165,53],[176,53],[180,57],[179,67],[174,73],[155,76],[143,74]],
+        [[156,38],[159,34],[177,34],[184,38],[190,40],[190,44],[181,45],[170,46],[158,44]]],
+      // Solid downhill retaining faces separate the two terraces. Walk around
+      // their eastern end instead of stepping through a painted cliff.
+      walls:[[[149,46],[157,46],[166,47],[175,47],[183,46],[184,48],[176,50],[165,50],[154,49],[149,48]]]},
     mountainPond:{asset:"assets/pass-pond-v202.png",name:"峠の池",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       // v241: independently measured shoreline and dirt centreline in the
@@ -165,6 +173,7 @@
   function walkable(x,y,region="stream") {
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<2||x>238||y<2||y>133)return false;
     const data=regionData(region);
+    if(data.walls?.some(polygon=>inside(x,y,polygon)))return false;
     if(Life?.solid(x,y,region))return false;
     if(data.treeBases?.some(p=>((x-p.x)/p.rx)**2+((y-p.y)/p.ry)**2<=1))return false;
     if(onBridge(x,y,region))return true;
@@ -239,7 +248,18 @@
     name:`${names[type]}・${["岸際","流心・中層","淵・深場"][i]}`,
     role:`${names[type]}の${["浅場","中層","深場"][i]}`,weights:populations[type][i],
   })));
-  const images={};let pendingScene;
+  const images={};let pendingScene,blendedHillside;
+  function hillsideLayer(image,overlay){
+    if(blendedHillside)return blendedHillside;
+    const c=typeof OffscreenCanvas!=="undefined"?new OffscreenCanvas(image.naturalWidth,image.naturalHeight):typeof document!=="undefined"?document.createElement("canvas"):null;
+    if(!c)return image;
+    c.width=image.naturalWidth;c.height=image.naturalHeight;const g=c.getContext("2d");
+    const outline=()=>{g.beginPath();overlay.clip.forEach(([x,y],i)=>i?g.lineTo(x/width*c.width,y/height*c.height):g.moveTo(x/width*c.width,y/height*c.height));g.closePath();};
+    g.save();outline();g.clip();g.drawImage(image,0,0);g.globalCompositeOperation="destination-out";g.lineJoin="round";
+    // Feather inward only: no altered pixels escape the approved hillside.
+    for(let i=24;i>=1;i--){g.globalAlpha=1/i;g.lineWidth=i*2;outline();g.stroke();}
+    g.restore();blendedHillside=c;return c;
+  }
   function paint(canvas,environment={},region="stream") {
     if(!canvas?.getContext)return;
     pendingScene=[canvas,{...environment},region];
@@ -247,10 +267,20 @@
       const img=new Image();images[region]=img;img.decoding="async";
       img.onload=()=>{if(pendingScene?.[2]===region)paint(...pendingScene);};img.src=regionData(region).asset;
     }
+    const overlay=regionData(region).overlay;
+    if(overlay && !images[overlay.asset] && typeof Image!=="undefined"){
+      const img=new Image();images[overlay.asset]=img;img.decoding="async";
+      img.onload=()=>{if(pendingScene?.[2]===region)paint(...pendingScene);};img.src=overlay.asset;
+    }
     const image=images[region];
     const ctx=canvas.getContext("2d");ctx.save();ctx.imageSmoothingEnabled=false;
     if(image?.complete && image.naturalWidth>0)ctx.drawImage(image,0,0,canvas.width,canvas.height);
     else {ctx.fillStyle="#183b31";ctx.fillRect(0,0,canvas.width,canvas.height);}
+    const patch=overlay && images[overlay.asset];
+    if(patch?.complete && patch.naturalWidth>0){
+      ctx.save();ctx.beginPath();overlay.clip.forEach(([x,y],i)=>i?ctx.lineTo(x/width*canvas.width,y/height*canvas.height):ctx.moveTo(x/width*canvas.width,y/height*canvas.height));ctx.closePath();ctx.clip();
+      ctx.drawImage(hillsideLayer(patch,overlay),0,0,canvas.width,canvas.height);ctx.restore();
+    }
     const tint=region==="cave"?null:{night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[environment.period||environment.time];
     if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
   }

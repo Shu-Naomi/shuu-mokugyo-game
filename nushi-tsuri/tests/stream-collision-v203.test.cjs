@@ -33,11 +33,25 @@ test('touch arrows follow the painted entrance road, cross the wooden bridge and
 test('the bridge eastern landing connects to the visible bend and cave using the touch arrows',()=>{
   const app=boot(stream({x:148,y:72})),w=app.window;
   try{
-    leg(w,'up',1,148,68);leg(w,'right',6,172,68);leg(w,'up',3,172,56);
-    leg(w,'right',1,176,56);leg(w,'up',2,176,48);leg(w,'right',3,188,48);
-    leg(w,'up',1,188,44);leg(w,'right',3,200,44);leg(w,'up',2,200,36);
-    leg(w,'right',4,216,36);leg(w,'up',2,216,28);
+    // The rebuilt road goes around the eastern end of the retaining wall,
+    // rather than cutting straight up through the two terraces.
+    leg(w,'right',6,172,72);leg(w,'up',1,172,68);leg(w,'right',2,180,68);
+    leg(w,'up',3,180,56);leg(w,'right',2,188,56);leg(w,'up',2,188,48);
+    leg(w,'right',2,196,48);leg(w,'up',2,196,40);leg(w,'right',2,204,40);
+    leg(w,'up',2,204,32);leg(w,'right',3,216,32);
     w.document.querySelector('#action').click();assert.equal(read(w,'s.mapRegion'),'cave');
+    assert.deepEqual(app.errors,[]);
+  }finally{app.dispose();}
+});
+
+test('touch arrows cannot take the former shortcut through the terrace retaining face',()=>{
+  const app=boot(stream({x:176,y:56})),w=app.window;
+  try{
+    leg(w,'up',6,176,54);
+    assert.equal(Mountain.walkable(176,48),false,'old shortcut crosses the retaining wall');
+    assert.ok(Mountain.walkable(read(w,'s.x'),read(w,'s.y')),'blocked approach remains on safe ground');
+    // Check the wall itself from the upper terrace, not only its southern bank.
+    w.eval('s.x=176;s.y=44;render()');leg(w,'down',6,176,45);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

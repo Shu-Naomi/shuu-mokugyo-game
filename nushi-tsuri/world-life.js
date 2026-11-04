@@ -7,7 +7,7 @@
  // height. Keep door anchors on the south edge; collision uses these same sizes.
  const buildings=[
   {id:'stream-shop',region:'stream',kind:'shop',name:'サムの渓流売店',x:166,y:66.5,w:29,h:23,sprite:1,route:[[170,70],[168,68],[166,66.5]],line:'川のそばでも道具を補充できるぞ。いつもの品を見ていくか。'},
-  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:190,y:40,w:28,h:23,sprite:0,route:[[196,44],[193,42],[190,40]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
+  {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:169.5,y:41,w:28,h:23,sprite:0,route:[[194,43],[185,42],[178,43],[169.5,41]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
   {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
   {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
@@ -19,7 +19,7 @@
   {id:'village-fisher',region:'village',name:'散歩中の釣り人',sprite:0,route:[[51,39],[64,39]],speed:1.4},
   {id:'village-greengrocer',region:'village',name:'買い物帰りの住人',sprite:1,route:[[70,81],[88,81]],speed:1.2},
   {id:'village-worker',region:'village',name:'仕事帰りの住人',sprite:2,route:[[164,82],[177,82]],speed:1.1},
-  {id:'stream-fisher',region:'stream',name:'渓流の常連',sprite:0,route:[[153,68],[168,67]],speed:1.2},
+  {id:'stream-fisher',region:'stream',name:'渓流の常連',sprite:0,route:[[151,71],[168,70]],speed:1.2},
   {id:'stream-worker',region:'stream',name:'橋を見回る住人',sprite:2,route:[[145,72],[153,72]],speed:1},
   {id:'pond-angler',region:'mountainPond',name:'池を眺める釣り人',sprite:0,route:[[116,108],[129,108]],speed:1.2},
   {id:'pond-resident',region:'mountainPond',name:'小屋の住人',sprite:2,route:[[214,75],[226,75]],speed:.9},
