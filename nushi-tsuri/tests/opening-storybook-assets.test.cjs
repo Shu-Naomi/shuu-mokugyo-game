@@ -9,8 +9,8 @@ test('all protagonist and companion paintings are shipped and precached with the
  for(const source of [Intro.art.diaryTurn,Intro.art.diarySettled]){assert.ok(fs.existsSync(path.join(root,source)));assert.ok(sw.includes(`"./${source}"`));}
  assert.ok(sw.includes(`"./${Intro.art.diaryTurn}"`));
  assert.equal([...sources].filter(s=>s.includes('opening-storybook-')).length,15);
- assert.ok(sw.includes('lake-intro.js?v=252-37'));
- assert.ok(sw.includes('lake-intro.css?v=252-37'));
+ assert.ok(sw.includes('lake-intro.js?v=252-40'));
+ assert.ok(sw.includes('lake-intro.css?v=252-40'));
 });
 test('the first peek, threshold and reunion use different paintings with stable avatar and favorite identity',()=>{
  for(const avatar of ['boy','girl'])for(const dog of ['shuu','riku','grey']){
