@@ -19,7 +19,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
    await page.evaluate(id=>{clearInterval(timer);timer=0;battle.cast=95;window.before250Random=Math.random;for(let n=0;n<10000;n++){Math.random=()=>(n+.5)/10000;if(pick(95,'sea-deep')?.id===id)return;}throw Error('no normal encounter '+id);},id);
    await press('#pull');await page.evaluate(()=>battleTick());for(let n=0;n<50&&await page.evaluate(()=>battle.phase==='cast-flight');n++)await page.clock.runFor(40);
    assert.equal(await page.evaluate(()=>battle.f.id),id);
-   await page.evaluate(()=>{Math.random=window.before250Random;battle.specimen=rollFishSpecimen(battle.f,()=>.999999);battle.specimenVisualScale=fishVisualScale(battle.specimen);window.v250Rng=301;window.v250RandomCalls=0;Math.random=()=>{window.v250RandomCalls++;return ((window.v250Rng=Math.imul(window.v250Rng,1664525)+1013904223>>>0)/4294967296);};battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();});
+   const initialWaterFx=await page.evaluate(()=>{Math.random=window.before250Random;battle.specimen=rollFishSpecimen(battle.f,()=>.999999);battle.specimenVisualScale=fishVisualScale(battle.specimen);window.v250Rng=301;window.v250RandomCalls=0;Math.random=()=>{window.v250RandomCalls++;return ((window.v250Rng=Math.imul(window.v250Rng,1664525)+1013904223>>>0)/4294967296);};battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();return JSON.parse(JSON.stringify(waterFxState));});
    await press('#pull');await page.clock.runFor(240);assert.equal(await page.evaluate(()=>battle.phase),'fight');
    const rect=await page.locator('#pull').boundingBox();assert.ok(rect&&rect.width>=44&&rect.height>=44&&rect.x>=0&&rect.y+rect.height<=viewport.height+1);button={x:rect.x+rect.width/2,y:rect.y+rect.height/2};
    const trace=[],inputs=[],fightStartedAt=await page.evaluate(()=>Date.now());
@@ -38,7 +38,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
    }
    // Preserve evidence before the unchanged 180-second assertion. No game state is modified.
    const final=await page.evaluate(point=>({phase:battle?.phase,meters:battle?ShuFishing.remainingMeters(battle):null,retrieval:battle?.retrieval,mood:battle?.mood?.id,moodTick:battle?.moodTick,reeling:battle?.reeling,runTicks:battle?.nushiRunTicks,endurance:ShuFishing.endurance[battle?.f?.id],wear:battle?.nushiHookWear,window:battle?.nushiWindow,rng:window.v250Rng,randomCalls:window.v250RandomCalls,now:Date.now(),pausedAt:battle?.pausedAt,hidden:document.hidden,inputTarget:document.elementFromPoint(point.x,point.y)?.id}),button);
-   const diagnostic={id,public:!!options.public,viewport,dpr:options.dpr||1,seconds,fightStartedAt,held,queue,button,final,trace,inputs,errors,failed};
+   const diagnostic={id,public:!!options.public,viewport,dpr:options.dpr||1,seconds,fightStartedAt,held,queue,button,final,initialWaterFx,trace,inputs,errors,failed};
    const basename=(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+id;
    fs.writeFileSync(path.join(dir,basename+'-diagnostic.json'),JSON.stringify(diagnostic,null,2));
    console.log('V250_FIGHT_DIAGNOSTIC '+JSON.stringify({id,public:!!options.public,viewport,seconds,fightStartedAt,held,final}));
