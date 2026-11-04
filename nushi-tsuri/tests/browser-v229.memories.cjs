@@ -19,8 +19,8 @@ module.exports=async function memories(url,mobile=false){
   assert.ok((await summary.boundingBox()).height>=42,'touch target');
   await press('.fishdex-memories > summary');assert.equal(await page.locator('.fishdex-memories').evaluate(el=>el.open),true);
   const one=await page.locator('[data-catch-memory="first"]').innerText(),maximum=await page.locator('[data-catch-memory="best"]').innerText();
-  assert.match(one,/21\.50cm/);assert.match(one,/1日目 08:20/);assert.match(one,/晴れ/);assert.match(one,/シュウ/);assert.match(one,/ゲージ式/);
-  assert.match(maximum,/49\.99cm/);assert.match(maximum,/3日目 01:20/);assert.match(maximum,/小雨/);assert.match(maximum,/Grey/);assert.match(maximum,/ぬし釣り式/);
+  assert.match(one,/21\.50cm/);assert.match(one,/1日目 08:20/);assert.match(one,/晴れ/);assert.match(one,/シュウ/);assert.match(one,/テンション方式/);
+  assert.match(maximum,/49\.99cm/);assert.match(maximum,/3日目 01:20/);assert.match(maximum,/小雨/);assert.match(maximum,/Grey/);assert.match(maximum,/クラシック方式/);
   assert.equal(await page.locator('#record').evaluate(el=>el.scrollWidth<=el.clientWidth+1),true);
   for(const selector of ['.fishdex-memory-pages','.fishdex-memory-page','.fishdex-memory-facts'])
     assert.equal(await page.locator(selector).evaluateAll(els=>els.every(el=>el.scrollWidth<=el.clientWidth+1)),true,selector+' wraps');

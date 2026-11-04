@@ -38,6 +38,7 @@ module.exports=async function streamAndCast(url,mobile=false){
   await press('[data-cast-tackle="hook"]');await press('#hookOptions [data-pick-hook="small"]');
   await press('[data-cast-tackle="rod"]');await press('#rodOptions [data-pick-rod="clearStream"]');
   await press('[data-cast-tackle="fight"]');await press('#castFightOptions [data-fight-mode="nushi"]');
+  assert.equal(await page.locator('#castFightOptions [data-fight-mode="gauge"]').innerText(),'テンション方式');assert.equal(await page.locator('#castFightOptions [data-fight-mode="nushi"]').innerText(),'クラシック方式');await layout();await screenshot('tackle-fight-names');
   assert.deepEqual(await page.evaluate(()=>[s.selectedBait,s.selectedHook,s.selectedRod,s.fightMode]),['river','small','clearStream','nushi']);assert.equal(await stock(),before);
   await press('[data-cast-tackle="bait"]');await layout();await screenshot('tackle-bait');
   if(!mobile){await page.locator('[data-cast-tackle="hook"]').focus();await page.keyboard.press('Enter');await page.locator('#hookOptions [data-pick-hook="medium"]').focus();await page.keyboard.press('Enter');assert.equal(await page.evaluate(()=>document.activeElement.dataset.pickHook),'medium');await press('#hookOptions [data-pick-hook="small"]');}

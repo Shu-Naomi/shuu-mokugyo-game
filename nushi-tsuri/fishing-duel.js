@@ -5,7 +5,7 @@
   "use strict";
   const clamp=(n,lo,hi)=>Math.max(lo,Math.min(hi,Number(n)||0));
   const record=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
-  const modes={gauge:"ゲージ式",nushi:"ぬし釣り式"};
+  const modes={gauge:"テンション方式",nushi:"クラシック方式"};
   const roles={bamboo:"小魚との練習に。強い魚には力不足",youngBamboo:"小型魚をしなやかに寄せる",
     clearStream:"流れの速い川・中型魚向け",starGazer:"星の加護で張力を抑える万能竿",
     moroko:"小さなアタリを捉える精密竿",shoreReed:"海の大型魚向けの丈夫な竿",
