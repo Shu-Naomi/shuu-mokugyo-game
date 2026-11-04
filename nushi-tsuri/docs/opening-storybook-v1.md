@@ -35,6 +35,6 @@ The new actual-source pixel tests check 21 poses for each diary step and both av
 
 `browser-opening-turn-comparison.cjs` records actual native-clock before/after WebM for both avatars at 1280×720, 844×390 and 820×366, with PNG frame sheets and pixel/trajectory reports. The baseline is commit `20141e1`. Local Chromium is unavailable under the current socket restriction, so browser/video verification runs in GitHub CI and requires independent visual review before release. Native Canvas still-frame review confirms the readable rise/cross/settle silhouette but does not establish real browser timing.
 
-### v252-40 integrated release
+### v252-41 integrated release
 
-This release includes hiramasa endurance v252-38 and the connected hillside v252-39 without changing either implementation. The opening script and stylesheet cache URLs, service-worker registration/cache, and HUD identify v252-40. Native before/after evidence covers both avatars at 1280×720, 844×390 and 820×366; final integrated-head CI and source publication checks remain release gates.
+This release includes the species endurance fixes v252-40 and the connected hillside v252-39 without changing either implementation. The opening script and stylesheet cache URLs, service-worker registration/cache, and HUD identify v252-41. Native before/after evidence covers both avatars at 1280×720, 844×390 and 820×366; final integrated-head CI and source publication checks remain release gates.

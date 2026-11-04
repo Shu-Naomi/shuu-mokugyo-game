@@ -78,3 +78,11 @@ test('hiramasa with real water effects stays below 180s on the former failing se
  assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing');assert.equal(r.wrongRunTicks,0);assert.ok(r.seconds<180,JSON.stringify(r));
  assert.equal(F.endurance.hiramasa,400);assert.ok(F.endurance.hiramasa>100);
 });
+
+// Particle seed 34 reproduced a 188.04s safe kanpachi fight at 446 run ticks.
+test('kanpachi with real water effects stays below 180s on the former failing sequence',()=>{
+ const r=runFight({id:'kanpachi',tier:.999999,delayMs:600,rngSeed:301,waterFxSeed:34});
+ console.log('V250_KANPACHI_FX_FIGHT '+JSON.stringify(r));
+ assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing');assert.equal(r.wrongRunTicks,0);assert.ok(r.seconds<180,JSON.stringify(r));
+ assert.equal(F.endurance.kanpachi,380);assert.ok(F.endurance.kanpachi>100);
+});
