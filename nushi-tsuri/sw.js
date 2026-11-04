@@ -24,7 +24,7 @@ const CORE_ASSETS = [
   "./assets/opening-storybook-girl-cling-grey-v1.webp",
 
   "./timed-rest.js?v=252-32",
-  "./timed-rest.css?v=252-32",
+  "./timed-rest.css?v=252-43",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
   "./lake-research.js?v=252-7",
