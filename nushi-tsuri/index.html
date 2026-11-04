@@ -6524,7 +6524,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-41</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-42</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7389,7 +7389,7 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-30"></script>
+    <script src="fish-motion.js?v=252-42"></script>
     <script src="aquarium-life.js?v=252-30"></script>
     <script src="compact-ui.js?v=252-32"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
@@ -7421,7 +7421,7 @@
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=251-1"></script>
-    <script src="fish-art.js?v=252-30"></script>
+    <script src="fish-art.js?v=252-42"></script>
     <script src="tackle-art.js?v=252-28"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -11870,7 +11870,8 @@
           clearStandaloneFishFrame(element);
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
+          const swimEffort=element.id==='battleFish'?Number(element.dataset.swimEffort||1):1;
+          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
           if(canvas.width!==448)canvas.width=448;
@@ -11886,7 +11887,7 @@
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend})===false)return;
+            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
             canvas.dataset.artPaintKey=key;
           };
@@ -22227,9 +22228,18 @@
               : "closed");
         let spriteAsset = fishAssets[battle.f.id];
         let spriteCells = fishSwimFrameCounts[battle.f.id] || 8;
-        const artFraction=battle.pausedAt||document.hidden?0:
-          clampBattle((Date.now()-(battle.artTickAt??Date.now()))/120,0,1);
-        const artSwimFrame=(battle.frame||0)+(battle.swimPhase||0)%1+(battle.swimAdvance||0)*artFraction;
+        const artNow=battle.pausedAt||Date.now();
+        const artFraction=clampBattle((artNow-(battle.artTickAt??artNow))/120,0,1);
+        const fightMotion=battle.phase==="fight"&&typeof ShuFishMotion.fight==="function"?ShuFishMotion.fight(battle.f.id,
+          ((battle.swimTick||0)+artFraction)*.12,{
+            reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,
+            calm:Boolean(battle.mood?.calm),
+            quiet:Boolean(battle.gillWash||battle.turning||nushiResistancePose()||sandGrounded),
+            age:((battle.moodTick||0)+artFraction)*.12,
+            remaining:Math.max(0,((battle.nextMood||artNow)-artNow)/1000),
+          }):{extraFrame:0,effort:1};
+        element.dataset.swimEffort=String(fightMotion.effort);
+        const artSwimFrame=(battle.frame||0)+(battle.swimPhase||0)%1+(battle.swimAdvance||0)*artFraction+fightMotion.extraFrame;
         element.dataset.artSwimFrame=String(artSwimFrame);
         let spriteFrame = ShuFishArt.species[battle.f.id]?artSwimFrame%spriteCells:(battle.frame || 0) % spriteCells;
         let spriteMode = "swim";
@@ -23985,6 +23995,7 @@
           for(const key of ["biteAt","nibbleAt"])if(Number.isFinite(battle[key]))battle[key]+=now-Math.max(paused,battle.biteScheduledAt||paused);
           if(Number.isFinite(battle.biteShownAt))battle.biteShownAt+=now-paused;
           if(battle.nextMood)battle.nextMood+=now-paused;
+          if(Number.isFinite(battle.artTickAt))battle.artTickAt+=now-paused;
           ShuFishing.shiftWindow(battle,now-paused);
           if(battle.underwaterCamera)ShuUnderwaterCamera.resume(battle.underwaterCamera,now);
           if(battle.fishEscape)battle.fishEscape.lastAt=now;
@@ -24272,7 +24283,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-41").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-42").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

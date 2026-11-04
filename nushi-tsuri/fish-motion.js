@@ -37,5 +37,38 @@
     // than pausing in an integer pose. Individual offsets prevent lockstep.
     return (clock+p.pulse*Math.sin(clock*1.7+individual))/(bottom?.24:.18)+individual;
   }
-  return Object.freeze({profile,phase,profiles:Object.freeze(profiles)});
+  // Fight-only effort. Aquarium gait and all simulation inputs remain unchanged.
+  // Heavy fish load a broad stroke then glide; swift fish use quicker, tighter
+  // strokes. These are artistic rhythms, not biological measurements.
+  const fightFamilies={
+    cruise:{cycle:1.6,cadence:3.2,effort:1.85},
+    swift:{cycle:1.05,cadence:4.8,effort:1.65},
+    hover:{cycle:1.3,cadence:3.5,effort:1.65},
+    bottom:{cycle:1.9,cadence:2.6,effort:1.8},
+    long:{cycle:1.8,cadence:2.8,effort:1.65},
+    flat:{cycle:2.1,cadence:2.2,effort:1.55},
+    heavy:{cycle:2.2,cadence:3,effort:2.15},
+  };
+  const fightBosses={
+    streamNushi:{cycle:1.5,cadence:4.2,effort:2.2},
+    coastNushi:{cycle:1.9,cadence:3.6,effort:2.4},
+    caveNushi:{cycle:2.5,cadence:2.6,effort:2.35},
+    nushi:{cycle:2.2,cadence:3.2,effort:2.45},
+    starNushi:{cycle:2.35,cadence:4,effort:2.8},
+  };
+  for(const p of [...Object.values(fightFamilies),...Object.values(fightBosses)])Object.freeze(p);
+  const fightProfile=id=>fightBosses[id]||fightFamilies[profile(id).family];
+  function fight(id,seconds,options={}){
+    if(options.reduced)return {extraFrame:0,effort:1};
+    const p=fightProfile(id),t=Math.max(0,Number(seconds)||0),angle=t*Math.PI*2/p.cycle;
+    // Positive derivative and no mood-dependent phase reset: a new window,
+    // warning or turn never reverses or jumps the tail's cycle.
+    const extraFrame=t*p.cadence+.15*p.cadence*p.cycle/(Math.PI*2)*Math.sin(angle);
+    const age=Math.max(0,Number(options.age)||0),remaining=Number.isFinite(options.remaining)?Math.max(0,options.remaining):1;
+    const envelope=Math.min(1,age/.24,remaining/.24);
+    const surge=.35+.65*((1+Math.sin(angle))/2)**2;
+    const effort=options.quiet?1:options.calm?1.25:1.25+(p.effort-1.25)*envelope*surge;
+    return {extraFrame,effort};
+  }
+  return Object.freeze({profile,phase,fight,fightProfile,profiles:Object.freeze(profiles)});
 });
