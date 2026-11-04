@@ -19,22 +19,31 @@ module.exports=async function morayTug(url,mobile=false,options={}){
    await page.evaluate(id=>{clearInterval(timer);timer=0;battle.cast=95;window.before250Random=Math.random;for(let n=0;n<10000;n++){Math.random=()=>(n+.5)/10000;if(pick(95,'sea-deep')?.id===id)return;}throw Error('no normal encounter '+id);},id);
    await press('#pull');await page.evaluate(()=>battleTick());for(let n=0;n<50&&await page.evaluate(()=>battle.phase==='cast-flight');n++)await page.clock.runFor(40);
    assert.equal(await page.evaluate(()=>battle.f.id),id);
-   await page.evaluate(()=>{Math.random=window.before250Random;battle.specimen=rollFishSpecimen(battle.f,()=>.999999);battle.specimenVisualScale=fishVisualScale(battle.specimen);window.v250Rng=301;Math.random=()=>((window.v250Rng=Math.imul(window.v250Rng,1664525)+1013904223>>>0)/4294967296);battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();});
+   await page.evaluate(()=>{Math.random=window.before250Random;battle.specimen=rollFishSpecimen(battle.f,()=>.999999);battle.specimenVisualScale=fishVisualScale(battle.specimen);window.v250Rng=301;window.v250RandomCalls=0;Math.random=()=>{window.v250RandomCalls++;return ((window.v250Rng=Math.imul(window.v250Rng,1664525)+1013904223>>>0)/4294967296);};battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();});
    await press('#pull');await page.clock.runFor(240);assert.equal(await page.evaluate(()=>battle.phase),'fight');
    const rect=await page.locator('#pull').boundingBox();assert.ok(rect&&rect.width>=44&&rect.height>=44&&rect.x>=0&&rect.y+rect.height<=viewport.height+1);button={x:rect.x+rect.width/2,y:rect.y+rect.height/2};
+   const trace=[],inputs=[],fightStartedAt=await page.evaluate(()=>Date.now());
    const phases=new Set(),queue=[];let priorWish=null,priorPhase=null,runStart=null,runGain=0,pullGain=0,priorMeters=null,warnings=0,seconds=0;
    for(let tick=0;tick<1500;tick++){
-    const ui=await page.evaluate(()=>({state:battle?.phase,phase:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),meters:battle?ShuFishing.remainingMeters(battle):0}));
+    const ui=await page.evaluate(()=>({state:battle?.phase,phase:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),meters:battle?ShuFishing.remainingMeters(battle):0,mood:battle?.mood?.id,moodTick:battle?.moodTick,reeling:battle?.reeling,runTicks:battle?.nushiRunTicks,wear:battle?.nushiHookWear,rng:window.v250Rng,randomCalls:window.v250RandomCalls,now:Date.now()}));
     if(ui.state!=='fight')break;phases.add(ui.phase);
+    if(tick%50===0||ui.phase!==priorPhase)trace.push({tick,...ui,held});
     if(ui.phase==='running'){if(runStart===null)runStart=ui.meters;runGain=Math.max(runGain,ui.meters-runStart);}else runStart=null;
     if(priorMeters!==null&&ui.phase==='pulling')pullGain+=Math.max(0,priorMeters-ui.meters);priorMeters=ui.meters;
     if(ui.phase==='warning'&&priorPhase!=='warning'){warnings++;if(warnings===1)await shot(id+'-release-cue');}priorPhase=ui.phase;
     const wish=['slack','pulling'].includes(ui.phase)&&!ui.leap;
     if(wish!==priorWish){queue.push({at:tick*120+600,value:wish});priorWish=wish;}
-    while(queue.length&&queue[0].at<=tick*120)await hold(queue.shift().value);
+    while(queue.length&&queue[0].at<=tick*120){const action=queue.shift();await hold(action.value);inputs.push({tick,...action});}
     await page.clock.runFor(120);seconds=(tick+1)*.12;
    }
-   assert.equal(await page.evaluate(()=>battle?.phase),'landing',id+' natural landing');await hold(false);assert.ok(runGain>=2,id+' measurable fish turn '+runGain);assert.ok(pullGain>3);assert.ok(warnings>=1);assert.ok(phases.has('running')&&phases.has('pulling'));
+   // Preserve evidence before the unchanged 180-second assertion. No game state is modified.
+   const final=await page.evaluate(point=>({phase:battle?.phase,meters:battle?ShuFishing.remainingMeters(battle):null,retrieval:battle?.retrieval,mood:battle?.mood?.id,moodTick:battle?.moodTick,reeling:battle?.reeling,runTicks:battle?.nushiRunTicks,endurance:ShuFishing.endurance[battle?.f?.id],wear:battle?.nushiHookWear,window:battle?.nushiWindow,rng:window.v250Rng,randomCalls:window.v250RandomCalls,now:Date.now(),pausedAt:battle?.pausedAt,hidden:document.hidden,inputTarget:document.elementFromPoint(point.x,point.y)?.id}),button);
+   const diagnostic={id,public:!!options.public,viewport,dpr:options.dpr||1,seconds,fightStartedAt,held,queue,button,final,trace,inputs,errors,failed};
+   const basename=(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+id;
+   fs.writeFileSync(path.join(dir,basename+'-diagnostic.json'),JSON.stringify(diagnostic,null,2));
+   console.log('V250_FIGHT_DIAGNOSTIC '+JSON.stringify({id,public:!!options.public,viewport,seconds,fightStartedAt,held,final}));
+   if(final.phase!=='landing')await shot(id+'-cutoff');
+   assert.equal(final.phase,'landing',id+' natural landing');await hold(false);assert.ok(runGain>=2,id+' measurable fish turn '+runGain);assert.ok(pullGain>3);assert.ok(warnings>=1);assert.ok(phases.has('running')&&phases.has('pulling'));
    await page.clock.runFor(1600);assert.equal(await page.evaluate(id=>s.caught[id],id),oldCaught+1);assert.equal(await page.evaluate(()=>s.baits.liveMinnow),bait-1);await shot(id+'-caught');
    results.push({id,seconds,largestRunMeters:runGain,pulledMeters:pullGain,warnings,realInput:true,reactionMs:600});
   }

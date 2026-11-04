@@ -69,3 +69,12 @@ test('the new pelagic fish retain separate species, encounter rhythms and drawin
   assert.notDeepEqual(F.rhythm('hiramasa'),F.rhythm('kanpachi'));assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
+
+// Fixed visual state matters: water particles share the game RNG with fish moods.
+// Seed 22 reproduced a 191.88s safe fight at the old 520-run-tick hiramasa budget.
+test('hiramasa with real water effects stays below 180s on the former failing sequence',()=>{
+ const r=runFight({id:'hiramasa',tier:.999999,delayMs:600,rngSeed:301,waterFxSeed:22});
+ console.log('V250_FX_FIGHT '+JSON.stringify(r));
+ assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing');assert.equal(r.wrongRunTicks,0);assert.ok(r.seconds<180,JSON.stringify(r));
+ assert.equal(F.endurance.hiramasa,400);assert.ok(F.endurance.hiramasa>100);
+});

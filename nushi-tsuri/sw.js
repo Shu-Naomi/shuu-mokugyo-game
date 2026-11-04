@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-storybook-feedback-252-37";
+const CACHE_NAME = "nushi-tsuri-v252-visible-page-turn-252-40";
 
 const CORE_ASSETS = [
   "./assets/opening-storybook-diary-v1.webp",
@@ -70,7 +70,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=251-1",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=252-35",
+  "./world-life.js?v=252-39",
   "./fish-additions.js?v=251-1",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -124,17 +124,17 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=227-1",
-  "./fishing-duel.js?v=252-36",
+  "./fishing-duel.js?v=252-38",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=252-31",
+  "./mountain-region.js?v=252-39",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-37",
-  "./lake-intro.css?v=252-37",
+  "./lake-intro.js?v=252-40",
+  "./lake-intro.css?v=252-40",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",
@@ -152,6 +152,7 @@ const CORE_ASSETS = [
   "./assets/fish-legendary-v208.png",
 
   "./assets/mountain-world-v252-31.png",
+  "./assets/valley-hillside-v2.png",
   "./assets/pass-pond-v202.png",
   "./assets/pass-marsh-v202.png",
   "./assets/cave-lake-v202.png",
