@@ -42,7 +42,7 @@ test('the title remains read-only and an old aquarium does not receive the noteb
 });
 test('the first actual shop purchase awards once, shows the gift, and unlocks the field menu without registering a wild catch',()=>{
  const a=boot(initial()),w=a.window;try{const caught=read(w,'s.caught');w.eval('petUi.open("shop")');click(w,'[data-pet-buy="funa"]');assert.match(w.document.querySelector('.pet-message').textContent,/育成ノートをどうぞ/);assert.equal(w.document.querySelector('.pet-message').hidden,false);assert.equal(w.document.querySelector('#petNotebookMenu').hidden,false);assert.equal(read(w,'s.petNotebook.announced'),true);
- click(w,'[data-pet-action="notebook"]');assert.equal(w.document.querySelector('#petLifeTitle').textContent,'育成ノート');assert.match(w.document.querySelector('.pet-notebook-page').textContent,/フナ.*記録開始/s);assert.deepEqual(read(w,'s.caught'),caught);assert.equal(read(w,'fish.length'),60);assert.deepEqual(a.errors,[]);
+ click(w,'[data-pet-action="notebook"]');assert.equal(w.document.querySelector('#petLifeTitle').textContent,'育成ノート');assert.match(w.document.querySelector('.pet-notebook-page').textContent,/フナ.*記録開始/s);assert.deepEqual(read(w,'s.caught'),caught);assert.equal(read(w,'fish.length'),61);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('returning owners explicitly receive the notebook for free, retaining unknown sex and generation on its individual page',()=>{

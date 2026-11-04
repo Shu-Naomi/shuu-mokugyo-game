@@ -6524,7 +6524,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-46</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-47</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7396,12 +7396,12 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-42"></script>
-    <script src="aquarium-life.js?v=252-30"></script>
+    <script src="fish-motion.js?v=252-47"></script>
+    <script src="aquarium-life.js?v=252-47"></script>
     <script src="compact-ui.js?v=252-32"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=227-1"></script>
-    <script src="fishing-duel.js?v=252-46"></script>
+    <script src="fishing-duel.js?v=252-47"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7427,7 +7427,7 @@
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=251-1"></script>
+    <script src="fish-additions.js?v=252-47"></script>
     <script src="fish-art.js?v=252-42"></script>
     <script src="tackle-art.js?v=252-28"></script>
     <script src="item-art.js?v=252-28"></script>
@@ -18786,7 +18786,7 @@
               night: 0.3,
             }[period] || 1;
           }
-          if (id === "namazu" || id === "gigi") {
+          if (id === "namazu" || id === "gigi" || id === "donko") {
             weight *= {
               morning: 0.75,
               day: 0.55,
@@ -24305,7 +24305,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-46").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-47").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
