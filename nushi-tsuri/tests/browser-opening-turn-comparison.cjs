@@ -7,6 +7,7 @@ const {execFileSync} = require('node:child_process');
 const {chromium} = require('playwright');
 const {createCanvas, loadImage} = require('@napi-rs/canvas');
 const enter = require('./browser-start-adventure.cjs');
+const assertDiaryTurnTrace = require('./opening-turn-trace.cjs');
 const root = path.resolve(__dirname, '..');
 const dir = path.resolve(__dirname, 'opening-turn-comparison');
 const baselineRef = process.env.OPENING_TURN_BASE_REF || '20141e1';
@@ -95,11 +96,8 @@ async function capture(browser,url,screen,avatar,version) {
     assert.ok(result.frames.every(f=>f.handChanged===0),'independent left/right hand and finger ROIs must stay pixel-identical');
     if(version==='before')assert.equal(result.uniqueFrames,3,'baseline must expose the old three held frames');
     else {
-      assert.ok(result.uniqueFrames>=8,`visible motion needs >=8 actual distinct frames, got ${result.uniqueFrames}`);
-      assert.ok(result.frames.some(f=>Number(f.leafEdgeX)>450),'leaf starts on right');
-      assert.ok(result.frames.some(f=>Number(f.leafEdgeX)>290&&Number(f.leafEdgeX)<350),'leaf visibly crosses spine');
-      assert.ok(result.frames.some(f=>Number(f.leafEdgeX)<200),'leaf travels onto left page');
-      assert.equal(result.frames.at(-1).turnPhase,'settled');
+      result.crossing=assertDiaryTurnTrace(result.frames);
+      fs.writeFileSync(path.join(dir,`${prefix}.json`),JSON.stringify(result,null,2));
     }
     return result;
   } catch(error) {

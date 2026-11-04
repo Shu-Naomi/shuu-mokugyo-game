@@ -47,3 +47,49 @@ test('real painted paper has many opaque poses, stationary hands/background, and
   for(const final of avatarFinals)equalPixels(final,avatarFinals[0],'diary artwork must be equally correct for both avatars and all diary steps');
  }finally{global.Image=old;}
 });
+
+const assertDiaryTurnTrace=require('./opening-turn-trace.cjs');
+function sampledTurn(){
+ // Recorded 844x390 girl native capture at commit 28b1087, with wall times
+ // rounded to 0.1ms. The 354 -> 288 crossing skipped the old 290–350 window.
+ return [[7.5,516,"start",3624840518],
+  [74.2,516,"start",3624840518],
+  [140.8,516,"start",3624840518],
+  [207.4,516,"rise",1249372264],
+  [274.2,515,"rise",1064065668],
+  [340.8,515,"rise",1064065668],
+  [407.5,509,"rise",865961491],
+  [474.1,495,"rise",668212475],
+  [540.8,495,"rise",668212475],
+  [607.5,464,"rise",216376366],
+  [674.1,416,"rise",2692187047],
+  [740.8,416,"rise",2692187047],
+  [807.4,354,"cross",1384444528],
+  [874.1,288,"cross",223148033],
+  [940.8,237,"settle",830050570],
+  [1007.5,237,"settle",830050570],
+  [1074.1,189,"settle",3450267457],
+  [1140.8,158,"settle",3501420055],
+  [1207.4,158,"settle",3501420055],
+  [1274.1,142,"settle",2450183677],
+  [1340.8,137,"settle",479719296],
+  [1407.4,137,"settle",479719296],
+  [1474.1,136,"settle",1275029771],
+  [1540.7,136,"settled",1650696104],
+  [1607.4,136,"settled",1650696104]].map(([wallMs,leafEdgeX,turnPhase,hash])=>({wallMs,leafEdgeX:String(leafEdgeX),turnPhase,hash}));
+}
+test('native sampling can bracket the spine without landing inside the old narrow x window',()=>{
+ const frames=sampledTurn();assert.ok(!frames.some(frame=>Number(frame.leafEdgeX)>290&&Number(frame.leafEdgeX)<350));
+ assert.deepEqual(assertDiaryTurnTrace(frames),{fromIndex:12,toIndex:13,fromX:354,toX:288,fromWallMs:807.4,toWallMs:874.1});
+});
+test('trace validation accepts an exactly edge-on sample without requiring one',()=>{
+ const frames=sampledTurn();frames[13].leafEdgeX='324';assert.equal(assertDiaryTurnTrace(frames).toX,324);
+});
+test('trace validation rejects stills, missing cross phases, reordered samples and instant jumps',()=>{
+ const still=sampledTurn().map(frame=>({...frame,hash:1}));assert.throws(()=>assertDiaryTurnTrace(still),/distinct frames/);
+ const noCross=sampledTurn().map(frame=>({...frame,turnPhase:frame.turnPhase==='cross'?'rise':frame.turnPhase}));assert.throws(()=>assertDiaryTurnTrace(noCross),/must show cross/);
+ const reversed=sampledTurn();[reversed[12],reversed[13]]=[reversed[13],reversed[12]];assert.throws(()=>assertDiaryTurnTrace(reversed),/chronological order|instantaneously/);
+ const jump=sampledTurn();jump.forEach((frame,index)=>frame.leafEdgeX=String(index<=12?516-index:136));assert.throws(()=>assertDiaryTurnTrace(jump),/instantaneously/);
+ const falseCross=sampledTurn();falseCross[13].turnPhase='settle';assert.throws(()=>assertDiaryTurnTrace(falseCross),/consecutive actual cross-phase samples/);
+ const noTravel=sampledTurn().map(frame=>({...frame,leafEdgeX:'516'}));assert.throws(()=>assertDiaryTurnTrace(noTravel),/onto left page/);
+});
