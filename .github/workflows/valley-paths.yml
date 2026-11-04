@@ -24,7 +24,7 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
-      - run: node --test valley-paths-v252-31.test.cjs
+      - run: node --test valley-paths-v252-31.test.cjs building-scale-v252-35.test.cjs release-version.test.cjs
       - run: node browser-valley-paths-v252-31.cjs
         env:
           VALLEY_EVIDENCE_DIR: valley-evidence

@@ -21,10 +21,21 @@ async function run(url,screen){
  await page.waitForFunction(()=>document.querySelector('#store').classList.contains('open'));
  await page.screenshot({path:path.join(directory,width+'x'+height+'-store.png')});
  await page.evaluate(()=>close());await page.waitForTimeout(100);
+ const houseGeometry=await page.evaluate(()=>{const b=ShuWorldLife.buildings.find(b=>b.id==='stream-house');s.x=b.x;s.y=b.y+2;s.direction='up';render();const node=document.querySelector('[data-world-life="stream-house"]');return {house:b,width:node.getBoundingClientRect().width,playerWidth:document.querySelector('#player').getBoundingClientRect().width,nearby:ShuWorldLife.nearby(s)?.id};});
+ assert.equal(houseGeometry.nearby,'stream-house');assert.ok(houseGeometry.width/houseGeometry.playerWidth>4,'house is large enough for the player');
+ await page.waitForTimeout(500);
+ const alignment=await page.evaluate(()=>{const b=ShuWorldLife.buildings.find(b=>b.id==='stream-house'),r=document.querySelector('[data-world-life="stream-house"]').getBoundingClientRect(),p=document.querySelector('#player').getBoundingClientRect();return {doorX:r.left+r.width*ShuWorldLife.art.doorX[b.sprite],playerX:p.left+p.width/2};});
+ assert.ok(Math.abs(alignment.doorX-alignment.playerX)<2,'player settles in front of the visible house door');
+ await page.screenshot({path:path.join(directory,width+'x'+height+'-house.png')});
+ await page.locator('#action')[mobile?'tap':'click']();
+ await page.waitForFunction(()=>document.querySelector('.modal.open'));
+ await page.screenshot({path:path.join(directory,width+'x'+height+'-house-dialog.png')});
+ await page.evaluate(()=>close());
+ await require('./browser-release.cjs').assertRelease(page);
  await page.evaluate(()=>{s.x=112;s.y=72;render();});
  await page.screenshot({path:path.join(directory,width+'x'+height+'-bridge.png')});
  assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
- fs.writeFileSync(path.join(directory,width+'x'+height+'-result.json'),JSON.stringify({screen,geometry,errors,failures},null,2));
+ fs.writeFileSync(path.join(directory,width+'x'+height+'-result.json'),JSON.stringify({screen,geometry,houseGeometry,errors,failures},null,2));
  console.log('VALLEY_BROWSER_PASS',width,height);
  }finally{await context.close();await browser.close();}
 }
