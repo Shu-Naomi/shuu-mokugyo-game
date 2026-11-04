@@ -16,3 +16,32 @@
 #locationInterior.compact-inn .inn-rest-note { display: none; }
 
 #timedRest h2 { color: #342d24; }
+
+/* Keep all touch selection inside the game, never an OS clock dialog. */
+#timedRest { padding: 8px; }
+.timed-rest-panel { width: min(720px,100%); padding: 12px; box-shadow: 0 6px 0 #352f25, inset 0 0 0 2px #d6b576; }
+#timedRestChooser { display: grid; grid-template-columns: minmax(140px, .8fr) minmax(280px, 1.2fr); gap: 6px 16px; }
+.timed-rest-scene { align-self: center; }
+.timed-rest-scene canvas { display: block; width: 100%; aspect-ratio: 2; image-rendering: pixelated; border: 2px solid #796244; border-radius: 8px; box-sizing: border-box; background: #172d36; }
+#timedRestDescription { font-size: 13px; line-height: 1.5; }
+.timed-rest-dial { text-align: center; }
+.timed-rest-dial label { display: block; font-weight: bold; }
+.timed-rest-dial label small { font-weight: normal; font-size: 11px; }
+.timed-rest-steps,.timed-rest-presets { display: flex; gap: 8px; margin-top: 4px; }
+#timedRest .timed-rest-dial button { flex: 1; min-width: 44px; padding: 4px; margin: 0; font-size: 14px; color: #49321d; background: linear-gradient(#fff4d5,#dec18b); border: 1px solid #94703c; border-radius: 7px; box-shadow: 0 2px 0 #94703c; touch-action: manipulation; }
+#timedRestTime { display: block; width: 100%; box-sizing: border-box; height: 48px; margin-top: 5px; font-size: 30px; line-height: 1; text-align: center; font-variant-numeric: tabular-nums; border: 2px solid #94703c; border-radius: 8px; }
+#timedRestTimeHint { display: block; margin-top: 5px; font-size: 11px; }
+#timedRestPreview { grid-column: 1 / -1; text-align: center; font-weight: bold; font-size: 14px; }
+.timed-rest-actions { grid-column: 1 / -1; margin-top: 0; flex-wrap: nowrap; }
+.timed-rest-actions button { flex: 1; padding: 4px 8px; font-size: 15px; }
+#timedRest :focus-visible { outline: 3px solid #2c7072; outline-offset: 2px; }
+@media (max-height: 450px) { .timed-rest-panel { padding: 8px 10px; } .timed-rest-panel h2 { margin-bottom: 4px; } #timedRestChooser { row-gap: 3px; } }
+@media (max-width: 520px) { #timedRestChooser { grid-template-columns: minmax(0,1fr); } .timed-rest-scene { display: none; } }
+.timed-rest-dial { display: grid; grid-template-columns: 1fr 1fr; column-gap: 8px; }
+.timed-rest-dial label { grid-row: 1; grid-column: 1 / -1; }
+#timedRestTime { grid-row: 2; grid-column: 1 / -1; }
+.timed-rest-steps { grid-row: 3; }
+.timed-rest-presets,#timedRestTimeHint { grid-column: 1 / -1; }
+/* The outer game frame is decorative; do not sacrifice short landscape height. */
+@media (max-height: 360px) { #timedRest { inset: 1%; padding: 3px; } .timed-rest-panel { padding: 6px 8px; } }
+@media (max-height: 360px) { #timedRestTimeHint { display: none; } #timedRestDescription { line-height: 1.3; } }

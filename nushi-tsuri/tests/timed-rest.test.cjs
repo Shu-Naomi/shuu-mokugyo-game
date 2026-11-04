@@ -57,3 +57,18 @@ test('rest sources and service-worker registration share the fresh release',()=>
  for(const file of ['timed-rest.js','timed-rest.css','compact-ui.js']){const url=html.match(new RegExp(file.replace('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url);assert.ok(sw.includes(url));}
  const release=html.match(/serviceWorker\.register\("\.\/sw\.js\?v=([0-9-]+)"\)/)?.[1],cache=sw.match(/const CACHE_NAME = "([^"]+)";/)?.[1];assert.ok(release);assert.ok(cache?.endsWith('-'+release));
 });
+
+test('game picker avoids native time dialog, supports minute precision and does not commit on selection',()=>{
+ const app=boot(),w=app.window,d=w.document;try{
+ w.openLocationInterior('farmhouse');w.openTimedRest('inn');const input=d.querySelector('#timedRestTime'),before=read(w,'s.gameMinutes');
+ assert.equal(input.type,'text');assert.equal(d.activeElement.dataset.restTime,'06:00');
+ d.querySelector('[data-rest-time="18:00"]').click();assert.equal(input.value,'18:00');
+ d.querySelector('[data-rest-step="1"]').click();assert.equal(input.value,'18:01');
+ d.querySelector('[data-rest-step="-60"]').click();assert.equal(input.value,'17:01');
+ input.value='23:59';d.querySelector('[data-rest-step="1"]').click();assert.equal(input.value,'00:00');assert.match(d.querySelector('#timedRestPreview').textContent,/翌日/);
+ d.querySelector('[data-rest-step="-1"]').click();assert.equal(input.value,'23:59');
+ input.value='08:20';input.dispatchEvent(new w.Event('input'));assert.match(d.querySelector('#timedRestPreview').textContent,/翌日/);
+ input.value='25:00';input.dispatchEvent(new w.Event('input'));assert.equal(d.querySelector('#timedRestStart').disabled,true);assert.equal(w.beginTimedRest(),false);
+ assert.equal(read(w,'s.gameMinutes'),before);d.querySelector('#timedRestCancel').click();assert.equal(read(w,'s.gameMinutes'),before);
+ }finally{app.dispose();}
+});
