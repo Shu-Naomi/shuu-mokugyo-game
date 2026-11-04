@@ -64,7 +64,7 @@ jobs:
         run: bash install-ci-fonts.sh
       - name: Check story checkpoints, names, old saves and existing game data
         if: ${{ !inputs.public_url }}
-        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs opening-presentation-271.test.cjs opening-storybook-assets.test.cjs cast-cancel-269.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
+        run: node --test --test-concurrency=2 opening-story-v252-2.test.cjs opening-presentation-271.test.cjs opening-storybook-assets.test.cjs opening-browser-readiness.test.cjs cast-cancel-269.test.cjs lake-intro-v215.test.cjs lake-story-v206.test.cjs title-flow-v252.test.cjs aquarium-mutations-v251-8.test.cjs character-names-v251-9.test.cjs player-options-v218.test.cjs save-slots-v207.test.cjs home-dogs.test.cjs dog-greetings-v181.test.cjs dog-forage-v207.test.cjs pet-life-integration.test.cjs service-worker.test.cjs 2>&1 | tee opening-story-unit.log
       - name: Exercise the opening, three favorite dogs, renames and resume on three screens
         env:
           OPENING_STORY_PUBLIC_URL: ${{ inputs.public_url }}
