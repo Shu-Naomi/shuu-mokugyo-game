@@ -43,7 +43,7 @@ concurrency:
 jobs:
   opening:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: ${{ github.ref == 'refs/heads/main' && 45 || 25 }}
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --shm-size=1gb
