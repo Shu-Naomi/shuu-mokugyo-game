@@ -167,10 +167,12 @@ async function touchSmoke(url){
     await road.context.close();
 
     const cave=await openStream({x:148,y:72}),c=cave.leg;
-    await c('up',1,148,68);await c('right',6,172,68);await c('up',3,172,56);
-    await c('right',1,176,56);await c('up',2,176,48);await c('right',3,188,48);
-    await c('up',1,188,44);await c('right',3,200,44);await c('up',2,200,36);
-    await c('right',4,216,36);await c('up',2,216,28);await cave.page.locator('#action').tap();
+    // Follow the rebuilt road east of the retaining wall, matching the
+    // strict touch-arrow route in stream-collision-v203.test.cjs.
+    await c('right',6,172,72);await c('up',1,172,68);await c('right',2,180,68);
+    await c('up',3,180,56);await c('right',2,188,56);await c('up',2,188,48);
+    await c('right',2,196,48);await c('up',2,196,40);await c('right',2,204,40);
+    await c('up',2,204,32);await c('right',3,216,32);await cave.page.locator('#action').tap();
     assert.equal(await cave.page.locator('#mountainPixels').getAttribute('aria-label'),'岩窟の地下湖');
     await cave.context.close();
 

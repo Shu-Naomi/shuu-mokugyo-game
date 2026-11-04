@@ -21,4 +21,4 @@ Only kanpachi endurance changes from 446 to 380 active-run ticks, a 14.8% reduct
 
 The regression uses the existing retained-water-effects fixture with particle seed 34 and keeps the original 180-second limit. Browser evidence now saves initial water-effect state alongside its RNG, input and phase trace, so future timing outliers can be replayed more precisely. It does not change or reseed the browser's live particle state.
 
-Release 252-41 is reserved after the building and page-turn fixes. The final release/cache/asset tokens will be reconciled with those preceding changes before readiness; this draft must not be released with the old fishing-duel cache token.
+Release 252-40 follows the merged building fix. The HUD badge, service-worker cache/registration and fishing-duel asset token are aligned. Building assets remain 252-39; opening assets remain 252-37. The page-turn update follows this gameplay correction.
