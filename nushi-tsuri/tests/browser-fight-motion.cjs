@@ -12,7 +12,7 @@ const server=http.createServer((req,res)=>{const p=path.join(root,decodeURI(req.
  await page.evaluate(id=>{cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id===id);startFight();clearInterval(timer);releaseBattleAction();battle.gillWash=null;window.motionInterval=setInterval(()=>{if(!battle)return;moveBattleFish(battle.mood);renderBattleFish();syncBattleFishLine();},120);},id);
  const samples=[];
  for(const calm of [true,false]){
- await page.evaluate(calm=>{battle.mood=fightProfiles[battle.f.id].moods.find(m=>Boolean(m.calm)===calm);battle.moodTick=0;setFishCourse(battle.mood);ShuFishing.beginWindow(battle,battle.mood,500,Date.now());battle.nushiWindow.warning=false;syncNushiFightCue();},calm);
+ await page.evaluate(calm=>{battle.mood=fightProfiles[battle.f.id].moods.find(m=>Boolean(m.calm)===calm);battle.moodTick=0;setFishCourse(battle.mood);ShuFishing.beginWindow(battle,battle.mood,500,Date.now());if(battle.nushiWindow)battle.nushiWindow.warning=false;syncNushiFightCue();},calm);
  for(let n=0;n<5;n++){await page.waitForTimeout(600);samples.push(await page.evaluate(()=>({x:battle.x,y:battle.y,pose:battleFishVisualPose(),frame:document.querySelector('#battleFish').dataset.artSwimFrame})));await page.screenshot({path:path.join(out,`${id}-${calm?'pull':'run'}-${n}.png`)});}
  }
  await page.evaluate(()=>clearInterval(window.motionInterval));const video=page.video();await context.close();await video.saveAs(path.join(out,id+'.webm'));fs.writeFileSync(path.join(out,id+'.json'),JSON.stringify({samples,errors},null,2));if(errors.length)throw Error(errors.join('\n'));
