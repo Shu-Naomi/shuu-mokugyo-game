@@ -78,6 +78,9 @@ jobs:
       - name: Record native before and after diary turns for both avatars
         if: ${{ !inputs.public_url }}
         run: node browser-opening-turn-comparison.cjs 2>&1 | tee opening-turn-comparison.log
+      - name: Record consecutive native diary pages for both avatars
+        if: ${{ !inputs.public_url }}
+        run: node browser-opening-diary-sequence.cjs 2>&1 | tee opening-diary-sequence.log
       - name: Protect empty bait, lure fishing and return controls from PR 270
         env:
           CAST_CANCEL_PUBLIC_URL: ${{ inputs.public_url }}
@@ -114,6 +117,8 @@ jobs:
             nushi-tsuri/tests/cast-cancel-evidence/
             nushi-tsuri/tests/opening-turn-comparison.log
             nushi-tsuri/tests/opening-turn-comparison/comparison.json
+            nushi-tsuri/tests/opening-diary-sequence.log
+            nushi-tsuri/tests/opening-diary-sequence/sequence.json
           retention-days: 14
           if-no-files-found: warn
       - name: Preserve storybook evidence at 1280x720
@@ -170,5 +175,29 @@ jobs:
         with:
           name: opening-turn-comparison-820x366
           path: nushi-tsuri/tests/opening-turn-comparison/820x366-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve consecutive diary video at 1280x720
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-diary-sequence-1280x720
+          path: nushi-tsuri/tests/opening-diary-sequence/1280x720-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve consecutive diary video at 844x390
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-diary-sequence-844x390
+          path: nushi-tsuri/tests/opening-diary-sequence/844x390-*
+          retention-days: 14
+          if-no-files-found: warn
+      - name: Preserve consecutive diary video at 820x366
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: opening-diary-sequence-820x366
+          path: nushi-tsuri/tests/opening-diary-sequence/820x366-*
           retention-days: 14
           if-no-files-found: warn

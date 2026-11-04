@@ -5,7 +5,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const diaryIds=['notebook','researcher','wish'];
 const reviewIds=['sam','invitation','refusal','push','retort','puppies','cling','care','decision','welcome'];
 module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
- const captures=[];
+ const captures=[],diarySequence=[];
  const snapshot=()=>page.evaluate(()=>lakeIntroPresentation.snapshot());
  async function capture(name,{existingUiFile=null}={}){
   const file=`${prefix}-${name}-canvas.png`,uiFile=existingUiFile||`${prefix}-${name}-ui.png`;
@@ -21,7 +21,12 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
   // renderer regressions by asking the same implementation to verify itself.
   const result=await page.locator('#lakeIntroPicture').evaluate(async(canvas,frame)=>{
    const api=ShuLakeIntro,region=api.regionFor('diary').region,base=api.sourceFor('diary');
-   const source=frame==='completed'?api.art.diarySettled:base;
+   const id=canvas.dataset.step;
+   const spreads={notebook:{from:base,to:api.art.diarySettled},researcher:{from:api.art.diarySettled,to:api.art.diaryResearcher},wish:{from:api.art.diaryResearcher,to:api.art.diaryWish}};
+   const spread=spreads[id];if(!spread?.from||!spread?.to)throw Error(`Missing expected diary spread for ${id}`);
+   const selected=api.diarySpreadFor(id);
+   if(selected.from!==spread.from||selected.to!==spread.to)throw Error(`Incorrect diary spread for ${id}: ${JSON.stringify(selected)}`);
+   const source=frame==='completed'?spread.to:spread.from;
    // Independent geometry, deliberately not read from the renderer exports.
    const paper=[[134,92],[145,81],[264,77],[307,81],[324,88],[343,81],[462,77],[504,81],[518,94],[520,281],[513,295],[334,300],[324,303],[310,297],[139,297],[132,289]];
    const hand=[[20,360],[30,332],[38,287],[46,255],[64,230],[85,216],[109,207],[119,202],[126,203],[130,210],[137,212],[143,220],[141,234],[132,253],[130,267],[139,264],[146,266],[151,273],[147,286],[140,301],[133,314],[120,330],[106,343],[99,360]];
@@ -30,15 +35,20 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
    const load=async src=>{const image=new Image();image.src=src;await image.decode();return image;};
    const expected=document.createElement('canvas');expected.width=canvas.width;expected.height=canvas.height;
    const ctx=expected.getContext('2d');ctx.imageSmoothingEnabled=false;
-   const first=await load(base);ctx.drawImage(first,0,0,first.naturalWidth,first.naturalHeight,0,0,expected.width,expected.height);
-   const initial=ctx.getImageData(0,0,expected.width,expected.height).data;
-   if(frame==='completed'){
-    ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
-    const image=await load(source);ctx.save();outline(ctx,paper);ctx.clip();
-    ctx.drawImage(image,0,0,image.naturalWidth,image.naturalHeight,0,0,expected.width,expected.height);ctx.restore();
-    ctx.save();outline(ctx,hand);ctx.clip();ctx.drawImage(first,0,0,expected.width,expected.height);ctx.restore();
-    ctx.restore();
-   }
+   const first=await load(base);
+   const compose=async source=>{
+    ctx.drawImage(first,0,0,expected.width,expected.height);
+    if(source!==base){
+     ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
+     const image=await load(source);ctx.save();outline(ctx,paper);ctx.clip();
+     ctx.drawImage(image,0,0,expected.width,expected.height);ctx.restore();
+     ctx.save();outline(ctx,hand);ctx.clip();ctx.drawImage(first,0,0,expected.width,expected.height);ctx.restore();
+     ctx.restore();
+    }
+    return ctx.getImageData(0,0,expected.width,expected.height).data;
+   };
+   const initial=await compose(spread.from);
+   await compose(source);
    const actual=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
    const reference=ctx.getImageData(0,0,expected.width,expected.height).data;
    let mismatched=0,changed=0,outsideChanged=0,handChanged=0,hash=2166136261;
@@ -51,7 +61,7 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
     }
     for(let c=0;c<4;c++)hash=Math.imul(hash^actual[i+c],16777619);
    }
-   return {frame,source,region,mismatched,changed,outsideChanged,handChanged,turnPhase:canvas.dataset.turnPhase,leafEdgeX:Number(canvas.dataset.leafEdgeX),hash:hash>>>0};
+   return {id,frame,source,spread,region,mismatched,changed,outsideChanged,handChanged,turnPhase:canvas.dataset.turnPhase,leafEdgeX:Number(canvas.dataset.leafEdgeX),hash:hash>>>0};
   },frame);
   if(frame!=='turn')assert.equal(result.mismatched,0,`${prefix}: actual ${frame} pixels do not match the independently decoded source: ${JSON.stringify(result)}`);
   assert.equal(result.outsideChanged,0,'diary motion must leave hands, binding and table outside its region unchanged');
@@ -69,16 +79,22 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
  }
  async function diary(id){
   assert.ok(diaryIds.includes(id));const duration=await reset(),frames=[];
-  frames.push(await compareDiaryFrame('start'));await capture(`${id}-00-start`);
+  frames.push(await compareDiaryFrame('start'));const initial=await page.locator('#lakeIntroPicture').evaluate(c=>c.toDataURL());
+  const previous=diarySequence.at(-1);
+  if(previous){assert.equal(id,diaryIds[diaryIds.indexOf(previous.id)+1]);assert.ok(initial===previous.final,'next diary stage must begin with the exact previous completed pixels');}
+  await capture(`${id}-00-start`);
   await page.clock.runFor(Math.ceil(duration*450));
   let model=await snapshot();assert.equal(model.pose.settled,false);assert.ok(model.elapsed>0&&model.elapsed<duration);
   frames.push(await compareDiaryFrame('turn'));await capture(`${id}-01-turn`);
   await page.clock.runFor(Math.ceil(duration*1000)+200);
   model=await snapshot();assert.equal(model.pose.settled,true);assert.equal(model.scheduled,false);
   frames.push(await compareDiaryFrame('completed'));await capture(`${id}-02-completed`);
+  const final=await page.locator('#lakeIntroPicture').evaluate(c=>c.toDataURL());
+  for(const previous of diarySequence)assert.ok(final!==previous.final,`${id} must finish on a new diary spread, not repeat ${previous.id}`);
+  diarySequence.push({id,final});
   assert.equal(new Set(frames.map(f=>f.hash)).size,3,'start, raised leaf, and completed page must be distinct actual rendered frames');
   await page.clock.runFor(1600);const held=await compareDiaryFrame('completed');assert.equal(held.hash,frames[2].hash,'final notebook artwork must stay completed');
-  return {id,frames,stable:true};
+  return {id,frames,stable:true,previousFinalEqualsInitial:previous?true:null,distinctCompletedSpreads:diarySequence.length};
  }
  async function transitions(){
   await go('notebook');let duration=await reset();await page.clock.runFor(Math.ceil(duration*450));await compareDiaryFrame('turn');
@@ -101,7 +117,7 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
  function writeReview({diaryMotionChecked=true}={}){
   const report={automatedFrameChecks:diaryMotionChecked?'passed':'not repeated for this cast; detailed diary motion is checked for both avatars with Grey at 1280x720 and 820x366, and native-clock diary motion covers both avatars on all four screens',visualSignoff:'required; not inferred from settled, timers, hashes or source identity',criteria:[
    'Sam/invitation: the tabletop book reads toward the seated protagonist, not toward the camera.',
-   'Notebook/researcher/wish: compare start, raised turn and completed frames. The completed image must visibly lie flat without an upright leaf or clipped seam.',
+   'Notebook/researcher/wish: compare start, raised turn and completed frames. The completed image must visibly lie flat without an upright leaf or clipped seam. Each stage must reveal different diary content, and each following stage must start on the previous completed spread.',
    'Refusal/retort: the protagonist looks hesitant or mildly exasperated, not like the same cheerful smile; compare the face with invitation and later warmer dialogue.',
    'Retort to puppies: the text introduces small footsteps before identifying the three dogs, and the doorway staging makes the transition legible.',
    'Both protagonist avatars and all three selected companions retain their correct identity and look natural at the target viewport.'

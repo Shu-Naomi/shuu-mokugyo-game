@@ -1,11 +1,13 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-rest-picker-252-43";
+const CACHE_NAME = "nushi-tsuri-v252-diary-spreads-252-44";
 
 const CORE_ASSETS = [
   "./assets/opening-storybook-diary-v1.webp",
   "./assets/opening-storybook-diary-turn-v1.webp",
   "./assets/opening-storybook-diary-settled-v1.webp",
+  "./assets/opening-storybook-diary-researcher-v1.webp",
+  "./assets/opening-storybook-diary-wish-v1.webp",
   "./assets/opening-storybook-boy-call-v2.webp",
   "./assets/opening-storybook-boy-refusal-v2.webp",
   "./assets/opening-storybook-boy-nose-v2.webp",
@@ -133,8 +135,8 @@ const CORE_ASSETS = [
   "./mountain-region.js?v=252-39",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-41",
-  "./lake-intro.css?v=252-41",
+  "./lake-intro.js?v=252-44",
+  "./lake-intro.css?v=252-44",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",

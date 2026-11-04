@@ -61,7 +61,7 @@
   const objective='まずは家と三匹の様子を見てみよう。道具の相談はサムの店へ。';
   // Storybook paintings share one south-door camera. Dialogue/save identifiers above
   // are deliberately unchanged: a visual revision must never migrate the story.
-  const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp'};
+  const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp',diaryResearcher:'assets/opening-storybook-diary-researcher-v1.webp',diaryWish:'assets/opening-storybook-diary-wish-v1.webp'};
   const images=new Map(),failed=new Set(),ids=['shuu','riku','grey'];
   const clamp=x=>Math.max(0,Math.min(1,x));
   const durations={arrival:.7,memory:.7,notebook:1.6,researcher:1.6,wish:1.6,sam:.9,invitation:.9,refusal:.8,push:.8,retort:.8,puppies:1.1,cling:1.1,care:.8,decision:.8,welcome:.8,'first-day':.7};
@@ -76,6 +76,14 @@
   }
   const revisedPanels=new Set(['boy-call','girl-call','boy-refusal','girl-refusal','boy-nose','girl-nose']);
   function sourceFor(panel){return art[panel]||'assets/opening-storybook-'+panel+(revisedPanels.has(panel)?'-v2.webp':'-v1.webp');}
+  // Adjacent dialogue pages turn consecutive spreads, never restart the diary.
+  const diarySpreads={
+    notebook:{from:sourceFor('diary'),to:art.diarySettled},
+    researcher:{from:art.diarySettled,to:art.diaryResearcher},
+    wish:{from:art.diaryResearcher,to:art.diaryWish}
+  };
+  function diarySpreadFor(value){return diarySpreads[pageFor(value).id]||diarySpreads.notebook;}
+  function diarySources(value){const spread=diarySpreadFor(value);return [...new Set([sourceFor('diary'),art.diaryTurn,spread.from,spread.to])];}
   // Regions use the 640 × 360 painting coordinate system. Only this small area
   // can move; the camera, doorway, people and dogs never slide as whole sprites.
   function regionFor(panel){
@@ -115,9 +123,17 @@
   const diaryHand=[[20,360],[30,332],[38,287],[46,255],[64,230],[85,216],[109,207],[119,202],[126,203],[130,210],[137,212],[143,220],[141,234],[132,253],[130,267],[139,264],[146,266],[151,273],[147,286],[140,301],[133,314],[120,330],[106,343],[99,360]];
   function outline(ctx,points){ctx.beginPath();for(let i=0;i<points.length;i++)ctx[i?'lineTo':'moveTo'](...points[i]);ctx.closePath();}
   function painting(ctx,im){ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight,0,0,640,360);}
-  function paintDiary(ctx,base,settled,progress,data){
+  function paintDiarySpread(ctx,base,spread){
+    // Canonical composition shared by a previous final and the next initial.
+    // Asset changes outside the paper can never move the original foreground.
+    ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
+    ctx.save();outline(ctx,diaryPaper);ctx.clip();painting(ctx,spread);ctx.restore();
+    ctx.save();outline(ctx,diaryHand);ctx.clip();painting(ctx,base);ctx.restore();ctx.restore();
+  }
+  function paintDiary(ctx,base,from,settled,progress,data){
     const leaf=diaryLeaf(progress);data.turnPhase=leaf.phase;data.leafEdgeX=String(leaf.edgeX);
-    if(leaf.phase==='start')return;
+    if(leaf.phase==='start'){if(from!==base)paintDiarySpread(ctx,base,from);return;}
+    if(leaf.phase!=='settled'&&from!==base)paintDiarySpread(ctx,base,from);
     ctx.save();ctx.beginPath();ctx.rect(128,15,394,288);ctx.clip();
     ctx.save();outline(ctx,diaryPaper);ctx.clip();
     if(leaf.phase==='settled')painting(ctx,settled);
@@ -127,7 +143,7 @@
       // A hard-edged, narrow contact shadow, never a blurred/doubled fish layer.
       ctx.save();outline(ctx,diaryPaper);ctx.clip();ctx.fillStyle='rgba(78,43,15,.18)';
       outline(ctx,[[324,303],[leaf.edgeX,295-leaf.lift],[leaf.edgeX,299],[324,303]]);ctx.fill();ctx.restore();
-      const source=leaf.front?base:settled,sx=source.naturalWidth/640,sy=source.naturalHeight/360;
+      const source=leaf.front?from:settled,sx=source.naturalWidth/640,sy=source.naturalHeight/360;
       const width=leaf.front?192:188;
       // Map the source paper's bowed top/bottom edges onto the lifted leaf.
       // No full-frame scaling, alpha blend, bitmap allocation or per-pixel loop.
@@ -168,12 +184,18 @@
     ctx.drawImage(im,0,0,im.naturalWidth,im.naturalHeight,0,0,640,360);
     const {kind,region,progress}=model.animation;
     if(kind==='turn'){
-      const curled=image(art.diaryTurn,redraw),settled=image(art.diarySettled,redraw);
-      if(!curled||!settled){data.artState=[art.diaryTurn,art.diarySettled].some(s=>failed.has(s))?'error':'loading';return;}
+      const spread=diarySpreadFor(model.id||value),curled=image(art.diaryTurn,redraw),from=image(spread.from,redraw),settled=image(spread.to,redraw);
+      data.diaryFrom=spread.from;data.diaryTo=spread.to;
+      if(!curled||!from||!settled){
+        // A newly requested destination may still be decoding. Keep the known
+        // previous spread visible, rather than flashing back to the first fish.
+        if(from)paintDiary(ctx,im,from,from,0,data);
+        data.artState=diarySources(model.id||value).some(s=>failed.has(s))?'error':'loading';return;
+      }
       // All paintings stay decoded for the existing loading/completion contract.
       // The curled illustration remains available as a reference, but motion now
       // comes from one opaque textured leaf rather than holding that still.
-      paintDiary(ctx,im,settled,progress,data);
+      paintDiary(ctx,im,from,settled,progress,data);
       return;
     }
     // A single, finite, edge-feathered local deformation: the leaf lifts then
@@ -199,7 +221,7 @@
     const media=options.media||env.matchMedia?.('(prefers-reduced-motion: reduce)'),duration=durations[page.id];
     const timers=options.timers||{set:(fn,ms)=>env.setTimeout(fn,ms),clear:id=>env.clearTimeout(id)};
     let live=true,handle=0,deadline=null,start=null,elapsed=media?.matches?duration:0,finished=Boolean(media?.matches),last=-Infinity;
-    const src=sourceFor(panelFor(page,state)),needed=page.scene==='notebook'?[src,art.diaryTurn,art.diarySettled]:[src];
+    const src=sourceFor(panelFor(page,state)),needed=page.scene==='notebook'?diarySources(page):[src];
     const ready=()=>needed.every(source=>{const im=images.get(source);return Boolean(im?.complete&&im.naturalWidth)||failed.has(source);});
     const cancelFrame=()=>{if(handle)clock.cancel(handle);handle=0;};
     const clearDeadline=()=>{if(deadline!==null)timers.clear(deadline);deadline=null;};
@@ -234,5 +256,5 @@
       for(const im of images.values())if(im.onload===redraw){im.onload=null;im.onerror=null;}canvas.dataset.motion='stopped';},
       snapshot:()=>({active:live,scheduled:Boolean(handle),elapsed,pose:pose(page,elapsed,state)})};
   }
-  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,panelFor,sourceFor,regionFor,diaryLeaf,diaryPaper,diaryHand,pose,paint,present};
+  return {version,pages,art,text,speaker,cast,progress,checkpoint,objective,panelFor,sourceFor,regionFor,diarySpreads,diarySpreadFor,diarySources,diaryLeaf,diaryPaper,diaryHand,pose,paint,present};
 });
