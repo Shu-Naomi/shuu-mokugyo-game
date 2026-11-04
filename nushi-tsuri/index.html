@@ -22230,7 +22230,7 @@
         let spriteCells = fishSwimFrameCounts[battle.f.id] || 8;
         const artNow=battle.pausedAt||Date.now();
         const artFraction=clampBattle((artNow-(battle.artTickAt??artNow))/120,0,1);
-        const fightMotion=battle.phase==="fight"?ShuFishMotion.fight(battle.f.id,
+        const fightMotion=battle.phase==="fight"&&typeof ShuFishMotion.fight==="function"?ShuFishMotion.fight(battle.f.id,
           ((battle.swimTick||0)+artFraction)*.12,{
             reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,
             calm:Boolean(battle.mood?.calm),

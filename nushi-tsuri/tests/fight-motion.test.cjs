@@ -23,6 +23,8 @@ test('maximum fight effort preserves every fish original, pixel volume, lips and
  for(const [id,spec]of Object.entries(A.species)){
   if(!images.has(spec.asset))images.set(spec.asset,await loadImage(path.join(__dirname,'..',spec.asset)));
   const image=images.get(spec.asset);
+  A.draw(ctx,image,id,8,2,()=>image,{swimFrame:2});const defaultPixels=pixels(ctx).bytes;
+  A.draw(ctx,image,id,8,2,()=>image,{swimFrame:2,swimEffort:1});assert.deepEqual(pixels(ctx).bytes,defaultPixels,id+' default unchanged');
   for(const heading of [0,1.5,3,4.5,6]){
    const target=A.pose(id,7,heading).target,x=Math.round(target[0]*448)-10,y=Math.round(target[1]*224)-10;
    A.draw(ctx,image,id,7,heading,()=>image,{swimFrame:1,swimEffort:1});
@@ -38,6 +40,10 @@ test('maximum fight effort preserves every fish original, pixel volume, lips and
 });
 function fixture(){const app=boot({...seed(),hp:100,fightMode:'nushi',ownedRods:['tideMaster'],selectedRod:'tideMaster'},
  {fishScene:[844,328],battleFish:[286,143]});
+ const scene=app.window.document.querySelector('#fishScene'),element=app.window.document.querySelector('#battleFish');
+ for(const [node,values]of [[scene,{clientWidth:844,clientHeight:328}],[element,{offsetWidth:286,offsetHeight:143}]])
+  for(const [key,value]of Object.entries(values))Object.defineProperty(node,key,{configurable:true,value});
+ app.window.document.querySelector('#pull').parentElement.getBoundingClientRect=()=>({top:310,width:200});
  app.window.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id==="starNushi");var motionNow=10000;Date.now=()=>motionNow;startFight();clearInterval(timer);stopBattleFishArt();releaseBattleAction();battle.gillWash=null;');return app;}
 test('fight painting leaves geometry, balance and saves unchanged; pause/resume freezes its phase',()=>{
  const app=fixture(),w=app.window;
@@ -50,5 +56,40 @@ test('fight painting leaves geometry, balance and saves unchanged; pause/resume 
   w.eval('pauseBattle();motionNow+=60000;renderBattleFish()');assert.equal(w.document.querySelector('#battleFish').dataset.artSwimFrame,phase);
   w.eval('resumeBattle();renderBattleFish()');assert.equal(w.document.querySelector('#battleFish').dataset.artSwimFrame,phase);
   assert.equal(read(w,'battle.pausedAt'),0);assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
+
+test('seeded simulation and responsive bounds match with fight effort enabled or neutral',()=>{
+ const app=fixture(),w=app.window;
+ try{
+  w.eval('var originalMotion=ShuFishMotion, savedMotionBattle=JSON.stringify(battle);');
+  function trace(enabled){return read(w,`(()=>{
+   battle=JSON.parse(savedMotionBattle);motionNow=10000;let rng=310,count=0;
+   Math.random=()=>{count++;rng=(Math.imul(rng,1664525)+1013904223)>>>0;return rng/4294967296};
+   ShuFishMotion=${enabled?'originalMotion':'{...originalMotion,fight:()=>({extraFrame:0,effort:1})}'};
+   const samples=[];
+   for(let i=0;i<90;i++){
+    motionNow+=120;ShuFishing.windowPhase(battle,motionNow);
+    if(motionNow>battle.nextMood)chooseFishMood();
+    battle.reeling=Boolean(battle.mood.calm&&!battle.nushiWindow?.warning);
+    if(battle.reeling)ShuFishing.acceptPull(battle,motionNow);
+    updateRetrieval(battle.mood);moveBattleFish(battle.mood);renderBattleFish();
+    samples.push({x:battle.x,y:battle.y,vx:battle.vx,vy:battle.vy,ten:battle.ten,retrieval:battle.retrieval,
+     bounds:fishSwimBounds(),window:battle.nushiWindow?JSON.parse(JSON.stringify(battle.nushiWindow)):null,mood:battle.mood.id,rng:count});
+   }
+   return samples;
+  })()`);}
+  const neutral=trace(false),enhanced=trace(true);assert.deepEqual(enhanced,neutral);
+  assert.ok(enhanced.every(p=>p.bounds.maxY<68),'nonzero viewport limits participate');
+  assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
+
+test('an old cached motion module falls back safely during an interrupted update',()=>{
+ const app=fixture(),w=app.window;
+ try{
+  w.eval('ShuFishMotion={profile:ShuFishMotion.profile,phase:ShuFishMotion.phase};renderBattleFish()');
+  assert.equal(w.document.querySelector('#battleFish').dataset.swimEffort,'1');
+  assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });

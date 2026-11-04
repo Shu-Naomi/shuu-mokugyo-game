@@ -29,6 +29,7 @@ const cases=[['starNushi','nushi',true],['moroko','nushi',true],['utsubo','nushi
     startFight();clearInterval(timer);releaseBattleAction();battle.gillWash=null;
     window.motionInterval=setInterval(()=>{
      if(!battle||battle.pausedAt||document.hidden)return;
+     if(battle.gillWash){updateGillWash(1.95);updateWaterFx();renderBattleFish();drawBattle();return;}
      updateRetrieval(battle.mood);moveBattleFish(battle.mood);advanceUnderwaterTravel();updateWaterFx();renderBattleFish();drawBattle();
     },120);
    },id);
@@ -37,9 +38,23 @@ const cases=[['starNushi','nushi',true],['moroko','nushi',true],['utsubo','nushi
     await page.evaluate(calm=>{
      battle.mood=fightProfiles[battle.f.id].moods.find(m=>Boolean(m.calm)===calm);battle.calm=calm;battle.moodTick=0;setFishCourse(battle.mood);
      battle.nextMood=ShuFishing.beginWindow(battle,battle.mood,6000,Date.now(),()=>1);syncNushiFightCue();
+     if(battle.f.id==='hirame'&&calm)battle.sandLifted=false;
      if(battle.f.id==='hirame'&&!calm)releaseHirameFromSand();
     },calm);
     for(let n=0;n<5;n++){await page.waitForTimeout(500);await shot((calm?'pull':'run')+'-'+n);}
+   }
+   if(mode==='gauge'){
+    await page.evaluate(()=>{battle.turning={from:battle.facing,to:-battle.facing,frame:0,frames:12,flipped:false};});
+    for(let n=0;n<5;n++){await page.waitForTimeout(250);await shot('turn-'+n);}
+   }
+   if(id==='starNushi'){
+    assert.equal(await page.evaluate(()=>{
+     battle.turning=null;battle.nushiWindow=null;battle.nushiStage=3;battle.retrieval=.3;battle.nextGillWashTick=0;
+     battle.mood=fightProfiles[battle.f.id].moods.find(m=>m.danger);const random=Math.random;
+     try{Math.random=()=>0;return maybeStartGillWash(battle.mood);}finally{Math.random=random;}
+    }),true);
+    for(let n=0;n<5;n++){await page.waitForTimeout(250);await shot('gill-'+n);}
+    await page.waitForTimeout(600);
    }
    if(mode==='nushi'){
     await page.evaluate(()=>{
@@ -64,7 +79,7 @@ const cases=[['starNushi','nushi',true],['moroko','nushi',true],['utsubo','nushi
    assert.equal(metrics.after.outputs,metrics.before.outputs);assert.equal(metrics.after.builds,metrics.before.builds);assert.deepEqual(errors,[]);
    fs.writeFileSync(path.join(out,label+'.json'),JSON.stringify({id,mode,mobile,samples,metrics,errors,note:'Controlled phase fixture and browser renderer timing; not physical-phone thermal measurements.'},null,2));
   }finally{
-   await page.evaluate(()=>clearInterval(window.motionInterval)).catch(()=>{});const video=page.video();await context.close();await video.saveAs(path.join(out,label+'.webm'));
+   await page.evaluate(()=>clearInterval(window.motionInterval)).catch(()=>{});const video=page.video();await context.close();await video.saveAs(path.join(out,label+'.webm'));await video.delete();
   }
  }}finally{await browser.close();server.close();}
 })().catch(e=>{console.error(e);process.exitCode=1;server.close();});
