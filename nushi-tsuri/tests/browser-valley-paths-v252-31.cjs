@@ -3,6 +3,30 @@ const {chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const root=path.resolve(__dirname,'..'),directory=path.resolve(process.env.VALLEY_EVIDENCE_DIR||'/tmp/valley-evidence');
 const screens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:3}];
+// Plan with the field's swept collision, then exercise native touch controls.
+async function walkTo(page,target,mobile){
+ const directions=await page.evaluate(target=>{
+  Math.random=()=>.999999;
+  const M=ShuMountain,L=ShuWorldLife;
+  const goal=(x,y)=>target==='house-turn'?Math.hypot(x-194,y-47)<=2:target==='bridge'?M.onBridge(x,y,'stream'):target==='cave'?M.exitAt(x,y,'stream')?.region==='cave':L.nearby({mapRegion:'stream',x,y,direction:'up'})?.id===target;
+  const queue=[{x:s.x,y:s.y,parent:-1}],seen=new Set([s.x+','+s.y]);
+  for(let i=0;i<queue.length;i++){
+   const p=queue[i];if(goal(p.x,p.y)){const directions=[];for(let j=i;queue[j].parent>=0;j=queue[j].parent)directions.push(queue[j].direction);return directions.reverse();}
+   for(const direction of ['up','right','down','left']){const n=M.moveTarget(p.x,p.y,direction,4,'stream'),key=n.x+','+n.y;if(!seen.has(key)){seen.add(key);queue.push({...n,parent:i,direction});}}
+  }
+  throw Error('No route to '+target);
+ },target);
+ for(const d of directions){
+  if(mobile)await page.locator('[data-move="'+d+'"]').tap();else await page.evaluate(d=>move(d),d);
+  assert.ok(await page.evaluate(()=>s.mapRegion==='stream'&&ShuMountain.walkable(s.x,s.y,'stream')),'safe step toward '+target);
+ }
+ const result=await page.evaluate(target=>{
+  const M=ShuMountain,L=ShuWorldLife,x=s.x,y=s.y;
+  const reached=target==='house-turn'?Math.hypot(x-194,y-47)<=2:target==='bridge'?M.onBridge(x,y,'stream'):target==='cave'?M.exitAt(x,y,'stream')?.region==='cave':L.nearby({mapRegion:'stream',x,y,direction:'up'})?.id===target;
+  render();return {target,x,y,reached};
+ },target);
+ assert.ok(result.reached,'reached '+target);return {...result,steps:directions.length};
+}
 async function run(url,screen){
  const {width,height,mobile,dpr}=screen,browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});
  const context=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,locale:'ja-JP',serviceWorkers:'block'});
@@ -21,6 +45,9 @@ async function run(url,screen){
  await page.waitForFunction(()=>document.querySelector('#store').classList.contains('open'));
  await page.screenshot({path:path.join(directory,width+'x'+height+'-store.png')});
  await page.evaluate(()=>close());await page.waitForTimeout(100);
+ const routeEvidence=[await walkTo(page,'house-turn',mobile)];
+ await page.waitForTimeout(500);await page.screenshot({path:path.join(directory,width+'x'+height+'-house-right-road.png')});
+ routeEvidence.push(await walkTo(page,'stream-house',mobile));
  const houseGeometry=await page.evaluate(()=>{const b=ShuWorldLife.buildings.find(b=>b.id==='stream-house');s.x=b.x;s.y=b.y+2;s.direction='up';render();const node=document.querySelector('[data-world-life="stream-house"]');return {house:b,width:node.getBoundingClientRect().width,playerWidth:document.querySelector('#player').getBoundingClientRect().width,nearby:ShuWorldLife.nearby(s)?.id};});
  assert.equal(houseGeometry.nearby,'stream-house');assert.ok(houseGeometry.width/houseGeometry.playerWidth>4,'house is large enough for the player');
  await page.waitForTimeout(500);
@@ -32,10 +59,20 @@ async function run(url,screen){
  await page.screenshot({path:path.join(directory,width+'x'+height+'-house-dialog.png')});
  await page.evaluate(()=>close());
  await require('./browser-release.cjs').assertRelease(page);
- await page.evaluate(()=>{s.x=112;s.y=72;render();});
+ routeEvidence.push(await walkTo(page,'cave',mobile));
+ await page.waitForTimeout(500);await page.screenshot({path:path.join(directory,width+'x'+height+'-cave-approach.png')});
+ await page.locator('#action')[mobile?'tap':'click']();
+ await page.waitForFunction(()=>s.mapRegion==='cave');
+ await page.screenshot({path:path.join(directory,width+'x'+height+'-cave.png')});
+ await page.locator('#action')[mobile?'tap':'click']();
+ await page.waitForFunction(()=>s.mapRegion==='stream'&&ShuMountain.walkable(s.x,s.y,'stream'));
+ await page.waitForTimeout(500);await page.screenshot({path:path.join(directory,width+'x'+height+'-cave-return.png')});
+ routeEvidence.push(await walkTo(page,'stream-shop',mobile));
+ routeEvidence.push(await walkTo(page,'bridge',mobile));
+ await page.waitForTimeout(500);
  await page.screenshot({path:path.join(directory,width+'x'+height+'-bridge.png')});
  assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);
- fs.writeFileSync(path.join(directory,width+'x'+height+'-result.json'),JSON.stringify({screen,geometry,houseGeometry,errors,failures},null,2));
+ fs.writeFileSync(path.join(directory,width+'x'+height+'-result.json'),JSON.stringify({screen,geometry,houseGeometry,routeEvidence,errors,failures},null,2));
  console.log('VALLEY_BROWSER_PASS',width,height);
  }finally{await context.close();await browser.close();}
 }
