@@ -38,3 +38,17 @@ The new actual-source pixel tests check 21 poses for each diary step and both av
 ### v252-41 integrated release
 
 This release includes the species endurance fixes v252-40 and the connected hillside v252-39 without changing either implementation. The opening script and stylesheet cache URLs, service-worker registration/cache, and HUD identify v252-41. Native before/after evidence covers both avatars at 1280×720, 844×390 and 820×366; final integrated-head CI and source publication checks remain release gates.
+
+## Consecutive diary spreads (v252-44)
+
+The approved 1.6-second leaf geometry, 12fps cap, paper and hand masks, dialogue and manual navigation remain unchanged. Only the paper sources now progress with the three diary story steps:
+
+- `notebook`: original diary → existing settled spread.
+- `researcher`: existing settled spread → fish studies and shoreline survey.
+- `wish`: fish studies and shoreline survey → dated observations and an empty lake with ripples.
+
+`diarySpreads`, `diarySpreadFor` and `diarySources` expose the exact mapping. Each completed spread is pixel-identical to the following step's initial spread. A destination still decoding leaves the known current spread visible; it cannot flash back to the first fish page. The current-stage image set controls the same readiness and cancellable completion deadline as before. A failed image remains an explicit art error and never blocks the story controls.
+
+The two additional sources are built-in image-generation precise-object edits of the approved `opening-storybook-diary-settled-v1.webp`, point-sampled to 640×360 and stored as lossless WebP. The generation changes ink layouts but may also alter incidental pixels outside the paper. Runtime composition therefore uses only their paper interiors, always retaining the canonical original background, binding and hands. The new illustrations add no caught legendary fish or narrative reveal.
+
+Unit tests independently compose each initial/final spread, require all three destinations to differ, compare adjacent final→initial bytes, cover delayed destination loading without rewind, and retain per-step deadline, interruption, reduced-motion and foreground invariants. A new native-clock browser sequence records notebook→researcher→wish without resetting the director between clicks, for both avatars at 1280×720, 844×390 and 820×366. Its immediate transition captures and per-frame checks reject a rewind/flicker, while all three completed spreads must remain distinct. The prior notebook-only before/after comparison stays in place. Browser videos and final release CI must be reviewed before publication; local Chromium remains unavailable under the socket restriction.

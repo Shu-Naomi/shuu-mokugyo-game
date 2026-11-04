@@ -14,15 +14,32 @@ test('the printed leaf rises, crosses the fixed spine, and lands on the other pa
  assert.deepEqual([...phases],['start','rise','cross','settle','settled']);assert.equal(edges[0],516);assert.equal(edges.at(-1),136);
  assert.equal(Intro.diaryLeaf(.5).edgeX,324);assert.equal(Intro.diaryLeaf(.5).lift,64);
 });
+
+test('diary stages select consecutive spreads while preserving geometry and duration',()=>{
+ const expected={notebook:{from:Intro.sourceFor('diary'),to:Intro.art.diarySettled},researcher:{from:Intro.art.diarySettled,to:Intro.art.diaryResearcher},wish:{from:Intro.art.diaryResearcher,to:Intro.art.diaryWish}};
+ assert.deepEqual(Intro.diarySpreads,expected);
+ for(const [id,spread] of Object.entries(expected)){
+  assert.deepEqual(Intro.diarySpreadFor(id),spread);assert.equal(Intro.pose(id,0).duration,1.6);
+  assert.deepEqual(Intro.pose(id,0).animation.region,[128,15,394,288]);
+  assert.deepEqual(Intro.diarySources(id),[...new Set([Intro.sourceFor('diary'),Intro.art.diaryTurn,spread.from,spread.to])]);
+ }
+ assert.equal(expected.notebook.to,expected.researcher.from);assert.equal(expected.researcher.to,expected.wish.from);
+ assert.equal(new Set(Object.values(expected).map(spread=>spread.to)).size,3);
+});
 test('real painted paper has many opaque poses, stationary hands/background, and the complete flat final spread',async()=>{
- const loaded={};for(const source of [Intro.sourceFor('diary'),Intro.art.diaryTurn,Intro.art.diarySettled])loaded[source]=await loadImage(path.join(root,source));
+ const loaded={};for(const source of new Set(['notebook','researcher','wish'].flatMap(id=>Intro.diarySources(id))))loaded[source]=await loadImage(path.join(root,source));
  const old=global.Image,sources=Object.keys(loaded);let created=0;global.Image=function(){const source=sources[created++],image=loaded[source];Object.defineProperty(image,'src',{get:()=>source,set(value){assert.equal(value,source);}});return image;};
  try{
   const base=createCanvas(640,360);base.getContext('2d').drawImage(loaded[Intro.sourceFor('diary')],0,0);const original=pixels(base);
-  const nextPage=loaded[Intro.art.diarySettled];
-  const expected=createCanvas(640,360),e=expected.getContext('2d');e.imageSmoothingEnabled=false;e.drawImage(base,0,0);e.beginPath();e.rect(128,15,394,288);e.clip();e.save();outline(e,paper);e.clip();e.drawImage(nextPage,0,0,640,360,0,0,640,360);e.restore();e.save();outline(e,hand);e.clip();e.drawImage(loaded[Intro.sourceFor('diary')],0,0,640,360,0,0,640,360);e.restore();
-  const finalPixels=pixels(expected),avatarFinals=[],handMask=createCanvas(640,360),handCtx=handMask.getContext('2d');outline(handCtx,hand);handCtx.fill();const handPixels=pixels(handMask);
+  function expectedSpread(source){
+   const expected=createCanvas(640,360),e=expected.getContext('2d');e.imageSmoothingEnabled=false;e.drawImage(base,0,0);
+   if(source!==Intro.sourceFor('diary')){e.beginPath();e.rect(128,15,394,288);e.clip();e.save();outline(e,paper);e.clip();e.drawImage(loaded[source],0,0,640,360,0,0,640,360);e.restore();e.save();outline(e,hand);e.clip();e.drawImage(loaded[Intro.sourceFor('diary')],0,0,640,360,0,0,640,360);e.restore();}
+   return pixels(expected);
+  }
+  const avatarFinals=new Map(),finalHashes=new Set(),handMask=createCanvas(640,360),handCtx=handMask.getContext('2d');outline(handCtx,hand);handCtx.fill();const handPixels=pixels(handMask);
+  let previousFinal=null;
   for(const avatar of ['boy','girl'])for(const id of ['notebook','researcher','wish']){
+   const spread=Intro.diarySpreadFor(id),initialPixels=expectedSpread(spread.from),finalPixels=expectedSpread(spread.to);
    const c=createCanvas(640,360);c.dataset={};const ctx=c.getContext('2d'),draw=ctx.drawImage.bind(ctx);let calls=0;
    ctx.drawImage=(...args)=>{calls++;return draw(...args);};const hashes=new Set(),poses=[];
    for(let index=0;index<=20;index++){
@@ -37,15 +54,33 @@ test('real painted paper has many opaque poses, stationary hands/background, and
     }
     assert.equal(transparent,0,'leaf must never expose transparent ink');assert.equal(protectedChanged,0,`stationary foreground/background changed at ${firstProtected}, progress ${progress}`);
     hashes.add(crypto.createHash('sha256').update(actual).digest('hex'));poses.push({changed,leftChanged,rightChanged});
-    if(index===0)equalPixels(actual,original,'initial source');
-    if(index===20){equalPixels(actual,finalPixels,'final must contain both newly settled pages, with original hands restored');avatarFinals.push(Buffer.from(actual));}
+    if(index===0){equalPixels(actual,initialPixels,`${id} initial source`);if(id!=='notebook')equalPixels(actual,previousFinal,'prior final must equal the next initial exactly');}
+    if(index===20){equalPixels(actual,finalPixels,'final must contain both newly settled pages, with original hands restored');previousFinal=Buffer.from(actual);if(avatarFinals.has(id))equalPixels(actual,avatarFinals.get(id),`${id} must look identical for both avatars`);else avatarFinals.set(id,previousFinal);finalHashes.add(crypto.createHash('sha256').update(actual).digest('hex'));
+     let newlyChanged=0;for(let i=0;i<actual.length;i+=4)if(actual[i]!==initialPixels[i]||actual[i+1]!==initialPixels[i+1]||actual[i+2]!==initialPixels[i+2])newlyChanged++;assert.ok(newlyChanged>5000,`${id} must reveal a visibly different spread`);}
    }
    assert.ok(hashes.size>=16,`expected a visible trajectory, not 3 held drawings: ${hashes.size}`);
    assert.ok(poses[13].leftChanged>8000,'the reverse leaf must cross onto the left page');
    assert.ok(poses[20].leftChanged>20000&&poses[20].rightChanged>25000,'finish must reveal the complete new spread');
   }
-  for(const final of avatarFinals)equalPixels(final,avatarFinals[0],'diary artwork must be equally correct for both avatars and all diary steps');
+  assert.equal(finalHashes.size,3,'all three diary destinations must be visually distinct');
  }finally{global.Image=old;}
+});
+
+test('a delayed next destination holds the exact previous spread instead of flashing the first page',async()=>{
+ const modulePath=require.resolve('../lake-intro.js'),previousModule=require.cache[modulePath],oldImage=global.Image;
+ delete require.cache[modulePath];const Fresh=require('../lake-intro.js'),sources=[...new Set(['notebook','researcher','wish'].flatMap(id=>Fresh.diarySources(id)))],loaded={},decoded=new Set(Fresh.diarySources('notebook'));let created=0;
+ try{
+  for(const source of sources)loaded[source]=await loadImage(path.join(root,source));
+  global.Image=function(){const source=sources[created++],image=loaded[source];Object.defineProperty(image,'src',{get:()=>source,set(value){assert.equal(value,source);}});Object.defineProperty(image,'complete',{get:()=>decoded.has(source)});return image;};
+  const canvas=createCanvas(640,360);canvas.dataset={};Fresh.paint(canvas,'notebook',()=>{},{},Fresh.pose('notebook',99));let previousFinal=Buffer.from(pixels(canvas));
+  for(const id of ['researcher','wish']){
+   for(const elapsed of [0,.6,99]){
+    Fresh.paint(canvas,id,()=>{},{},Fresh.pose(id,elapsed));assert.equal(canvas.dataset.artState,'loading');equalPixels(pixels(canvas),previousFinal,`${id} pending destination must not rewind`);
+   }
+   decoded.add(Fresh.diarySpreadFor(id).to);Fresh.paint(canvas,id,()=>{},{},Fresh.pose(id,0));equalPixels(pixels(canvas),previousFinal,`${id} decoded initial must preserve continuity`);assert.equal(canvas.dataset.artState,'ready');
+   Fresh.paint(canvas,id,()=>{},{},Fresh.pose(id,99));previousFinal=Buffer.from(pixels(canvas));
+  }
+ }finally{global.Image=oldImage;require.cache[modulePath]=previousModule;}
 });
 
 const assertDiaryTurnTrace=require('./opening-turn-trace.cjs');

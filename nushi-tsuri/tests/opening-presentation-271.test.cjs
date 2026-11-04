@@ -147,7 +147,7 @@ test('every diary page reaches the completed source even when RAF stops after th
    assert.equal(timers.pending.size,1);assert.equal([...timers.pending.values()][0].ms,d.snapshot().pose.duration*1000);
    time.advance(550);assert.ok(['rise','cross','settle'].includes(c.dataset.turnPhase));assert.equal(d.snapshot().pose.settled,false);
    // No more animation-frame callbacks are delivered, only the deadline.
-   timers.fire();assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled,'deadline must actually paint completed artwork, not only set a state flag');
+   timers.fire();assert.equal(sources.at(-2),w.ShuLakeIntro.diarySpreadFor(id).to,'deadline must actually paint completed artwork, not only set a state flag');
    assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().pose.settled,true);assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
    const count=sources.length;time.advance(5000);assert.equal(sources.length,count);assert.deepEqual(resources(w),before);assert.equal(w.localStorage.getItem(saveKey),raw);
    d.cancel();assert.deepEqual(a.errors,[]);
@@ -191,10 +191,10 @@ test('diary deadline waits for all image decodes and arms only once, including r
  }
 });
 test('reduced motion and visibility interruption paint completed diary artwork without leaving deadlines behind',()=>{
- for(const mode of ['initial-reduced','changed-reduced','hidden']){
-  const a=boot(saved('notebook'),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(mode==='initial-reduced'),sources=paintedSources(c);
+ for(const id of ['notebook','researcher','wish'])for(const mode of ['initial-reduced','changed-reduced','hidden']){
+  const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(mode==='initial-reduced'),sources=paintedSources(c);
   try{
-   const d=w.ShuLakeIntro.present(c,'notebook',read(w,'s'),{clock:time,timers,media:m});
+   const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m});
    if(mode!=='initial-reduced'){
     time.advance(550);assert.ok(['rise','cross','settle'].includes(c.dataset.turnPhase));
     if(mode==='changed-reduced')m.change(true);
@@ -204,7 +204,7 @@ test('reduced motion and visibility interruption paint completed diary artwork w
      Object.defineProperty(w.document,'hidden',{configurable:true,value:false});w.document.dispatchEvent(new w.Event('visibilitychange'));
     }
    }
-   assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled,mode);assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
+   assert.equal(sources.at(-2),w.ShuLakeIntro.diarySpreadFor(id).to,`${id} ${mode}`);assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
    assert.equal(d.snapshot().pose.settled,true);const count=sources.length;m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
    d.cancel();assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
@@ -226,18 +226,35 @@ for(const mode of ['reduced-motion','deadline'])test(`retained RAF callbacks can
    time.queued.delete(handle);
    if(mode==='reduced-motion')m.change(true);
    else{time.advance(duration*1000-time.now());timers.fire();}
-   assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled);
+   assert.equal(sources.at(-2),w.ShuLakeIntro.diarySpreadFor(id).to);
    const count=sources.length;
    for(const timestamp of mode==='reduced-motion'?[650,550,duration*1000+250]:[550,duration*1000+250]){
     late(timestamp);
     assert.equal(sources.length,count,'a retained callback must not repaint after settlement');
-    assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled);
+    assert.equal(sources.at(-2),w.ShuLakeIntro.diarySpreadFor(id).to);
     assert.equal(d.snapshot().elapsed,duration);assert.equal(d.snapshot().pose.settled,true);
     assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().scheduled,false);
     assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
    }
    m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
    d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
+
+test('later diary stages wait for their own source and destination before starting their deadline',()=>{
+ for(const id of ['researcher','wish'])for(const order of [[0,1,2,3],[3,2,1,0],[0,3,1,2],[2,0,3,1]]){
+  const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),pending=[];
+  try{
+   w.Image=function(){this.complete=false;this.naturalWidth=0;this.naturalHeight=0;pending.push(this);};
+   const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:media()}),names=w.ShuLakeIntro.diarySources(id);
+   assert.equal(names.length,4);assert.equal(pending.length,4);assert.equal(timers.pending.size,0);
+   for(const [index,sourceIndex] of order.entries()){
+    const im=pending.find(image=>image.src===names[sourceIndex]);Object.assign(im,{complete:true,naturalWidth:640,naturalHeight:360});im.onload();
+    if(index<3){time.advance(3000);assert.equal(d.snapshot().elapsed,0);assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);}
+   }
+   assert.equal(time.queued.size,1);assert.equal(timers.pending.size,1);assert.equal(d.snapshot().elapsed,0);
+   const sources=paintedSources(c);timers.fire();assert.equal(sources.at(-2),w.ShuLakeIntro.diarySpreadFor(id).to);assert.equal(d.snapshot().pose.settled,true);d.cancel();assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
  }
 });
