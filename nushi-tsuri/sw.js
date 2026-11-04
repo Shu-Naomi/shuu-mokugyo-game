@@ -1,6 +1,28 @@
 const CACHE_PREFIX = "nushi-tsuri-";
-const CACHE_NAME = "nushi-tsuri-v252-hook-fatigue-252-32";
+// Keep this release suffix, the HUD badge, and the index.html registration in sync.
+const CACHE_NAME = "nushi-tsuri-v252-hook-fatigue-252-36";
+
 const CORE_ASSETS = [
+  "./assets/opening-storybook-diary-v1.webp",
+  "./assets/opening-storybook-diary-turn-v1.webp",
+  "./assets/opening-storybook-diary-settled-v1.webp",
+  "./assets/opening-storybook-boy-call-v1.webp",
+  "./assets/opening-storybook-boy-refusal-v1.webp",
+  "./assets/opening-storybook-boy-nose-v1.webp",
+  "./assets/opening-storybook-boy-threshold-v1.webp",
+  "./assets/opening-storybook-girl-call-v1.webp",
+  "./assets/opening-storybook-girl-refusal-v1.webp",
+  "./assets/opening-storybook-girl-nose-v1.webp",
+  "./assets/opening-storybook-girl-threshold-v1.webp",
+  "./assets/opening-storybook-boy-cling-shuu-v1.webp",
+  "./assets/opening-storybook-boy-cling-riku-v1.webp",
+  "./assets/opening-storybook-boy-cling-grey-v1.webp",
+  "./assets/opening-storybook-girl-cling-shuu-v1.webp",
+  "./assets/opening-storybook-girl-cling-riku-v1.webp",
+  "./assets/opening-storybook-girl-cling-grey-v1.webp",
+
+  "./timed-rest.js?v=252-32",
+  "./timed-rest.css?v=252-32",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
   "./lake-research.js?v=252-7",
@@ -48,7 +70,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=251-1",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=252-31",
+  "./world-life.js?v=252-35",
   "./fish-additions.js?v=251-1",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -59,7 +81,7 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=252-28",
+  "./compact-ui.js?v=252-32",
   "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
@@ -102,7 +124,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=227-1",
-  "./fishing-duel.js?v=252-32",
+  "./fishing-duel.js?v=252-36",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
@@ -111,8 +133,8 @@ const CORE_ASSETS = [
   "./mountain-region.js?v=252-31",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
-  "./lake-intro.js?v=252-8",
-  "./lake-intro.css?v=252-4",
+  "./lake-intro.js?v=252-34",
+  "./lake-intro.css?v=252-34",
   "./lake-story.css?v=206-1",
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",

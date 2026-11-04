@@ -4,8 +4,11 @@ on:
     branches: [main]
     paths: ['nushi-tsuri/**', '.github/workflows/hook-fatigue.yml']
   push:
-    branches: [main, codex/nushi-hook-fatigue]
+    branches: [main]
     paths: ['nushi-tsuri/**', '.github/workflows/hook-fatigue.yml']
+concurrency:
+  group: hook-fatigue-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
 permissions:
   contents: read
 jobs:
