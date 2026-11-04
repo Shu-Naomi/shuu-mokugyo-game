@@ -3,7 +3,7 @@ const {findRoute}=require('./water-routes-v220.cjs');
 const M=require('../mountain-region.js');
 const I=require('../offshore-island.js');
 
-function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold}){
+function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold,waterFxSeed=null}){
  const island={shimaaji:{area:'east',bait:'shrimp',distance:50},ishigakidai:{area:'west',bait:'shell',distance:50},akahata:{area:'cove',bait:'smallShrimp',distance:20}}[id];
  const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=island?.bait||(wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm');
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:wet?600:1320,
@@ -20,11 +20,12 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
   w.eval(`Math.random=()=>${encounter};battle.cast=${distance};launchSurfaceCast();settleSurfaceCast();
    battle.specimen=rollFishSpecimen(battle.f,()=>${tier});battle.specimenVisualScale=fishVisualScale(battle.specimen);var testNow=200000,testRng=${rngSeed};Date.now=()=>testNow;
    Math.random=()=>((testRng=Math.imul(testRng,1664525)+1013904223>>>0)/4294967296);
+   ${waterFxSeed===null?'':`var gameRandom=Math.random,particleRng=${Number(waterFxSeed)};Math.random=()=>((particleRng=Math.imul(particleRng,1664525)+1013904223>>>0)/4294967296);resetWaterFx();Math.random=gameRandom;`}
    battle.biteAt=testNow;syncBitePhase();pressBattleAction();releaseBattleAction();stopBattleFishArt();
    var fightTick;setInterval=fn=>(fightTick=fn,9001);battleTick();
    // Skip painting only: real mood selection, cue text, line/rod physics,
    // movement, warning clocks, input edges and landing are still executed.
-   renderBattleFish=()=>{};updateWaterFx=()=>{};syncBattleFishLine=()=>{};updateTensionFeedback=()=>{};`);
+   renderBattleFish=()=>{};${waterFxSeed===null?'updateWaterFx=()=>{};':'drawWaterFx=()=>{};'}syncBattleFishLine=()=>{};updateTensionFeedback=()=>{};`);
   const start=read(w,'({id:battle.f.id,size:battle.specimen.cmText,mode:battle.fightMode,gear:battle.equipment})');
   const result=read(w,`(()=>{
    const scene=document.querySelector('#fishScene'),ten=document.querySelector('#ten'),queue=[];

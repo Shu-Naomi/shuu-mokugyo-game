@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-storybook-feedback-252-37";
+const CACHE_NAME = "nushi-tsuri-v252-storybook-feedback-252-38";
 
 const CORE_ASSETS = [
   "./assets/opening-storybook-diary-v1.webp",
@@ -124,7 +124,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=227-1",
-  "./fishing-duel.js?v=252-36",
+  "./fishing-duel.js?v=252-38",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
