@@ -59,3 +59,8 @@
   #timedRestPreview { grid-row: 2; }
   .timed-rest-actions { grid-row: 3; }
 }
+@media (max-height: 360px) {
+  .timed-rest-scene canvas { height: 56px; }
+  #timedRestPreview { font-size: 13px; line-height: 1.3; }
+  #timedRestDescription { font-size: 12px; }
+}
