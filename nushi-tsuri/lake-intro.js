@@ -174,7 +174,7 @@
       draw(now);startWhenReady(now);schedule();
     }
     function tick(now){
-      handle=0;if(!live||doc?.hidden)return;
+      handle=0;if(!live||doc?.hidden||finished)return;
       elapsed=Math.min(duration,(now-start)/1000);if(elapsed>=duration){finished=true;clearDeadline();}
       if(now-last>=1000/12||finished)draw(now);schedule();
     }

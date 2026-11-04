@@ -210,3 +210,34 @@ test('reduced motion and visibility interruption paint completed diary artwork w
   }finally{a.dispose();}
  }
 });
+
+// Defensive adapter invariant: a retained callback must not undo settlement.
+// Native RAF cancellation normally prevents this late delivery; these cases do
+// not claim to reproduce the user's original browser freeze.
+for(const mode of ['reduced-motion','deadline'])test(`retained RAF callbacks cannot repaint after ${mode} settlement`,()=>{
+ for(const id of ['notebook','researcher','wish']){
+  const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(),sources=paintedSources(c);
+  try{
+   const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m}),duration=d.snapshot().pose.duration;
+   time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);
+   const [handle,late]=[...time.queued][0];assert.equal(typeof late,'function');
+   // Simulate a clock adapter having handed the callback to another queue,
+   // where cancellation cannot retract it. Keep its frame timestamp as well.
+   time.queued.delete(handle);
+   if(mode==='reduced-motion')m.change(true);
+   else{time.advance(duration*1000-time.now());timers.fire();}
+   assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+   const count=sources.length;
+   for(const timestamp of mode==='reduced-motion'?[650,550,duration*1000+250]:[550,duration*1000+250]){
+    late(timestamp);
+    assert.equal(sources.length,count,'a retained callback must not repaint after settlement');
+    assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+    assert.equal(d.snapshot().elapsed,duration);assert.equal(d.snapshot().pose.settled,true);
+    assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().scheduled,false);
+    assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
+   }
+   m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
+   d.cancel();assert.deepEqual(a.errors,[]);
+  }finally{a.dispose();}
+ }
+});
