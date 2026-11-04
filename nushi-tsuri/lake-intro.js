@@ -25,8 +25,8 @@
       paragraphs:['道具なら、うちの店で何とかなるぞ。','まずは湖をひと回りしてだな――。']},
     {id:'retort',title:'まだ返事の途中です',speaker:'{player}',scene:'sam',
       paragraphs:['人の話、聞いてます？']},
-    {id:'puppies',title:'廊下からの足音',speaker:'祖父の家',scene:'puppies',
-      paragraphs:['足音の主は、祖父が世話をしていた三匹。','{shuu}、{riku}、{grey}が、そばへ駆け寄ってきた。']},
+    {id:'puppies',title:'戸口からの足音',speaker:'祖父の家',scene:'puppies',
+      paragraphs:['戸口の方から、小さな足音が重なって聞こえた。祖父が世話をしていた三匹だ。','{shuu}、{riku}、{grey}が、そばへ駆け寄ってきた。']},
     {id:'cling',title:'小さなぬくもり',speaker:'{dog}',scene:'cling',
       paragraphs:['くぅん……','{dog}は服の裾に鼻を寄せ、そっと体をすり寄せた。']},
     {id:'care',title:'この家に残されたもの',speaker:'サム',scene:'cling',
@@ -74,7 +74,8 @@
     const action={sam:'call',invitation:'call',refusal:'refusal',push:'refusal',retort:'nose',puppies:'threshold'}[p.id];
     return c.avatar+'-'+(action||'cling-'+c.dog);
   }
-  function sourceFor(panel){return art[panel]||'assets/opening-storybook-'+panel+'-v1.webp';}
+  const revisedPanels=new Set(['boy-call','girl-call','boy-refusal','girl-refusal','boy-nose','girl-nose']);
+  function sourceFor(panel){return art[panel]||'assets/opening-storybook-'+panel+(revisedPanels.has(panel)?'-v2.webp':'-v1.webp');}
   // Regions use the 640 × 360 painting coordinate system. Only this small area
   // can move; the camera, doorway, people and dogs never slide as whole sprites.
   function regionFor(panel){
@@ -149,10 +150,18 @@
     const page=pageFor(value),doc=canvas.ownerDocument,env=doc?.defaultView||globalThis;
     const clock=options.clock||{now:()=>env.performance.now(),request:fn=>env.requestAnimationFrame(fn),cancel:id=>env.cancelAnimationFrame(id)};
     const media=options.media||env.matchMedia?.('(prefers-reduced-motion: reduce)'),duration=durations[page.id];
-    let live=true,handle=0,start=null,elapsed=media?.matches?duration:0,finished=Boolean(media?.matches),last=-Infinity;
+    const timers=options.timers||{set:(fn,ms)=>env.setTimeout(fn,ms),clear:id=>env.clearTimeout(id)};
+    let live=true,handle=0,deadline=null,start=null,elapsed=media?.matches?duration:0,finished=Boolean(media?.matches),last=-Infinity;
     const src=sourceFor(panelFor(page,state)),needed=page.scene==='notebook'?[src,art.diaryTurn,art.diarySettled]:[src];
     const ready=()=>needed.every(source=>{const im=images.get(source);return Boolean(im?.complete&&im.naturalWidth)||failed.has(source);});
     const cancelFrame=()=>{if(handle)clock.cancel(handle);handle=0;};
+    const clearDeadline=()=>{if(deadline!==null)timers.clear(deadline);deadline=null;};
+    function startWhenReady(now){
+      if(start!==null||!ready())return;start=now;
+      // A missed/throttled animation frame must never leave the leaf half turned.
+      // The deadline starts only after every required painting has decoded.
+      if(!finished)deadline=timers.set(()=>{deadline=null;settle();},duration*1000);
+    }
     function draw(now){
       paint(canvas,page,redraw,state,pose(page,elapsed,state));last=now;
       canvas.dataset.step=page.id;canvas.dataset.motion=finished||elapsed>=duration?'still':start===null?'loading':'running';
@@ -160,20 +169,21 @@
     function schedule(){if(live&&!doc?.hidden&&!finished&&start!==null&&elapsed<duration&&!handle)handle=clock.request(tick);}
     function redraw(){
       if(!live||doc?.hidden)return;
-      const now=clock.now();if(start===null&&ready())start=now;
+      const now=clock.now();startWhenReady(now);
       elapsed=finished?duration:start===null?0:Math.min(duration,(now-start)/1000);
-      draw(now);if(start===null&&ready())start=now;schedule();
+      draw(now);startWhenReady(now);schedule();
     }
     function tick(now){
       handle=0;if(!live||doc?.hidden)return;
-      elapsed=Math.min(duration,(now-start)/1000);if(now-last>=1000/12||elapsed>=duration)draw(now);schedule();
+      elapsed=Math.min(duration,(now-start)/1000);if(elapsed>=duration){finished=true;clearDeadline();}
+      if(now-last>=1000/12||finished)draw(now);schedule();
     }
-    function settle(){finished=true;elapsed=duration;cancelFrame();redraw();}
-    function visibility(){if(doc.hidden){finished=true;elapsed=duration;cancelFrame();}else redraw();}
+    function settle(){if(!live)return;finished=true;elapsed=duration;cancelFrame();clearDeadline();redraw();}
+    function visibility(){if(doc.hidden){finished=true;elapsed=duration;cancelFrame();clearDeadline();}else redraw();}
     const motion=()=>{if(media.matches)settle();};
     doc?.addEventListener('visibilitychange',visibility);media?.addEventListener?.('change',motion);
     for(const source of needed)image(source,redraw);redraw();
-    return {cancel(){if(!live)return;live=false;cancelFrame();doc?.removeEventListener('visibilitychange',visibility);media?.removeEventListener?.('change',motion);
+    return {cancel(){if(!live)return;live=false;cancelFrame();clearDeadline();doc?.removeEventListener('visibilitychange',visibility);media?.removeEventListener?.('change',motion);
       for(const im of images.values())if(im.onload===redraw){im.onload=null;im.onerror=null;}canvas.dataset.motion='stopped';},
       snapshot:()=>({active:live,scheduled:Boolean(handle),elapsed,pose:pose(page,elapsed,state)})};
   }

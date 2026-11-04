@@ -1,0 +1,124 @@
+{
+  "method": "Image-generated edits reduced with nearest-neighbor sampling and composited only within bounded book/face patches onto the original 640x360 images; lossless WebP.",
+  "assets": [
+    {
+      "key": "boy-call",
+      "file": "assets/opening-storybook-boy-call-v2.webp",
+      "generation_ids": [
+        "25556ba0-0b81-4338-8f95-0a5154e89f05",
+        "7f160569-455d-4bbc-9906-c96cdea432b3"
+      ],
+      "patches": [
+        [
+          114,
+          223,
+          91,
+          48
+        ],
+        [
+          212,
+          183,
+          15,
+          14
+        ]
+      ]
+    },
+    {
+      "key": "girl-call",
+      "file": "assets/opening-storybook-girl-call-v2.webp",
+      "generation_ids": [
+        "970f24eb-0aeb-4847-a89c-d2c954bea0f1",
+        "5a010c59-66d6-481a-93e5-3559d7c6c34c",
+        "d0b3572d-6a56-476e-858d-1bdf84354119"
+      ],
+      "patches": [
+        [
+          114,
+          223,
+          91,
+          48
+        ],
+        [
+          212,
+          183,
+          15,
+          14
+        ]
+      ],
+      "contained_wrist_patch": [
+        180,
+        244,
+        25,
+        24
+      ]
+    },
+    {
+      "key": "boy-nose",
+      "file": "assets/opening-storybook-boy-nose-v2.webp",
+      "generation_ids": [
+        "9b8a11c5-04c7-4783-91f9-12d338e74de0"
+      ],
+      "patches": [
+        [
+          201,
+          168,
+          31,
+          34
+        ]
+      ]
+    },
+    {
+      "key": "girl-nose",
+      "file": "assets/opening-storybook-girl-nose-v2.webp",
+      "generation_ids": [
+        "d46a55d9-93a5-4472-a10a-d45a5b7419d8"
+      ],
+      "patches": [
+        [
+          201,
+          168,
+          31,
+          34
+        ]
+      ]
+    },
+    {
+      "key": "boy-refusal",
+      "file": "assets/opening-storybook-boy-refusal-v2.webp",
+      "generation_ids": [
+        "870ddb4a-e66c-4948-b532-daec270ff424"
+      ],
+      "patches": [
+        [
+          201,
+          168,
+          31,
+          34
+        ]
+      ]
+    },
+    {
+      "key": "girl-refusal",
+      "file": "assets/opening-storybook-girl-refusal-v2.webp",
+      "generation_ids": [
+        "5f399f2a-746b-49c2-8b9a-2df8b9fd71ab"
+      ],
+      "patches": [
+        [
+          201,
+          168,
+          31,
+          34
+        ]
+      ]
+    }
+  ],
+  "prompt_set": {
+    "call_book": "Edit only diary orientation, preserving scene and hand placement. Reader sits at right. Rotate physical open book in table plane so gutter runs horizontally left-to-right, dividing upper and lower pages. Rotate ink on each page so cabin roof/tree tops point left and bases point right toward reader; fish nose down/tail up; illegible writing rows run vertically onscreen. Keep table, body, camera and surroundings unchanged.",
+    "call_face": "Replace smiling mouth with small round open o of surprised attentive listening. Gaze stays up-right; preserve face silhouette and all other features.",
+    "retort": "Change only eyes, eyebrows and mouth to mildly irritated incredulity for Were you even listening to me: slightly narrowed eyes, small lowered/furrowed brow, closed downturned mouth. Composed annoyance, not fury or shouting; no smile. Preserve identity, outline, feature positions, clothing, background and pixel clusters.",
+    "refusal": "Change only eyebrows, eyes and mouth to quietly reserved reluctance: neutral small closed mouth without smile, slightly hesitant raised inner brow, calm attentive eyes looking up-right. Not sad, irritated or excited. Preserve identity, outline, feature positions, clothing, background and pixel clusters.",
+    "girl_wrist": "Repair only lower hand/wrist join at compositing seam, preserving corrected diary orientation and ink, body outline and red shirt. Make one continuous natural forearm/hand resting on book with unchanged pose. Do not alter upper hand, book perspective, background or pixel density."
+  },
+  "unchanged": "All v1 assets and all diary, threshold, cling and standing artwork remain untouched. The existing initial and final diary sources are flat; the reported screenshot matches the intermediate source. A runtime deadline protects completion. Diary ROI remains [315,43,214,260]."
+}
