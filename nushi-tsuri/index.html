@@ -6454,7 +6454,7 @@
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
     <link rel="stylesheet" href="lake-intro.css?v=252-41" />
-    <link rel="stylesheet" href="timed-rest.css?v=252-32" />
+    <link rel="stylesheet" href="timed-rest.css?v=252-43" />
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
@@ -6524,7 +6524,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-42</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-43</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7138,8 +7138,15 @@
           <section class="timed-rest-panel">
             <h2 id="timedRestTitle">時刻を選んで休む</h2>
             <div id="timedRestChooser">
-              <p id="timedRestDescription"></p>
-              <label for="timedRestTime">起きる時刻</label> <input type="time" id="timedRestTime" value="06:00" required />
+              <div class="timed-rest-scene"><canvas id="timedRestScene" width="320" height="160" aria-hidden="true"></canvas><p id="timedRestDescription"></p></div>
+              <div class="timed-rest-dial">
+                <label for="timedRestTime">起きる時刻 <small>24時間表示</small></label>
+                <input type="text" id="timedRestTime" value="06:00" maxlength="5" autocomplete="off" spellcheck="false" aria-describedby="timedRestTimeHint timedRestPreview" required />
+                <div class="timed-rest-steps"><button type="button" data-rest-step="-60" aria-label="1時間戻す">時 −</button><button type="button" data-rest-step="60" aria-label="1時間進める">時 ＋</button></div>
+                <div class="timed-rest-steps"><button type="button" data-rest-step="-1" aria-label="1分戻す">分 −</button><button type="button" data-rest-step="1" aria-label="1分進める">分 ＋</button></div>
+                <div class="timed-rest-presets" aria-label="起きる時刻の候補"><button type="button" data-rest-time="06:00">朝 6時</button><button type="button" data-rest-time="12:00">昼 12時</button><button type="button" data-rest-time="18:00">夕 18時</button></div>
+                <small id="timedRestTimeHint">＋−で1分単位・数字を押すと直接入力</small>
+              </div>
               <p id="timedRestPreview" aria-live="polite"></p>
               <div class="timed-rest-actions"><button id="timedRestStart" type="button">この時刻まで休む</button><button id="timedRestCancel" type="button">戻る</button></div>
             </div>
@@ -17291,8 +17298,14 @@
         $("#timedRestTitle").textContent = kind === "inn" ? "釣り宿でひと休み" : "湖畔のキャンプ";
         $("#timedRestDescription").textContent = kind === "inn" ? "宿で指定時刻まで休み、体力を全回復する。" : "この釣り場で、ワンコと指定時刻まで待つ。体力や持ち物は変わらない。";
         $("#timedRestTime").value = "06:00";
+        const scene=$("#timedRestScene"),images={};
+        const draw=()=>{if(timedRestSession?.kind===kind)ShuTimedRest.paint(scene,kind,.4,images,s.dog);};
+        draw();
+        for(const [key,src] of Object.entries({inn:"assets/interior-fishing-inn-v55.png",dog:"assets/dog-idles.png"})){
+          const im=new Image();images[key]=im;im.onload=draw;im.src=src;
+        }
         $("#timedRestChooser").hidden = false;$("#timedRestFilm").hidden = true;
-        updateTimedRestPreview();open("timedRest");$("#timedRestTime").focus({preventScroll:true});return true;
+        updateTimedRestPreview();open("timedRest");$("[data-rest-time]").focus({preventScroll:true});return true;
       }
       function finishTimedRest() {
         const presentation=timedRestPresentation;timedRestPresentation=null;
@@ -24093,6 +24106,15 @@
       $("#locationAction").onclick = useLocationService;
       $("#locationTimedRest").onclick = () => openTimedRest("inn");
       $("#timedRestTime").oninput = updateTimedRestPreview;
+      document.querySelectorAll("[data-rest-step],[data-rest-time]").forEach(button=>button.onclick=()=>{
+        if(!timedRestSession||timedRestSession.committed)return;
+        const input=$("#timedRestTime"),target=ShuTimedRest.targetMinute(0,input.value);
+        input.value=button.dataset.restTime||ShuTimedRest.label(((target??360)+Number(button.dataset.restStep)+1440)%1440);
+        updateTimedRestPreview();
+      });
+      $("#timedRestTime").addEventListener("keydown",event=>{
+        if(event.key==="Enter"){event.preventDefault();$("#timedRestStart").focus({preventScroll:true});}
+      });
       $("#timedRestStart").onclick = beginTimedRest;
       $("#timedRestCancel").onclick = () => {const kind=timedRestSession?.kind;finishTimedRest();if(kind==="inn")openLocationInterior("farmhouse");};
       $("#timedRestFilm").onclick = finishTimedRest;
@@ -24283,7 +24305,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-42").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-43").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
