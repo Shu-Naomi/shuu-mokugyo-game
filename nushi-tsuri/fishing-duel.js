@@ -123,9 +123,10 @@
   // Boss force already makes missed ground costly; a lower base avoids
   // multiplying their fight length while still exceeding old endurance.
   const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,legendary:60,pelagic:360,reefRunner:280};
-  // Hiramasa's long runs and strong payout otherwise crowd the three-minute
-  // safe-play window. Keep four times the old stamina, calibrated with real water FX.
-  const enduranceOverrides={hiramasa:400};
+  // These strong sea fish need a margin below the three-minute safe-play
+  // window. Both retain more than three times the old stamina; real water FX
+  // are included in their reproducible calibration cases.
+  const enduranceOverrides={hiramasa:400,kanpachi:380};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);

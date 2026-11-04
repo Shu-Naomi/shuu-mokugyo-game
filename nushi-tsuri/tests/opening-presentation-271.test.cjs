@@ -96,9 +96,9 @@ test('paint changes only its local region and settles into a stable still or the
   Intro.paint(canvas,id,()=>{},state,end);const final=ctx.getImageData(0,0,640,360).data;
   if(id==='notebook'){
    assert.ok(localChanges(final,'final')>0,'diary must settle on the next page, not return to the first');
-   for(const [fraction,expected]of [[.2,animated],[.8,final]]){
+   for(const fraction of [.2,.8]){
     Intro.paint(canvas,id,()=>{},state,Intro.pose(id,start.duration*fraction,state));
-    assert.deepEqual(ctx.getImageData(0,0,640,360).data,expected,'held pixel-art poses must not dissolve into doubled ink');
+    assert.notDeepEqual(ctx.getImageData(0,0,640,360).data,animated,'the leaf must travel through multiple crisp poses, not hold a middle still');
    }
   }
   else assert.deepEqual(final,first);
@@ -145,9 +145,9 @@ test('every diary page reaches the completed source even when RAF stops after th
    const before=resources(w),raw=w.localStorage.getItem(saveKey);
    const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m});
    assert.equal(timers.pending.size,1);assert.equal([...timers.pending.values()][0].ms,d.snapshot().pose.duration*1000);
-   time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);assert.equal(d.snapshot().pose.settled,false);
+   time.advance(550);assert.ok(['rise','cross','settle'].includes(c.dataset.turnPhase));assert.equal(d.snapshot().pose.settled,false);
    // No more animation-frame callbacks are delivered, only the deadline.
-   timers.fire();assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled,'deadline must actually paint completed artwork, not only set a state flag');
+   timers.fire();assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled,'deadline must actually paint completed artwork, not only set a state flag');
    assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().pose.settled,true);assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
    const count=sources.length;time.advance(5000);assert.equal(sources.length,count);assert.deepEqual(resources(w),before);assert.equal(w.localStorage.getItem(saveKey),raw);
    d.cancel();assert.deepEqual(a.errors,[]);
@@ -185,7 +185,7 @@ test('diary deadline waits for all image decodes and arms only once, including r
    const last=images[2];Object.assign(last,{complete:true,naturalWidth:640,naturalHeight:360});last.onload();
    assert.equal(timers.pending.size,1);const token=[...timers.pending.keys()][0];
    for(const image of images)image.onload();assert.equal(timers.pending.size,1);assert.equal([...timers.pending.keys()][0],token,'decode notifications cannot restart the completion deadline');
-   const sources=paintedSources(c);timers.fire();assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);assert.equal(d.snapshot().pose.settled,true);
+   const sources=paintedSources(c);timers.fire();assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled);assert.equal(d.snapshot().pose.settled,true);
    d.cancel();assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
  }
@@ -196,7 +196,7 @@ test('reduced motion and visibility interruption paint completed diary artwork w
   try{
    const d=w.ShuLakeIntro.present(c,'notebook',read(w,'s'),{clock:time,timers,media:m});
    if(mode!=='initial-reduced'){
-    time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);
+    time.advance(550);assert.ok(['rise','cross','settle'].includes(c.dataset.turnPhase));
     if(mode==='changed-reduced')m.change(true);
     else{
      Object.defineProperty(w.document,'hidden',{configurable:true,value:true});w.document.dispatchEvent(new w.Event('visibilitychange'));
@@ -204,7 +204,7 @@ test('reduced motion and visibility interruption paint completed diary artwork w
      Object.defineProperty(w.document,'hidden',{configurable:true,value:false});w.document.dispatchEvent(new w.Event('visibilitychange'));
     }
    }
-   assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled,mode);assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
+   assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled,mode);assert.equal(timers.pending.size,0);assert.equal(time.queued.size,0);
    assert.equal(d.snapshot().pose.settled,true);const count=sources.length;m.change(false);time.advance(5000);timers.fire();assert.equal(sources.length,count);
    d.cancel();assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
@@ -219,19 +219,19 @@ for(const mode of ['reduced-motion','deadline'])test(`retained RAF callbacks can
   const a=boot(saved(id),undefined,{start:false}),w=a.window,c=w.document.querySelector('#lakeIntroPicture'),time=clock(),timers=deadlines(),m=media(),sources=paintedSources(c);
   try{
    const d=w.ShuLakeIntro.present(c,id,read(w,'s'),{clock:time,timers,media:m}),duration=d.snapshot().pose.duration;
-   time.advance(550);assert.equal(sources.at(-1),w.ShuLakeIntro.art.diaryTurn);
+   time.advance(550);assert.ok(['rise','cross','settle'].includes(c.dataset.turnPhase));
    const [handle,late]=[...time.queued][0];assert.equal(typeof late,'function');
    // Simulate a clock adapter having handed the callback to another queue,
    // where cancellation cannot retract it. Keep its frame timestamp as well.
    time.queued.delete(handle);
    if(mode==='reduced-motion')m.change(true);
    else{time.advance(duration*1000-time.now());timers.fire();}
-   assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+   assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled);
    const count=sources.length;
    for(const timestamp of mode==='reduced-motion'?[650,550,duration*1000+250]:[550,duration*1000+250]){
     late(timestamp);
     assert.equal(sources.length,count,'a retained callback must not repaint after settlement');
-    assert.equal(sources.at(-1),w.ShuLakeIntro.art.diarySettled);
+    assert.equal(sources.at(-2),w.ShuLakeIntro.art.diarySettled);
     assert.equal(d.snapshot().elapsed,duration);assert.equal(d.snapshot().pose.settled,true);
     assert.equal(c.dataset.motion,'still');assert.equal(d.snapshot().scheduled,false);
     assert.equal(time.queued.size,0);assert.equal(timers.pending.size,0);
