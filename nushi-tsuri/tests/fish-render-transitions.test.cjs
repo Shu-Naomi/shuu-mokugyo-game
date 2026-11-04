@@ -4,6 +4,9 @@ const { boot, read } = require("./game-harness.cjs");
 
 function setup(surface, initialFish = null) {
   const app = boot(), { window } = app;
+  // Identical-frame deduplication needs identical presentation time. Fight
+  // strokes now interpolate even before the first simulation tick.
+  window.eval("var transitionNow=Date.now();Date.now=()=>transitionNow");
   const element = window.document.querySelector(surface === "battle" ? "#battleFish" : "#catchFish");
   window.eval(`fishAtlasCanvas($("#${element.id}"))`);
   const canvas = element.querySelector("canvas"), context = canvas.getContext("2d");

@@ -67,7 +67,7 @@
     const age=Math.max(0,Number(options.age)||0),remaining=Number.isFinite(options.remaining)?Math.max(0,options.remaining):1;
     const envelope=Math.min(1,age/.24,remaining/.24);
     const surge=.35+.65*((1+Math.sin(angle))/2)**2;
-    const effort=options.quiet?1.15:options.calm?1.25:1.25+(p.effort-1.25)*envelope*surge;
+    const effort=options.quiet?1:options.calm?1.25:1.25+(p.effort-1.25)*envelope*surge;
     return {extraFrame,effort};
   }
   return Object.freeze({profile,phase,fight,fightProfile,profiles:Object.freeze(profiles)});
