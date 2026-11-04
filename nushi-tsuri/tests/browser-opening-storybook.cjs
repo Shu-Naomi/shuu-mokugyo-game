@@ -5,7 +5,7 @@ module.exports=async function storybook(url,screen){
  const {width,height,mobile,dpr=1}=screen,dir=path.resolve(process.env.STORYBOOK_EVIDENCE||path.join(__dirname,'storybook-evidence'));
  fs.mkdirSync(dir,{recursive:true});const browser=await chromium.launch({headless:true}),results=[];
  try{for(const avatar of ['boy','girl'])for(const dog of ['shuu','riku','grey']){
-  const prefix=`${width}x${height}-${avatar}-${dog}`;
+  const prefix=`${width}x${height}-${avatar}-${dog}`,detailedFeedback=feedbackEvidence.coversDiaryMotion(screen,dog);
   const context=await browser.newContext({viewport:{width,height},deviceScaleFactor:dpr,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage(),errors=[],httpErrors=[],layouts=[],panels=[],diaryFrames=[];
   page.setDefaultTimeout(15000);
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(`${r.status()} ${r.url()}`);});
@@ -42,10 +42,10 @@ module.exports=async function storybook(url,screen){
    for(const id of ids){
     assert.equal(await step(),id);assert.equal(await page.locator('#lakeIntroPicture').getAttribute('data-avatar'),avatar);assert.equal(await page.locator('#lakeIntroPicture').getAttribute('data-dog'),dog);
     await ready();
-    if(feedback.diaryIds.includes(id))diaryFrames.push(await feedback.diary(id));
+    if(detailedFeedback&&feedback.diaryIds.includes(id))diaryFrames.push(await feedback.diary(id));
     await page.clock.runFor(2200);await fits();
     const model=await snapshot();assert.equal(model.scheduled,false);assert.equal(model.pose.settled,true);panels.push({id,hash:await hash(),pose:model.pose});await shot(id);
-    if(feedback.reviewIds.includes(id))await feedback.capture(`${id}-dialogue`);
+    if(feedback.reviewIds.includes(id))await feedback.capture(`${id}-dialogue`,{existingUiFile:`${prefix}-${id}.png`});
     if(id==='puppies'){const text=await page.locator('#lakeIntroPaper').innerText();assert.match(text,/小さな足音/);assert.ok(text.indexOf('小さな足音')<text.indexOf('三匹'),'introduce footsteps before identifying the dogs');}
     if(id==='refusal'){await press('#lakeIntroPrevious');assert.equal(await step(),'invitation');await next();assert.equal(await step(),'refusal');}
     if(id==='cling'){
@@ -65,15 +65,15 @@ module.exports=async function storybook(url,screen){
    await press('#lakeIntroNext');assert.equal(await step(),'arrival');
    await press('#lakeIntroNext');assert.equal(await step(),'memory');
    await page.evaluate(()=>{textSpeed='instant';});await press('#lakeIntroPrevious');assert.equal(await step(),'arrival');
-   const feedbackTransitions=await feedback.transitions();
+   const feedbackTransitions=detailedFeedback?await feedback.transitions():{checked:false,reason:'Detailed interrupted diary coverage runs for both avatars with Grey on desktop and the smallest phone'};
    // Rapid advances/back navigation do not wait for art animation or leak late paints.
    await page.evaluate(()=>{for(let i=0;i<10;i++)document.querySelector('#lakeIntroNext').click();});assert.equal(await step(),'puppies');await press('#lakeIntroPrevious');assert.equal(await step(),'retort');await next();
    await ready();await page.emulateMedia({reducedMotion:'reduce'});await page.clock.runFor(120);assert.equal((await snapshot()).scheduled,false);const still=await hash();await page.clock.runFor(1500);assert.equal(await hash(),still);await page.emulateMedia({reducedMotion:'no-preference'});assert.equal((await snapshot()).scheduled,false);
    await next();await page.evaluate(()=>window.skippedStorybook=lakeIntroPresentation);await press('#lakeIntroSkip');assert.equal(await page.evaluate(()=>skippedStorybook.snapshot().active),false);assert.equal(await page.locator('#lakeStory.open').count(),1);assert.equal(await page.evaluate(()=>JSON.stringify(s.lakeStory)),story);const stopped=await hash();await page.clock.runFor(2500);assert.equal(await hash(),stopped,'skipped art cannot repaint');
    await press('#lakeStoryReplayIntro');await page.keyboard.press('Escape');assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.locator('#lakeStory.open').count(),1);
    assert.equal(await page.evaluate(()=>localStorage.getItem('storybook-other-slot')),'untouched');assert.equal(await stats(),before);assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
-   const visualReview=feedback.writeReview();
-   results.push({avatar,dog,layouts,panels,diaryFrames,feedbackTransitions,visualSignoff:visualReview.visualSignoff,resume:true,replay:true,skip:true,fastAdvance:true,reducedMotion:true,errors,httpErrors});console.log('STORYBOOK_CASE_PASS '+prefix);
+   const visualReview=feedback.writeReview({diaryMotionChecked:detailedFeedback});
+   results.push({avatar,dog,layouts,panels,diaryFrames,detailedFeedback,feedbackTransitions,visualSignoff:visualReview.visualSignoff,resume:true,replay:true,skip:true,fastAdvance:true,reducedMotion:true,errors,httpErrors});console.log('STORYBOOK_CASE_PASS '+prefix);
   }catch(error){await shot('failure').catch(()=>{});fs.writeFileSync(path.join(dir,`${prefix}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors,layouts},null,2));throw error;}finally{await context.close();}
  }
  fs.writeFileSync(path.join(dir,`${width}x${height}-result.json`),JSON.stringify({screen,results,nativeStatus:'pending'},null,2));

@@ -23,3 +23,6 @@ The PR must not merge until browser replay screenshots have been visually inspec
 The first released scene drew the open diary for the viewer rather than the seated protagonist, and the retort reused a smiling expression. Corrected paintings must be visually inspected at desktop and landscape-phone size for both avatars. Changed artwork uses fresh asset URLs rather than relying on old cached names.
 
 The reported raised diary page matches the intermediate painting. The shipped final source is flat; a stalled RAF on the user's device has not been reproduced. Timing flags alone are not visual proof of completion: browser evidence must capture the actual starting, raised, and flat final pixels, plus reduced motion, interruption and re-entry.
+
+The browser matrix retains all 384 settled page/cast/screen cases. Supplementary interrupted diary sequences target both avatars at desktop 1280×720 and landscape phone 820×366; native-clock diary sequences run for both avatars on all four viewports. Review sheets reuse existing full UI captures and retain native canvas images, avoiding duplicate screenshots. The opening job allows 25 minutes for this expanded evidence.
+Evidence is uploaded as one artifact per viewport, keeping individual archives within the retrieval limit while retaining every capture.

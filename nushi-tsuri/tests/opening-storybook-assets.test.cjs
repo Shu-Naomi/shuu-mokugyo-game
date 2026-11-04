@@ -43,3 +43,15 @@ test('feedback art changes are confined to the protagonist face and tabletop boo
   assert.ok(changed>100,`${avatar}-${action} must actually revise the relevant artwork`);
  }
 });
+
+test('focused supplementary motion retains both avatars on desktop and small phone alongside the full 384 settled matrix',()=>{
+ const {coversDiaryMotion}=require('./browser-opening-feedback.cjs');
+ const screens=[{width:1280,height:720},{width:844,height:390},{width:820,height:366},{width:1280,height:1024}],selected=[];let settled=0,native=0;
+ for(const screen of screens)for(const avatar of ['boy','girl']){
+  native+=3;
+  for(const dog of ['shuu','riku','grey']){settled+=16;if(coversDiaryMotion(screen,dog))selected.push(`${screen.width}x${screen.height}-${avatar}-${dog}`);}
+ }
+ assert.equal(settled,384);assert.equal(native,24);
+ assert.deepEqual(selected,['1280x720-boy-grey','1280x720-girl-grey','820x366-boy-grey','820x366-girl-grey']);
+ assert.equal(selected.length*3,12);
+});

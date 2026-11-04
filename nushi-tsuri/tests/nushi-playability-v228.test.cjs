@@ -65,6 +65,7 @@ for(const id of ['namazu','koi','raigyo','nushi','starNushi'])for(const tier of 
 for(const condition of conditions)test(`visible cues with ${condition.delayMs}ms input delay land ${condition.id} tier ${condition.tier} seed ${condition.rngSeed}`,()=>{
  const r=runFight(condition);console.log('V228_FIGHT '+JSON.stringify(r));
  assert.deepEqual(r.errors,[]);assert.equal(r.start.id,condition.id);assert.equal(r.phase,'landing');
+ if(condition.id==='starNushi'&&condition.tier>.99)assert.ok(r.seconds<300,'maximum-size final boss remains under five minutes for these seeds');
  assert.ok(r.warningCount>0||r.pullOpenings===1,'a pull either lands within the first opening or shows the resistance cue');
 });
 

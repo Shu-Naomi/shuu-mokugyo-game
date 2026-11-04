@@ -7,11 +7,12 @@ const reviewIds=['sam','invitation','refusal','push','retort','puppies','cling',
 module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
  const captures=[];
  const snapshot=()=>page.evaluate(()=>lakeIntroPresentation.snapshot());
- async function capture(name){
-  const file=`${prefix}-${name}-canvas.png`,uiFile=`${prefix}-${name}-ui.png`;
+ async function capture(name,{existingUiFile=null}={}){
+  const file=`${prefix}-${name}-canvas.png`,uiFile=existingUiFile||`${prefix}-${name}-ui.png`;
   const result=await page.locator('#lakeIntroPicture').evaluate(canvas=>({png:canvas.toDataURL('image/png'),dataset:{...canvas.dataset},pose:lakeIntroPresentation.snapshot().pose}));
   fs.writeFileSync(path.join(dir,file),Buffer.from(result.png.split(',')[1],'base64'));
-  await page.screenshot({path:path.join(dir,uiFile)});
+  if(existingUiFile)assert.ok(fs.existsSync(path.join(dir,existingUiFile)),`missing existing UI evidence ${existingUiFile}`);
+  else await page.screenshot({path:path.join(dir,uiFile)});
   const record={name,file,uiFile,dataset:result.dataset,pose:result.pose};captures.push(record);return record;
  }
  async function compareDiaryFrame(frame){
@@ -86,8 +87,8 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
   await press('#lakeIntroPrevious');assert.equal(await page.locator('#lakeIntroPicture').getAttribute('data-step'),'arrival');
   return {nextWhileRaised:true,backWhileRaised:true,reducedMotionCompletedPixels:true};
  }
- function writeReview(){
-  const report={automatedFrameChecks:'passed',visualSignoff:'required; not inferred from settled, timers, hashes or source identity',criteria:[
+ function writeReview({diaryMotionChecked=true}={}){
+  const report={automatedFrameChecks:diaryMotionChecked?'passed':'not repeated for this cast; detailed diary motion is checked for both avatars with Grey at 1280x720 and 820x366, and native-clock diary motion covers both avatars on all four screens',visualSignoff:'required; not inferred from settled, timers, hashes or source identity',criteria:[
    'Sam/invitation: the tabletop book reads toward the seated protagonist, not toward the camera.',
    'Notebook/researcher/wish: compare start, raised turn and completed frames. The completed image must visibly lie flat without an upright leaf or clipped seam.',
    'Refusal/retort: the protagonist looks hesitant or mildly exasperated, not like the same cheerful smile; compare the face with invitation and later warmer dialogue.',
@@ -101,3 +102,8 @@ module.exports=function feedback({page,dir,prefix,ready,next,press,go}){
  }
  return {diary,transitions,capture,compareDiaryFrame,writeReview,diaryIds,reviewIds};
 };
+
+// Repeat expensive mocked-clock animation/cancellation only on a desktop and
+// the smallest landscape phone. The original 384 settled cases and all native
+// clock sequences still run, as do expression/companion captures for every cast.
+module.exports.coversDiaryMotion=({width,height},dog)=>dog==='grey'&&((width===1280&&height===720)||(width===820&&height===366));

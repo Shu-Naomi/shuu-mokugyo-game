@@ -117,7 +117,37 @@
   function rhythm(id){return rhythms[speciesRhythms[id]]||rhythms.heavy;}
   // Only active runs spend the fish's stamina. A paused clock or an ignored
   // slack window cannot tire it out. Even a tired fish continues taking line.
-  const fatigue=b=>clamp((b.nushiRunTicks||0)/100,0,1);
+  // Game tuning, not biological endurance estimates. Every species lasts
+  // longer than the former shared 100 ticks; strength and swimming style both
+  // matter. Progress starts after a fresh reserve, then fades gradually.
+  // Boss force already makes missed ground costly; a lower base avoids
+  // multiplying their fight length while still exceeding old endurance.
+  const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,legendary:60,pelagic:360,reefRunner:280};
+  const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
+    [id,Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
+  const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
+  function hookState(b){
+    const wear=b.nushiHookWear||0;
+    return wear>=.7?"危険":wear>=.3?"緩みかけ":"安定";
+  }
+  function stepHook(b,mood,equipment,unsafe){
+    if(b.fightMode!=="nushi")return;
+    // One charge per resistance episode. Releasing/re-pressing cannot farm
+    // recovery or reset wear. Timely yielding during the run restores it slowly.
+    const window=b.nushiWindow;
+    if(window&&window!==b.nushiHookWindow){
+      b.nushiHookWindow=window;b.nushiHookCharged=false;
+    }
+    if(b.reeling&&unsafe&&!b.nushiHookCharged){
+      const protection=clamp(equipment.control||1,1,2);
+      const previous=b.nushiHookWear||0;
+      b.nushiHookWear=clamp(previous+.28*rhythm(b.f.id).shake/protection,0,previous<.7?.95:1);
+      b.nushiHookCharged=true;
+    }else if(!b.reeling&&!mood.calm&&b.nushiYielded&&!b.nushiHookCharged){
+      b.nushiHookWear=Math.max(0,(b.nushiHookWear||0)-.001);
+    }
+    b.nushiHookLost=!b.practice&&b.nushiHookWear>=1;
+  }
   function escapePace(b,mood,tick=b.moodTick||0){
     const profile=rhythm(b.f.id),surge=.72+.56*Math.sin(tick*.64*profile.tempo)**2;
     return clamp((1.4+(mood.speedX||.6)*.48)*profile.speed,2.25,6.2)*surge*(1-.25*fatigue(b));
@@ -191,6 +221,7 @@
     // Sustained force against a run/resistance breaks even an overpowered rod.
     const resisting=Boolean(window?.warning);
     const unsafe=running||(resisting&&window.warningShownAt!==null&&now-window.warningShownAt>=nushiTiming.reaction);
+    stepHook(b,mood,equipment,unsafe);
     if(b.reeling){
       if(unsafe){
         b.nushiStrain=(b.nushiStrain||0)+120*(resisting?1.8:clamp(ratio,.85,1.5));
@@ -220,5 +251,5 @@
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
   return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
-    nushiTiming,rhythm,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
+    nushiTiming,rhythm,endurance,fatigue,hookState,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
 });
