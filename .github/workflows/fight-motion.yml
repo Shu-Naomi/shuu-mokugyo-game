@@ -29,8 +29,15 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
-      - name: Capture current fight motion
-        run: node browser-fight-motion.cjs
+      - name: Preserve balance, original anatomy, pause and bounded painter allocations
+        run: node --test --test-concurrency=2 fight-motion.test.cjs fish-resistance-v244.test.cjs fish-motion-v213.test.cjs fish-render-transitions.test.cjs fishing-spec-v242.test.cjs render-efficiency.test.cjs
+      - name: Capture the exact unchanged comparison runtime
+        run: |
+          git fetch --depth=1 origin f45b14d49e4d7f2ad88bb4fcbf5a3d3891408845
+          git worktree add /tmp/fight-motion-baseline f45b14d49e4d7f2ad88bb4fcbf5a3d3891408845
+          MOTION_ROOT=/tmp/fight-motion-baseline/nushi-tsuri MOTION_OUT=fight-motion-evidence/before node browser-fight-motion.cjs
+      - name: Capture stronger strokes, warning cues, pauses and reduced motion
+        run: MOTION_ENHANCED=1 MOTION_OUT=fight-motion-evidence/after node browser-fight-motion.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

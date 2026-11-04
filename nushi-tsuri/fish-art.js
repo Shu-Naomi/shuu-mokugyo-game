@@ -316,7 +316,8 @@
     }
     return finishRaster(raster);
   }
-  function paintSwimming(ctx,raster,id,p,phase){
+  function paintSwimming(ctx,raster,id,p,phase,effort=1){
+    effort=clamp(Number.isFinite(effort)?effort:1,1,2.8);
     let output=outputs.get(ctx);
     if(!output){const data=ctx.createImageData(448,224);output={data,words:new Uint32Array(data.data.buffer,data.data.byteOffset,448*224)};outputs.set(ctx,output);counters.outputs++;}
     output.words.fill(0);
@@ -330,7 +331,7 @@
     for(let x=raster.left;x<=raster.right;x++){
       const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
       const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
-      const wave=profile.amplitude*weight*side*Math.sin(phase-rear*profile.wave);
+      const wave=profile.amplitude*effort*weight*side*Math.sin(phase-rear*profile.wave);
       // At the frontal heading the tail is behind the body. Only the outer
       // paired fin columns flutter; the lip and central torso retain volume.
       const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
@@ -349,7 +350,7 @@
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
     const raster=p.heading!==undefined?turnRaster(ctx,image,id,p,resolveImage,motion?.resistanceBend||0):bodyRaster(ctx,image,id,p,resolveImage);
     const phase=(motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
-    paintSwimming(ctx,raster,id,p,phase);
+    paintSwimming(ctx,raster,id,p,phase,motion?.swimEffort);
     return true;
   }
   return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
