@@ -17,7 +17,7 @@ test('a released fish now takes several real metres in its first turn, at the ri
 
 test('active runs tire a fish gradually without ever stopping its payout; slack is not a free win',()=>{
  const b=running('hiramasa'),fresh=F.escapePace(b,b.mood,5);
- for(let i=0;i<100;i++){F.step(b,b.mood,gear);b.moodTick++;}
+ for(let i=0;i<F.endurance[b.f.id];i++){F.step(b,b.mood,gear);b.moodTick++;}
  const tired=F.escapePace(b,b.mood,5),before=F.remainingMeters(b),ticks=b.nushiRunTicks;
  assert.ok(tired<fresh*.8&&tired>fresh*.7);
  F.step(b,b.mood,gear);assert.ok(F.remainingMeters(b)>before);
