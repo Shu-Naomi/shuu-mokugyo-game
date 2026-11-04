@@ -1,8 +1,11 @@
 name: Underwater fight motion
 on:
+  push:
+    branches: [main]
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', '.github/workflows/fight-motion.yml']
   pull_request:
     branches: [main]
-    paths: ['nushi-tsuri/**', '.github/workflows/fight-motion.yml']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', '.github/workflows/fight-motion.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -38,6 +41,12 @@ jobs:
           MOTION_ROOT=/tmp/fight-motion-baseline/nushi-tsuri MOTION_OUT=fight-motion-evidence/before node browser-fight-motion.cjs
       - name: Capture stronger strokes, warning cues, pauses and reduced motion
         run: MOTION_ENHANCED=1 MOTION_OUT=fight-motion-evidence/after node browser-fight-motion.cjs
+      - name: Verify the exact deployed runtime after merge
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          node fish-swimming-public-source.cjs
+          cp fish-swimming-evidence/public-source.json fight-motion-evidence/public-source.json
+          MOTION_ENHANCED=1 MOTION_PUBLIC_URL=https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/ MOTION_OUT=fight-motion-evidence/public node browser-fight-motion.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

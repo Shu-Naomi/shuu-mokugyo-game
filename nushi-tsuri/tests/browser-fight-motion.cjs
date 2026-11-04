@@ -21,7 +21,7 @@ const cases=[['starNushi','nushi',true],['moroko','nushi',true],['utsubo','nushi
   page.on('pageerror',e=>errors.push(e.message));
   await context.addInitScript(({key,state})=>{localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),hp:100,maxHp:100,soundEnabled:false,fightMode:mode,ownedRods:['tideMaster'],selectedRod:'tideMaster'}});
   try{
-   await page.goto(`http://127.0.0.1:${server.address().port}/`);await require('./browser-start-adventure.cjs')(page,mobile);
+   await page.goto(process.env.MOTION_PUBLIC_URL||`http://127.0.0.1:${server.address().port}/`);await require('./browser-start-adventure.cjs')(page,mobile);
    if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').click();
    await page.evaluate(id=>{
     cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();battle.f=fish.find(f=>f.id===id);
@@ -67,11 +67,12 @@ const cases=[['starNushi','nushi',true],['moroko','nushi',true],['utsubo','nushi
    await page.evaluate(()=>{pauseBattle();renderBattleFish();});
    const frozen=await page.evaluate(()=>({tick:battle.swimTick,frame:document.querySelector('#battleFish').dataset.artSwimFrame}));
    await page.waitForTimeout(800);assert.deepEqual(await page.evaluate(()=>({tick:battle.swimTick,frame:document.querySelector('#battleFish').dataset.artSwimFrame})),frozen);
-   await shot('paused');await page.evaluate(()=>resumeBattle());
+   await shot('paused');await page.evaluate(()=>{resumeBattle();battle.nushiWindow=null;battle.mood=fightProfiles[battle.f.id].moods.find(m=>!m.calm);battle.calm=false;battle.moodTick=0;battle.nextMood=Date.now()+6000;});
    await page.emulateMedia({reducedMotion:'reduce'});await page.waitForTimeout(400);await shot('reduced');
    if(process.env.MOTION_ENHANCED==='1')assert.equal(await page.locator('#battleFish').getAttribute('data-swim-effort'),'1');
    const metrics=await page.evaluate(()=>{
-    pauseBattle();const canvas=document.querySelector('#battleFish canvas'),ctx=canvas.getContext('2d'),id=battle.f.id,image=fishAtlasImage(ShuFishArt.species[id].asset);
+    pauseBattle();const canvas=document.createElement('canvas');canvas.width=448;canvas.height=224;
+    const ctx=canvas.getContext('2d'),id=battle.f.id,image=fishAtlasImage(ShuFishArt.species[id].asset);
     const resolve=asset=>fishAtlasImage(asset),times=[];ShuFishArt.draw(ctx,image,id,8,0,resolve,{swimFrame:0,swimEffort:2.8});const before=ShuFishArt.metrics();
     for(let n=0;n<120;n++){const start=performance.now();ShuFishArt.draw(ctx,image,id,8,0,resolve,{swimFrame:n/15,swimEffort:1+n%3*.8});times.push(performance.now()-start);}
     times.sort((a,b)=>a-b);return {before,after:ShuFishArt.metrics(),medianMs:times[60],p95Ms:times[114]};

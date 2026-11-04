@@ -10,7 +10,7 @@ The diary is held down while the protagonist looks up. The refusal painting brin
 
 ## Rendering and accessibility
 
-Paintings render on a 640 × 360 canvas with nearest-neighbor sampling. Text lives in a separate grid cell; object-fit contain never crops the artwork. Each page has one small animation region and a finite 0.7–1.25 second presentation. There is no continuous loop or full-frame camera pan. Reduced-motion and backgrounding settle the scene immediately. Navigation cancels pending animation and late image callbacks. A separate cancellable completion deadline, armed after all required paintings decode, guarantees the flat final diary pose even if animation-frame delivery stops. Reduced-motion, visibility changes and ordinary completion clear that deadline. Loading does not block text navigation. Canvas data attributes expose page, panel, asset state, and animation region for integration tests.
+Paintings render on a 640 × 360 canvas with nearest-neighbor sampling. Text lives in a separate grid cell; object-fit contain never crops the artwork. Each page has one small animation region and a finite 0.7–1.6 second presentation. There is no continuous loop or full-frame camera pan. Reduced-motion and backgrounding settle the scene immediately. Navigation cancels pending animation and late image callbacks. A separate cancellable completion deadline, armed after all required paintings decode, guarantees the flat final diary pose even if animation-frame delivery stops. Reduced-motion, visibility changes and ordinary completion clear that deadline. Loading does not block text navigation. Canvas data attributes expose page, panel, asset state, and animation region for integration tests.
 
 ## Validation
 
@@ -26,3 +26,15 @@ The reported raised diary page matches the intermediate painting. The shipped fi
 
 The browser matrix retains all 384 settled page/cast/screen cases. Supplementary interrupted diary sequences target both avatars at desktop 1280×720 and landscape phone 820×366; native-clock diary sequences run for both avatars on all four viewports. Review sheets reuse existing full UI captures and retain native canvas images, avoiding duplicate screenshots. Pull-request jobs allow 25 minutes for this expanded evidence. Main-branch jobs allow 45 minutes because they repeat the complete browser replay against the published site after verifying source parity.
 Evidence is uploaded as one artifact per viewport, keeping individual archives within the retrieval limit while retaining every capture.
+
+## Visible page-turn follow-up
+
+The diary now turns one opaque textured leaf through many integer-column poses at the existing 12 fps drawing cap. Its outside edge rises 64 pixels, travels from x516 across the fixed x324 spine to x136, and settles on the left. The final paper mask shows both pages of the new spread; the previous right-only crop hid the new left page. The original hands, binding and table remain fixed. No new artwork, canvas allocations, per-pixel runtime operations, image-wide transforms or transparent ink crossfades are added. All three existing paintings still participate in the decode readiness and completion contract. Duration is 1.6 seconds with short opening/closing holds.
+
+The new actual-source pixel tests check 21 poses for each diary step and both avatars, opaque rendering, protected hand/background pixels, bounded drawing cost, the spine crossing, and an independently composited complete flat final spread. Existing cancellation, reduced-motion, image loading permutations and late-RAF/deadline guards remain covered. The original user-reported freeze is still not reproduced; this change addresses the visibly weak motion, not a proven cause of that report.
+
+`browser-opening-turn-comparison.cjs` records actual native-clock before/after WebM for both avatars at 1280×720, 844×390 and 820×366, with PNG frame sheets and pixel/trajectory reports. The baseline is commit `20141e1`. Local Chromium is unavailable under the current socket restriction, so browser/video verification runs in GitHub CI and requires independent visual review before release. Native Canvas still-frame review confirms the readable rise/cross/settle silhouette but does not establish real browser timing.
+
+### v252-41 integrated release
+
+This release includes the species endurance fixes v252-40 and the connected hillside v252-39 without changing either implementation. The opening script and stylesheet cache URLs, service-worker registration/cache, and HUD identify v252-41. Native before/after evidence covers both avatars at 1280×720, 844×390 and 820×366; final integrated-head CI and source publication checks remain release gates.
