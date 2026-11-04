@@ -45,7 +45,7 @@ module.exports=async function inventoryDistance(url,mobile=false,options={}){
    }else await page.evaluate(()=>{battle.retrieval=1;surfaceCatch();});
    await page.clock.runFor(1250);assert.equal(await value('s.caught.'+id),(prior.caught[id]||0)+1);assert.equal(await value('s.baits.'+bait),prior.baits[bait]-1);await shot(id+'-'+mode+'-caught');captures.push({id,mode});
   }
-  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),60);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),61);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V248_PASS '+JSON.stringify({viewport,mobile,dpr:options.dpr||1,layouts:layouts.map(({name,rows})=>({name,rows})),distance:distanceResult,captures,saveReload:true,errors:errors.length,httpErrors:failed.length}));
  }finally{if(held)await hold(false).catch(()=>{});await context.close();if(!options.browser)await browser.close();}
 };

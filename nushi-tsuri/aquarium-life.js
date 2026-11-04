@@ -3,7 +3,8 @@
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
-  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo'].includes(id);
+  const travelClock=(id,t,individual=0)=>typeof Motion.travelClock==='function'?Motion.travelClock(id,t,individual):Math.max(0,Number(t)||0);
+  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo','donko'].includes(id);
   // Each fish has its own tank pacing and water column. Gameplay and feeding
   // use the same layout and never change catch records or reel physics.
   const gaits=Object.freeze({
@@ -11,7 +12,7 @@
     mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],
     bluegill:[.98,.65,-.015],aburahaya:[1.36,.7,-.025],magochi:[.63,.26,.075],
     oyanirami:[.79,.49,.015],akakamasu:[1.58,.91,-.055],ishidai:[.92,.68,.035],
-    kawayoshinobori:[.54,.23,.08],utsubo:[.70,.25,.085],buri:[1.67,.84,-.065],
+    donko:[.46,.12,.085],kawayoshinobori:[.54,.23,.08],utsubo:[.70,.25,.085],buri:[1.67,.84,-.065],
     hiramasa:[1.83,.68,-.05],kanpachi:[1.52,.72,-.015],
     shimaaji:[1.43,.67,-.03],ishigakidai:[.83,.48,.03],akahata:[.68,.39,.065],
     tanago:[.78,.65,-.01],motsugo:[1.23,.72,-.02],medaka:[.86,.38,-.09],
@@ -50,7 +51,8 @@
   function inspection(id,seconds,reduced=false){
     const swim=gait(id),travel=4.2/swim.speed,turn=1.8,leg=travel+turn;
     const cycle=seconds%(leg*2),right=cycle<leg,local=cycle%leg;
-    const progress=smooth(local/travel),turnProgress=smooth((local-travel)/turn);
+    const travelTime=id==='donko'?travel*travelClock(id,Math.min(local,travel))/travelClock(id,travel):local;
+    const progress=smooth(travelTime/travel),turnProgress=smooth((local-travel)/turn);
     // Spend most of the time swimming sideways so the tail-beat atlas plays.
     // A short arc at each end joins the painted headings; no perpetual spin.
     const yaw=reduced?0:Math.PI*(right?turnProgress:1-turnProgress);
@@ -105,7 +107,7 @@
       const ratio=Math.max(.6,ratioFor(f.species)||2),depth=.84+(i%3)*.08;
       const w=Math.min(Math.max(8,width*f.length/100/scale.widthCm*depth),width*.37,height*.20*ratio),h=w/ratio;
       const minX=w/2+width*.045,maxX=width-minX;
-      const speed=(bottom(f.species)?.12:.20)*(1+i*.075)*swim.speed,phase=seconds*speed+i*2.399;
+      const speed=(bottom(f.species)?.12:.20)*(1+i*.075)*swim.speed,phase=travelClock(f.species,seconds,i)*speed+i*2.399;
       const sin=Math.sin(phase);
       // Every fish gets at least 1.8 seconds through the turn, including fast
       // swimmers in a crowded tank. Keep authored frontal thickness.

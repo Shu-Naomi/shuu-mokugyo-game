@@ -40,13 +40,13 @@ test('Funa and Koi discoveries stay independent and notifications commit togethe
 test('actual aquarium UI names golden Koi, preserves the prior Funa record and safely displays unknown future colours',()=>{
  const a=boot(fixture()),w=a.window;try{w.eval('petUi.open("aquarium")');assert.equal(read(w,'s.petLife.eggs[0].mutation.kind'),'gold');w.eval('s.gameMinutes=190*1440+360;ShuPetLife.sync(s,petCatalog,190);petUi.open("aquarium")');
   assert.match(w.document.querySelector('.pet-discovery').textContent,/黄金のコイ/);w.document.querySelector('[data-pet-inspect="pet-6"]').click();w.document.querySelector('[data-pet-action="records"]').click();
-  assert.match(w.document.querySelector('.pet-discoveries').textContent,/黄金のフナ/);assert.match(w.document.querySelector('.pet-discoveries').textContent,/黄金のコイ/);assert.equal(read(w,'fish.length'),60);
+  assert.match(w.document.querySelector('.pet-discoveries').textContent,/黄金のフナ/);assert.match(w.document.querySelector('.pet-discoveries').textContent,/黄金のコイ/);assert.equal(read(w,'fish.length'),61);
   w.eval('s.petLife.fish.find(f=>f.uid==="pet-6").mutation={checked:true,kind:"future_pearl",ruleVersion:2}');assert.equal(read(w,'ShuAquariumLife.appearance(s.petLife.fish.find(f=>f.uid==="pet-6"),petCatalog).artId===undefined'),true);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('golden Koi atlas draws all eight poses and 97 turn positions without changing ordinary catalogues or original artwork',async()=>{
  const {createCanvas,loadImage}=require('@napi-rs/canvas'),root=path.resolve(__dirname,'..'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
- assert.equal(sha('assets/fish-lake-v208.png'),'d15babca220116e0d0c04bf4fed6b667d373b237f7c3f9cd64c4ebe9c87dd119');assert.equal(sha('assets/aquarium-funa-gold-v251-8.png'),'602c861e1b1f7e60dc9bc84c135fd187cd56cba880580f6ce74dfb62ffc4326d');assert.equal(Art.species.koiGold,undefined);assert.equal(Object.keys(Art.species).length,60);
+ assert.equal(sha('assets/fish-lake-v208.png'),'d15babca220116e0d0c04bf4fed6b667d373b237f7c3f9cd64c4ebe9c87dd119');assert.equal(sha('assets/aquarium-funa-gold-v251-8.png'),'602c861e1b1f7e60dc9bc84c135fd187cd56cba880580f6ce74dfb62ffc4326d');assert.equal(Art.species.koiGold,undefined);assert.equal(Object.keys(Art.species).length,61);
  const im=await loadImage(path.join(root,Art.aquarium.koiGold.asset));assert.equal(im.width,1536);assert.equal(im.height,1024);const samples=[];
  for(let i=0;i<=96;i++)samples.push([7,i/16]);samples.push([3,2]);for(const [cells,frame]of samples){const c=createCanvas(448,224),ctx=c.getContext('2d');Art.draw(ctx,im,'koiGold',cells,frame,()=>im);const d=ctx.getImageData(0,0,448,224).data;let visible=0,gold=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>=128){visible++;if(d[i]>d[i+2]*1.3&&d[i+1]>d[i+2]*1.1)gold++;}assert.ok(visible>3000&&visible<448*224*.7,'visible isolated turn '+frame);assert.ok(gold/visible>.55);}
  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert.ok(sw.includes('"./assets/aquarium-koi-gold-v252-9.png"'));assert.ok(sw.includes('"./assets/aquarium-funa-gold-v251-8.png"'));

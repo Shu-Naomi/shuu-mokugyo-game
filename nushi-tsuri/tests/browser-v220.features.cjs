@@ -89,7 +89,7 @@ module.exports=async function waterAndFish(url,mobile=false){
     assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),spot);
    }
    await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>['wakasagi','dojo','isaki'].map(id=>s.caught[id])),[1,1,1]);
-   assert.equal(await page.evaluate(()=>fish.length),60);
+   assert.equal(await page.evaluate(()=>fish.length),61);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:await page.evaluate(()=>fish.length),saved:true,shoreBlocks:true,errors,failed}));
   }finally{await context.close();}

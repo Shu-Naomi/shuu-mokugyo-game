@@ -167,6 +167,18 @@
   ishigakidai:{asset:'assets/fish-ishigakidai-v251.png',boxes:[[28,123,503,332],[539,118,382,352],[946,111,284,364],[1254,111,242,357],[24,595,259,343],[288,586,340,351],[616,615,442,318],[1077,616,445,316]],heads:[[.99,.62],[.99,.66],[.82,.68],[.5,.72],[.18,.63],[.01,.61],[.01,.54],[.995,.57]],continuousBody:true},
   akahata:{asset:'assets/fish-akahata-v251.png',boxes:[[27,208,470,248],[526,203,363,264],[932,199,261,268],[1229,201,269,261],[16,599,253,247],[306,598,334,251],[651,599,426,248],[1096,598,415,248]],heads:[[.99,.61],[.99,.64],[.78,.68],[.5,.74],[.21,.64],[.01,.62],[.01,.57],[.995,.57]],continuousBody:true}
  });
+ // Donko is a freshwater sleeper, not the marine fish sharing its common name.
+ definitions.push({id:'donko',name:'ドンコ',base:'kajika',number:61,price:240,resistance:68,band:'small',hook:'small',
+  scientific:'Odontobutis obscura',habitats:['river'],rarity:2,label:'石陰の丸顔の待ち伏せ屋',
+  ecology:'丸みのある大きな頭と褐色のまだら模様が目印。流れの緩やかな淡水域で石陰に潜み、夜にはエビや小魚を捕らえる。腹びれは左右に分かれている。',
+  locations:'民家川／水郷の湿地・砂底の小川（岸際〜中層）',time:'夕方〜夜に狙いやすい',
+  rods:['bamboo','youngBamboo'],baits:['smallShrimp','worm','river'],tip:'小エビ＋ハリ小で川の岸際へ。底へ戻る短い突進を待ち、止まった間にそっと寄せよう。',
+  intro:'丸顔のドンコだ。石陰へ戻る短い突進と、底で止まる間を見分けよう。',lengths:[2,4,7,10,13,17,23],
+  baitWeights:{smallShrimp:3.4,worm:2.2,river:1.8,shrimp:1.2,liveMinnow:1.1,grasshopper:.35,paste:.02,corn:.01,shell:.02,crab:.08}
+ });
+ Object.assign(art,{
+  donko:{asset:'assets/fish-donko-v252-47.png',boxes:[[48,147,372,166],[487,130,364,200],[953,112,329,235],[1394,98,309,261],[64,535,328,260],[478,562,373,200],[919,578,377,175],[1355,580,377,170]],heads:[[.98,.55],[.98,.55],[.98,.60],[.50,.69],[.025,.64],[.02,.55],[.02,.55],[.98,.60]],continuousBody:true}
+ });
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -195,6 +207,8 @@
  Object.assign(pools['sea-deep'],{ishidai:.16});Object.assign(pools['coast-reef-mid'],{ishidai:.18});Object.assign(pools['coast-reef-deep'],{ishidai:.28});
  for(const id of ['river-shallow','mountain-stream-shallow','mountain-wetCreek-shallow'])Object.assign(pools[id],{kawayoshinobori:.25});
  for(const id of ['river-mid','mountain-stream-mid','mountain-wetCreek-mid'])Object.assign(pools[id],{kawayoshinobori:.12});
+ for(const id of ['river-shallow','mountain-wetCreek-shallow'])Object.assign(pools[id],{donko:.18});
+ for(const id of ['river-mid','mountain-wetCreek-mid'])Object.assign(pools[id],{donko:.10});
  Object.assign(pools['sea-deep'],{utsubo:.1});Object.assign(pools['coast-reef-mid'],{utsubo:.14});Object.assign(pools['coast-reef-deep'],{utsubo:.24});
  for(const id of ['sea-deep','coast-sand-deep','coast-reef-deep'])Object.assign(pools[id],{buri:.2});
  Object.assign(pools['sea-deep'],{hiramasa:.08,kanpachi:.08});
@@ -217,6 +231,14 @@
    fishEncyclopediaData[d.id]={number:d.number,scientific:d.scientific,habitats:d.habitats,rarity:d.rarity,rarityLabel:d.label,ecology:d.ecology,locations:d.locations,time:d.time,rods:d.rods,baits:d.baits,tip:d.tip};
    tackle.species[d.id]={band:d.band,recommendedHook:d.hook,baits:d.baitWeights};
   }
+  Object.assign(fishMotionProfiles.donko,{beat:.48,speedBeat:.07,burst:1.35,thrust:.095,
+   recoil:.01,sway:.015,roll:0,turnFrames:18,turnArc:1.4,turnRoll:.5});
+  Object.assign(fishLifeProfiles.donko,{wave:.035,bend:.025,pulse:.025});
+  fightProfiles.donko={intro:definitions.find(d=>d.id==='donko').intro,moods:[
+   {id:'stone-dart',name:'石陰への短い突進',icon:'➜',weight:.34,min:650,max:1000,motion:'deep',speedX:2.7,speedY:.6,tension:5.3,release:5.6,reel:.65,scale:1,frameEvery:1,danger:true,hold:'石陰へ短く走る！Aを離して受け流そう。',loose:'底へ戻る突進が止まるまで待とう。'},
+   {id:'bottom-brace',name:'底で踏ん張る',icon:'≋',weight:.22,min:700,max:1100,motion:'heavy',speedX:.7,speedY:.2,tension:4.1,release:5.1,reel:.85,scale:1,frameEvery:3,hold:'底で踏ん張っている。強く引かず、糸の緩みを待とう。',loose:'丸い胸びれで底に留まっている。'},
+   {id:'rest',name:'底でひと休み',icon:'◎',weight:.44,min:950,max:1500,motion:'rest',speedX:.15,speedY:.1,tension:1.3,release:5.3,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'突進が止まって糸が緩んだ！Aでそっと寄せよう。',loose:'底でひと休み。今が寄せる番。'}
+  ]};
   // Long-bodied morays glide and undulate instead of inheriting the eel's
   // quick zig-zags and rolling turns. The renderer keeps their lips fixed.
   Object.assign(fishMotionProfiles.utsubo,{beat:.42,speedBeat:.065,burst:1.18,thrust:.075,

@@ -48,7 +48,7 @@ module.exports=async function audioFish(url,mobile=false,options={}){
    await page.evaluate(()=>{battle.retrieval=1;surfaceCatch();});await page.waitForFunction(({id,count})=>s.caught[id]===count,{id,count:(old.caught[id]||0)+1});
    assert.equal(await value('s.baits.'+bait),old.baits[bait]-1);const count=await value('s.caught.'+id);await page.evaluate(()=>caught());assert.equal(await value('s.caught.'+id),count);assert.equal(await value('s.catchMemories.'+id+'.best.method'),'bait');
   }
-  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),60);
+  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),61);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V246_PASS '+JSON.stringify({viewport,mobile,dpr:options.dpr||1,levels,species:3,modes:2,errors:errors.length,httpErrors:failed.length}));
  }finally{await context.close();if(!options.browser)await browser.close();}
 };

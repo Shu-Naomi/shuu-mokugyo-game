@@ -3,7 +3,7 @@ const Art=require('../fish-art.js'),Life=require('../aquarium-life.js'),M=requir
 const root=path.resolve(__dirname,'..');
 test('gold uses one additional aquarium-only atlas with eight isolated poses, preserving catalogue and source artwork',async()=>{
  assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'assets/fish-lake-v208.png'))).digest('hex'),'d15babca220116e0d0c04bf4fed6b667d373b237f7c3f9cd64c4ebe9c87dd119');
- assert.equal(Art.species.funaGold,undefined);assert.equal(Object.keys(Art.species).length,60);
+ assert.equal(Art.species.funaGold,undefined);assert.equal(Object.keys(Art.species).length,61);
  const image=await loadImage(path.join(root,Art.aquarium.funaGold.asset));assert.ok(image.width>0&&image.height>0);
  for(let n=0;n<8;n++){
   const canvas=createCanvas(448,224),ctx=canvas.getContext('2d');Art.draw(ctx,image,'funaGold',n===7?3:7,n===7?2:n,()=>image);

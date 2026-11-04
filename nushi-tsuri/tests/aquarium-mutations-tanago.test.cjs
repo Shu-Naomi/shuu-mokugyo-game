@@ -55,7 +55,7 @@ test('the real aquarium and notebook show the golden hatch and preserve all nine
   w.document.querySelector('[data-pet-action="records"]').click();const records=w.document.querySelector('.pet-discoveries').textContent;for(const title of ['黄金のフナ','黄金のコイ','白化ナマズ','黄金のメダカ','白化ウナギ','白化ドジョウ','蒼鱗マダイ','白化カマツカ','白化ライギョ','黄金のタナゴ'])assert.ok(records.includes(title));
   for(const record of variant.fixture().petLife.mutationDiscoveries)assert.deepEqual(read(w,`s.petLife.mutationDiscoveries.find(d=>d.species==="${record.species}")`),record);
   w.eval('ShuPetLife.renameFish(s,"pet-15","こがねびより");petUi.open("notebook")');w.document.querySelector('[data-notebook-species="tanago"]').click();w.document.querySelector('[data-notebook-fish="pet-15"]').click();
-  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/こがねびより/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/黄金のタナゴ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-15"] [data-pet-mutation]').textContent,'黄金');assert.equal(read(w,'fish.length'),60);assert.deepEqual(a.errors,[]);
+  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/こがねびより/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/黄金のタナゴ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-15"] [data-pet-mutation]').textContent,'黄金');assert.equal(read(w,'fish.length'),61);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('unknown or wrong-species colours survive save normalization but safely use ordinary artwork and labels',()=>{
@@ -66,7 +66,7 @@ test('dedicated golden artwork renders all eight poses and 97 turn positions wit
  const {createCanvas,loadImage}=require('@napi-rs/canvas'),root=path.resolve(__dirname,'..'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
  assert.equal(sha('assets/aquarium-tanago-gold-v252-24.png'),'1c5eecf47509f950ecf47fb7b31fa6de730632b033de54d367bbc68d92ac24fd');
  assert.equal(sha('assets/fish-tanago-v227.png'),'8c55e2fd1b816ea5d180f87a6adc0f4bca11b325d6e3a7b6ed68be81a95545ba');
- assert.equal(sha('assets/aquarium-koi-gold-v252-9.png'),'bc49730e4487166d56984cb5ccbd0556c57af946b21fc451e25195587b9fb734');assert.equal(Art.species.tanagoGold,undefined);assert.equal(Object.keys(Art.species).length,60);
+ assert.equal(sha('assets/aquarium-koi-gold-v252-9.png'),'bc49730e4487166d56984cb5ccbd0556c57af946b21fc451e25195587b9fb734');assert.equal(Art.species.tanagoGold,undefined);assert.equal(Object.keys(Art.species).length,61);
  const im=await loadImage(path.join(root,Art.aquarium.tanagoGold.asset));assert.equal(im.width,1536);assert.equal(im.height,1024);assert.equal(Art.aquarium.tanagoGold.boxes.length,8);const alpha=createCanvas(1536,1024).getContext('2d');alpha.drawImage(im,0,0);assert.equal(alpha.getImageData(768,512,1,1).data[3],0);const samples=[];for(let i=0;i<=96;i++)samples.push([7,i/16]);samples.push([3,0],[3,1],[3,2]);
  for(const [cells,frame]of samples){assert.deepEqual(Art.pose('tanagoGold',cells,frame),Art.pose('tanago',cells,frame));const c=createCanvas(448,224),ctx=c.getContext('2d');Art.draw(ctx,im,'tanagoGold',cells,frame,()=>im);const d=ctx.getImageData(0,0,448,224).data;let visible=0,golden=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>=128){visible++;if(d[i]>d[i+2]*1.3&&d[i+1]>d[i+2]*1.1)golden++;}
   assert.ok(visible>2000&&visible<448*224*.7,'isolated visible turn '+frame);assert.ok(golden/visible>.55,'golden body '+frame);assert.equal(d[3],0);assert.equal(d[d.length-1],0);

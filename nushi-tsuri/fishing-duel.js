@@ -48,8 +48,8 @@
   Object.assign(spoon,{bluegill:1.6,aburahaya:.65,magochi:2.4});
   Object.assign(fishStrength,{oyanirami:1.12,akakamasu:2.05,ishidai:2.8});
   Object.assign(spoon,{oyanirami:1.8,akakamasu:3.2,ishidai:.4});
-  Object.assign(fishStrength,{kawayoshinobori:.48,utsubo:3.1,buri:3.55});
-  Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4});
+  Object.assign(fishStrength,{kawayoshinobori:.48,utsubo:3.1,buri:3.55,donko:.95});
+  Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4,donko:.45});
   Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
   Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
   function normalize(s,rods){
@@ -99,6 +99,7 @@
     heavy:{pull:[2200,6000],run:[2400,4400],speed:1.5,shake:1.3,tempo:.85},
     ambush:{pull:[1800,5000],run:[2100,4100],speed:1.95,shake:1.4,tempo:1.1},
     bottom:{pull:[2000,5600],run:[2000,3800],speed:1.35,shake:1.2,tempo:1},
+    bottomAmbush:{pull:[2800,5800],run:[1800,2900],speed:1.45,shake:1.1,tempo:1.3},
     legendary:{pull:[1600,5200],run:[2600,4800],speed:2.25,shake:1.6,tempo:1.05},
     pelagic:{pull:[2200,5600],run:[2600,4200],speed:2.1,shake:1.15,tempo:1.2},
     reefRunner:{pull:[2200,5800],run:[2400,4400],speed:1.95,shake:1.65,tempo:1.05}
@@ -110,6 +111,7 @@
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
     bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori',
+    bottomAmbush:'donko',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi',
     pelagic:'hiramasa shimaaji',reefRunner:'kanpachi ishigakidai akahata'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
@@ -122,7 +124,7 @@
   // matter. Progress starts after a fresh reserve, then fades gradually.
   // Boss force already makes missed ground costly; a lower base avoids
   // multiplying their fight length while still exceeding old endurance.
-  const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,legendary:60,pelagic:360,reefRunner:280};
+  const enduranceBase={gentle:160,dart:220,heavy:300,ambush:250,bottom:210,bottomAmbush:220,legendary:60,pelagic:360,reefRunner:280};
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.

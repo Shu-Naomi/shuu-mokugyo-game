@@ -16,13 +16,13 @@
     cruise:'moroko funa ayu yamame nijimasu iwana amago bora suzuki madai isaki ugui kawamutsu herabuna himemasu aburahaya bluegill tanago motsugo nigoi',
     swift:'aji wakasagi oikawa sayori masaba akakamasu buri hiramasa kanpachi shimaaji',
     hover:'mebaru kawahagi oyanirami medaka',
-    bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata',
+    bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko',
     long:'unagi dojo utsubo',flat:'hirame magochi',
     heavy:'koi namazu bass kurodai ishidai ishigakidai raigyo streamNushi coastNushi caveNushi starNushi nushi',
   };
   const variations={unagi:[1.05,.97],dojo:[.78,1.18],utsubo:[1.08,1],koi:[.84,.9],namazu:[1.12,1.12],
     medaka:[.68,1.1],kawahagi:[.65,.85],buri:[1.08,.98],hiramasa:[.88,1.1],kanpachi:[1.12,.92],
-    tanago:[.72,1.04],moroko:[.82,1.08],hirame:[.78,1.15],magochi:[.76,.85]};
+    donko:[.78,.86],tanago:[.72,1.04],moroko:[.82,1.08],hirame:[.78,1.15],magochi:[.76,.85]};
   const profiles={};
   for(const [family,ids]of Object.entries(groups))for(const id of ids.split(' ')){
     const v=variations[id]||[1,1],p=families[family];
@@ -31,7 +31,21 @@
   const aliases={buriMojako:'buri',buriYoung:'buri',tanagoGold:'tanago',raigyoAlbino:'raigyo',kamatsukaAlbino:'kamatsuka',
     madaiBlue:'madai',dojoAlbino:'dojo',unagiAlbino:'unagi',medakaGold:'medaka',namazuAlbino:'namazu',koiGold:'koi',funaGold:'funa'};
   const profile=id=>profiles[aliases[id]||id]||profiles.moroko;
+  // Donko settles between short, smooth advances. This continuous clock is
+  // cosmetic only; no timers, randomness, save state or game-time changes.
+  function travelClock(id,seconds,individual=0){
+    const t=Math.max(0,Number(seconds)||0);
+    if(id!=='donko')return t;
+    const cycle=4.4,offset=individual*.41,clock=t+offset,turn=Math.floor(clock/cycle),part=clock/cycle-turn;
+    const p=Math.max(0,Math.min(1,(part-.56)/.44));
+    return turn*cycle+cycle*p*p*(3-2*p)-offset;
+  }
   function phase(id,seconds,speed=1,bottom=false,individual=0){
+    if(id==='donko'){
+      const t=Math.max(0,Number(seconds)||0);
+      // The body may settle, but gentle fin/breathing motion never freezes.
+      seconds=.16*t+.84*(travelClock(id,t,individual)-travelClock(id,0,individual));
+    }
     const p=profile(id),clock=Math.max(0,Number(seconds)||0)*speed;
     // The derivative remains positive: a tail push eases into a glide rather
     // than pausing in an integer pose. Individual offsets prevent lockstep.
@@ -70,5 +84,5 @@
     const effort=options.quiet?1:options.calm?1.25:1.25+(p.effort-1.25)*envelope*surge;
     return {extraFrame,effort};
   }
-  return Object.freeze({profile,phase,fight,fightProfile,profiles:Object.freeze(profiles)});
+  return Object.freeze({profile,phase,travelClock,fight,fightProfile,profiles:Object.freeze(profiles)});
 });
