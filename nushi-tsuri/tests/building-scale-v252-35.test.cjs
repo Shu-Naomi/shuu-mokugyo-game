@@ -100,6 +100,7 @@ test('runtime hillside compositing preserves every pixel outside the clip and us
   set src(source){pending.push(new Promise((resolve,reject)=>{const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;}));super.src=path.join(__dirname,'..',source);}
  }
  const context={Image:LocalImage,OffscreenCanvas:function(width,height){return createCanvas(width,height);}};
+ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
  const mountain=context.ShuMountain,overlay=mountain.regions.stream.overlay;
  // This exact terrain-only image was visually reviewed with both terraces empty.

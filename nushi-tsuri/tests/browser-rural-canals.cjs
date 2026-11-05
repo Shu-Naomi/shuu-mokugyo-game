@@ -2,10 +2,10 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
 const {planRuralRoute}=require('./rural-canals-route.cjs');
 const {createHash}=require('node:crypto'),R=require('../rural-canals.js');
-const sourceFiles=['index.html','rural-canals.js','mountain-region.js','scene-layers.js','layered-scenery.js','sw.js',R.asset];
+const sourceFiles=['index.html','rural-canals.js','mountain-region.js','scene-layers.js','layered-scenery.js','sw.js',R.asset,'assets/rural-canal-cast-v252-48.webp','assets/rural-backwater-cast-v252-48.webp'];
 const digest=data=>createHash('sha256').update(data).digest('hex');
 const root=path.resolve(__dirname,'..'),directory=path.resolve(process.env.RURAL_EVIDENCE_DIR||'/tmp/rural-canals-evidence');
-const screens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875}];
+const screens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:3},{width:820,height:366,mobile:true,dpr:1.875}];
 async function run(url,screen){
  const {width,height,mobile,dpr}=screen,browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});
  const context=await browser.newContext({viewport:{width,height},isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,locale:'ja-JP',serviceWorkers:'block'}),errors=[],failures=[],evidence=[];
@@ -22,7 +22,9 @@ async function run(url,screen){
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  const state=()=>page.evaluate(()=>({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction}));
  const progress=()=>page.evaluate(()=>JSON.parse(JSON.stringify({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,equipment:s.equipment,questCompletions:s.questCompletions,gameMinutes:s.gameMinutes})));
- const shot=async name=>{await page.waitForTimeout(180);await page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});};
+ const settleCamera=()=>page.evaluate(async()=>{await Promise.all(['map','player'].flatMap(id=>document.getElementById(id).getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{}))));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});
+ const surfaceReady=type=>page.waitForFunction(type=>{const c=document.querySelector('#castBackdrop'),motion=document.querySelector('.scenery-motion[data-for="castBackdrop"]');if(c.dataset.locale!=='mountain-'+type||c.style.backgroundImage!=='none'||motion?.dataset.scene!=='surface-mountain-'+type)return false;const data=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<data.length;i+=4*47)if(data[i+3])colors.add(data[i]+','+data[i+1]+','+data[i+2]);return colors.size>100;},type);
+ const shot=async name=>{await settleCamera();await page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});};
  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');}
  async function walk(target){const route=await page.evaluate(planRuralRoute,target);for(const d of route){if(mobile)await press('[data-move="'+d+'"]');else await page.keyboard.press('Arrow'+d[0].toUpperCase()+d.slice(1));assert.ok(await page.evaluate(()=>isWalkableWorld(s.x,s.y)),'walkable native step '+target);}evidence.push({target,steps:route.length,...await state()});}
  const sample=async()=>page.evaluate(async()=>{window.__paints={};await new Promise(r=>setTimeout(r,300));return window.__paints;});
@@ -38,12 +40,15 @@ async function run(url,screen){
  await press('#fieldMenuClose');assert.deepEqual(await state(),arrivalBeforeImage,'menu dismissal paints without moving player');
  await page.waitForFunction(()=>{const c=document.querySelector('#mountainPixels'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<d.length;i+=4*47)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>100;});
  assert.ok(await page.evaluate(()=>window.__paints['mountainPixels:drawImage']>0),'menu close performs a real image paint');await shot('arrival');await page.unroute('**/'+R.asset+'*');
- const layout=await page.evaluate(()=>{const ids=['map','player','action'];return Object.fromEntries(ids.map(id=>{const e=document.getElementById(id),r=e.getBoundingClientRect();return [id,{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom,display:getComputedStyle(e).display}];}));});
- for(const id of ['map','action']){assert.ok(layout[id].width>0&&layout[id].height>0);assert.ok(layout[id].x>=-1&&layout[id].right<=width+1&&layout[id].y>=-1&&layout[id].bottom<=height+1,'visible '+id);}
+ const layout=await page.evaluate(()=>{const ids=['world','map','player','action'];return Object.fromEntries(ids.map(id=>{const e=document.getElementById(id),r=e.getBoundingClientRect();return [id,{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom,display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility,opacity:getComputedStyle(e).opacity}];}));});
+ for(const id of ['world','action']){assert.ok(layout[id].width>0&&layout[id].height>0);assert.ok(layout[id].x>=-1&&layout[id].right<=width+1&&layout[id].y>=-1&&layout[id].bottom<=height+1,'visible '+id);}
+ assert.ok(layout.map.width>=layout.world.width,'map is the scrolling world, not the viewport');
+ assert.ok(layout.player.width>=12&&layout.player.height>=18,'player remains readable');assert.notEqual(layout.player.display,'none');assert.equal(layout.player.visibility,'visible');assert.ok(Number(layout.player.opacity)>.5);
+ assert.ok(layout.player.x>=layout.world.x-1&&layout.player.right<=layout.world.right+1&&layout.player.y>=layout.world.y-1&&layout.player.bottom<=layout.world.bottom+1,'settled player is visible inside world viewport');
  await walk('bridge');await shot('bridge');
  for(const type of ['canalCurrent','canalBackwater']){
   await walk(type);assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),type);await shot(type+'-bank');await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');
-  await page.evaluate(()=>{beginFishing();clearInterval(timer);timer=0;});await shot(type+'-cast');
+  await page.evaluate(()=>{beginFishing();clearInterval(timer);timer=0;});await surfaceReady(type);await shot(type+'-cast');
   await page.evaluate(()=>{battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer);timer=0;});assert.equal(await page.evaluate(()=>battle.spot),'mountain-'+type+'-mid');
   evidence.push({spot:await page.evaluate(()=>battle.spot),fish:await page.evaluate(()=>battle.f.id)});
   await page.evaluate(()=>{endBattle();});

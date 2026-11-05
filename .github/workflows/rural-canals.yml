@@ -4,14 +4,14 @@ on:
     branches: [main]
     paths: ['nushi-tsuri/**', '.github/workflows/rural-canals.yml']
   push:
-    branches: [main, codex/rural-canals]
+    branches: [main, codex/rural-canal-playable]
     paths: ['nushi-tsuri/**', '.github/workflows/rural-canals.yml']
 permissions:
   contents: read
 jobs:
   rural-browser:
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 30
     defaults:
       run:
         working-directory: nushi-tsuri/tests
@@ -28,6 +28,14 @@ jobs:
       - run: node browser-rural-canals.cjs
         env:
           RURAL_EVIDENCE_DIR: rural-evidence
+      - name: Verify deployed sources and public gameplay
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          node rural-canals-public-source.cjs
+          node browser-rural-canals.cjs
+        env:
+          RURAL_BASE_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/
+          RURAL_EVIDENCE_DIR: rural-evidence/public
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

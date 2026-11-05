@@ -35,7 +35,8 @@ test('decoded mountain backgrounds are opaque and detailed; underground navigati
   class LocalImage extends Image{set src(source){pending.push(new Promise((resolve,reject)=>{
     const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;
   }));super.src=path.join(__dirname,'..',source);}}
-  const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
+  const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
   for(const region of ['mountainPond','mountainMarsh','cave']){
     const canvas=createCanvas(960,540);context.ShuMountain.paint(canvas,{period:'day'},region);await Promise.all(pending);
     const pixels=canvas.getContext('2d').getImageData(0,0,960,540).data,colors=new Set();
