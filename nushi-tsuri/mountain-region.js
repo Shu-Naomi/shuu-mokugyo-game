@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife);
+  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.ShuMountain = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function (Life) {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural) {
   "use strict";
   const width = 240, height = 135;
   const asset = "assets/mountain-world-v252-31.png";
@@ -132,10 +132,12 @@
       waters:{underground:[[90,18],[112,17],[136,19],[157,23],[176,27],[192,33],[207,42],[217,55],[219,71],[210,86],[192,98],[169,102],[146,105],[126,106],[104,103],[88,99],[69,94],[53,88],[37,77],[28,63],[31,47],[42,37],[58,29],[74,24]]},
       trails:[[[120,133],[122,120],[120,112],[97,112],[77,108],[56,101],[39,91],[25,78],[19,59],[29,42],[47,27],[74,16],[101,13],[132,13],[160,17],[187,23],[211,35],[226,49],[229,69],[221,87],[207,99],[186,109],[161,114],[138,114],[120,112]]],landmarks:[]},
   };
+  regions[Rural.id]=Rural.data;
   const isRegion=id=>Object.hasOwn(regions,id);
   const regionData=id=>regions[id]||regions.stream;
   function exitAt(x,y,region="stream"){
     const data=regionData(region);
+    if(inRect(x,y,data.returnGate) && data.returnTarget)return {...data.returnTarget};
     if(inRect(x,y,data.returnGate))return region==="wetland"
       ?{region:"mountainMarsh",x:227,y:78,direction:"up"}:region==="stream"
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
@@ -165,7 +167,7 @@
   function edgeDistance(x,y,poly) {
     return Math.min(...poly.map((a,i)=>segmentDistance(x,y,a,poly[(i+1)%poly.length])));
   }
-  function onBridge(x,y,region="stream") { return regionData(region).bridges.some(b=>inRect(x,y,b)); }
+  function onBridge(x,y,region="stream") { return regionData(region).bridges.some(b=>b.polygon?inside(x,y,b.polygon):inRect(x,y,b)); }
   function waterType(x,y,region="stream") {
     if(!Number.isFinite(x)||!Number.isFinite(y)||x<2||x>238||y<2||y>133||onBridge(x,y,region))return null;
     return Object.entries(regionData(region).waters).find(([,poly])=>inside(x,y,poly))?.[0] || null;
@@ -208,8 +210,9 @@
       if(ray.blocked)continue;
       const px=x+dx*d-dy*ray.slope*d,py=y+dy*d+dx*ray.slope*d;
       if(onBridge(px,py,region)){ray.blocked=true;continue;}
+      if(regionData(region).walls?.some(p=>inside(px,py,p)) || Life?.solid(px,py,region)){ray.blocked=true;continue;}
       const type=waterType(px,py,region);
-      if(type)return {zone:["stream","wetCreek"].includes(type)?"river":"lake",type,x:px,y:py};
+      if(type)return {zone:["stream","wetCreek","canalCurrent"].includes(type)?"river":"lake",type,x:px,y:py};
       if(!walkable(px,py,region))ray.blocked=true;
     }
     return null;
@@ -243,12 +246,15 @@
   populations.wetMarsh=[{raigyo:.15,tanago:.18,motsugo:.22,medaka:.14,dojo:.18,funa:.13},
     {raigyo:.32,nigoi:.12,namazu:.22,funa:.16,dojo:.18},
     {raigyo:.39,nigoi:.18,namazu:.23,unagi:.12,koi:.08}];
+  Object.assign(names,Rural.names);
+  Object.assign(populations,Rural.populations);
   const spots=Object.keys(names).flatMap(type=>["shallow","mid","deep"].map((depth,i)=>({
-    id:`mountain-${type}-${depth}`,zone:["stream","wetCreek"].includes(type)?"river":"lake",depth,
+    id:`mountain-${type}-${depth}`,zone:["stream","wetCreek","canalCurrent"].includes(type)?"river":"lake",depth,
     name:`${names[type]}・${["岸際","流心・中層","淵・深場"][i]}`,
     role:`${names[type]}の${["浅場","中層","深場"][i]}`,weights:populations[type][i],
   })));
   const images={};let pendingScene,blendedHillside;
+  const canPaintPending=region=>pendingScene?.[2]===region && (!pendingScene[0].dataset?.region || pendingScene[0].dataset.region===region) && (typeof document==="undefined" || !document.hidden && !document.querySelector(".modal.open") && !document.querySelector("#fieldMenu.show"));
   function hillsideLayer(image,overlay){
     if(blendedHillside)return blendedHillside;
     const c=typeof OffscreenCanvas!=="undefined"?new OffscreenCanvas(image.naturalWidth,image.naturalHeight):typeof document!=="undefined"?document.createElement("canvas"):null;
@@ -265,12 +271,12 @@
     pendingScene=[canvas,{...environment},region];
     if(!images[region] && typeof Image!=="undefined") {
       const img=new Image();images[region]=img;img.decoding="async";
-      img.onload=()=>{if(pendingScene?.[2]===region)paint(...pendingScene);};img.src=regionData(region).asset;
+      img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=regionData(region).asset;
     }
     const overlay=regionData(region).overlay;
     if(overlay && !images[overlay.asset] && typeof Image!=="undefined"){
       const img=new Image();images[overlay.asset]=img;img.decoding="async";
-      img.onload=()=>{if(pendingScene?.[2]===region)paint(...pendingScene);};img.src=overlay.asset;
+      img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=overlay.asset;
     }
     const image=images[region];
     const ctx=canvas.getContext("2d");ctx.save();ctx.imageSmoothingEnabled=false;
@@ -283,6 +289,7 @@
     }
     const tint=region==="cave"?null:{night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[environment.period||environment.time];
     if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
+    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0));
   }
   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
     landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};
