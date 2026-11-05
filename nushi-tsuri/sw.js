@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-rural-canals-modal-252-49";
+const CACHE_NAME = "nushi-tsuri-v252-pond-paths-252-50";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",
@@ -137,7 +137,7 @@ const CORE_ASSETS = [
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=252-48",
+  "./mountain-region.js?v=252-50",
   "./regional-nushi.js?v=202-1",
   "./lake-story.js?v=252-2",
   "./lake-intro.js?v=252-44",
