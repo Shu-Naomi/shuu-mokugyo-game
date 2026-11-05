@@ -1775,9 +1775,13 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign) {
         display: none !important;
       }
+      .map.v54-map #ruralSign { position:absolute; left:90.8%; top:23.2%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
+      .map.v54-map #ruralSign[hidden] { display:none !important; }
+      #ruralSign::after { content:""; position:absolute; left:48%; top:60%; width:7%; height:62%; background:#624226; border-right:2px solid #342719; z-index:-1; }
+      #ruralSign span { display:block; background:#624226; color:#ffe0a3; border:2px solid #392a1b; box-shadow:inset 0 0 0 1px #b98b48,2px 3px 0 #392a1b; font-size:clamp(10px,1.1vw,19px); font-weight:bold; text-align:center; white-space:nowrap; padding:2px; }
       .map.v54-map.coast > :not(#player):not(#dog):not(#coastPixels):not(#boatVisual) { display: none !important; }
       .map.v54-map.coast #worldPixels { display: none !important; }
       .map.v54-map #coastPixels { display: none; }
@@ -6524,7 +6528,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-47</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-48</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -6537,6 +6541,7 @@
           <canvas id="offshorePixels" width="1672" height="941" role="img" aria-label="漁船で渡る潮風島"></canvas>
           <canvas id="offshoreShip" width="540" height="198" aria-hidden="true"></canvas>
           <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
+          <div id="ruralSign" role="img" aria-label="田園の用水路への道標。水車の右手、Aで入る"><span>田園へ →</span></div>
           <canvas id="mountainPixels" width="1536" height="864" role="img" aria-label="星見渓流と木漏れ日の池、葦の沼"></canvas>
           <canvas id="boatVisual" width="192" height="144" aria-hidden="true"></canvas>
           <div class="lake">
@@ -7416,8 +7421,9 @@
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="offshore-island.js?v=252-20"></script>
     <script src="world-life.js?v=252-39"></script>
-    <script src="field-guide.js?v=251-1"></script>
-    <script src="mountain-region.js?v=252-39"></script>
+    <script src="field-guide.js?v=252-48"></script>
+    <script src="rural-canals.js?v=252-48"></script>
+    <script src="mountain-region.js?v=252-48"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-intro.js?v=252-44"></script>
     <script src="timed-rest.js?v=252-32"></script>
@@ -7439,8 +7445,8 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-8"></script>
-    <script src="layered-scenery.js?v=252-29"></script>
+    <script src="scene-layers.js?v=252-48"></script>
+    <script src="layered-scenery.js?v=252-48"></script>
     <script>
       function uiArt(key) {
         const [kind, id] = key.split(":");
@@ -14645,9 +14651,13 @@
         showRescueToast(s.boatActive?"水面へ向いてAで釣れる。桟橋ではAで降りられる。":"水辺へ向いてAで釣ろう。桟橋ではAで乗船できる。");
         return true;
       }
+      function travelRural() {
+        return travelMountain(true,{region:ShuRural.id,...ShuRural.entry});
+      }
       function travelMountain(entering, destination=null) {
+        const fromRegion=s.mapRegion;
         if (entering && s.tournament) {
-          showRescueToast("大会が終わったら、北の渓流へ出かけよう。");
+          showRescueToast("大会が終わったら、村の外へ出かけよう。");
           return false;
         }
         clearTimeout(walkTimer); clearTimeout(dogWalkTimer);
@@ -14659,7 +14669,9 @@
         ShuLakeStory.visit(s,target.region);
         Object.assign(s,{x:target.x,y:target.y,direction:target.direction});
         dogWorldPosition=null;
-        log(s.mapRegion==="village"?"山道を下り、村の北口へ戻った。":`山道を進み、${ShuMountain.regionData(s.mapRegion).name}へやってきた。`);
+        log(s.mapRegion===ShuRural.id?"北東の水車から畦道を進み、田園の用水路へやってきた。南の道を戻れば村へ帰れる。"
+          :fromRegion===ShuRural.id&&s.mapRegion==='village'?"畦道を戻り、村の北東の水車前へ帰ってきた。"
+          :s.mapRegion==="village"?"山道を下り、村の北口へ戻った。":`山道を進み、${ShuMountain.regionData(s.mapRegion).name}へやってきた。`);
         const mapElement=$("#map");
         mapElement.classList.add("region-arrival");
         hideIdleStatus(); hideFieldMenu(); render();
@@ -15088,9 +15100,9 @@
           }
         } else if (ShuMountain.isRegion(s.mapRegion) && !battle) {
           const key=`${s.mapRegion}:${env.key}`;
-          if (pixelSceneCache.get($("#mountainPixels")) !== key) {
-            ShuMountain.paint($("#mountainPixels"),env,s.mapRegion);
-            pixelSceneCache.set($("#mountainPixels"),key);
+          if (!document.hidden && !document.querySelector(".modal.open") && !fieldMenuIsOpen() && pixelSceneCache.get($("#mountainPixels")) !== key) {
+            if(ShuMountain.paint($("#mountainPixels"),env,s.mapRegion))pixelSceneCache.set($("#mountainPixels"),key);
+            else pixelSceneCache.delete($("#mountainPixels"));
           }
         } else if (!playerHomeIsActive() && !battle)
           paintPixelScene($("#worldPixels"), env.key, c => ShuScenery.paint(c, "world", env));
@@ -15277,7 +15289,7 @@
         if (s.mapRegion === "coast") return ShuCoast.water(x,y) ? "sea" : null;
         if (ShuMountain.isRegion(s.mapRegion)) {
           const type=ShuMountain.waterType(x,y,s.mapRegion);
-          return type ? type==="stream"?"river":"lake" : null;
+          return type ? ["stream","wetCreek","canalCurrent"].includes(type)?"river":"lake" : null;
         }
         if (isPracticePondWater(x, y)) return null;
         if (isLakeWater(x, y)) return "lake";
@@ -17949,6 +17961,8 @@
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
         mapElement.classList.toggle("offshore",offshore);
+        $("#ruralSign").hidden=s.mapRegion!=="village";
+        $("#mountainPixels").dataset.region=mountain?s.mapRegion:"inactive";
         const ferry=$("#offshoreShip");ferry.hidden=!(offshore||s.mapRegion==="village");
         if(!ferry.hidden){const point=offshore?{x:118,y:104}:{x:214,y:119};ferry.style.left=`${worldToMapX(point.x)}%`;ferry.style.top=`${worldToMapY(point.y)}%`;ShuOffshore.paintShip(ferry,offshore);}
         if(mountain) {
@@ -18063,9 +18077,11 @@
             ? ShuMountain.atReturnGate(s.x,s.y,s.mapRegion) ? "来た道の入口だ。Aで戻れる。"
               : ShuMountain.onBridge(s.x,s.y,s.mapRegion) ? "木の橋だ。釣りは岸へ降りてから。"
               : ShuWorldLife.nearby(s) ? `${ShuWorldLife.nearby(s).name}だ。Aで中へ入る。`
+              : spot && ShuRural.names[spot.mountainType] ? `${ShuRural.data.notes[spot.mountainType]} 水へ向いてAで釣る。`
               : spot ? `${ShuMountain.names[spot.mountainType]}だ。水へ向いてAで釣る。${spot.mountainType==="stream"?"イワナはミミズ＋ハリ中で狙えるよ。":['pond','highPond'].includes(spot.mountainType)?"ワカサギは川虫＋ハリ小で中層を狙おう。":spot.mountainType==="highMarsh"?"岸際はハリ小で小魚、中層は活き小魚＋ハリ大でライギョを。":spot.mountainType==="marsh"?"ドジョウはミミズ＋ハリ小で岸際を狙おう。":"距離で深さを狙い分けよう。"}`
               : ShuMountain.landmarkAt(s.x,s.y,s.mapRegion) ? `${ShuMountain.landmarkAt(s.x,s.y,s.mapRegion).name}だ。Aで先へ進む。`
               : `${ShuMountain.regionData(s.mapRegion).name}。水辺で釣り、来た道の入口から戻れる。`
+          : ShuRural.atVillageGate(s.x,s.y) ? "田園への畦道だ。Aか右へ進むと、用水路と水車小屋へ。帰りは田園の南口へ。"
           : ShuMountain.atVillageGate(s.x,s.y) ? "北の山道だ。Aか上へ進むと星見渓流へ。"
           : !s.equipment.vehicle && activeLandingDock()
             ? "舟屋でタライかボートを購入・装備すると、この桟橋から小島へ行ける。"
@@ -18157,12 +18173,14 @@
         return Boolean($("#fieldMenu")?.classList.contains("show"));
       }
       function hideFieldMenu() {
+        const wasOpen=fieldMenuIsOpen();
         clearTimeout(fieldMenuTimer);
         fieldMenuTimer = 0;
         $("#fieldMenu")?.classList.remove("show");
         $("#fieldMenu")?.setAttribute("aria-hidden", "true");
         $("#menu")?.setAttribute("aria-expanded", "false");
         $("#world")?.classList.remove("field-menu-active");
+        if(wasOpen && ShuMountain.isRegion(s.mapRegion) && !document.hidden && !document.querySelector(".modal.open"))renderPixelScenery();
       }
       function canShowFieldMenu() {
         return $("#game").classList.contains("active") &&
@@ -18215,6 +18233,7 @@
             document.querySelector(".modal.open")) return;
         if (s.mapRegion==="village" && d === "left" && isAtPlayerHomeMapEntrance())
           return enterPlayerHomeFromMap();
+        if(s.mapRegion==="village" && d==="right" && ShuRural.atVillageGate(s.x,s.y))return travelRural();
         if(s.mapRegion==="village" && d==="up" && s.y<=6 && ShuMountain.atVillageGate(s.x,s.y))
           return travelMountain(true);
         if(ShuMountain.isRegion(s.mapRegion) && d==="down" && s.y>=129 && ShuMountain.atReturnGate(s.x,s.y,s.mapRegion))
@@ -18621,6 +18640,7 @@
         if (s.mapRegion==="village"&&ShuOffshore.atPier(s)) return openOffshoreFerry();
         if (s.mapRegion==="coast") return coastAction();
         if (ShuMountain.isRegion(s.mapRegion)) return mountainAction();
+        if (ShuRural.atVillageGate(s.x,s.y)) return travelRural();
         if (ShuMountain.atVillageGate(s.x,s.y)) return travelMountain(true);
         if (activeLandingDock()) return boardBoat();
         const tournamentNpc = nearbyTournamentNpc();
@@ -23588,11 +23608,11 @@
         }).join("");
       }
       function villageGuidePlaces() {
-        return ShuVillageGuide.places({
+        return [...ShuVillageGuide.places({
           home:{x:(PLAYER_HOME_MAP_ENTRY.left+PLAYER_HOME_MAP_ENTRY.right)/2,y:(PLAYER_HOME_MAP_ENTRY.top+PLAYER_HOME_MAP_ENTRY.bottom)/2},
           sam:{x:(samShopInteractionBounds.left+samShopInteractionBounds.right)/2,y:samShopApproachBounds.bottom},
           practice:{x:practicePondBounds.entryX,y:practicePondBounds.entryY},
-        });
+        }),...ShuRural.guideEntries()];
       }
       function renderVillageGuideReminder() {
         const button=$("#villageGuideOpen"),goal=ShuVillageGuide.goal(s);
@@ -24281,6 +24301,7 @@
           setMasterAudioLevel(false);
           gameAudio.unlocked = false;
         } else {
+          renderPixelScenery();
           resumeBattle();
           startSurfaceCastAnimation();
           if (s.soundEnabled) recoverGameAudio();
@@ -24305,7 +24326,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-47").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-48").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

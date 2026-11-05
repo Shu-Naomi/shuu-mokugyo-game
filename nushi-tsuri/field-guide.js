@@ -23,6 +23,7 @@
    for(const [id,polygon]of Object.entries(mountain.waters)){
     const point=polygon.reduce((p,[x,y])=>({x:p.x+x/polygon.length,y:p.y+y/polygon.length}),{x:0,y:0});
     water(id,data.mountain.names[id],point,polygon,'mountain-'+id+'-');
+    if(mountain.notes?.[id])entries.at(-1).notes.push({text:mountain.notes[id]});
    }
    for(const b of data.life.buildings.filter(b=>b.region===region))entries.push({id:b.id,kind:b.kind,name:b.name,point:{x:b.x,y:b.y},building:b,
     notes:[{text:b.kind==='shop'?'扉へ向いてAで入店。いつものエサや道具を補充できるよ。':'扉へ向いてAで入れるよ。家の人とひと息ついていこう。'}]});

@@ -161,5 +161,11 @@ test('weather is part of the scenery cache key and is available offline with the
     assert.equal(builds,3);
   } finally {controller.dispose();}
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const [module,version] of [['weather','169-1'],['layered-scenery','252-29'],['scenery-worker','252-29']])assert.ok(sw.includes(`./${module}.js?v=${version}`));
+  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+  for(const module of ['weather','layered-scenery']){
+    const url=[...html.matchAll(/src="([^"]+)"/g)].map(m=>m[1]).find(url=>url.startsWith(module+'.js?v='));
+    assert.ok(url&&sw.includes('./'+url),module+' uses the current browser URL offline');
+  }
+  const source=fs.readFileSync(path.join(root,'layered-scenery.js'),'utf8'),workerUrl=source.match(/new Worker\('([^']+)'\)/)?.[1];
+  assert.ok(workerUrl&&sw.includes('./'+workerUrl),'the active scenery worker is cached');
 });
