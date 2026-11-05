@@ -64,7 +64,25 @@ async function run(url,screen){
  // A second cold load returns to the village before its delayed regional image arrives.
  const staleImage=await delayRuralImage();await page.reload({waitUntil:'load'});await start();await walk('villageGate');await press('#action');await staleImage.seen;assert.equal((await state()).region,'ruralCanals');await press('#action');assert.equal((await state()).region,'village');
  await page.evaluate(()=>{window.__paints={};});staleImage.release();await waitForRuralImage();await page.waitForTimeout(100);const staleVillagePaints=await page.evaluate(()=>window.__paints);assertNoRegionalPaint(staleVillagePaints,'late regional image must not repaint hidden canvas in village');await page.unroute('**/'+R.asset+'*');
- assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);const result={screen,url,sourceDigests,layout,evidence,paintCounts:{visible,menu,hidden,resumed,delayedMenuPaints,staleVillagePaints},delayedFirstImage:true,areaReload:true,returnReload:true,legacyProgress:true,errors,failures};fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify(result,null,2));console.log('RURAL_CANALS_BROWSER_PASS',width,height,dpr);
+ // Each reload creates a fresh regional Image; routing disables the browser cache.
+ const delayedCoverPaints={};
+ for(const cover of ['options','modal']){
+  const coldImage=await delayRuralImage();await page.reload({waitUntil:'load'});await start();await walk('villageGate');await press('#action');await coldImage.seen;
+  const beforeCover=await state();await page.evaluate(cover=>cover==='options'?openOptions():open('record'),cover);
+  assert.equal(await page.locator(cover==='options'?'#options':'#record').evaluate(e=>e.classList.contains('open')),true);
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:true});document.dispatchEvent(new Event('visibilitychange'));window.__paints={};});coldImage.release();await waitForRuralImage();await page.waitForTimeout(100);
+  const background=await page.evaluate(()=>window.__paints);assertNoRegionalPaint(background,'cold image in background under '+cover);
+  await page.evaluate(()=>{Object.defineProperty(document,'hidden',{configurable:true,value:false});document.dispatchEvent(new Event('visibilitychange'));});await page.waitForTimeout(100);
+  const covered=await page.evaluate(()=>window.__paints);assertNoRegionalPaint(covered,'cold image under '+cover);
+  await page.evaluate(cover=>cover==='options'?closeOptions():close(),cover);
+  assert.deepEqual(await state(),beforeCover,cover+' dismissal must not move the player');
+  await page.waitForFunction(()=>window.__paints['mountainPixels:drawImage']>0);
+  await page.waitForFunction(()=>{const c=document.querySelector('#mountainPixels'),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<d.length;i+=4*47)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>100;});
+  delayedCoverPaints[cover]={background,covered,resumed:await page.evaluate(()=>window.__paints)};await shot('cold-'+cover+'-dismissed');await page.unroute('**/'+R.asset+'*');
+  // Visibility changes save the rural arrival; return/save before the next cold reload.
+  await press('#action');assert.equal((await state()).region,'village');await page.evaluate(()=>save());
+ }
+ assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);const result={screen,url,sourceDigests,layout,evidence,paintCounts:{visible,menu,hidden,resumed,delayedMenuPaints,staleVillagePaints,delayedCoverPaints},delayedFirstImage:true,areaReload:true,returnReload:true,legacyProgress:true,errors,failures};fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify(result,null,2));console.log('RURAL_CANALS_BROWSER_PASS',width,height,dpr);
  }finally{await context.close();await browser.close();}
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
