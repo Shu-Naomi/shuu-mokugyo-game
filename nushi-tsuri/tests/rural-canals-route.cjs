@@ -2,10 +2,11 @@
 // four-unit control presses; it never moves the player or edits the save.
 function planRuralRoute(target) {
   const M=ShuMountain,R=ShuRural,region=s.mapRegion;
-  const dirs=['up','right','down','left'];
+  const dirs=['up','right','down','left'],bank=R.fishingPoints.find(p=>p.type===target);
   const goal=(x,y,d)=>target==='villageGate'?x>=R.villageGate.left&&x<=R.villageGate.right&&y>=R.villageGate.top&&y<=R.villageGate.bottom:
     target==='return'?M.atReturnGate(x,y,region):
     target==='bridge'?M.onBridge(x,y,region):
+    Boolean(bank)&&Math.hypot(x-bank.x,y-bank.y)<=2&&d===bank.direction&&
     M.fishingWater(x,y,d,region)?.type===target&&!M.exitAt(x,y,region);
   const queue=[{x:s.x,y:s.y,direction:s.direction,parent:-1}],seen=new Set();
   for(let i=0;i<queue.length;i++){

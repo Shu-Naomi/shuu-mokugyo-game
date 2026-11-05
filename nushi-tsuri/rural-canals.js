@@ -35,6 +35,10 @@
     [[1370,414],[1390,397]]
   ];
   const bridges=[{polygon:polygon([[1046,425],[1062,416],[1186,461],[1188,480],[1173,487],[1045,444]])}];
+  // Railing feet are not part of the walkable deck. These strips also stop
+  // casting rays, so the bridge cannot masquerade as a bank fishing spot.
+  const bridgeRails=[polygon([[1037,442],[1175,487],[1175,503],[1035,457]]),
+    polygon([[1060,397],[1200,446],[1200,461],[1060,414]])];
   const paddies=[
     [[541,129],[778,66],[940,4],[1170,4],[1258,68],[1131,119],[1019,168],[1004,290],[807,314],[699,254],[588,225]],
     [[161,638],[292,605],[453,617],[647,662],[601,730],[482,766],[268,733],[183,696]],
@@ -44,7 +48,7 @@
   const mill=polygon([[275,367],[370,260],[501,238],[630,300],[703,344],[704,425],[618,472],[423,475],[281,451]]);
   const data={name,asset,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
     trails:rawTrails.map(polygon),trailRadii:[4.5,4.1,2.1,4.1,3.0,3.2,2.8,2.8],
-    bridges,bankRadius:0,walls:[mill,...paddies],landmarks:[],
+    bridges,bankRadius:0,walls:[mill,...paddies,...bridgeRails],landmarks:[],
     notes:{canalCurrent:'水車の流れ。岸際のフナ、底を探るドジョウ、深場のナマズを狙おう。',canalBackwater:'草陰のよどみ。浅場はドジョウとフナ、深場はナマズが多い。'}};
   const names={canalCurrent:'水車下の流れ',canalBackwater:'草陰のよどみ'};
   const populations={
@@ -54,5 +58,5 @@
   const fishingPoints=[{id:'current',type:'canalCurrent',...point([865,530]),direction:'up'},
     {id:'backwater',type:'canalBackwater',...point([1390,397]),direction:'up'}];
   function guideEntries(){return [{id:'village-rural',kind:'exit',name,point:{x:220,y:36},notes:[{text:'村の北東、水車のペットショップ右手にある「田園へ」の道標へ。Aで畦道に入り、南口からいつでも村へ戻れる。'}]}];}
-  return {id,name,asset,size,point,entry,villageReturn,villageGate,returnGate,atVillageGate,data,waters,bridges,rawTrails,paddies,mill,names,populations,fishingPoints,guideEntries};
+  return {id,name,asset,size,point,entry,villageReturn,villageGate,returnGate,atVillageGate,data,waters,bridges,rawTrails,paddies,mill,bridgeRails,names,populations,fishingPoints,guideEntries};
 });

@@ -11,7 +11,7 @@ test('village approach, A entry, bridge, both banks, return and region reload us
   before=resources(w);assert.ok(walk(w,'villageGate')>0);w.document.querySelector('#action').click();
   assert.equal(read(w,'s.mapRegion'),R.id);assert.deepEqual(read(w,'({x:s.x,y:s.y,direction:s.direction})'),R.entry);
   assert.ok(walk(w,'bridge')>0);assert.ok(M.onBridge(read(w,'s.x'),read(w,'s.y'),R.id));
-  for(const type of ['canalCurrent','canalBackwater']){walk(w,type);assert.equal(read(w,'nearbyFishingSpot().mountainType'),type);}
+  for(const type of ['canalCurrent','canalBackwater']){walk(w,type);assert.equal(read(w,'nearbyFishingSpot().mountainType'),type);const bank=R.fishingPoints.find(p=>p.type===type),p=read(w,'({x:s.x,y:s.y,d:s.direction})');assert.ok(Math.hypot(p.x-bank.x,p.y-bank.y)<=2,'advertised bank '+type);assert.equal(p.d,bank.direction);}
   assert.deepEqual(resources(w),before);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const restored=boot(saved),r=restored.window;
@@ -64,4 +64,8 @@ test('canal water, flooded paddies and the mill stay solid while the painted bri
  assert.deepEqual([...seen].sort(),['canalBackwater','canalCurrent']);assert.ok(waterSamples>50);
  for(const point of [[800,150],[350,660],[1100,700],[1500,600],[500,370]]){const p=R.point(point);assert.equal(M.walkable(p.x,p.y,R.id),false,'solid paddy/mill '+point);}
  const bridge=R.point([1115,450]);assert.ok(M.onBridge(bridge.x,bridge.y,R.id));assert.ok(M.walkable(bridge.x,bridge.y,R.id));assert.equal(M.fishingWater(bridge.x,bridge.y,'up',R.id),null,'bridge is not a fishing bank');
+});
+
+test('the former lower bridge rail coordinate cannot be walked on or used to cast',()=>{
+ assert.equal(M.walkable(158,67,R.id),false);for(const direction of ['up','right','down','left'])assert.equal(M.fishingWater(158,67,direction,R.id),null,'no fishing from bridge railing '+direction);
 });
