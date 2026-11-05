@@ -19,7 +19,8 @@ test('new mountain maps have connected real walking routes to every exit and fis
     assert.deepEqual([...types],Object.keys(data.waters));
     assert.ok(queue.some(([x,y])=>M.atReturnGate(x,y,region)));
     for(const p of data.landmarks)assert.ok(queue.some(([x,y])=>Math.hypot(x-p.x,y-p.y)<6),p.id);
-    assert.equal(M.walkable(120,65,region),false);assert.equal(M.walkable(5,5,region),false);
+    // The rebuilt marsh has a bridge at its former center-water probe.
+    assert.equal(M.walkable(120,region==='mountainMarsh'?45:65,region),false);assert.equal(M.walkable(5,5,region),false);
   }
 });
 test('A connects pass, pond, marsh and cave in both directions and preserves inventory and collection',()=>{

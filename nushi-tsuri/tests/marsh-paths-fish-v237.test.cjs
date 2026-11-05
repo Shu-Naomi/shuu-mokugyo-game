@@ -8,11 +8,11 @@ function walk(w,region,goal){for(const d of routeTo(w,region,goal)){
   const b=w.document.querySelector('[data-move="'+d+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();
 }assert.ok(goal(read(w,'s.x'),read(w,'s.y')));assert.equal(read(w,'s.mapRegion'),region);}
 
-test('the marsh follows the painted ring and seven timber crossings while open water and cliffs stay blocked',()=>{
+test('the rebuilt marsh follows its broad painted ring and continuous crossing while open water and cliffs stay blocked',()=>{
   for(const p of paintedLoop)assert.equal(M.walkable(...p,'mountainMarsh'),true,'painted path '+p);
   for(const p of decks){assert.equal(M.onBridge(...p,'mountainMarsh'),true,'deck '+p);
     assert.equal(M.waterType(...p,'mountainMarsh'),null);assert.equal(M.fishingWater(...p,'down','mountainMarsh'),null);}
-  for(const p of [[120,65],[80,70],[165,60],[5,5],[230,32],[43,128]])assert.equal(M.walkable(...p,'mountainMarsh'),false,'water, cliff or former forest spawn '+p);
+  for(const p of [[120,45],[80,50],[165,90],[5,5],[230,32],[43,128]])assert.equal(M.walkable(...p,'mountainMarsh'),false,'water, cliff or former forest spawn '+p);
   for(const p of banks)assert.ok(['up','right','down','left'].some(d=>M.fishingWater(...p,d,'mountainMarsh')?.type==='highMarsh'),'bank '+p);
 });
 
@@ -64,6 +64,6 @@ test('a save at the former marsh entrance resumes on dirt with money, fish, equi
   try{
     const p=read(w,'({x:s.x,y:s.y})');assert.notDeepEqual(p,{x:43,y:128});assert.ok(M.walkable(p.x,p.y,'mountainMarsh'));
     assert.equal(read(w,'s.money'),old.money);assert.equal(read(w,'s.hp'),old.hp);assert.deepEqual(read(w,'s.caught'),old.caught);assert.equal(read(w,'s.baits.worm'),old.baits.worm);assert.equal(read(w,'s.questCompletions'),old.questCompletions);
-    walk(w,'mountainMarsh',(x,y)=>Math.hypot(x-50,y-79)<=1);assert.deepEqual(app.errors,[]);
+    walk(w,'mountainMarsh',(x,y)=>Math.hypot(x-39,y-88)<=1);assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });

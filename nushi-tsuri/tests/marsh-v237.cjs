@@ -1,9 +1,11 @@
-// Independent landmarks measured from pass-marsh-v202.png, not from its masks.
-const paintedLoop=[[48,128],[43,119],[42,104],[50,79],[34,64],[27,55],[52,34],
-  [76,23],[116,21],[129,15],[173,26],[178,35],[198,53],[228,77],[219,87],
-  [209,98],[154,106],[131,102],[113,109],[106,112],[67,104],[42,104]];
-const decks=[[52,34],[116,21],[173,26],[198,53],[50,79],[58,78],[110,107],[154,106]];
-const banks=[[39,39],[89,27],[211,63],[136,102]];
+// Independent landmarks measured from pass-marsh-v252-50.webp, not its masks.
+// The legacy species/catch test now follows the rebuilt broad perimeter.
+const paintedLoop=[[48,128],[47,119],[40,104],[39,88],[34,71],[27,55],[36,40],
+  [58,32],[87,28],[111,15],[137,14],[166,21],[183,27],[186,38],[206,46],
+  [219,62],[222,82],[213,98],[197,107],[158,111],[127,108],[103,112],
+  [77,108],[50,108],[40,104]];
+const decks=[[45,70],[70,70],[95,70],[122,70],[150,70],[180,70],[212,70]];
+const banks=[[39,39],[85,30],[211,94],[135,108]];
 const fishCases=[['tanago','paste','small',20],['motsugo','river','small',20],
   ['medaka','river','small',20],['raigyo','liveMinnow','large',50],['dojo','worm','small',20]];
 module.exports={paintedLoop,decks,banks,fishCases};

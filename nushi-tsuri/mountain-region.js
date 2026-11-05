@@ -88,31 +88,52 @@
           [210,23],[212,21],[207,20],[198,18],[193,16],[193,14],[196,11],[205,10],
           [214,9],[219,7],[220,4],[218,2]]],trailRadii:[2.7,2.8],bankRadius:3,
       landmarks:[{id:"marsh",x:219,y:8,name:"沼へ続く尾根",message:"尾根の先に、葦の揺れる水辺が見える。"}]},
-    mountainMarsh:{asset:"assets/pass-marsh-v202.png",name:"峠の沼",entry:{x:48,y:128,direction:"up"},
-      returnGate:{left:45,right:54,top:126,bottom:133},trailRadius:3.1,bankRadius:2.5,
-      // Trace the dirt, shore and timber decks in the finished 1672 x 941 art.
-      // The old outline covered the northern road and missed several bends.
-      bridges:[{left:48,right:56,top:32,bottom:35.5},{left:113,right:123,top:19.5,bottom:22.5},
-        {left:168,right:178,top:24,bottom:27.5},{left:192,right:203,top:51,bottom:55.5},
-        {left:48,right:53,top:76.5,bottom:83},{left:53,right:61,top:76,bottom:79},
-        {left:106,right:114,top:104,bottom:108.5},{left:150,right:161,top:104,bottom:108}],
-      waters:{highMarsh:[[43,40],[54,37],[61,36],[64,30],[71,29],[82,29],[89,31],[101,29],
-        [110,25],[123,24],[128,19],[144,19],[153,22],[163,26],[176,29],[175,35],[175,40],
-        [185,45],[193,51],[200,59],[210,63],[218,68],[221,77],[216,81],[208,85],[207,93],
-        [202,96],[192,99],[182,100],[170,101],[158,102],[150,100],[138,101],[127,99],
-        [119,100],[113,103],[108,107],[103,109],[97,106],[89,102],[80,99],[67,100],[54,99],
-        [56,92],[57,84],[55,76],[47,72],[40,65],[32,62],[31,55],[33,48],[37,44]]},
-      trails:[[[50,133],[46,124],[43,119],[42,113],[41,108],[42,104]],
-        [[42,104],[48,96],[52,90],[53,85],[50,80],[48,73],[42,68],[34,64],[28,60],[27,55],
-          [28,50],[32,43],[39,39],[46,36],[52,34],[60,33],[64,29],[67,25],[76,23],[83,25],
-          [92,27],[98,25],[107,21],[116,21],[123,19],[129,15],[139,14],[147,15],[158,20],
-          [168,24],[174,26],[178,29],[178,35],[178,39],[184,42],[191,47],[196,51],[198,54],
-          [203,59],[214,63],[221,67],[226,71],[228,77],[224,83],[219,87],[214,90],[213,94],
-          [209,98],[202,101],[193,104],[185,104],[177,105],[167,106],[154,106],[146,105],
-          [140,104],[131,102],[123,102],[118,105],[113,109],[106,112],[100,113],[94,110],
-          [85,106],[77,103],[67,104],[59,103],[52,102],[46,102],[42,104]],
-        [[50,78],[60,78]],[[113,109],[110,107]]],trailRadii:[3.1,3.1,1.4,1.4],
-      landmarks:[{id:"wetland",x:221,y:86,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+    mountainMarsh:{asset:"assets/pass-marsh-v252-50.webp",name:"峠の沼",entry:{x:48,y:128,direction:"up"},
+      returnGate:{left:45,right:54,top:126,bottom:133},trailRadius:5.1,bankRadius:0,
+      // v252-50: independently traced from the rebuilt 1671 x 941 painting.
+      // Only timber floors bridge the marsh. Rails, posts and the bench stay solid.
+      bridges:[{left:42,right:214,top:63.5,bottom:77},
+        {left:97,right:145.2,top:57.1,bottom:85.7}],
+      bridgeFishingEdges:[{left:116,right:129,top:57.1,bottom:61.5,direction:"up"},
+        {left:116,right:129,top:81.3,bottom:85.7,direction:"down"}],
+      bridgeHint:"沼を渡る木の橋。中央の広場の、柵が開いた上と下で釣れるよ。",
+      waters:{highMarsh:[[36,44],[45,39],[56,36],[70,36],[84,33],[98,27],[109,22],
+        [119,21],[129,17],[143,19],[155,23],[167,26],[176,29],[177,36],[181,41],
+        [192,46],[202,51],[210,58],[213.8,66],[214,77],[217,85],[209,91],[203,98],
+        [191,102],[174,105],[160,105],[147,105],[134,103],[123,103],[112,104],
+        [101,108],[92,107],[83,103],[72,101],[60,102],[51,103],[45,98],[43,94],
+        [46,88],[46,81],[42.1,77.5],[42.1,63],[33,61],[31,55],[32,49]]},
+      trails:[[[50,133],[48,125],[47,116],[46,111],[42,106]],
+        [[42,106],[37,102],[36,96],[40,88],[40,81],[37,73],[32,65],[27,57],
+          [27,52],[30,46],[36,40],[44,35],[56,32],[69,32],[81,30],[93,26],
+          [105,19],[117,14],[130,13],[144,14],[158,18],[173,22],[181,27],
+          [183,34],[186,39],[197,43],[208,48],[216,54],[220,62],[221,71],
+          [223,80],[223,84],[216,89],[212,96],[205,102],[194,107],[177,110],
+          [160,111],[146,110],[131,108],[119,108],[106,112],[94,112],
+          [82,108],[72,107],[61,108],[51,110],[42,106]],
+        [[55,32],[61,26],[68,22],[77,23],[82,27]],
+        [[221,82],[230,82],[238,83]],
+        // Dry abutments join the last planks to both banks without a water seam.
+        [[37,70],[44,70]],[[212,70],[222,70]]],trailRadii:[5.4,5.1,5.1,5.2,6.6,6.6],
+      clearings:[[[57,19],[62,16],[72,16],[81,21],[82,26],[73,29],[60,28],[56,24]]],
+      walls:[
+        // Upper and lower rail footprints along both bridge wings.
+        [[42,59],[97,59],[97,63.5],[42,63.5]],
+        [[145.2,59],[214,59],[214,63.5],[145.2,63.5]],
+        [[42,77.1],[97,77.1],[97,82],[42,82]],
+        [[145.2,77.1],[214,77.1],[214,82],[145.2,82]],
+        // Terrace rail sections leave the two explicit casting windows open.
+        [[96,51.5],[115,51.5],[115,57.1],[96,57.1]],
+        [[130,51.5],[146.2,51.5],[146.2,57.1],[130,57.1]],
+        [[96,83.5],[115,83.5],[115,88],[96,88]],
+        [[130,83.5],[146.2,83.5],[146.2,88],[130,88]],
+        [[95.5,55],[97,55],[97,63.5],[95.5,63.5]],
+        [[145.2,55],[146.5,55],[146.5,63.5],[145.2,63.5]],
+        [[95.5,77],[97,77],[97,87],[95.5,87]],
+        [[145.2,77],[146.5,77],[146.5,87],[145.2,87]],
+        // Bench, basket and lantern, all above the unobstructed through route.
+        [[99.5,56],[117.5,56],[117.5,62.7],[99.5,62.7]]],
+      landmarks:[{id:"wetland",x:228,y:82,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
     wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:224,y:6,direction:"down"},
       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
       // Shores and paths traced from the final 1672 x 941 background.
@@ -184,6 +205,9 @@
     if(data.clearings?.some(polygon=>inside(x,y,polygon)))return true;
     if(inRect(x,y,data.returnGate))return true;
     if(data.trails.some((path,trail)=>path.slice(1).some((b,i)=>segmentDistance(x,y,path[i],b)<=(data.trailRadii?.[trail]??data.trailRadius??4))))return true;
+    // Zero means no implicit bank path, including exact polygon boundaries.
+    // Otherwise a former save can remain stranded on a zero-width shoreline.
+    if(data.bankRadius===0)return false;
     // Dry stone banks remain available for fishing. The waterfall is cliff-bound.
     return Object.entries(data.waters).some(([id,poly])=>(id!=="stream"||y>=26) && edgeDistance(x,y,poly)<=(data.bankRadius??6));
   }
@@ -203,14 +227,19 @@
   function atVillageGate(x,y) { return inRect(x,y,villageGate); }
   function atReturnGate(x,y,region="stream") { return inRect(x,y,regionData(region).returnGate); }
   function fishingWater(x,y,direction="up",region="stream") {
-    if(!walkable(x,y,region)||onBridge(x,y,region))return null;
+    if(!walkable(x,y,region))return null;
+    const data=regionData(region),fromBridge=onBridge(x,y,region);
+    // A terrace opening is an explicit exception, not permission to cast from
+    // every bridge or through its rails. Keep the cast aligned with the bay.
+    const bridgeEdge=fromBridge && data.bridgeFishingEdges?.find(edge=>edge.direction===direction&&inRect(x,y,edge));
+    if(fromBridge&&!bridgeEdge)return null;
     const [dx,dy]={up:[0,-1],right:[1,0],down:[0,1],left:[-1,0]}[direction]||[0,-1];
-    const rays=[0,-.1875,.1875,-.375,.375].map(slope=>({slope,blocked:false}));
+    const rays=(bridgeEdge?[0]:[0,-.1875,.1875,-.375,.375]).map(slope=>({slope,blocked:false}));
     for(let d=.5;d<=8;d+=.5)for(const ray of rays) {
       if(ray.blocked)continue;
       const px=x+dx*d-dy*ray.slope*d,py=y+dy*d+dx*ray.slope*d;
-      if(onBridge(px,py,region)){ray.blocked=true;continue;}
-      if(regionData(region).walls?.some(p=>inside(px,py,p)) || Life?.solid(px,py,region)){ray.blocked=true;continue;}
+      if(data.walls?.some(p=>inside(px,py,p)) || Life?.solid(px,py,region)){ray.blocked=true;continue;}
+      if(onBridge(px,py,region)){if(!bridgeEdge)ray.blocked=true;continue;}
       const type=waterType(px,py,region);
       if(type)return {zone:["stream","wetCreek","canalCurrent"].includes(type)?"river":"lake",type,x:px,y:py};
       if(!walkable(px,py,region))ray.blocked=true;

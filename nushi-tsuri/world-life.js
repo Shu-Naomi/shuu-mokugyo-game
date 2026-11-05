@@ -23,8 +23,8 @@
   {id:'stream-worker',region:'stream',name:'橋を見回る住人',sprite:2,route:[[145,72],[153,72]],speed:1},
   {id:'pond-angler',region:'mountainPond',name:'池を眺める釣り人',sprite:0,route:[[116,108],[129,108]],speed:1.2},
   {id:'pond-resident',region:'mountainPond',name:'小屋の住人',sprite:2,route:[[214,75],[226,75]],speed:.9},
-  {id:'marsh-resident',region:'mountainMarsh',name:'葦守りの住人',sprite:1,route:[[68,24],[82,24]],speed:1.1},
-  {id:'marsh-fisher',region:'mountainMarsh',name:'沼の釣り人',sprite:0,route:[[136,104],[146,105]],speed:.9},
+  {id:'marsh-resident',region:'mountainMarsh',name:'葦守りの住人',sprite:1,route:[[66,24],[79,25]],speed:1.1},
+  {id:'marsh-fisher',region:'mountainMarsh',name:'沼の釣り人',sprite:0,route:[[132,108],[144,110]],speed:.9},
   {id:'wetland-resident',region:'wetland',name:'水郷の住人',sprite:1,route:[[46,70],[68,71]],speed:1.1},
   {id:'wetland-worker',region:'wetland',name:'売店帰りの住人',sprite:2,route:[[149,39],[164,36]],speed:1}
  ];
