@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-rural-canals-252-48";
+const CACHE_NAME = "nushi-tsuri-v252-rural-canals-modal-252-49";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",

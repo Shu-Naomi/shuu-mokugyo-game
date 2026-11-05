@@ -69,3 +69,27 @@ test('canal water, flooded paddies and the mill stay solid while the painted bri
 test('the former lower bridge rail coordinate cannot be walked on or used to cast',()=>{
  assert.equal(M.walkable(158,67,R.id),false);for(const direction of ['up','right','down','left'])assert.equal(M.fishingWater(158,67,direction,R.id),null,'no fishing from bridge railing '+direction);
 });
+for(const cover of ['options','modal'])for(const hidden of [false,true])test(`cold rural image resumes on ${cover} dismissal without movement${hidden?' after background resume':''}`,()=>{
+ const app=boot(fixture()),w=app.window;let pending,ready=false;
+ try{
+  const OriginalImage=w.Image;
+  w.Image=function(){
+   const image=w.document.createElement('img');
+   Object.defineProperties(image,{complete:{get:()=>ready},naturalWidth:{get:()=>ready?320:0},naturalHeight:{get:()=>ready?160:0},src:{get(){return this._src;},set(value){this._src=value;pending=this;}}});
+   image.decode=()=>Promise.resolve();return image;
+  };
+  walk(w,'villageGate');w.document.querySelector('#action').click();assert.equal(read(w,'s.mapRegion'),R.id);assert.ok(pending?.src.includes(R.asset));w.Image=OriginalImage;
+  const canvas=w.document.querySelector('#mountainPixels'),ctx=canvas.getContext('2d'),paints={};
+  for(const method of ['clearRect','fillRect','drawImage'])ctx[method]=()=>{paints[method]=(paints[method]||0)+1;};
+  w.eval(cover==='options'?'openOptions()':"open('record')");
+  for(const key of Object.keys(paints))delete paints[key];
+  const before=read(w,'({x:s.x,y:s.y,direction:s.direction,mapRegion:s.mapRegion})');ready=true;pending.dispatchEvent(new w.Event('load'));
+  assert.deepEqual(paints,{},'loaded image does not paint under cover');
+  if(hidden)Object.defineProperty(w.document,'hidden',{configurable:true,value:true});
+  w.eval(cover==='options'?'closeOptions()':'close()');
+  if(hidden){assert.deepEqual(paints,{},'hidden dismissal must not paint');Object.defineProperty(w.document,'hidden',{configurable:true,value:false});w.document.dispatchEvent(new w.Event('visibilitychange'));}
+  assert.deepEqual(read(w,'({x:s.x,y:s.y,direction:s.direction,mapRegion:s.mapRegion})'),before);
+  assert.ok(paints.drawImage>0,'dismissal retries loaded regional image immediately');
+  const painted={...paints};w.eval(cover==='options'?'closeOptions()':'close()');assert.deepEqual(paints,painted,'repeated dismissal reuses ready scene cache');assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
