@@ -15,7 +15,7 @@ test('independently sampled painted dirt edges are usable, including the west ha
 });
 
 test('wider bends do not open the cliff, forest, house walls, or water',()=>{
- for(const [x,y] of [[224,12],[225,23],[224,31],[200,31],[210,15],[130,12],[219,59],[180,104],[120,60]])assert.equal(M.walkable(x,y,region),false,`${x},${y}`);
+ for(const [x,y] of [[224,12],[225,23],[224,31],[200,31],[210,15],[130,12],[219,56],[180,113],[120,60]])assert.equal(M.walkable(x,y,region),false,`${x},${y}`);
  const b=L.buildings.find(b=>b.id==='pond-house');assert.equal(M.walkable(b.x,b.y-3,region),false);assert.equal(M.walkable(b.x,b.y,region),true);
  const stopped=M.moveTarget(120,106,'up',20,region);assert.equal(M.waterType(stopped.x,stopped.y,region),null);assert.ok(stopped.y>102);
 });

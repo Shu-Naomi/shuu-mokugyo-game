@@ -24,7 +24,7 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
-      - run: node --test pond-paths.test.cjs pond-cave-lure-v241.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
+      - run: node --test pond-paths.test.cjs pond-wide-road.test.cjs pond-cave-lure-v241.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
       - run: node browser-pond-paths.cjs
         env:
           POND_EVIDENCE_DIR: pond-evidence

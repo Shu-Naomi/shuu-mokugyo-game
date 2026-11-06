@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-pond-paths-252-50";
+const CACHE_NAME = "nushi-tsuri-v252-pond-wide-roads-252-51";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",
@@ -137,9 +137,9 @@ const CORE_ASSETS = [
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=252-50",
+  "./mountain-region.js?v=252-51",
   "./regional-nushi.js?v=202-1",
-  "./lake-story.js?v=252-2",
+  "./lake-story.js?v=252-51",
   "./lake-intro.js?v=252-44",
   "./lake-intro.css?v=252-44",
   "./lake-story.css?v=206-1",
@@ -160,7 +160,7 @@ const CORE_ASSETS = [
 
   "./assets/mountain-world-v252-31.png",
   "./assets/valley-hillside-v2.png",
-  "./assets/pass-pond-v202.png",
+  "./assets/pass-pond-v252-51.png",
   "./assets/pass-marsh-v202.png",
   "./assets/cave-lake-v202.png",
   "./assets/stream-nushi-v202.png",

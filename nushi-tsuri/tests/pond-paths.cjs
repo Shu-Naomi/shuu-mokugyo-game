@@ -1,8 +1,8 @@
 const M=require('../mountain-region.js');
 const samples=[[820,790],[810,820],[815,845],[1520,470]];
 const stops=[['west-entrance',117,118],['south-shore',120,106],['west-bend',25,62],['west-shore',38,62],['north-path',120,20],['north-shore',120,25],['east-bend',218,67],['east-shore',202,65],['house',227,75],['ridge',212,10]];
-function route(start,target,region='mountainPond'){
- const near=(x,y)=>Math.hypot(x-target[0],y-target[1])<=1.1;
+function route(start,target,region='mountainPond',tolerance=1.1){
+ const near=(x,y)=>Math.hypot(x-target[0],y-target[1])<=tolerance;
  const heuristic=(x,y)=>Math.max(0,Math.abs(x-target[0])+Math.abs(y-target[1])-2)/4;
  const nodes=[{x:start.x,y:start.y,parent:-1,cost:0}],frontier=[0],best=new Map([[start.x+','+start.y,0]]);
  while(frontier.length){
