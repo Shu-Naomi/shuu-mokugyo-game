@@ -46,6 +46,7 @@
   }
   function sourceArt(n){return n.querySelector(':scope > i,.shop-item-art,.rod-display-art,.pet-fish-thumb,.pet-specimen-window,svg.pixel-item-icon,svg.tackle-pixel-icon');}
   function samCategoryArt(id){
+    if(id==='hooks')return root.ShuTackleArt?.icon('hookMedium')||'';
     if(id==='bait'||id==='lures')return root.ShuTackleArt?.icon(id==='bait'?'worm':'silverSpoon')||'';
     if(id==='rods')return root.UiExtraArt?.get('fishingRod')||'';
     return root.ItemObjectArt?.get({hands:'gloves',dogTreats:'samBiscuit',dogToys:'rubberBall'}[id])||'';
@@ -137,8 +138,8 @@
     const choose=value=>{groups.set(id,value);body.querySelectorAll('[data-compact-group-panel]').forEach(n=>n.hidden=n.dataset.compactGroupPanel!==value);nav.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.compactGroup===value)));};
     entries.forEach(entry=>{const b=button(entry.label),section=el('section','compact-group-panel');b.dataset.compactGroup=entry.id;b.onclick=()=>choose(entry.id);section.dataset.compactGroupPanel=entry.id;nav.append(b);body.append(section);
       const options={key:id+':'+entry.id,list:true,summary:true,inlinePager:true,art,description:entry.description,empty:entry.empty,onLayout:()=>placeInventoryToast(scope),describe:()=>scope.querySelector('.compact-toast')?.remove(),
-        stock:n=>[clean(n.querySelector('strong')),entry.id==='hook'?'消耗なし':'',n.classList.contains('selected')||n.getAttribute('aria-pressed')==='true'?'選択中':''].filter(Boolean).join(' · '),
-        action:b=>b.classList.contains('selected')||b.getAttribute('aria-pressed')==='true'?'選択中':b.hasAttribute('data-pick-bait')||b.hasAttribute('data-pick-hook')?'セットする':b.hasAttribute('data-pick-rod')||b.hasAttribute('data-equip-hand')||b.hasAttribute('data-equip-vehicle')?'装備する':actionText(b)};
+        stock:n=>[clean(n.querySelector('strong')),n.classList.contains('selected')||n.getAttribute('aria-pressed')==='true'?'選択中':''].filter(Boolean).join(' · '),
+        action:b=>b.dataset.hookOwned==='false'?'未購入':b.classList.contains('selected')||b.getAttribute('aria-pressed')==='true'?'選択中':b.hasAttribute('data-pick-bait')||b.hasAttribute('data-pick-hook')?'セットする':b.hasAttribute('data-pick-rod')||b.hasAttribute('data-equip-hand')||b.hasAttribute('data-equip-vehicle')?'装備する':actionText(b)};
       if(entry.node){move(entry.node,section,d);entry.node.classList.add('compact-source-group');d.cleanup.push(()=>entry.node.classList.remove('compact-source-group'));catalog(section,{...options,selector:'button'});}else catalog(section,{...options,cards:[]});
     });choose(entries.some(e=>e.id===current)?current:entries[0]?.id);
   }

@@ -2,7 +2,7 @@
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const {expectedRelease}=require('./browser-release.cjs');
 const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/',root=path.resolve(__dirname,'..');
-const files=['index.html','tackle-balance.js','tackle-art.js','lake-research.js','sw.js','mountain-region.js','lake-story.js','assets/pass-pond-v252-51.png'];
+const files=['index.html','compact-ui.js','tackle-balance.js','tackle-art.js','lake-research.js','sw.js','mountain-region.js','lake-story.js','assets/pass-pond-v252-51.png'];
 const sha=data=>createHash('sha256').update(data).digest('hex');
 (async()=>{
  const pending=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),deadline=Date.now()+8*60*1000;

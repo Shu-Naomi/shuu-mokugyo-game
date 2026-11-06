@@ -20,8 +20,8 @@ test('a detail action invokes the existing food operation once and the consumed 
 });
 test('Sam has one live category control per shelf and retains the same native bulk-purchase button',()=>{
  const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');const before=snapshot(w),native=w.document.querySelector('[data-buy-bait="worm"]');
-  assert.equal(w.document.querySelectorAll('#store [data-sam-category]').length,6);
-  for(const id of ['rods','lures','hands','dogTreats','dogToys','bait']){click(w,'#store [data-sam-category="'+id+'"]');assert.equal(w.document.querySelectorAll('#store [data-compact-sam-tab][aria-pressed="true"]').length,1);assert.deepEqual(snapshot(w),before);}
+  assert.equal(w.document.querySelectorAll('#store [data-sam-category]').length,7);
+  for(const id of ['hooks','rods','lures','hands','dogTreats','dogToys','bait']){click(w,'#store [data-sam-category="'+id+'"]');assert.equal(w.document.querySelectorAll('#store [data-compact-sam-tab][aria-pressed="true"]').length,1);assert.deepEqual(snapshot(w),before);}
   click(w,'[data-bait-count="10"]');assert.equal(w.document.querySelector('[data-buy-bait="worm"]'),native);assert.deepEqual(snapshot(w),before);
   click(w,'[data-buy-bait="worm"]');assert.equal(read(w,'s.money'),before.money-1200);assert.equal(read(w,'s.baits.worm'),before.baits.worm+30);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
@@ -30,7 +30,7 @@ test('Sam guide keeps event and conversation buttons, remains read-only and retu
  const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');const before=snapshot(w),offer=w.document.querySelector('#tournamentOffer');
   click(w,'#store [data-compact-guide]');assert.ok(w.document.querySelector('.compact-sheet-body #tournamentOffer'));assert.equal(w.document.querySelector('#tournamentOffer'),offer);assert.deepEqual(snapshot(w),before);
   click(w,'[data-compact-sheet-close]');assert.equal(w.document.querySelector('.compact-sheet'),null);assert.equal(w.document.querySelector('#tournamentOffer'),offer);assert.deepEqual(snapshot(w),before);
-  w.close();w.eval('renderSamShop();open("store")');assert.equal(w.document.querySelectorAll('#tournamentOffer').length,1);assert.equal(w.document.querySelectorAll('#store [data-sam-category]').length,6);assert.deepEqual(a.errors,[]);
+  w.close();w.eval('renderSamShop();open("store")');assert.equal(w.document.querySelectorAll('#tournamentOffer').length,1);assert.equal(w.document.querySelectorAll('#store [data-sam-category]').length,7);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('vegetable count changes preserve shared stock and purchase the exact count at the native price',()=>{
@@ -69,7 +69,7 @@ test('Sam describes each choice without buying, keeps the quantity controls, and
  }finally{a.dispose();}
 });
 test('Sam welcomes, gives short factual advice, and opens the selected product catalogue without changing the save',()=>{
- const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');const before=snapshot(w),saved=w.localStorage.getItem(saveKey);assert.match(w.document.querySelector('#shopDialogue').dataset.dialogueText,/いらっしゃい/);assert.equal(w.document.querySelectorAll('.sam-category-icon').length,6);
+ const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');const before=snapshot(w),saved=w.localStorage.getItem(saveKey);assert.match(w.document.querySelector('#shopDialogue').dataset.dialogueText,/いらっしゃい/);assert.equal(w.document.querySelectorAll('.sam-category-icon').length,7);
   const native=w.document.querySelector('[data-buy-bait="worm"]');native.closest('.compact-product').querySelector('[data-compact-select]').click();assert.match(w.document.querySelector('#shopDialogue').dataset.dialogueText,/万能.*迷ったら/);click(w,'[data-sam-more]');assert.match(w.document.querySelector('.compact-sheet-body').textContent,/万能.*1セット → 3個/s);assert.deepEqual(snapshot(w),before);assert.equal(w.localStorage.getItem(saveKey),saved);click(w,'[data-compact-sheet-close]');assert.equal(w.document.activeElement,w.document.querySelector('[data-sam-more]'));
   click(w,'[data-sam-category="dogToys"]');click(w,'[data-sam-more]');assert.match(w.document.querySelector('.compact-sheet-heading').textContent,/ゴムボール/);assert.deepEqual(snapshot(w),before);click(w,'[data-compact-sheet-close]');assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}

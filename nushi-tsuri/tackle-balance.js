@@ -6,11 +6,11 @@
   if (root) root.ShuTackle = tackle;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const hooks = {
-    small: { name: "ハリ小", role: "小型魚・フナ向け。大型魚は掛かりにくい", bands: { small: 2.2, medium: .83, large: .12 } },
-    medium: { name: "ハリ中", role: "標準的な魚種向け", bands: { small: .72, medium: 1.2, large: .88 } },
-    large: { name: "ハリ大", role: "大型魚種を幅広く狙う", bands: { small: .07, medium: .46, large: 1.9 } },
-    micro: { name: "小魚針", role: "タナゴ・メダカなど小魚向け。大きな個体は苦手", bands: { small: 2.6, medium: .14, large: .001 } },
-    carp: { name: "コイ針", role: "コイを絞って狙う。ほかの大型魚にはハリ大", bands: { small: .025, medium: .26, large: .82 } },
+    small: { price: 200, name: "ハリ小", role: "小型魚・フナ向け。大型魚は掛かりにくい", bands: { small: 2.2, medium: .83, large: .12 } },
+    medium: { price: 0, name: "ハリ中", role: "標準的な魚種向け", bands: { small: .72, medium: 1.2, large: .88 } },
+    large: { price: 400, name: "ハリ大", role: "大型魚種を幅広く狙う", bands: { small: .07, medium: .46, large: 1.9 } },
+    micro: { price: 600, name: "小魚針", role: "タナゴ・メダカなど小魚向け。大きな個体は苦手", bands: { small: 2.6, medium: .14, large: .001 } },
+    carp: { price: 800, name: "コイ針", role: "コイを絞って狙う。ほかの大型魚にはハリ大", bands: { small: .025, medium: .26, large: .82 } },
   };
   // Add a species here with its basic band, bait multipliers, and optional hook overrides.
   // Spot, weather, time and casting distance multiply the result in the fishing scene.
