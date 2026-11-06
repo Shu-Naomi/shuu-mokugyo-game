@@ -1,7 +1,7 @@
 /* Decode/partition/color work stays off the input/render thread when supported.
  * Both paths call the exact same compositor; there is no lower-quality fallback.
  */
-importScripts('scene-layers.js?v=252-48','layered-scenery.js?v=252-48');
+importScripts('scene-layers.js?v=252-55','layered-scenery.js?v=252-55');
 self.onmessage=event=>{
   const {id,source,underlay,definition,env}=event.data;
   try {

@@ -6,7 +6,7 @@ module.exports=async function villageSam(url,mobile=false,options={}){
  const initial={...seed(),x:10,y:79,direction:'right',money:10000,gameMinutes:600,soundEnabled:false};
  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:initial});
  const page=await context.newPage(),errors=[],failed=[],resources=[],visits=[];let walked=0;
- page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const name=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+name);if(name.endsWith('/village-sam-v251-3.png')&&r.status()===200)resources.push(name);});
+ page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const name=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+name);if(name.endsWith('/village-world-v252-55-riao-clear.png')&&r.status()===200)resources.push(name);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>JSON.parse(JSON.stringify(eval(q))),q);
  const state=()=>value('({x:s.x,y:s.y,direction:s.direction})');
  const progress=()=>value('({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
@@ -29,7 +29,7 @@ module.exports=async function villageSam(url,mobile=false,options={}){
  }
  try{
   await page.clock.install({time:new Date('2026-10-22T03:00:00Z')});await page.clock.pauseAt('2026-10-22T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
-  const before=await progress();assert.ok(resources.length,'new shop art actually loaded');
+  const before=await progress();assert.ok(resources.length,'cohesive village master actually loaded');
   await walkTo({name:'sam-from-home',x:197,y:91,direction:'up'});assert.equal(await value('isAtSamShopEntrance()'),true);
   const controls=await page.evaluate(()=>['#action',...['up','right','down','left'].map(d=>'[data-move="'+d+'"]')].map(q=>{const b=document.querySelector(q),r=b.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {q,width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:top===b||b.contains(top)};}));
   const controlFit=controls.every(c=>c.width>=44&&c.height>=44&&c.inside&&c.unblocked);assert.ok(controlFit,'landscape controls fit and accept touches '+JSON.stringify(controls));

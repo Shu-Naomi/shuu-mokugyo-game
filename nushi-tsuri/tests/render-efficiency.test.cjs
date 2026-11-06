@@ -120,7 +120,13 @@ test('animation occlusion is separate from cache visibility and syncVisibility r
   const clear = overlay.getContext('2d').clearRect.bind(overlay.getContext('2d'));
   overlay.getContext('2d').clearRect = (...args) => {paints++; clear(...args);};
   const controller = Art.createController({canvasFactory: createCanvas,
-    loadImage: async () => {loads++; return createCanvas(16, 16);},
+    loadImage: async () => {
+      loads++;
+      // The village now keeps trees static. Give the retained water effect
+      // real water-coloured pixels instead of relying on empty tree masks.
+      const image=createCanvas(16,16),ctx=image.getContext('2d');
+      ctx.fillStyle='#306c98';ctx.fillRect(0,0,16,16);return image;
+    },
     buildScene: (...args) => {builds++; return Art.prepare(...args);},
     requestFrame: fn => {frames.set(++serial, fn); return serial;}, cancelFrame: id => frames.delete(id),
     now: () => time, visible: () => true, animationVisible: () => !covered, isHidden: () => hidden,

@@ -12,7 +12,8 @@
   const villageGate = { left:116, right:132, top:2, bottom:10 };
   const returnGate = { left:146, right:158, top:125, bottom:133 };
   const entry = { x:152, y:128, direction:"up" };
-  const villageReturn = { x:124, y:8, direction:"down" };
+  // v252-55: return on the renewed north road, with a straight clear step to the gate.
+  const villageReturn = { x:120, y:8, direction:"down" };
   const bridge = { left:87, right:140, top:69, bottom:75.5 };
   // v252-31: widened dirt and bridge traced against the finished painting, in the same 240 x 135 world units
   // as the village. The deck covers the stream; the waterfall and cliffs do not.

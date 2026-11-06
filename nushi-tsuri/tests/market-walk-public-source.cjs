@@ -1,6 +1,6 @@
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
-const files=['index.html','lake-intro.js','scene-layers.js','layered-scenery.js','scenery-worker.js','sw.js','assets/player-girl-front-walk-v252-8.png','assets/village-fishmarket-v252-8.png'];
+const files=['index.html','lake-intro.js','scene-layers.js','layered-scenery.js','scenery-worker.js','sw.js','assets/player-girl-front-walk-v252-8.png','assets/village-world-v252-55-riao-clear.png','assets/village-underlay-v252-55-riao.png'];
 const sha=data=>crypto.createHash('sha256').update(data).digest('hex');
 (async()=>{
  const expected=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),pending=new Set(files),matched=[],deadline=Date.now()+6*60*1000;

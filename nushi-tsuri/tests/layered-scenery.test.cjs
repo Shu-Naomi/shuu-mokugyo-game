@@ -170,7 +170,8 @@ test('late scene decodes cannot overwrite a new room; animation suspends, resume
 test('restored tree trunks are solid while former simplified-tree positions no longer form invisible obstacles',()=>{
   const app=boot(),w=app.window;
   try {
-    for(const [x,y] of [[416,223],[420,345],[543,568],[1112,214]])assert.equal(w.eval(`isWalkableWorld(${x/6.4},${y/6.4})`),false);
+    for(const [x,y] of [[459,384],[584,635],[1184,240],[1227,240],[108,369],[1583,430]])assert.equal(w.eval(`isWalkableWorld(${x/1672*240},${y/941*135})`),false);
+    assert.equal(w.eval('ShuSceneLayers.propSolid(452/1672*240,245/941*135)'),false,'replaced tree no longer blocks Riao front');
     for(const [x,y] of [[59,59],[60,96],[86,94],[171,14]])assert.equal(w.eval(`ShuSceneLayers.propSolid(${x},${y})`),false);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

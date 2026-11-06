@@ -1,5 +1,8 @@
 name: Village inn and garden
 on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/village-inn.yml']
   push:
     branches: [main, codex/village-inn-next]
     paths:

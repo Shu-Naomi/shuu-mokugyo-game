@@ -61,7 +61,7 @@
   const objective='まずは家と三匹の様子を見てみよう。道具の相談はサムの店へ。';
   // Storybook paintings share one south-door camera. Dialogue/save identifiers above
   // are deliberately unchanged: a visual revision must never migrate the story.
-  const art={village:'assets/terrain-world-v54.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp',diaryResearcher:'assets/opening-storybook-diary-researcher-v1.webp',diaryWish:'assets/opening-storybook-diary-wish-v1.webp'};
+  const art={village:'assets/village-world-v252-55-riao-clear.png',home:'assets/player-home-interior-v160.webp',diaryTurn:'assets/opening-storybook-diary-turn-v1.webp',diarySettled:'assets/opening-storybook-diary-settled-v1.webp',diaryResearcher:'assets/opening-storybook-diary-researcher-v1.webp',diaryWish:'assets/opening-storybook-diary-wish-v1.webp'};
   const images=new Map(),failed=new Set(),ids=['shuu','riku','grey'];
   const clamp=x=>Math.max(0,Math.min(1,x));
   const durations={arrival:.7,memory:.7,notebook:1.6,researcher:1.6,wish:1.6,sam:.9,invitation:.9,refusal:.8,push:.8,retort:.8,puppies:1.1,cling:1.1,care:.8,decision:.8,welcome:.8,'first-day':.7};

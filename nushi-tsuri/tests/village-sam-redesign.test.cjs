@@ -2,12 +2,13 @@ const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const Art=require('../layered-scenery.js'),Data=require('../scene-layers.js');
+const archivedWorld=require('./fixtures/village-world-v54.json');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const root=path.resolve(__dirname,'..'),pixels=c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data;
 const snapshot=w=>read(w,'({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
 
 test('Sam district source art is preserved, and the assembled village changes no pixel outside the shop district',async()=>{
- const d={...Data.get('world'),edits:Data.get('world').edits.filter(e=>e.id==='sam-shop-front')},original=await loadImage(path.join(root,d.source));
+ const d={...archivedWorld,edits:archivedWorld.edits.filter(e=>e.id==='sam-shop-front')},original=await loadImage(path.join(root,d.source));
  const raw=fs.readFileSync(path.join(root,d.edits[0].source));
  assert.equal(crypto.createHash('sha256').update(raw).digest('hex'),'88d868055afb912bc4054cbc286e9d774891225b5086a411ae70d294acf6b372');
  const edits=await Promise.all(d.edits.map(e=>loadImage(path.join(root,e.source))));
@@ -19,23 +20,42 @@ test('Sam district source art is preserved, and the assembled village changes no
   changed++;assert.ok(x>=1150&&x<=1355&&y>=437&&y<=604,`unrelated scenery changed at ${x},${y}`);
  }
  assert.ok(changed>18000&&changed<35000,'a detailed shop district, preserving the rest of the village');
- assert.ok(Data.assets().includes(d.edits[0].source));
- const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert.ok(sw.includes('./'+d.edits[0].source));
+ assert.ok(fs.existsSync(path.join(root,d.edits[0].source)),'archived source remains available for exact-pixel regression');
  for(const period of ['day','evening','night']){
   const scene=Art.prepare(assembled,null,d,{season:'spring',period},createCanvas),c=createCanvas(1536,864);
   Art.compose(c,scene,{patches:false});const rgba=pixels(c),colors=new Set();for(let i=0;i<rgba.length;i+=64)colors.add((rgba[i]<<16)|(rgba[i+1]<<8)|rgba[i+2]);assert.ok(colors.size>1000,'keep tonal detail at '+period);
  }
 });
 
-test('the browser controller loads and assembles the shop edit before preparing world pixels',async()=>{
- const seen=[],d=Data.get('world'),canvas=createCanvas(1536,864);
+test('the cohesive master renders Sam pixels at native resolution in day, rain and night without retired overlays',async()=>{
+ const seen=[],canvas=createCanvas(1672,941),d=Data.get('world');
+ assert.equal(d.source,'assets/village-world-v252-55-riao-clear.png');
+ assert.deepEqual(d.edits,[],'district composites are retired from runtime');
+ assert.deepEqual(d.patches,[],'dock patches are retired from runtime');
+ assert.ok(d.underlay&&d.underlay!==archivedWorld.underlay,'load the matching cohesive underlay');
+ assert.ok(d.parts.every(p=>p.motion!=='sway'),'vegetation stays fixed');
+ assert.ok(d.parts.some(p=>p.kind==='water'&&p.effect),'water effects remain enabled');
  const controller=Art.createController({canvasFactory:createCanvas,loadImage:async url=>{seen.push(url);return loadImage(path.join(root,url));},
-  createMotionCanvas:()=>{const overlay=createCanvas(1536,864);overlay.dataset={};return overlay;},visible:()=>true,isHidden:()=>false,reducedMotion:()=>true,
-  requestFrame:()=>1,cancelFrame:()=>{},onError:e=>{throw e;}});
- try{assert.equal(await controller.paint(canvas,'world',{season:'spring',period:'day'}),true);
-  assert.ok(seen.includes(d.edits[0].source));
-  const original=await loadImage(path.join(root,d.source)),expected=Art.assembleSource(original,d,await Promise.all(d.edits.map(e=>loadImage(path.join(root,e.source)))),createCanvas);
-  assert.deepEqual(canvas.getContext('2d').getImageData(1230,475,60,80).data,expected.getContext('2d').getImageData(1230,475,60,80).data);
+  createMotionCanvas:()=>{const c=createCanvas(1672,941);c.dataset={};return c;},visible:()=>true,isHidden:()=>false,reducedMotion:()=>true,
+  requestFrame:()=>1,cancelFrame(){},onError:e=>{throw e;}});
+ try{
+  const original=await loadImage(path.join(root,d.source)),expected=createCanvas(1672,941);
+  assert.deepEqual([original.width,original.height],[1672,941]);expected.getContext('2d').drawImage(original,0,0);
+  assert.equal(await controller.paint(canvas,'world',{season:'spring',period:'day',weather:'sunny'}),true);
+  assert.deepEqual([canvas.width,canvas.height],[1672,941]);
+  assert.deepEqual(canvas.getContext('2d').getImageData(1340,518,60,80).data,expected.getContext('2d').getImageData(1340,518,60,80).data,'daytime Sam uses native master pixels');
+  const day=Buffer.from(canvas.getContext('2d').getImageData(1340,518,60,80).data);
+  for(const env of [{season:'summer',period:'evening',weather:'rain'},{season:'winter',period:'night',weather:'cloudy'}]){
+   assert.equal(await controller.paint(canvas,'world',env),true);
+   assert.notDeepEqual(Buffer.from(canvas.getContext('2d').getImageData(1340,518,60,80).data),day,'season and lighting still change the master: '+env.period);
+  }
+  assert.ok(seen.includes(d.source),'cohesive master actually loaded');assert.ok(seen.includes(d.underlay),'matching underlay actually loaded');
+  for(const retired of [archivedWorld.source,archivedWorld.underlay,...archivedWorld.edits.map(e=>e.source)]){
+   assert.ok(!seen.includes(retired),'retired world image was not requested: '+retired);
+   assert.ok(!Data.assets().includes(retired),'retired world image is not in runtime assets: '+retired);
+  }
+  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+  for(const file of [d.source,d.underlay])assert.ok(sw.includes('./'+file),'offline cache includes '+file);
  }finally{controller.dispose();}
 });
 

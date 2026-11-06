@@ -41,7 +41,7 @@
    if(Array.isArray(data.villagePlaces))entries.push(...data.villagePlaces);
    if(data.offshore)entries.push({id:'village-ferry',kind:'exit',name:'潮風島への漁船',point:data.offshore.harbor,notes:[{text:'船長タツにAで相談。潮風島へ往復800円・片道1時間。帰りもこの漁船で戻れるよ。'}]});
   }
-  return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/terrain-world-v54.png'),
+  return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/village-world-v252-55-riao-clear.png'),
    entries,buildings:data.life.buildings.filter(b=>b.region===region),player:{x:state.x,y:state.y},playerLabel:state.home?'家の入口':'現在地'};
  }
  function create({element,life}){

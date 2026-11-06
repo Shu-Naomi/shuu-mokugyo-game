@@ -27,7 +27,7 @@ test("the actual four-unit movement traverses the three painted paths in both di
       if (route.name.includes("shrine")) {
         assert.equal(w.nearbyWorldLandmark(x, y).id, "west-shrine");
         w.action();
-        assert.match(read(w, "s.log[0]"), /水守りの社に手を合わせた/);
+        assert.match(read(w, "s.log[0]"), /ダンの魚レース場は準備中/);
       }
       const reverse = route.direction === "down" ? "up" : "down";
       for (let i = 0; i < route.count; i++) {

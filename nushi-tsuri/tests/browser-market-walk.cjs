@@ -6,7 +6,7 @@ module.exports=async function marketWalk(url,screen){
  const initial={...seed(),avatar:'girl',x:10,y:79,direction:'right',gameMinutes:600,soundEnabled:false},other=JSON.stringify({...seed(),avatar:'boy',money:7654,playerName:'別の冒険'});
  await context.addInitScript(({key,state,other})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));if(!localStorage.getItem(key+'-slot2'))localStorage.setItem(key+'-slot2',other);localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:initial,other});
  const page=await context.newPage(),errors=[],failed=[],resources=new Set(),visits=[],pointers=[];let walked=0;
- page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const file=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+file);if(r.status()===200&&/village-fishmarket-v252-8|player-girl-front-walk-v252-8/.test(file))resources.add(file.split('/').at(-1));});
+ page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const file=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+file);if(r.status()===200&&/village-world-v252-55-riao-clear|player-girl-front-walk-v252-8/.test(file))resources.add(file.split('/').at(-1));});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>JSON.parse(JSON.stringify(eval(q))),q);
  const state=()=>value('({x:s.x,y:s.y,direction:s.direction,avatar:s.avatar})');
  const progress=()=>value('({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,items:s.items,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
@@ -42,7 +42,7 @@ module.exports=async function marketWalk(url,screen){
  }
  try{
   await page.clock.install({time:new Date('2026-10-27T03:00:00Z')});await page.clock.pauseAt('2026-10-27T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
-  assert.equal((await state()).avatar,'girl');assert.equal(resources.size,2,'both new originals were really loaded');const before=await progress();
+  assert.equal((await state()).avatar,'girl');assert.equal(resources.size,2,'the cohesive village master and walking sprite were really loaded');const before=await progress();
   await walkTo({name:'downward-walk-start',x:178,y:95,direction:'down'});const from=await state(),expected=await page.evaluate(()=>ShuWorldLife.moveTarget(s.x,s.y,'down',4,isWalkableWorld));
   await press('[data-move="down"]');walked++;const moved=await state();assert.equal(moved.y,expected.y);assert.ok(moved.y>from.y);assert.equal(moved.x,from.x);
   const right=await bootPose('girl-step-right');await shot('girl-down-right');await page.clock.runFor(180);const left=await bootPose('girl-step-left');await shot('girl-down-left');
