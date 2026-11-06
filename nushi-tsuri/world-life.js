@@ -16,7 +16,7 @@
  const residents=[
   {id:'ferry-harbor',region:'village',name:'漁船の船長タツ',sprite:0,route:[[221,108],[221,108]],speed:1},
   {id:'ferry-island',region:'offshore',name:'漁船の船長タツ',sprite:0,route:[[135,91],[135,91]],speed:1},
-  {id:'village-fisher',region:'village',name:'散歩中の釣り人',sprite:0,route:[[51,39],[64,39]],speed:1.4},
+  {id:'village-fisher',region:'village',name:'散歩中の釣り人',sprite:0,route:[[74,44],[89,44]],speed:1.4},
   {id:'village-greengrocer',region:'village',name:'買い物帰りの住人',sprite:1,route:[[70,81],[88,81]],speed:1.2},
   {id:'village-worker',region:'village',name:'仕事帰りの住人',sprite:2,route:[[164,82],[177,82]],speed:1.1},
   {id:'stream-fisher',region:'stream',name:'渓流の常連',sprite:0,route:[[151,71],[168,70]],speed:1.2},

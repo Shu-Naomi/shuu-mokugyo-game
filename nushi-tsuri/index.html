@@ -1778,7 +1778,7 @@
       .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign) {
         display: none !important;
       }
-      .map.v54-map #ruralSign { position:absolute; left:90.8%; top:23.2%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
+      .map.v54-map #ruralSign { position:absolute; left:90.8%; top:20.8%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
       .map.v54-map #ruralSign[hidden] { display:none !important; }
       #ruralSign::after { content:""; position:absolute; left:48%; top:60%; width:7%; height:62%; background:#624226; border-right:2px solid #342719; z-index:-1; }
       #ruralSign span { display:block; background:#624226; color:#ffe0a3; border:2px solid #392a1b; box-shadow:inset 0 0 0 1px #b98b48,2px 3px 0 #392a1b; font-size:clamp(10px,1.1vw,19px); font-weight:bold; text-align:center; white-space:nowrap; padding:2px; }
@@ -6528,7 +6528,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-54</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-55</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7425,12 +7425,12 @@
     </section>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="offshore-island.js?v=252-20"></script>
-    <script src="world-life.js?v=252-54"></script>
-    <script src="field-guide.js?v=252-48"></script>
-    <script src="rural-canals.js?v=252-48"></script>
-    <script src="mountain-region.js?v=252-54"></script>
+    <script src="world-life.js?v=252-55"></script>
+    <script src="field-guide.js?v=252-55"></script>
+    <script src="rural-canals.js?v=252-55"></script>
+    <script src="mountain-region.js?v=252-55"></script>
     <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-44"></script>
+    <script src="lake-intro.js?v=252-55"></script>
     <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-51"></script>
@@ -7445,13 +7445,13 @@
     <script src="item-object-art.js?v=252-28"></script>
     <script src="ui-pixel-art.js?v=252-28"></script>
     <script src="ui-extra-art.js?v=252-28"></script>
-    <script src="rival-anglers.js?v=199-1"></script>
-    <script src="tournament-npcs.js?v=180-1"></script>
+    <script src="rival-anglers.js?v=252-55"></script>
+    <script src="tournament-npcs.js?v=252-55"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-48"></script>
-    <script src="layered-scenery.js?v=252-48"></script>
+    <script src="scene-layers.js?v=252-55"></script>
+    <script src="layered-scenery.js?v=252-55"></script>
     <script>
       function uiArt(key) {
         const [kind, id] = key.split(":");
@@ -14042,7 +14042,7 @@
           store: $("#store").classList.contains("open"),
           location: $("#locationInterior").classList.contains("open") ? activeLocationId : null,
           home: playerHomeIsActive(), boats: $("#vehicleShop").classList.contains("open"),
-          shrine: !battle && nearbyWorldLandmark()?.id === "west-shrine",
+          shrine: !battle && nearbyWorldLandmark()?.id === "main-shrine",
         });
       }
       function stopWildlifeSound() {
@@ -14725,22 +14725,32 @@
         return y / WORLD_SCALE_Y;
       }
       const lakeWaterPolygon = [
-          // Follow the painted northeast bank. The former x=159 bulge
-          // covered the dry path at x=155, interrupting the lakeside walk.
-          [91, 15], [104, 13], [119, 13], [134, 14], [148, 19],
-          [153, 24], [154, 30], [153, 36], [150, 42], [142, 47],
-          [130, 50], [123, 51], [118, 49], [111, 51], [100, 49],
-          [90, 46], [83, 41], [79, 35], [79, 28], [82, 21],
-        ],
-        riverCenterLine = [
-          [50, 118], [58, 116], [68, 113.5], [76, 111], [84, 108.5],
-          [92, 108], [101, 108], [110, 106.5], [120, 106],
-          [128, 104.5], [135, 104],
-        ],
-        riverWidthLine = [
-          [50, 2.2], [68, 2.5], [84, 3.1], [101, 3.2],
-          [120, 3.8], [128, 4.3], [135, 4.8],
-        ],
+          // Shore-side vertices measured in the final 1672×941 village art.
+          // The larger TCG shop replaces the old western bank. Keep water
+          // out of its forecourt, cover the small southwest reed pocket,
+          // and leave the existing dock exclusion intact.
+          [776,101],[722,104],[717,120],[690,126],[670,162],
+          [677,183],[688,202],[716,234],[715,252],[726,267],
+          [713,282],[702,287],[698,309],[704,326],[755,342],
+          [768,358],[805,358],[822,345],[910,341],[946,331],
+          [958,312],[1015,303],[1021,288],[1033,283],[1066,234],
+          [1054,219],[1047,201],[1039,190],[1044,174],[1018,164],
+          [1017,153],[954,140],[920,117],[784,101],
+        ].map(([x,y]) => [x / 1672 * 240, y / 941 * 135]),
+        // The painted stream bends independently on its two banks. A
+        // symmetric center/width approximation left blue water walkable.
+        // The same measured envelope governs collision and bridge casting.
+        riverWaterPolygon = [
+          [772,345],[812,345],[813,381],[812,411],[805,440],
+          [805,455],[797,472],[788,485],[785,502],[778,529],
+          [775,559],[778,598],[783,637],[788,668],[796,696],
+          [791,726],[782,756],[772,788],[774,818],[790,850],
+          [813,883],[848,914],[870,941],[650,941],[650,910],
+          [665,878],[681,846],[680,817],[694,787],[711,757],
+          [723,724],[731,693],[724,662],[720,636],[716,610],
+          [714,582],[716,555],[724,529],[735,498],[752,469],
+          [759,439],[772,412],[769,381],
+        ].map(([x,y]) => [x / 1672 * 240, y / 941 * 135]),
         seaShoreLine = [
           [0, 111], [15, 109], [30, 110], [45, 113], [60, 115],
           [75, 119], [90, 124], [102, 130], [108, 134], [116, 128],
@@ -14748,6 +14758,16 @@
           [175, 105], [185, 102], [195, 99], [205, 98], [215, 99],
           [225, 101], [240, 104],
         ],
+        // Open water behind the east pier, bounded by the stepped wall and
+        // boulders. It overrides the old broad quay/pier rectangles without
+        // consuming the dry timber connector or its painted blue bucket.
+        harborPocketWaterPolygon = [
+          [1544,653],[1603,653],[1605,662],[1618,667],[1632,676],
+          [1636,687],[1638,696],[1645,704],[1646,720],[1642,730],
+          [1646,736],[1646,746],[1600,746],[1598,737],[1584,732],
+          [1580,710],[1578,702],[1565,700],[1565,686],[1555,679],
+          [1554,671],[1544,671],
+        ].map(([x,y]) => [x / 1672 * 240, y / 941 * 135]),
         practicePondBounds = {
           centerX: 222.5,
           centerY: 78.5,
@@ -14756,7 +14776,9 @@
           entryX: 212,
           entryY: 87,
         },
-        riverBridgeBounds = { left: 99, right: 119, top: 75, bottom: 88 },
+        // Only the painted stone deck is a water exception. The old tall
+        // rectangle also exposed the stream above and below the arch.
+        riverBridgeBounds = { left: 99, right: 119, top: 78, bottom: 84.5 },
         // v80: only the painted stone quays and wooden piers are walkable.
         // The old broad rectangles covered boats and open harbor water, which
         // let both the player and the following dog appear to walk on the sea.
@@ -14792,13 +14814,17 @@
           top: 55,
           bottom: 65,
         },
-        // The west shrine also has open central steps. Keep its walls,
-        // side signs and planted borders solid while letting feet approach.
-        westShrineApproachBounds = {
-          left: 32,
-          right: 40,
-          top: 55,
-          bottom: 62,
+        // Dan's painted venue replaces the west shrine. The pools and
+        // outer fences are solid; only the central wood path and wider
+        // lower porch are dry. Keep the legacy landmark ID for compatibility.
+        danRaceFront = {
+          walls: { left: 20.8, right: 55.6, top: 41, bottom: 69.5 },
+          approaches: [
+            { left: 34.5, right: 39.5, top: 55, bottom: 69.5 },
+            { left: 31.5, right: 42.2, top: 64.5, bottom: 69.5 },
+          ],
+          // Walkability below narrows this rectangle to the two dry areas.
+          interaction: { left: 31.5, right: 42.2, top: 55, bottom: 69.5 },
         },
         // Sam's shop has the same painted-doorway shape as the shrine. Open
         // only the centre steps so the player can stand at the door without
@@ -14819,16 +14845,32 @@
         },
         // The sign faces south. Read it from the small strip directly in
         // front, facing the board; never intercept A on the river path.
-        questBoardInteractionBounds = { left: 120.5, right: 126.5, top: 74, bottom: 78.5 },
+        questBoardInteractionBounds = { left: 120.5, right: 126.5, top: 74, bottom: 79.5 },
+        // Riao's full-size south-facing shop. The main wall stops at the
+        // painted façade foot; only the retained pots, crate and notice have
+        // separate small ground-contact solids. The removed left-hand loose
+        // objects do not leave invisible barriers on the inn connector.
+        riaoShopFront = {
+          walls: { left: 55.5, right: 89, top: 14, bottom: 38.5 },
+          interaction: { left: 71, right: 77, top: 38.6, bottom: 43.5 },
+          door: { x: 74, y: 39.5 },
+          // Source-pixel foot bands, not the full height of each decoration.
+          props: [[457,484,270,282],[543,568,270,282],
+            [587,616,272,282],[619,645,282,292]].map(([left,right,top,bottom]) => ({
+              left:left/1672*240, right:right/1672*240,
+              top:top/941*135, bottom:bottom/941*135,
+            })),
+        },
         structureBounds = [
           { id: "farmhouse", left: 28, right: 55, top: 12, bottom: 31 },
+          { id: "riao-tcg-shop", ...riaoShopFront.walls },
           { id: "watermill", left: 187, right: 210, top: 13, bottom: 31 },
-          { id: "west-shrine", left: 27, right: 55, top: 41, bottom: 62 },
+          { id: "west-shrine", ...danRaceFront.walls },
           { id: "wayside-shrine", left: 8, right: 17, top: 50, bottom: 61 },
           { id: "yaoya", left: 66, right: 91, top: 55, bottom: 75 },
           // The small painted sign stands beside the river path, not across
-          // it. Only its foot (master pixels 784..797, 461..474) is solid.
-          { id: "quest-board", left: 122.5, right: 124.5, top: 72, bottom: 74 },
+          // it. Its renewed board feet stay north of the existing A approach.
+          { id: "quest-board", left: 119.4, right: 124.5, top: 72, bottom: 75.2 },
           { id: "diner", left: 130, right: 158, top: 55, bottom: 75 },
           { id: "main-shrine", left: 178, right: 211, top: 36, bottom: 64 },
           { id: "sam-shop", left: 182, right: 211, top: 70, bottom: 92 },
@@ -14844,8 +14886,17 @@
           },
           {
             id: "west-shrine", x: 36, y: 61, radius: 8,
-            hint: "水守りの社だ。Aでお参りする。",
-            message: "水守りの社に手を合わせた。湖から海まで、穏やかな水音が続いている。",
+            interaction: danRaceFront.interaction, facing: "up",
+            hint: "ダンの魚レース場（準備中）。Aで案内を見る。",
+            message: "ダンの魚レース場は準備中。今はまだレースに参加できません。",
+            noticeOnly: true,
+          },
+          {
+            id: "riao-tcg-shop", ...riaoShopFront.door, radius: 4,
+            interaction: riaoShopFront.interaction, facing: "up",
+            hint: "リアオの魚TCGショップ（準備中）。Aで案内を見る。",
+            message: "リアオの魚TCGショップは準備中。今はまだ対戦やカードの売買はできません。",
+            noticeOnly: true,
           },
           {
             id: "yaoya", x: 79, y: 77, radius: 8,
@@ -14875,7 +14926,7 @@
             id: "watermill", x: 198, y: 33, radius: 8,
             hint: "アスアルのペットショップだ。Aで魚とコンテストの受付へ。",
             petShop: true, interaction: {left:191,right:204,top:31.2,bottom:37.5},
-            message: "森の水車小屋。苔むした水路から、湖へ細い水が注いでいる。",
+            message: "アスアルのペットショップ。水車の家で、魚のお世話用品とコンテストを受け付けている。",
           },
           {
             id: "fish-market", x: 160, y: 105, radius: 9,
@@ -15196,12 +15247,6 @@
       function isLakeWater(x, y) {
         return !isOnLakeDock(x, y) && pointInPolygon(x, y, lakeWaterPolygon);
       }
-      function riverCenterWorldX(worldY) {
-        return sampleWorldLine(riverCenterLine, worldY);
-      }
-      function riverHalfWidth(worldY) {
-        return sampleWorldLine(riverWidthLine, worldY);
-      }
       function isOnRiverBridge(x, y) {
         return inWorldRect(x, y, riverBridgeBounds);
       }
@@ -15209,20 +15254,24 @@
         // The broad walkable bridge bounds include dry approach paths.
         // Only the span over the channel prevents a cast from this position.
         return isOnRiverBridge(x, y) &&
-          Math.abs(x - riverCenterWorldX(y)) <= riverHalfWidth(y) + 1;
+          pointInPolygon(x, y, riverWaterPolygon);
       }
       function isRiverWater(x, y) {
-        if (y < 50 || y > 132 || isOnRiverBridge(x, y)) return false;
-        return Math.abs(x - riverCenterWorldX(y)) < riverHalfWidth(y);
+        // Keep the established river/sea fishing-zone boundary at y=132.
+        return y >= 50 && y <= 132 && !isOnRiverBridge(x, y) &&
+          pointInPolygon(x, y, riverWaterPolygon);
       }
       function isOnHarborWalkway(x, y) {
-        return harborWalkwayPolygons.some((polygon) => pointInPolygon(x, y, polygon));
+        return !pointInPolygon(x, y, harborPocketWaterPolygon) &&
+          harborWalkwayPolygons.some((polygon) => pointInPolygon(x, y, polygon));
       }
       function seaWaterY(x) {
         return sampleWorldLine(seaShoreLine, x);
       }
       function isSeaWater(x, y) {
-        return y >= seaWaterY(x) && !isOnHarborWalkway(x, y);
+        const mouth = y > 132 && pointInPolygon(x, y, riverWaterPolygon);
+        return (y >= seaWaterY(x) || mouth || pointInPolygon(x, y, harborPocketWaterPolygon)) &&
+          !isOnHarborWalkway(x, y);
       }
       function isPracticePondWater(x, y) {
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
@@ -15237,12 +15286,13 @@
         ) < 9;
       }
       function isBlockedStructure(x, y) {
+        if (riaoShopFront.props.some((bounds) => inWorldRect(x, y, bounds))) return true;
         return structureBounds.some((bounds) => {
           if (!inWorldRect(x, y, bounds)) return false;
           const isShrineApproach = bounds.id === "main-shrine" &&
             inWorldRect(x, y, mainShrineApproachBounds);
-          const isWestShrineApproach = bounds.id === "west-shrine" &&
-            inWorldRect(x, y, westShrineApproachBounds);
+          const isDanRaceApproach = bounds.id === "west-shrine" &&
+            danRaceFront.approaches.some((approach) => inWorldRect(x, y, approach));
           const isSamShopApproach = bounds.id === "sam-shop" &&
             inWorldRect(x, y, samShopApproachBounds);
           const isHarborCornerBuilding =
@@ -15250,7 +15300,7 @@
           const isHarborCornerPassage = isHarborCornerBuilding &&
             inWorldRect(x, y, harborCornerPassageBounds);
           return !(
-            isShrineApproach || isWestShrineApproach ||
+            isShrineApproach || isDanRaceApproach ||
             isSamShopApproach || isHarborCornerPassage ||
             (bounds.id === "harbor-shop" && inWorldRect(x,y,{left:138,right:144,top:118,bottom:121}))
           );
@@ -15329,7 +15379,8 @@
         if (s.mapRegion !== "village") return null;
         return worldLandmarks.find((landmark) =>
           landmark.questBoard ? isAtQuestBoardFront(x, y, direction) :
-          landmark.interaction ? inWorldRect(x,y,landmark.interaction) && isWalkableWorld(x,y) :
+          landmark.interaction ? (!landmark.facing || landmark.facing === direction) &&
+            inWorldRect(x,y,landmark.interaction) && isWalkableWorld(x,y) :
             Math.hypot(x - landmark.x, y - landmark.y) < landmark.radius,
         ) || null;
       }
@@ -18140,6 +18191,8 @@
           ? `${ShuRivals.character(rival.id).name}がいる。Aで挨拶する。`
           : tournamentNpc
           ? `${ShuTournamentNpcs.byId(tournamentNpc.id).name}がいる。Aで話しかける。`
+          : landmark?.noticeOnly
+          ? landmark.hint
           : foragePoint
           ? "小さなキラキラがある。Aで拾う。"
           : nearPracticePond
@@ -18696,11 +18749,18 @@
         const rival = nearbyRival();
         if (rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)) return openRivalTalk(rival.id);
         if (tournamentNpc) return openTournamentTalk(tournamentNpc.id);
+        const landmark = nearbyWorldLandmark();
+        // A front notice must not collect nearby forage or start another
+        // activity. These exteriors have no game, trade or interior yet.
+        if (landmark?.noticeOnly) {
+          log(landmark.message);
+          showRescueToast(landmark.message, 4200);
+          return;
+        }
         const foragePoint = nearbyForagePoint();
         if (foragePoint) return collectForagePoint(foragePoint.point.id);
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
-        const landmark = nearbyWorldLandmark();
         if (isAtSamShopEntrance()) {
           renderSamShop();
           open("store");
@@ -24393,7 +24453,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-54").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-55").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

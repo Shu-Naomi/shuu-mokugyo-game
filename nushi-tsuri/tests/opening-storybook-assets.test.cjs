@@ -9,7 +9,7 @@ test('all protagonist and companion paintings are shipped and precached with the
  for(const source of new Set(['notebook','researcher','wish'].flatMap(id=>Intro.diarySources(id)))){assert.ok(fs.existsSync(path.join(root,source)));assert.ok(sw.includes(`"./${source}"`));}
  assert.ok(sw.includes(`"./${Intro.art.diaryTurn}"`));
  assert.equal([...sources].filter(s=>s.includes('opening-storybook-')).length,15);
- assert.ok(sw.includes('lake-intro.js?v=252-44'));
+ assert.ok(sw.includes('lake-intro.js?v=252-55'));
  assert.ok(sw.includes('lake-intro.css?v=252-44'));
 });
 test('the first peek, threshold and reunion use different paintings with stable avatar and favorite identity',()=>{

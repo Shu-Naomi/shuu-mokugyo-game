@@ -83,12 +83,12 @@
   const placements = [
     { id: "liao", x: 157, y: 31, facing: "left", place: "湖の東岸" },
     { id: "asual", x: 145, y: 49, facing: "left", place: "湖の南東岸" },
-    { id: "dancer", x: 91, y: 49, facing: "right", place: "湖の南西岸" },
+    { id: "dancer", x: 103, y: 54, facing: "right", place: "湖の南西岸" },
   ];
   const dogPlacements = [
     { id: "crow", x: 164, y: 31, facing: "left", place: "リアオのそば" },
     { id: "cloud", x: 153, y: 52, facing: "left", place: "アスアルのそば" },
-    { id: "jamie", x: 83, y: 52, facing: "right", place: "ダンサーのそば" },
+    { id: "jamie", x: 103, y: 62, facing: "right", place: "ダンサーのそば" },
     { id: "chappie", x: 208, y: 96, facing: "left", place: "サムの店先" },
   ];
   const profiles = [

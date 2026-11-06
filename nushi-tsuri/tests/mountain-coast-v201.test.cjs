@@ -46,11 +46,11 @@ test('A and directional exits travel between the same north village gate and mou
     assert.equal(read(w,'s.boatActive'),false);
     assert.equal(read(w,'activeLandingDock()'),null,'village port does not leak into mountains');
     w.eval('action()');
-    assert.deepEqual(read(w,'({region:s.mapRegion,x:s.x,y:s.y,d:s.direction})'),{region:'village',x:124,y:8,d:'down'});
+    assert.deepEqual(read(w,'({region:s.mapRegion,x:s.x,y:s.y,d:s.direction})'),{region:'village',x:120,y:8,d:'down'});
     w.eval('move("up");move("up")');
     assert.equal(read(w,'s.mapRegion'),'stream');
     w.eval('move("down");move("down")');
-    assert.deepEqual(read(w,'({region:s.mapRegion,x:s.x,y:s.y})'),{region:'village',x:124,y:8});
+    assert.deepEqual(read(w,'({region:s.mapRegion,x:s.x,y:s.y})'),{region:'village',x:120,y:8});
     assert.deepEqual(read(w,'({money:s.money,hp:s.hp,baits:s.baits,gameMinutes:s.gameMinutes,caught:s.caught,equipment:s.equipment})'),before);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

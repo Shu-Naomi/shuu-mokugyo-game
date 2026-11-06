@@ -15,22 +15,17 @@
   const water = {filter:'water',effect:'ripple'};
   const surfaceWater = style => ({filter:'water',effect:'surface-wave',surfaceMotion:style});
   const world = {
-    id:'world', source:'assets/terrain-world-v54.png',
-    underlay:'assets/layered-v163/world-underlay.png', units:[1536,864],coherentGrade:true,
-    // District edits share the original village master and its native scale.
-    // Every pixel outside their explicit outlines remains the existing village.
-    edits:[{id:'sam-shop-front',source:'assets/village-sam-v251-3.png',to:[1120,405,272,216],
-      clip:[[1151,509],[1184,490],[1184,443],[1236,443],[1265,438],[1329,443],[1350,506],[1355,589],[1327,604],[1151,601]]},
-      {id:'fishing-inn-front',source:'assets/village-inn-v251-4.png',to:[120,48,272,216],
-        clip:[[136,169],[176,169],[176,110],[193,76],[277,68],[288,80],[332,77],[334,102],[351,110],[351,142],[382,139],[388,167],[382,225],[365,244],[304,248],[137,248]]},
-      {id:'fish-market-front',source:'assets/village-fishmarket-v252-8.png',to:[912,532,224,168],
-        clip:[[935,580],[963,562],[994,544],[1055,556],[1088,552],[1106,599],[1108,648],[952,656],[925,632]]}],
+    id:'world', source:'assets/village-world-v252-55-riao-clear.png',
+    underlay:'assets/village-underlay-v252-55-riao.png', units:[1536,864],coherentGrade:true,
+    // One authored village replaces the old separately resampled districts.
+    // Original assets and their bounded-edit contract remain in test fixtures.
+    edits:[],
     waterColorMasks:[[[0,680],[145,680],[294,700],[461,735],[584,775],[663,790],[740,790],[740,864],[0,864]]],
     parts:[
       box('meadow','grass',0,0,1536,864,vegetation),
       box('paths','path',0,0,1536,864,{filter:'earth'}),
-      part('lake','water',[[532,110],[667,90],[771,89],[866,106],[940,141],[974,195],[970,234],[938,272],[887,296],[775,319],[658,300],[576,274],[539,244],[528,196]],water),
-      part('stream','water',[[710,309],[754,312],[736,411],[708,480],[707,560],[725,601],[716,655],[705,699],[721,745],[718,786],[745,832],[671,856],[650,818],[674,749],[657,679],[675,620],[667,571],[658,520],[689,442]],water),
+      part('lake','water',[[718.392,100.081],[668.785,101.917],[666.029,111.099],[641.225,119.362],[623.77,148.744],[632.957,156.089],[625.608,160.68],[638.469,168.944],[636.632,179.044],[670.622,214.852],[666.029,228.625],[679.809,240.561],[663.273,248.825],[666.947,258.925],[684.402,265.352],[655.005,266.27],[660.517,294.733],[701.856,304.833],[711.962,320.442],[734.01,320.442],[747.789,308.506],[831.388,303.915],[860.785,295.651],[870.89,278.206],[924.172,269.024],[926.01,256.17],[939.789,255.252],[970.105,213.934],[959.081,212.098],[955.407,187.307],[941.627,179.044],[949.895,161.598],[927.847,158.844],[926.928,145.989],[874.565,135.889],[840.574,115.69],[720.23,100.081]],water),
+      part('stream','water',[[709.206,316.769],[745.952,316.769],[746.871,349.824],[745.952,377.369],[739.522,403.996],[739.522,417.768],[732.172,433.377],[723.904,445.313],[721.148,460.922],[714.718,485.713],[711.962,513.258],[714.718,549.067],[719.311,584.876],[723.904,613.339],[731.254,639.048],[726.66,666.593],[718.392,694.138],[709.206,723.52],[711.043,751.065],[725.742,780.446],[746.871,810.746],[779.024,839.209],[799.234,864.0],[597.129,864.0],[597.129,835.537],[610.909,806.155],[625.608,776.774],[624.689,750.147],[637.55,722.601],[653.167,695.056],[664.191,664.757],[671.541,636.293],[665.11,607.83],[661.435,583.957],[657.761,560.085],[655.923,534.376],[657.761,509.586],[665.11,485.713],[675.215,457.25],[690.833,430.623],[697.263,403.078],[709.206,378.287],[706.45,349.824]],water),
       part('sea','water',[[0,711],[142,713],[294,742],[461,777],[584,816],[663,829],[740,824],[802,858],[933,857],[961,818],[1060,807],[1135,737],[1243,662],[1434,663],[1484,709],[1479,791],[1536,849],[1536,864],[0,864]],water),
       part('harbor-water','water',[[944,709],[1052,667],[1157,646],[1270,648],[1383,634],[1407,599],[1536,576],[1536,864],[938,864]],water),
       part('practice-pond','water',[[1372,479],[1387,466],[1423,465],[1457,478],[1474,502],[1460,526],[1424,536],[1386,520]],water),
@@ -39,17 +34,17 @@
       part('east-forest','trees',[[1450,0],[1536,0],[1536,315],[1441,274],[1417,185]],vegetation),
       box('west-coast-bushes','foreground',0,483,203,159,vegetation),
       box('east-coast-bushes','foreground',1484,365,52,234,vegetation),
-      box('farm-tree','trees',376,122,80,124,{motion:'sway'}),
-      box('shrine-tree','trees',385,274,64,88,{motion:'sway'}),
-      box('river-tree','trees',516,516,58,63,{motion:'sway'}),
-      box('east-tree','trees',1061,88,111,135,{motion:'sway'}),
-      box('west-cherry','trees',42,248,112,101,{motion:'sway'}),
-      box('east-cherry','trees',1430,321,106,112,{motion:'sway'}),
-      box('lake-reeds','grass',577,273,83,32,{...vegetation,motion:'sway'}),
-      box('river-reeds','grass',731,388,28,82,{...vegetation,motion:'sway'}),
+      box('riao-tcg-shop','buildings',342,82,252,183),
+      box('shrine-tree','trees',385,274,64,88),
+      box('river-tree','trees',516,516,58,63),
+      box('east-tree','trees',1061,88,111,135),
+      box('west-cherry','trees',42,248,112,101),
+      box('east-cherry','trees',1430,321,106,112),
+      box('lake-reeds','grass',635,241,52,78,vegetation),
+      box('river-reeds','grass',731,388,28,82,vegetation),
       part('farmhouse','buildings',[[176,110],[193,76],[277,68],[288,80],[332,77],[334,102],[351,110],[348,183],[181,183]]),
       part('watermill','buildings',[[1189,117],[1233,81],[1306,83],[1317,98],[1341,114],[1347,168],[1304,184],[1192,182]]),
-      part('west-shrine','buildings',[[171,299],[187,264],[269,263],[280,280],[310,296],[309,362],[180,371]]),
+      box('dan-race-venue','buildings',133,253,224,192),
       box('wayside-shrine','buildings',47,331,58,65),
       part('yaoya','buildings',[[429,393],[449,350],[506,347],[519,362],[565,360],[580,401],[586,469],[559,489],[439,486]]),
       part('diner','buildings',[[835,398],[855,352],[987,350],[1004,395],[1006,479],[851,489]]),
@@ -59,19 +54,18 @@
       part('harbor-shop','buildings',[[794,715],[827,687],[873,668],[915,685],[928,716],[927,771],[818,784],[798,768]]),
       box('stone-bridge','rocks',636,479,108,77),
       box('lake-dock','props',678,89,37,33),
-      box('farm-fences','fences',143,172,240,76,{filter:'wood'}),
+      box('farm-fences','fences',138,170,198,76,{filter:'wood'}),
       box('west-torii','fences',163,371,110,77),
       box('shrine-fence','fences',1095,305,329,106,{filter:'wood'}),
       box('beach-stones','rocks',0,733,204,98,{filter:'stone'}),
       box('north-bank-stones','rocks',528,79,424,61,{filter:'stone'}),
       box('diner-props','props',788,420,58,60),
       box('diner-parasol','props',1006,416,54,65),
-      box('village-board','props',771,437,22,40),
+      box('village-board','props',758,439,39,44),
       box('sam-bait-chest','props',1200,575,23,16,{parent:'sam-shop'}),
       box('sam-front-pail','props',1224,579,14,14,{parent:'sam-shop'}),
       box('inn-noren','props',264,146,25,13,{parent:'farmhouse'}),
       box('inn-doorstep','rocks',263,177,21,17,{parent:'farmhouse'}),
-      box('inn-laundry','props',337,151,28,23,{parent:'farmhouse'}),
       box('market-noren','props',999,609,28,16,{parent:'fish-market'}),
       box('market-fish-counter','props',966,630,34,14,{parent:'fish-market'}),
       box('market-ice-chest','props',1051,641,20,14,{parent:'fish-market'}),
@@ -82,12 +76,8 @@
       box('east-boat','props',1195,675,84,44),
       box('harbor-pier','props',1320,659,179,117),
     ],
-    // These two links were already walkable in v161. Reuse the master's own
-    // dock planks so the retained collision paths also have a visible surface.
-    patches:[
-      {id:'lower-pier-link',kind:'props',sample:[984,756,26,18],to:[967,722,42,40]},
-      {id:'east-pier-link',kind:'props',sample:[984,756,26,18],to:[1389,627,37,55]},
-    ],
+    // Both dock links are painted into the cohesive master. No tiled patches.
+    patches:[],
   };
   const garden = {
     id:'home-exterior',source:'assets/player-home-exterior-v160.webp',
@@ -243,11 +233,12 @@
     }
     return [...urls];
   }
-  // Only the visible trunks in the detailed master have small foot collisions.
-  // Building/water/path geometry continues to belong to the existing game.
-  const trunks=[[416,223],[420,345],[543,568],[1112,214],[92,344],[1483,413]];
+  // Measured foot anchors in the 1672×941 cohesive village master. Keep
+  // these small solids on the trunks, never on neighboring widened roads.
+  const villageArtSize=[1672,941];
+  const trunks=[[459,384],[584,635],[1184,240],[1227,240],[108,369],[1583,430]];
   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
-  const propSolid=(x,y)=>trunks.some(([px,py])=>Math.abs(x-px/6.4)<.85&&Math.abs(y-py/6.4)<.55)||
+  const propSolid=(x,y)=>trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
     shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom);
   return {get,ids,assets,propSolid};
 });

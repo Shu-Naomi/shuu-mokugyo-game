@@ -34,8 +34,8 @@
     lakeFuna: [
       { id: "gen", x: 157, y: 31, facing: "left", place: "湖の東岸" },
       { id: "mina", x: 145, y: 49, facing: "left", place: "湖の南東岸" },
-      { id: "take", x: 91, y: 49, facing: "right", place: "湖の南西岸" },
-      { id: "haru", x: 77, y: 27, facing: "right", place: "湖の西岸" },
+      { id: "take", x: 103, y: 54, facing: "right", place: "湖の南西岸" },
+      { id: "haru", x: 93, y: 27, facing: "right", place: "湖の西岸" },
     ],
   };
   const asset = "assets/tournament-villagers-v175.png";
