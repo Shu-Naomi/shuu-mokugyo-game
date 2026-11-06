@@ -3,6 +3,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 const {chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const {pressProduct}=require('./compact-ui-helpers.cjs');
+const {assertRelease}=require('./browser-release.cjs');
 const enter=require('./browser-start-adventure.cjs');
 const root=path.resolve(__dirname,'..'),dir=path.resolve(process.env.HOOK_SPECIALIZATION_EVIDENCE_DIR||'/tmp/hook-specialization-evidence');
 const screens=[{width:1280,height:720,mobile:false},{width:844,height:390,mobile:true},{width:820,height:366,mobile:true}];
@@ -25,7 +26,7 @@ async function run(url,screen){
   // Forage takes priority over fishing on field A. Seed an empty, valid morning
   // cycle so unrelated random shoreline pickups cannot consume the test action.
   await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),forageCycle:{version:1,dayIndex:0,period:'morning',expiresAt:620,active:{},harvested:[],dogFound:[]},mapRegion:'village',x:127,y:56,direction:'up',hp:100,dogFollowing:false,soundEnabled:false,ownedRods:['bamboo','lureRod'],selectedRod:'bamboo',baits:{worm:20,corn:20,nushiSecret:2},lures:{silverSpoon:1},selectedHook:'small',selectedBait:'worm',fishingMethod:'bait'}});
-  await page.clock.install({time:new Date('2026-11-06T00:00:00Z')});await page.clock.pauseAt('2026-11-06T00:00:01Z');await page.goto(url,{waitUntil:'load'});await start();
+  await page.clock.install({time:new Date('2026-11-06T00:00:00Z')});await page.clock.pauseAt('2026-11-06T00:00:01Z');await page.goto(url,{waitUntil:'load'});await start();await assertRelease(page);
   await context.addInitScript(()=>{window.hookPointers=[];document.addEventListener('pointerdown',e=>hookPointers.push(e.pointerType));});await page.evaluate(()=>{window.hookPointers=[];document.addEventListener('pointerdown',e=>hookPointers.push(e.pointerType));});
   const before=await stock();await press('#menu');await press('[data-field-menu-target="items"]');await press('[data-inventory-tab="tackle"]');await inspect('#inventory');
   for(const id of ['small','medium','large','micro','carp','carp','micro']){await act(`#inventory [data-pick-hook="${id}"]`);await selected('#inventory',id);assert.equal(await page.locator('[data-compact-group-panel="hook"]').isVisible(),true);}
@@ -50,4 +51,4 @@ async function run(url,screen){
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
 const server=http.createServer((req,res)=>{try{const name=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',file=path.resolve(root,name);if(!file.startsWith(root+path.sep)||!fs.statSync(file).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(file).pipe(res);}catch{res.writeHead(404);res.end();}});
-(async()=>{fs.mkdirSync(dir,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));const failures=[];try{for(const screen of screens)try{await run(`http://127.0.0.1:${server.address().port}/nushi-tsuri/`,screen);}catch(e){failures.push(e.stack);fs.writeFileSync(path.join(dir,`${screen.width}x${screen.height}-run-failure.json`),JSON.stringify({error:e.stack},null,2));}if(failures.length)throw Error(failures.join('\n'));}finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{fs.mkdirSync(dir,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));const failures=[];try{for(const screen of screens)try{await run(process.env.HOOK_SPECIALIZATION_BASE_URL||`http://127.0.0.1:${server.address().port}/nushi-tsuri/`,screen);}catch(e){failures.push(e.stack);fs.writeFileSync(path.join(dir,`${screen.width}x${screen.height}-run-failure.json`),JSON.stringify({error:e.stack},null,2));}if(failures.length)throw Error(failures.join('\n'));}finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

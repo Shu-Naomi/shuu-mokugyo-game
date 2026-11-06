@@ -31,6 +31,14 @@ jobs:
       - run: node browser-hook-specialization.cjs
         env:
           HOOK_SPECIALIZATION_EVIDENCE_DIR: hook-specialization-evidence
+      - name: Verify deployed sources and public hook gameplay
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          node hook-specialization-public-source.cjs
+          node browser-hook-specialization.cjs
+        env:
+          HOOK_SPECIALIZATION_BASE_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/
+          HOOK_SPECIALIZATION_EVIDENCE_DIR: hook-specialization-evidence/public
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:

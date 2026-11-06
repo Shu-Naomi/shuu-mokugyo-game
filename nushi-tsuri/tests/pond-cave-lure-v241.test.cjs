@@ -8,16 +8,17 @@ test('pond movement follows independently sampled dirt pixels on both shores and
   // the collision polyline. Include the reported right-hand shortcut.
   for(const [x,y] of [[836,137],[1280,271],[1424,357],[1489,443],[1498,482],[1481,526],[1306,633],[1057,716],[491,661],[192,469]])
     assert.ok(M.walkable(x/1672*240,y/941*135,'mountainPond'),`painted dirt ${x},${y}`);
-  for(const [x,y] of [[130,12],[219,59],[180,104],[120,60]])
+  for(const [x,y] of [[130,12],[219,56],[180,113],[120,60]])
     assert.equal(M.walkable(x,y,'mountainPond'),false,`old forest or water ${x},${y}`);
   const house=L.buildings.find(b=>b.id==='pond-house');assert.ok(house.w>=20&&house.h>=16);
   for(const p of [[213,75],[227,75]])assert.ok(M.walkable(...p,'mountainPond'));
 });
 
-test('a v240 save on the old right shore recovers and can reach the larger house, both exits and reload without losing progress',()=>{
+test('a v240 save on the now-widened right shore stays in place and can reach the larger house, both exits and reload without losing progress',()=>{
   const original={...seed(),mapRegion:'mountainPond',x:219,y:66,hp:100,soundEnabled:false},app=boot(original),w=app.window;let saved;
   try{
-    assert.notDeepEqual(read(w,'[s.x,s.y]'),[219,66]);
+    assert.deepEqual(read(w,'[s.x,s.y]'),[219,66]);
+    assert.ok(M.walkable(219,66,'mountainPond'));
     const before=read(w,'[s.hp,s.money,s.baits,s.caught,s.gameMinutes]');
     const walk=goal=>{for(const d of routeTo(w,'mountainPond',goal))w.move(d);assert.ok(goal(read(w,'s.x'),read(w,'s.y')));};
     walk((x,y)=>Math.hypot(x-227,y-75)<1.5);w.move('up');w.action();assert.equal(w.document.querySelector('#worldHouseTitle').textContent,'峠の釣り人の小屋');w.close();
