@@ -192,6 +192,32 @@
       ["#ffe5ae","M4 10h2v1H4z"],
       ["#c98d5e","M5 12h1v2H5z"],
     ],
+    // A short, fine silver wire with a narrow gape for small-fish rigs.
+    hookMicro: [
+      ["#243341","M12 6h4v3h-1v7h-1v2H9v-1H8v-5h2v4h3V9h-1z"],
+      ["#a6b9bb","M13 7h2v1h-2zM13 9h1v7h-1zM9 16h4v1H9z"],
+      ["#55747f","M14 9h1v6h-1zM13 17h1v1h-1z"],
+      ["#cad8ce","M13 10h1v2h-1zM10 16h2v1h-2z"],
+      ["#384d59","M14 7h1v1h-1zM8 15h1v1H8z"],
+      ["#e9f5e2","M12 6h1v1h-1zM13 9h1v1h-1zM11 16h1v1h-1z"],
+      ["#8fa6aa","M13 13h1v2h-1zM15 7h1v1h-1z"],
+      ["#f4e6b6","M8 12h1v2H8z"],
+      ["#ffe5ae","M9 12h1v1H9z"],
+      ["#e6ac71","M9 14h1v1H9z"],
+    ],
+    // Broad bronze bend and heavy wire distinguish the carp hook from steel sizes.
+    hookCarp: [
+      ["#42332c","M13 2h5v5h-1v10h-1v3h-2v1H7v-1H5v-2H4v-8h3v5h1v2h5V7h-1V2z"],
+      ["#b17a43","M13 3h4v3h-1v11h-1v2H7v-1H6v-7h1v6h1v1h5v-1h1V6h-1z"],
+      ["#e0b56e","M13 3h3v1h-3zM14 7h1v9h-1zM8 18h5v1H8z"],
+      ["#795034","M16 6h1v11h-1zM14 19h1v1h-1zM5 14h1v4H5z"],
+      ["#f4d99a","M14 8h1v3h-1zM8 18h2v1H8zM13 3h1v1h-1z"],
+      ["#5d4030","M14 4h2v1h-2zM7 10h1v2H7zM7 19h2v1H7z"],
+      ["#cc9657","M15 7h1v2h-1zM15 12h1v2h-1zM13 17h1v1h-1zM11 19h2v1h-2z"],
+      ["#fff0bd","M5 10h2v1H5zM14 8h1v1h-1zM9 18h1v1H9z"],
+      ["#9a633b","M6 12h1v2H6zM15 16h1v2h-1zM16 3h1v1h-1z"],
+      ["#eac386","M5 11h1v2H5zM14 15h1v1h-1zM12 18h1v1h-1z"],
+    ],
     silverSpoon: [
       ["#273744","M16 2h3v2h2v5h-2v3h-2v3h-3v3h-2v3H8v-3h2v-2h3v-3h2v-3h1z"],
       ["#91b1b9","M16 4h3v5h-2v3h-2v2h-2v-2h1V9h2z"],

@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-pond-wide-roads-252-51";
+const CACHE_NAME = "nushi-tsuri-v252-hook-specialization-252-52";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",
@@ -32,7 +32,7 @@ const CORE_ASSETS = [
   "./timed-rest.css?v=252-43",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
-  "./lake-research.js?v=252-46",
+  "./lake-research.js?v=252-52",
   "./lake-research.css?v=252-6",
   "./village-guide.js?v=252-5",
   "./village-guide.css?v=252-5",
@@ -130,7 +130,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
-  "./tackle-balance.js?v=227-1",
+  "./tackle-balance.js?v=252-52",
   "./fishing-duel.js?v=252-47",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
@@ -176,7 +176,7 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-v197.webp",
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
-  "./tackle-art.js?v=252-28",
+  "./tackle-art.js?v=252-52",
   "./item-art.js?v=252-28",
   "./item-object-art.js?v=252-28",
   "./ui-pixel-art.js?v=252-28",
