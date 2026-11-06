@@ -35,7 +35,7 @@ test('species data and hook bands favor funa with corn + small hook, carp with l
   assert.equal(Balance.allowed('nushiSecret','medium'),false);
 });
 
-test('actual fishing selection follows bait, hook, fishing spot and still rolls catch size independently',()=>{
+test('actual fishing selection follows bait, hook and fishing spot while funa sizes stay unchanged',()=>{
   const app=boot(),w=app.window;
   try{
     const small=fixedCatches(w),large=fixedCatches(w,'lake-mid','corn','large');
@@ -59,7 +59,7 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
   try{
     w.eval('openInventory("tackle")');
     const doc=w.document;
-    assert.equal(doc.querySelectorAll('#inventoryHookOptions button[data-pick-hook]').length,3);
+    assert.equal(doc.querySelectorAll('#inventoryHookOptions button[data-pick-hook]').length,5);
     assert.equal(doc.querySelectorAll('#inventoryBaitOptions button[data-pick-bait]').length,11);
     assert.match(doc.querySelector('#inventoryTackleSummary').textContent,/ミミズ.*ハリ小/);
     doc.querySelector('#inventoryBaitOptions [data-pick-bait="corn"]').click();
@@ -97,8 +97,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
   finally{legacy.dispose();}
 });
 
-test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibles and the shop',()=>{
-  const ids=['worm','corn','liveMinnow','nushiSecret','grasshopper','river','paste','shrimp','smallShrimp','shell','crab','hookSmall','hookMedium','hookLarge','silverSpoon','starMinnow','expeditionJoint','float'];
+test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibles and the shop',()=>{
+  const ids=['worm','corn','liveMinnow','nushiSecret','grasshopper','river','paste','shrimp','smallShrimp','shell','crab','hookSmall','hookMedium','hookLarge','hookMicro','hookCarp','silverSpoon','starMinnow','expeditionJoint','float'];
   assert.deepEqual(Object.keys(Art.sprites).sort(),ids.sort());
   const variants=new Set();
   for(const id of ids){const sprite=Art.sprites[id],markup=Art.icon(id);variants.add(markup);
@@ -123,7 +123,7 @@ test('18 unique pixel icons appear for all bait, hooks, small tackle, collectibl
 
 test('release references and offline cache contain both pixel and balance modules',()=>{
   const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const [id,version] of [['tackle-balance','227-1'],['tackle-art','252-28']]){
+  for(const [id,version] of [['tackle-balance','252-52'],['tackle-art','252-52']]){
     assert.ok(html.includes(`${id}.js?v=${version}`));assert.ok(sw.includes(`./${id}.js?v=${version}`));
   }
 });

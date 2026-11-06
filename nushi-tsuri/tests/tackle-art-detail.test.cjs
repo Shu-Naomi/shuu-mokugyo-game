@@ -8,7 +8,7 @@ const Art = require('../tackle-art.js');
 const ids = [
   'worm', 'corn', 'liveMinnow', 'nushiSecret', 'grasshopper', 'river',
   'paste', 'shrimp', 'smallShrimp', 'shell', 'crab', 'hookSmall',
-  'hookMedium', 'hookLarge', 'silverSpoon', 'starMinnow', 'expeditionJoint', 'float',
+  'hookMedium', 'hookLarge', 'hookMicro', 'hookCarp', 'silverSpoon', 'starMinnow', 'expeditionJoint', 'float',
 ];
 
 // Rasterize the intentionally tiny M/H/V path vocabulary without a DOM or an
@@ -101,7 +101,7 @@ function detailClusters(pixels) {
 const rendered = Object.fromEntries(ids.map(id => [id, raster(id)]));
 const pixel = (id, x, y) => rendered[id][y * 24 + x];
 
-test('all 18 tackle sprite IDs keep the small SVG API and browser export', () => {
+test('all 20 tackle sprite IDs keep the small SVG API and browser export', () => {
   assert.deepEqual(Object.keys(Art.sprites), ids);
   assert.equal(Art.icon('missing-item'), '');
   for (const id of ids) {
@@ -173,4 +173,27 @@ test('hook sizes stay distinct and consistently grow in length and painted area'
   });
   assert.ok(hooks[0].area < hooks[1].area && hooks[1].area < hooks[2].area);
   assert.ok(hooks[0].height < hooks[1].height && hooks[1].height < hooks[2].height);
+});
+
+
+test('dedicated hooks retain a narrow fine wire and a heavier bronze bend', () => {
+  const area = id => rendered[id].filter(Boolean).length;
+  assert.ok(area('hookMicro') < area('hookSmall'), 'small-fish hook is visibly smaller than the ordinary small hook');
+  assert.ok(area('hookCarp') > area('hookMedium'), 'carp hook has visibly heavier wire');
+  for (const id of ['hookMicro', 'hookCarp']) {
+    assert.equal(pixel(id, 11, 12), null, `${id}: open gape`);
+    assert.ok(pixel(id, 14, 12), `${id}: continuous shank`);
+  }
+  assert.equal(pixel('hookMicro', 13, 9), '#e9f5e2', 'fine polished silver shank');
+  assert.equal(pixel('hookMicro', 9, 12), '#ffe5ae', 'tiny sharp point');
+  assert.equal(pixel('hookCarp', 14, 8), '#fff0bd', 'bronze shank glint');
+  assert.equal(pixel('hookCarp', 16, 8), '#795034', 'heavy bronze outer shadow');
+  assert.equal(pixel('hookCarp', 5, 10), '#fff0bd', 'carp hook point');
+  assert.ok(pixel('hookCarp', 15, 12), 'carp shank is three pixels thick');
+  assert.equal(pixel('hookMicro', 15, 12), null, 'micro shank stays two pixels thin');
+  // The entire hook, including its point and eye, must remain one connected shape.
+  for (const id of ['hookMicro', 'hookCarp']) {
+    const silhouette = rendered[id].map(color => color ? '#ffffff' : null);
+    assert.deepEqual(detailClusters(silhouette), [area(id)], `${id}: no detached wire or decorative speckles`);
+  }
 });
