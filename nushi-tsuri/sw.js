@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-hook-specialization-252-52";
+const CACHE_NAME = "nushi-tsuri-v252-purchased-hooks-252-53";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",
@@ -88,7 +88,7 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=252-32",
+  "./compact-ui.js?v=252-53",
   "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
@@ -130,7 +130,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
-  "./tackle-balance.js?v=252-52",
+  "./tackle-balance.js?v=252-53",
   "./fishing-duel.js?v=252-47",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",

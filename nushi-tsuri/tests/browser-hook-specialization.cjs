@@ -34,7 +34,7 @@ async function run(url,screen){
   await page.reload({waitUntil:'load'});await start();assert.equal(await page.evaluate(()=>s.selectedHook),'carp');assert.equal(await stock(),before);assert.equal(await page.evaluate(()=>nearbyForagePoint()),null,'fixture forage must not intercept field A');
   await press('#action');assert.equal(await page.evaluate(()=>battle?.phase),'prep','fixture must face fishable water');await press('#wait');await press('[data-cast-tackle="hook"]');await inspect('#tackle');
   for(const id of ['micro','carp','carp']){await press(`#tackle [data-pick-hook="${id}"]`);await selected('#tackle',id);assert.equal(await page.locator('#castTackle-hook').isVisible(),true);}
-  assert.match(await page.locator('#castTackle-hook').textContent(),/5種類.*消耗なし/);await shot('cast-hooks');
+  assert.match(await page.locator('#castTackle-hook').textContent(),/サムの店で購入.*消耗なし/);await shot('cast-hooks');
   await press('[data-cast-tackle="bait"]');await press('#tackle [data-pick-bait="nushiSecret"]');await press('[data-cast-tackle="hook"]');
   for(const id of ['small','medium','large','micro','carp'])assert.equal(await page.locator(`#tackle [data-pick-hook="${id}"]`).isDisabled(),id!=='large');await selected('#tackle','large');await shot('secret-bait');
   await press('[data-cast-tackle="bait"]');await press('#tackle [data-pick-bait="worm"]');await press('[data-cast-tackle="hook"]');await press('#tackle [data-pick-hook="micro"]');await press('#tackle [data-close]');assert.equal(await page.evaluate(()=>battle.phase),'prep');await press('#wait');await selected('#tackle','micro');await press('#cancelTacklePreparation');assert.equal(await page.evaluate(()=>battle),null);assert.equal(await stock(),before);

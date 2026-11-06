@@ -115,7 +115,7 @@ test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibl
     assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .pixel-item-icon').length,2);
     assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .item-object-pixel-icon').length,2);
     for(const id of ['bait','lures','tackle'])assert.equal(w.document.querySelector('#inventoryCategory-'+id),null,'the old duplicate shelf is gone');
-    w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),7);
+    w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),11);
     w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .item-object-pixel-icon').length,2);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
@@ -123,7 +123,7 @@ test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibl
 
 test('release references and offline cache contain both pixel and balance modules',()=>{
   const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const [id,version] of [['tackle-balance','252-52'],['tackle-art','252-52']]){
+  for(const [id,version] of [['tackle-balance','252-53'],['tackle-art','252-52']]){
     assert.ok(html.includes(`${id}.js?v=${version}`));assert.ok(sw.includes(`./${id}.js?v=${version}`));
   }
 });
