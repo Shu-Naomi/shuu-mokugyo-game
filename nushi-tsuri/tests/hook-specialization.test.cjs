@@ -58,13 +58,13 @@ test('real weighted species selection favors carp without excluding other lake f
  }finally{app.dispose();}
 });
 test('real inventory and casting menu handlers expose five icons and retain hook category on repeated choices',()=>{
- const app=boot({...seed(),hp:100,mapRegion:'village',x:127,y:56,direction:'up',baits:{worm:20,nushiSecret:2}}),w=app.window,d=w.document;
+ const app=boot({...seed(),hp:100,forageCycle:{version:1,dayIndex:0,period:'morning',expiresAt:620,active:{},harvested:[],dogFound:[]},mapRegion:'village',x:127,y:56,direction:'up',baits:{worm:20,nushiSecret:2}}),w=app.window,d=w.document;
  try{
   const valid=read(w,`fish.every(f=>Object.keys(ShuTackle.hooks).every(h=>{const n=ShuTackle.weight(f.id,'worm',h);return Number.isFinite(n)&&n>0}))`);assert.equal(valid,true);
   const notes=read(w,'ShuLakeResearch.model(s,{fish,encyclopedia:fishEncyclopediaData,baits:baitData,rods:rodData,tackle:ShuTackle,legendary:ShuRegional.legendary,finalReady:ShuRegional.finalReady})');assert.match(notes.fish.find(f=>f.id==="koi").hook,/ハリ大.*コイ針/);assert.match(notes.fish.find(f=>f.id==="medaka").hook,/小魚針/);
   w.openInventory('tackle');
   for(const scope of ['#inventory','#tackle']){
-   if(scope==='#tackle'){w.close();d.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');d.querySelector('#wait').click();w.setCastTackleCategory('hook');}
+   if(scope==='#tackle'){w.close();assert.equal(read(w,'nearbyForagePoint()'),null);d.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');d.querySelector('#wait').click();w.setCastTackleCategory('hook');}
    const buttons=[...d.querySelectorAll(`${scope} [data-pick-hook]`)];assert.equal(buttons.length,5);
    assert.ok(buttons.every(b=>b.querySelector('svg')||b.closest('.compact-product')?.querySelector('svg')));
    for(const hook of ['micro','carp','carp']){
