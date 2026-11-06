@@ -1,0 +1,11 @@
+{
+  "release": "v252-50",
+  "reference": "assets/pass-marsh-v202.png",
+  "output": "assets/pass-marsh-v252-50.webp",
+  "dimensions": [1671, 941],
+  "purpose": "Rebuild the whole marsh as cohesive detailed pixel art with wide walking routes and a real crossing bridge with a central fishing terrace.",
+  "artDirection": "Keep the existing high-oblique overhead view, crisp detailed pixel clusters, turquoise water, reeds, mossy rock, conifer forest and northwest waterfalls. Broad continuous tan perimeter road; retain southwest and east exits and an empty dry house clearing at the northwest. No characters, UI, labels or text.",
+  "bridgeDirection": "Wide level timber bridge crossing west to east. Spacious rectangular middle terrace with bench, basket and lantern away from the through route. North and south fishing bays have visible openings in the low rails. Sturdy supporting posts and clear dry floor boundaries.",
+  "revision": "Widen the bridge floor between its rails to roughly twice the first draft, and enlarge the terrace vertically. Preserve the perimeter and existing surroundings. Keep both centered fishing openings and an unobstructed through route.",
+  "integration": "Convert the finished raster to WebP at the original dimensions. Independently measure roads, water, floor, railing footprints and casting windows; do not reuse v237 map geometry. Keep the original reference asset for history."
+}

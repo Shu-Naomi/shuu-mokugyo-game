@@ -1,0 +1,27 @@
+const {test}=require('node:test'),assert=require('node:assert/strict');
+const M=require('../mountain-region.js'),Life=require('../world-life.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
+const {planMarshRoute,marshRing,marshFeet}=require('./marsh-retreat-route.cjs');
+const region='mountainMarsh',fixture=extra=>({...seed(),mapRegion:region,...M.regions[region].entry,hp:100,dogFollowing:true,soundEnabled:false,...extra});
+const progress=w=>read(w,'({money:s.money,hp:s.hp,time:s.gameMinutes,baits:s.baits,caught:s.caught,equipment:s.equipment,quests:s.questCompletions,dog:s.dog,dogAffinity:s.dogAffinity})');
+function walk(w,target){const steps=w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')');for(const direction of steps){const b=w.document.querySelector('[data-move="'+direction+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();const feet=w.eval('('+marshFeet.toString()+')()');assert.ok(feet.player,'player feet');if(Array.isArray(target)&&target[1]===70&&target[0]>38)assert.ok(read(w,'s.y')>=63.5&&read(w,'s.y')<=77,'bridge crossing must not detour around ring');assert.ok(feet.dog,'dog feet '+JSON.stringify({target,direction,feet,player:read(w,'({x:s.x,y:s.y})')}));for(const n of feet.npcs)assert.ok(n.walkable,'NPC feet '+n.id);}assert.equal(w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')').length,0,'native controls reach planned target');return steps.length;}
+test('native controls cross the bridge west to east, walk the whole ring, open the house, cast at both terrace bays and preserve reload/exits',()=>{
+ const app=boot(fixture()),w=app.window;let saved,before;
+ try{before=progress(w);for(const p of [[38,70],[52,70],[120,70],[208,70],[221,70]]){const steps=walk(w,p);if(p[0]===221)assert.ok(steps<=8,'east bridge meets bank directly, no ring detour');}for(const p of marshRing)walk(w,p);
+  walk(w,'house');w.document.querySelector('#action').click();assert.ok(w.document.querySelector('#worldHouse.open'));w.document.querySelector('#worldHouse [data-close]').click();
+  for(const bay of ['northFish','southFish']){walk(w,bay);assert.equal(read(w,'nearbyFishingSpot().mountainType'),'highMarsh');w.document.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');w.eval('beginFishing();clearInterval(timer);battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');assert.equal(read(w,'battle.spot'),'mountain-highMarsh-mid');w.eval('endBattle()');}
+  assert.equal(read(w,'s.baits.worm'),before.baits.worm-2);assert.equal(read(w,'s.gameMinutes'),before.time+20);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));before=progress(w);assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+ const restored=boot(saved),r=restored.window;try{assert.deepEqual(progress(r),before);assert.equal(read(r,'s.x'),saved.x);assert.equal(read(r,'s.y'),saved.y);walk(r,'wetland');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'wetland');walk(r,'return');r.document.querySelector('#action').click();assert.deepEqual(read(r,'({region:s.mapRegion,x:s.x,y:s.y})'),{region,x:227,y:78});walk(r,'return');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'mountainPond');assert.deepEqual(progress(r),before);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
+});
+test('rail sweep rejects tunnelling and every bridge cast is limited to its directional bay',()=>{
+ let moves=0,casts=0,blocked=0;
+ for(let x=42;x<=214;x+=1)for(let y=55;y<=88;y+=1){if(!M.walkable(x,y,region))continue;for(const direction of ['up','right','down','left']){
+  const n=M.moveTarget(x,y,direction,12,region),length=Math.hypot(n.x-x,n.y-y);for(let d=.25;d<=length;d+=.25)assert.ok(M.walkable(x+(n.x-x)*d/length,y+(n.y-y)*d/length,region),'swept '+[x,y,direction,d]);moves++;if(length<12)blocked++;
+  if(M.onBridge(x,y,region)){const water=M.fishingWater(x,y,direction,region);if(water){casts++;assert.equal(water.type,'highMarsh');assert.ok(M.regions[region].bridgeFishingEdges.some(e=>e.direction===direction&&x>=e.left&&x<=e.right&&y>=e.top&&y<=e.bottom));}}
+ }}assert.ok(moves>5000);assert.ok(blocked>100);assert.ok(casts>10);
+ for(const p of [[80,50],[170,90],[50,79],[58,78],[116,21],[173,26],[198,53]])if(M.waterType(...p,region))assert.equal(M.walkable(...p,region),false);
+ for(const npc of Life.residents.filter(p=>p.region===region))for(let t=0;t<60000;t+=125){const p=Life.residentPose(npc,t);assert.ok(M.walkable(p.x,p.y,region),'entire NPC route '+npc.id);}
+});
+test('legacy saves at removed decks and new water recover on land without losing progress',()=>{
+ for(const [x,y] of [[50,79],[58,78],[116,21],[173,26],[198,53],[110,107],[154,106],[80,50],[170,90],[160,105]]){const old=fixture({x,y,boatActive:true}),app=boot(old),w=app.window;try{assert.ok(read(w,'isWalkableWorld(s.x,s.y)'));assert.equal(read(w,'s.boatActive'),false);for(const target of [[120,70],'return'])assert.ok(Array.isArray(w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')')),'recovered save has route to '+JSON.stringify(target));for(const key of ['money','hp','gameMinutes','caught','questCompletions','dog'])assert.deepEqual(read(w,'s.'+key),old[key],key+' '+x+','+y);for(const [bait,count]of Object.entries(old.baits))assert.equal(read(w,'s.baits.'+bait),count);assert.equal(read(w,'s.dogAffinity.shuu'),old.dogAffinity.shuu*20,'legacy affection scale migration');assert.deepEqual(app.errors,[]);}finally{app.dispose();}}
+});
