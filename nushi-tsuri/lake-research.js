@@ -6,7 +6,7 @@
  'use strict';
  const habitats={all:'すべての水辺',lake:'湖・池',river:'川',sea:'海'};
  const basics=[
-  {title:'餌・針・距離',text:'餌で魚の好み、針でサイズ帯、投げる距離で水辺を探る。魚の覚え書きと見比べよう。'},
+  {title:'餌・針・距離',text:'餌・針・距離を合わせよう。小魚針は小魚、コイ針はコイ向け。外道も来るよ。'},
   {title:'食いついたら、アワセ',text:'食いつきが出たら、一度Aを離して押し直す。針が掛かったら、選んだ水中ファイトへ。'},
   {title:'引くとき・待つとき',text:'クラシック方式：走る間は離し、糸が緩んだらA。テンション方式：張りを見て引く。'},
   {title:'スプーンで誘う',text:'ルアーロッドとスプーンでAを押して誘う。近づく魚を見て、食いついてからアワセよう。'}
@@ -19,7 +19,7 @@
    return {id:f.id,name:f.name,habitats:note.habitats||[],locations:note.locations||'記録なし',
     time:note.time||'記録なし',ecology:note.ecology||'記録なし',tip:note.tip||'記録なし',
     baits:names(note.baits,data.baits),rods:names(note.rods,data.rods),
-    hook:data.tackle.hooks[tackle.recommendedHook||tackle.band||'medium']?.name||'記録なし',caught:caught(f.id)};
+    hook:names([tackle.recommendedHook||tackle.band||'medium',...(data.tackle.alternatives?.(f.id)||[])],data.tackle.hooks).join('／')||'記録なし',caught:caught(f.id)};
   });
   const visits=state.lakeStory?.visited||{},clues=[];
   const gates=[['nushi',true,'湖の深場'],['streamNushi',visits.stream===true,'渓流の深場'],

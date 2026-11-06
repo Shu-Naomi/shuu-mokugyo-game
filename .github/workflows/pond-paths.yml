@@ -1,0 +1,44 @@
+name: Pond paths
+on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/pond-paths.yml']
+  push:
+    branches: [main, codex/mountain-pond-paths]
+    paths: ['nushi-tsuri/**', '.github/workflows/pond-paths.yml']
+permissions:
+  contents: read
+jobs:
+  pond-browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - run: node --test pond-paths.test.cjs pond-wide-road.test.cjs pond-cave-lure-v241.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
+      - run: node browser-pond-paths.cjs
+        env:
+          POND_EVIDENCE_DIR: pond-evidence
+      - name: Verify deployed sources and public gameplay
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: |
+          node pond-paths-public-source.cjs
+          node browser-pond-paths.cjs
+        env:
+          POND_BASE_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/
+          POND_EVIDENCE_DIR: pond-evidence/public
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: pond-evidence
+          path: nushi-tsuri/tests/pond-evidence/
+          if-no-files-found: warn

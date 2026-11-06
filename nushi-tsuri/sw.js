@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-marsh-retreat-252-50";
+const CACHE_NAME = "nushi-tsuri-v252-marsh-retreat-252-54";
 
 const CORE_ASSETS = [
   "./rural-canals.js?v=252-48",
@@ -32,7 +32,7 @@ const CORE_ASSETS = [
   "./timed-rest.css?v=252-43",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
-  "./lake-research.js?v=252-46",
+  "./lake-research.js?v=252-52",
   "./lake-research.css?v=252-6",
   "./village-guide.js?v=252-5",
   "./village-guide.css?v=252-5",
@@ -77,7 +77,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=252-48",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=252-50",
+  "./world-life.js?v=252-54",
   "./fish-additions.js?v=252-47",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -88,7 +88,7 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=252-32",
+  "./compact-ui.js?v=252-53",
   "./compact-ui.css?v=251-5",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
@@ -130,16 +130,16 @@ const CORE_ASSETS = [
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
-  "./tackle-balance.js?v=227-1",
+  "./tackle-balance.js?v=252-53",
   "./fishing-duel.js?v=252-47",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=252-50",
+  "./mountain-region.js?v=252-54",
   "./regional-nushi.js?v=202-1",
-  "./lake-story.js?v=252-2",
+  "./lake-story.js?v=252-51",
   "./lake-intro.js?v=252-44",
   "./lake-intro.css?v=252-44",
   "./lake-story.css?v=206-1",
@@ -160,7 +160,7 @@ const CORE_ASSETS = [
 
   "./assets/mountain-world-v252-31.png",
   "./assets/valley-hillside-v2.png",
-  "./assets/pass-pond-v202.png",
+  "./assets/pass-pond-v252-51.png",
   "./assets/pass-marsh-v252-50.webp",
   "./assets/cave-lake-v202.png",
   "./assets/stream-nushi-v202.png",
@@ -176,7 +176,7 @@ const CORE_ASSETS = [
   "./assets/coast-canoe-v197.webp",
   "./assets/coast-canoe-stroke-v197.webp",
   "./assets/coast-boat-v196.png",
-  "./tackle-art.js?v=252-28",
+  "./tackle-art.js?v=252-52",
   "./item-art.js?v=252-28",
   "./item-object-art.js?v=252-28",
   "./ui-pixel-art.js?v=252-28",

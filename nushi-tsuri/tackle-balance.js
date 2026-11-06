@@ -1,25 +1,29 @@
-// Species size bands tune which fish bites; specimen sizes are rolled separately after selection.
+// Species and hook preferences tune which fish bites. Fine hooks also gently
+// bias the later specimen roll away from lengths they are poorly suited to.
 (function (root, factory) {
   const tackle = factory();
   if (typeof module === "object" && module.exports) module.exports = tackle;
   if (root) root.ShuTackle = tackle;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   const hooks = {
-    small: { name: "ハリ小", role: "小型魚種を狙いやすい", bands: { small: 2.2, medium: .83, large: .12 } },
-    medium: { name: "ハリ中", role: "標準的な魚種向け", bands: { small: .72, medium: 1.2, large: .88 } },
-    large: { name: "ハリ大", role: "大型魚種を狙いやすい", bands: { small: .07, medium: .46, large: 1.9 } },
+    small: { price: 200, name: "ハリ小", role: "小型魚・フナ向け。大型魚は掛かりにくい", bands: { small: 2.2, medium: .83, large: .12 } },
+    medium: { price: 0, name: "ハリ中", role: "標準的な魚種向け", bands: { small: .72, medium: 1.2, large: .88 } },
+    large: { price: 400, name: "ハリ大", role: "大型魚種を幅広く狙う", bands: { small: .07, medium: .46, large: 1.9 } },
+    micro: { price: 600, name: "小魚針", role: "タナゴ・メダカなど小魚向け。大きな個体は苦手", bands: { small: 2.6, medium: .14, large: .001 } },
+    carp: { price: 800, name: "コイ針", role: "コイを絞って狙う。ほかの大型魚にはハリ大", bands: { small: .025, medium: .26, large: .82 } },
   };
   // Add a species here with its basic band, bait multipliers, and optional hook overrides.
   // Spot, weather, time and casting distance multiply the result in the fishing scene.
   const species = {
-    tanago:{band:"small",baits:{paste:2.8,river:1.2,worm:1,corn:.9,smallShrimp:.25,shrimp:.08,grasshopper:.1,liveMinnow:.01,shell:.02,crab:.02}},
-    motsugo:{band:"small",baits:{river:2.6,worm:1.4,paste:1.1,corn:.18,smallShrimp:.45,shrimp:.15,grasshopper:.25,liveMinnow:.02,shell:.03,crab:.03}},
-    medaka:{band:"small",hooks:{small:2.8,medium:.05,large:.005},baits:{river:2.2,paste:1,worm:.65,corn:.04,smallShrimp:.12,shrimp:.03,grasshopper:.08,liveMinnow:.005,shell:.01,crab:.01}},
+    tanago:{band:"small",hooks:{micro:4.2},baits:{paste:2.8,river:1.2,worm:1,corn:.9,smallShrimp:.25,shrimp:.08,grasshopper:.1,liveMinnow:.01,shell:.02,crab:.02}},
+    motsugo:{band:"small",hooks:{micro:3.8},baits:{river:2.6,worm:1.4,paste:1.1,corn:.18,smallShrimp:.45,shrimp:.15,grasshopper:.25,liveMinnow:.02,shell:.03,crab:.03}},
+    medaka:{band:"small",hooks:{small:2.8,medium:.05,large:.005,micro:5.2},baits:{river:2.2,paste:1,worm:.65,corn:.04,smallShrimp:.12,shrimp:.03,grasshopper:.08,liveMinnow:.005,shell:.01,crab:.01}},
     kamatsuka:{band:"small",hooks:{small:2.2,medium:.9,large:.12},baits:{worm:2.5,river:2,smallShrimp:.7,shrimp:.3,paste:.1,corn:.06,grasshopper:.08,liveMinnow:.1,shell:.03,crab:.08}},
     nigoi:{band:"large",recommendedHook:"medium",hooks:{small:.15,medium:1.8,large:1.3},baits:{worm:2.1,river:1.8,corn:1.1,paste:.7,liveMinnow:.8,smallShrimp:1,shrimp:.3,grasshopper:.4,shell:.15,crab:.3}},
     raigyo:{band:"large",hooks:{small:.03,medium:.7,large:2.4},baits:{liveMinnow:3.5,grasshopper:1.8,worm:.5,river:.1,smallShrimp:.6,shrimp:.2,paste:.02,corn:.01,shell:.02,crab:.7}},
     moroko: {
       band: "small",
+      hooks: { micro: 3.8 },
       baits: {
         river: 1.9, worm: 1, paste: 0.45, corn: 0.28,
         shrimp: 0.2, liveMinnow: 0.04, grasshopper: 0.9, smallShrimp: 0.5,
@@ -43,7 +47,7 @@
         shrimp: 0.22, liveMinnow: 0.04, grasshopper: 0.35, smallShrimp: 0.38,
         shell: 0.5, crab: 0.24,
       },
-      hooks: { small: 0.14, medium: 0.92, large: 1.85 },
+      hooks: { small: 0.14, medium: 0.92, large: 1.85, carp: 2.7 },
     },
     aji: {
       band: "small",
@@ -64,7 +68,7 @@
     iwana: {band:"medium",baits:{worm:1.8,river:1.7,grasshopper:1.8,liveMinnow:1.2,smallShrimp:.6,shrimp:.3,paste:.06,corn:.03,shell:.04,crab:.08}},
     amago: {band:"small",baits:{river:2.3,grasshopper:2.15,worm:.85,liveMinnow:.58,smallShrimp:.65,shrimp:.25,paste:.05,corn:.03,shell:.03,crab:.06}},
     kajika: {band:"small",baits:{river:2.5,worm:1.4,liveMinnow:1.1,smallShrimp:.8,shrimp:.5,grasshopper:.3,paste:.04,corn:.02,shell:.07,crab:.12}},
-    wakasagi: {band:"small",baits:{river:2.5,smallShrimp:1.8,worm:1.1,shrimp:.55,paste:.25,corn:.03,liveMinnow:.02,grasshopper:.12,shell:.02,crab:.02}},
+    wakasagi: {band:"small",hooks:{micro:3.8},baits:{river:2.5,smallShrimp:1.8,worm:1.1,shrimp:.55,paste:.25,corn:.03,liveMinnow:.02,grasshopper:.12,shell:.02,crab:.02}},
     dojo: {band:"small",baits:{worm:2.6,river:1.7,smallShrimp:.8,shrimp:.45,paste:.3,corn:.12,liveMinnow:.04,grasshopper:.3,shell:.05,crab:.05}},
     ugui: {band:"medium",hooks:{small:1.6,medium:1.2,large:.2},baits:{worm:2,river:1.8,paste:1.2,grasshopper:1.2,corn:.4,smallShrimp:.5,shrimp:.15,liveMinnow:.12,shell:.06,crab:.04}},
     oikawa: {band:"small",baits:{river:2.4,grasshopper:1.5,worm:1.2,paste:.8,corn:.2,smallShrimp:.3,shrimp:.12,liveMinnow:.02,shell:.02,crab:.02}},
@@ -203,7 +207,23 @@
     const profile = species[fishId];
     const bait = profile?.baits[baitId] ?? baitDefaults[baitId] ?? .08;
     const hook = profile?.hooks?.[hookId] ?? hooks[hookId].bands[profile?.band] ?? 1;
-    return Math.max(0, bait * hook);
+    // Apply after species overrides, including species registered by other modules.
+    // Rare bycatch remains possible; a small general hook is still useful for funa.
+    const smallPenalty = hookId === "small" && profile?.band === "large" ? .22 : 1;
+    return Math.max(0, bait * hook * smallPenalty);
   }
-  return { hooks, species, allowed, weight };
+  function specimenWeight(fishId, hookId, tier) {
+    // A smooth length bias, never a hard species/size ban or a guaranteed catch.
+    // General small hooks retain the authored funa tournament size distribution.
+    const lengthScale = hookId === "micro" ? 18
+      : hookId === "small" && species[fishId]?.band === "large" ? 45 : 0;
+    if (!lengthScale) return 1;
+    const cm = (Number(tier?.minHundredths) + Number(tier?.maxHundredths)) / 200;
+    return Number.isFinite(cm) && cm >= 0 ? 1 / (1 + (cm / lengthScale) ** 4) : 1;
+  }
+  function alternatives(fishId) {
+    if (fishId === "koi") return ["carp"];
+    return ["tanago", "medaka", "motsugo", "moroko", "wakasagi"].includes(fishId) ? ["micro"] : [];
+  }
+  return { hooks, species, allowed, weight, specimenWeight, alternatives };
 });

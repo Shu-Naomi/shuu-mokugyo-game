@@ -18,7 +18,7 @@
       paragraphs:["村の北口を抜けると、湖で聞いていた風が流水の音へ変わった。木の橋の下を、泡が一本の白い線になって流れていく。",
         "川の淵、木漏れ日の池、葦の沼。同じ山の水でも、魚が待つ深さと好きな餌は違う。{dog}は橋の端で振り返り、こちらが来るまで待っていた。",
         "帰って話そう。ここで釣れた一匹のことも、釣れなかった時間のことも。手帳には、濡れた木の匂いを覚えておく。"]},
-    {id:"ridge",title:"峠に置いてきた息",place:"峠の池と沼",art:"assets/pass-pond-v202.png",when:s=>visited(s,"mountainPond")||visited(s,"mountainMarsh"),speaker:"八百屋の店主",
+    {id:"ridge",title:"峠に置いてきた息",place:"峠の池と沼",art:"assets/pass-pond-v252-51.png",when:s=>visited(s,"mountainPond")||visited(s,"mountainMarsh"),speaker:"八百屋の店主",
       quote:"遠くまで行った日は、帰ったら温かいものを食べな。話はそのあとでいいから。",
       paragraphs:["峠を越えた先の池には、村の屋根が映っていなかった。尾根の向こうには、葦の鳴る沼もあるという。",
         "釣り竿を持つ手を少し休め、来た道を確かめる。遠い場所にも、帰る道が一本つながっている。それだけで、次の一投を落ち着いて待てた。",

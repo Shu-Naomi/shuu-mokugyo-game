@@ -6528,7 +6528,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-50</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-54</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7067,6 +7067,11 @@
                     </button>
                   </div>
                 </section>
+                <section class="shop-category" id="samCategory-hooks" data-sam-category-panel="hooks" aria-labelledby="samHookHeading" hidden>
+                  <div class="shop-category-heading"><b id="samHookHeading">ハリ</b><small>一度買えば繰り返し使える</small></div>
+                  <div id="samHookGoods" class="grid shop-goods"></div>
+                  <p class="sam-window-note">ハリ中は最初から所持。購入したハリは道具袋や釣る前の仕掛け変更で選べるよ。消耗なし。</p>
+                </section>
                 <section class="shop-category" id="samCategory-rods" data-sam-category-panel="rods" aria-labelledby="samRodHeading" hidden>
                   <div class="shop-category-heading">
                     <b id="samRodHeading">釣り竿</b><small>役割を選ぼう</small>
@@ -7234,7 +7239,7 @@
                     <div class="tackle-options" id="inventoryBaitOptions"></div>
                   </div>
                   <div>
-                    <h3>ハリを選ぶ <small>3種類とも所持・消耗なし</small></h3>
+                    <h3>ハリを選ぶ <small>購入したハリは消耗なし</small></h3>
                     <div class="tackle-options hook-options" id="inventoryHookOptions"></div>
                     <h3>釣り竿を選ぶ</h3>
                     <div class="tackle-options" id="inventoryRodOptions"></div>
@@ -7297,7 +7302,7 @@
             <div class="cast-tackle-pages">
               <section id="castTackle-method" data-cast-tackle-page="method" hidden><h3>釣り方・ルアー</h3><div id="castTackleMethods"></div></section>
               <section id="castTackle-bait" data-cast-tackle-page="bait"><h3>餌を選ぶ</h3><p id="castBaitHint"></p><div class="tackle-options" id="baitOptions"></div></section>
-              <section id="castTackle-hook" data-cast-tackle-page="hook" hidden><h3>ハリを選ぶ</h3><p>3種類とも所持・消耗なし。ハリは狙う魚種を絞り込む目安になるよ。</p><div class="tackle-options hook-options" id="hookOptions"></div></section>
+              <section id="castTackle-hook" data-cast-tackle-page="hook" hidden><h3>ハリを選ぶ</h3><p>ハリ中は最初から所持。ほかのハリはサムの店で購入・消耗なし。小魚針は小魚、コイ針はコイを狙う針。フナはハリ小、幅広い大物はハリ大が得意。専用針でも外道は来るよ。</p><div class="tackle-options hook-options" id="hookOptions"></div></section>
               <section id="castTackle-rod" data-cast-tackle-page="rod" hidden><h3>釣り竿を選ぶ</h3><div class="tackle-options" id="rodOptions"></div><div id="castRodDuplicates"></div></section>
               <section id="castTackle-fight" data-cast-tackle-page="fight" hidden><h3>水中ファイト方式</h3><div id="castFightOptions"></div></section>
             </div>
@@ -7403,9 +7408,9 @@
     <script src="pet-life.js?v=252-27"></script>
     <script src="fish-motion.js?v=252-47"></script>
     <script src="aquarium-life.js?v=252-47"></script>
-    <script src="compact-ui.js?v=252-32"></script>
+    <script src="compact-ui.js?v=252-53"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
-    <script src="tackle-balance.js?v=227-1"></script>
+    <script src="tackle-balance.js?v=252-53"></script>
     <script src="fishing-duel.js?v=252-47"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
@@ -7420,22 +7425,22 @@
     </section>
     <script src="coast-voyage.js?v=226-1"></script>
     <script src="offshore-island.js?v=252-20"></script>
-    <script src="world-life.js?v=252-50"></script>
+    <script src="world-life.js?v=252-54"></script>
     <script src="field-guide.js?v=252-48"></script>
     <script src="rural-canals.js?v=252-48"></script>
-    <script src="mountain-region.js?v=252-50"></script>
+    <script src="mountain-region.js?v=252-54"></script>
     <script src="regional-nushi.js?v=202-1"></script>
     <script src="lake-intro.js?v=252-44"></script>
     <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
-    <script src="lake-story.js?v=252-2"></script>
-    <script src="lake-research.js?v=252-46"></script>
+    <script src="lake-story.js?v=252-51"></script>
+    <script src="lake-research.js?v=252-52"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=252-47"></script>
     <script src="fish-art.js?v=252-42"></script>
-    <script src="tackle-art.js?v=252-28"></script>
+    <script src="tackle-art.js?v=252-52"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
     <script src="ui-pixel-art.js?v=252-28"></script>
@@ -12022,20 +12027,21 @@
         return FISH_VISUAL_MIN_SCALE +
           progress * (FISH_VISUAL_MAX_SCALE - FISH_VISUAL_MIN_SCALE);
       }
-      function rollFishSpecimen(f, random = Math.random) {
+      function rollFishSpecimen(f, random = Math.random, hookId = null) {
         const tiers = fishSizeProfiles[f?.id];
         if (!tiers?.length) return null;
-        const totalWeight = tiers.reduce((sum, tier) => sum + tier.weight, 0);
-        const bigWeight = tiers.reduce((sum,tier)=>sum+(["large","giant"].includes(tier.id)?tier.weight:0),0);
+        const weights = tiers.map(tier => tier.weight * ShuTackle.specimenWeight(f.id, hookId, tier));
+        const totalWeight = weights.reduce((sum, weight) => sum + weight, 0);
+        const bigWeight = tiers.reduce((sum,tier,index)=>sum+(["large","giant"].includes(tier.id)?weights[index]:0),0);
         const bonus = Math.max(0,Math.min(.2,Number(mealEffectBonus("largeFishChance"))||0));
         // Move probability mass towards large/giant fish. Keep their relative
         // rarity, all authored size bounds, and the two existing RNG draws.
         const bigChance = bigWeight/totalWeight;
         const boostedChance = Math.min(.95,bigChance+bonus);
         const adjusted = bonus&&bigWeight>0&&bigWeight<totalWeight
-          ? tiers.map(tier=>tier.weight*(["large","giant"].includes(tier.id)
+          ? tiers.map((tier,index)=>weights[index]*(["large","giant"].includes(tier.id)
             ? boostedChance/bigChance : (1-boostedChance)/(1-bigChance)))
-          : tiers.map(tier=>tier.weight);
+          : weights;
         let tierRoll = boundedRandom(random) * totalWeight;
         let selected = tiers[tiers.length - 1];
         for (const [index,tier] of tiers.entries()) {
@@ -12290,6 +12296,7 @@
             baits: null,
             selectedBait: "worm",
             selectedHook: "medium",
+            ownedHooks: null,
             selectedRod: "bamboo",
             ownedRods: ["bamboo"],
             hp: 100,
@@ -13072,8 +13079,16 @@
       for (const id of Object.keys(baitData))
         s.baits[id] = Math.max(0, Math.floor(Number(s.baits[id]) || 0));
       if (!baitData[s.selectedBait]) s.selectedBait = "worm";
-      if (!ShuTackle.hooks[s.selectedHook]) s.selectedHook = "medium";
-      if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
+      // Old adventures already owned every hook. Only an absent field is a
+      // legacy save; malformed current ownership must not unlock paid tackle.
+      if (hadStoredSave && !Object.hasOwn(loadedSaveSlot.data, "ownedHooks"))
+        s.ownedHooks = ["small", "medium", "large", "micro", "carp"];
+      if (!Array.isArray(s.ownedHooks)) s.ownedHooks = ["medium"];
+      s.ownedHooks = [...new Set(s.ownedHooks)].filter(id => typeof id === "string" && Object.hasOwn(ShuTackle.hooks, id));
+      if (!s.ownedHooks.includes("medium")) s.ownedHooks.unshift("medium");
+      if (!s.ownedHooks.includes(s.selectedHook)) s.selectedHook = "medium";
+      if (!ShuTackle.allowed(s.selectedBait, s.selectedHook) && s.ownedHooks.includes("large"))
+        s.selectedHook = "large";
       if (!s.items || typeof s.items !== "object") s.items = {};
       for (const id of Object.keys(fieldItemData))
         s.items[id] = Math.max(0, Number(s.items[id]) || 0);
@@ -16847,7 +16862,7 @@
           paste:"今日はどの魚と出会えるか、楽しみじゃな。", corn:"黄色い一粒も、立派な釣りの相棒じゃ。",
           shrimp:"海へ行くなら、忘れずにな。", liveMinnow:"活きのいい小魚を揃えておいたぞ。",
         };
-        const comment = comments[button.dataset.buyBait] || (button.dataset.buyRod ? "竿選びも、釣りの楽しみじゃな。" : button.dataset.buyLure ? "釣りの帰りに、また話を聞かせておくれ。" : button.dataset.buyHand ? "手をいたわって、長く釣りを楽しもうぞ。" : "相棒にも、よい一日をな。");
+        const comment = comments[button.dataset.buyBait] || (button.dataset.buyRod ? "竿選びも、釣りの楽しみじゃな。" : button.dataset.buyHook ? "一度買えば何度でも使える。魚に合うハリを選ぶんじゃ。" : button.dataset.buyLure ? "釣りの帰りに、また話を聞かせておくれ。" : button.dataset.buyHand ? "手をいたわって、長く釣りを楽しもうぞ。" : "相棒にも、よい一日をな。");
         setSamShopDialogue(`「${feature}。${comment}」`);
       }
       function renderSamShop() {
@@ -16855,6 +16870,13 @@
         renderWeather();
         setDialogue($("#samStoryLine"),ShuLakeStory.dialogue(s,"sam"));
         $("#samNewTackle").innerHTML=["lureRod","shoreReed","tideMaster"].map(id=>`<button data-buy-rod="${id}"><span><b>${rodData[id].name}</b><small>${ShuFishing.roles[id]}</small></span><strong><em data-sam-price>${rodData[id].price}円</em><small data-sam-stock></small></strong></button>`).join("");
+        $("#samHookGoods").innerHTML = Object.entries(ShuTackle.hooks).filter(([, hook]) => hook.price > 0).map(([id, hook]) => {
+          const owned = s.ownedHooks.includes(id);
+          return `<button data-buy-hook="${id}" class="${owned ? "owned" : ""}" ${owned ? "disabled" : ""} aria-label="${hook.name}、${hook.price}円、${owned ? "購入済み" : "未購入"}">` +
+            `<span><b><i class="shop-item-art">${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i>${hook.name}</b><small>${hook.role} · 消耗なし</small></span>` +
+            `<strong><em data-sam-price>${hook.price}円</em><small data-sam-stock>${owned ? "✓ 購入済み" : "未購入"}</small></strong></button>`;
+        }).join("");
+        $("#samHookGoods").querySelectorAll("[data-buy-hook]").forEach(button => button.onclick = () => buySamHook(button.dataset.buyHook));
         $("#samLureGoods").innerHTML = `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
         $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
         $("#samLureGoods [data-buy-lure]").onclick=()=>{
@@ -16937,7 +16959,7 @@
         renderSamDogGoods();
         for (const tab of ["tackle", "goods"]) {
           const holder = $(tab === "tackle" ? "#samTackleCategories" : "#samGoodsCategories");
-          const counts = Object.fromEntries(samCategories[tab].map(({id}) => [id, document.querySelectorAll(`#samCategory-${id} [data-buy-bait], #samCategory-${id} [data-buy-rod], #samCategory-${id} [data-buy-lure], #samCategory-${id} [data-buy-hand], #samCategory-${id} [data-buy-dog-good]`).length]));
+          const counts = Object.fromEntries(samCategories[tab].map(({id}) => [id, document.querySelectorAll(`#samCategory-${id} [data-buy-bait], #samCategory-${id} [data-buy-rod], #samCategory-${id} [data-buy-hook], #samCategory-${id} [data-buy-lure], #samCategory-${id} [data-buy-hand], #samCategory-${id} [data-buy-dog-good]`).length]));
           renderItemCategories(holder, samCategories[tab], samShopCategories[tab], counts, "sam", setSamShopCategory);
         }
         setSamShopTab(samShopTab);
@@ -17020,6 +17042,28 @@
           `「${item.name}を${purchaseCount}セット、${totalAmount}個じゃ。${totalPrice}円で、所持は${s.baits[id]}個になったぞ」`,
         );
         markPurchaseButton(document.querySelector(`[data-buy-bait="${id}"]`));
+        save();
+        return true;
+      }
+      function buySamHook(id) {
+        const hook = Object.hasOwn(ShuTackle.hooks, id) ? ShuTackle.hooks[id] : null;
+        if (!hook || !Number.isFinite(hook.price) || hook.price <= 0) return false;
+        if (s.ownedHooks.includes(id)) {
+          setSamShopDialogue(`「${hook.name}はもう持っているぞ。繰り返し使えるから、買い直さなくてよいんじゃ」`);
+          return false;
+        }
+        if (!Number.isFinite(s.money) || s.money < hook.price) {
+          setSamShopDialogue(`「${hook.name}は${hook.price}円じゃ。今は少し足りんようじゃな」`);
+          return false;
+        }
+        s.money -= hook.price;
+        s.ownedHooks.push(id);
+        log(`${hook.name}を${hook.price}円で買った。繰り返し使えるハリだ。`);
+        renderTackle();
+        renderSamShop();
+        render();
+        setSamShopDialogue(`「${hook.name}を買ったぞ。道具袋や釣る前の仕掛け変更で選べる。何度でも使っておくれ」`);
+        markPurchaseButton(document.querySelector(`[data-buy-hook="${id}"]`));
         save();
         return true;
       }
@@ -18999,6 +19043,14 @@
       function hasUsableLureTackle() {
         return s.ownedRods.includes("lureRod") && (s.lures.silverSpoon || 0) > 0;
       }
+      function hookPreparationProblem(baitId, hookId) {
+        if (!s.ownedHooks.includes(hookId) || !Object.hasOwn(ShuTackle.hooks, hookId))
+          return "選んだハリを持っていません。仕掛け変更で所持しているハリを選ぶか、サムの店で購入しよう。";
+        if (!ShuTackle.allowed(baitId, hookId)) return s.ownedHooks.includes("large")
+          ? "星湖の秘餌はハリ大にしか付けられないよ。仕掛けでハリ大を選ぼう。"
+          : `星湖の秘餌にはハリ大が必要です。サムの店で${ShuTackle.hooks.large.price}円で購入するか、別の餌を選ぼう。`;
+        return "";
+      }
       function fishingPreparationProblem() {
         if (battle?.practice) return "";
         if (!rodData[s.selectedRod] || !s.ownedRods.includes(s.selectedRod))
@@ -19007,8 +19059,9 @@
           if (s.selectedRod !== "lureRod") return "ルアー釣りにはルアーロッドが必要です。仕掛け変更で装備しよう。";
           if (!hasUsableLureTackle()) return "使えるスプーンルアーがありません。仕掛け変更か、フィールドへ戻れます。";
         } else {
-          if (!baitData[s.selectedBait] || !ShuTackle.hooks[s.selectedHook] || !ShuTackle.allowed(s.selectedBait, s.selectedHook))
-            return "餌とハリの組み合わせを確認しよう。仕掛け変更か、フィールドへ戻れます。";
+          const hookProblem = hookPreparationProblem(s.selectedBait, s.selectedHook);
+          if (hookProblem) return hookProblem;
+          if (!baitData[s.selectedBait]) return "餌とハリの組み合わせを確認しよう。仕掛け変更か、フィールドへ戻れます。";
           if ((s.baits[s.selectedBait] || 0) < 1) return hasFishingBait()
             ? "選んだ餌がありません。仕掛け変更で手持ちの餌を選ぼう。"
             : hasUsableLureTackle()
@@ -19992,7 +20045,7 @@
         { id: "offerings", label: "奉納品", icon: ItemArt.get("offeringDaikon"), title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
       ];
       const samCategories = {
-        tackle: [{id:"bait",label:"餌"},{id:"rods",label:"釣り竿"},{id:"lures",label:"ルアー"}],
+        tackle: [{id:"bait",label:"餌"},{id:"hooks",label:"ハリ"},{id:"rods",label:"釣り竿"},{id:"lures",label:"ルアー"}],
         goods: [{id:"hands",label:"手装備"},{id:"dogTreats",label:"犬のおやつ"},{id:"dogToys",label:"犬のおもちゃ"}],
       };
       function renderItemCategories(holder, categories, selected, counts, scope, select, countLabel = "販売") {
@@ -20213,10 +20266,13 @@
           `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}" aria-pressed="${s.selectedBait === id}">` +
           `<i>${ShuTackleArt.icon(id)}</i><span><b>${b.name}</b><small>${b.role}</small></span>` +
           `<strong>×${s.baits[id] || 0}</strong></button>`).join("");
-        const hookMarkup = Object.entries(ShuTackle.hooks).map(([id, hook]) =>
-          `<button data-pick-hook="${id}" class="hook-option ${s.selectedHook === id ? "selected" : ""}" aria-pressed="${s.selectedHook === id}" ${ShuTackle.allowed(s.selectedBait,id)?"":"disabled title=\"星湖の秘餌はハリ大のみ\""}>` +
-          `<i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i>` +
-          `<span><b>${hook.name}</b><small>${hook.role}</small></span></button>`).join("");
+        const hookMarkup = Object.entries(ShuTackle.hooks).map(([id, hook]) => {
+          const owned = s.ownedHooks.includes(id), compatible = ShuTackle.allowed(s.selectedBait, id);
+          const status = owned ? "所持・消耗なし" : `未購入・サムの店 ${hook.price}円`;
+          return `<button data-pick-hook="${id}" data-hook-owned="${owned}" class="hook-option ${s.selectedHook === id ? "selected" : ""}" aria-pressed="${s.selectedHook === id}" ${owned && compatible ? "" : `disabled title="${owned ? "星湖の秘餌はハリ大のみ" : status}"`}>` +
+            `<i>${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)}</i>` +
+            `<span><b>${hook.name}</b><small>${hook.role}</small><strong>${status}</strong></span></button>`;
+        }).join("");
         const rodMarkup = s.ownedRods.filter(id => rodData[id]).map(id =>
           `<button data-pick-rod="${id}" class="rod-option ${s.selectedRod === id ? "selected" : ""}">` +
           `${rodDisplayMarkup(id)}<span>${rodData[id].name}${s.rodLevels[id]?` ＋${s.rodLevels[id]}`:""}<small>${ShuFishing.roles[id]} · ${s.rodCopies[id]||1}本</small></span></button>`).join("");
@@ -20247,21 +20303,21 @@
         $("#castTackleMethods").innerHTML = `<div class="cast-method-buttons">${groups[1].innerHTML}</div><p>スプーンにはルアーロッドが必要。所持している銀のスプーンは繰り返し使えるよ。</p><p>スプーン：${s.lures.silverSpoon || 0}個 ／ 現在：${s.fishingMethod === "lure" ? "ルアー釣り" : "エサ釣り"}</p>`;
         $("#castFightOptions").innerHTML = `<div class="cast-fight-buttons">${groups[0].innerHTML}</div><p>${castDuel.querySelector("p").textContent}</p>`;
         $("#castRodDuplicates").innerHTML = castDuel.querySelector(".rod-duplicates")?.outerHTML || "";
-        $("#castBaitHint").textContent = s.fishingMethod === "lure" ? "ルアー釣りでは餌・ハリを消費しないよ。エサ釣りへ戻すときの仕掛けも選べる。" : "所持数と得意な魚を見て選ぼう。餌を消費するのは投げた時だよ。";
+        $("#castBaitHint").textContent = s.fishingMethod === "lure" ? "ルアー釣りでは選んだ餌・ハリは抽選に影響しないよ。エサ釣りへ戻すときの仕掛けも選べる。" : hookPreparationProblem(s.selectedBait, s.selectedHook) || "所持数と得意な魚を見て選ぼう。餌を消費するのは投げた時だよ。";
         $("#tackle").querySelectorAll("[data-fight-mode]").forEach(b => b.onclick = () => { s.fightMode=b.dataset.fightMode;renderTackle();save(); });
         $("#tackle").querySelectorAll("[data-fishing-method]").forEach(b => b.onclick = () => { s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save(); });
         $("#tackle").querySelectorAll("[data-rod-duplicate]").forEach(b => b.onclick = () => { const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save(); });
         setCastTackleCategory(castTackleCategory);
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
           s.selectedBait = b.dataset.pickBait;
-          if (!ShuTackle.allowed(s.selectedBait, s.selectedHook)) s.selectedHook = "large";
+          if (!ShuTackle.allowed(s.selectedBait, s.selectedHook) && s.ownedHooks.includes("large")) s.selectedHook = "large";
           renderTackle();
           render();
           save();
         });
         document.querySelectorAll("[data-pick-hook]").forEach(b => b.onclick = () => {
           const hookId = b.dataset.pickHook;
-          if (!ShuTackle.hooks[hookId] || !ShuTackle.allowed(s.selectedBait, hookId)) return;
+          if (!s.ownedHooks.includes(hookId) || !Object.hasOwn(ShuTackle.hooks, hookId) || !ShuTackle.allowed(s.selectedBait, hookId)) return;
           s.selectedHook = hookId;
           renderTackle();
           render();
@@ -20475,7 +20531,7 @@
           : pick(distance, battle.spot);
         setFishingSceneTheme(spot.zone, spot.depth, f.id);
         battle.f = f;
-        battle.specimen = battle.practice ? null : rollFishSpecimen(f);
+        battle.specimen = battle.practice ? null : rollFishSpecimen(f, Math.random, battle.method === "bait" ? battle.hook : null);
         battle.specimenVisualScale = battle.specimen
           ? fishVisualScale(battle.specimen)
           : 1;
@@ -20518,8 +20574,10 @@
               battle.minimumDepth || "shallow",
             );
         const baitId = battle.bait || s.selectedBait;
-        if (!battle.practice && battle.method!=="lure" && !ShuTackle.allowed(baitId, battle.hook || s.selectedHook)) {
-          $("#battleMsg").textContent = "星湖の秘餌はハリ大にしか付けられないよ。仕掛けでハリ大を選ぼう。";
+        const hookProblem = !battle.practice && battle.method !== "lure"
+          ? hookPreparationProblem(baitId, battle.hook || s.selectedHook) : "";
+        if (hookProblem) {
+          $("#battleMsg").textContent = hookProblem;
           return false;
         }
         if (!battle.practice && battle.method!=="lure" && baitId === "nushiSecret" &&
@@ -23547,6 +23605,8 @@
         const band=ShuTackle.species[f.id]?.band||"medium";
         const recommendedHook=ShuTackle.species[f.id]?.recommendedHook||band;
         const hookName=ShuTackle.hooks[recommendedHook].name;
+        const alternativeHooks=ShuTackle.alternatives(f.id).map(id =>
+          `<span class="fishdex-chip">${ShuTackleArt.icon(`hook${id[0].toUpperCase()+id.slice(1)}`)} ${ShuTackle.hooks[id].name}（狙い分け）</span>`).join("");
         return `<div class="fishdex-hero">
           <div class="fishdex-art-card"><div class="fishdex-art" id="fishdexArt"></div></div>
           <div class="fishdex-identity">
@@ -23573,8 +23633,8 @@
           </section>
           <section class="fishdex-panel">
             <h3>基本タックル（おすすめ）</h3>
-            <div class="fishdex-chip-row">${rods}${baits}<span class="fishdex-chip">${ShuTackleArt.icon(`hook${recommendedHook[0].toUpperCase()+recommendedHook.slice(1)}`)} ${hookName}</span></div>
-            <small class="fishdex-tackle-note">魚種の基本サイズ帯は${{small:"小型",medium:"標準",large:"大型"}[band]}。個体の極小〜巨大とは別。エサとハリを組み合わせて狙いやすくできるよ。</small>
+            <div class="fishdex-chip-row">${rods}${baits}<span class="fishdex-chip">${ShuTackleArt.icon(`hook${recommendedHook[0].toUpperCase()+recommendedHook.slice(1)}`)} ${hookName}</span>${alternativeHooks}</div>
+            <small class="fishdex-tackle-note">魚種の基本サイズ帯は${{small:"小型",medium:"標準",large:"大型"}[band]}。個体の極小〜巨大とは別。ハリ小は大型魚、小魚針は大きな個体が苦手。専用針でも外道は来るので、エサ・深さ・距離も合わせよう。</small>
           </section>
           <section class="fishdex-panel">
             <h3>自分が使ったタックル</h3>
@@ -24333,7 +24393,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-50").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-54").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
