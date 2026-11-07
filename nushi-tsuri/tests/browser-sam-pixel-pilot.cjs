@@ -114,6 +114,19 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     return value.layers.map(({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled})=>
       ({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled}));
   }
+  async function finishMapTransitions() {
+    await page.locator('#map').evaluate(map=>{
+      // Equivalent 2D/3D transform spellings can still start a CSS transition.
+      // Flush style first so Chromium exposes that transition, then seek only
+      // this at-rest map's finite animations to their exact endpoint. Never
+      // advance the game/canvas clock or relax the framing/RGBA comparisons.
+      void getComputedStyle(map).transform;
+      for(const animation of map.getAnimations()) {
+        if(animation.effect?.target===map&&Number.isFinite(animation.effect.getComputedTiming().endTime))animation.finish();
+      }
+      void map.getBoundingClientRect();
+    });
+  }
   async function capture(name, settled=true) {
     if(settled) {
       await page.clock.runFor(700);await page.waitForTimeout(700);
@@ -147,6 +160,7 @@ module.exports = async function run(url, label, screen, output, experiments=fals
           map.style.setProperty('backface-visibility','visible','important');
           return previous;
         });
+        await finishMapTransitions();
       } else if(!await setRendering(page,value)) {
         shot.variants.push({value,skipped:true,reason:'CSS.supports(image-rendering, value) is false'});
         continue;
@@ -169,9 +183,12 @@ module.exports = async function run(url, label, screen, output, experiments=fals
             ?'test-only compositor option; layer promotion is browser-dependent; possible CPU/movement cost; not shipped'
             :'experimental review option; not shipped'});
       } finally {
-        if(value==='compositor-auto')await page.locator('#map').evaluate((map,previous)=>{
-          if(previous===null)map.removeAttribute('style');else map.setAttribute('style',previous);
-        },previousMapStyle);
+        if(value==='compositor-auto') {
+          await page.locator('#map').evaluate((map,previous)=>{
+            if(previous===null)map.removeAttribute('style');else map.setAttribute('style',previous);
+          },previousMapStyle);
+          await finishMapTransitions();
+        }
         else await page.locator(`#${EXPERIMENT_STYLE}`).evaluate(node=>node.remove());
       }
     }
