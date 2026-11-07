@@ -28,7 +28,7 @@ test('the preserved inn original changes only its own district and leaves the en
 test('the cohesive master renders inn pixels at native resolution in day, rain and night without retired overlays',async()=>{
  const seen=[],canvas=createCanvas(1672,941),d=Data.get('world');
  assert.equal(d.source,'assets/village-world-v252-55-riao-clear.png');
- assert.deepEqual(d.edits.map(e=>e.id),['sam-sfc-pilot'],'only the bounded Sam pixel pilot is active, not retired districts');
+ assert.deepEqual(d.edits,[],'district composites are retired from runtime');
  assert.deepEqual(d.patches,[],'dock patches are retired from runtime');
  assert.ok(d.underlay&&d.underlay!==archivedWorld.underlay,'load the matching cohesive underlay');
  assert.ok(d.parts.every(p=>p.motion!=='sway'),'vegetation stays fixed');

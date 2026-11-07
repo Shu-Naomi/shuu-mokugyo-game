@@ -17,21 +17,9 @@
   const world = {
     id:'world', source:'assets/village-world-v252-55-riao-clear.png',
     underlay:'assets/village-underlay-v252-55-riao.png', units:[1536,864],coherentGrade:true,
-    // Review-only pilot: one original 120×96 pixel drawing at exactly 2×.
-    // Native-master points are converted per axis; gameplay geometry is absent.
-    // Keep the original village, water, facilities and all outside pixels intact.
-    edits:[{
-      id:'sam-sfc-pilot',source:'assets/sam-sfc-pixel-pilot.png',
-      to:[1240/1672*1536,472/941*864,240/1672*1536,192/941*864],
-      clip:[[1250,552],[1270,552],[1270,542],[1294,542],[1294,482],
-        [1322,482],[1322,472],[1336,472],[1336,482],[1440,482],
-        [1440,498],[1444,498],[1444,512],[1450,512],[1450,528],
-        [1460,528],[1460,552],[1476,552],[1476,608],[1480,608],
-        [1480,636],[1474,636],[1474,648],[1468,648],[1468,656],
-        [1254,656],[1254,648],[1248,648],[1248,636],[1240,636],
-        [1240,570],[1250,570]]
-        .map(([x,y])=>[x/1672*1536,y/941*864]),
-    }],
+    // One authored village replaces the old separately resampled districts.
+    // Original assets and their bounded-edit contract remain in test fixtures.
+    edits:[],
     waterColorMasks:[[[0,680],[145,680],[294,700],[461,735],[584,775],[663,790],[740,790],[740,864],[0,864]]],
     parts:[
       box('meadow','grass',0,0,1536,864,vegetation),

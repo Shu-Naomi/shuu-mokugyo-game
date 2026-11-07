@@ -1,9 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-village-refresh-sam-pilot-252-55";
+const CACHE_NAME = "nushi-tsuri-v252-village-refresh-252-55";
 
 const CORE_ASSETS = [
-  "./assets/sam-sfc-pixel-pilot.png",
   "./rural-canals.js?v=252-55",
   "./assets/rural-canals-v252-48.webp",
   "./assets/rural-canal-cast-v252-48.webp",
@@ -222,8 +221,6 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=247-1",
   "./pixel-scenes.css?v=240-1",
-  "./scene-layers.js?v=252-5501",
-  // The unchanged worker imports this exact URL; retain it for cold offline starts.
   "./scene-layers.js?v=252-55",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",

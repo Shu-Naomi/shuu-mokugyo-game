@@ -1,5 +1,6 @@
-// Real-browser evidence only. Frozen-clock visual comparisons and native-clock
-// performance samples are intentionally separate pages and contexts.
+// Tests-only same-art rendering study. Production remains the pinned pixelated build.
+// CSS variants never redraw or change canvas pixels, assets, player, camera or scale.
+// Frozen-clock visual comparisons and optional native-clock performance use separate contexts.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -8,14 +9,18 @@ const { seed, saveKey } = require('./game-harness.cjs');
 const enter = require('./browser-start-adventure.cjs');
 const BASELINE = '880817ec738f6f9dcc45dc9a3a098e7bd6676823';
 const FIXED_TIME = '2026-10-22T03:00:00Z';
+const WORLD_SELECTOR = '#worldPixels, canvas.scenery-motion[data-for="worldPixels"], canvas.scenery-foreground[data-for="worldPixels"]';
+const EXPERIMENT_STYLE = 'same-art-rendering-study-only';
 const initial = () => ({ ...seed(), x:175, y:84, direction:'right', money:10000,
   gameMinutes:600, soundEnabled:false, practiceTutorialComplete:true });
 
-module.exports = async function run(url, label, screen, output) {
+module.exports = async function run(url, label, screen, output, experiments=false) {
   fs.mkdirSync(output, { recursive:true });
   const browser = await chromium.launch({ headless:true });
   const result = { label, baseline:BASELINE, screen, fixture:initial(), fixedTime:FIXED_TIME,
-    screenshots:[], visits:[], resources:[], errors:[], httpErrors:[] };
+    screenshots:[], visits:[], resources:[], errors:[], httpErrors:[],
+    experiments, cssScope:WORLD_SELECTOR, productionRendering:'pixelated',
+    visualClock:'Fixed JS clock; completed finite CSS animations; infinite CSS animations paused at time zero.' };
   const options = { viewport:{width:screen.width,height:screen.height}, deviceScaleFactor:screen.dpr,
     isMobile:screen.touch, hasTouch:screen.touch, locale:'ja-JP', serviceWorkers:'block' };
   async function context() {
@@ -61,19 +66,119 @@ module.exports = async function run(url, label, screen, output) {
     const canvas=await ready(page);assert.ok(canvas.painted>canvas.width*canvas.height/2,'decoded scene is painted, not a blank canvas');
     result.canvas=canvas;
   }
-  async function capture(name) {
-    await page.clock.runFor(700);await page.waitForTimeout(700);
-    const framing=await page.evaluate(() => {
-      const m=document.querySelector('#map'),p=document.querySelector('#player'),r=m.getBoundingClientRect(),b=p.getBoundingClientRect();
-      return {x:s.x,y:s.y,direction:s.direction,gameMinutes:s.gameMinutes,now:Date.now(),
-        mapTransform:m.style.transform,mapWidth:m.clientWidth,mapHeight:m.clientHeight,
-        mapRect:{x:r.x,y:r.y,width:r.width,height:r.height},
-        feet:{dx:Math.abs(b.x+b.width/2-(r.x+r.width*s.x/240)),dy:Math.abs(b.bottom-(r.y+r.height*s.y/135))}};
-    });
-    assert.ok(framing.feet.dx<1&&framing.feet.dy<1,'feet match collision position');
-    const filename=`${label}-${name}.png`;
-    await page.screenshot({path:path.join(output,filename),animations:'disabled'});
-    result.screenshots.push({name,filename,framing});
+  async function setRendering(target, value) {
+    assert.ok(['crisp-edges','auto'].includes(value));
+    const supported=await target.evaluate(value=>CSS.supports('image-rendering',value),value);
+    if(!supported)return false;
+    await target.addStyleTag({content:`${WORLD_SELECTOR} { image-rendering: ${value} !important; }`})
+      .then(style=>style.evaluate((node,id)=>node.id=id,EXPERIMENT_STYLE));
+    return true;
+  }
+  async function pipeline() {
+    return page.evaluate(async selector => {
+      const rect=n=>{const r=n.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+      const fractional=v=>v-Math.floor(v), dpr=devicePixelRatio;
+      const hash=async bytes=>[...new Uint8Array(await crypto.subtle.digest('SHA-256',bytes))].map(x=>x.toString(16).padStart(2,'0')).join('');
+      const map=document.querySelector('#map'),p=document.querySelector('#player'),r=rect(map),b=rect(p);
+      const layers=await Promise.all([...document.querySelectorAll(selector)].map(async c=>{
+        const bounds=rect(c),css=getComputedStyle(c),context=c.getContext('2d');
+        const rgba=context.getImageData(0,0,c.width,c.height).data;
+        return {id:c.id||c.className,for:c.dataset.for||null,intrinsic:{width:c.width,height:c.height},
+          rgbaSha256:await hash(rgba),cssSize:{width:css.width,height:css.height},rendered:bounds,
+          cssPixelsPerSourcePixel:{x:bounds.width/c.width,y:bounds.height/c.height},
+          devicePixelsPerSourcePixel:{x:bounds.width*dpr/c.width,y:bounds.height*dpr/c.height},
+          deviceOrigin:{x:bounds.x*dpr,y:bounds.y*dpr},
+          fractionalDeviceOrigin:{x:fractional(bounds.x*dpr),y:fractional(bounds.y*dpr)},
+          imageRendering:css.imageRendering,imageSmoothingEnabled:context.imageSmoothingEnabled,
+          cssTransform:css.transform,filter:css.filter,display:css.display,opacity:css.opacity};
+      }));
+      const definition=ShuSceneLayers.get('world'),sam=definition.parts.find(p=>p.id==='sam-shop');
+      const points=sam.polygons.flat(),xs=points.map(p=>p[0]),ys=points.map(p=>p[1]);
+      const padding=24,art={x:Math.min(...xs)-padding,y:Math.min(...ys)-padding,
+        width:Math.max(...xs)-Math.min(...xs)+padding*2,height:Math.max(...ys)-Math.min(...ys)+padding*2};
+      const source=layers.find(l=>l.id==='worldPixels').rendered;
+      return {dpr,viewport:{width:innerWidth,height:innerHeight},
+        supports:Object.fromEntries(['pixelated','crisp-edges','auto'].map(v=>[v,CSS.supports('image-rendering',v)])),
+        mapCompositor:{inlineTransform:map.style.transform,transform:getComputedStyle(map).transform,
+          willChange:getComputedStyle(map).willChange,backfaceVisibility:getComputedStyle(map).backfaceVisibility},
+        framing:{x:s.x,y:s.y,direction:s.direction,gameMinutes:s.gameMinutes,now:Date.now(),
+          cameraMatrix:Array.from(new DOMMatrix(getComputedStyle(map).transform).toFloat64Array()),
+          mapWidth:map.clientWidth,mapHeight:map.clientHeight,mapRect:r,
+          feet:{dx:Math.abs(b.x+b.width/2-(r.x+r.width*s.x/240)),dy:Math.abs(b.y+b.height-(r.y+r.height*s.y/135))}},
+        samCrop:{artSpace:art,units:definition.units,css:{x:source.x+art.x/definition.units[0]*source.width,
+          y:source.y+art.y/definition.units[1]*source.height,
+          width:art.width/definition.units[0]*source.width,height:art.height/definition.units[1]*source.height}},layers};
+    },WORLD_SELECTOR);
+  }
+  function immutablePixels(value) {
+    return value.layers.map(({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled})=>
+      ({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled}));
+  }
+  async function capture(name, settled=true) {
+    if(settled) {
+      await page.clock.runFor(700);await page.waitForTimeout(700);
+      await page.evaluate(async()=>{
+        await document.fonts.ready;
+        // Normalize decorative CSS animations, without touching canvas content.
+        for(const animation of document.getAnimations()) {
+          if(animation.effect?.getTiming().iterations===Infinity){animation.pause();animation.currentTime=0;}
+          else animation.finish();
+        }
+      });
+    }
+    const original=await pipeline();
+    if(settled)assert.ok(original.framing.feet.dx<1&&original.framing.feet.dy<1,'feet match collision position');
+    assert.equal(original.layers.length,3,'original world, motion and foreground canvases exist');
+    assert.ok(original.layers.every(l=>l.imageRendering==='pixelated'),'unaltered baseline computed image-rendering is pixelated');
+    const filename=`${label}-${name}-pixelated.png`;
+    await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
+    const shot={name,filename,settled,framing:original.framing,pipeline:original,variants:[]};
+    result.screenshots.push(shot);
+    if(!experiments)return;
+    for(const value of ['crisp-edges','auto',...(settled?['compositor-auto']:[])]) {
+      let previousMapStyle=null;
+      if(value==='compositor-auto') {
+        previousMapStyle=await page.locator('#map').evaluate(map=>{
+          const previous=map.getAttribute('style');
+          const transform=map.style.transform;
+          if(!/^translate3d\([^,]+,[^,]+,\s*0(?:px)?\)$/.test(transform))throw Error('Unexpected map transform: '+transform);
+          map.style.setProperty('transform',transform.replace('translate3d(','translate(').replace(/,\s*0(?:px)?\)$/ ,')'),'important');
+          map.style.setProperty('will-change','auto','important');
+          map.style.setProperty('backface-visibility','visible','important');
+          return previous;
+        });
+      } else if(!await setRendering(page,value)) {
+        shot.variants.push({value,skipped:true,reason:'CSS.supports(image-rendering, value) is false'});
+        continue;
+      }
+      try {
+        const candidate=await pipeline();
+        assert.deepEqual(candidate.framing,original.framing,`${value}: identical player, time, camera and scale`);
+        assert.deepEqual(immutablePixels(candidate),immutablePixels(original),`${value}: every source canvas RGBA byte is unchanged`);
+        assert.deepEqual(candidate.layers.map(l=>l.rendered),original.layers.map(l=>l.rendered),`${value}: identical layer bounds`);
+        assert.ok(candidate.layers.every(l=>l.imageRendering===(value==='compositor-auto'?'pixelated':value)),`${value}: expected computed image-rendering`);
+        if(value==='compositor-auto') {
+          assert.equal(candidate.mapCompositor.willChange,'auto');
+          assert.equal(candidate.mapCompositor.backfaceVisibility,'visible');
+        }
+        const variantFile=`${label}-${name}-${value}.png`;
+        await page.screenshot({path:path.join(output,variantFile),animations:'allow',scale:'device'});
+        assert.deepEqual(immutablePixels(await pipeline()),immutablePixels(original),`${value}: capture did not repaint source pixels`);
+        shot.variants.push({value,filename:variantFile,pipeline:candidate,
+          status:value==='auto'?'diagnostic only':value==='compositor-auto'
+            ?'test-only compositor option; layer promotion is browser-dependent; possible CPU/movement cost; not shipped'
+            :'experimental review option; not shipped'});
+      } finally {
+        if(value==='compositor-auto')await page.locator('#map').evaluate((map,previous)=>{
+          if(previous===null)map.removeAttribute('style');else map.setAttribute('style',previous);
+        },previousMapStyle);
+        else await page.locator(`#${EXPERIMENT_STYLE}`).evaluate(node=>node.remove());
+      }
+    }
+    const restored=await pipeline();
+    assert.deepEqual(restored,original,'removing the test CSS restores the exact original pipeline');
+    const repeat=await page.screenshot({animations:'allow',scale:'device'});
+    assert.deepEqual(repeat,fs.readFileSync(path.join(output,filename)),'pixelated repeat is byte-identical after experiments');
   }
   async function walk(target) {
     const route=await page.evaluate(target => {
@@ -107,7 +212,12 @@ module.exports = async function run(url, label, screen, output) {
     const before=await progress();await capture('west-approach');
     result.worldSources=await page.evaluate(() => {const d=ShuSceneLayers.get('world');return [d.source,...(d.underlay?[d.underlay]:[]),...(d.edits||[]).map(e=>e.source)];});
     for(const source of result.worldSources)assert.ok(result.resources.some(p=>p.endsWith('/'+source)),`loaded source ${source}`);
-    if(label==='after')assert.ok(result.worldSources.includes('assets/sam-sfc-pixel-pilot.png'),'pilot overlay source loaded');
+    assert.deepEqual(result.worldSources,['assets/village-world-v252-55-riao-clear.png','assets/village-underlay-v252-55-riao.png'],'original art sources only');
+    assert.ok(!result.resources.some(p=>p.includes('sam-sfc-pixel-pilot')),'no rejected art overlay requested');
+    result.sourceImages=await page.evaluate(async sources=>Promise.all(sources.map(async source=>{
+      const image=new Image();image.src=source;await image.decode();
+      return {source,width:image.naturalWidth,height:image.naturalHeight};
+    })),result.worldSources);
     await walk({x:197,y:91,direction:'up'});
     assert.equal(await page.evaluate(()=>isAtSamShopEntrance()),true);
     await capture('shop-entrance');
@@ -139,14 +249,47 @@ module.exports = async function run(url, label, screen, output) {
     assert.deepEqual(await state(),saved);assert.deepEqual(await progress(),before);
     result.pointers=await page.evaluate(()=>pilotPointers);
     if(screen.touch)assert.ok(result.pointers.some(p=>p.id==='action'&&p.type==='touch'));
+    // Separate actual-button movement diagnostic. Real CSS transitions are
+    // paused and sought through their Web Animations API, not approximated by
+    // sleep timings or mistaken for the JS clock. The game/canvas clock advances
+    // by the same elapsed time on both builds. This is not a native-FPS test.
+    const movement=await page.evaluate(()=>{
+      for(const direction of ['left','right','down','up']) {
+        const target=ShuWorldLife.moveTarget(s.x,s.y,direction,4,isWalkableWorld);
+        if(target.x!==s.x||target.y!==s.y)return {direction,from:{x:s.x,y:s.y},to:target};
+      }
+      throw Error('No reachable neighboring position for camera diagnostic');
+    });
+    await press(`[data-move="${movement.direction}"]`);
+    const transitions=await page.evaluate(()=>{
+      const nodes=['#map','#player','#dog'].map(q=>document.querySelector(q));
+      window.sameArtMotionAnimations=nodes.flatMap(node=>node.getAnimations());
+      return sameArtMotionAnimations.map(animation=>{
+        const effect=animation.effect,timing=effect.getTiming();animation.pause();animation.currentTime=0;
+        return {target:effect.target.id,property:animation.transitionProperty||animation.animationName||null,
+          duration:timing.duration,delay:timing.delay,keyframes:effect.getKeyframes()};
+      });
+    });
+    result.movementDiagnostic={...movement,transitions,timesMs:[0,75,150,300],
+      clock:'Actual direction button, then deterministic Web Animations API transition seeking and matching JS-clock steps.',
+      limitation:'If no map transition is active, these are settled snapshots; they do not show moving-camera interpolation or native frame pacing.'};
+    let previousTime=0;
+    for(const time of result.movementDiagnostic.timesMs) {
+      if(time>previousTime)await page.clock.runFor(time-previousTime);
+      await page.evaluate(time=>{for(const animation of sameArtMotionAnimations)animation.currentTime=time;},time);
+      await capture(`camera-motion-${time}ms`,false);previousTime=time;
+    }
     await ctx.close();
 
+    if(process.env.SAM_SAMPLE_PERF==='1') {
     // This second context NEVER installs Playwright's clock. performance.now,
     // timers and requestAnimationFrame below are the browser's native clocks.
     const perfCtx=await context(), perf=await perfCtx.newPage();observe(perf);
     await perf.goto(url,{waitUntil:'load'});await enter(perf,screen.touch);
     if(await perf.locator('#lakeIntroSkip').isVisible())await perf.locator('#lakeIntroSkip')[screen.touch?'tap':'click']();
-    await ready(perf);await perf.waitForTimeout(2000);
+    await ready(perf);
+    const perfRendering=experiments&&await setRendering(perf,'crisp-edges')?'crisp-edges':'pixelated';
+    await perf.waitForTimeout(2000);
     result.performance=await perf.evaluate(async () => {
       const longTasks=[],intervals=[];let observer=null,last=null,frames=0,id;
       if(PerformanceObserver.supportedEntryTypes.includes('longtask')) {
@@ -164,7 +307,11 @@ module.exports = async function run(url, label, screen, output) {
         limitation:'One CI idle sample is a performance proxy, not physical heat, battery, or device-temperature measurement.'};
     });
     assert.ok(result.performance.elapsedMs>=4900&&result.performance.frames>0);
-    await perfCtx.close();assert.deepEqual(result.errors,[]);assert.deepEqual(result.httpErrors,[]);
+    result.performance.rendering=perfRendering;
+    result.performance.status=experiments?'experimental CSS option only; not production':'original production CSS';
+    await perfCtx.close();
+    }
+    assert.deepEqual(result.errors,[]);assert.deepEqual(result.httpErrors,[]);
     return result;
   } catch(error) {
     result.failure=error.stack;await page.screenshot({path:path.join(output,`${label}-failure.png`)}).catch(()=>{});throw error;

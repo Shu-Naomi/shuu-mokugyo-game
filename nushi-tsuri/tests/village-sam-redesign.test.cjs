@@ -27,10 +27,10 @@ test('Sam district source art is preserved, and the assembled village changes no
  }
 });
 
-test('the cohesive master plus bounded pixel pilot renders Sam natively in day, rain and night without retired overlays',async()=>{
+test('the cohesive master renders Sam pixels at native resolution in day, rain and night without retired overlays',async()=>{
  const seen=[],canvas=createCanvas(1672,941),d=Data.get('world');
  assert.equal(d.source,'assets/village-world-v252-55-riao-clear.png');
- assert.deepEqual(d.edits.map(e=>e.id),['sam-sfc-pilot'],'only the bounded Sam pixel pilot is active, not retired districts');
+ assert.deepEqual(d.edits,[],'district composites are retired from runtime');
  assert.deepEqual(d.patches,[],'dock patches are retired from runtime');
  assert.ok(d.underlay&&d.underlay!==archivedWorld.underlay,'load the matching cohesive underlay');
  assert.ok(d.parts.every(p=>p.motion!=='sway'),'vegetation stays fixed');
@@ -39,11 +39,11 @@ test('the cohesive master plus bounded pixel pilot renders Sam natively in day, 
   createMotionCanvas:()=>{const c=createCanvas(1672,941);c.dataset={};return c;},visible:()=>true,isHidden:()=>false,reducedMotion:()=>true,
   requestFrame:()=>1,cancelFrame(){},onError:e=>{throw e;}});
  try{
-  const original=await loadImage(path.join(root,d.source)),expected=Art.assembleSource(original,d,await Promise.all(d.edits.map(e=>loadImage(path.join(root,e.source)))),createCanvas);
-  assert.deepEqual([original.width,original.height],[1672,941]);
+  const original=await loadImage(path.join(root,d.source)),expected=createCanvas(1672,941);
+  assert.deepEqual([original.width,original.height],[1672,941]);expected.getContext('2d').drawImage(original,0,0);
   assert.equal(await controller.paint(canvas,'world',{season:'spring',period:'day',weather:'sunny'}),true);
   assert.deepEqual([canvas.width,canvas.height],[1672,941]);
-  assert.deepEqual(canvas.getContext('2d').getImageData(1340,518,60,80).data,expected.getContext('2d').getImageData(1340,518,60,80).data,'daytime Sam uses the exact native composed pilot pixels');
+  assert.deepEqual(canvas.getContext('2d').getImageData(1340,518,60,80).data,expected.getContext('2d').getImageData(1340,518,60,80).data,'daytime Sam uses native master pixels');
   const day=Buffer.from(canvas.getContext('2d').getImageData(1340,518,60,80).data);
   for(const env of [{season:'summer',period:'evening',weather:'rain'},{season:'winter',period:'night',weather:'cloudy'}]){
    assert.equal(await controller.paint(canvas,'world',env),true);
