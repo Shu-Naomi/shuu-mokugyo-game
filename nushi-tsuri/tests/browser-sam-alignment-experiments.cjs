@@ -479,6 +479,28 @@ async function visuals(browser, url) {
           timing: animation.effect.getTiming(), keyframes: animation.effect.getKeyframes() };
       });
     });
+    const normalizationPixels = await sourceHashes(page), normalizationActor = await actorHash(page);
+    const motionSetup = await page.evaluate(() => {
+      const before = JSON.stringify({ state: s, now: Date.now() });
+      // The real move also starts #idleStatus's180ms exit fade. Wall time
+      // would otherwise advance that unrelated UI between paired screenshots.
+      // Normalize finite UI animations only, without hiding HUD nodes or
+      // touching any animation on the map, player, dog, or their descendants.
+      const map = document.querySelector('#map'), normalized = [];
+      for (const animation of document.getAnimations()) {
+        const target = animation.effect?.target, end = animation.effect?.getComputedTiming().endTime;
+        if (!(target instanceof Element) || target === map || map.contains(target) || !Number.isFinite(end)) continue;
+        const fromTimeMs = animation.currentTime;
+        animation.pause(); animation.currentTime = end;
+        normalized.push({ target: target.id || target.className, property: animation.transitionProperty || animation.animationName || null,
+          fromTimeMs, toTimeMs: end, action: 'paused-at-finite-end' });
+      }
+      return { normalized, before, after: JSON.stringify({ state: s, now: Date.now() }) };
+    });
+    assert.equal(motionSetup.after, motionSetup.before, 'UI animation normalization does not change game state or JS time');
+    assert.deepEqual(await sourceHashes(page), normalizationPixels, 'UI normalization preserves source canvas bytes');
+    assert.deepEqual(await actorHash(page), normalizationActor, 'UI normalization preserves player canvas/state');
+    result.motion.uiAnimationNormalization = { scope: 'Finite animations outside #map only; paused at terminal visual phase before the first motion pair', animations: motionSetup.normalized };
     result.motion.transitions = transitions;
     assert.ok(transitions.some(t => t.target === 'map' && t.property === 'transform' && Number(t.timing.duration) > 0), 'Real button created observed map transition');
     async function seek(time) {
