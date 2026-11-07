@@ -82,7 +82,14 @@ function installController() {
   const owned = [[map, 'translate'], [map, 'scale'], [map, 'clip-path'], [world, 'background-color']];
   const saved = owned.map(([node, property]) => ({ node, property, value: node.style.getPropertyValue(property), priority: node.style.getPropertyPriority(property) }));
   let raf = null, mode = 'baseline', active = false, pageHidden = false, frozen = false;
-  let previous = { x: 0, y: 0 }, last = null, probe = null;
+  let previous = { x: 0, y: 0 }, last = null, probe = null, diagnosticsEnabled = false;
+  const changes = [];
+  const devicePixelBox = { requested: false, available: false, last: null };
+  function recordChange(change) {
+    if (!diagnosticsEnabled) return;
+    changes.push({ time: performance.now(), ...change });
+    if (changes.length > 128) changes.shift();
+  }
   const removers = [], observers = [], updateDurations = [], callbackDurations = {};
   const wakes = {}, observation = { mutationRecords: 0, ignoredMutationBatches: 0 };
   function measured(source, callback) {
@@ -104,7 +111,7 @@ function installController() {
     active = false; cancelFrame();
     for (const remove of removers.splice(0)) remove();
     for (const observer of observers.splice(0)) observer.disconnect();
-    resetProperties(); mode = 'baseline'; pageHidden = false; frozen = false; probe = null;
+    resetProperties(); mode = 'baseline'; pageHidden = false; frozen = false; probe = null; diagnosticsEnabled = false;
   }
   function snapCorrection() {
     const r = rect(map), dpr = devicePixelRatio;
@@ -233,8 +240,9 @@ function installController() {
     node.addEventListener(type, listener);
     removers.push(() => node.removeEventListener(type, listener));
   }
-  function start(requested) {
-    restore(); mode = requested;
+  function start(requested, { diagnostics = false } = {}) {
+    restore(); mode = requested; diagnosticsEnabled = diagnostics;
+    Object.assign(devicePixelBox, { requested: false, available: false, last: null });
     if (mode === 'baseline') return;
     active = true;
     if (mode === 'legacy-per-frame') {
@@ -259,17 +267,29 @@ function installController() {
     // Those ignored deliveries are still counted explicitly in timing().
     const ancestors = [];
     for (let node = world; node; node = node.parentElement) ancestors.push(node);
-    const signature = node => JSON.stringify([node.className, node.hidden,
+    const rawSignature = node => [node.className, node.hidden,
+      ...[...node.style].filter(property => !owned.some(([owner, key]) => node === owner && property === key))
+        .map(property => [property, node.style.getPropertyValue(property), node.style.getPropertyPriority(property)])];
+    // DOMTokenList.remove() and renderPlayer() can serialize identical class
+    // tokens with different whitespace/order. Such rewrites do not change CSS.
+    const signature = node => JSON.stringify([[...new Set(String(node.className).split(/\s+/).filter(Boolean))].sort(), node.hidden,
       ...[...node.style].filter(property => !owned.some(([owner, key]) => node === owner && property === key))
         .map(property => [property, node.style.getPropertyValue(property), node.style.getPropertyPriority(property)])]);
     const targets = [map, ...ancestors, ...(mode.startsWith('integer-') ? [player] : [])];
     const signatures = new Map(targets.map(node => [node, signature(node)]));
+    const rawSignatures = diagnosticsEnabled ? new Map(targets.map(node => [node, rawSignature(node)])) : null;
     const mutation = new MutationObserver(records => measured('mutation', () => {
       observation.mutationRecords += records.length;
       let changed = false;
       for (const node of new Set(records.map(record => record.target))) {
-        const next = signature(node);
-        if (next !== signatures.get(node)) { signatures.set(node, next); changed = true; }
+        const next = signature(node), relevant = next !== signatures.get(node);
+        if (rawSignatures) {
+          const before = rawSignatures.get(node), after = rawSignature(node);
+          if (JSON.stringify(before) !== JSON.stringify(after)) recordChange({ kind: 'external-mutation',
+            target: node.id || node.tagName || 'anonymous', before, after, semanticChange: relevant });
+          rawSignatures.set(node, after);
+        }
+        if (relevant) { signatures.set(node, next); changed = true; }
       }
       if (changed) wake('external-style'); else observation.ignoredMutationBatches++;
     }));
@@ -277,6 +297,26 @@ function installController() {
     observers.push(mutation);
     const resize = new ResizeObserver(() => measured('resize', () => wake('element-resize')));
     resize.observe(world); resize.observe(map); observers.push(resize);
+    // CSS-content observations need not fire when only the physical pixel ratio
+    // changes. Request a separate physical-content observation, without polling
+    // or forcing layout/viewport changes to manufacture a resize notification.
+    const physicalResize = new ResizeObserver(entries => measured('device-pixel-resize', () => {
+      const box = entries.find(entry => entry.target === world)?.devicePixelContentBoxSize?.[0];
+      devicePixelBox.available = !!box;
+      if (!box) return;
+      devicePixelBox.last = { inlineSize: box.inlineSize, blockSize: box.blockSize, dpr: devicePixelRatio };
+      recordChange({ kind: 'device-pixel-resize', ...devicePixelBox.last });
+      wake('device-pixel-resize');
+    }));
+    try {
+      physicalResize.observe(world, { box: 'device-pixel-content-box' });
+      devicePixelBox.requested = true; observers.push(physicalResize);
+    } catch (error) {
+      // Older engines may reject the box option. Keep the explicit capability
+      // limit; resolution/viewport events remain, but no idle fallback is added.
+      physicalResize.disconnect(); devicePixelBox.requested = false;
+      recordChange({ kind: 'device-pixel-resize-unavailable', reason: String(error) });
+    }
     listen(window, 'resize', () => wake('window-resize'));
     // Zoom/display migration may change DPR without resizing the CSS viewport.
     // Re-arm the exact-resolution query after each change, with one live handler.
@@ -303,10 +343,11 @@ function installController() {
   }
   window.samAlignment = { apply, restore, start, get last() { return last; },
     observeUpdates(callback) { probe = callback; },
+    diagnostics() { return { enabled: diagnosticsEnabled, changes: [...changes], devicePixelBox: { ...devicePixelBox } }; },
     status() { return { mode, active, pendingRaf: raf !== null, listeners: removers.length, observers: observers.length,
-      documentHidden: document.hidden, visibilityState: document.visibilityState, pageHidden, frozen, probeEnabled: !!probe }; },
+      documentHidden: document.hidden, visibilityState: document.visibilityState, pageHidden, frozen, probeEnabled: !!probe, diagnosticsEnabled }; },
     resetTiming() {
-      updateDurations.length = 0;
+      updateDurations.length = 0; changes.length = 0;
       for (const key of Object.keys(callbackDurations)) delete callbackDurations[key];
       for (const key of Object.keys(wakes)) delete wakes[key];
       observation.mutationRecords = 0; observation.ignoredMutationBatches = 0;
@@ -820,7 +861,7 @@ async function lifecycle(browser, url, mode) {
   // apply() study. Diagnostic post-update probes are deliberately NOT used in
   // performanceSample. They observe whole-map registration after each update.
   const { context, page } = await newPage(browser, url, false);
-  const report = { mode, clock: 'native, unmocked', stages: [], background: {},
+  const report = { mode, clock: 'native, unmocked', stages: [], background: {}, failures: [],
     menuPolicy: 'Finish finite visible camera movement behind menus, then stop. Menus do not start an idle animation loop.' };
   result.lifecycle.push(report);
   try {
@@ -843,6 +884,13 @@ async function lifecycle(browser, url, mode) {
           visibilityState: document.visibilityState, updates: samLifecycle.frames.length, status: samAlignment.status() });
       });
     }, mode);
+    function validate(name, check) {
+      try { check(); }
+      catch (error) {
+        report.failures.push({ name, failure: error.stack });
+        json('alignment-results.json', result);
+      }
+    }
     async function stage(name, action, { idle = false, updates = false } = {}) {
       const begin = await page.evaluate(name => {
         samLifecycle.stage = name; samAlignment.resetTiming();
@@ -852,31 +900,33 @@ async function lifecycle(browser, url, mode) {
       }, name);
       if (action) await action();
       await page.waitForTimeout(idle ? 300 : 550);
-      const end = await page.evaluate(begin => ({ frames: samLifecycle.frames.slice(begin.frames), timing: samAlignment.timing(),
+      const end = await page.evaluate(begin => ({ frames: samLifecycle.frames.slice(begin.frames), timing: samAlignment.timing(), diagnostics: samAlignment.diagnostics(),
         status: samAlignment.status(), world: { x: s.x, y: s.y }, menu: fieldMenuIsOpen(), modal: !!document.querySelector('.modal.open'),
         viewport: { width: innerWidth, height: innerHeight }, dpr: devicePixelRatio }), begin);
       report.stages.push({ name, begin, ...end }); json('alignment-results.json', result);
-      assert.equal(end.status.pendingRaf, false, `${mode}/${name}: no work remains after settling`);
-      if (idle) {
-        assert.equal(end.timing.callbacks, 0, `${mode}/${name}: stable idle has no alignment updates`);
-        assert.equal(end.timing.callbackSources.raf?.callbacks || 0, 0, `${mode}/${name}: stable idle has no alignment rAF`);
-      }
-      if (updates) assert.ok(end.frames.length > 0, `${mode}/${name}: real change must reach controller updates`);
-      for (const frame of end.frames) {
-        near(frame.residual.x, 0, .002, `${mode}/${name}: native x origin`);
-        near(frame.residual.y, 0, .002, `${mode}/${name}: native y origin`);
-        near(frame.maxLayerDelta, 0, .01, `${mode}/${name}: whole-map layer registration`);
-        assert.ok(Number.isFinite(frame.playerFeet.x) && Number.isFinite(frame.playerFeet.y));
-        assert.ok(frame.npcFeetMaximumErrorCSS < 1, `${mode}/${name}: NPC feet remain registered`);
-        if (mode.startsWith('integer-')) {
-          near(frame.scale.x, Math.round(frame.scale.x), 1e-6, `${mode}/${name}: integer x scale`);
-          near(frame.scale.y, Math.round(frame.scale.y), 1e-6, `${mode}/${name}: integer y scale`);
+      validate(name, () => {
+        assert.equal(end.status.pendingRaf, false, `${mode}/${name}: no work remains after settling`);
+        if (idle) {
+          assert.equal(end.timing.callbacks, 0, `${mode}/${name}: stable idle has no alignment updates`);
+          assert.equal(end.timing.callbackSources.raf?.callbacks || 0, 0, `${mode}/${name}: stable idle has no alignment rAF`);
         }
-      }
+        if (updates) assert.ok(end.frames.length > 0, `${mode}/${name}: real change must reach controller updates`);
+        for (const frame of end.frames) {
+          near(frame.residual.x, 0, .002, `${mode}/${name}: native x origin`);
+          near(frame.residual.y, 0, .002, `${mode}/${name}: native y origin`);
+          near(frame.maxLayerDelta, 0, .01, `${mode}/${name}: whole-map layer registration`);
+          assert.ok(Number.isFinite(frame.playerFeet.x) && Number.isFinite(frame.playerFeet.y));
+          assert.ok(frame.npcFeetMaximumErrorCSS < 1, `${mode}/${name}: NPC feet remain registered`);
+          if (mode.startsWith('integer-')) {
+            near(frame.scale.x, Math.round(frame.scale.x), 1e-6, `${mode}/${name}: integer x scale`);
+            near(frame.scale.y, Math.round(frame.scale.y), 1e-6, `${mode}/${name}: integer y scale`);
+          }
+        }
+      });
       return end;
     }
     await stage('initial-settle', () => page.evaluate(mode => {
-      samAlignment.start(mode); samAlignment.observeUpdates(samLifecycleProbe);
+      samAlignment.start(mode, { diagnostics: true }); samAlignment.observeUpdates(samLifecycleProbe);
     }, mode), { updates: true });
     const plainIdle = await stage('stable-plain-idle', null, { idle: true });
     assert.equal(plainIdle.menu, false, 'Plain-idle interval must not actually be field-menu idle');
@@ -901,7 +951,12 @@ async function lifecycle(browser, url, mode) {
     const changeDpr = dpr => cdp.send('Emulation.setDeviceMetricsOverride', {
       width: screen.width, height: screen.height, deviceScaleFactor: dpr, mobile: screen.touch });
     const dprChanged = await stage('actual-dpr-change', () => changeDpr(screen.dpr + .125), { updates: true });
-    near(dprChanged.dpr, screen.dpr + .125, 1e-7, 'Browser devicePixelRatio changed');
+    validate('actual-dpr-change-signal', () => {
+      near(dprChanged.dpr, screen.dpr + .125, 1e-7, 'Browser devicePixelRatio changed');
+      assert.deepEqual(dprChanged.viewport, { width: screen.width, height: screen.height }, 'DPR test retains the same CSS viewport');
+      assert.ok(dprChanged.timing.wakes['dpr-change'] || dprChanged.timing.wakes['device-pixel-resize'] || dprChanged.timing.wakes['window-resize'],
+        'Same-CSS-size DPR change must emit a genuine resolution/device-pixel/window signal, not rely on an unrelated style wake');
+    });
     await stage('actual-dpr-restore', () => changeDpr(screen.dpr), { updates: true });
     await stage('real-field-menu-open', () => press(page, '#menu'), { updates: true });
     assert.equal(await page.locator('#fieldMenu.show').count(), 1);
@@ -946,7 +1001,7 @@ async function lifecycle(browser, url, mode) {
 
     for (let i = 0; i < 3; i++) {
       await stage(`repeated-start-${i + 1}`, () => page.evaluate(mode => {
-        samAlignment.start(mode); samAlignment.observeUpdates(samLifecycleProbe);
+        samAlignment.start(mode, { diagnostics: true }); samAlignment.observeUpdates(samLifecycleProbe);
       }, mode), { updates: true });
     }
     const registered = report.stages.filter(entry => entry.name.startsWith('repeated-start-')).map(entry =>
@@ -964,7 +1019,8 @@ async function lifecycle(browser, url, mode) {
     assert.equal(cleanup.status.listeners, 0); assert.equal(cleanup.status.observers, 0);
     assert.equal(cleanup.status.pendingRaf, false); assert.equal(cleanup.status.probeEnabled, false);
     assert.equal(cleanup.timing.allSchedulerCallbacks.callbacks, 0, 'No observer/listener/rAF callback survives restore');
-    report.cleanup = cleanup; report.status = 'passed';
+    report.cleanup = cleanup; report.status = report.failures.length ? 'failed' : 'passed';
+    assert.deepEqual(report.failures.map(failure => failure.name), [], `${mode}: lifecycle stage failures retained while later evidence was collected`);
   } finally { json('alignment-results.json', result); await context.close(); }
 }
 
@@ -990,7 +1046,7 @@ async function performanceSample(browser, url, mode, activity) {
           observer = new PerformanceObserver(list => longTasks.push(...list.getEntries().map(e => e.duration)));
           observer.observe({ type: 'longtask', buffered: false });
         }
-        if (samAlignment.status().probeEnabled) throw Error('Lifecycle probe must not run in performance samples');
+        if (samAlignment.status().probeEnabled || samAlignment.status().diagnosticsEnabled) throw Error('Lifecycle diagnostics must not run in performance samples');
         samAlignment.resetTiming();
         const presentationBefore = { menu: fieldMenuIsOpen(), modal: !!document.querySelector('.modal.open'), hidden: document.hidden };
         const heapBefore = performance.memory?.usedJSHeapSize ?? null, start = performance.now();

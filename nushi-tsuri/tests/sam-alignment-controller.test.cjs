@@ -63,9 +63,12 @@ function fixture(beforeInstall = null) {
     disconnect() { this.targets.clear(); this.records = []; }
   }
   class ResizeObserver {
-    constructor(callback) { this.callback = callback; this.targets = new Set(); resizes.push(this); }
-    observe(node) { this.targets.add(node); }
-    disconnect() { this.targets.clear(); }
+    constructor(callback) { this.callback = callback; this.targets = new Set(); this.options = new Map(); resizes.push(this); }
+    observe(node, options = {}) {
+      if (node.rejectPhysicalObservation && options.box === 'device-pixel-content-box') throw Error('Unsupported box');
+      this.targets.add(node); this.options.set(node, options);
+    }
+    disconnect() { this.targets.clear(); this.options.clear(); }
   }
   const environment = { document, window, matchMedia: () => { const query = new Target(); resolutions.push(query); return query; }, devicePixelRatio: 1.875, MutationObserver, ResizeObserver,
     getComputedStyle: () => ({ borderRightWidth: '0', borderBottomWidth: '0' }),
@@ -245,4 +248,63 @@ test('restore preserves existing owned values and priorities, even with queued m
   }
   assert.equal(f.map.style.getPropertyValue('transform'), 'translateX(3px)', 'External changes are not reverted');
   assert.equal(f.rafs.size, 0);
+});
+
+test('physical-content resize observes a DPR-only change without resolution or viewport events', () => {
+  const f = fixture(); f.api.start('per-frame', { diagnostics: true }); f.frame(); f.api.resetTiming();
+  const observer = f.resizes.find(candidate => candidate.options.get(f.world)?.box === 'device-pixel-content-box');
+  assert.ok(observer, 'A dedicated physical-content observation is registered');
+  f.environment.devicePixelRatio = 1.125;
+  observer.callback([{ target: f.world, devicePixelContentBoxSize: [{ inlineSize: 675, blockSize: 394 }] }]);
+  assert.equal(f.rafs.size, 1); f.frame(); f.snapped(); assert.equal(f.rafs.size, 0);
+  assert.equal(f.api.timing().wakes['device-pixel-resize'], 1);
+  assert.equal(f.api.timing().callbackSources.event, undefined, 'No resolution/window event manufactured');
+  assert.equal(f.api.diagnostics().devicePixelBox.last.dpr, 1.125);
+  f.api.restore(); assert.equal(observer.targets.size, 0);
+});
+
+test('an unsupported physical-content observation stays explicit and adds no polling', () => {
+  const f = fixture(({ world }) => { world.rejectPhysicalObservation = true; });
+  f.api.start('per-frame', { diagnostics: true }); f.frame(); f.api.resetTiming();
+  f.environment.devicePixelRatio = 1.125;
+  for (let i = 0; i < 300; i++) f.frame();
+  assert.equal(f.api.diagnostics().devicePixelBox.requested, false);
+  assert.equal(f.api.timing().callbacks, 0); assert.equal(f.rafs.size, 0);
+  f.api.restore(); assert.ok(f.resizes.every(observer => observer.targets.size === 0));
+});
+
+test('equivalent class serialization is diagnosed but does not wake integer alignment', () => {
+  const f = fixture(({ map }) => { map.className = 'map v54-map'; });
+  f.player.className = 'player boy face-down';
+  f.api.start('integer-nearest', { diagnostics: true }); f.frame(); f.api.resetTiming();
+  f.player.className = 'player boy  face-down  '; f.player.changed(); f.frame();
+  assert.equal(f.api.timing().callbacks, 0); assert.equal(f.rafs.size, 0);
+  assert.equal(f.api.timing().callbackSources.mutation.callbacks, 1, 'Real observer work is still counted');
+  const change = f.api.diagnostics().changes.find(entry => entry.kind === 'external-mutation');
+  assert.equal(change.before[0], 'player boy face-down'); assert.equal(change.after[0], 'player boy  face-down  ');
+  assert.equal(change.semanticChange, false);
+  f.player.className += ' companion-sit'; f.player.changed(); f.frame();
+  assert.equal(f.api.timing().callbacks, 1, 'Actual class-token changes still wake a finite correction');
+  assert.equal(f.rafs.size, 0);
+});
+
+test('real game dog completion rewrites only player class whitespace after player completion', () => {
+  // Execute the original game functions with explicit timer callbacks. This
+  // establishes the source of the late mutation, not real browser rendering.
+  const { boot, seed } = require('./game-harness.cjs');
+  const app = boot({ ...seed(), x: 175, y: 84, direction: 'right', gameMinutes: 600 });
+  try {
+    const timers = [], w = app.window;
+    w.setTimeout = (callback, delay) => { timers.push({ callback, delay }); return timers.length; };
+    w.eval("move('down')");
+    const player = w.document.querySelector('#player');
+    timers.find(timer => timer.delay === 365).callback(); const playerComplete = player.className;
+    timers.find(timer => timer.delay === 660).callback(); const dogComplete = player.className;
+    assert.notEqual(dogComplete, playerComplete);
+    const tokens = value => [...new Set(value.split(/\s+/).filter(Boolean))].sort();
+    assert.deepEqual(tokens(dogComplete), tokens(playerComplete));
+    assert.equal(w.eval('playerWalking'), false);
+    assert.equal(w.eval('dogWalking'), false);
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
 });
