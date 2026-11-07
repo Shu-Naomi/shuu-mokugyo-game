@@ -16,7 +16,7 @@ test('the selected cohesive master and clean underlay remain the reviewed native
   assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex'),hash);
   const image=await loadImage(path.join(root,file));assert.deepEqual([image.width,image.height],[1672,941]);
  }
- assert.deepEqual(d.edits,[]);assert.deepEqual(d.patches,[]);
+ assert.deepEqual(d.edits.map(edit=>edit.id),['sam-sfc-pilot']);assert.deepEqual(d.patches,[]);
  assert.ok(d.parts.every(p=>!p.motion),'fixed vegetation cannot reveal an obsolete shifted-tree patch');
  assert.ok(d.parts.some(p=>p.kind==='water'&&p.effect),'water remains alive');
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');

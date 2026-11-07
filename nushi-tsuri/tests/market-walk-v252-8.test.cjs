@@ -83,7 +83,7 @@ test('the preserved fishmonger art changes only its own outline, keeping the del
 test('the cohesive master renders market pixels at native resolution in day, rain and night without retired overlays',async()=>{
  const seen=[],canvas=createCanvas(1672,941),d=Data.get('world');
  assert.equal(d.source,'assets/village-world-v252-55-riao-clear.png');
- assert.deepEqual(d.edits,[],'district composites are retired from runtime');
+ assert.deepEqual(d.edits.map(e=>e.id),['sam-sfc-pilot'],'only the bounded Sam pixel pilot is active, not retired districts');
  assert.deepEqual(d.patches,[],'dock patches are retired from runtime');
  assert.ok(d.underlay&&d.underlay!==archivedWorld.underlay,'load the matching cohesive underlay');
  assert.ok(d.parts.every(p=>p.motion!=='sway'),'vegetation stays fixed');
