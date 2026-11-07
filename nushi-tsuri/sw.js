@@ -222,7 +222,7 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=247-1",
   "./pixel-scenes.css?v=240-1",
-  "./scene-layers.js?v=252-55-sam-pilot",
+  "./scene-layers.js?v=252-5501",
   // The unchanged worker imports this exact URL; retain it for cold offline starts.
   "./scene-layers.js?v=252-55",
   "./assets/cast-coast-sand-v198.webp",

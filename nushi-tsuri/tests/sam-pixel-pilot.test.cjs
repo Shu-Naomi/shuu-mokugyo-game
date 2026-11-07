@@ -51,6 +51,6 @@ test('day, night and rain composition leave every non-pilot pixel unchanged and 
 test('cold offline preparation keeps the worker scene-metadata import precached',()=>{
  const worker=fs.readFileSync(path.join(root,'scenery-worker.js'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  for(const url of [...worker.matchAll(/['"]([^'"]+\.js\?v=[^'"]+)['"]/g)].map(m=>m[1]))assert.ok(sw.includes('"./'+url+'"'),'offline worker import '+url);
- assert.ok(sw.includes('"./scene-layers.js?v=252-55-sam-pilot"'));
+ assert.ok(sw.includes('"./scene-layers.js?v=252-5501"'));
  assert.ok(sw.includes('"./assets/sam-sfc-pixel-pilot.png"'));
 });
