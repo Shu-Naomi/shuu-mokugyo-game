@@ -1,0 +1,66 @@
+# Sam's shop: same-art rendering study
+
+Status: draft investigation, not a release. Building redesign has been stopped at the owner's request. Do not merge, deploy, change village-wide presentation, or resume redesign without review.
+
+## Restoration and scope
+
+The immutable comparison baseline is `880817ec738f6f9dcc45dc9a3a098e7bd6676823` (v252-55). The rejected 120×96 building replacement and its generator are removed from the branch. All production files, source images, scene definitions, camera code, CSS, cache names and offline URLs match that baseline. The original appearance is restored. Main was never changed by the unmerged prior draft.
+
+This PR now adds investigation, tests and browser evidence only. CSS and alignment variants are injected by browser tests, not shipped to the game. Position changes are isolated in a separately labeled experiment, never included in the strict identical-framing CSS comparison. Facilities, collisions, water and fishing triggers, NPC routes, player/dog art and positions, saves, prices and inventory remain unchanged. There is no sharpening, recoloring, palette reduction, replacement illustration or new per-frame production work.
+
+## Findings before the new comparison
+
+- The world source is already 1672×941. After loading, `#worldPixels` and the motion/foreground canvases use native scene dimensions. The initial HTML 960×540 is not a lasting downsample. Native source → prepare → compose is pixel-identical on a spring daytime frame; the exact full-world check finds zero changed pixels.
+- Canvas composition and motion already set `imageSmoothingEnabled=false`. CSS already requests `image-rendering:pixelated`. Merely adding either setting cannot solve an already-disabled interpolation problem.
+- **Correction to the previous pilot report:** the active `.map.v54-map` has 240% width with automatic height and 16:9 aspect ratio. An older 190% height declaration is overridden. This is not a demonstrated large anisotropic-stretch bug. The source's 1672/941 aspect ratio differs minutely from 16:9 because its height is an odd integer.
+- Actual settled browser sizes have noninteger scale and fractional origins: desktop width3072 / source1672 ≈1.8373 CSS pixels per source pixel; landscape844 width2025.59375 /1672 ≈1.2115; landscape820/DPR1.875 physical scale≈2.2069. A noninteger scale alone does **not** prove added blur. At small scales, one-source-pixel details have unequal screen coverage and can be lost during downsampling.
+- In an existing baseline screenshot's static roof/wall region `[1300,490]–[1440,575]`, all sampled screen colors match a source RGB in the expected 3×3 sampling neighborhood on the three viewports. This supports nearest-like settled presentation with no newly blended colors in that specific region. It does not prove the whole frame, every browser or camera movement is blend-free.
+- The original Sam crop `(1252,476)–(1476,659)` contains 35,474 RGB colors among 40,992 pixels. That describes dense source shading. It does **not** establish that a redesign is necessary or authorized. Existing colors, shapes and character are to be preserved.
+- CSS `crisp-edges` is a diagnostic control, not a promised fix. The [Chromium implementation discussion](https://groups.google.com/a/chromium.org/g/blink-dev/c/dqAs7zmriQQ/m/nzl-7lmrBQAJ) describes it as effectively a synonym of `pixelated`. The actual test browser's support, computed values and screenshot pixels must decide the result.
+- The camera uses a percentage `translate3d`, a 0.3s transition and compositor hints. A test-only 3D-to-2D/compositor change failed the strict same-position condition in CI: settled origins moved by less than 0.001 CSS pixel even after finishing transitions. It is excluded from matched comparisons rather than weakening the position assertion. This tiny sampling-phase change is not evidence of improved outlines. No compositor or camera-snapping change is shipped.
+
+## Review experiments
+
+The browser study compares the same original art at the same viewport, clock, player position, camera rectangle and scale. It records canvas dimensions, CSS and physical scales, fractional origins, computed styles and original canvas RGBA hashes. Baseline versus restored-default images must match exactly. Interpolation probes must not change source pixels, camera scale, collision state or save state. Any position-snapped probe is explicitly separate because a bounded subpixel origin adjustment is not an identical-camera comparison.
+
+`auto` is a diagnostic reference for ordinary smoothing, not an assumed improvement. The excluded compositor probe is not presented as a same-position improvement. Zero visual difference is a useful result and must not be relabeled an improvement. Native-device-pixel crops and whole-frame pairs avoid hiding losses behind a changed zoom.
+
+## Verification and limits
+
+- Local focused restoration regression: 25/25 tests pass, plus the added full-native composition assertion. Source image hashes, no replacement assembly/asset, unchanged production settings and offline resources are checked. Previous gameplay/native-master tests are restored without weakening expectations.
+- Dedicated CI uses the clean pinned baseline and exact PR head on Chromium: 1280×720/DPR1, landscape touch 844×390/DPR1, and 820×366/DPR1.875.
+- Real direction/action buttons, repeated shop open/close, practice-pond cancellation, NPC walkable feet, save/reload and existing purchase/entrance checks are exercised. Fixture money/date/name are test data, not the owner's save.
+- Performance probes use a separate native-clock context, not the frozen screenshot clock. Short CI RAF/long-task/heap samples are not physical-phone temperature, battery measurements, sustained-play or statistically controlled benchmarks. Browser-emulated mobile size and touch are not a real phone.
+- The exact-head browser and full-regression results are recorded in the PR description and linked workflow runs. Treat pending or failed checks as unfinished, not a pass. Local browser socket restrictions are not bypassed; actual browser evidence is produced in CI.
+
+Art redesign remains the last resort. No redesign or wider rollout is authorized by a rendering experiment.
+
+## Second experiment: synchronized alignment and integer scale
+
+`browser-sam-alignment-experiments.cjs` is a separate, reversible browser-only experiment. It does not change the served runtime, assets, collision coordinates, or saved data. It evaluates the whole map together with its scenery and actors, rather than moving only the background behind fixed characters.
+
+The study separates three questions: whether snapping a settled final device-pixel origin changes static appearance, whether snapping each camera-animation frame stabilizes the sampling pattern at the existing scale, and whether integer physical scale gives uniform source-pixel blocks at an acceptable change in view. A viewport alternative is labeled separately because losing usable screen area is a real tradeoff, not an invisible sharpening fix.
+
+The same three desktop/landscape screens are joined by 640×360/DPR1 to measure an actual landscape game layout below one device pixel per source pixel. The test captures original-asset screenshots, transition samples, bounds/scales, source hashes, view changes, restoration, and native-clock performance proxies. Its results must be reviewed before recommending any candidate. Integer scale is not an identical-scale comparison, endpoint snapping does not fix intermediate frames, and preserving the world pixel grid does not make independent actor assets share that grid.
+
+The attempted 390×844 portrait case cannot enter the game: its existing portrait CSS hides the title/game screens behind a landscape warning. The test does not bypass that restriction; 640×360/DPR1 landscape is used for the below-one-scale case instead.
+
+The exact-head browser findings, failed checks, artifact links, and remaining limitations are recorded in the PR description. No positive result or performance claim is implied by adding the harness. Physical-device temperature, battery use, Safari, and sustained play remain unmeasured.
+
+## Follow-up experiment: alignment only while it is needed
+
+The completed `a2faddb6` investigation established an original-art motion benefit, but its prototype scheduled approximately 300 alignment callbacks during each five-second idle sample. That loop is a measurement prototype, not a suitable production default. Its exact-head full regression and browser checks succeeded, with 1031 unit tests passing; the study retained two strict whole-frame screenshot-restoration failures on unrelated control presentation. The prior evidence is not rewritten or described as an all-screen pass.
+
+The follow-up changes only the test prototype and its tests. It investigates event-driven scheduling during real map transitions and required layout changes, with bounded settling work and complete cancellation on suspension or removal. The comparison retains the old per-frame loop as an explicitly named performance control, so a result can distinguish eliminated idle work from simply running a different test. Callback counts, observer/event activity, pending work and native timing must be reported separately. No zero-work claim can be inferred only from a hidden page, open menu, stopped test clock, or unchanged output pixels.
+
+Lifecycle coverage must include real pointer movement, interrupted and repeated movement, actual viewport changes, menus opening and closing, and browser lifecycle transitions. Browser-controlled freezing, headless visibility behavior, and synthetic unit tests are different forms of evidence and must be labeled as such. Each case must verify wake-up and alignment on return as well as suspension, source/state invariants, and removal of listeners, observers, and pending callbacks. Simulated visibility or DPR in unit tests cannot establish physical mobile-browser behavior.
+
+The strict screenshot comparison must use a known, equivalent input/presentation state on both sides. The previous 640×360 failure was confined to the Down button and its existing three-pixel pressed translation; the PC failure involved four curved-border pixels whose raster cause was not established. Any stabilization is applied symmetrically before a baseline and its restored counterpart, with real press/release behavior tested separately. The whole-frame equality assertion, source hashes, actor hashes, game state, and geometry assertions remain strict. Do not mask controls, raise a pixel tolerance, silently retry until a match, or discard a failed frame.
+
+The follow-up's measured results and any remaining failures are recorded in the PR description only after exact-head CI. Original-art visual approval remains pending. No test result authorizes production integration, a redesign, a merge, or village-wide rollout.
+
+The first event-driven revision (`b391323d`) passed all 132 no-op screenshot and control-state checks, and 131/132 exact restoration checks. The remaining PC restoration difference is still the same four control-border pixels; it is not masked. In all four viewports, stable idle had zero alignment updates, while a five-second sample spanning the game's automatic menu opening had one finite update versus 300 in the legacy loop. The lifecycle test correctly failed because a CDP-only DPR change produced no resolution or CSS-size notification. Its integer modes also caught one late player-class update. These failures are retained in the archived result, not relabeled as success.
+
+A focused game-harness reproduction established that player completion writes `player boy face-down`, then the dog's later completion rewrites `player boy  face-down  `. The class tokens are identical. The follow-up canonicalizes token sets for change detection without changing the actual DOM class or ignoring meaningful token changes. It still counts observer deliveries. A dedicated physical-pixel content-box ResizeObserver complements CSS-size and resolution notifications without polling. Browser capability and the last observed physical size are explicit. Unit tests establish scheduler behavior, not that every browser or CDP override emits a physical-pixel notification; the browser DPR stage continues to require a real signal and aligned output. Failed lifecycle stages remain failures while independent later stages collect evidence.
+
+The physical-content observer did **not** solve the CDP-only DPR gap in the `722c93e` headless run: the value changed but no watched physical/resolution/viewport signal arrived. The canonical class comparison did eliminate the integer idle update. Headless tab switching still reported the game visible, and freezing that visible page produced no genuine document freeze/resume events. Those assertions remain failed. A separately labeled, focused headed-Chromium run under a virtual display tests an actual foreground/background tab transition and freezes only while another tab stays in front. It does not replace the headless evidence, relax DPR assertions, claim physical-phone behavior, or imply that screenshots/performance skipped in a lifecycle-only run were tested.
