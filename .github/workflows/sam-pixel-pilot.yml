@@ -98,6 +98,8 @@ jobs:
         with:
           node-version: '22'
       - run: npm install --no-audit --no-fund
+      - name: Check experimental scheduler lifecycle without a browser
+        run: node --test sam-alignment-controller.test.cjs sam-pixel-pilot.test.cjs
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
