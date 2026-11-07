@@ -337,3 +337,83 @@ test('focused/headed CLI flags reject ambiguous values rather than silently chan
   const config = configure({ SAM_LIFECYCLE_ONLY: '0', SAM_HEADED: '0' });
   assert.equal(config.scope, 'full-study'); assert.equal(config.browserMode, 'headless');
 });
+
+test('standalone signal audit imports without any Playwright dependency or browser launch', () => {
+  const { execFileSync } = require('node:child_process');
+  const auditPath = path.join(__dirname, 'browser-sam-signal-audit.cjs');
+  execFileSync(process.execPath, ['-e', `
+    const Module = require('node:module');
+    const original = Module._load;
+    Module._load = function (name, ...args) {
+      if (name.includes('playwright')) throw Error('Playwright must be lazy-loaded only by audit main');
+      return original.call(this, name, ...args);
+    };
+    require('node:child_process').spawn = () => { throw Error('Import must never launch a process'); };
+    require(${JSON.stringify(auditPath)});
+  `], { encoding: 'utf8' });
+});
+
+test('signal audit labels its limited scope and uses no security/background bypass flags', () => {
+  const { configuration, chromiumArguments } = require('./browser-sam-signal-audit.cjs');
+  assert.deepEqual(configuration({ SAM_HEADED: '1' }), {
+    scope: 'browser-signal-capability-audit-only', headed: true, width: 844, height: 390,
+    dprSequence: [1, 1.125, 1],
+    notRun: ['game', 'alignment-controller', 'runtime-art-verification', 'visual-restoration', 'performance']
+  });
+  assert.throws(() => configuration({ SAM_HEADED: 'true' }), /must be 0 or 1/);
+  const headedArgs = chromiumArguments('/tmp/test-profile', true);
+  assert.deepEqual(headedArgs, ['--user-data-dir=/tmp/test-profile', '--remote-debugging-address=127.0.0.1',
+    '--remote-debugging-port=0', '--no-first-run', '--no-default-browser-check', '--window-size=1000,700', 'about:blank']);
+  assert.ok(chromiumArguments('/tmp/test-profile', false).includes('--headless=new'));
+  assert.equal(headedArgs.some(arg => /sandbox|disable-web-security|disable-background|ignore-certificate/i.test(arg)), false);
+});
+
+test('DPR evidence requires a native notification, not changed DPR, query matches or unchanged observer size', () => {
+  const { dprEvidence } = require('./browser-sam-signal-audit.cjs');
+  const before = { sequence: 1, viewport: { width: 844, height: 390 }, fixedBox: { width: 100, height: 80 },
+    events: [{ sequence: 1, kind: 'resize-observer:device-pixel-content-box', physicalBox: { inlineSize: 100, blockSize: 80 } }] };
+  const after = { ...before, dpr: 1.125, sequence: 4, queries: [{ existingMatches: false, freshMatches: true }],
+    events: [...before.events,
+      { sequence: 2, kind: 'media-query:original-1', isTrusted: false },
+      { sequence: 3, kind: 'resize-observer:device-pixel-content-box', physicalBox: { inlineSize: 100, blockSize: 80 } },
+      { sequence: 4, kind: 'transitionend', isTrusted: true }] };
+  const absent = dprEvidence(before, after, 1.125);
+  assert.equal(absent.notificationObserved, false);
+  assert.equal(absent.actualDpr, 1.125);
+  assert.equal(absent.sameCssViewport, true);
+  assert.deepEqual(absent.queries, after.queries);
+  const trusted = { ...after, events: [...after.events, { sequence: 5, kind: 'media-query:original-1', isTrusted: true }] };
+  assert.equal(dprEvidence(before, trusted, 1.125).notificationObserved, true);
+  const physical = { ...after, events: [...after.events, { sequence: 5, kind: 'resize-observer:device-pixel-content-box',
+    physicalBox: { inlineSize: 113, blockSize: 90 } }] };
+  assert.equal(dprEvidence(before, physical, 1.125).notificationObserved, true);
+  assert.equal(dprEvidence(before, { ...after, viewport: { width: 845, height: 390 } }, 1.125).sameCssViewport, false);
+});
+
+test('signal audit cannot label a visible page or untrusted visibility notification as a proven focus fix', () => {
+  const { summarize } = require('./browser-sam-signal-audit.cjs');
+  const control = { noDefaults: false, dpr: [], background: { hiddenObserved: false } };
+  const candidate = { noDefaults: true, dpr: [], background: { hiddenObserved: false } };
+  assert.equal(summarize([control, candidate]).focusOverrideSuppressionDemonstrated, false);
+  candidate.background.hiddenObserved = true;
+  assert.equal(summarize([control, candidate]).focusOverrideSuppressionDemonstrated, false);
+  candidate.background.trustedHiddenEvent = true;
+  assert.equal(summarize([control, candidate]).focusOverrideSuppressionDemonstrated, false);
+  for (const arm of [control, candidate]) arm.background.windows = { original: { windowId: 1 }, foreground: { windowId: 1 } };
+  const proven = summarize([control, candidate]);
+  assert.equal(proven.focusOverrideSuppressionDemonstrated, true);
+  assert.equal(proven.noDefaultsRealFreezeResumeObserved, false);
+  assert.equal(proven.gameOrControllerPass, false);
+  assert.equal(summarize([candidate]).focusOverrideSuppressionDemonstrated, false);
+});
+
+test('signal audit uses supported default-context connection and never synthesizes visibility or signals', () => {
+  const source = fs.readFileSync(path.join(__dirname, 'browser-sam-signal-audit.cjs'), 'utf8');
+  assert.match(source, /chromium\.connectOverCDP\(launched\.endpoint, \{ noDefaults, timeout: 15000 \}\)/);
+  assert.match(source, /const context = browser\.contexts\(\)\[0\]/);
+  assert.doesNotMatch(source, /browser\.newContext\(/);
+  assert.doesNotMatch(source, /\.dispatchEvent\(|\.emit\(|Object\.defineProperty\(|waitForFunction\(/);
+  assert.doesNotMatch(source, /send\(['"]Emulation\.setFocusEmulationEnabled/);
+  assert.match(source, /if \(hidden\) \{[\s\S]*?Page\.setWebLifecycleState/);
+  assert.match(source, /if \(require\.main === module\) main\(\)/);
+});

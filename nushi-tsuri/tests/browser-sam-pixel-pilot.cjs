@@ -4,7 +4,7 @@
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
-const { chromium } = require('playwright');
+const { createHash } = require('node:crypto');
 const { seed, saveKey } = require('./game-harness.cjs');
 const enter = require('./browser-start-adventure.cjs');
 const BASELINE = '880817ec738f6f9dcc45dc9a3a098e7bd6676823';
@@ -14,13 +14,75 @@ const EXPERIMENT_STYLE = 'same-art-rendering-study-only';
 const initial = () => ({ ...seed(), x:175, y:84, direction:'right', money:10000,
   gameMinutes:600, soundEnabled:false, practiceTutorialComplete:true });
 
+// Diagnostic readback only. Keep clocks/animation observations OUT of pipeline:
+// its existing exact restoration assertion must not compare volatile timestamps.
+async function actorObservation(page, output, stem) {
+  const sampled = await page.evaluate(() => {
+    const player=document.querySelector('#player'),canvas=document.querySelector('#playerSprite');
+    const rect=node=>{const r=node.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height};};
+    const timing=value=>JSON.parse(JSON.stringify(value,(_key,item)=>
+      typeof item==='number'&&!Number.isFinite(item)?String(item):item));
+    const properties=['width','height','left','top','transform','transform-origin','translate','scale',
+      'image-rendering','filter','opacity','display','visibility','clip-path','will-change','backface-visibility',
+      'transition','animation'];
+    const describe=node=>{
+      const css=getComputedStyle(node);
+      return {id:node.id,className:node.className,inlineStyle:node.getAttribute('style'),rect:rect(node),
+        computed:Object.fromEntries(properties.map(key=>[key,css.getPropertyValue(key)])),
+        animations:node.getAnimations().map(animation=>({type:animation.constructor.name,
+          animationName:animation.animationName??null,transitionProperty:animation.transitionProperty??null,
+          playState:animation.playState,pending:animation.pending,currentTime:timing(animation.currentTime),
+          startTime:timing(animation.startTime),playbackRate:animation.playbackRate,
+          timing:timing(animation.effect?.getTiming()??null),
+          computedTiming:timing(animation.effect?.getComputedTiming()??null)}))};
+    };
+    const context=canvas.getContext('2d'),rgba=context.getImageData(0,0,canvas.width,canvas.height).data;
+    return {clock:{now:Date.now(),performanceNow:performance.now(),timelineTime:document.timeline.currentTime},
+      dpr:devicePixelRatio,state:{avatar:s.avatar,direction:s.direction,
+        walking:typeof playerWalking==='undefined'?null:playerWalking,
+        frame:typeof playerAnimFrame==='undefined'?null:playerAnimFrame,
+        companionReaction:typeof companionReaction==='undefined'?null:companionReaction,
+        dogIdleMode:typeof dogIdleMode==='undefined'?null:dogIdleMode},
+      player:describe(player),sprite:describe(canvas),
+      canvas:{width:canvas.width,height:canvas.height,imageSmoothingEnabled:context.imageSmoothingEnabled},
+      rgba:Array.from(rgba),png:canvas.toDataURL('image/png')};
+  });
+  const {rgba,png,...metadata}=sampled,bytes=Buffer.from(rgba);
+  const rgbaFile=`${stem}-actor.rgba`,pngFile=`${stem}-actor.png`;
+  // Retain both sides even on success: cross-build comparison occurs only after
+  // both browser runs return, when the source canvases no longer exist.
+  fs.writeFileSync(path.join(output,rgbaFile),bytes);
+  fs.writeFileSync(path.join(output,pngFile),Buffer.from(png.split(',')[1],'base64'));
+  return {...metadata,canvas:{...metadata.canvas,rgbaBytes:bytes.length,
+    rgbaSha256:createHash('sha256').update(bytes).digest('hex'),rgbaFile,pngFile}};
+}
+async function observedScreenshot(page, output, filename, observations, persist) {
+  const observation={filename};observations.push(observation);
+  const stem=filename.replace(/\.png$/,'');
+  try {
+    observation.before=await actorObservation(page,output,`${stem}-before`);
+    const bytes=await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
+    observation.pngBytes=bytes.length;observation.pngSha256=createHash('sha256').update(bytes).digest('hex');
+    observation.after=await actorObservation(page,output,`${stem}-after`);
+    const a=observation.before.canvas,b=observation.after.canvas;
+    observation.actorCanvasUnchanged=a.width===b.width&&a.height===b.height&&a.rgbaSha256===b.rgbaSha256;
+    observation.actorStateUnchanged=JSON.stringify(observation.before.state)===JSON.stringify(observation.after.state);
+    return bytes;
+  } catch(error) {observation.failure=error.stack;throw error;}
+  finally {persist();}
+}
+
 module.exports = async function run(url, label, screen, output, experiments=false) {
+  // Unit shards import the readback helpers without installing browser tooling.
+  const { chromium } = require('playwright');
   fs.mkdirSync(output, { recursive:true });
   const browser = await chromium.launch({ headless:true });
   const result = { label, baseline:BASELINE, screen, fixture:initial(), fixedTime:FIXED_TIME,
-    screenshots:[], visits:[], resources:[], errors:[], httpErrors:[],
+    screenshots:[], actorObservations:[], visits:[], resources:[], errors:[], httpErrors:[],
     experiments, cssScope:WORLD_SELECTOR, productionRendering:'pixelated',
     visualClock:'Fixed JS clock; completed finite CSS animations; infinite CSS animations paused at time zero.' };
+  const persist=()=>fs.writeFileSync(path.join(output,`${label}-result.json`),JSON.stringify(result,null,2));
+  const screenshot=filename=>observedScreenshot(page,output,filename,result.actorObservations,persist);
   const options = { viewport:{width:screen.width,height:screen.height}, deviceScaleFactor:screen.dpr,
     isMobile:screen.touch, hasTouch:screen.touch, locale:'ja-JP', serviceWorkers:'block' };
   async function context() {
@@ -131,9 +193,13 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     assert.equal(original.layers.length,3,'original world, motion and foreground canvases exist');
     assert.ok(original.layers.every(l=>l.imageRendering==='pixelated'),'unaltered baseline computed image-rendering is pixelated');
     const filename=`${label}-${name}-pixelated.png`;
-    await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
+    const first=await screenshot(filename);
     const shot={name,filename,settled,framing:original.framing,pipeline:original,variants:[]};
     screenshots.push(shot);
+    // Observe a repeat, never retry or replace the first baseline with it.
+    const noOpFilename=`${label}-${name}-noop.png`,noOp=await screenshot(noOpFilename);
+    shot.noOp={filename:noOpFilename,pngByteIdentical:first.equals(noOp)};persist();
+    assert.ok(shot.noOp.pngByteIdentical,`${label}/${name}: first/no-op screenshot must be byte-identical`);
     if(!experiments)return;
     for(const value of ['crisp-edges','auto']) {
       if(!await setRendering(page,value)) {
@@ -147,7 +213,7 @@ module.exports = async function run(url, label, screen, output, experiments=fals
         assert.deepEqual(candidate.layers.map(l=>l.rendered),original.layers.map(l=>l.rendered),`${value}: identical layer bounds`);
         assert.ok(candidate.layers.every(l=>l.imageRendering===value),`${value}: expected computed image-rendering`);
         const variantFile=`${label}-${name}-${value}.png`;
-        await page.screenshot({path:path.join(output,variantFile),animations:'allow',scale:'device'});
+        await screenshot(variantFile);
         assert.deepEqual(immutablePixels(await pipeline()),immutablePixels(original),`${value}: capture did not repaint source pixels`);
         shot.variants.push({value,filename:variantFile,pipeline:candidate,
           status:value==='auto'?'diagnostic only':'experimental review option; not shipped'});
@@ -157,7 +223,7 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     }
     const restored=await pipeline();
     assert.deepEqual(restored,original,'removing the test CSS restores the exact original pipeline');
-    const repeat=await page.screenshot({animations:'allow',scale:'device'});
+    const repeat=await screenshot(`${label}-${name}-pixelated-repeat.png`);
     assert.deepEqual(repeat,fs.readFileSync(path.join(output,filename)),'pixelated repeat is byte-identical after experiments');
   }
   async function walk(target) {
@@ -324,6 +390,8 @@ module.exports = async function run(url, label, screen, output, experiments=fals
   } catch(error) {
     result.failure=error.stack;await page.screenshot({path:path.join(output,`${label}-failure.png`)}).catch(()=>{});throw error;
   } finally {
-    fs.writeFileSync(path.join(output,`${label}-result.json`),JSON.stringify(result,null,2));await browser.close();
+    persist();await browser.close();
   }
 };
+module.exports.actorObservation=actorObservation;
+module.exports.observedScreenshot=observedScreenshot;
