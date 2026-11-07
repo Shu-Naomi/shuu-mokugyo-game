@@ -6,7 +6,7 @@ Status: draft investigation, not a release. Building redesign has been stopped a
 
 The immutable comparison baseline is `880817ec738f6f9dcc45dc9a3a098e7bd6676823` (v252-55). The rejected 120×96 building replacement and its generator are removed from the branch. All production files, source images, scene definitions, camera code, CSS, cache names and offline URLs match that baseline. The original appearance is restored. Main was never changed by the unmerged prior draft.
 
-This PR now adds investigation, tests and browser evidence only. CSS variants are injected by the browser test, not shipped to the game. Compositor/position changes are not included in the matched comparisons. Facilities, collisions, water and fishing triggers, NPC routes, player/dog art and positions, saves, prices and inventory remain unchanged. There is no sharpening, recoloring, palette reduction, replacement illustration or new per-frame production work.
+This PR now adds investigation, tests and browser evidence only. CSS and alignment variants are injected by browser tests, not shipped to the game. Position changes are isolated in a separately labeled experiment, never included in the strict identical-framing CSS comparison. Facilities, collisions, water and fishing triggers, NPC routes, player/dog art and positions, saves, prices and inventory remain unchanged. There is no sharpening, recoloring, palette reduction, replacement illustration or new per-frame production work.
 
 ## Findings before the new comparison
 
@@ -34,3 +34,13 @@ The browser study compares the same original art at the same viewport, clock, pl
 - The exact-head browser and full-regression results are recorded in the PR description and linked workflow runs. Treat pending or failed checks as unfinished, not a pass. Local browser socket restrictions are not bypassed; actual browser evidence is produced in CI.
 
 Art redesign remains the last resort. No redesign or wider rollout is authorized by a rendering experiment.
+
+## Second experiment: synchronized alignment and integer scale
+
+`browser-sam-alignment-experiments.cjs` is a separate, reversible browser-only experiment. It does not change the served runtime, assets, collision coordinates, or saved data. It evaluates the whole map together with its scenery and actors, rather than moving only the background behind fixed characters.
+
+The study separates three questions: whether snapping a settled final device-pixel origin changes static appearance, whether snapping each camera-animation frame stabilizes the sampling pattern at the existing scale, and whether integer physical scale gives uniform source-pixel blocks at an acceptable change in view. A viewport alternative is labeled separately because losing usable screen area is a real tradeoff, not an invisible sharpening fix.
+
+The same three desktop/landscape screens are joined by 390×844/DPR1 to measure an actual game layout below one device pixel per source pixel. The test captures original-asset screenshots, transition samples, bounds/scales, source hashes, view changes, restoration, and native-clock performance proxies. Its results must be reviewed before recommending any candidate. Integer scale is not an identical-scale comparison, endpoint snapping does not fix intermediate frames, and preserving the world pixel grid does not make independent actor assets share that grid.
+
+This second experiment is pending browser validation. No positive result or performance claim is implied by adding the harness. Physical-device temperature, battery use, Safari, and sustained play remain unmeasured.
