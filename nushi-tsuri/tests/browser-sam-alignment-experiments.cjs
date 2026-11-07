@@ -561,40 +561,63 @@ async function performanceSample(browser, url, mode, activity) {
   try {
     const move = activity === 'moving' ? await cameraChangingMove(page) : null;
     await page.evaluate(mode => samAlignment.start(mode), mode); await page.waitForTimeout(2000);
-    const sample = await page.evaluate(async ({ mode, activity, move }) => {
-      const durations = [], intervals = [], positions = [], longTasks = []; let last = null, raf, timer = null;
-      let observer = null;
-      if (PerformanceObserver.supportedEntryTypes.includes('longtask')) {
-        observer = new PerformanceObserver(list => longTasks.push(...list.getEntries().map(e => e.duration)));
-        observer.observe({ type: 'longtask', buffered: false });
+    await page.evaluate(({ mode, activity }) => {
+      // Return immediately while the native sampler remains active. Input is
+      // supplied through Playwright's real pointer route below, because the
+      // game's direction buttons handle pointerdown, not HTMLElement.click().
+      window.samNativePerfPromise = (async () => {
+        const durations = [], intervals = [], positions = [], longTasks = [], inputs = [];
+        let last = null, raf, observer = null;
+        if (PerformanceObserver.supportedEntryTypes.includes('longtask')) {
+          observer = new PerformanceObserver(list => longTasks.push(...list.getEntries().map(e => e.duration)));
+          observer.observe({ type: 'longtask', buffered: false });
+        }
+        samAlignment.resetTiming();
+        const heapBefore = performance.memory?.usedJSHeapSize ?? null, start = performance.now();
+        const input = event => {
+          const button = event.target.closest('[data-move]');
+          if (button) inputs.push({ direction: button.dataset.move, pointerType: event.pointerType,
+            timeMs: performance.now() - start, world: { x: s.x, y: s.y } });
+        };
+        document.addEventListener('pointerdown', input);
+        const frame = time => {
+          const begin = performance.now();
+          if (last !== null) intervals.push(time - last); last = time;
+          const r = document.querySelector('#map').getBoundingClientRect(); positions.push([r.x, r.y]);
+          durations.push(performance.now() - begin); raf = requestAnimationFrame(frame);
+        };
+        raf = requestAnimationFrame(frame); await new Promise(resolve => setTimeout(resolve, 5000)); cancelAnimationFrame(raf);
+        document.removeEventListener('pointerdown', input); observer?.disconnect();
+        const elapsed = performance.now() - start, sorted = [...intervals].sort((a, b) => a - b);
+        return { mode, activity, clock: 'native, unmocked', elapsedMs: elapsed, frames: positions.length,
+          fps: positions.length * 1000 / elapsed, frameP95Ms: sorted[Math.floor(sorted.length * .95)] ?? null,
+          longTasksSupported: !!observer, longTasks: longTasks.length, longTaskTotalMs: longTasks.reduce((a, b) => a + b, 0),
+          heapBefore, heapAfter: performance.memory?.usedJSHeapSize ?? null,
+          inputs, clicks: inputs.length, distinctInputPositions: new Set(inputs.map(i => `${i.world.x},${i.world.y}`)).size,
+          distinctCameraOrigins: new Set(positions.map(p => p.join(','))).size,
+          maxFrameProbeMs: Math.max(...durations), controllerTiming: samAlignment.timing(), endState: { x: s.x, y: s.y },
+          limitation: 'Single sequential CI sample per mode/activity. Controller read/modify/layout cost and real pointer input are included; no physical heat or battery claim.' };
+      })();
+    }, { mode, activity });
+    if (move) {
+      const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' }, hostStart = Date.now();
+      // Identical10-event target schedule for every mode. Actual browser event
+      // times are reported, since scheduling/CI delays are not hidden.
+      for (let i = 0; i < 10; i++) {
+        await page.waitForTimeout(Math.max(0, (i + 1) * 420 - (Date.now() - hostStart)));
+        await press(page, `[data-move="${i % 2 ? opposite[move.direction] : move.direction}"]`);
       }
-      const opposite = { up: 'down', down: 'up', left: 'right', right: 'left' }; let alternate = false, clicks = 0;
-      if (move) timer = setInterval(() => {
-        document.querySelector(`[data-move="${alternate ? opposite[move.direction] : move.direction}"]`).click();
-        alternate = !alternate; clicks++;
-      }, 420);
-      samAlignment.resetTiming();
-      const heapBefore = performance.memory?.usedJSHeapSize ?? null, start = performance.now();
-      const frame = time => {
-        const begin = performance.now();
-        if (last !== null) intervals.push(time - last); last = time;
-        const r = document.querySelector('#map').getBoundingClientRect(); positions.push([r.x, r.y]);
-        durations.push(performance.now() - begin); raf = requestAnimationFrame(frame);
-      };
-      raf = requestAnimationFrame(frame); await new Promise(resolve => setTimeout(resolve, 5000)); cancelAnimationFrame(raf);
-      if (timer !== null) clearInterval(timer); observer?.disconnect();
-      const elapsed = performance.now() - start, sorted = [...intervals].sort((a, b) => a - b);
-      return { mode, activity, clock: 'native, unmocked', elapsedMs: elapsed, frames: positions.length,
-        fps: positions.length * 1000 / elapsed, frameP95Ms: sorted[Math.floor(sorted.length * .95)] ?? null,
-        longTasksSupported: !!observer, longTasks: longTasks.length, longTaskTotalMs: longTasks.reduce((a, b) => a + b, 0),
-        heapBefore, heapAfter: performance.memory?.usedJSHeapSize ?? null, clicks,
-        distinctCameraOrigins: new Set(positions.map(p => p.join(','))).size,
-        maxFrameProbeMs: Math.max(...durations), controllerTiming: samAlignment.timing(), endState: { x: s.x, y: s.y },
-        limitation: 'Single sequential CI sample per mode/activity. Controller read/modify/layout cost is included; no physical heat or battery claim.' };
-    }, { mode, activity, move });
-    assert.ok(sample.elapsedMs >= 4900 && sample.frames > 0);
-    if (activity === 'moving') assert.ok(sample.clicks > 0 && sample.distinctCameraOrigins > 1, 'Native performance sample must actually move the camera');
+    }
+    const sample = await page.evaluate(() => window.samNativePerfPromise);
+    sample.inputProtocol = { source: 'Playwright real tap/click pointer events', targetCount: move ? 10 : 0, intervalMs: 420,
+      firstEventTargetMs: move ? 420 : null, touch: screen.touch };
     result.performance.push(sample);
+    json('alignment-results.json', result);
+    assert.ok(sample.elapsedMs >= 4900 && sample.frames > 0);
+    if (activity === 'moving') {
+      assert.ok(sample.clicks > 0 && sample.distinctInputPositions > 1 && sample.distinctCameraOrigins > 1, 'Native performance sample must actually move the camera');
+      assert.ok(sample.inputs.every(input => input.pointerType === (screen.touch ? 'touch' : 'mouse')), 'Native sample uses actual requested pointer type');
+    }
   } finally { await context.close(); }
 }
 async function contactSheets() {

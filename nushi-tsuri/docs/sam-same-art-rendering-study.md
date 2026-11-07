@@ -45,4 +45,4 @@ The same three desktop/landscape screens are joined by 640×360/DPR1 to measure 
 
 The attempted 390×844 portrait case cannot enter the game: its existing portrait CSS hides the title/game screens behind a landscape warning. The test does not bypass that restriction; 640×360/DPR1 landscape is used for the below-one-scale case instead.
 
-This second experiment is pending browser validation. No positive result or performance claim is implied by adding the harness. Physical-device temperature, battery use, Safari, and sustained play remain unmeasured.
+The exact-head browser findings, failed checks, artifact links, and remaining limitations are recorded in the PR description. No positive result or performance claim is implied by adding the harness. Physical-device temperature, battery use, Safari, and sustained play remain unmeasured.
