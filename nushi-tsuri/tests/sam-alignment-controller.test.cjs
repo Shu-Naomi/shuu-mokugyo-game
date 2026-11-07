@@ -308,3 +308,32 @@ test('real game dog completion rewrites only player class whitespace after playe
     assert.deepEqual(app.errors, []);
   } finally { app.dispose(); }
 });
+
+test('default CLI scope remains the full headless study', () => {
+  const source = text.slice(text.indexOf('function runConfiguration(env) {'), text.indexOf('\nconst runConfig ='));
+  const configure = vm.runInNewContext(`(${source})`);
+  const defaults = JSON.parse(JSON.stringify(configure({})));
+  assert.deepEqual(defaults, { lifecycleOnly: false, headed: false, scope: 'full-study',
+    browserMode: 'headless', samplePerformance: false, notRun: [] });
+  assert.equal(configure({ SAM_SAMPLE_PERF: '1' }).samplePerformance, true);
+});
+
+test('focused headed CLI scope labels unrun cases and cannot accidentally include performance', () => {
+  const source = text.slice(text.indexOf('function runConfiguration(env) {'), text.indexOf('\nconst runConfig ='));
+  const configure = vm.runInNewContext(`(${source})`);
+  const config = configure({ SAM_LIFECYCLE_ONLY: '1', SAM_HEADED: '1', SAM_SAMPLE_PERF: '1' });
+  assert.equal(config.lifecycleOnly, true); assert.equal(config.headed, true);
+  assert.equal(config.scope, 'lifecycle-only'); assert.equal(config.browserMode, 'headed');
+  assert.equal(config.samplePerformance, false);
+  assert.deepEqual(Array.from(config.notRun), ['visual-pairs', 'screenshot-restoration', 'contact-sheets', 'route-shop-regression', 'performance']);
+});
+
+test('focused/headed CLI flags reject ambiguous values rather than silently changing scope', () => {
+  const source = text.slice(text.indexOf('function runConfiguration(env) {'), text.indexOf('\nconst runConfig ='));
+  const configure = vm.runInNewContext(`(${source})`);
+  for (const key of ['SAM_LIFECYCLE_ONLY', 'SAM_HEADED']) {
+    for (const value of ['', 'true', 'yes', '2']) assert.throws(() => configure({ [key]: value }), /must be 0 or 1/);
+  }
+  const config = configure({ SAM_LIFECYCLE_ONLY: '0', SAM_HEADED: '0' });
+  assert.equal(config.scope, 'full-study'); assert.equal(config.browserMode, 'headless');
+});

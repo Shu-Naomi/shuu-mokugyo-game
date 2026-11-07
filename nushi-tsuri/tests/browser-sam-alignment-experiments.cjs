@@ -15,16 +15,28 @@ const PINNED = '880817ec738f6f9dcc45dc9a3a098e7bd6676823';
 const TIME = '2026-10-22T03:00:00Z';
 const LAYERS = '#worldPixels, canvas.scenery-motion[data-for="worldPixels"], canvas.scenery-foreground[data-for="worldPixels"]';
 const MODES = ['baseline', 'endpoint', 'per-frame', 'integer-nearest', 'integer-fit'];
+function runConfiguration(env) {
+  for (const key of ['SAM_LIFECYCLE_ONLY', 'SAM_HEADED']) {
+    if (env[key] !== undefined && !['0', '1'].includes(env[key])) throw Error(`${key} must be 0 or 1`);
+  }
+  const lifecycleOnly = env.SAM_LIFECYCLE_ONLY === '1', headed = env.SAM_HEADED === '1';
+  return { lifecycleOnly, headed, scope: lifecycleOnly ? 'lifecycle-only' : 'full-study',
+    browserMode: headed ? 'headed' : 'headless', samplePerformance: !lifecycleOnly && env.SAM_SAMPLE_PERF === '1',
+    notRun: lifecycleOnly ? ['visual-pairs', 'screenshot-restoration', 'contact-sheets', 'route-shop-regression', 'performance'] : [] };
+}
+const runConfig = runConfiguration(process.env);
 const screen = { width: Number(process.env.SAM_WIDTH || 1280), height: Number(process.env.SAM_HEIGHT || 720),
   dpr: Number(process.env.SAM_DPR || 1), touch: process.env.SAM_TOUCH === '1' };
 const root = path.resolve(__dirname, '..');
-const output = path.join(__dirname, 'browser-evidence-sam-alignment', `${screen.width}x${screen.height}-dpr${screen.dpr}`);
+const output = path.join(__dirname, 'browser-evidence-sam-alignment', `${screen.width}x${screen.height}-dpr${screen.dpr}${runConfig.lifecycleOnly ? `-lifecycle-${runConfig.browserMode}` : ''}`);
 const initial = () => ({ ...seed(), x: 175, y: 84, direction: 'right', money: 10000,
   gameMinutes: 600, soundEnabled: false, practiceTutorialComplete: true });
 const hash = bytes => createHash('sha256').update(bytes).digest('hex');
 const json = (name, value) => fs.writeFileSync(path.join(output, name), JSON.stringify(value, null, 2));
-const result = { study: 'Reversible whole-map alignment and integer-source-pixel experiments', pinned: PINNED,
-  screen, modes: MODES, fixture: initial(), fixedTime: TIME, errors: [], httpErrors: [], frames: [],
+const result = { study: runConfig.lifecycleOnly ? 'Lifecycle-only original-art alignment capability experiment'
+  : 'Reversible whole-map alignment and integer-source-pixel experiments', pinned: PINNED, runConfiguration: runConfig,
+  screen, modes: runConfig.lifecycleOnly ? ['per-frame', 'integer-nearest', 'integer-fit'] : MODES,
+  fixture: initial(), fixedTime: runConfig.lifecycleOnly ? null : TIME, errors: [], httpErrors: [], frames: [],
   regressions: [], lifecycle: [], performance: [], limitations: [
     'Tests only. No production rendering switch, artwork replacement, merge or release.',
     'Endpoint and per-frame variants retain baseline scale. Integer variants intentionally change zoom and visible source area.',
@@ -879,10 +891,10 @@ async function lifecycle(browser, url, mode) {
           npcFeetMaximumErrorCSS: Math.max(0, ...p.npcFeet.flatMap(npc => [npc.errorCSS.x, npc.errorCSS.y])) });
       };
       window.samLifecycleProbe = observe;
-      for (const type of ['visibilitychange', 'freeze', 'resume']) document.addEventListener(type, event => {
-        samLifecycle.events.push({ type, trusted: event.isTrusted, hidden: document.hidden,
+      window.samLifecycleRecordEvent = event => {
+        samLifecycle.events.push({ type: event.type, trusted: event.isTrusted, hidden: document.hidden,
           visibilityState: document.visibilityState, updates: samLifecycle.frames.length, status: samAlignment.status() });
-      });
+      };
     }, mode);
     function validate(name, check) {
       try { check(); }
@@ -927,6 +939,9 @@ async function lifecycle(browser, url, mode) {
     }
     await stage('initial-settle', () => page.evaluate(mode => {
       samAlignment.start(mode, { diagnostics: true }); samAlignment.observeUpdates(samLifecycleProbe);
+      // Register evidence after controller listeners so recorded status reflects
+      // the cancellation/resume that the same native event just performed.
+      for (const type of ['visibilitychange', 'freeze', 'resume']) document.addEventListener(type, samLifecycleRecordEvent);
     }, mode), { updates: true });
     const plainIdle = await stage('stable-plain-idle', null, { idle: true });
     assert.equal(plainIdle.menu, false, 'Plain-idle interval must not actually be field-menu idle');
@@ -968,32 +983,77 @@ async function lifecycle(browser, url, mode) {
     assert.equal(await page.locator('.modal.open').count(), 0);
     await stage('resume-real-movement-after-menu', () => press(page, `[data-move="${opposite[move.direction]}"]`), { updates: true });
 
-    // A real background-tab attempt may remain visible in headless Chromium.
-    // Report the observed value; never substitute a synthetic visibility event
-    // or claim physical-device tab throttling from this result.
-    const foreground = await context.newPage(); await foreground.bringToFront();
-    report.background.tabSwitch = await page.evaluate(() => ({ hidden: document.hidden, visibilityState: document.visibilityState }));
-    await page.waitForTimeout(200); await foreground.close(); await page.bringToFront();
-    await stage('foreground-after-tab-switch', null);
-    await stage('actual-cdp-freeze-resume-during-motion', async () => {
-      await press(page, `[data-move="${move.direction}"]`); await page.waitForTimeout(50);
-      report.background.beforeFreeze = await page.evaluate(() => ({ hidden: document.hidden,
-        visibilityState: document.visibilityState, moving: document.querySelector('#map').getAnimations()
-          .some(animation => animation.transitionProperty === 'transform' && animation.playState === 'running') }));
-      assert.equal(report.background.beforeFreeze.moving, true, 'Freeze interrupts a real running transform');
-      await cdp.send('Page.setWebLifecycleState', { state: 'frozen' });
-      await new Promise(resolve => setTimeout(resolve, 300));
-      await cdp.send('Page.setWebLifecycleState', { state: 'active' });
+    // Keep another genuine tab foreground for the entire background/frozen
+    // interval. No DOM visibility override or synthetic hidden event is used.
+    // A browser that never reports hidden remains an explicit failed case.
+    const foreground = await context.newPage(); await page.bringToFront();
+    await stage('actual-background-freeze-resume-during-motion', async () => {
+      const eventStart = await page.evaluate(() => samLifecycle.events.length);
+      let freezeRequested = false;
+      try {
+        await press(page, `[data-move="${move.direction}"]`); await page.waitForTimeout(50);
+        report.background.beforeBackground = await page.evaluate(() => ({ hidden: document.hidden,
+          visibilityState: document.visibilityState, status: samAlignment.status(), updates: samLifecycle.frames.length,
+          moving: document.querySelector('#map').getAnimations()
+            .some(animation => animation.transitionProperty === 'transform' && animation.playState === 'running') }));
+        validate('background-interrupts-real-motion', () => {
+          assert.equal(report.background.beforeBackground.hidden, false, 'Movement begins in the genuinely visible game tab');
+          assert.equal(report.background.beforeBackground.moving, true, 'Backgrounding interrupts a real running transform');
+          assert.equal(report.background.beforeBackground.status.pendingRaf, true, 'Alignment had a real scheduled frame before backgrounding');
+        });
+        await foreground.bringToFront();
+        await new Promise(resolve => setTimeout(resolve, 200));
+        report.background.tabSwitch = await page.evaluate(eventStart => ({ hidden: document.hidden,
+          visibilityState: document.visibilityState, status: samAlignment.status(), updates: samLifecycle.frames.length,
+          events: samLifecycle.events.slice(eventStart) }), eventStart);
+        validate('actual-hidden-suspension', () => {
+          const hiddenEvent = report.background.tabSwitch.events.find(event => event.type === 'visibilitychange' && event.hidden);
+          assert.equal(report.background.tabSwitch.hidden, true, 'A different foreground tab must actually hide the game document');
+          assert.ok(hiddenEvent?.trusted, 'The browser delivered a trusted hidden visibility event');
+          assert.equal(hiddenEvent.status.pendingRaf, false, 'Hidden event cancels the controller scheduled frame');
+          assert.equal(report.background.tabSwitch.status.pendingRaf, false, 'No controller frame remains pending in background');
+          assert.equal(report.background.tabSwitch.updates, hiddenEvent.updates, 'No alignment updates ran during the actual hidden interval');
+        });
+        if (report.background.tabSwitch.hidden) {
+          report.background.beforeFreeze = report.background.tabSwitch;
+          freezeRequested = true;
+          await cdp.send('Page.setWebLifecycleState', { state: 'frozen' });
+          await new Promise(resolve => setTimeout(resolve, 300));
+          await cdp.send('Page.setWebLifecycleState', { state: 'active' });
+          freezeRequested = false;
+          // The second tab is still foreground. Resume must not restart work
+          // until the original tab is actually made visible again.
+          report.background.afterResumeStillBackground = await page.evaluate(eventStart => ({ hidden: document.hidden,
+            visibilityState: document.visibilityState, status: samAlignment.status(), updates: samLifecycle.frames.length,
+            events: samLifecycle.events.slice(eventStart) }), eventStart);
+          validate('actual-frozen-background', () => {
+            const after = report.background.afterResumeStillBackground;
+            const freeze = after.events.find(event => event.type === 'freeze');
+            const resume = after.events.find(event => event.type === 'resume');
+            assert.ok(freeze?.trusted && resume?.trusted, 'CDP delivered real browser freeze/resume events while hidden');
+            assert.equal(freeze.hidden, true); assert.equal(resume.hidden, true);
+            assert.equal(freeze.status.pendingRaf, false); assert.equal(resume.status.pendingRaf, false);
+            assert.equal(freeze.status.frozen, true); assert.equal(resume.status.frozen, false);
+            assert.equal(resume.updates, freeze.updates, 'No alignment updates ran while actually frozen');
+            assert.equal(after.hidden, true, 'The game stays backgrounded after resume');
+            assert.equal(after.status.pendingRaf, false, 'Resume while hidden schedules no alignment frame');
+            assert.equal(after.updates, report.background.beforeFreeze.updates, 'No alignment updates during hidden/frozen/resumed-hidden interval');
+          });
+        } else {
+          report.background.freezeSkipped = 'Browser did not report document.hidden with another foreground tab. Freeze precondition was not met; no frozen-background pass is claimed.';
+          validate('actual-frozen-background', () => assert.fail(report.background.freezeSkipped));
+        }
+      } finally {
+        if (freezeRequested) await cdp.send('Page.setWebLifecycleState', { state: 'active' });
+        await page.bringToFront(); await foreground.close();
+      }
+      report.background.events = await page.evaluate(eventStart => samLifecycle.events.slice(eventStart), eventStart);
     }, { updates: true });
-    report.background.events = await page.evaluate(() => samLifecycle.events);
-    const freeze = report.background.events.find(event => event.type === 'freeze');
-    const resume = report.background.events.find(event => event.type === 'resume');
-    assert.ok(freeze?.trusted && resume?.trusted, 'CDP delivered real browser freeze/resume events');
-    assert.equal(resume.updates, freeze.updates, 'No alignment callbacks ran while the document was frozen');
-    report.background.actualHiddenObserved = report.background.tabSwitch.hidden || report.background.events.some(event => event.hidden);
-    report.background.limitation = report.background.actualHiddenObserved
-      ? 'Observed document.hidden in Chromium. This does not validate physical-device or Safari background behavior.'
-      : 'Headless Chromium did not report document.hidden. Real freeze/resume was exercised; hidden-tab visibility suspension is covered only by deterministic unit signals, not claimed as browser-validated.';
+    report.background.actualHiddenObserved = report.background.events.some(event => event.trusted && event.type === 'visibilitychange' && event.hidden);
+    report.background.actualFreezeResumeObserved = ['freeze', 'resume'].every(type => report.background.events.some(event => event.trusted && event.type === type && event.hidden));
+    report.background.limitation = report.background.actualHiddenObserved && report.background.actualFreezeResumeObserved
+      ? 'Observed trusted hidden, freeze and resume events in Chromium. This does not validate physical-device or Safari background behavior.'
+      : 'Required real hidden/freeze/resume signals were not all observed. Missing browser capabilities remain failures; synthetic unit signals do not establish browser background behavior.';
     await stage('synthetic-visible-notification-only', () => page.evaluate(() => document.dispatchEvent(new Event('visibilitychange'))), { updates: true });
     report.background.syntheticNotification = await page.evaluate(() => samLifecycle.events.at(-1));
     assert.equal(report.background.syntheticNotification.trusted, false);
@@ -1127,7 +1187,11 @@ function checkpoint(stage) {
 }
 async function main() {
   fs.mkdirSync(output, { recursive: true }); result.runtime = verifyRuntime();
-  const server = await serve(), browser = await chromium.launch({ headless: true });
+  if (runConfig.lifecycleOnly) {
+    assert.equal(result.runtime.files, 676, 'Focused lifecycle evidence still verifies all 676 pinned runtime/art files');
+    fs.writeFileSync(path.join(output, 'README.txt'), `Lifecycle-only ${runConfig.browserMode} capability experiment.\n\nAll 676 production runtime/art files are verified against ${PINNED}. Only per-frame, integer-nearest and integer-fit lifecycle cases are requested.\n\nVisual pairs, screenshot restoration, contact sheets, route/shop regressions and performance samples are NOT RUN here. A lifecycle-only result cannot be treated as a full-study pass. See alignment-results.json for actual status and retained failures.\n`);
+  }
+  const server = await serve(), browser = await chromium.launch({ headless: !runConfig.headed });
   result.browserVersion = browser.version();
   const url = `http://127.0.0.1:${server.address().port}/nushi-tsuri/`;
   try {
@@ -1143,21 +1207,31 @@ async function main() {
     }
     // Independent contexts continue collecting useful evidence after a failure.
     // Every failed case still fails the aggregate study; no baseline is replaced.
-    await collect('visuals', () => visuals(browser, url));
-    await collect('contact-sheets', () => contactSheets());
-    for (const mode of MODES) await collect(`regression:${mode}`, () => regression(browser, url, mode));
+    if (!runConfig.lifecycleOnly) {
+      await collect('visuals', () => visuals(browser, url));
+      await collect('contact-sheets', () => contactSheets());
+      for (const mode of MODES) await collect(`regression:${mode}`, () => regression(browser, url, mode));
+    }
     for (const mode of ['per-frame', 'integer-nearest', 'integer-fit']) await collect(`lifecycle:${mode}`, () => lifecycle(browser, url, mode));
-    if (process.env.SAM_SAMPLE_PERF === '1') for (const mode of ['baseline', 'legacy-per-frame', 'endpoint', 'per-frame', 'integer-nearest', 'integer-fit']) for (const activity of ['idle', 'moving']) {
+    if (runConfig.samplePerformance) for (const mode of ['baseline', 'legacy-per-frame', 'endpoint', 'per-frame', 'integer-nearest', 'integer-fit']) for (const activity of ['idle', 'moving']) {
       await collect(`performance:${mode}:${activity}`, () => performanceSample(browser, url, mode, activity));
     }
-    result.performanceComparison = ['idle', 'moving'].map(activity => {
+    result.performanceComparison = runConfig.samplePerformance ? ['idle', 'moving'].map(activity => {
       const legacy = result.performance.find(sample => sample.mode === 'legacy-per-frame' && sample.activity === activity);
       const candidate = result.performance.find(sample => sample.mode === 'per-frame' && sample.activity === activity);
       return { activity, sameRun: true, legacy: legacy?.controllerTiming || null, candidate: candidate?.controllerTiming || null,
         note: 'Alignment update time is nested in candidate scheduler totals and must not be added again. Legacy preserves old update-only timing; rAF requeue is excluded. Shared sampling probe and original game work are separate. No cross-run speed claim.' };
-    });
+    }) : null;
     assert.deepEqual(result.caseFailures.map(entry => entry.name), [], 'Independent browser cases failed; see caseFailures for exact failures');
     assert.deepEqual(result.errors, []); assert.deepEqual(result.httpErrors, []);
+    if (runConfig.lifecycleOnly) {
+      assert.deepEqual(result.lifecycle.map(entry => entry.mode), ['per-frame', 'integer-nearest', 'integer-fit']);
+      assert.equal(result.frames.length + result.regressions.length + result.performance.length, 0, 'Focused mode must not run unrelated study cases');
+      result.status = 'passed-lifecycle-only';
+      console.log('SAM_ALIGNMENT_LIFECYCLE_ONLY_PASS ' + JSON.stringify({ screen, browserMode: runConfig.browserMode,
+        lifecycleCases: result.lifecycle.length, runtimeFiles: result.runtime.files, notRun: runConfig.notRun }));
+      return;
+    }
     const validityFailures = result.frames.filter(frame => !frame.noOpScreenshotByteIdentical || !frame.controlsRestoredExactly).map(frame => frame.name);
     assert.deepEqual(validityFailures, [], 'Exact no-op screenshot/control presentation validity gate failed; the original baseline was retained');
     const restorationFailures = result.frames.filter(frame => !frame.restoredScreenshotByteIdentical).map(frame => frame.name);
@@ -1166,10 +1240,10 @@ async function main() {
     fs.writeFileSync(path.join(output, 'README.txt'), `Original-art whole-map alignment study\n\nThe served runtime and assets are verified against ${PINNED}. All mutations are removable browser-only #map individual translate/scale and clip-path styles; integer-fit also supplies a dark viewport background. No canvas pixels are rewritten.\n\nBaseline, endpoint and per-frame use the same state and nominal scale. Endpoint holds the initial snapped correction during the transition and snaps again only on the map transform transitionend, so intermediate origins remain fractional. Per-frame snaps each measured absolute map origin to device pixels. Both include parent #world position and move ALL scenery/actors together.\n\nInteger-nearest changes zoom to the nearest >=1 physical source-pixel scale. Integer-fit chooses the lower >=1 integer and narrows/letterboxes the viewport to retain the original visible source extent when possible. A sub1 source downscale cannot retain that extent at integer1; cropped source area and focus/clamp deltas are explicit in JSON. Integer variants account for visual dimensions rather than trusting unchanged clientWidth camera bounds.\n\nEvery paired frame checks source-canvas hashes, player sprite hash/state, actor relative foot registration, synchronized layers, unchanged game state and exact restoration of pipeline and screenshot. The original source aspect is preserved by integer variants, not stretched to16:9. Actor sprites have separate fractional internal sizing.\n\n31 motion frames seek the actual button-generated 300ms transition at10ms spacing. Native Sam crops and contact sheets are unresized device pixels. The same-scale variants use identical screenshot crop bounds. Integer alternatives use their own transformed Sam bounds, with clipping disclosed; do not mistake their changed zoom for a matched-scale improvement. Full screenshots are retained at settled endpoints and motion0/150/300ms.\n\nwidthModel is geometry-only predicted boundary coverage, not actual browser raster widths. Consult actual PNGs/source correspondence for sampling evidence. Native-clock idle and moving performance samples are separate contexts without pixel readback; they cannot measure physical heat.\n`);
     console.log('SAM_ALIGNMENT_EXPERIMENTS_PASS ' + JSON.stringify({ screen, frames: result.frames.length, regressions: result.regressions.length,
       lifecycleCases: result.lifecycle.length, performanceSamples: result.performance.length, motion: result.motion.widthPatternStability }));
-  } catch (error) { result.status = 'failed'; result.failure = error.stack; throw error; }
+  } catch (error) { result.status = runConfig.lifecycleOnly ? 'failed-lifecycle-only' : 'failed'; result.failure = error.stack; throw error; }
   finally {
     json('alignment-results.json', result); await browser.close(); await new Promise(resolve => server.close(resolve));
   }
 }
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
-module.exports = { widthModel, crop, MODES, installController };
+module.exports = { widthModel, crop, MODES, installController, runConfiguration };
