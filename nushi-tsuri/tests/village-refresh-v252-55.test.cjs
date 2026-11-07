@@ -20,7 +20,7 @@ test('the selected cohesive master and clean underlay remain the reviewed native
  assert.ok(d.parts.every(p=>!p.motion),'fixed vegetation cannot reveal an obsolete shifted-tree patch');
  assert.ok(d.parts.some(p=>p.kind==='water'&&p.effect),'water remains alive');
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(html,/v252-55<\/span>/);assert.match(html,/sw\.js\?v=252-55/);assert.match(sw,/village-refresh-252-55/);
+ assert.match(html,/v252-55<\/span>/);assert.match(html,/sw\.js\?v=252-55/);assert.match(sw,/village-refresh-sam-pilot-252-55/);
  for(const file of ['scene-layers.js','layered-scenery.js','field-guide.js','rural-canals.js','mountain-region.js','lake-intro.js']){
   assert.ok(html.includes(file+'?v=252-55'));assert.ok(sw.includes(file+'?v=252-55'));
  }
