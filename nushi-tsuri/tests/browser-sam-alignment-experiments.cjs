@@ -33,7 +33,7 @@ const result = { study: 'Reversible whole-map alignment and integer-source-pixel
     'Dense visual frames seek a real observed CSS transition at 10 ms intervals. This is not native frame pacing.',
     'Raster-width geometry is a boundary-coverage model, not a claim about the browser sampling kernel or artistic quality.',
     'Native-clock idle/moving CI samples are sequential proxies, not physical heat, battery, GPU power, or device-temperature measurements.',
-    'Chromium emulation does not establish physical-device Safari behavior. Mobile landscape is the primary mobile target; portrait is a deliberate source-downscale stress case.'
+    'Chromium emulation does not establish physical-device Safari behavior. Mobile landscape is the target;640x360 DPR1 exercises source downscale. The original portrait orientation guard hides all game screens, so390x844 portrait was not validated and is not bypassed.'
   ] };
 
 function verifyRuntime() {
@@ -45,7 +45,7 @@ function verifyRuntime() {
     .trim().split('\n').filter(file => !/\/tests\/|\/tools\/|\.md$/.test(file));
   const manifest = files.map(file => {
     const original = fs.readFileSync(path.join(baseline, file));
-    assert.deepEqual(fs.readFileSync(path.join(root, file.slice('nushi-tsuri/'.length))), original, `Unchanged production bytes: ${file}`);
+    assert.ok(fs.readFileSync(path.join(root, file.slice('nushi-tsuri/'.length))).equals(original), `Unchanged production bytes: ${file}`);
     return { file, bytes: original.length, sha256: hash(original) };
   });
   assert.ok(!fs.existsSync(path.join(root, 'assets/sam-sfc-pixel-pilot.png')));
@@ -309,6 +309,10 @@ async function newPage(browser, url, frozen = true) {
 }
 const press = (page, selector) => page.locator(selector)[screen.touch ? 'tap' : 'click']();
 async function start(page, frozen) {
+  if (await page.locator('.landscape-warning').isVisible()) {
+    await page.screenshot({ path: path.join(output, 'unsupported-portrait-orientation-guard.png'), scale: 'device' });
+    throw Error('Original portrait orientation guard hides .screen; use a supported landscape viewport. Portrait gameplay is not validated and the guard is not bypassed.');
+  }
   await enter(page, screen.touch);
   if (frozen) await page.clock.runFor(240);
   if (await page.locator('#lakeIntroSkip').isVisible()) { await press(page, '#lakeIntroSkip'); if (frozen) await page.clock.runFor(240); }
@@ -395,10 +399,14 @@ async function actorHash(page) {
   });
 }
 async function captureFrame(page, name, settled, endpointCorrection = null, time = null) {
+  checkpoint(`capture:${name}:start`);
   await page.evaluate(() => samAlignment.restore());
   const original = await metrics(page), pixels = await sourceHashes(page), actor = await actorHash(page);
   const baseBuffer = await page.screenshot({ animations: 'allow', scale: 'device' });
   const baseImage = await loadImage(baseBuffer), baseCrop = crop(baseImage, original);
+  // The preliminary crop supplies only its exact bounds. Release its raster
+  // immediately rather than waiting for GC to discover native allocations.
+  if (baseCrop.canvas) { baseCrop.canvas.width = 1; baseCrop.canvas.height = 1; }
   const frame = { name, timeMs: time, settled, hashes: pixels, actor, variants: [] };
   result.frames.push(frame);
   for (const mode of MODES) {
@@ -413,7 +421,8 @@ async function captureFrame(page, name, settled, endpointCorrection = null, time
     const fullFile = `${name}-${mode}.png`, cropFile = `${name}-${mode}-sam-native.png`;
     if (settled || time === 0 || time === 150 || time === 300) fs.writeFileSync(path.join(output, fullFile), buffer);
     const sampled = crop(image, pipeline, mode === 'endpoint' || mode === 'per-frame' ? baseCrop.requested : null);
-    if (sampled.canvas) fs.writeFileSync(path.join(output, cropFile), sampled.canvas.toBuffer('image/png'));
+    const cropBuffer = sampled.canvas ? sampled.canvas.toBuffer('image/png') : null;
+    if (cropBuffer) fs.writeFileSync(path.join(output, cropFile), cropBuffer);
     frame.variants.push({ mode, pipeline, overlay, widthModel: widthModel(pipeline),
       fullScreenshot: settled || time === 0 || time === 150 || time === 300 ? fullFile : null,
       nativeCrop: sampled.canvas ? cropFile : null, crop: { requested: sampled.requested, bounds: sampled.bounds,
@@ -422,15 +431,30 @@ async function captureFrame(page, name, settled, endpointCorrection = null, time
       sourceViewDelta: { x: pipeline.visibleSource.x - original.visibleSource.x, y: pipeline.visibleSource.y - original.visibleSource.y,
         width: pipeline.visibleSource.width - original.visibleSource.width, height: pipeline.visibleSource.height - original.visibleSource.height },
       focalDisplacementCSS: { x: pipeline.player.feet.x - original.player.feet.x, y: pipeline.player.feet.y - original.player.feet.y },
-      screenshotSha256: hash(buffer), cropSha256: sampled.canvas ? hash(sampled.canvas.toBuffer('image/png')) : null });
+      screenshotSha256: hash(buffer), cropSha256: cropBuffer ? hash(cropBuffer) : null });
+    if (sampled.canvas) { sampled.canvas.width = 1; sampled.canvas.height = 1; }
+    if (mode !== 'baseline') image.src = Buffer.alloc(0);
     await page.evaluate(() => samAlignment.restore());
     assert.deepEqual(await metrics(page), original, `${name}/${mode}: exact pipeline restoration`);
   }
   assert.deepEqual(await sourceHashes(page), pixels); assert.deepEqual(await actorHash(page), actor);
   const repeat = await page.screenshot({ animations: 'allow', scale: 'device' });
-  assert.deepEqual(repeat, baseBuffer, `${name}: removing overlays restores byte-identical screenshot`);
-  frame.restoredScreenshotByteIdentical = true;
+  // Never format megabytes of Buffer contents inside an assertion failure.
+  // Keep exact byte equality, but save both PNGs and compact diagnostic hashes.
+  const identical = repeat.equals(baseBuffer);
+  if (!identical) {
+    fs.writeFileSync(path.join(output, `${name}-restoration-baseline.png`), baseBuffer);
+    fs.writeFileSync(path.join(output, `${name}-restoration-actual.png`), repeat);
+    frame.restorationFailure = { baselineSha256: hash(baseBuffer), actualSha256: hash(repeat),
+      baselineBytes: baseBuffer.length, actualBytes: repeat.length };
+    json('alignment-results.json', result);
+  }
+  baseImage.src = Buffer.alloc(0);
+  // Collect independent candidate evidence before enforcing this exact gate
+  // at the end. A mismatch remains an explicit failure, never a tolerated pass.
+  frame.restoredScreenshotByteIdentical = identical;
   json('alignment-results.json', result);
+  checkpoint(`capture:${name}:complete`);
 }
 async function visuals(browser, url) {
   const { context, page } = await newPage(browser, url);
@@ -441,9 +465,9 @@ async function visuals(browser, url) {
     const source = await page.evaluate(() => document.querySelector('#worldPixels').toDataURL('image/png'));
     fs.writeFileSync(path.join(output, 'original-world-canvas.png'), Buffer.from(source.split(',')[1], 'base64'));
     await captureFrame(page, 'west-approach', true);
-    if (screen.width === 390 && screen.dpr === 1) {
+    if (screen.width === 640 && screen.height === 360 && screen.dpr === 1) {
       const base = result.frames[0].variants[0].pipeline.layers[0];
-      assert.ok(base.physicalScale.x < 1 && base.physicalScale.y < 1, 'portrait really exercises <1 source downscale');
+      assert.ok(base.physicalScale.x < 1 && base.physicalScale.y < 1, '640x360 landscape really exercises <1 source downscale');
     }
     const move = await cameraChangingMove(page); result.motion = { move, clock: 'Paused real CSS transitions, 31 samples at 10 ms spacing' };
     await press(page, `[data-move="${move.direction}"]`);
@@ -576,19 +600,29 @@ async function performanceSample(browser, url, mode, activity) {
 async function contactSheets() {
   for (const mode of MODES) {
     const entries = result.frames.filter(f => f.timeMs !== null).map(f => ({ time: f.timeMs, ...f.variants.find(v => v.mode === mode) })).filter(v => v.nativeCrop);
-    const images = await Promise.all(entries.map(e => loadImage(path.join(output, e.nativeCrop))));
-    // Native-pixel frames are NOT resized. Columns are padded to the largest
-    // crop. Labels and borders live outside source screenshots.
-    const cellW = Math.max(...images.map(i => i.width)) + 8, cellH = Math.max(...images.map(i => i.height)) + 28;
-    const columns = 4, canvas = createCanvas(cellW * columns, cellH * Math.ceil(images.length / columns)), ctx = canvas.getContext('2d');
+    assert.ok(entries.length, `${mode}: motion crops exist`);
+    // Read one crop at a time. Frame metadata already records native dimensions,
+    // so sizing the sheet does not need31 simultaneously decoded images.
+    const cellW = Math.max(...entries.map(e => e.crop.bounds.right - e.crop.bounds.x)) + 8;
+    const cellH = Math.max(...entries.map(e => e.crop.bounds.bottom - e.crop.bounds.y)) + 28;
+    const columns = 4, canvas = createCanvas(cellW * columns, cellH * Math.ceil(entries.length / columns)), ctx = canvas.getContext('2d');
     ctx.fillStyle = '#101820'; ctx.fillRect(0, 0, canvas.width, canvas.height); ctx.font = '14px sans-serif'; ctx.imageSmoothingEnabled = false;
-    images.forEach((image, i) => {
+    for (let i = 0; i < entries.length; i++) {
+      const image = await loadImage(path.join(output, entries[i].nativeCrop));
       const x = i % columns * cellW, y = Math.floor(i / columns) * cellH;
       ctx.fillStyle = '#fff'; ctx.fillText(`${mode}: ${entries[i].time} ms | native pixels`, x + 4, y + 18);
-      ctx.drawImage(image, x + 4, y + 24);
-    });
+      ctx.drawImage(image, x + 4, y + 24); image.src = Buffer.alloc(0);
+    }
     fs.writeFileSync(path.join(output, `motion-contact-${mode}-native.png`), canvas.toBuffer('image/png'));
+    canvas.width = 1; canvas.height = 1; checkpoint(`contact-sheet:${mode}`);
   }
+}
+function checkpoint(stage) {
+  const memory = process.memoryUsage();
+  result.lastCheckpoint = { stage, time: new Date().toISOString(), nodeMemory: memory };
+  console.log('SAM_ALIGNMENT_CHECKPOINT ' + JSON.stringify(result.lastCheckpoint));
+  // This identifies where a killed process stopped, without assuming its cause.
+  json('alignment-progress.json', result.lastCheckpoint);
 }
 async function main() {
   fs.mkdirSync(output, { recursive: true }); result.runtime = verifyRuntime();
@@ -596,12 +630,16 @@ async function main() {
   result.browserVersion = browser.version();
   const url = `http://127.0.0.1:${server.address().port}/nushi-tsuri/`;
   try {
-    await visuals(browser, url); await contactSheets();
-    for (const mode of ['baseline', 'per-frame', 'integer-nearest', 'integer-fit']) await regression(browser, url, mode);
-    if (process.env.SAM_SAMPLE_PERF === '1') for (const mode of MODES) for (const activity of ['idle', 'moving']) await performanceSample(browser, url, mode, activity);
+    checkpoint('visuals:start'); await visuals(browser, url); await contactSheets();
+    for (const mode of MODES) { checkpoint(`regression:${mode}`); await regression(browser, url, mode); }
+    if (process.env.SAM_SAMPLE_PERF === '1') for (const mode of MODES) for (const activity of ['idle', 'moving']) {
+      checkpoint(`performance:${mode}:${activity}`); await performanceSample(browser, url, mode, activity);
+    }
     assert.deepEqual(result.errors, []); assert.deepEqual(result.httpErrors, []);
+    const restorationFailures = result.frames.filter(frame => !frame.restoredScreenshotByteIdentical).map(frame => frame.name);
+    assert.deepEqual(restorationFailures, [], 'Exact screenshot restoration gate failed; see saved baseline/actual PNGs and compact hashes');
     result.status = 'passed';
-    fs.writeFileSync(path.join(output, 'README.txt'), `Original-art whole-map alignment study\n\nThe served runtime and assets are verified against ${PINNED}. All mutations are removable browser-only #map individual translate/scale and clip-path styles; integer-fit also supplies a dark viewport background. No canvas pixels are rewritten.\n\nBaseline, endpoint and per-frame use the same state and nominal scale. Endpoint holds the initial snapped correction during the transition and snaps again only on the map transform transitionend, so intermediate origins remain fractional. Per-frame snaps each measured absolute map origin to device pixels. Both include parent #world position and move ALL scenery/actors together.\n\nInteger-nearest changes zoom to the nearest >=1 physical source-pixel scale. Integer-fit chooses the lower >=1 integer and narrows/letterboxes the viewport to retain the original visible source extent when possible. Portrait downscale cannot retain that extent at integer1; cropped source area and focus/clamp deltas are explicit in JSON. Integer variants account for visual dimensions rather than trusting unchanged clientWidth camera bounds.\n\nEvery paired frame checks source-canvas hashes, player sprite hash/state, actor relative foot registration, synchronized layers, unchanged game state and exact restoration of pipeline and screenshot. The original source aspect is preserved by integer variants, not stretched to16:9. Actor sprites have separate fractional internal sizing.\n\n31 motion frames seek the actual button-generated 300ms transition at10ms spacing. Native Sam crops and contact sheets are unresized device pixels. The same-scale variants use identical screenshot crop bounds. Integer alternatives use their own transformed Sam bounds, with clipping disclosed; do not mistake their changed zoom for a matched-scale improvement. Full screenshots are retained at settled endpoints and motion0/150/300ms.\n\nwidthModel is geometry-only predicted boundary coverage, not actual browser raster widths. Consult actual PNGs/source correspondence for sampling evidence. Native-clock idle and moving performance samples are separate contexts without pixel readback; they cannot measure physical heat.\n`);
+    fs.writeFileSync(path.join(output, 'README.txt'), `Original-art whole-map alignment study\n\nThe served runtime and assets are verified against ${PINNED}. All mutations are removable browser-only #map individual translate/scale and clip-path styles; integer-fit also supplies a dark viewport background. No canvas pixels are rewritten.\n\nBaseline, endpoint and per-frame use the same state and nominal scale. Endpoint holds the initial snapped correction during the transition and snaps again only on the map transform transitionend, so intermediate origins remain fractional. Per-frame snaps each measured absolute map origin to device pixels. Both include parent #world position and move ALL scenery/actors together.\n\nInteger-nearest changes zoom to the nearest >=1 physical source-pixel scale. Integer-fit chooses the lower >=1 integer and narrows/letterboxes the viewport to retain the original visible source extent when possible. A sub1 source downscale cannot retain that extent at integer1; cropped source area and focus/clamp deltas are explicit in JSON. Integer variants account for visual dimensions rather than trusting unchanged clientWidth camera bounds.\n\nEvery paired frame checks source-canvas hashes, player sprite hash/state, actor relative foot registration, synchronized layers, unchanged game state and exact restoration of pipeline and screenshot. The original source aspect is preserved by integer variants, not stretched to16:9. Actor sprites have separate fractional internal sizing.\n\n31 motion frames seek the actual button-generated 300ms transition at10ms spacing. Native Sam crops and contact sheets are unresized device pixels. The same-scale variants use identical screenshot crop bounds. Integer alternatives use their own transformed Sam bounds, with clipping disclosed; do not mistake their changed zoom for a matched-scale improvement. Full screenshots are retained at settled endpoints and motion0/150/300ms.\n\nwidthModel is geometry-only predicted boundary coverage, not actual browser raster widths. Consult actual PNGs/source correspondence for sampling evidence. Native-clock idle and moving performance samples are separate contexts without pixel readback; they cannot measure physical heat.\n`);
     console.log('SAM_ALIGNMENT_EXPERIMENTS_PASS ' + JSON.stringify({ screen, frames: result.frames.length, regressions: result.regressions.length,
       performanceSamples: result.performance.length, motion: result.motion.widthPatternStability }));
   } catch (error) { result.status = 'failed'; result.failure = error.stack; throw error; }

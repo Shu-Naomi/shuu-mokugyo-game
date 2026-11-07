@@ -79,7 +79,7 @@ jobs:
           - {width: 1280, height: 720, touch: '0', dpr: 1}
           - {width: 844, height: 390, touch: '1', dpr: 1}
           - {width: 820, height: 366, touch: '1', dpr: 1.875}
-          - {width: 390, height: 844, touch: '1', dpr: 1}
+          - {width: 640, height: 360, touch: '1', dpr: 1}
     defaults:
       run:
         working-directory: current/nushi-tsuri/tests
