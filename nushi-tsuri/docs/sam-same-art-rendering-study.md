@@ -6,7 +6,7 @@ Status: draft investigation, not a release. Building redesign has been stopped a
 
 The immutable comparison baseline is `880817ec738f6f9dcc45dc9a3a098e7bd6676823` (v252-55). The rejected 120×96 building replacement and its generator are removed from the branch. All production files, source images, scene definitions, camera code, CSS, cache names and offline URLs match that baseline. The original appearance is restored. Main was never changed by the unmerged prior draft.
 
-This PR now adds investigation, tests and browser evidence only. CSS/compositor/position variants are injected by the browser test, not shipped to the game. Facilities, collisions, water and fishing triggers, NPC routes, player/dog art and positions, saves, prices and inventory remain unchanged. There is no sharpening, recoloring, palette reduction, replacement illustration or new per-frame production work.
+This PR now adds investigation, tests and browser evidence only. CSS variants are injected by the browser test, not shipped to the game. Compositor/position changes are not included in the matched comparisons. Facilities, collisions, water and fishing triggers, NPC routes, player/dog art and positions, saves, prices and inventory remain unchanged. There is no sharpening, recoloring, palette reduction, replacement illustration or new per-frame production work.
 
 ## Findings before the new comparison
 
@@ -17,13 +17,13 @@ This PR now adds investigation, tests and browser evidence only. CSS/compositor/
 - In an existing baseline screenshot's static roof/wall region `[1300,490]–[1440,575]`, all sampled screen colors match a source RGB in the expected 3×3 sampling neighborhood on the three viewports. This supports nearest-like settled presentation with no newly blended colors in that specific region. It does not prove the whole frame, every browser or camera movement is blend-free.
 - The original Sam crop `(1252,476)–(1476,659)` contains 35,474 RGB colors among 40,992 pixels. That describes dense source shading. It does **not** establish that a redesign is necessary or authorized. Existing colors, shapes and character are to be preserved.
 - CSS `crisp-edges` is a diagnostic control, not a promised fix. The [Chromium implementation discussion](https://groups.google.com/a/chromium.org/g/blink-dev/c/dqAs7zmriQQ/m/nzl-7lmrBQAJ) describes it as effectively a synonym of `pixelated`. The actual test browser's support, computed values and screenshot pixels must decide the result.
-- The camera uses a percentage `translate3d`, a 0.3s transition and compositor hints. Changing compositing or snapping the final origin might affect sampling phase, but could cause movement judder, repaint cost or misalignment if only scenery moves. Such probes remain test-only and are not an endorsed production fix.
+- The camera uses a percentage `translate3d`, a 0.3s transition and compositor hints. A test-only 3D-to-2D/compositor change failed the strict same-position condition in CI: settled origins moved by less than 0.001 CSS pixel even after finishing transitions. It is excluded from matched comparisons rather than weakening the position assertion. This tiny sampling-phase change is not evidence of improved outlines. No compositor or camera-snapping change is shipped.
 
 ## Review experiments
 
 The browser study compares the same original art at the same viewport, clock, player position, camera rectangle and scale. It records canvas dimensions, CSS and physical scales, fractional origins, computed styles and original canvas RGBA hashes. Baseline versus restored-default images must match exactly. Interpolation probes must not change source pixels, camera scale, collision state or save state. Any position-snapped probe is explicitly separate because a bounded subpixel origin adjustment is not an identical-camera comparison.
 
-`auto` is a diagnostic reference for ordinary smoothing, not an assumed improvement. A compositor probe may leave pixels unchanged or cost more during movement. Zero visual difference is a useful result and must not be relabeled an improvement. Native-device-pixel crops and whole-frame pairs avoid hiding losses behind a changed zoom.
+`auto` is a diagnostic reference for ordinary smoothing, not an assumed improvement. The excluded compositor probe is not presented as a same-position improvement. Zero visual difference is a useful result and must not be relabeled an improvement. Native-device-pixel crops and whole-frame pairs avoid hiding losses behind a changed zoom.
 
 ## Verification and limits
 

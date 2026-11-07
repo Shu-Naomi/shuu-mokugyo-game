@@ -114,20 +114,7 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     return value.layers.map(({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled})=>
       ({id,for:owner,intrinsic,rgbaSha256,imageSmoothingEnabled}));
   }
-  async function finishMapTransitions() {
-    await page.locator('#map').evaluate(map=>{
-      // Equivalent 2D/3D transform spellings can still start a CSS transition.
-      // Flush style first so Chromium exposes that transition, then seek only
-      // this at-rest map's finite animations to their exact endpoint. Never
-      // advance the game/canvas clock or relax the framing/RGBA comparisons.
-      void getComputedStyle(map).transform;
-      for(const animation of map.getAnimations()) {
-        if(animation.effect?.target===map&&Number.isFinite(animation.effect.getComputedTiming().endTime))animation.finish();
-      }
-      void map.getBoundingClientRect();
-    });
-  }
-  async function capture(name, settled=true) {
+  async function capture(name, settled=true, screenshots=result.screenshots) {
     if(settled) {
       await page.clock.runFor(700);await page.waitForTimeout(700);
       await page.evaluate(async()=>{
@@ -146,22 +133,10 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     const filename=`${label}-${name}-pixelated.png`;
     await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
     const shot={name,filename,settled,framing:original.framing,pipeline:original,variants:[]};
-    result.screenshots.push(shot);
+    screenshots.push(shot);
     if(!experiments)return;
-    for(const value of ['crisp-edges','auto',...(settled?['compositor-auto']:[])]) {
-      let previousMapStyle=null;
-      if(value==='compositor-auto') {
-        previousMapStyle=await page.locator('#map').evaluate(map=>{
-          const previous=map.getAttribute('style');
-          const transform=map.style.transform;
-          if(!/^translate3d\([^,]+,[^,]+,\s*0(?:px)?\)$/.test(transform))throw Error('Unexpected map transform: '+transform);
-          map.style.setProperty('transform',transform.replace('translate3d(','translate(').replace(/,\s*0(?:px)?\)$/ ,')'),'important');
-          map.style.setProperty('will-change','auto','important');
-          map.style.setProperty('backface-visibility','visible','important');
-          return previous;
-        });
-        await finishMapTransitions();
-      } else if(!await setRendering(page,value)) {
+    for(const value of ['crisp-edges','auto']) {
+      if(!await setRendering(page,value)) {
         shot.variants.push({value,skipped:true,reason:'CSS.supports(image-rendering, value) is false'});
         continue;
       }
@@ -170,26 +145,14 @@ module.exports = async function run(url, label, screen, output, experiments=fals
         assert.deepEqual(candidate.framing,original.framing,`${value}: identical player, time, camera and scale`);
         assert.deepEqual(immutablePixels(candidate),immutablePixels(original),`${value}: every source canvas RGBA byte is unchanged`);
         assert.deepEqual(candidate.layers.map(l=>l.rendered),original.layers.map(l=>l.rendered),`${value}: identical layer bounds`);
-        assert.ok(candidate.layers.every(l=>l.imageRendering===(value==='compositor-auto'?'pixelated':value)),`${value}: expected computed image-rendering`);
-        if(value==='compositor-auto') {
-          assert.equal(candidate.mapCompositor.willChange,'auto');
-          assert.equal(candidate.mapCompositor.backfaceVisibility,'visible');
-        }
+        assert.ok(candidate.layers.every(l=>l.imageRendering===value),`${value}: expected computed image-rendering`);
         const variantFile=`${label}-${name}-${value}.png`;
         await page.screenshot({path:path.join(output,variantFile),animations:'allow',scale:'device'});
         assert.deepEqual(immutablePixels(await pipeline()),immutablePixels(original),`${value}: capture did not repaint source pixels`);
         shot.variants.push({value,filename:variantFile,pipeline:candidate,
-          status:value==='auto'?'diagnostic only':value==='compositor-auto'
-            ?'test-only compositor option; layer promotion is browser-dependent; possible CPU/movement cost; not shipped'
-            :'experimental review option; not shipped'});
+          status:value==='auto'?'diagnostic only':'experimental review option; not shipped'});
       } finally {
-        if(value==='compositor-auto') {
-          await page.locator('#map').evaluate((map,previous)=>{
-            if(previous===null)map.removeAttribute('style');else map.setAttribute('style',previous);
-          },previousMapStyle);
-          await finishMapTransitions();
-        }
-        else await page.locator(`#${EXPERIMENT_STYLE}`).evaluate(node=>node.remove());
+        await page.locator(`#${EXPERIMENT_STYLE}`).evaluate(node=>node.remove());
       }
     }
     const restored=await pipeline();
@@ -266,35 +229,63 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     assert.deepEqual(await state(),saved);assert.deepEqual(await progress(),before);
     result.pointers=await page.evaluate(()=>pilotPointers);
     if(screen.touch)assert.ok(result.pointers.some(p=>p.id==='action'&&p.type==='touch'));
-    // Separate actual-button movement diagnostic. Real CSS transitions are
-    // paused and sought through their Web Animations API, not approximated by
-    // sleep timings or mistaken for the JS clock. The game/canvas clock advances
-    // by the same elapsed time on both builds. This is not a native-FPS test.
-    const movement=await page.evaluate(()=>{
-      for(const direction of ['left','right','down','up']) {
-        const target=ShuWorldLife.moveTarget(s.x,s.y,direction,4,isWalkableWorld);
-        if(target.x!==s.x||target.y!==s.y)return {direction,from:{x:s.x,y:s.y},to:target};
-      }
-      throw Error('No reachable neighboring position for camera diagnostic');
-    });
-    await press(`[data-move="${movement.direction}"]`);
-    const transitions=await page.evaluate(()=>{
-      const nodes=['#map','#player','#dog'].map(q=>document.querySelector(q));
-      window.sameArtMotionAnimations=nodes.flatMap(node=>node.getAnimations());
-      return sameArtMotionAnimations.map(animation=>{
-        const effect=animation.effect,timing=effect.getTiming();animation.pause();animation.currentTime=0;
-        return {target:effect.target.id,property:animation.transitionProperty||animation.animationName||null,
-          duration:timing.duration,delay:timing.delay,keyframes:effect.getKeyframes()};
+    if(experiments) {
+      // Separate actual-button movement diagnostic, never mixed into the
+      // baseline/restored byte-equality gate. Choose a reachable move whose
+      // camera target changes, rather than moving within the east-edge clamp.
+      const movement=await page.evaluate(()=>{
+        const map=document.querySelector('#map'),world=document.querySelector('#world');
+        const viewWidth=WORLD_WIDTH*Math.max(1,world.clientWidth)/Math.max(1,map.clientWidth);
+        const viewHeight=WORLD_HEIGHT*Math.max(1,world.clientHeight)/Math.max(1,map.clientHeight);
+        const camera=point=>({
+          x:Math.max(0,Math.min(WORLD_WIDTH-viewWidth,point.x-viewWidth/2)),
+          y:Math.max(0,Math.min(WORLD_HEIGHT-viewHeight,point.y-viewHeight/2))});
+        const from={x:s.x,y:s.y},cameraFrom=camera(from);
+        for(const direction of ['down','up','left','right']) {
+          const to=ShuWorldLife.moveTarget(s.x,s.y,direction,4,isWalkableWorld),cameraTo=camera(to);
+          if((to.x!==s.x||to.y!==s.y)&&(cameraTo.x!==cameraFrom.x||cameraTo.y!==cameraFrom.y))
+            return {direction,from,to,cameraFrom,cameraTo,inlineTransformBefore:map.style.transform};
+        }
+        return {from,cameraFrom,skipped:true,reason:'No reachable neighboring move changes the clamped camera target.'};
       });
-    });
-    result.movementDiagnostic={...movement,transitions,timesMs:[0,75,150,300],
-      clock:'Actual direction button, then deterministic Web Animations API transition seeking and matching JS-clock steps.',
-      limitation:'If no map transition is active, these are settled snapshots; they do not show moving-camera interpolation or native frame pacing.'};
-    let previousTime=0;
-    for(const time of result.movementDiagnostic.timesMs) {
-      if(time>previousTime)await page.clock.runFor(time-previousTime);
-      await page.evaluate(time=>{for(const animation of sameArtMotionAnimations)animation.currentTime=time;},time);
-      await capture(`camera-motion-${time}ms`,false);previousTime=time;
+      result.movementDiagnostic={...movement,screenShots:[],
+        clock:'Actual direction button, then deterministic Web Animations API transition seeking and matching JS-clock steps.',
+        limitation:'This diagnostic does not measure native frame pacing. Camera motion is reported only when an actual map transform transition and differing sampled bounds are observed.'};
+      if(!movement.skipped) {
+        await press(`[data-move="${movement.direction}"]`);
+        const transitions=await page.evaluate(()=>{
+          const nodes=['#map','#player','#dog'].map(q=>document.querySelector(q));
+          // getAnimations flushes style so the actual movement transitions are
+          // present before seeking. Do not fabricate a transition if absent.
+          window.sameArtMotionAnimations=nodes.flatMap(node=>node.getAnimations());
+          return sameArtMotionAnimations.map(animation=>{
+            const effect=animation.effect,timing=effect.getTiming();animation.pause();animation.currentTime=0;
+            return {target:effect.target.id,property:animation.transitionProperty||animation.animationName||null,
+              duration:timing.duration,delay:timing.delay,keyframes:effect.getKeyframes()};
+          });
+        });
+        const mapTransition=transitions.some(t=>t.target==='map'&&t.property==='transform'&&Number(t.duration)>0);
+        Object.assign(result.movementDiagnostic,{transitions,mapTransition,
+          inlineTransformAfter:await page.locator('#map').evaluate(map=>map.style.transform)});
+        if(!mapTransition) {
+          Object.assign(result.movementDiagnostic,{skipped:true,cameraMotionObserved:false,
+            reason:'No active map transform transition was observed after the real direction button. No moving-camera claim or motion pairs were generated.'});
+        } else {
+          result.movementDiagnostic.timesMs=[0,75,150,300];
+          let previousTime=0;
+          for(const time of result.movementDiagnostic.timesMs) {
+            if(time>previousTime)await page.clock.runFor(time-previousTime);
+            await page.evaluate(time=>{for(const animation of sameArtMotionAnimations)animation.currentTime=time;},time);
+            await capture(`movement-diagnostic-${time}ms`,false,result.movementDiagnostic.screenShots);previousTime=time;
+          }
+          const frames=result.movementDiagnostic.screenShots;
+          const first=frames[0].framing.mapRect,last=frames[frames.length-1].framing.mapRect;
+          result.movementDiagnostic.cameraMotionObserved=first.x!==last.x||first.y!==last.y;
+          result.movementDiagnostic.status=result.movementDiagnostic.cameraMotionObserved
+            ?'Actual map transition observed; same-frame CSS-only comparisons are separate from settled comparisons.'
+            :'No camera displacement observed in sampled bounds; these frames are not evidence of moving-camera interpolation.';
+        }
+      } else result.movementDiagnostic.cameraMotionObserved=false;
     }
     await ctx.close();
 
