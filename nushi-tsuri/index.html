@@ -6534,7 +6534,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-55</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-56</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7412,12 +7412,12 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-47"></script>
-    <script src="aquarium-life.js?v=252-47"></script>
+    <script src="fish-motion.js?v=252-56"></script>
+    <script src="aquarium-life.js?v=252-56"></script>
     <script src="compact-ui.js?v=252-53"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=252-53"></script>
-    <script src="fishing-duel.js?v=252-47"></script>
+    <script src="fishing-duel.js?v=252-56"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7430,7 +7430,7 @@
       </div>
     </section>
     <script src="coast-voyage.js?v=226-1"></script>
-    <script src="offshore-island.js?v=252-20"></script>
+    <script src="offshore-island.js?v=252-56"></script>
     <script src="world-life.js?v=252-55"></script>
     <script src="field-guide.js?v=252-55"></script>
     <script src="rural-canals.js?v=252-55"></script>
@@ -7444,7 +7444,7 @@
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=252-47"></script>
+    <script src="fish-additions.js?v=252-56"></script>
     <script src="fish-art.js?v=252-42"></script>
     <script src="tackle-art.js?v=252-52"></script>
     <script src="item-art.js?v=252-28"></script>
@@ -12945,7 +12945,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       // The title stays read-only. Persist the draw seed on Start, before
@@ -16766,7 +16766,7 @@
         aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function aquariumFishPose(id, elapsed, measuredLength = null) {
-        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo", "kawahagi", "kamatsuka", "nigoi"].includes(id);
+        const bottomDweller = ["hirame", "kasago", "namazu", "unagi", "kajika", "dojo", "kawahagi", "kamatsuka", "nigoi", "houraihimeji"].includes(id);
         const swim = ShuAquariumLife.gait(id);
         const normal = fishSizeTierById(id, "normal");
         const lengthCm = measuredLength > 0 ? measuredLength / 100 : normal ? (normal.minHundredths + normal.maxHundredths) / 200 : 20;
@@ -24459,7 +24459,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-55").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-56").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

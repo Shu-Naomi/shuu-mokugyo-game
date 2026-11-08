@@ -55,7 +55,7 @@ test('the real aquarium and notebook show the albino hatch and preserve all five
   w.document.querySelector('[data-pet-action="records"]').click();const records=w.document.querySelector('.pet-discoveries').textContent;for(const title of ['黄金のフナ','黄金のコイ','白化ナマズ','黄金のメダカ','白化ウナギ','白化ドジョウ'])assert.ok(records.includes(title));
   for(const record of variant.fixture().petLife.mutationDiscoveries)assert.deepEqual(read(w,`s.petLife.mutationDiscoveries.find(d=>d.species==="${record.species}")`),record);
   w.eval('ShuPetLife.renameFish(s,"pet-11","しらもち");petUi.open("notebook")');w.document.querySelector('[data-notebook-species="dojo"]').click();w.document.querySelector('[data-notebook-fish="pet-11"]').click();
-  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/しらもち/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/白化ドジョウ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-11"] [data-pet-mutation]').textContent,'白化');assert.equal(read(w,'fish.length'),61);assert.deepEqual(a.errors,[]);
+  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/しらもち/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/白化ドジョウ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-11"] [data-pet-mutation]').textContent,'白化');assert.equal(read(w,'fish.length'),64);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('unknown or wrong-species colours survive save normalization but safely use ordinary artwork and labels',()=>{
@@ -65,7 +65,7 @@ test('unknown or wrong-species colours survive save normalization but safely use
 test('dedicated albino artwork renders all 26 poses and 97 turn positions with pale skin, red eyes and isolated alpha',async()=>{
  const {createCanvas,loadImage}=require('@napi-rs/canvas'),root=path.resolve(__dirname,'..'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
  assert.equal(sha('assets/fish-dojo-v220.png'),'b7cc1ce98c451a461cf02bd28d45ff7d4adc56e06053a072d7694ae3ed6ed6fc');
- assert.equal(sha('assets/aquarium-koi-gold-v252-9.png'),'bc49730e4487166d56984cb5ccbd0556c57af946b21fc451e25195587b9fb734');assert.equal(Art.species.dojoAlbino,undefined);assert.equal(Object.keys(Art.species).length,61);
+ assert.equal(sha('assets/aquarium-koi-gold-v252-9.png'),'bc49730e4487166d56984cb5ccbd0556c57af946b21fc451e25195587b9fb734');assert.equal(Art.species.dojoAlbino,undefined);assert.equal(Object.keys(Art.species).length,64);
  const im=await loadImage(path.join(root,Art.aquarium.dojoAlbino.asset));assert.equal(im.width,1536);assert.equal(im.height,1024);const samples=[];for(let i=0;i<=96;i++)samples.push([7,i/16]);samples.push([3,2]);
  assert.equal(Art.aquarium.dojoAlbino.boxes.length,26);
  for(let n=0;n<26;n++)assert.deepEqual(Art.sourceHead('dojoAlbino',n),Art.sourceHead('dojo',n));

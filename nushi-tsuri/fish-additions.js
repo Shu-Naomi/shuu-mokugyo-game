@@ -179,6 +179,16 @@
  Object.assign(art,{
   donko:{asset:'assets/fish-donko-v252-47.png',boxes:[[48,147,372,166],[487,130,364,200],[953,112,329,235],[1394,98,309,261],[64,535,328,260],[478,562,373,200],[919,578,377,175],[1355,580,377,170]],heads:[[.98,.55],[.98,.55],[.98,.60],[.50,.69],[.025,.64],[.02,.55],[.02,.55],[.98,.60]],continuousBody:true}
  });
+ // Three island discoveries: sizes, prices and encounter odds are game tuning.
+ definitions.push(
+  {id:'takabe',name:'タカベ',base:'aji',number:62,price:380,resistance:78,band:'small',hook:'small',scientific:'Labracoglossa argentiventris',habitats:['sea'],rarity:2,label:'潮目を泳ぐ黄色い帯',
+   ecology:'青みのある背から尾びれへ続く黄色い帯が目印。岩礁の周りの中層で群れを作り、動物プランクトンを食べる。',locations:'潮風島・東の潮目（岸際〜中層）',time:'いつでも',rods:['youngBamboo','shoreReed'],baits:['shrimp','smallShrimp'],tip:'東の潮目でオキアミ＋ハリ小を中層へ。群れへ戻る小さな走りを待ち、向き直ったらやさしく寄せよう。',intro:'青い背に黄色い帯。群れを追うタカベだ！',lengths:[6,10,14,18,22,27,35],baitWeights:{shrimp:3.6,smallShrimp:3,worm:.2,river:.08,paste:.12,corn:.02,liveMinnow:.02,shell:.01,crab:.02}},
+  {id:'kuromejina',name:'クロメジナ',base:'kurodai',number:63,price:1150,resistance:180,band:'medium',hook:'medium',scientific:'Girella leonina',habitats:['sea'],rarity:3,label:'黒いえらぶたの尾長グレ',
+   ecology:'尾長グレとも呼ばれるメジナの仲間。えらぶたの後ろの黒い縁と、上下が伸びた尾びれが目印。潮通しのよい岩礁に暮らす。',locations:'潮風島・西の磯（中層〜深場）',time:'いつでも',rods:['shoreReed','tideMaster'],baits:['shrimp','smallShrimp'],tip:'西の磯でオキアミ＋ハリ中を中層へ。磯へ向かう強い突進はAを離し、向き直る間に距離を取り返そう。',intro:'黒いえらぶたと長い尾びれ。尾長グレことクロメジナだ！',lengths:[10,18,26,35,44,55,70],baitWeights:{shrimp:3.6,smallShrimp:2.7,worm:.35,river:.06,paste:.8,corn:.1,liveMinnow:.06,shell:.08,crab:.3}},
+  {id:'houraihimeji',name:'ホウライヒメジ',base:'shirogisu',number:64,price:670,resistance:115,band:'medium',hook:'medium',scientific:'Parupeneus ciliatus',habitats:['sea'],rarity:3,label:'砂底を探る桃色の二本ひげ',
+   ecology:'桃色の体に、あごから伸びる二本のひげを持つ。尾の付け根の黒い鞍状の模様は体側の中央より下まで届く。ひげで底の小さな生き物を探す。',locations:'潮風島・入り江（中層〜深場）',time:'いつでも',rods:['clearStream','shoreReed'],baits:['smallShrimp','worm','shrimp'],tip:'入り江で小エビ＋ハリ中を深場へ。砂底を伝う引きが止まり、ひげを休めた間にそっと寄せよう。',intro:'桃色の体に二本ひげ。底を探るホウライヒメジだ！',lengths:[8,13,18,24,31,39,50],baitWeights:{smallShrimp:3.6,worm:2.7,shrimp:2.3,crab:1.4,shell:.25,liveMinnow:.1,river:.15,paste:.02,corn:.01}}
+ );
+ Object.assign(art,{"takabe":{"asset":"assets/fish-takabe-v252-56.png","boxes":[[10,204,366,143],[414,153,342,228],[850,135,260,259],[1214,120,269,280],[46,642,270,256],[401,665,329,206],[778,701,360,146],[1167,699,359,152]],"heads":[[0.9918,0.5594],[0.9825,0.5614],[0.7692,0.5676],[0.5056,0.5786],[0.2704,0.5508],[0.0122,0.5777],[0.0111,0.5274],[0.9833,0.4868]],"continuousBody":true},"kuromejina":{"asset":"assets/fish-kuromejina-v252-56.png","boxes":[[9,178,388,207],[422,141,380,281],[838,125,323,322],[1219,116,280,334],[30,611,314,313],[375,631,364,268],[760,658,378,209],[1154,653,374,213]],"heads":[[0.9871,0.5314],[0.9816,0.5516],[0.7802,0.5466],[0.5036,0.5689],[0.2102,0.5399],[0.0192,0.5784],[0.0132,0.5502],[0.9786,0.4742]],"continuousBody":true},"houraihimeji":{"asset":"assets/fish-houraihimeji-v252-56.png","boxes":[[12,183,377,177],[415,150,351,230],[830,126,267,288],[1221,126,247,302],[60,622,269,286],[400,645,350,242],[777,673,367,177],[1160,674,368,176]],"heads":[[0.9814,0.6384],[0.9687,0.6261],[0.8127,0.5833],[0.498,0.6026],[0.1896,0.6049],[0.02,0.6322],[0.0245,0.661],[0.9837,0.5852]],"continuousBody":true}});
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -216,9 +226,9 @@
  Object.assign(pools['coast-reef-deep'],{hiramasa:.20,kanpachi:.22});
  // These fish are exclusive to the distant island's normal encounter pools.
  Object.assign(pools,{
-  'offshore-cove-shallow':{akahata:.45,ishigakidai:.12},'offshore-cove-mid':{akahata:.38,ishigakidai:.15},'offshore-cove-deep':{akahata:.14,ishigakidai:.2},
-  'offshore-west-shallow':{ishigakidai:.42,akahata:.3},'offshore-west-mid':{ishigakidai:.5,akahata:.24},'offshore-west-deep':{ishigakidai:.55,akahata:.12},
-  'offshore-east-shallow':{shimaaji:.18,akahata:.12},'offshore-east-mid':{shimaaji:.55},'offshore-east-deep':{shimaaji:.5}
+  'offshore-cove-shallow':{akahata:.45,ishigakidai:.12},'offshore-cove-mid':{akahata:.38,ishigakidai:.15,houraihimeji:.22},'offshore-cove-deep':{akahata:.14,ishigakidai:.2,houraihimeji:.6},
+  'offshore-west-shallow':{ishigakidai:.42,akahata:.3},'offshore-west-mid':{ishigakidai:.5,akahata:.24,kuromejina:.48},'offshore-west-deep':{ishigakidai:.55,akahata:.12,kuromejina:.24},
+  'offshore-east-shallow':{shimaaji:.18,akahata:.12,takabe:.14},'offshore-east-mid':{shimaaji:.55,takabe:.6},'offshore-east-deep':{shimaaji:.5}
  });
  function install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle}){
   for(const d of definitions){
@@ -261,6 +271,20 @@
     {id:'island-run',name:runName,icon:'➜',weight:.4,min:800,max:1300,motion:id==='shimaaji'?'rush':'deep',speedX:speed,speedY:.9,tension:force,release:5.8,reel:.5,scale:1.02,frameEvery:1,danger:true,hold:'魚の走りだ！Aを離して受け流そう。',loose:'走りが緩むまで待とう。'},
     {id:'island-drive',name:id==='shimaaji'?'群れへ向かう泳ぎ':'岩際の粘り',icon:'≋',weight:.28,min:800,max:1250,motion:'steady',speedX:speed*.65,speedY:.4,tension:6.8,release:5.3,reel:.72,scale:1,frameEvery:2,hold:'まだ糸が張っている。無理に引かずに待とう。',loose:'魚の向き直りを見ていよう。'},
     {id:'rest',name:'向き直る',icon:'◎',weight:.32,min:750,max:1200,motion:'rest',speedX:.3,speedY:.2,tension:1.8,release:5.3,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aで寄せよう。',loose:'今が引きどころ。Aで距離を取り返そう。'}
+   ]};
+  }
+  // Keep the three newcomers' effort readable in both fight modes. These
+  // are game rhythms, not measurements of biological force or endurance.
+  for(const [id,run,drive,speed,force,restWeight]of [
+   ['takabe','群れへの小さな走り','潮目を横切る泳ぎ',3.2,4.5,.44],
+   ['kuromejina','磯へ向かう強い突進','尾を振って踏ん張る',4.5,8,.34],
+   ['houraihimeji','砂底への短い走り','ひげで底を探る',2.5,5.8,.42]
+  ]){
+   const bottom=id==='houraihimeji';
+   fightProfiles[id]={intro:definitions.find(d=>d.id===id).intro,moods:[
+    {id:'island-dart',name:run,icon:'➜',weight:.36,min:700,max:1150,motion:bottom?'deep':'rush',speedX:speed,speedY:bottom?.45:.8,tension:force,release:5.6,reel:.6,scale:1,frameEvery:1,danger:true,hold:'走り出した！Aを離して受け流そう。',loose:'走りが落ち着くまで待とう。'},
+    {id:'island-cruise',name:drive,icon:'≋',weight:.64-restWeight,min:750,max:1200,motion:bottom?'heavy':'steady',speedX:speed*.45,speedY:.25,tension:force*.75,release:5.3,reel:.85,scale:1,frameEvery:2,hold:'まだ糸が張っている。無理に引かずに待とう。',loose:bottom?'砂底を探っている。止まる間を待とう。':'尾の動きが緩むのを見よう。'},
+    {id:'rest',name:bottom?'ひげを休める':'向き直る',icon:'◎',weight:restWeight,min:850,max:1400,motion:'rest',speedX:.2,speedY:.1,tension:1.4,release:5.3,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aでやさしく寄せよう。',loose:'今が引きどころ。Aで寄せよう。'}
    ]};
   }
   for(const spot of fishingSpots)if(pools[spot.id])Object.assign(spot.weights,pools[spot.id]);

@@ -55,7 +55,7 @@ test('the real aquarium and notebook show blue Madai, its alias and all six prio
   w.document.querySelector('[data-pet-action="records"]').click();const records=w.document.querySelector('.pet-discoveries').textContent;for(const title of ['黄金のフナ','黄金のコイ','白化ナマズ','黄金のメダカ','白化ウナギ','白化ドジョウ','蒼鱗マダイ'])assert.ok(records.includes(title));
   for(const record of variant.fixture().petLife.mutationDiscoveries)assert.deepEqual(read(w,`s.petLife.mutationDiscoveries.find(d=>d.species==="${record.species}")`),record);
   w.eval('ShuPetLife.renameFish(s,"pet-12","あおしお");petUi.open("notebook")');w.document.querySelector('[data-notebook-species="madai"]').click();w.document.querySelector('[data-notebook-fish="pet-12"]').click();
-  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/あおしお/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/蒼鱗マダイ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-12"] [data-pet-mutation]').textContent,'蒼鱗');assert.equal(read(w,'fish.length'),61);
+  assert.match(w.document.querySelector('.pet-notebook-page').textContent,/あおしお/);assert.match(w.document.querySelector('.pet-notebook-page').textContent,/蒼鱗マダイ/);assert.equal(w.document.querySelector('[data-notebook-fish="pet-12"] [data-pet-mutation]').textContent,'蒼鱗');assert.equal(read(w,'fish.length'),64);
   w.eval('petUi.open("aquarium")');w.document.querySelector('[data-pet-action="help"]').click();assert.match(w.document.querySelector('.pet-help-cards').textContent,/マダイは蒼鱗/);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
@@ -66,7 +66,7 @@ test('unknown or wrong-species Madai colours survive normalization and safely us
 test('dedicated blue art covers eight poses and 97 turn positions with clean alpha and the ordinary physical scale',async()=>{
  const {createCanvas,loadImage}=require('@napi-rs/canvas'),root=path.resolve(__dirname,'..'),sha=file=>crypto.createHash('sha256').update(fs.readFileSync(path.join(root,file))).digest('hex');
  assert.equal(sha('assets/aquarium-madai-blue-v252-21.png'),'da1e4780dfcc5e6004e68e62dfec3a357a13a890112240bc61f03b94db304ee4');assert.equal(sha('assets/aquarium-dojo-albino-v252-15.png'),'68301e6775db15555216dc7822fedb036dcab384efc2c26aeaad0a98c21ae679');
- assert.equal(Art.species.madaiBlue,undefined);assert.equal(Object.keys(Art.species).length,61);assert.equal(Art.aquarium.madaiBlue.boxes.length,8);
+ assert.equal(Art.species.madaiBlue,undefined);assert.equal(Object.keys(Art.species).length,64);assert.equal(Art.aquarium.madaiBlue.boxes.length,8);
  const image=await loadImage(path.join(root,Art.aquarium.madaiBlue.asset));assert.equal(image.width,1536);assert.equal(image.height,1024);
  const samples=Array.from({length:97},(_,i)=>[7,i/16]);samples.push([3,0],[3,1],[3,2]);
  for(const [cells,frame]of samples){assert.deepEqual(Art.pose('madaiBlue',cells,frame),Art.pose('madai',cells,frame));const c=createCanvas(448,224),ctx=c.getContext('2d');assert.equal(Art.draw(ctx,image,'madaiBlue',cells,frame,()=>image),true);const d=ctx.getImageData(0,0,448,224).data;let visible=0,azure=0;for(let i=0;i<d.length;i+=4)if(d[i+3]>=128){visible++;if(d[i+2]>d[i]*1.25&&d[i+1]>d[i]*1.10)azure++;}

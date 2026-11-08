@@ -65,7 +65,7 @@
   }
   const fishingPoints=[{id:'cove',x:118,y:81,direction:'down'},{id:'west',x:27,y:69,direction:'left'},{id:'east',x:218,y:55,direction:'right'}];
   const base={cove:{aji:.2,kasago:.2,mebaru:.14,shirogisu:.16},west:{ishidai:.18,utsubo:.14,kasago:.2},east:{hiramasa:.18,kanpachi:.18,buri:.14,masaba:.12}};
-  const spots=Object.entries(names).flatMap(([area,label])=>['shallow','mid','deep'].map(depth=>({id:`offshore-${area}-${depth}`,zone:'sea',depth,name:`${label}・${{shallow:'岸際',mid:'中層',deep:'深場'}[depth]}`,role:{cove:'入り江のアカハタと磯魚',west:'貝を狙うイシガキダイと岩陰の魚',east:'潮目を巡るシマアジと青物'}[area],weights:{...base[area]}})));
+  const spots=Object.entries(names).flatMap(([area,label])=>['shallow','mid','deep'].map(depth=>({id:`offshore-${area}-${depth}`,zone:'sea',depth,name:`${label}・${{shallow:'岸際',mid:'中層',deep:'深場'}[depth]}`,role:{cove:'岩陰のアカハタと砂底のホウライヒメジ',west:'イシガキダイと尾長グレのクロメジナ',east:'小さなタカベの群れとシマアジ・青物'}[area],weights:{...base[area]}})));
   const atPier=s=>s.mapRegion===id?near(s,entry,7):s.mapRegion==='village'&&near(s,harbor,5);
   function voyage(s,returning=false){
     if(!atPier(s)||s.boatActive||returning!==(s.mapRegion===id))return {ok:false,reason:'船着き場で船長に話しかけよう。'};

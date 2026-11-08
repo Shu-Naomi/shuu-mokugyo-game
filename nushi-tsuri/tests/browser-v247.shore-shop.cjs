@@ -32,11 +32,11 @@ module.exports=async function shoreShop(url,mobile=false,options={}){
    await page.waitForFunction(id=>{const c=document.querySelector('#battleFish canvas');return c?.dataset.artSpecies===id&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>100);},id);await shot(id+'-'+mode);
    await page.evaluate(()=>{battle.retrieval=1;surfaceCatch();});await page.clock.runFor(1250);assert.equal(await value('s.caught.'+id),(old.caught[id]||0)+1);assert.equal(await value('s.baits.'+bait),old.baits[bait]-1);assert.equal(await value('s.catchMemories.'+id+'.best.method'),'bait');
   }
-  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),61);
+  await page.evaluate(()=>{hideCatchCard();save();});await page.reload({waitUntil:'domcontentloaded'});await start();for(const [id]of cases)assert.equal(await value('s.caught.'+id),2);assert.equal(await value('fish.length'),64);
   await page.evaluate(()=>{for(const f of fish)s.caught[f.id]=1;s.petLife.unlockedTanks=2;petUi.open('shop');});
   await page.waitForFunction(()=>[...document.querySelectorAll('.pet-fish-sales [data-compact-select]')].filter(n=>n.getClientRects().length).every(n=>{const c=n.querySelector('canvas');return c&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>100);}));
   const baseline=await snapshot(),layout=await page.locator('.pet-fish-sales').evaluate(n=>({visible:[...n.querySelectorAll('[data-compact-select]')].filter(x=>x.getClientRects().length).length,scroll:n.scrollHeight-n.clientHeight,columns:getComputedStyle(n).getPropertyValue('--compact-list-columns')}));
-  assert.ok(layout.visible>=(mobile?6:18),JSON.stringify(layout));assert.equal(layout.scroll,0);assert.equal(await page.locator('[data-pet-buy]').count(),56);
+  assert.ok(layout.visible>=(mobile?6:18),JSON.stringify(layout));assert.equal(layout.scroll,0);assert.equal(await page.locator('[data-pet-buy]').count(),59);
   for(const [category,label,id]of [['fresh','淡水','oyanirami'],['sea','海水','ishidai']]){
    await press('[data-pet-water="'+category+'"]');assert.equal(await page.locator('[data-pet-water="'+category+'"]').getAttribute('aria-pressed'),'true');
    const actual=await page.locator('[data-pet-buy]').evaluateAll(ns=>ns.map(n=>n.dataset.petBuy)),expected=await page.evaluate(label=>petCatalog.filter(f=>!f.legendary&&f.waterLabel===label).map(f=>f.id),label);assert.deepEqual(actual,expected);
