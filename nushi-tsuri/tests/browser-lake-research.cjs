@@ -31,7 +31,7 @@ module.exports=async function research(url,screen){
   assert.ok(basicFit.scroll<=basicFit.height+1,'basics should fit on one page '+JSON.stringify(basicFit));
   await shot('basics');
   const before=await value('s'),raw=await page.evaluate(k=>localStorage.getItem(k),key);
-  assert.equal(await page.locator('#lakeResearchFish option').count(),56);
+  assert.equal(await page.locator('#lakeResearchFish option').count(),59);
   const firstFish=await page.locator('#lakeResearchFish').inputValue();await page.locator('#lakeResearchFish').focus();
   assert.equal(await page.locator('#lakeResearchTitle').textContent(),await value('fish.find(f=>f.id==='+JSON.stringify(firstFish)+').name'));
   await change('lakeResearchHabitat','sea');await change('lakeResearchFish','buri');
@@ -60,7 +60,7 @@ module.exports=async function research(url,screen){
   await page.reload({waitUntil:'load'});await enter(page,mobile,{slot:1,isNew:false});await menu('story');await press('#lakeStoryResearch');await fits('saved adventure');
   assert.deepEqual(await value('s.caught'),before.caught);if(!fresh){assert.equal(await value('s.extraFuture.keep'),42);assert.deepEqual(await value('s.petLife.fish.map(f=>f.uid)'),before.petLife.fish.map(f=>f.uid));assert.deepEqual(await value('s.petLife.eggs'),before.petLife.eggs);}
   pointers.push(...await value('researchPointers').catch(()=>[]));assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
-  const result={screen,fresh,readOnly:true,catalogue:56,fishCount:61,slotIsolation:true,saveResume:true,unknownNamesHidden:true,sourceReturn:true,errors,httpErrors,layouts,pointers};
+  const result={screen,fresh,readOnly:true,catalogue:59,fishCount:64,slotIsolation:true,saveResume:true,unknownNamesHidden:true,sourceReturn:true,errors,httpErrors,layouts,pointers};
   fs.writeFileSync(path.join(dir,width+'x'+height+'-result.json'),JSON.stringify(result,null,2));console.log('LAKE_RESEARCH_PASS '+JSON.stringify({...result,layouts:undefined}));
  }catch(error){await shot('failure').catch(()=>{});throw error;}finally{await context.close();await browser.close();}
 };
