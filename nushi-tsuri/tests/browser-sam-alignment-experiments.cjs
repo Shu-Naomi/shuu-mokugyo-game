@@ -7,7 +7,6 @@ const path = require('node:path');
 const http = require('node:http');
 const { createHash } = require('node:crypto');
 const { execFileSync } = require('node:child_process');
-const { chromium } = require('playwright');
 const { createCanvas, loadImage } = require('@napi-rs/canvas');
 const { seed, saveKey } = require('./game-harness.cjs');
 const enter = require('./browser-start-adventure.cjs');
@@ -48,8 +47,7 @@ const result = { study: runConfig.lifecycleOnly ? 'Lifecycle-only original-art a
     'Chromium emulation does not establish physical-device Safari behavior. Mobile landscape is the target;640x360 DPR1 exercises source downscale. The original portrait orientation guard hides all game screens, so390x844 portrait was not validated and is not bypassed.'
   ] };
 
-function verifyRuntime() {
-  const baseline = process.env.SAM_BASELINE_ROOT;
+function verifyRuntime({ baseline = process.env.SAM_BASELINE_ROOT, writeManifest = json } = {}) {
   assert.ok(baseline, 'SAM_BASELINE_ROOT is required; use the separately checked-out pinned original');
   assert.equal(execFileSync('git', ['-C', baseline, 'rev-parse', 'HEAD'], { encoding: 'utf8' }).trim(), PINNED);
   assert.equal(execFileSync('git', ['-C', baseline, 'status', '--porcelain', '--untracked-files=no'], { encoding: 'utf8' }).trim(), '');
@@ -61,7 +59,7 @@ function verifyRuntime() {
     return { file, bytes: original.length, sha256: hash(original) };
   });
   assert.ok(!fs.existsSync(path.join(root, 'assets/sam-sfc-pixel-pilot.png')));
-  json('original-runtime-art-manifest.json', manifest);
+  writeManifest('original-runtime-art-manifest.json', manifest);
   return { files: manifest.length, allBytesIdentical: true, manifest: 'original-runtime-art-manifest.json' };
 }
 async function serve() {
@@ -1186,6 +1184,7 @@ function checkpoint(stage) {
   json('alignment-progress.json', result.lastCheckpoint);
 }
 async function main() {
+  const { chromium } = require('playwright');
   fs.mkdirSync(output, { recursive: true }); result.runtime = verifyRuntime();
   if (runConfig.lifecycleOnly) {
     assert.equal(result.runtime.files, 676, 'Focused lifecycle evidence still verifies all 676 pinned runtime/art files');
@@ -1246,4 +1245,5 @@ async function main() {
   }
 }
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
-module.exports = { widthModel, crop, MODES, installController, runConfiguration };
+module.exports = { widthModel, crop, MODES, installController, runConfiguration,
+  verifyRuntime, serve, installMetrics, installInputEvidence, assertPressReleased, cameraChangingMove, LAYERS, PINNED, initial };

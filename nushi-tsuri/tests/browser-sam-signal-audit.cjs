@@ -339,5 +339,5 @@ async function main() {
   if (result.failures.length) process.exitCode = 1;
 }
 
-module.exports = { configuration, chromiumArguments, dprEvidence, summarize };
+module.exports = { configuration, chromiumArguments, dprEvidence, summarize, launchStandalone, EXPECTED_PLAYWRIGHT, EXPECTED_CHROMIUM };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });

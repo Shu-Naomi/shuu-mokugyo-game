@@ -91,6 +91,16 @@ test('partial capture metadata is persisted even when screenshot fails',async t=
   assert.match(observations[0].failure,/capture failed/);
   assert.ok(fs.existsSync(path.join(output,'failed-before-actor.rgba')));
 });
+test('opt-in raw CDP capture records provenance and presentation without calling Playwright screenshot',async t=>{
+  const output=directory(t),observations=[],bytes=Buffer.from('raw CDP screenshot');let snapshots=0;
+  const page={evaluate:async()=>sampled(),screenshot:async()=>{throw Error('wrong capture API');}};
+  const probe={snapshot:async()=>({revision:++snapshots}),capture:async()=>({bytes,
+    provenance:{method:'Page.captureScreenshot',params:{format:'png',fromSurface:true,captureBeyondViewport:false}}})};
+  const result=await observedScreenshot(page,output,'cdp.png',observations,()=>{}, {probe,rawCDP:true});
+  assert.deepEqual(result,bytes);assert.deepEqual(fs.readFileSync(path.join(output,'cdp.png')),bytes);
+  assert.equal(observations[0].captureProvenance.method,'Page.captureScreenshot');
+  assert.equal(observations[0].presentationBefore.revision,1);assert.equal(observations[0].presentationAfter.revision,2);
+});
 test('legacy strict assertions and original settling waits remain in place',()=>{
   const source=fs.readFileSync(path.join(__dirname,'browser-sam-pixel-pilot.cjs'),'utf8');
   assert.match(source,/await page\.clock\.runFor\(700\);await page\.waitForTimeout\(700\)/);

@@ -13,7 +13,9 @@ const pinned='880817ec738f6f9dcc45dc9a3a098e7bd6676823';
 const baseline=process.env.SAM_BASELINE_ROOT;
 const screen={width:Number(process.env.SAM_WIDTH||1280),height:Number(process.env.SAM_HEIGHT||720),
   dpr:Number(process.env.SAM_DPR||1),touch:process.env.SAM_TOUCH==='1'};
-const output=path.join(__dirname,'browser-evidence-sam-pixel-pilot',`${screen.width}x${screen.height}-dpr${screen.dpr}`);
+const compositorDiagnostic=process.env.SAM_COMPOSITOR_DIAGNOSTIC==='1';
+const output=path.join(__dirname,compositorDiagnostic?'browser-evidence-sam-compositor':'browser-evidence-sam-pixel-pilot',
+  `${screen.width}x${screen.height}-dpr${screen.dpr}`);
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8',
   '.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
 const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
@@ -191,6 +193,13 @@ async function main() {
         assert.deepEqual(b.framing,variant.pipeline.framing,'same framing for injected experiment');
         comparisons.push(await compareShots(b.filename,variant.filename,`${b.name}-${variant.value}`,b.pipeline.samCrop.css));
       }
+    }
+    if(compositorDiagnostic){
+      const summary={study:'Dedicated disposable-context compositor diagnostic, not the full original comparison or a quality fix',
+        baseline:pinned,current:execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8',cwd:roots.restored}).trim(),
+        screen,runtime,comparisons,diagnostics:['baseline-compositor-diagnostic.json','restored-compositor-diagnostic.json']};
+      fs.writeFileSync(path.join(output,'compositor-summary.json'),JSON.stringify(summary,null,2));
+      console.log('SAM_COMPOSITOR_DIAGNOSTIC_COLLECTED '+JSON.stringify(summary));return;
     }
     const movementComparisons=[];
     for(const frame of results.restored.movementDiagnostic?.screenShots||[])for(const variant of frame.variants) {

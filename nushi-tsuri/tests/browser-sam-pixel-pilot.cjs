@@ -56,17 +56,26 @@ async function actorObservation(page, output, stem) {
   return {...metadata,canvas:{...metadata.canvas,rgbaBytes:bytes.length,
     rgbaSha256:createHash('sha256').update(bytes).digest('hex'),rgbaFile,pngFile}};
 }
-async function observedScreenshot(page, output, filename, observations, persist) {
+async function observedScreenshot(page, output, filename, observations, persist, diagnostic=null) {
   const observation={filename};observations.push(observation);
   const stem=filename.replace(/\.png$/,'');
   try {
+    if(diagnostic)observation.presentationBefore=await diagnostic.probe.snapshot();
     observation.before=await actorObservation(page,output,`${stem}-before`);
-    const bytes=await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
+    let bytes;
+    if(diagnostic?.rawCDP){
+      const captured=await diagnostic.probe.capture();bytes=captured.bytes;observation.captureProvenance=captured.provenance;
+      fs.writeFileSync(path.join(output,filename),bytes);
+    }else{
+      bytes=await page.screenshot({path:path.join(output,filename),animations:'allow',scale:'device'});
+      if(diagnostic)observation.captureProvenance={method:'Playwright page.screenshot',params:{animations:'allow',scale:'device'}};
+    }
     observation.pngBytes=bytes.length;observation.pngSha256=createHash('sha256').update(bytes).digest('hex');
     observation.after=await actorObservation(page,output,`${stem}-after`);
     const a=observation.before.canvas,b=observation.after.canvas;
     observation.actorCanvasUnchanged=a.width===b.width&&a.height===b.height&&a.rgbaSha256===b.rgbaSha256;
     observation.actorStateUnchanged=JSON.stringify(observation.before.state)===JSON.stringify(observation.after.state);
+    if(diagnostic)observation.presentationAfter=await diagnostic.probe.snapshot();
     return bytes;
   } catch(error) {observation.failure=error.stack;throw error;}
   finally {persist();}
@@ -75,6 +84,10 @@ async function observedScreenshot(page, output, filename, observations, persist)
 module.exports = async function run(url, label, screen, output, experiments=false) {
   // Unit shards import the readback helpers without installing browser tooling.
   const { chromium } = require('playwright');
+  const compositorDiagnostic=process.env.SAM_COMPOSITOR_DIAGNOSTIC==='1';
+  if(compositorDiagnostic)assert.ok(screen.width===1280&&screen.height===720&&screen.dpr===1&&!screen.touch,
+    'dedicated compositor diagnostic is limited to PC 1280x720 DPR1');
+  let compositorProbe=null;
   fs.mkdirSync(output, { recursive:true });
   const browser = await chromium.launch({ headless:true });
   const result = { label, baseline:BASELINE, screen, fixture:initial(), fixedTime:FIXED_TIME,
@@ -82,7 +95,8 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     experiments, cssScope:WORLD_SELECTOR, productionRendering:'pixelated',
     visualClock:'Fixed JS clock; completed finite CSS animations; infinite CSS animations paused at time zero.' };
   const persist=()=>fs.writeFileSync(path.join(output,`${label}-result.json`),JSON.stringify(result,null,2));
-  const screenshot=filename=>observedScreenshot(page,output,filename,result.actorObservations,persist);
+  const screenshot=filename=>observedScreenshot(page,output,filename,result.actorObservations,persist,
+    compositorProbe?{probe:compositorProbe}:null);
   const options = { viewport:{width:screen.width,height:screen.height}, deviceScaleFactor:screen.dpr,
     isMobile:screen.touch, hasTouch:screen.touch, locale:'ja-JP', serviceWorkers:'block' };
   async function context() {
@@ -266,7 +280,21 @@ module.exports = async function run(url, label, screen, output, experiments=fals
     })),result.worldSources);
     await walk({x:197,y:91,direction:'up'});
     assert.equal(await page.evaluate(()=>isAtSamShopEntrance()),true);
+    if(compositorDiagnostic){
+      result.scope='Dedicated compositor diagnostic: original approach/shop captures followed by a disposable A-A-B-A probe; later gameplay comparisons are not run.';
+      compositorProbe=await require('./browser-sam-compositor-diagnostic.cjs').createCompositorProbe(page);
+    }
     await capture('shop-entrance');
+    if(compositorDiagnostic){
+      const {runCompositorDiagnostic}=require('./browser-sam-compositor-diagnostic.cjs');
+      result.compositorDiagnostic=await runCompositorDiagnostic({page,probe:compositorProbe,pipeline,output,label,
+        retainedFirst:`${label}-shop-entrance-pixelated.png`,
+        capture:async(filename,rawCDP)=>({bytes:await observedScreenshot(page,output,filename,result.actorObservations,persist,
+          {probe:compositorProbe,rawCDP}),observation:result.actorObservations.at(-1)})});
+      // CSS restoration cannot reset a raster cache. Never continue ordinary
+      // gameplay screenshots in a context that ran this intervention.
+      return result;
+    }
     result.controls=await page.evaluate(() => ['#action',...['up','right','down','left'].map(d=>`[data-move="${d}"]`)].map(q=>{
       const n=document.querySelector(q),r=n.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
       return {q,width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:top===n||n.contains(top)};
@@ -390,7 +418,7 @@ module.exports = async function run(url, label, screen, output, experiments=fals
   } catch(error) {
     result.failure=error.stack;await page.screenshot({path:path.join(output,`${label}-failure.png`)}).catch(()=>{});throw error;
   } finally {
-    persist();await browser.close();
+    persist();try{if(compositorProbe)await compositorProbe.close();}finally{await browser.close();}
   }
 };
 module.exports.actorObservation=actorObservation;
