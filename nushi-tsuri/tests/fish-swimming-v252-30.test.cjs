@@ -8,7 +8,7 @@ function shape(ctx){
  return {count,width:right-left+1,edge,bytes:Buffer.from(px)};
 }
 test('all sixty-one species and twelve variants use explicit cosmetic profiles; variant aliases preserve the parent style',()=>{
- assert.equal(Object.keys(A.species).length,61);assert.equal(Object.keys(A.aquarium).length,12);
+ assert.equal(Object.keys(A.species).length,64);assert.equal(Object.keys(A.aquarium).length,12);
  for(const id of Object.keys(A.species))assert.ok(M.profiles[id],id);
  for(const id of Object.keys(all))for(const key of ['amplitude','shoulder','falloff','wave','fin','pulse'])assert.ok(Number.isFinite(M.profile(id)[key]),id+' '+key);
  for(const [variant,id]of [['dojoAlbino','dojo'],['unagiAlbino','unagi'],['medakaGold','medaka'],['buriMojako','buri'],['tanagoGold','tanago']])assert.equal(M.profile(variant),M.profile(id));

@@ -6,10 +6,10 @@ const model=w=>read(w,'ShuLakeResearch.model(s,{fish,encyclopedia:fishEncycloped
 const value=(w,id)=>w.document.querySelector('#'+id);
 function choose(w,id,selected){const control=value(w,id);control.value=selected;control.dispatchEvent(new w.Event('change',{bubbles:true}));}
 
-test('the notes reuse all 56 ordinary fish and the existing location, time, bait, rod and hook records',()=>{
+test('the notes reuse all 59 ordinary fish and the existing location, time, bait, rod and hook records',()=>{
  const app=boot(),w=app.window;
  try{
-  const data=model(w);assert.equal(data.fish.length,56);
+  const data=model(w);assert.equal(data.fish.length,59);
   for(const f of data.fish){
    assert.equal(Regional.legendary(f.id),false);
    const original=read(w,'fishEncyclopediaData['+JSON.stringify(f.id)+']');

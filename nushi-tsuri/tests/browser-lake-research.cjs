@@ -54,7 +54,7 @@ module.exports=async function research(url,screen){
   await press('#lakeStoryResearch');await fits('return from map and memories');await press('#lakeStoryClose');
   await menu('record');await press('#fishdexStoryOffer');await press('#lakeStoryResearch');await page.keyboard.press('Escape');await page.locator('#record.open').waitFor();await page.keyboard.press('Escape');
   if(!fresh){await press('#action');await page.locator('#store.open').waitFor();if(!await page.locator('#samStoryOffer').isVisible())await press('#store [data-compact-guide]');await press('#samStoryOffer');await press('#lakeStoryResearch');await press('#lakeStoryClose');await page.locator('#store.open').waitFor();await page.keyboard.press('Escape');}
-  assert.deepEqual(await value('s.caught'),before.caught);assert.equal(await value('fish.length'),61);
+  assert.deepEqual(await value('s.caught'),before.caught);assert.equal(await value('fish.length'),64);
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),other),otherRaw);
   pointers.push(...await value('researchPointers'));assert.ok(pointers.some(p=>p.id==='lakeStoryResearch'&&p.type===(mobile?'touch':'mouse')));
   await page.reload({waitUntil:'load'});await enter(page,mobile,{slot:1,isNew:false});await menu('story');await press('#lakeStoryResearch');await fits('saved adventure');

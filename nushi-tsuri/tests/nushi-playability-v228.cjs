@@ -3,16 +3,16 @@ const {findRoute}=require('./water-routes-v220.cjs');
 const M=require('../mountain-region.js');
 const I=require('../offshore-island.js');
 
-function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold,waterFxSeed=null}){
- const island={shimaaji:{area:'east',bait:'shrimp',distance:50},ishigakidai:{area:'west',bait:'shell',distance:50},akahata:{area:'cove',bait:'smallShrimp',distance:20}}[id];
+function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold,waterFxSeed=null,rod='tideMaster'}){
+ const island={takabe:{area:'east',bait:'shrimp',distance:50,hook:'small'},kuromejina:{area:'west',bait:'shrimp',distance:50,hook:'medium'},houraihimeji:{area:'cove',bait:'smallShrimp',distance:80,hook:'medium'},shimaaji:{area:'east',bait:'shrimp',distance:50},ishigakidai:{area:'west',bait:'shell',distance:50},akahata:{area:'cove',bait:'smallShrimp',distance:20}}[id];
  const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=island?.bait||(wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm');
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:wet?600:1320,
   ...(island?{mapRegion:I.id,...I.fishingPoints.find(p=>p.id===island.area)}:wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
-  ownedRods:['tideMaster'],selectedRod:'tideMaster',fightMode:mode,selectedHook:island?.area==='cove'?'medium':'large',selectedBait:bait,
+  ownedRods:[rod],selectedRod:rod,fightMode:mode,selectedHook:island?.hook||(island?.area==='cove'?'medium':'large'),selectedBait:bait,
   baits:{worm:20,nushiSecret:20,liveMinnow:20,shrimp:20,shell:20,smallShrimp:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
  try{
   if(wet)for(const direction of findRoute(w,'wetMarsh').path)w.move(direction);
- const spot=island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':'mid'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=island?.distance||(wet?50:95);
+ const spot=island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':island.distance<67?'mid':'deep'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=island?.distance||(wet?50:95);
   w.eval(`${island?'action()':sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
   const encounter=read(w,`(()=>{for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;
    if(pick(${distance},${JSON.stringify(spot)})?.id===${JSON.stringify(id)})return r;}return null;})()`);

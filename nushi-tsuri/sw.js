@@ -1,8 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-village-refresh-252-55";
+const CACHE_NAME = "nushi-tsuri-v252-island-fish-252-56";
 
 const CORE_ASSETS = [
+  "./assets/fish-takabe-v252-56.png",
+  "./assets/fish-kuromejina-v252-56.png",
+  "./assets/fish-houraihimeji-v252-56.png",
   "./rural-canals.js?v=252-55",
   "./assets/rural-canals-v252-48.webp",
   "./assets/rural-canal-cast-v252-48.webp",
@@ -51,7 +54,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-tanago-gold-v252-24.png",
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
-  "./offshore-island.js?v=252-20",
+  "./offshore-island.js?v=252-56",
   "./offshore-island.css?v=251-2",
   "./assets/offshore-world-v252-18.png",
   "./assets/offshore-ferry-v251.png",
@@ -78,7 +81,7 @@ const CORE_ASSETS = [
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
   "./world-life.js?v=252-55",
-  "./fish-additions.js?v=252-47",
+  "./fish-additions.js?v=252-56",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
   "./assets/fish-himemasu-v238.png",
@@ -131,7 +134,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=252-53",
-  "./fishing-duel.js?v=252-47",
+  "./fishing-duel.js?v=252-56",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
@@ -184,8 +187,8 @@ const CORE_ASSETS = [
   "./assets/ui-lantern-v252-28.svg",
   "./assets/ui-paw-v252-28.svg",
   "./assets/ui-heart-v252-28.svg",
-  "./aquarium-life.js?v=252-47",
-  "./fish-motion.js?v=252-47",
+  "./aquarium-life.js?v=252-56",
+  "./fish-motion.js?v=252-56",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-27",
   "./rival-anglers.js?v=252-55",

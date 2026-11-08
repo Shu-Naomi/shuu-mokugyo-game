@@ -14,14 +14,15 @@
   };
   const groups={
     cruise:'moroko funa ayu yamame nijimasu iwana amago bora suzuki madai isaki ugui kawamutsu herabuna himemasu aburahaya bluegill tanago motsugo nigoi',
-    swift:'aji wakasagi oikawa sayori masaba akakamasu buri hiramasa kanpachi shimaaji',
+    swift:'aji wakasagi oikawa sayori masaba akakamasu buri hiramasa kanpachi shimaaji takabe',
     hover:'mebaru kawahagi oyanirami medaka',
-    bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko',
+    bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko houraihimeji',
     long:'unagi dojo utsubo',flat:'hirame magochi',
-    heavy:'koi namazu bass kurodai ishidai ishigakidai raigyo streamNushi coastNushi caveNushi starNushi nushi',
+    heavy:'koi namazu bass kurodai ishidai ishigakidai kuromejina raigyo streamNushi coastNushi caveNushi starNushi nushi',
   };
   const variations={unagi:[1.05,.97],dojo:[.78,1.18],utsubo:[1.08,1],koi:[.84,.9],namazu:[1.12,1.12],
     medaka:[.68,1.1],kawahagi:[.65,.85],buri:[1.08,.98],hiramasa:[.88,1.1],kanpachi:[1.12,.92],
+    takabe:[.82,1.12],kuromejina:[.92,1.08],houraihimeji:[.86,.92],
     donko:[.78,.86],tanago:[.72,1.04],moroko:[.82,1.08],hirame:[.78,1.15],magochi:[.76,.85]};
   const profiles={};
   for(const [family,ids]of Object.entries(groups))for(const id of ids.split(' ')){
