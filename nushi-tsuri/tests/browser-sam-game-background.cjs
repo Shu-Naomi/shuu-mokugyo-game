@@ -15,6 +15,51 @@ function configuration(env) {
     notRun: ['visual-pairs', 'exact-screenshot-restoration', 'contact-sheets', 'route-shop-regression', 'performance', 'mobile-touch'] };
 }
 
+function metricsForDpr(dpr) {
+  // Match the fixed desktop screen fields sent by Playwright v1.63's public
+  // setViewportSize. After a screenshot, the next command changes only DPR.
+  return { width: WIDTH, height: HEIGHT, deviceScaleFactor: dpr, mobile: false,
+    screenWidth: WIDTH, screenHeight: HEIGHT, screenOrientation: { angle: 0, type: 'landscapePrimary' } };
+}
+
+function readViewportSnapshot() {
+  return { viewport: { width: innerWidth, height: innerHeight }, dpr: devicePixelRatio,
+    screen: { width: window.screen.width, height: window.screen.height,
+      orientation: window.screen.orientation ? { type: window.screen.orientation.type, angle: window.screen.orientation.angle } : null } };
+}
+
+async function normalizeViewport(page, cdp) {
+  const read = () => page.evaluate(readViewportSnapshot);
+  const before = await read();
+  // Establish the viewport through Playwright's own session before loading the
+  // fixture. A custom CDP session alone leaves Playwright's capture session with
+  // native-window metrics, which Chromium restores after captureScreenshot.
+  // Public setViewportSize preserves the noDefaults/focus-emulation choice.
+  await page.setViewportSize({ width: WIDTH, height: HEIGHT });
+  await cdp.send('Emulation.setDeviceMetricsOverride', metricsForDpr(1));
+  const after = await read(), playwrightViewport = page.viewportSize();
+  assert.deepEqual(playwrightViewport, { width: WIDTH, height: HEIGHT });
+  assert.deepEqual(after.viewport, playwrightViewport, 'Actual initial CSS viewport agrees with Playwright capture state');
+  assert.equal(after.dpr, 1);
+  assert.equal(after.screen.width, WIDTH); assert.equal(after.screen.height, HEIGHT);
+  return { before, after, playwrightViewport, command: metricsForDpr(1), method: 'Public Playwright viewport followed by initial CDP DPR 1, before fixture navigation',
+    provenance: [
+      'https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/server/chromium/crPage.ts#L962-L1014',
+      'https://github.com/microsoft/playwright/blob/v1.63.0/packages/playwright-core/src/server/chromium/crPage.ts#L275-L297',
+      'https://github.com/chromium/chromium/blob/153.0.8010.12/content/browser/devtools/protocol/page_handler.cc#L1453-L1468',
+      'https://github.com/chromium/chromium/blob/153.0.8010.12/content/browser/devtools/protocol/page_handler.cc#L1894-L1902'
+    ] };
+}
+
+function assertDprStepIsolation(before, after, expectedBeforeDpr, expectedAfterDpr) {
+  assert.deepEqual(before.viewport, { width: WIDTH, height: HEIGHT }, 'DPR step starts at the expected CSS viewport');
+  assert.deepEqual(after.viewport, before.viewport, 'DPR-only step must not change either CSS viewport dimension');
+  assert.equal(before.dpr, expectedBeforeDpr, 'Expected DPR before the isolated change');
+  assert.equal(after.dpr, expectedAfterDpr, 'Expected DPR after the isolated change');
+  assert.ok(before.screen && after.screen, 'Screen metadata must be recorded on both sides');
+  assert.deepEqual(after.screen, before.screen, 'DPR-only step must not change screen dimensions or orientation');
+}
+
 function assertFrame(frame, mode) {
   const near = (value, tolerance, name) => assert.ok(Number.isFinite(value) && Math.abs(value) <= tolerance, `${name}: ${value}`);
   near(frame.residual.x, .002, 'Device-grid x residual');
@@ -79,6 +124,8 @@ function installEvidence() {
     updates: frames.length + droppedFrames, status: samAlignment.status(), timing: samAlignment.timing(),
     owned: owned(), world: { x: s.x, y: s.y, direction: s.direction },
     viewport: { width: innerWidth, height: innerHeight }, dpr: devicePixelRatio,
+    screen: { width: window.screen.width, height: window.screen.height,
+      orientation: window.screen.orientation ? { type: window.screen.orientation.type, angle: window.screen.orientation.angle } : null },
     menu: fieldMenuIsOpen(), modal: !!document.querySelector('.modal.open'),
     moving: document.querySelector('#map').getAnimations().some(animation =>
       animation.transitionProperty === 'transform' && (animation.playState === 'running' || animation.pending)) });
@@ -177,9 +224,10 @@ async function runMode(chromium, helpers, url, mode, output, checkpoint) {
     page.on('console', message => { if (message.type() === 'error') report.errors.push(message.text()); });
     page.on('response', response => { if (response.status() >= 400) report.httpErrors.push(`${response.status()} ${response.url()}`); });
     cdp = await context.newCDPSession(page);
-    const metrics = dpr => ({ width: WIDTH, height: HEIGHT, deviceScaleFactor: dpr, mobile: false });
-    await cdp.send('Emulation.setDeviceMetricsOverride', metrics(1));
+    report.viewportSetup = await normalizeViewport(page, cdp);
     await page.goto(url, { waitUntil: 'load' }); await page.bringToFront();
+    report.fixtureViewport = await page.evaluate(readViewportSnapshot);
+    assertDprStepIsolation(report.viewportSetup.after, report.fixtureViewport, 1, 1);
     assert.equal(await page.locator('.landscape-warning').isVisible(), false, 'Original orientation guard is not bypassed');
     await enter(page, false);
     if (await page.locator('#lakeIntroSkip').isVisible()) await press('#lakeIntroSkip');
@@ -282,15 +330,22 @@ async function runMode(chromium, helpers, url, mode, output, checkpoint) {
     validate('protected-state-and-original-canvas', () => {
       assert.deepEqual(report.recoveredState, report.originalState); assert.deepEqual(report.recoveredSource, report.originalSource);
     });
-    await page.screenshot({ path: path.join(output, `${mode}-recovered.png`), scale: 'device' });
+    report.recoveryScreenshot = { before: await snapshot(), file: `${mode}-recovered.png` };
+    await page.screenshot({ path: path.join(output, report.recoveryScreenshot.file), scale: 'device' });
+    await delay(250); // Let any capture-induced native resize appear before measuring DPR.
+    report.recoveryScreenshot.after = await snapshot();
+    validate('recovery-screenshot-viewport-isolation', () => assertDprStepIsolation(
+      report.recoveryScreenshot.before, report.recoveryScreenshot.after, 1, 1), 'dpr');
 
     // Retain the original real DPR-only update/signal/restore gates, separately
     // from genuine-background results. No dispatch, polling wake or manual apply.
     for (const dpr of [1.125, 1]) {
       const name = dpr === 1 ? 'actual-dpr-restore' : 'actual-dpr-change';
       await page.evaluate(() => samAlignment.resetTiming());
-      const test = await stage(name, () => cdp.send('Emulation.setDeviceMetricsOverride', metrics(dpr)), 350, 'dpr');
-      report.dpr.push({ name, command: metrics(dpr), ...test });
+      const test = await stage(name, () => cdp.send('Emulation.setDeviceMetricsOverride', metricsForDpr(dpr)), 350, 'dpr');
+      report.dpr.push({ name, command: metricsForDpr(dpr), ...test });
+      validate(`${name}-css-viewport-isolation`, () => assertDprStepIsolation(
+        test.before, test.after, dpr === 1 ? 1.125 : 1, dpr), 'dpr');
       validate(name, () => {
         assert.equal(test.after.dpr, dpr); assert.deepEqual(test.after.viewport, { width: WIDTH, height: HEIGHT });
         assert.ok(test.after.updates > test.before.updates, 'DPR-only change must reach a real controller update');
@@ -375,5 +430,6 @@ async function main() {
   if (result.failures.length) process.exitCode = 1;
 }
 
-module.exports = { configuration, assertFrame, assertSuspended, assertCleanup, summarize, waitForTrustedHiddenResume };
+module.exports = { configuration, assertFrame, assertSuspended, assertCleanup, summarize, waitForTrustedHiddenResume,
+  normalizeViewport, assertDprStepIsolation, metricsForDpr };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
