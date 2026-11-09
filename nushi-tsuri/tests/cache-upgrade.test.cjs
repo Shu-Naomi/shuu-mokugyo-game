@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome } = require('./browser-cache-upgrade-evidence.cjs');
+const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
 const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
@@ -79,4 +79,28 @@ test('candidate observer captures a failed install even before register resolves
     } },
   });
   assert.equal(await vm.runInContext(`(${candidateOutcome.toString()})('./sw.js?v=252-57')`, context), 'redundant');
+});
+
+test('existing-user upgrade fixture includes valid identity metadata and preserves every stored byte for either title slot', () => {
+  const { boot, saveKey } = require('./game-harness.cjs');
+  const saved = cacheUpgradeStorageFixture(), identityKeys = [saveKey, 'nushi-inugoya-v2-slot2'].map(key => 'nushi-pet-identity-display-v1:' + key);
+  const snapshot = window => Object.fromEntries(Object.keys(window.localStorage).sort().map(key => [key, window.localStorage.getItem(key)]));
+  for (const key of identityKeys) assert.equal(saved[key], '{"version":1,"rows":[]}');
+  for (const slot of [1, 2]) {
+    // Reproduce the incomplete fixture: normal title initialization adds only
+    // the selected slot's legitimate provenance registry, not a save rewrite.
+    const incomplete = { ...saved };
+    for (const key of identityKeys) delete incomplete[key];
+    const options = { start: false, url: `http://localhost/nushi-tsuri/?saveSlot=${slot}` };
+    const first = boot(JSON.parse(saved[saveKey]), undefined, { ...options, storage: incomplete });
+    try {
+      assert.deepEqual(snapshot(first.window), { ...incomplete, [identityKeys[slot - 1]]: saved[identityKeys[slot - 1]] });
+      assert.deepEqual(first.errors, []);
+    } finally { first.dispose(); }
+    const existing = boot(JSON.parse(saved[saveKey]), undefined, { ...options, storage: saved });
+    try {
+      assert.deepEqual(snapshot(existing.window), saved, 'complete snapshot, including both identity registries, remains byte-identical for slot ' + slot);
+      assert.deepEqual(existing.errors, []);
+    } finally { existing.dispose(); }
+  }
 });

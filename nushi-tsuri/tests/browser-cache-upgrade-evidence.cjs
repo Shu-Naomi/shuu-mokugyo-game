@@ -18,6 +18,21 @@ const alignmentSelectors = [
 const sha256 = text => createHash('sha256').update(text).digest('hex');
 const git = (cwd, ...args) => execFileSync('git', args, { cwd, encoding: 'utf8', maxBuffer: 8 * 1024 * 1024 }).trim();
 
+function cacheUpgradeStorageFixture() {
+  const { seed, saveKey } = require('./game-harness.cjs');
+  // Both adventures have no aquarium fish. An existing user's unchanged pet
+  // UI has already initialized each slot's display-provenance registry.
+  const identity = JSON.stringify({ version: 1, rows: [] });
+  return Object.fromEntries(Object.entries({
+    [saveKey]: JSON.stringify({ ...seed(), avatar: 'girl', soundEnabled: false }),
+    'nushi-inugoya-v2-slot2': JSON.stringify({ ...seed(), money: 9876, dog: 'grey', avatar: 'boy', soundEnabled: false }),
+    [`nushi-pet-identity-display-v1:${saveKey}`]: identity,
+    'nushi-pet-identity-display-v1:nushi-inugoya-v2-slot2': identity,
+    'nushi-inugoya-last-slot': '2', 'nushi-inugoya-options-v1': JSON.stringify({ textSpeed: 'instant' }),
+    'unrelated-game-save': '{"level":7}',
+  }).sort(([a], [b]) => a.localeCompare(b)));
+}
+
 function requireGitHubCI(env) {
   assert.equal(env.GITHUB_ACTIONS, 'true', 'Native cache-upgrade verification is reserved for the authorized GitHub Actions job. No local server or browser was started.');
   assert.match(env.NUSHI_EXPECTED_HEAD_SHA || '', /^[0-9a-f]{40}$/, 'exact pull request head is required');
@@ -187,13 +202,7 @@ async function run(sources, root, output) {
     context = await browser.newContext({ viewport: { width: 844, height: 390 }, locale: 'ja-JP', serviceWorkers: 'allow' });
     page = await context.newPage(); page.setDefaultTimeout(30000);
     page.on('pageerror', error => report.pageErrors.push(error.message));
-    const { seed, saveKey } = require('./game-harness.cjs');
-    const saved = Object.fromEntries(Object.entries({
-      [saveKey]: JSON.stringify({ ...seed(), avatar: 'girl', soundEnabled: false }),
-      'nushi-inugoya-v2-slot2': JSON.stringify({ ...seed(), money: 9876, dog: 'grey', avatar: 'boy', soundEnabled: false }),
-      'nushi-inugoya-last-slot': '2', 'nushi-inugoya-options-v1': JSON.stringify({ textSpeed: 'instant' }),
-      'unrelated-game-save': '{"level":7}',
-    }).sort(([a], [b]) => a.localeCompare(b)));
+    const saved = cacheUpgradeStorageFixture();
     await page.goto(origin + '/cache-upgrade-probe.html');
     await page.evaluate(async saved => {
       for (const [key, value] of Object.entries(saved)) localStorage.setItem(key, value);
@@ -295,5 +304,5 @@ async function main() {
   fs.writeFileSync(path.join(output, 'provenance.json'), JSON.stringify(sources.provenance, null, 2) + '\n');
   await run(sources, root, output);
 }
-module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome };
+module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
