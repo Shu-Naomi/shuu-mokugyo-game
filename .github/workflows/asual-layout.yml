@@ -36,6 +36,7 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
+      - run: node --test asual-notice-layout.test.cjs compact-ui-v232.test.cjs pet-boarding-ui.test.cjs shore-shop-v247.test.cjs pet-life-integration.test.cjs
       - run: node browser-asual-layout-evidence.cjs
       - name: Preserve screenshots and geometry
         if: always()
