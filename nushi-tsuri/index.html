@@ -14988,8 +14988,8 @@
         const board=worldLandmarks.find(p=>p.id==='quest-board');
         board.hint='依頼掲示板（右上の立て看板へ仮配置）。Aで依頼を見る。';
         const banner=document.createElement('div');banner.id='villageReferenceNotice';
-        banner.textContent='参考原画の試作・未公開／リアオ右上は仮配置／依頼は右上の立て看板に仮配置／通常セーブには書き込みません';
-        banner.style.cssText='position:fixed;top:0;left:0;right:0;z-index:9999;padding:3px 6px;background:#241b10e8;color:#fff1c7;font:11px sans-serif;text-align:center;pointer-events:none';
+        banner.textContent='原画試作・未公開｜右上のリアオ・依頼看板は仮配置｜通常セーブへの書込なし';
+        banner.style.cssText='position:fixed;left:50%;bottom:max(6px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(640px,calc(100vw - 340px));box-sizing:border-box;z-index:20;padding:4px 6px;border-radius:5px;background:#241b10e8;color:#fff1c7;font:11px/1.4 sans-serif;text-align:center;pointer-events:none';
         document.body.append(banner);
       }
       const PLAYER_HOME_MAP_ENTRY = ShuVillageReference.enabled ? ShuVillageReference.exits.home.bounds : {

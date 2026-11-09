@@ -3,9 +3,20 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http'),{execFileSync}=require('node:child_process');
 
 const {seed,saveKey}=require('./game-harness.cjs');
-const ROOT=path.resolve(__dirname,'..'),FROZEN='10f1d811df46170bf7b811c118dfd54ad9c93fba';
+const RESOURCE_EXPRESSION='({money:s.money,hp:s.hp,maxHp:s.maxHp,time:s.gameMinutes,baits:s.baits,caught:s.caught,items:s.items,ingredients:s.cookingIngredients,meals:s.preparedMeals,ownedRods:s.ownedRods,rodCopies:s.rodCopies,rodParts:s.rodParts,equipment:s.equipment,lures:s.lures,dog:s.dog,dogAffinity:s.dogAffinity,dogFollowing:s.dogFollowing,dogTreats:s.dogTreats,dogToys:s.dogToys,pet:s.petLife,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})';
+const STORED_MUTATION_SEED='00000000000000000000000000000327';
+function legacyFixture(){
+ // This is an existing save with an existing mutation identity, not a new
+ // aquarium requiring a fresh crypto seed independently in each context.
+ const state={...seed(),mapRegion:'village',x:74,y:39.5,soundEnabled:false,
+  petLife:{version:require('../aquarium-mutations.js').VERSION,mutationSeed:STORED_MUTATION_SEED}};
+ require('../pet-life.js').normalize(state,[],['shuu'],Math.floor(state.gameMinutes/1440),{legacy:true,deferSync:true});
+ assert.equal(state.petLife.mutationSeed,STORED_MUTATION_SEED);
+ return state;
+}
+const ROOT=path.resolve(__dirname,'..'),FROZEN='9e3891d1b4eae8a35856611f74d1d5cb10535700';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='9689ec09856def0c1113aa2b6d44fd099da6787a8965b707997b081c4fad2bcf';
+const RUNTIME_TREE_SHA256='5912c96640d7d843195a2ffad3555f9badaa29af60156ed43f72dac2a6037124';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
@@ -46,13 +57,13 @@ async function run(){
  report.runtimeTreeSha256=runtimeTreeDigest();
  assert.equal(report.runtimeTreeSha256,RUNTIME_TREE_SHA256,'frozen runtime blob manifest');
  fs.mkdirSync(out,{recursive:true});const host=server();let browser,context,page;
- const raw=JSON.stringify({...seed(),mapRegion:'village',x:74,y:39.5,soundEnabled:false});
+ const raw=JSON.stringify(legacyFixture());
  const evaluate=expression=>page.evaluate(expression=>JSON.parse(JSON.stringify(eval(expression))),expression);
  const press=selector=>page.locator(selector)[mobile?'tap':'click']();
  const advance=async(ms=100)=>{await page.clock.runFor(ms);};
  const screenshot=async(name)=>{await page.waitForTimeout(700);const file=name+'.png';await page.screenshot({path:path.join(out,file)});report.screens.push(file);};
  const state=()=>evaluate('({x:s.x,y:s.y,direction:s.direction,mapRegion:s.mapRegion})');
- const resources=()=>evaluate('({money:s.money,hp:s.hp,maxHp:s.maxHp,time:s.gameMinutes,baits:s.baits,caught:s.caught,items:s.items,ingredients:s.cookingIngredients,meals:s.preparedMeals,ownedRods:s.ownedRods,rodCopies:s.rodCopies,rodParts:s.rodParts,equipment:s.equipment,lures:s.lures,dog:s.dog,dogAffinity:s.dogAffinity,dogFollowing:s.dogFollowing,dogTreats:s.dogTreats,dogToys:s.dogToys,pet:s.petLife,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
+ const resources=()=>evaluate(RESOURCE_EXPRESSION);
  async function boot(url){await page.clock.install({time:new Date('2026-11-09T03:00:00Z')});await page.clock.pauseAt('2026-11-09T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await require('./browser-start-adventure.cjs')(page,mobile);await advance(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await advance(240);}for(let attempt=0;attempt<150;attempt++){if(await page.evaluate(()=>{const c=document.querySelector('#worldPixels');return c.style.backgroundImage==='none'&&c.width===1672&&c.height===941;}))break;if(attempt===149)throw Error('Native scenery did not become ready');await advance(100);await page.waitForTimeout(100);}await page.evaluate(()=>{Math.random=()=>.999999;});}
  async function originalUnchanged(){assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),raw,'normal save bytes unchanged');}
  async function walk(label,predicate){
@@ -87,9 +98,18 @@ async function run(){
   observe(page,'reference');
   await boot(url+'?villageReference=1');assert.equal(await evaluate('ShuVillageReference.enabled'),true);assert.equal(await evaluate("ShuSceneLayers.get('world').source"),'assets/village-reference-pilot.png');assert.deepEqual(await resources(),normalResources);assert.equal(await evaluate('s.referenceVillageLayout'),'source-11016-1');
   assert.notDeepEqual([...(Object.values(await state()).slice(0,2))],[74,39.5]);await originalUnchanged();await screenshot('imported-save-rescue');
+  assert.equal(await evaluate('s.petLife.mutationSeed'),STORED_MUTATION_SEED);
   report.importRescue={method:'real title continue imports seeded legacy save',progressMatchesNormal:true,normalBytesUnchanged:true};
   const controls=await page.evaluate(()=>['#action',...['up','right','down','left'].map(d=>'[data-move="'+d+'"]')].map(q=>{const b=document.querySelector(q),r=b.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {q,width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:hit===b||b.contains(hit)};}));
   assert.ok(controls.every(c=>c.width>=44&&c.height>=44&&c.inside&&c.unblocked),JSON.stringify(controls));report.controls=controls;
+  const bannerLayout=await page.evaluate(()=>{
+   const banner=document.querySelector('#villageReferenceNotice'),r=banner.getBoundingClientRect();
+   const overlaps=[...document.querySelectorAll('.hud,.controls button')].filter(n=>n.getClientRects().length).filter(n=>{const b=n.getBoundingClientRect();return r.left<b.right&&r.right>b.left&&r.top<b.bottom&&r.bottom>b.top;}).map(n=>n.id||n.className);
+   return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height,fontSize:parseFloat(getComputedStyle(banner).fontSize),inside:r.left>=0&&r.right<=innerWidth&&r.top>=0&&r.bottom<=innerHeight,overlaps};
+  });
+  assert.ok(bannerLayout.inside&&bannerLayout.fontSize>=10&&bannerLayout.width>0,'prototype notice readable inside viewport');
+  assert.deepEqual(bannerLayout.overlaps,[],'prototype notice cannot cover HUD or D-pad/A/B controls');report.bannerLayout=bannerLayout;
+
   await page.evaluate(()=>{ensureForageCycle();s.forageCycle.active=Object.fromEntries(foragePointData.map(p=>[p.id,'worm']));s.forageCycle.harvested=[];});report.injectedFixtures.push({label:'all forage active to challenge facility precedence',method:'spawn fixture only; subsequent movement/A are real UI'});
   const facilities=[['farmhouse','locationInterior'],['west-shrine',null],['yaoya','locationInterior'],['diner','locationInterior'],['main-shrine','locationInterior'],['sam-shop','store'],['fish-market','locationInterior'],['harbor-shop','vehicleShop'],['watermill','petLifeModal'],['riao-tcg-shop',null],['quest-board','questBoard']];
   for(const [id,modal]of facilities){
@@ -110,10 +130,10 @@ async function run(){
   await fixture('canoe ownership only, no position change',"s.ownedVehicles=['canoe'];s.equipment.vehicle='canoe';render()");await press('#action');await advance(200);assert.equal(await evaluate('s.mapRegion'),'coast');assert.equal(await evaluate('s.boatActive'),true);await screenshot('boat-coast-arrival');await press('#action');await advance(200);assert.equal(await evaluate('s.mapRegion'),'village');
   await fixture('offshore paid-return path, no outbound fare claimed',"s.mapRegion='offshore';s.x=130;s.y=96;s.direction='up';render()");await press('#action');await page.locator('#offshoreFerry.open').waitFor();await press('#offshoreFerryGo');await advance(400);assert.equal(await evaluate('s.mapRegion'),'village');const ferry=await evaluate('ShuVillageReference.routes.offshore.harbor');assert.deepEqual(await evaluate('[s.x,s.y]'),[ferry.x,ferry.y]);
   await walk('home-west-approach','(x,y,d)=>!isAtPlayerHomeMapEntrance(x,y)&&((n)=>isAtPlayerHomeMapEntrance(n.x,n.y))(ShuWorldLife.moveTarget(x,y,"left",4,isWalkableWorld))');await press('[data-move="left"]');await advance(800);assert.equal(await evaluate('playerHomeState.area'),'exterior');await screenshot('home-arrival');await press('#action');await advance(800);assert.equal(await evaluate('playerHomeIsActive()'),false);
-  await page.evaluate(()=>save());await originalUnchanged();const savedAt=await state();await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);await advance(400);assert.deepEqual(await state(),savedAt);await originalUnchanged();await screenshot('preview-reloaded');
+  await page.evaluate(()=>save());await originalUnchanged();const savedAt=await state();await page.reload({waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);await advance(400);assert.deepEqual(await state(),savedAt);assert.equal(await evaluate('s.petLife.mutationSeed'),STORED_MUTATION_SEED);await originalUnchanged();await screenshot('preview-reloaded');
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.httpErrors,[]);assert.deepEqual(report.requestErrors,[]);report.status='passed';report.saveReload={previewPositionPreserved:true,normalBytesUnchanged:true};
  }catch(error){report.status='failed';report.failure={message:error.message,stack:error.stack,state:page?await state().catch(()=>null):null};if(page)await screenshot('failure').catch(()=>{});throw error;}
  finally{fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));if(context)await context.close();if(browser)await browser.close();await new Promise(resolve=>host.close(resolve));}
 }
 if(require.main===module)run().catch(error=>{console.error(error);process.exitCode=1;});
-module.exports={server,run,FROZEN,RUNTIME_TREE_SHA256,runtimeTreeDigest,planVillageRoute};
+module.exports={server,run,FROZEN,RUNTIME_TREE_SHA256,runtimeTreeDigest,planVillageRoute,legacyFixture,STORED_MUTATION_SEED,RESOURCE_EXPRESSION};
