@@ -1,7 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const path=require('node:path'),fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
-const {execFileSync}=require('node:child_process');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const Data=require('../scene-layers.js'),Art=require('../layered-scenery.js');
 const root=path.join(__dirname,'..');
@@ -10,7 +9,11 @@ const hash=b=>crypto.createHash('sha256').update(b).digest('hex');
 const neutral={season:'spring',period:'day',weather:'sunny',referenceVillage:true};
 async function scene(env=neutral){const definition=Data.get('world',env),source=await loadImage(path.join(root,definition.source));return {source,prepared:Art.prepare(source,source,definition,env,createCanvas)};}
 test('reference is explicit opt-in; normal definitions and solids stay unchanged',()=>{
-  const previous=execFileSync('git',['show','b0f8e02:nushi-tsuri/scene-layers.js'],{cwd:root,encoding:'utf8'});
+  // Byte-exact scene-layers.js from b0f8e02a6004d773d3fb0dfb9ed179592d1ab054.
+  // Committed fixture keeps the same comparison available in shallow checkouts.
+  const baseline=fs.readFileSync(path.join(__dirname,'fixtures/reference-baseline-scene-layers-b0f8e02.js'));
+  assert.equal(hash(baseline),'81ad90a55f29f462992a9085f8e9b03bf6a4663c5f45fe575f32302bb28f4362','baseline fixture provenance');
+  const previous=baseline.toString('utf8');
   const context={module:{exports:{}}};vm.runInNewContext(previous,context);const old=context.module.exports;
   assert.equal(JSON.stringify(Data.get('world')),JSON.stringify(old.get('world')));
   for(let y=0;y<135;y+=.5)for(let x=0;x<240;x+=.5)assert.equal(Data.propSolid(x,y),old.propSolid(x,y));

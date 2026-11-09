@@ -50,6 +50,25 @@ function planVillageRoute(predicate){
    }throw Error('No actual-control route: '+predicate+'; states='+q.length+'; start='+JSON.stringify(start));
 
 }
+function dinerLayersReady(){
+ const base=document.querySelector('#locationPixels'),front=document.querySelector('.scenery-foreground[data-for="locationPixels"]'),motion=document.querySelector('.scenery-motion[data-for="locationPixels"]');
+ return !!(document.querySelector('#locationInterior.open')&&base&&front&&motion&&base.style.backgroundImage==='none'&&motion.dataset.scene==='room-diner'&&base.width>0&&base.height>0&&front.width===base.width&&front.height===base.height);
+}
+async function dinerVisualMetrics(){
+ const bounds=n=>{const r=n.getBoundingClientRect(),style=getComputedStyle(n);return {left:r.left,top:r.top,right:r.right,bottom:r.bottom,width:r.width,height:r.height,zIndex:style.zIndex,position:style.position,overflow:style.overflow,objectFit:style.objectFit,transform:style.transform};};
+ const base=document.querySelector('#locationPixels'),front=document.querySelector('.scenery-foreground[data-for="locationPixels"]'),motion=document.querySelector('.scenery-motion[data-for="locationPixels"]'),dialogue=document.querySelector('#locationDialogue');
+ async function pixels(canvas){
+  const data=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+  const digest=await crypto.subtle.digest('SHA-256',data);let opaque=0;for(let i=3;i<data.length;i+=4)if(data[i])opaque++;
+  return {sha256:Array.from(new Uint8Array(digest),b=>b.toString(16).padStart(2,'0')).join(''),nonTransparentPixels:opaque,width:canvas.width,height:canvas.height};
+ }
+ const b=bounds(base),f=bounds(front),d=bounds(dialogue);
+ return {ready:base.style.backgroundImage==='none'&&motion.dataset.scene==='room-diner'&&front.width===base.width&&front.height===base.height,category:locationCategory,reference:ShuVillageReference.enabled,environment:gameSceneryEnvironment(),base:{...b,...await pixels(base),backgroundImage:base.style.backgroundImage},foreground:{...f,...await pixels(front)},motion:{...bounds(motion),scene:motion.dataset.scene,width:motion.width,height:motion.height},dialogue:{...d,text:dialogue.textContent},scene:bounds(document.querySelector('.location-scene')),panel:bounds(document.querySelector('.location-panel')),foregroundOverlapsDialogueRect:f.left<d.right&&f.right>d.left&&f.top<d.bottom&&f.bottom>d.top};
+}
+function compareDinerDiagnostics(normal,reference){
+ const rect=a=>Object.fromEntries(['left','top','right','bottom','width','height','zIndex','position','overflow','objectFit','transform'].map(k=>[k,a[k]]));
+ return {bothLayersReady:normal.ready&&reference.ready,sameCategory:normal.category===reference.category,sameEnvironment:JSON.stringify(normal.environment)===JSON.stringify(reference.environment),sameBasePixels:normal.base.sha256===reference.base.sha256,sameForegroundPixels:normal.foreground.sha256===reference.foreground.sha256,sameBaseBoundsAndStyle:JSON.stringify(rect(normal.base))===JSON.stringify(rect(reference.base)),sameForegroundBoundsAndStyle:JSON.stringify(rect(normal.foreground))===JSON.stringify(rect(reference.foreground)),sameDialogueBoundsAndStyle:JSON.stringify(rect(normal.dialogue))===JSON.stringify(rect(reference.dialogue)),sameDialogueText:normal.dialogue.text===reference.dialogue.text,normalForegroundOverlapsDialogueRect:normal.foregroundOverlapsDialogueRect,referenceForegroundOverlapsDialogueRect:reference.foregroundOverlapsDialogueRect,interpretation:'Diagnostic only: matching or differing ready-state pixels and bounds must be reviewed alongside screenshots; this does not by itself establish regression origin.'};
+}
 async function run(){
  assert.equal(process.env.CI,'true','This runner is authorized for GitHub CI only, not local browser launch');
  report.head=execFileSync('git',['rev-parse','HEAD'],{cwd:ROOT,encoding:'utf8'}).trim();
@@ -65,6 +84,19 @@ async function run(){
  const state=()=>evaluate('({x:s.x,y:s.y,direction:s.direction,mapRegion:s.mapRegion})');
  const resources=()=>evaluate(RESOURCE_EXPRESSION);
  async function boot(url){await page.clock.install({time:new Date('2026-11-09T03:00:00Z')});await page.clock.pauseAt('2026-11-09T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await require('./browser-start-adventure.cjs')(page,mobile);await advance(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await advance(240);}for(let attempt=0;attempt<150;attempt++){if(await page.evaluate(()=>{const c=document.querySelector('#worldPixels');return c.style.backgroundImage==='none'&&c.width===1672&&c.height===941;}))break;if(attempt===149)throw Error('Native scenery did not become ready');await advance(100);await page.waitForTimeout(100);}await page.evaluate(()=>{Math.random=()=>.999999;});}
+ async function diagnoseDiner(mode){
+  for(let attempt=0;attempt<200;attempt++){
+   if(await page.evaluate(dinerLayersReady))break;
+   if(attempt===199)throw Error(mode+' diner scenery never reached rendered split-layer state');
+   await advance(100);await page.waitForTimeout(100);
+  }
+  await advance(700);await page.waitForTimeout(700);
+  const metrics=await page.evaluate(dinerVisualMetrics);
+  assert.equal(metrics.ready,true);assert.equal(metrics.category,'food','same-condition diner diagnostic uses food tab');
+  report.dinerDiagnostics??={};report.dinerDiagnostics[mode]=metrics;
+  await screenshot(mode+'-diner-food-ready');
+  if(report.dinerDiagnostics.normal&&report.dinerDiagnostics.reference)report.dinerDiagnostics.comparison=compareDinerDiagnostics(report.dinerDiagnostics.normal,report.dinerDiagnostics.reference);
+ }
  async function originalUnchanged(){assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),raw,'normal save bytes unchanged');}
  async function walk(label,predicate){
   const route=await page.evaluate(planVillageRoute,predicate);
@@ -93,7 +125,10 @@ async function run(){
    page.on('requestfailed',request=>{const resource=new URL(request.url());if(resource.origin===new URL(url).origin&&resource.pathname!=='/favicon.ico')report.requestErrors.push({stage,path:resource.pathname,error:request.failure()?.errorText});});
   };
   context=await makeContext();page=await context.newPage();observe(page,'normal');await boot(url);
-  assert.equal(await evaluate('ShuVillageReference.enabled'),false);assert.equal(await evaluate("ShuSceneLayers.get('world').source"),'assets/village-world-v252-55-riao-clear.png');const normalResources=await resources();await screenshot('normal-no-flag');await page.waitForLoadState('networkidle');await context.close();
+  assert.equal(await evaluate('ShuVillageReference.enabled'),false);assert.equal(await evaluate("ShuSceneLayers.get('world').source"),'assets/village-world-v252-55-riao-clear.png');const normalResources=await resources();await screenshot('normal-no-flag');
+  await page.evaluate(()=>openLocationInterior('diner'));report.injectedFixtures.push({label:'normal-mode same-condition diner diagnostic',method:'explicit openLocationInterior(diner), not UI walking'});
+  await diagnoseDiner('normal');await closeModal('locationInterior');assert.deepEqual(await resources(),normalResources,'normal diner diagnostic preserves economy');
+  await page.waitForLoadState('networkidle');await context.close();
   context=await makeContext();page=await context.newPage();
   observe(page,'reference');
   await boot(url+'?villageReference=1');assert.equal(await evaluate('ShuVillageReference.enabled'),true);assert.equal(await evaluate("ShuSceneLayers.get('world').source"),'assets/village-reference-pilot.png');assert.deepEqual(await resources(),normalResources);assert.equal(await evaluate('s.referenceVillageLayout'),'source-11016-1');
@@ -117,7 +152,7 @@ async function run(){
    // Match the real dispatcher, not merely a broad overlapping entrance box.
    const predicate=`(x,y,d)=>{const old=[s.x,s.y,s.direction];s.x=x;s.y=y;s.direction=d;const ok=(${facility})&&!ShuOffshore.atPier(s)&&!ShuRural.atVillageGate(x,y)&&!ShuMountain.atVillageGate(x,y)&&!activeLandingDock()&&!nearbyRival()&&!nearbyTournamentNpc();[s.x,s.y,s.direction]=old;return ok;}`;
    await walk(id,predicate);const before=await resources();await screenshot(id+'-front');await press('#action');await advance(100);
-   if(modal){await page.locator('#'+modal+'.open').waitFor();if(modal==='locationInterior')assert.equal(await evaluate('activeLocationId'),id);await screenshot(id+'-inside');await closeModal(modal);}
+   if(modal){await page.locator('#'+modal+'.open').waitFor();if(modal==='locationInterior')assert.equal(await evaluate('activeLocationId'),id);if(id==='diner')await diagnoseDiner('reference');await screenshot(id+'-inside');await closeModal(modal);}
    else {assert.equal(await page.locator('.modal.open').count(),0);assert.match(await page.locator('#rescueToast').innerText(),/準備中/);await screenshot(id+'-notice');}
    assert.deepEqual(await resources(),before,id+' does not spend resources');
   }
@@ -136,4 +171,4 @@ async function run(){
  finally{fs.mkdirSync(out,{recursive:true});fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));if(context)await context.close();if(browser)await browser.close();await new Promise(resolve=>host.close(resolve));}
 }
 if(require.main===module)run().catch(error=>{console.error(error);process.exitCode=1;});
-module.exports={server,run,FROZEN,RUNTIME_TREE_SHA256,runtimeTreeDigest,planVillageRoute,legacyFixture,STORED_MUTATION_SEED,RESOURCE_EXPRESSION};
+module.exports={server,run,FROZEN,RUNTIME_TREE_SHA256,runtimeTreeDigest,planVillageRoute,legacyFixture,STORED_MUTATION_SEED,RESOURCE_EXPRESSION,dinerLayersReady,dinerVisualMetrics,compareDinerDiagnostics};

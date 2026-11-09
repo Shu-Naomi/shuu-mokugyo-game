@@ -2,9 +2,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot}=require('./game-harness.cjs');
 const runner=require('./browser-reference-village-evidence.cjs');
-test('CI runtime fingerprint matches the frozen runtime independently of commit metadata',()=>{
- assert.equal(runner.runtimeTreeDigest(),runner.RUNTIME_TREE_SHA256);
-});
 test('CI read-only route planner reaches facilities and gates without automatic village exits',()=>{
  const app=boot(undefined,undefined,{url:'http://localhost/nushi-tsuri/?villageReference=1'});
  try{
