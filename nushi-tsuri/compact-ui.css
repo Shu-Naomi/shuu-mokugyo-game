@@ -414,6 +414,11 @@
 #petLifeModal.compact-pet-shop .pet-buyback-detail small,#petLifeModal.compact-pet-shop .pet-contest-rivals small{color:#655236}
 #petLifeModal.compact-pet-shop .pet-trick-results li{background:#dfceaa}
 
+/* Non-livestock Asual notices temporarily use the host's text area. */
+#petLifeModal.compact-pet-shop .pet-shop-host>div>.pet-message{display:block;position:static;z-index:auto;min-height:0;max-height:41px;margin:0;padding:0;border:0;background:none;color:inherit;font-size:11px;line-height:1.35;overflow:auto;overflow-wrap:anywhere;pointer-events:auto;box-sizing:border-box}
+#petLifeModal.compact-pet-shop .pet-shop-host>div:has(>.pet-message:not([hidden]))>b,
+#petLifeModal.compact-pet-shop .pet-shop-host>div:has(>.pet-message:not([hidden]))>small{display:none}
+
 /* v247: Asual uses the same full-width shelf as Sam's bait. */
 .pet-water-filters{display:flex;gap:4px;min-width:0}
 .pet-water-filters button{min-width:60px;min-height:44px;display:flex;align-items:center;justify-content:center;gap:5px;padding:4px 8px;font-size:12px}

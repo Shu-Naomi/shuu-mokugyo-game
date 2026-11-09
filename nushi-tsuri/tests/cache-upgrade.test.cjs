@@ -28,8 +28,9 @@ test('upgrade source guard requires new CSS, complete metadata and only the revi
   assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'index.html': files['index.html'] + '<!-- unrelated change -->' }), /HTML changes only/);
   assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'sw.js': files['sw.js'] + '\n// changed behavior' }), /worker behavior/);
   assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'compact-ui.css': files['compact-ui.css'] + '\nbody{display:none}' }), /two reviewed selectors/);
-  const unrelatedUrl = './compact-ui.js?v=252-53';
-  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'sw.js': files['sw.js'].replace(unrelatedUrl, './compact-ui.js?v=252-57') }), /unrelated precache URLs/);
+  const unrelatedUrl = current.coreAssets.find(url => url.startsWith('./compact-ui.js?'));
+  assert.ok(unrelatedUrl, 'unrelated module is present in the actual precache list');
+  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'sw.js': files['sw.js'].replace(unrelatedUrl, './compact-ui.js?v=0-0') }), /unrelated precache URLs/);
 });
 
 test('native installation fixture serves old bytes, targeted failure and corrected immutable CSS at distinct URLs', () => {
