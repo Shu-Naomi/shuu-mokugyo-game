@@ -75,7 +75,7 @@
     return c.avatar+'-'+(action||'cling-'+c.dog);
   }
   const revisedPanels=new Set(['boy-call','girl-call','boy-refusal','girl-refusal','boy-nose','girl-nose']);
-  function sourceFor(panel){return art[panel]||'assets/opening-storybook-'+panel+(revisedPanels.has(panel)?'-v2.webp':'-v1.webp');}
+  function sourceFor(panel){if(panel==='village'&&typeof globalThis!=='undefined'&&globalThis.ShuVillageReference?.enabled)return 'assets/village-reference-pilot.png';return art[panel]||'assets/opening-storybook-'+panel+(revisedPanels.has(panel)?'-v2.webp':'-v1.webp');}
   // Adjacent dialogue pages turn consecutive spreads, never restart the diary.
   const diarySpreads={
     notebook:{from:sourceFor('diary'),to:art.diarySettled},

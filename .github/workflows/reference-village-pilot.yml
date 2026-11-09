@@ -1,0 +1,69 @@
+name: Reference village pilot browser evidence
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nushi-tsuri/**'
+      - '.github/workflows/reference-village-pilot.yml'
+permissions:
+  contents: read
+concurrency:
+  group: reference-village-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  browser:
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - {width: 1280, height: 720, touch: '0', dpr: 1}
+          - {width: 844, height: 390, touch: '1', dpr: 1}
+          - {width: 820, height: 366, touch: '1', dpr: 1.875}
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 1
+          persist-credentials: false
+      - name: Verify PR head and frozen prototype runtime
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: |
+          test "$(git rev-parse HEAD)" = "$EXPECTED_HEAD_SHA"
+          node - <<'JS'
+          const {execFileSync}=require('node:child_process'),{createHash}=require('node:crypto');
+          const tree=execFileSync('git',['-C','../..','ls-tree','-r','HEAD','nushi-tsuri'],{encoding:'utf8'});
+          const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
+          const digest=createHash('sha256').update(runtime).digest('hex');
+          if(digest!=='9689ec09856def0c1113aa2b6d44fd099da6787a8965b707997b081c4fad2bcf')throw Error('Frozen runtime blob manifest mismatch: '+digest);
+          console.log('Verified frozen runtime manifest: '+digest);
+          JS
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: sudo apt-get install -y fonts-noto-cjk
+      - name: Run localhost browser evidence, never deploy
+        env:
+          CI: 'true'
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          WIDTH: ${{ matrix.width }}
+          HEIGHT: ${{ matrix.height }}
+          TOUCH: ${{ matrix.touch }}
+          DPR: ${{ matrix.dpr }}
+        run: node browser-reference-village-evidence.cjs
+      - name: Upload screenshots and provenance report
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: reference-village-${{ matrix.width }}x${{ matrix.height }}-dpr${{ matrix.dpr }}
+          path: nushi-tsuri/tests/browser-evidence-reference-village/
+          retention-days: 14
+          if-no-files-found: warn

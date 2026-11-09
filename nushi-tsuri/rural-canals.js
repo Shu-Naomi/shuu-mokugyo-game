@@ -6,12 +6,14 @@
   root.ShuRural=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
   const id='ruralCanals',name='田園の用水路・水車小屋',asset='assets/rural-canals-v252-48.webp';
   const size=[1672,941],point=([x,y])=>({x:x/size[0]*240,y:y/size[1]*135});
   const polygon=points=>points.map(p=>{const q=point(p);return [q.x,q.y];});
-  const entry={x:114,y:129,direction:'up'},villageReturn={x:214,y:32,direction:'left'};
+  const entry={x:114,y:129,direction:'up'},villageReturn=reference?.routes.rural.return || {x:214,y:32,direction:'left'};
   // v252-55: center the existing transition on the renewed village lane.
-  const villageGate={left:216,right:225,top:29,bottom:35};
+  const villageGate=reference?.routes.rural.gate || {left:216,right:225,top:29,bottom:35};
   const returnGate={left:108,right:120,top:126,bottom:133};
   const atVillageGate=(x,y)=>Number.isFinite(x)&&Number.isFinite(y)&&x>=villageGate.left&&x<=villageGate.right&&y>=villageGate.top&&y<=villageGate.bottom;
   // The wheel current and reed-fringed backwater are the only fishable waters.
@@ -58,6 +60,6 @@
   };
   const fishingPoints=[{id:'current',type:'canalCurrent',...point([865,530]),direction:'up'},
     {id:'backwater',type:'canalBackwater',...point([1390,397]),direction:'up'}];
-  function guideEntries(){return [{id:'village-rural',kind:'exit',name,point:{x:220,y:32},notes:[{text:'村の北東、水車のペットショップ右手にある「田園へ」の道標へ。Aで畦道に入り、南口からいつでも村へ戻れる。'}]}];}
+  function guideEntries(){return [{id:'village-rural',kind:'exit',name,point:reference?.routes.rural.guide || {x:220,y:32},notes:[{text:reference?'村の右端へ続く道へ。Aで田園の畦道に入り、南口からいつでも村へ戻れる。':'村の北東、水車のペットショップ右手にある「田園へ」の道標へ。Aで畦道に入り、南口からいつでも村へ戻れる。'}]}];}
   return {id,name,asset,size,point,entry,villageReturn,villageGate,returnGate,atVillageGate,data,waters,bridges,rawTrails,paddies,mill,bridgeRails,names,populations,fishingPoints,guideEntries};
 });

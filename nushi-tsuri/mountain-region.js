@@ -4,16 +4,18 @@
   root.ShuMountain = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural) {
   "use strict";
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
   const width = 240, height = 135;
   const asset = "assets/mountain-world-v252-31.png";
   // Approved hillside redesign is composited only inside this region. The river,
   // bridge, ponds and every pixel outside it retain the original painting.
   const hillside = {asset:"assets/valley-hillside-v2.png",clip:[[145,0],[240,0],[240,45],[213,52],[190,63],[183,77],[140,77],[140,64],[134,59],[140,49],[145,42],[149,31],[148,20]]};
-  const villageGate = { left:116, right:132, top:2, bottom:10 };
+  const villageGate = reference?.routes.mountain.gate || { left:116, right:132, top:2, bottom:10 };
   const returnGate = { left:146, right:158, top:125, bottom:133 };
   const entry = { x:152, y:128, direction:"up" };
   // v252-55: return on the renewed north road, with a straight clear step to the gate.
-  const villageReturn = { x:120, y:8, direction:"down" };
+  const villageReturn = reference?.routes.mountain.return || { x:120, y:8, direction:"down" };
   const bridge = { left:87, right:140, top:69, bottom:75.5 };
   // v252-31: widened dirt and bridge traced against the finished painting, in the same 240 x 135 world units
   // as the village. The deck covers the stream; the waterfall and cliffs do not.
