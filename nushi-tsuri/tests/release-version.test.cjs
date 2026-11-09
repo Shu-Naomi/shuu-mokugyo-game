@@ -43,3 +43,22 @@ test("release guard detects stale HUD, registration, and worker independently", 
   assert.throws(() => releaseParts(html.replace(`sw.js?v=${release}`, `sw.js?v=${stale}`), worker));
   assert.throws(() => releaseParts(html, worker.replace(`-${release}";`, `-${stale}";`)));
 });
+
+function compactStylesheet(documentSource, workerSource) {
+  const urls = [...documentSource.matchAll(/href="(compact-ui\.css\?v=[0-9-]+)"/g)];
+  assert.equal(urls.length, 1, "one versioned compact stylesheet");
+  const url = "./" + urls[0][1];
+  assert.notEqual(url, "./compact-ui.css?v=251-5", "the layer fix must invalidate the previously cached stylesheet");
+  const cached = [...workerSource.matchAll(/"(\.\/compact-ui\.css\?v=[0-9-]+)"/g)];
+  assert.equal(cached.length, 1, "one precached compact stylesheet");
+  assert.equal(cached[0][1], url, "HTML and worker must request the same corrected CSS");
+  return url;
+}
+
+test("compact layer fix invalidates stale CSS in both the document and precache", () => {
+  const url = compactStylesheet(html, worker);
+  const stale = "./compact-ui.css?v=251-5";
+  assert.throws(() => compactStylesheet(html.replace(url.slice(2), stale.slice(2)), worker), /previously cached/);
+  assert.throws(() => compactStylesheet(html, worker.replace(url, stale)), /same corrected CSS/);
+  assert.throws(() => compactStylesheet(html.replace(url.slice(2), stale.slice(2)), worker.replace(url, stale)), /previously cached/);
+});

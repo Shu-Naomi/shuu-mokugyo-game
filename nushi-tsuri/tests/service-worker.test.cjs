@@ -1,4 +1,5 @@
-// Exercise the real worker with in-memory CacheStorage and network responses.
+// Exercise the real worker with simulated CacheStorage and network responses.
+// Native browser install/upgrade evidence lives in browser-cache-upgrade-evidence.cjs.
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
@@ -11,7 +12,7 @@ function bootWorker() {
   const listeners = {}, stores = new Map(), requests = [], writes = [];
   const state = {
     network: async () => { throw new TypeError("Offline"); },
-    failOpen: false, failWrite: false, claimed: false,
+    failOpen: false, failWrite: false, claimed: false, skippedWaiting: false,
   };
   const key = (request) => new URL(typeof request === "string" ? request : request.url, location).href;
   function entries(name) {
@@ -22,13 +23,30 @@ function bootWorker() {
     URL, Response,
     self: {
       location, addEventListener: (name, handler) => { listeners[name] = handler; },
-      skipWaiting: async () => {}, clients: { claim: async () => { state.claimed = true; } },
+      skipWaiting: async () => { state.skippedWaiting = true; }, clients: { claim: async () => { state.claimed = true; } },
     },
     caches: {
       keys: async () => [...stores.keys()], delete: async (name) => stores.delete(name),
       open: async (name) => {
         if (state.failOpen) throw new Error("Cache storage unavailable");
+        entries(name);
         return {
+          addAll: async (resources) => {
+            // Cache.addAll rejects failed responses and commits the batch only
+            // after every fetch succeeds. This is a double, not browser proof.
+            const batch = await Promise.all(resources.map(async (resource) => {
+              const request = { url: key(resource), method: "GET" };
+              requests.push({ request, install: true });
+              const response = await state.network(request);
+              if (!response.ok || response.status === 206) throw new TypeError("Precache request failed");
+              return [key(resource), response.clone()];
+            }));
+            if (state.failWrite) throw new Error("Cache quota exceeded");
+            for (const [url, response] of batch) {
+              writes.push(url);
+              entries(name).set(url, response);
+            }
+          },
           match: async (request) => entries(name).get(key(request))?.clone(),
           put: async (request, response) => {
             if (state.failWrite) throw new Error("Cache quota exceeded");
@@ -45,10 +63,16 @@ function bootWorker() {
   });
   vm.runInContext(source, context);
   const name = vm.runInContext("CACHE_NAME", context);
+  const coreAssets = Array.from(vm.runInContext("CORE_ASSETS", context));
   return {
-    state, stores, requests, writes, name,
+    state, stores, requests, writes, name, coreAssets,
     seed: (cache, resource, body) => entries(cache).set(key(resource), new Response(body)),
     cached: (resource) => entries(name).get(key(resource))?.clone(),
+    install: async () => {
+      const pending = [];
+      listeners.install({ waitUntil: (promise) => pending.push(promise) });
+      await Promise.all(pending);
+    },
     activate: async () => {
       const pending = [];
       listeners.activate({ waitUntil: (promise) => pending.push(promise) });
@@ -68,6 +92,65 @@ function bootWorker() {
     },
   };
 }
+
+test("installation fetches all core assets before skipWaiting and activation retires stale CSS", async () => {
+  const app = bootWorker(), previous = "nushi-tsuri-v252-island-fish-252-56";
+  const css = app.coreAssets.find(resource => resource.startsWith("./compact-ui.css?"));
+  assert.ok(css);
+  assert.notEqual(css, "./compact-ui.css?v=251-5");
+  assert.notEqual(app.name, previous);
+  app.seed(previous, "./compact-ui.css?v=251-5", "stale CSS");
+  app.seed("another-game-v1", "./keep", "unrelated cache");
+  let releaseCss, startedCss;
+  const started = new Promise(resolve => { startedCss = resolve; });
+  const pendingCss = new Promise(resolve => { releaseCss = resolve; });
+  app.state.network = async request => {
+    if (request.url.endsWith(css.slice(2))) { startedCss(); await pendingCss; }
+    return new Response(request.url.endsWith(css.slice(2)) ? "corrected CSS" : "core asset");
+  };
+  const installing = app.install();
+  await started;
+  assert.equal(app.state.skippedWaiting, false, "cannot activate an incomplete precache");
+  assert.equal(app.stores.has(previous), true, "previous release survives while installing");
+  releaseCss();
+  await installing;
+  assert.equal(app.requests.length, app.coreAssets.length);
+  assert.equal(new Set(app.requests.map(({request}) => request.url)).size, app.coreAssets.length);
+  assert.equal(app.state.skippedWaiting, true);
+  assert.equal(app.state.claimed, false);
+  assert.equal(await app.cached(css).text(), "corrected CSS");
+  assert.equal(app.cached("./compact-ui.css?v=251-5"), undefined);
+  await app.activate();
+  assert.equal(app.stores.has(previous), false);
+  assert.equal(app.stores.has("another-game-v1"), true);
+  assert.equal(app.state.claimed, true);
+  app.state.network = async () => { throw new TypeError("Offline"); };
+  const requests = app.requests.length;
+  assert.equal(await (await app.fetch(css)).text(), "corrected CSS");
+  assert.equal(app.requests.length, requests, "corrected stylesheet is available offline");
+});
+
+test("failed precache cannot skip waiting or delete the previous working release", async () => {
+  for (const failure of ["network", "http", "failOpen", "failWrite"]) {
+    const app = bootWorker(), previous = "nushi-tsuri-v252-island-fish-252-56";
+    app.seed(previous, "./compact-ui.css?v=251-5", "stale but working CSS");
+    app.seed("another-game-v1", "./keep", "unrelated cache");
+    app.state[failure] = true;
+    app.state.network = async request => {
+      if (request.url.includes("/compact-ui.css?")) {
+        if (failure === "network") throw new TypeError("Offline");
+        if (failure === "http") return new Response("unavailable", { status: 503 });
+      }
+      return new Response("core asset");
+    };
+    await assert.rejects(app.install(), undefined, failure);
+    assert.equal(app.state.skippedWaiting, false, failure);
+    assert.equal(app.state.claimed, false, failure);
+    assert.equal(app.stores.has(previous), true, failure);
+    assert.equal(app.stores.has("another-game-v1"), true, failure);
+    assert.equal(app.writes.length, 0, failure + ": no partial precache batch");
+  }
+});
 
 test("activation deletes only this game's old caches; resource lookup stays isolated", async () => {
   const app = bootWorker();
