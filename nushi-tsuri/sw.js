@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-island-fish-252-56";
+const CACHE_NAME = "nushi-tsuri-v252-location-layers-252-57";
 
 const CORE_ASSETS = [
   "./assets/fish-takabe-v252-56.png",
@@ -92,7 +92,7 @@ const CORE_ASSETS = [
   "./assets/village-residents-v238.png",
 
   "./compact-ui.js?v=252-53",
-  "./compact-ui.css?v=251-5",
+  "./compact-ui.css?v=252-57",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
