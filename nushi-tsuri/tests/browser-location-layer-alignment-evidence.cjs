@@ -3,6 +3,18 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {seed,saveKey}=require('./game-harness.cjs');
 const screens=[{width:820,height:366,dpr:1.875,mobile:true},{width:844,height:390,dpr:1,mobile:true},{width:1280,height:720,dpr:1,mobile:false}];
+const alignmentSelectors=['#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-motion','#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-foreground'];
+function baselineSelectorText(selectorText){
+ const normalize=s=>s.replace(/\s/g,''),selectors=selectorText.split(',').map(s=>s.trim());
+ const removed=selectors.filter(s=>alignmentSelectors.some(added=>normalize(added)===normalize(s)));
+ assert.equal(selectors.length,5,'the known shared geometry rule has five selectors');
+ assert.equal(removed.length,2,'revert exactly the two alignment selectors, not any declarations');
+ return selectors.filter(s=>!removed.includes(s)).join(', ');
+}
+function assertPreservedMetrics(current,baseline,restored,label){
+ assert.deepEqual(current,baseline,label+' is unchanged from the same-DOM pre-fix CSS baseline');
+ assert.deepEqual(restored,current,label+' returns to the original metrics after restoring the fix');
+}
 
 function sourceProvenance(){
  const {execFileSync}=require('node:child_process'),crypto=require('node:crypto'),cwd=path.resolve(__dirname,'../..');
@@ -19,7 +31,7 @@ function layersReady({id,scene}){
  return !!(base&&motion&&front&&base.style.backgroundImage==='none'&&motion.dataset.scene===scene&&base.width>0&&base.height>0&&[motion,front].every(c=>c.width===base.width&&c.height===base.height));
 }
 function measureLayers({id,dialogueId}){
- const bounds=n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return {x:r.x,y:r.y,width:r.width,height:r.height,top:r.top,bottom:r.bottom,left:r.left,right:r.right,objectFit:s.objectFit,objectPosition:s.objectPosition,zIndex:s.zIndex};};
+ const bounds=n=>{const r=n.getBoundingClientRect(),s=getComputedStyle(n);return {x:r.x,y:r.y,width:r.width,height:r.height,top:r.top,bottom:r.bottom,left:r.left,right:r.right,position:s.position,objectFit:s.objectFit,objectPosition:s.objectPosition,zIndex:s.zIndex};};
  const base=document.getElementById(id),motion=document.querySelector(`.scenery-motion[data-for="${id}"]`),front=document.querySelector(`.scenery-foreground[data-for="${id}"]`),dialogue=document.getElementById(dialogueId),box=dialogue.closest('.compact-scene-dialogue');
  const layer=n=>({...bounds(n),nativeWidth:n.width,nativeHeight:n.height});
  const d=bounds(dialogue),b=box&&bounds(box),s=box&&getComputedStyle(box);
@@ -51,11 +63,35 @@ async function run(url,screen,output,provenance){
   }
   throw Error('Split layers never became ready: '+scene);
  }
- async function capture(label,{sam=false,fit='cover',textFits=false}={}){
+ async function preserveException(label,metrics){
+  const rule=await page.evaluate(added=>{
+   const normalize=s=>s.replace(/\s/g,''),matches=[];
+   [...document.styleSheets].forEach((sheet,sheetIndex)=>{
+    if(!sheet.href||!new URL(sheet.href).pathname.endsWith('/compact-ui.css'))return;
+    [...sheet.cssRules].forEach((rule,ruleIndex)=>{const selectors=rule.selectorText?.split(',').map(normalize)||[];if(added.every(s=>selectors.includes(normalize(s))))matches.push({sheetIndex,ruleIndex,selectorText:rule.selectorText,declarations:rule.style.cssText});});
+   });
+   if(matches.length!==1)throw Error('Expected exactly one shared compact location geometry rule');return matches[0];
+  },alignmentSelectors);
+  const baselineSelectors=baselineSelectorText(rule.selectorText);let baseline,restored;
+  try{
+   await page.evaluate(({rule,selectors})=>{const live=document.styleSheets[rule.sheetIndex].cssRules[rule.ruleIndex];if(live.selectorText!==rule.selectorText)throw Error('Geometry rule changed before baseline capture');live.selectorText=selectors;if(live.style.cssText!==rule.declarations)throw Error('Baseline must not alter declarations');},{rule,selectors:baselineSelectors});
+   baseline=await page.evaluate(measureLayers,{id:'locationPixels',dialogueId:'locationDialogue'});
+   await page.screenshot({path:path.join(dir,label+'-baseline.png')});
+  }finally{
+   await page.evaluate(rule=>{const live=document.styleSheets[rule.sheetIndex].cssRules[rule.ruleIndex];live.selectorText=rule.selectorText;if(live.selectorText!==rule.selectorText||live.style.cssText!==rule.declarations)throw Error('Baseline capture did not restore the geometry rule');},rule);
+   restored=await page.evaluate(measureLayers,{id:'locationPixels',dialogueId:'locationDialogue'});
+  }
+  return {method:'Same DOM, viewport, scene and clock; remove only the two added selectors, then restore them in finally.',baselineSelectors,removedSelectors:alignmentSelectors,baseline,restored};
+ }
+ async function capture(label,{sam=false,fit='cover',textFits=false,preserveBaseline=false}={}){
   const metrics=await page.evaluate(measureLayers,{id:sam?'shopPixels':'locationPixels',dialogueId:sam?'shopDialogue':'locationDialogue'});
-  report.checks.push({label,...metrics});
+  const check={label,...metrics};report.checks.push(check);
   await page.screenshot({path:path.join(dir,label+'.png')});
-  assertGeometry(metrics,fit,label);
+  if(preserveBaseline){
+   check.preservation=await preserveException(label,metrics);
+   assertPreservedMetrics(metrics,check.preservation.baseline,check.preservation.restored,label);
+   for(const name of ['base','motion','foreground'])assert.equal(metrics[name].objectFit,fit,label+' keeps '+name+' crop');
+  }else assertGeometry(metrics,fit,label);
   if(!sam)assert.equal(metrics.foregroundOverlapsDialogue,false,label+' foreground does not cover dialogue');
   if(textFits)assert.equal(metrics.dialogue.textFits,true,label+' current dialogue fits inside its padded box');
   return metrics;
@@ -83,7 +119,7 @@ async function run(url,screen,output,provenance){
   await page.setViewportSize({width,height});await page.clock.runFor(150);await capture('diner-size-restored',{textFits:true});
   await press('#locationInterior [data-close]');
   for(const [id,fit] of [['yaoya','cover'],['player-home','cover'],['farmhouse','contain'],['fish-market','contain'],['main-shrine','contain']]){
-   await openRoom(id);await capture(id+'-ready',{fit,textFits:id==='yaoya'});await press('#locationInterior [data-close]');
+   await openRoom(id);await capture(id+'-ready',{fit,textFits:id==='yaoya',preserveBaseline:id==='fish-market'||id==='main-shrine'});await press('#locationInterior [data-close]');
    await openRoom('diner');await capture('diner-after-'+id,{textFits:true});await press('#locationInterior [data-close]');
   }
   await page.evaluate(()=>{renderSamShop();open('store');});await ready('shopPixels','room-sam-shop');const sam=await capture('sam-ready',{sam:true});assert.ok(Number(sam.dialogue.box.zIndex)>Number(sam.foreground.zIndex),'Sam keeps dialogue above foreground');await press('#store [data-close]');
@@ -107,5 +143,5 @@ async function main(){
   if(failures.length)throw Error(failures.join('\n'));
  }finally{await new Promise(resolve=>server.close(resolve));}
 }
-module.exports={layersReady,measureLayers,assertGeometry,run};
+module.exports={layersReady,measureLayers,assertGeometry,alignmentSelectors,baselineSelectorText,assertPreservedMetrics,run};
 if(require.main===module)main().catch(error=>{console.error(error);process.exitCode=1;});

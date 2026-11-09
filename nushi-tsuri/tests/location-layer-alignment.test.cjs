@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 const {JSDOM}=require('jsdom');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
-const {assertGeometry}=require('./browser-location-layer-alignment-evidence.cjs');
+const {assertGeometry,alignmentSelectors,baselineSelectorText,assertPreservedMetrics}=require('./browser-location-layer-alignment-evidence.cjs');
 const css=['pixel-scenes.css','compact-ui.css'].map(file=>fs.readFileSync(path.join(__dirname,'..',file),'utf8')).join('\n');
 
 // JSDOM checks selector/cascade contracts, not rendered pixel bounds. The
@@ -61,6 +61,16 @@ test('the prepared browser check rejects offset, crop and native-size mismatches
   const wrong={...metrics,foreground:{...layer,[key]:value}};
   assert.throws(()=>assertGeometry(wrong,'cover','regression'),/regression/);
  }
+});
+test('exception baseline removes only the two fix selectors and rejects changed or unrestored metrics',()=>{
+ const before=['#store.compact-store #shopPixels','.compact-store .shop-actors','#locationInterior.compact-location-shop:not(.compact-service) #locationPixels'].join(', ');
+ assert.equal(baselineSelectorText(before+', '+alignmentSelectors.join(', ')),before);
+ assert.throws(()=>baselineSelectorText(before),/five selectors/);
+ assert.throws(()=>baselineSelectorText(before+', .unexpected, '+alignmentSelectors[0]),/exactly the two alignment selectors/);
+ const metrics={base:{height:339.390625},motion:{height:286.40625},foreground:{height:286.40625}};
+ assertPreservedMetrics(metrics,structuredClone(metrics),structuredClone(metrics),'service');
+ assert.throws(()=>assertPreservedMetrics(metrics,{...metrics,base:{height:286.40625}},metrics,'service'),/unchanged/);
+ assert.throws(()=>assertPreservedMetrics(metrics,metrics,{...metrics,motion:{height:339.390625}},'service'),/restoring/);
 });
 test('repeated diner tabs, detail cancellation and service/inn/Sam transitions keep one dialogue and preserve resources',()=>{
  const a=boot({...seed(),items:{wildGreens:2}}),w=a.window;
