@@ -1,0 +1,117 @@
+name: Casting hint release
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nushi-tsuri/cast-tackle.css'
+      - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/sw.js'
+      - 'nushi-tsuri/tests/browser-cache-upgrade-evidence.cjs'
+      - 'nushi-tsuri/tests/cache-upgrade.test.cjs'
+      - 'nushi-tsuri/tests/*cast*'
+      - 'nushi-tsuri/tests/browser-v238.life.cjs'
+      - 'nushi-tsuri/tests/browser-v241.fixes.cjs'
+      - '.github/workflows/cast-release.yml'
+permissions:
+  contents: read
+concurrency:
+  group: cast-release-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  evidence:
+    if: github.head_ref == 'codex/fix-cast-unrelated-banner'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    env:
+      NUSHI_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      NUSHI_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+      NUSHI_PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact pull request head
+        run: test "$(git rev-parse HEAD)" = "$NUSHI_EXPECTED_HEAD_SHA"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - run: node --test cast-field-hint.test.cjs asual-notice-layout.test.cjs location-layer-alignment.test.cjs
+      - name: Check casting and field return in all three viewport sizes
+        run: node browser-life-ui-evidence.cjs
+      - name: Recheck released Asual layout
+        run: node browser-asual-layout-evidence.cjs
+      - name: Recheck released diner and exception layouts after integration
+        run: node browser-location-layer-alignment-evidence.cjs
+      - name: Preserve screenshots and geometry
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cast-release-${{ github.event.pull_request.head.sha }}
+          path: |
+            nushi-tsuri/tests/browser-evidence-v238/
+            nushi-tsuri/tests/browser-evidence-asual-layout/
+            nushi-tsuri/tests/browser-evidence-location-layer-alignment/
+          retention-days: 14
+          if-no-files-found: warn
+
+  cache-upgrade:
+    if: github.head_ref == 'codex/fix-cast-unrelated-banner'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    env:
+      NUSHI_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      NUSHI_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+      NUSHI_PR_NUMBER: ${{ github.event.pull_request.number }}
+      NUSHI_BASELINE_REPOSITORY: ${{ github.workspace }}/cast-cache-baseline
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Read immutable released v252-58 baseline
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: Shu-Naomi/shuu-mokugyo-game
+          ref: 71b8139ffc3f30ebb28c35bec9a20814ea3ea722
+          path: cast-cache-baseline
+          persist-credentials: false
+          sparse-checkout-cone-mode: false
+          sparse-checkout: |
+            /nushi-tsuri/index.html
+            /nushi-tsuri/sw.js
+            /nushi-tsuri/cast-tackle.css
+      - name: Verify exact pull request head
+        run: test "$(git rev-parse HEAD)" = "$NUSHI_EXPECTED_HEAD_SHA"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Check cache guards, releases, and simulated worker behavior
+        run: node --test cast-cache-upgrade.test.cjs asual-cache-upgrade.test.cjs cache-upgrade.test.cjs release-version.test.cjs browser-release.test.cjs service-worker.test.cjs
+      - name: Verify native 58 to 59 cast CSS upgrade with exact save preservation
+        run: node browser-cast-cache-upgrade-evidence.cjs
+      - name: Preserve cache migration evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: cast-cache-upgrade-${{ github.event.pull_request.head.sha }}
+          path: nushi-tsuri/tests/browser-evidence-cast-cache-upgrade/
+          retention-days: 14
+          if-no-files-found: warn
