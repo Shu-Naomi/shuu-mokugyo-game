@@ -61,7 +61,9 @@ module.exports=async function livingWaters(url,mobile=false,options={}){
       const r=c.getBoundingClientRect(),st=getComputedStyle(el);if(Number(st.opacity)<.9||st.visibility!=='visible'||r.width<20||r.height<8||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)return false;
       const data=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let painted=0;for(let i=3;i<data.length;i+=4)if(data[i]>100)painted++;return painted>2500;
     },id);
-    await fieldHint('hidden');assert.equal(await page.locator('#battleMsg').isVisible(),true);
+    await fieldHint('hidden');
+    const guidance=await page.evaluate(()=>battle.fightMode==='nushi'?'#nushiCue':'#battleMsg');
+    assert.equal(await page.locator(guidance).isVisible(),true,'the selected fight mode keeps its own guidance');
     await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-fish-'+id+'.png')});
     assert.equal(await page.evaluate(bait=>s.baits[bait],bait),old.bait-1);
     await page.evaluate(()=>{caught();caught();hideCatchCard();save();});
