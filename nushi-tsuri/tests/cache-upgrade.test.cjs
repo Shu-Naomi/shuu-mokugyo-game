@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture } = require('./browser-cache-upgrade-evidence.cjs');
+const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
 const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
@@ -103,4 +103,29 @@ test('existing-user upgrade fixture includes valid identity metadata and preserv
       assert.deepEqual(existing.errors, []);
     } finally { existing.dispose(); }
   }
+});
+
+test('retired cache inventory uses only read-only protocol calls and never creates a missing cache', async () => {
+  const calls = [], origin = 'https://game.test';
+  const client = { send: async (method, params) => {
+    calls.push({ method, params });
+    if (method === 'CacheStorage.requestCacheNames') return { caches: [{ cacheName: 'recreated-old', cacheId: 'existing-id' }] };
+    assert.equal(method, 'CacheStorage.requestEntries', 'only read-only cache inventory methods are allowed');
+    assert.deepEqual(params, { cacheId: 'existing-id', skipCount: 0, pageSize: 1000 });
+    return { cacheDataEntries: [{ requestURL: origin + '/nushi-tsuri/late-request.png' }] };
+  } };
+  assert.deepEqual(await namedCacheInventory(client, origin, 'absent-old'), { names: ['recreated-old'], present: false, keys: [] });
+  assert.deepEqual(calls, [{ method: 'CacheStorage.requestCacheNames', params: { securityOrigin: origin } }]);
+  assert.deepEqual(await namedCacheInventory(client, origin, 'recreated-old'), { names: ['recreated-old'], present: true, keys: ['/nushi-tsuri/late-request.png'] });
+});
+
+test('cleanup guard requires actual sentinel and stale-CSS deletion even when late work recreates the name', () => {
+  const absent = { present: false, keys: [], sentinel: null, oldCssPresent: false };
+  assertCacheRetirement(absent);
+  const recreated = { ...absent, present: true, keys: ['/nushi-tsuri/late-request.png'] };
+  assertCacheRetirement(recreated);
+  assert.throws(() => assertCacheRetirement({ ...recreated, sentinel: 'old marker survives' }), /unique sentinel/);
+  assert.throws(() => assertCacheRetirement({ ...recreated, oldCssPresent: true }), /stale CSS/);
+  assert.throws(() => assertCacheRetirement({ ...recreated, keys: ['/nushi-tsuri/__cache-upgrade-retirement-sentinel__'] }), /original sentinel/);
+  assert.throws(() => assertCacheRetirement({ ...recreated, keys: ['/nushi-tsuri/compact-ui.css?v=251-5'] }), /stale CSS key/);
 });

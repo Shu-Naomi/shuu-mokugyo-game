@@ -10,6 +10,8 @@ const BASELINE_SHA = 'b0f8e02a6004d773d3fb0dfb9ed179592d1ab054';
 const BASELINE_RELEASE = '252-56';
 const BASELINE_CACHE = 'nushi-tsuri-v252-island-fish-252-56';
 const BASELINE_CSS = './compact-ui.css?v=251-5';
+const RETIREMENT_MARKER = '/nushi-tsuri/__cache-upgrade-retirement-sentinel__';
+const RETIREMENT_VALUE = 'old cache retirement: ' + BASELINE_SHA;
 const CHANGED_FILES = ['index.html', 'sw.js', 'compact-ui.css'];
 const alignmentSelectors = [
   '#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-motion',
@@ -124,10 +126,45 @@ async function cacheSnapshot(page, release) {
     const names = await caches.keys();
     const cache = await caches.open(cacheName), response = await cache.match(cssUrl);
     const unrelated = await (await caches.open('another-game-v1')).match('/unrelated-game-sentinel');
+    const registration = await navigator.serviceWorker.getRegistration();
+    const worker = value => value ? { url: value.scriptURL, state: value.state } : null;
     return { names: names.sort(), keys: (await cache.keys()).map(request => new URL(request.url).pathname + new URL(request.url).search).sort(),
       css: response ? await response.text() : null, unrelated: unrelated ? await unrelated.text() : null,
-      controller: navigator.serviceWorker.controller?.scriptURL };
+      controller: navigator.serviceWorker.controller?.scriptURL,
+      registration: registration ? { scope: registration.scope, active: worker(registration.active), waiting: worker(registration.waiting), installing: worker(registration.installing) } : null };
   }, release);
+}
+async function namedCacheInventory(client, origin, name) {
+  // CDP reads the actual key inventory without caches.open(), which would
+  // itself recreate a missing retired cache and invalidate the evidence.
+  const { caches } = await client.send('CacheStorage.requestCacheNames', { securityOrigin: origin });
+  const cache = caches.find(cache => cache.cacheName === name);
+  if (!cache) return { names: caches.map(cache => cache.cacheName).sort(), present: false, keys: [] };
+  const { cacheDataEntries } = await client.send('CacheStorage.requestEntries', { cacheId: cache.cacheId, skipCount: 0, pageSize: 1000 });
+  assert.ok(cacheDataEntries.length < 1000, 'retired cache inventory must not be truncated');
+  return { names: caches.map(cache => cache.cacheName).sort(), present: true,
+    keys: cacheDataEntries.map(entry => new URL(entry.requestURL).pathname + new URL(entry.requestURL).search).sort() };
+}
+async function retirementEvidence(page, client, origin, release) {
+  const inventory = await namedCacheInventory(client, origin, release.cacheName);
+  const stored = await page.evaluate(async ({ cacheName, cssUrl, marker }) => {
+    // CacheStorage.match does not create a cache. Do not use caches.open here.
+    const probe = await caches.match(marker, { cacheName });
+    const css = await caches.match(cssUrl, { cacheName });
+    const html = await caches.match('./index.html', { cacheName });
+    return { sentinel: probe ? await probe.text() : null, css: css ? await css.text() : null, html: html ? await html.text() : null };
+  }, { ...release, marker: RETIREMENT_MARKER });
+  return { ...inventory, sentinel: stored.sentinel, oldCssPresent: stored.css !== null,
+    oldCssSha256: stored.css === null ? null : sha256(stored.css), htmlSha256: stored.html === null ? null : sha256(stored.html) };
+}
+function assertCacheRetirement(evidence) {
+  // A late response from the already-deployed old worker can reopen its old
+  // cache name after activation deleted it. Require the original contents to
+  // be gone, not a permanent-name-absence guarantee that worker cannot give.
+  assert.equal(evidence.sentinel, null, 'activation deleted the prior cache and its unique sentinel');
+  assert.equal(evidence.oldCssPresent, false, 'activation removed the stale CSS from the prior cache');
+  assert.ok(!evidence.keys.includes(RETIREMENT_MARKER), 'retired inventory has no original sentinel');
+  assert.ok(!evidence.keys.includes('/nushi-tsuri/' + BASELINE_CSS.slice(2)), 'retired inventory has no stale CSS key');
 }
 async function controlledBy(page, release) {
   await page.waitForFunction(url => navigator.serviceWorker.controller?.scriptURL.endsWith(url.slice(2)), release.workerUrl, { timeout: 180000 });
@@ -184,7 +221,7 @@ async function run(sources, root, output) {
   const { chromium } = require('playwright'), http = require('node:http');
   const report = { provenance: sources.provenance, old: sources.old, next: sources.next,
     scope: 'Native Chromium CacheStorage, production previous/current HTML/CSS/workers and unchanged real assets. Save values are explicit test fixtures; no production user data. No gameplay input or layout claim.',
-    checks: [], requests: [], pageErrors: [], passed: false };
+    checks: [], requests: [], transitions: [], cacheSnapshots: [], pageErrors: [], passed: false };
   let phase = 'baseline', browser, context, page;
   const server = http.createServer((request, response) => {
     try {
@@ -201,6 +238,16 @@ async function run(sources, root, output) {
     browser = await chromium.launch({ headless: true });
     context = await browser.newContext({ viewport: { width: 844, height: 390 }, locale: 'ja-JP', serviceWorkers: 'allow' });
     page = await context.newPage(); page.setDefaultTimeout(30000);
+    const cacheClient = await context.newCDPSession(page);
+    context.on('serviceworker', worker => report.transitions.push({ phase, event: 'worker-created', url: worker.url() }));
+    await page.exposeFunction('__recordCacheUpgradeController', event => report.transitions.push({ phase, ...event }));
+    await page.addInitScript(() => {
+      if (!('serviceWorker' in navigator)) return;
+      const record = event => window.__recordCacheUpgradeController({ event, document: location.href,
+        controller: navigator.serviceWorker.controller?.scriptURL || null, state: navigator.serviceWorker.controller?.state || null }).catch(() => {});
+      navigator.serviceWorker.addEventListener('controllerchange', () => record('controllerchange'));
+      record('document-start');
+    });
     page.on('pageerror', error => report.pageErrors.push(error.message));
     const saved = cacheUpgradeStorageFixture();
     await page.goto(origin + '/cache-upgrade-probe.html');
@@ -213,7 +260,13 @@ async function run(sources, root, output) {
     await controlledBy(page, sources.old);
     await assertTitleAndSaves(page, sources.old, saved);
     assert.equal(await workerCss(page, sources.old), sources.previous['compact-ui.css']);
+    await page.evaluate(async ({ name, marker, value }) => {
+      await (await caches.open(name)).put(marker, new Response(value));
+    }, { name: sources.old.cacheName, marker: RETIREMENT_MARKER, value: RETIREMENT_VALUE });
     const old = await cacheSnapshot(page, sources.old);
+    const originalCache = await retirementEvidence(page, cacheClient, origin, sources.old);
+    report.cacheSnapshots.push({ stage: 'baseline', retired: originalCache, registration: old.registration });
+    assert.equal(originalCache.sentinel, RETIREMENT_VALUE, 'unique cleanup sentinel starts in the old cache');
     assert.equal(old.css, sources.previous['compact-ui.css']);
     assert.equal(old.unrelated, 'keep unrelated cache');
     for (const asset of sources.old.coreAssets) assert.ok(old.keys.includes(new URL(asset, url).pathname + new URL(asset, url).search), 'baseline installed core resource: ' + asset);
@@ -226,6 +279,9 @@ async function run(sources, root, output) {
     const failedState = await page.evaluate(candidateOutcome, sources.next.workerUrl);
     assert.equal(failedState, 'redundant', 'a failed precache does not activate');
     const failed = await cacheSnapshot(page, sources.old);
+    const failedCache = await retirementEvidence(page, cacheClient, origin, sources.old);
+    report.cacheSnapshots.push({ stage: 'failed-install', retired: failedCache, registration: failed.registration });
+    assert.equal(failedCache.sentinel, RETIREMENT_VALUE, 'failed installation preserves the old cleanup sentinel');
     assert.equal(failed.controller, old.controller);
     assert.equal(failed.css, old.css);
     assert.equal(failed.unrelated, old.unrelated);
@@ -243,6 +299,9 @@ async function run(sources, root, output) {
     await assertTitleAndSaves(page, sources.old, saved);
     assert.equal(await workerCss(page, sources.old), sources.previous['compact-ui.css']);
     assert.equal((await cacheSnapshot(page, sources.old)).unrelated, old.unrelated);
+    const oldOfflineCache = await retirementEvidence(page, cacheClient, origin, sources.old);
+    report.cacheSnapshots.push({ stage: 'old-offline', retired: oldOfflineCache });
+    assert.equal(oldOfflineCache.sentinel, RETIREMENT_VALUE, 'old offline reload preserves the cleanup sentinel');
     assert.equal(report.requests.length, beforeOldOffline, 'old offline reload made zero requests to the server');
     report.checks.push({ name: 'failed upgrade retains a working old offline reload', serverRequests: 0 });
     await page.screenshot({ path: path.join(output, 'failed-upgrade-old-offline-title.png') });
@@ -255,7 +314,9 @@ async function run(sources, root, output) {
     await assertTitleAndSaves(page, sources.next, saved);
     assert.equal(await workerCss(page, sources.next), sources.current['compact-ui.css']);
     const current = await cacheSnapshot(page, sources.next);
-    assert.ok(!current.names.includes(sources.old.cacheName), 'activation deleted the prior game cache');
+    const retired = await retirementEvidence(page, cacheClient, origin, sources.old);
+    report.cacheSnapshots.push({ stage: 'activated-before-assertions', current: { ...current, css: undefined, cssSha256: current.css === null ? null : sha256(current.css) }, retired });
+    assertCacheRetirement(retired);
     assert.ok(current.names.includes(sources.next.cacheName));
     assert.equal(current.unrelated, old.unrelated);
     assert.equal(current.css, sources.current['compact-ui.css']);
@@ -277,6 +338,9 @@ async function run(sources, root, output) {
     await assertTitleAndSaves(page, sources.next, saved);
     assert.equal(await workerCss(page, sources.next), sources.current['compact-ui.css']);
     assert.equal((await cacheSnapshot(page, sources.next)).unrelated, old.unrelated);
+    const finalRetired = await retirementEvidence(page, cacheClient, origin, sources.old);
+    report.cacheSnapshots.push({ stage: 'new-offline', retired: finalRetired });
+    assertCacheRetirement(finalRetired);
     assert.equal(report.requests.length, beforeNewOffline, 'new offline reload made zero requests to the server');
     await page.screenshot({ path: path.join(output, 'offline-title.png') });
     report.checks.push({ name: 'offline reload keeps the new release, corrected CSS, both readable saves and unrelated data', serverRequests: 0 });
@@ -304,5 +368,5 @@ async function main() {
   fs.writeFileSync(path.join(output, 'provenance.json'), JSON.stringify(sources.provenance, null, 2) + '\n');
   await run(sources, root, output);
 }
-module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture };
+module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });

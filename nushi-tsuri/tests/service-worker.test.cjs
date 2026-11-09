@@ -7,9 +7,9 @@ const path = require("node:path");
 const vm = require("node:vm");
 const source = fs.readFileSync(path.join(__dirname, "../sw.js"), "utf8");
 
-function bootWorker() {
+function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const location = new URL("https://game.test/nushi-tsuri/sw.js");
-  const listeners = {}, stores = new Map(), requests = [], writes = [];
+  const listeners = {}, requests = [], writes = [];
   const state = {
     network: async () => { throw new TypeError("Offline"); },
     failOpen: false, failWrite: false, claimed: false, skippedWaiting: false,
@@ -61,7 +61,7 @@ function bootWorker() {
       return state.network(request, options);
     },
   });
-  vm.runInContext(source, context);
+  vm.runInContext(workerSource, context);
   const name = vm.runInContext("CACHE_NAME", context);
   const coreAssets = Array.from(vm.runInContext("CORE_ASSETS", context));
   return {
@@ -165,6 +165,35 @@ test("activation deletes only this game's old caches; resource lookup stays isol
   app.state.network = async () => new Response("correct fish");
   assert.equal(await (await app.fetch("./assets/fish.png")).text(), "correct fish");
   assert.equal(app.requests.length, 1);
+});
+
+test("a late retired-worker response can recreate its deleted cache name without restoring old contents or affecting the new worker", async () => {
+  const stores = new Map(), current = bootWorker({ stores });
+  // The prior deployed worker has this identical fetch/activation behavior;
+  // only the two release metadata strings differ in the source guard.
+  const previousName = "nushi-tsuri-v252-island-fish-252-56", oldCss = "./compact-ui.css?v=251-5";
+  const newCss = current.coreAssets.find(url => url.startsWith("./compact-ui.css?"));
+  const previous = bootWorker({ stores, workerSource: source.replace(current.name, previousName).replace(newCss, oldCss) });
+  previous.seed(previous.name, oldCss, "old CSS");
+  previous.seed(previous.name, "./retirement-sentinel", "must be deleted");
+  previous.seed("another-game-v1", "./keep", "unrelated cache");
+  current.seed(current.name, newCss, "new CSS");
+  let started, finish;
+  const networkStarted = new Promise(resolve => { started = resolve; });
+  const responseReady = new Promise(resolve => { finish = resolve; });
+  previous.state.network = async () => { started(); await responseReady; return new Response("late old-worker response"); };
+  const inFlight = previous.fetch("./late-request.png");
+  await networkStarted;
+  await current.activate();
+  assert.equal(stores.has(previous.name), false, "activation really deleted the old cache");
+  finish();
+  assert.equal(await (await inFlight).text(), "late old-worker response");
+  assert.equal(stores.has(previous.name), true, "caches.open in the retired worker recreates its name");
+  assert.deepEqual([...stores.get(previous.name).keys()], ["https://game.test/nushi-tsuri/late-request.png"], "old precache contents and sentinel were not restored");
+  assert.equal(stores.has("another-game-v1"), true);
+  assert.equal(await (await current.fetch(newCss)).text(), "new CSS");
+  assert.equal((await current.fetch("./late-request.png")).type, "error", "new worker never reads the recreated old cache");
+  assert.equal((await current.fetch(oldCss)).type, "error", "old CSS is absent after cleanup");
 });
 
 test("navigation stores a good page and recovers it offline or on server failure", async () => {
