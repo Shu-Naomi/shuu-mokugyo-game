@@ -1,5 +1,6 @@
 #tackle { padding: 0; overflow: hidden; }
-.world:has(#fishScene.active.surface-casting) .field-notices>.hint{visibility:hidden}
+/* Field navigation is unrelated throughout fishing, including the underwater view. */
+.world:has(#fishScene.active) .field-notices>.hint{visibility:hidden}
 #cancelCastPreparation { position:absolute; z-index:7; top:4px; right:4%; min-height:44px; }
 #cancelCastPreparation[hidden], #cancelTacklePreparation[hidden] { display:none; }
 #world:has(.modal.open) #cancelCastPreparation { visibility:hidden; }

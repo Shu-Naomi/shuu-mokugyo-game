@@ -14,6 +14,7 @@ module.exports=async function livingWaters(url,mobile=false,options={}){
  await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state:initial});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),step=d=>mobile?press('[data-move="'+d+'"]'):page.keyboard.press('Arrow'+d[0].toUpperCase()+d.slice(1));
  const state=()=>page.evaluate(()=>({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction})),snapshot=()=>page.evaluate(()=>JSON.parse(JSON.stringify({hp:s.hp,money:s.money,time:s.gameMinutes,baits:s.baits,caught:s.caught,equipment:s.equipment})));
+ async function fieldHint(expected){assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),expected,'field hint at '+await page.evaluate(()=>battle?.phase||'field'));}
  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.locator('#game.active').waitFor();if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await require('./browser-release.cjs').assertRelease(page);}
  async function shot(name){await page.evaluate(()=>hideFieldMenu());await page.waitForTimeout(250);await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+name+'.png')});}
  async function walk(region,goal){for(const d of route(region,await state(),goal)){const old=await state(),next=M.moveTarget(old.x,old.y,d,4,region);await step(d);const now=await state();assert.equal(now.region,region);assert.equal(now.x,next.x);assert.equal(now.y,next.y);}const p=await state();assert.ok(goal(p.x,p.y));}
@@ -29,13 +30,17 @@ module.exports=async function livingWaters(url,mobile=false,options={}){
   assert.ok(fit.inside&&fit.feet,JSON.stringify(fit));assert.equal(fit.position,fit.locale==='harbor'?'50% 20%':'50% 100%');await shot(name);
  }
  async function catchNewFish(id,type,bait,hook,distance){
+    await page.evaluate(()=>hideFieldMenu());await fieldHint('visible');
     await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');
+    await fieldHint('hidden');
     if(['herabuna','mahaze'].includes(id))await groundShot('cast-'+id);
     await press('#wait');await page.locator('#tackle.open').waitFor();
+    await fieldHint('hidden');
     await press('#tackle [data-cast-tackle="bait"]');await press('#tackle [data-pick-bait="'+bait+'"]');
     await press('#tackle [data-cast-tackle="hook"]');await press('#tackle [data-pick-hook="'+hook+'"]');
     const old=await page.evaluate(({id,bait})=>({count:s.caught[id]||0,bait:s.baits[bait]}),{id,bait});
     await press('#beginCast');assert.equal(await page.evaluate(()=>battle.phase),'cast');
+    await fieldHint('hidden');
     // Fix only timing and the random roll; use the game's real population and controls.
     await page.evaluate(({id,type,distance})=>{
       const original=Math.random,spot=(type==='sea'?'sea':'mountain-'+type)+'-'+depthForCast('lake',distance);let roll=-1;
@@ -46,17 +51,21 @@ module.exports=async function livingWaters(url,mobile=false,options={}){
     await press('#pull');assert.equal(await page.evaluate(()=>battle.f.id),id);
     await page.evaluate(()=>{Math.random=window.v238Random;delete window.v238Random;});
     await page.waitForFunction(()=>battle?.phase==='wait');
+    await fieldHint('hidden');
     await page.evaluate(()=>{battle.biteAt=Date.now()+180;battle.nibbleAt=Date.now();battleTick();});
     await page.waitForFunction(()=>battle?.phase==='bite');await press('#pull');assert.equal(await page.evaluate(()=>battle.phase),'fight');
+    await fieldHint('hidden');
     await page.evaluate(()=>{clearInterval(timer);timer=0;finishHookReveal();renderBattleFish();});
     await page.waitForFunction(id=>{renderBattleFish();const scene=document.querySelector('#fishScene'),el=document.querySelector('#battleFish'),c=el?.querySelector('canvas');
       if(scene.classList.contains('surface-casting')||scene.classList.contains('surface-diving')||!c||c.dataset.artSpecies!==id)return false;
       const r=c.getBoundingClientRect(),st=getComputedStyle(el);if(Number(st.opacity)<.9||st.visibility!=='visible'||r.width<20||r.height<8||r.left<0||r.top<0||r.right>innerWidth+1||r.bottom>innerHeight+1)return false;
       const data=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let painted=0;for(let i=3;i<data.length;i+=4)if(data[i]>100)painted++;return painted>2500;
     },id);
+    await fieldHint('hidden');assert.equal(await page.locator('#battleMsg').isVisible(),true);
     await page.screenshot({path:path.join(directory,(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-fish-'+id+'.png')});
     assert.equal(await page.evaluate(bait=>s.baits[bait],bait),old.bait-1);
     await page.evaluate(()=>{caught();caught();hideCatchCard();save();});
+    await page.evaluate(()=>hideFieldMenu());await fieldHint('visible');
     assert.equal(await page.evaluate(id=>s.caught[id],id),old.count+1);
     assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),(type==='sea'?'sea':'mountain-'+type)+'-'+(distance<34?'shallow':'mid'));
   }
