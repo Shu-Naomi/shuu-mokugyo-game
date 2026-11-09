@@ -4,7 +4,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
-const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement } = require('./browser-cache-upgrade-evidence.cjs');
+const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
 const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
@@ -128,4 +128,60 @@ test('cleanup guard requires actual sentinel and stale-CSS deletion even when la
   assert.throws(() => assertCacheRetirement({ ...recreated, oldCssPresent: true }), /stale CSS/);
   assert.throws(() => assertCacheRetirement({ ...recreated, keys: ['/nushi-tsuri/__cache-upgrade-retirement-sentinel__'] }), /original sentinel/);
   assert.throws(() => assertCacheRetirement({ ...recreated, keys: ['/nushi-tsuri/compact-ui.css?v=251-5'] }), /stale CSS key/);
+});
+
+test('readiness requires the same fully activated release and complete cache in one lifecycle observation', async () => {
+  const old = { scriptURL: 'https://game.test/nushi-tsuri/sw.js?v=252-56', state: 'activated' };
+  const next = { scriptURL: 'https://game.test/nushi-tsuri/sw.js?v=252-57', state: 'activating' };
+  const registration = { active: old }, serviceWorker = { controller: next, getRegistration: async () => registration };
+  const release = { workerUrl: './sw.js?v=252-57', cacheName: 'new-cache-left-by-failed-install', coreAssets: ['./index.html', './compact-ui.css?v=252-57'] };
+  const stored = new Set(release.coreAssets), matches = [];
+  let duringMatch = () => {};
+  const context = vm.createContext({
+    URL, location: { href: 'https://game.test/nushi-tsuri/' }, navigator: { serviceWorker },
+    caches: { match: async (url, options) => {
+      assert.deepEqual({ ...options }, { cacheName: release.cacheName });
+      matches.push(url); duringMatch();
+      return stored.has(url) ? {} : undefined;
+    } },
+  });
+  const ready = () => vm.runInContext(`(${releaseReady.toString()})(${JSON.stringify(release)})`, context);
+  assert.equal(await ready(), false, 'new controller URL plus old activated registration and preexisting new cache is not readiness');
+  assert.equal(matches.length, 0, 'do not inspect the cache before both workers match and activate');
+  registration.active = next;
+  assert.equal(await ready(), false, 'new controller and registration are both still activating');
+  next.state = 'activated';
+  registration.active = old;
+  assert.equal(await ready(), false, 'old activated registration cannot satisfy new readiness');
+  registration.active = next; serviceWorker.controller = old;
+  assert.equal(await ready(), false, 'old controller cannot satisfy new readiness');
+  serviceWorker.controller = next;
+  stored.delete(release.coreAssets[1]);
+  assert.equal(await ready(), false, 'a cache name or partial cache is insufficient');
+  stored.add(release.coreAssets[1]);
+  assert.equal(await ready(), true, 'exact new workers are activated and every core asset is cached');
+  duringMatch = () => { registration.active = old; };
+  assert.equal(await ready(), false, 'registration changes during asynchronous cache reads invalidate the observation');
+  registration.active = next;
+  duringMatch = () => { serviceWorker.controller = { ...next, state: 'activating' }; };
+  assert.equal(await ready(), false, 'controller state is rechecked after asynchronous cache reads');
+  serviceWorker.controller = { ...next, scriptURL: 'https://other.test/nushi-tsuri/sw.js?v=252-57' };
+  duringMatch = () => {};
+  assert.equal(await ready(), false, 'URL suffix alone is not the exact expected worker');
+});
+
+test('controller wait polls resolved false results and enforces its deadline', async () => {
+  const observations = [false, false, true], pauses = [];
+  const page = {
+    evaluate: async (predicate, release) => {
+      assert.equal(predicate, releaseReady); assert.equal(release, current);
+      return observations.shift();
+    },
+    waitForTimeout: async interval => { pauses.push(interval); },
+    waitForFunction: () => { throw Error('Do not pass an async predicate to waitForFunction'); },
+  };
+  await controlledBy(page, current, { interval: 25 });
+  assert.deepEqual(observations, [], 'false async results must not terminate the wait');
+  assert.deepEqual(pauses, [25, 25]);
+  await assert.rejects(controlledBy({ evaluate: async () => false }, current, { timeout: 0 }), /Timed out waiting for fully activated release/);
 });

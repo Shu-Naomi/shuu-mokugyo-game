@@ -166,12 +166,32 @@ function assertCacheRetirement(evidence) {
   assert.ok(!evidence.keys.includes(RETIREMENT_MARKER), 'retired inventory has no original sentinel');
   assert.ok(!evidence.keys.includes('/nushi-tsuri/' + BASELINE_CSS.slice(2)), 'retired inventory has no stale CSS key');
 }
-async function controlledBy(page, release) {
-  await page.waitForFunction(url => navigator.serviceWorker.controller?.scriptURL.endsWith(url.slice(2)), release.workerUrl, { timeout: 180000 });
-  await page.waitForFunction(async cacheName => {
-    const registration = await navigator.serviceWorker.getRegistration();
-    return registration?.active?.state === 'activated' && (await caches.keys()).includes(cacheName);
-  }, release.cacheName, { timeout: 180000 });
+async function releaseReady({ workerUrl, cacheName, coreAssets }) {
+  const expectedUrl = new URL(workerUrl, location.href).href;
+  const registration = await navigator.serviceWorker.getRegistration();
+  const activated = () => {
+    const controller = navigator.serviceWorker.controller, active = registration?.active;
+    return controller?.scriptURL === expectedUrl && controller.state === 'activated'
+      && active?.scriptURL === expectedUrl && active.state === 'activated';
+  };
+  // A new controller URL can appear while activation is still running, and a
+  // failed installation can leave the new cache name behind. Neither is ready.
+  if (!activated()) return false;
+  const complete = (await Promise.all(coreAssets.map(async url => Boolean(await caches.match(url, { cacheName }))))).every(Boolean);
+  // Re-read both live worker states after the asynchronous cache checks so
+  // observations from separate lifecycle moments cannot satisfy the wait.
+  return complete && activated();
+}
+async function controlledBy(page, release, { timeout = 180000, interval = 100 } = {}) {
+  // Poll the resolved boolean explicitly. The pinned Playwright implementation
+  // treats an async waitForFunction predicate's Promise as truthy before it
+  // resolves, so a false result can end that wait prematurely.
+  const deadline = Date.now() + timeout;
+  for (;;) {
+    if (await page.evaluate(releaseReady, release)) return;
+    if (Date.now() >= deadline) throw Error('Timed out waiting for fully activated release ' + release.workerUrl + ' and its complete precache');
+    await page.waitForTimeout(interval);
+  }
 }
 async function workerCss(page, release) {
   const responsePromise = page.waitForResponse(response => response.url().endsWith(release.cssUrl.slice(2)));
@@ -368,5 +388,5 @@ async function main() {
   fs.writeFileSync(path.join(output, 'provenance.json'), JSON.stringify(sources.provenance, null, 2) + '\n');
   await run(sources, root, output);
 }
-module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement };
+module.exports = { BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });
