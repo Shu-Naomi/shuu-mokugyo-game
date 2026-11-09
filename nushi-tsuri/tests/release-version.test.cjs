@@ -62,3 +62,20 @@ test("compact layer fix invalidates stale CSS in both the document and precache"
   assert.throws(() => compactStylesheet(html, worker.replace(url, stale)), /same corrected CSS/);
   assert.throws(() => compactStylesheet(html.replace(url.slice(2), stale.slice(2)), worker.replace(url, stale)), /previously cached/);
 });
+
+function castingStylesheet(documentSource, workerSource) {
+  const urls = [...documentSource.matchAll(/href="(cast-tackle\.css\?v=[0-9-]+)"/g)];
+  assert.equal(urls.length, 1, "one versioned cast stylesheet");
+  const url = "./" + urls[0][1];
+  assert.notEqual(url, "./cast-tackle.css?v=252-3", "the field hint fix must invalidate the previously cached stylesheet");
+  const cached = [...workerSource.matchAll(/"(\.\/cast-tackle\.css\?v=[0-9-]+)"/g)];
+  assert.equal(cached.length, 1, "one precached cast stylesheet");
+  assert.equal(cached[0][1], url, "HTML and worker request the same casting CSS");
+  return url;
+}
+test("casting hint fix invalidates stale CSS in both document and precache", () => {
+  const url = castingStylesheet(html, worker), stale = "./cast-tackle.css?v=252-3";
+  assert.throws(() => castingStylesheet(html.replace(url.slice(2), stale.slice(2)), worker), /previously cached/);
+  assert.throws(() => castingStylesheet(html, worker.replace(url, stale)), /same casting CSS/);
+  assert.throws(() => castingStylesheet(html.replace(url.slice(2), stale.slice(2)), worker.replace(url, stale)), /previously cached/);
+});

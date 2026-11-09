@@ -227,7 +227,7 @@ async function candidateOutcome(url) {
 }
 async function assertTitleAndSaves(page, release, saved) {
   assert.equal((await page.locator('#gameRelease').textContent()).trim(), 'v' + release.release);
-  assert.equal(await page.locator('link[href^="compact-ui.css"]').getAttribute('href'), release.cssUrl.slice(2));
+  assert.equal(await page.locator(`link[href="${release.cssUrl.slice(2)}"]`).getAttribute('href'), release.cssUrl.slice(2));
   assert.deepEqual(await storageSnapshot(page), saved, 'all save slots, options, metadata and unrelated localStorage retain their exact bytes');
   const slots = await page.evaluate(() => [1, 2].map(slot => ShuSaveSlots.create(() => localStorage).read(slot)));
   for (const [index, slot] of slots.entries()) {
@@ -235,9 +235,18 @@ async function assertTitleAndSaves(page, release, saved) {
     assert.deepEqual(slot.data, JSON.parse(saved[index === 0 ? 'nushi-inugoya-v2' : 'nushi-inugoya-v2-slot2']), 'real save reader still opens slot ' + (index + 1));
   }
 }
+async function loadedSelectors(page, cssUrl, selectors) {
+  return page.evaluate(({ cssUrl, selectors }) => {
+    const expected = new URL(cssUrl, location.href).href;
+    const sheet = [...document.styleSheets].find(sheet => sheet.href === expected);
+    if (!sheet) return selectors.map(() => false);
+    return selectors.map(selector => [...sheet.cssRules].some(rule => rule.selectorText?.split(',').some(part => part.replace(/\s/g, '') === selector.replace(/\s/g, ''))));
+  }, { cssUrl, selectors });
+}
 async function run(sources, root, output, hooks = {}) {
   // This check precedes loading Playwright, creating a server or launching a browser.
   requireGitHubCI(process.env);
+  const cssFile = hooks.cssFile || 'compact-ui.css';
   const { chromium } = require('playwright'), http = require('node:http');
   const report = { provenance: sources.provenance, old: sources.old, next: sources.next,
     scope: 'Native Chromium CacheStorage, production previous/current release files/workers and unchanged real assets. Save values are explicit test fixtures; no production user data. No gameplay input or layout claim.',
@@ -280,7 +289,7 @@ async function run(sources, root, output, hooks = {}) {
     await controlledBy(page, sources.old);
     await assertTitleAndSaves(page, sources.old, saved);
     if (hooks.assertAssets) report.checks.push({ name: 'exact native release assets', release: sources.old.release, assets: await hooks.assertAssets(page, sources.old, sources.previous) });
-    assert.equal(await workerCss(page, sources.old), sources.previous['compact-ui.css']);
+    assert.equal(await workerCss(page, sources.old), sources.previous[cssFile]);
     await page.evaluate(async ({ name, marker, value }) => {
       await (await caches.open(name)).put(marker, new Response(value));
     }, { name: sources.old.cacheName, marker: RETIREMENT_MARKER, value: RETIREMENT_VALUE });
@@ -288,7 +297,7 @@ async function run(sources, root, output, hooks = {}) {
     const originalCache = await retirementEvidence(page, cacheClient, origin, sources.old);
     report.cacheSnapshots.push({ stage: 'baseline', retired: originalCache, registration: old.registration });
     assert.equal(originalCache.sentinel, RETIREMENT_VALUE, 'unique cleanup sentinel starts in the old cache');
-    assert.equal(old.css, sources.previous['compact-ui.css']);
+    assert.equal(old.css, sources.previous[cssFile]);
     assert.equal(old.unrelated, 'keep unrelated cache');
     for (const asset of sources.old.coreAssets) assert.ok(old.keys.includes(new URL(asset, url).pathname + new URL(asset, url).search), 'baseline installed core resource: ' + asset);
     report.checks.push({ name: 'prior release installed with stale CSS', cacheKeys: old.keys.length, controller: old.controller, cssSha256: sha256(old.css) });
@@ -320,7 +329,7 @@ async function run(sources, root, output, hooks = {}) {
     assert.equal(sha256(await oldOffline.text()), sources.provenance.previousHashes['index.html'], 'failed update leaves the previous offline document usable');
     await assertTitleAndSaves(page, sources.old, saved);
     if (hooks.assertAssets) report.checks.push({ name: 'exact native release assets', release: sources.old.release, assets: await hooks.assertAssets(page, sources.old, sources.previous) });
-    assert.equal(await workerCss(page, sources.old), sources.previous['compact-ui.css']);
+    assert.equal(await workerCss(page, sources.old), sources.previous[cssFile]);
     assert.equal((await cacheSnapshot(page, sources.old)).unrelated, old.unrelated);
     const oldOfflineCache = await retirementEvidence(page, cacheClient, origin, sources.old);
     report.cacheSnapshots.push({ stage: 'old-offline', retired: oldOfflineCache });
@@ -336,7 +345,7 @@ async function run(sources, root, output, hooks = {}) {
     await controlledBy(page, sources.next);
     await assertTitleAndSaves(page, sources.next, saved);
     if (hooks.assertAssets) report.checks.push({ name: 'exact native release assets', release: sources.next.release, assets: await hooks.assertAssets(page, sources.next, sources.current) });
-    assert.equal(await workerCss(page, sources.next), sources.current['compact-ui.css']);
+    assert.equal(await workerCss(page, sources.next), sources.current[cssFile]);
     const current = await cacheSnapshot(page, sources.next);
     const retired = await retirementEvidence(page, cacheClient, origin, sources.old);
     report.cacheSnapshots.push({ stage: 'activated-before-assertions', current: { ...current, css: undefined, cssSha256: current.css === null ? null : sha256(current.css) }, retired });
@@ -344,13 +353,10 @@ async function run(sources, root, output, hooks = {}) {
     if (hooks.assertRetired) await hooks.assertRetired(page, sources.old);
     assert.ok(current.names.includes(sources.next.cacheName));
     assert.equal(current.unrelated, old.unrelated);
-    assert.equal(current.css, sources.current['compact-ui.css']);
+    assert.equal(current.css, sources.current[cssFile]);
     assert.ok(!current.keys.includes('/nushi-tsuri/' + sources.old.cssUrl.slice(2)), 'new cache has no old CSS URL');
     for (const asset of sources.next.coreAssets) assert.ok(current.keys.includes(new URL(asset, url).pathname + new URL(asset, url).search), 'installed core resource: ' + asset);
-    const matchedSelectors = await page.evaluate(selectors => {
-      const sheet = [...document.styleSheets].find(sheet => sheet.href?.includes('/compact-ui.css?'));
-      return selectors.map(selector => [...sheet.cssRules].some(rule => rule.selectorText?.split(',').some(part => part.replace(/\s/g, '') === selector.replace(/\s/g, ''))));
-    }, hooks.selectors || alignmentSelectors);
+    const matchedSelectors = await loadedSelectors(page, sources.next.cssUrl, hooks.selectors || alignmentSelectors);
     assert.deepEqual(matchedSelectors, (hooks.selectors || alignmentSelectors).map(() => true), 'the loaded CSSOM includes all reviewed selectors');
     report.checks.push({ name: 'successful retry installs and activates new release', cacheKeys: current.keys.length, controller: current.controller, cssSha256: sha256(current.css), cacheNames: current.names, selectors: matchedSelectors });
     await page.screenshot({ path: path.join(output, 'upgraded-title.png') });
@@ -362,7 +368,7 @@ async function run(sources, root, output, hooks = {}) {
     assert.equal(sha256(await offline.text()), sources.provenance.currentHashes['index.html']);
     await assertTitleAndSaves(page, sources.next, saved);
     if (hooks.assertAssets) report.checks.push({ name: 'exact native release assets', release: sources.next.release, assets: await hooks.assertAssets(page, sources.next, sources.current) });
-    assert.equal(await workerCss(page, sources.next), sources.current['compact-ui.css']);
+    assert.equal(await workerCss(page, sources.next), sources.current[cssFile]);
     assert.equal((await cacheSnapshot(page, sources.next)).unrelated, old.unrelated);
     const finalRetired = await retirementEvidence(page, cacheClient, origin, sources.old);
     report.cacheSnapshots.push({ stage: 'new-offline', retired: finalRetired });
@@ -395,5 +401,5 @@ async function main() {
   fs.writeFileSync(path.join(output, 'provenance.json'), JSON.stringify(sources.provenance, null, 2) + '\n');
   await run(sources, root, output);
 }
-module.exports = { run, sha256, BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy };
+module.exports = { run, loadedSelectors, assertTitleAndSaves, sha256, BASELINE_SHA, requireGitHubCI, inspectRelease, assertReleaseUpgrade, sourceProvenance, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy };
 if (require.main === module) main().catch(error => { console.error(error); process.exitCode = 1; });

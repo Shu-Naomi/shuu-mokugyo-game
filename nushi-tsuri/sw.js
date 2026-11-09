@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-asual-notices-252-58";
+const CACHE_NAME = "nushi-tsuri-v252-cast-hints-252-59";
 
 const CORE_ASSETS = [
   "./assets/fish-takabe-v252-56.png",
@@ -113,7 +113,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-isaki-adult-v230.png",
   "./player-options.js?v=251-9",
   "./player-options.css?v=251-9",
-  "./cast-tackle.css?v=252-3",
+  "./cast-tackle.css?v=252-59",
   "./assets/fish-iwana-v219.png",
   "./assets/fish-amago-v219.png",
   "./assets/fish-kajika-v219.png",
