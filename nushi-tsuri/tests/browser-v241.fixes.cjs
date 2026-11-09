@@ -23,7 +23,7 @@ module.exports=async function fixes(page,mobile,viewport){
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);
-   assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),'hidden',mode+' fight hides the field hint');assert.equal(await page.locator('#battleMsg').isVisible(),true);
+   assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),'hidden',mode+' fight hides the field hint');assert.equal(await page.locator(mode==='nushi'?'#nushiCue':'#battleMsg').isVisible(),true,mode+' keeps its own fight guidance');
    await hold(true);assert.equal(await page.evaluate(()=>battle.reeling),true);await hold(false);await shot('lure-fight-'+mode);
    const after=await page.evaluate(()=>JSON.parse(JSON.stringify([s.baits,s.lures,s.gameMinutes])));assert.deepEqual(after.slice(0,2),before.slice(0,2));assert.equal(after[2]-before[2],10);
   }

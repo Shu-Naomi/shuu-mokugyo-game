@@ -24,7 +24,9 @@ test('field hint stays hidden from bait preparation through hook-set, underwater
 test('lure search and both fishing fight modes do not restore the field hint',()=>{
  for(const fightMode of ['gauge','nushi']){
   const app=boot(fixture({fightMode,fishingMethod:'lure',selectedRod:'lureRod',ownedRods:['bamboo','lureRod'],lures:{silverSpoon:1}})),w=app.window;
-  try{w.eval('s.fishingMethod="lure";s.selectedRod="lureRod"');click(w,'#action');w.beginFishing();stop(w);release(w);assert.ok(['lure','interest'].includes(read(w,'battle.phase')));hint(w,'hidden');w.eval('battle.f=fish.find(f=>f.id==="funa")');hook(w);hint(w,'hidden');assert.equal(visibility(w,'#battleMsg'),'visible');w.endBattle();hint(w,'visible');assert.deepEqual(app.errors,[]);}finally{app.dispose();}
+  try{w.eval('s.fishingMethod="lure";s.selectedRod="lureRod"');click(w,'#action');w.beginFishing();stop(w);release(w);assert.ok(['lure','interest'].includes(read(w,'battle.phase')));hint(w,'hidden');w.eval('battle.f=fish.find(f=>f.id==="funa")');hook(w);hint(w,'hidden');
+   const guidance=fightMode==='nushi'?'#nushiCue':'#battleUi';assert.notEqual(w.getComputedStyle(w.document.querySelector(guidance)).display,'none');assert.equal(visibility(w,guidance),'visible');
+   w.endBattle();hint(w,'visible');assert.deepEqual(app.errors,[]);}finally{app.dispose();}
  }
 });
 test('preparation cancel, tackle close, Escape and repeated entry restore hints without spending supplies',()=>{
