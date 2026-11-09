@@ -1,0 +1,55 @@
+name: Compact location layer alignment
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nushi-tsuri/compact-ui.css'
+      - 'nushi-tsuri/tests/location-layer-alignment.test.cjs'
+      - 'nushi-tsuri/tests/browser-location-layer-alignment-evidence.cjs'
+      - '.github/workflows/location-layer-alignment.yml'
+permissions:
+  contents: read
+concurrency:
+  group: location-layer-alignment-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  evidence:
+    if: github.head_ref == 'codex/fix-location-layer-alignment'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    env:
+      NUSHI_EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      NUSHI_HEAD_REPOSITORY: ${{ github.event.pull_request.head.repo.full_name }}
+      NUSHI_PR_NUMBER: ${{ github.event.pull_request.number }}
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - name: Verify exact pull request head
+        run: test "$(git rev-parse HEAD)" = "$NUSHI_EXPECTED_HEAD_SHA"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - name: Install pinned Japanese UI fonts
+        run: bash install-ci-fonts.sh
+      - name: Check layer contracts and interrupted UI flows
+        run: node --test location-layer-alignment.test.cjs
+      - name: Verify all three ready-state layouts and dialogue text
+        run: node browser-location-layer-alignment-evidence.cjs
+      - name: Preserve exact-head provenance, screenshots and geometry
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: location-layer-alignment-${{ github.event.pull_request.head.sha }}
+          path: nushi-tsuri/tests/browser-evidence-location-layer-alignment/
+          retention-days: 14
+          if-no-files-found: warn
