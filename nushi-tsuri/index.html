@@ -7402,6 +7402,35 @@
         <button id="optionsDeletedReturn" type="button" hidden>セーブ選択画面へ戻る</button>
       </div>
     </section>
+    <script src="village-reference.js?v=pilot-1"></script>
+    <script>
+      // Keep normal offline play usable, but fail closed for an unsafe preview.
+      function showReferenceVillageFailure(reason) {
+        let failure = document.getElementById("villageReferenceLoadFailure");
+        if (failure) { failure.textContent = reason; return; }
+        failure = document.createElement("div");
+        failure.id = "villageReferenceLoadFailure";
+        failure.setAttribute("role", "alertdialog");
+        failure.setAttribute("aria-modal", "true");
+        failure.setAttribute("aria-label", "参考原画の試作を読み込めませんでした");
+        failure.tabIndex = -1;
+        failure.textContent = reason;
+        failure.style.cssText = "position:fixed;inset:0;z-index:2147483647;display:grid;place-content:center;padding:32px;background:#241b10;color:#fff1c7;font:18px/1.7 sans-serif;text-align:center";
+        document.body.append(failure);
+        failure.focus();
+        for (const type of ["keydown", "keyup", "pointerdown", "pointerup", "click", "touchstart", "touchend"])
+          window.addEventListener(type, event => {
+            if (event.type.startsWith("key") && (event.ctrlKey || event.metaKey || event.key === "F5")) return;
+            event.stopImmediatePropagation();
+            event.preventDefault();
+          }, { capture: true, passive: false });
+      }
+      if (!globalThis.ShuVillageReference) {
+        globalThis.ShuVillageReference = { enabled: false, moduleLoadFailed: true };
+        if (new URLSearchParams(location.search).get("villageReference") === "1")
+          showReferenceVillageFailure("参考原画の試作を読み込めませんでした。通信を確認して再読み込みしてください。通常版を試作として表示することはできません。");
+      }
+    </script>
     <script src="player-options.js?v=251-9"></script>
     <script src="fortune-capsules.js?v=187-1"></script>
     <script src="music-tracks.js?v=205-1"></script>
@@ -7459,6 +7488,23 @@
     <script src="scene-layers.js?v=252-55"></script>
     <script src="layered-scenery.js?v=252-55"></script>
     <script>
+      // Abort this same script before create(), save reads, migrations or UI
+      // handlers. A previous worker can otherwise serve the old save module.
+      if (new URLSearchParams(location.search).get("villageReference") === "1") {
+        let isolatedPreview = false;
+        try {
+          isolatedPreview = ShuVillageReference.enabled === true &&
+            !navigator.serviceWorker?.controller &&
+            ShuSaveSlots.preview === true &&
+            ShuSaveSlots.keyFor(1) === "nushi-reference-village-pilot-v1-slot1" &&
+            ShuSaveSlots.keyFor(2) === "nushi-reference-village-pilot-v1-slot2" &&
+            ShuSaveSlots.lastSlotKey === "nushi-reference-village-pilot-v1-last-slot";
+        } catch (_) {}
+        if (!isolatedPreview) {
+          showReferenceVillageFailure("参考原画の試作を安全に読み込めませんでした。保存データを守るため起動を止めました。この試作は通常版のキャッシュがない専用の検証環境で確認してください。");
+          throw new Error("Reference village safety check blocked startup");
+        }
+      }
       function uiArt(key) {
         const [kind, id] = key.split(":");
         return kind === "ui" ? UiPixelArt.get(id) : kind === "extra" ? UiExtraArt.get(id)
@@ -13119,8 +13165,8 @@
       if (s.mapRegion === "coast" && !s.equipment.vehicle) {
         s.mapRegion = "village";
         s.boatActive = false;
-        s.x = ShuCoast.docks.harbor.land.x;
-        s.y = ShuCoast.docks.harbor.land.y;
+        s.x = (ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x;
+        s.y = (ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y;
       }
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
@@ -14581,8 +14627,8 @@
       }
       function activeLandingDock() {
         if (ShuMountain.isRegion(s.mapRegion) || s.mapRegion===ShuOffshore.id) return null;
-        if (s.mapRegion === "village") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
-          ? { id:"harbor",...ShuCoast.docks.harbor } : null;
+        if (s.mapRegion === "village") return near((ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x,(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y,8)
+          ? { id:"harbor",...ShuCoast.docks.harbor,land:ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land } : null;
         return Object.entries(ShuCoast.docks)
           .filter(([id])=>id!=="harbor" || s.boatActive)
           .map(([id,dock])=>({id,...dock}))
@@ -14608,14 +14654,15 @@
         if (!s.boatActive || s.mapRegion!=="coast") return false;
         const dock=activeLandingDock();if(!dock)return false;
         s.boatActive=false;s.mapRegion=dock.id==="harbor"?"village":"coast";
-        s.x=dock.land.x;s.y=dock.land.y;s.direction="up";
+        const land=ShuVillageReference.enabled&&dock.id==="harbor"?ShuVillageReference.routes.boat.land:dock.land;
+        s.x=land.x;s.y=land.y;s.direction="up";
         dogWorldPosition=null;
         log(`${dock.name}に船を着けた。`);
         render();save();return true;
       }
       function rescueBoat() {
         s.mapRegion="village";s.boatActive=false;
-        s.x=ShuCoast.docks.harbor.land.x;s.y=ShuCoast.docks.harbor.land.y;
+        s.x=(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x;s.y=(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y;
         s.direction="up";dogWorldPosition=null;
         advanceGameTime(s,120);s.hp=Math.min(s.maxHp,Math.max(25,s.hp));
         log("体力が尽き、漁師に助けられて星見港へ戻った。体力を25まで回復した。");
@@ -14730,7 +14777,7 @@
       function worldToMapY(y) {
         return y / WORLD_SCALE_Y;
       }
-      const lakeWaterPolygon = [
+      let lakeWaterPolygon = [
           // Shore-side vertices measured in the final 1672×941 village art.
           // The larger TCG shop replaces the old western bank. Keep water
           // out of its forecourt, cover the small southwest reed pocket,
@@ -14947,13 +14994,29 @@
             message: "港の舟具屋。小島への航海に使えるタライとボートが並んでいる。",
           },
         ];
-      const PLAYER_HOME_MAP_ENTRY = {
+      if (ShuVillageReference.enabled) {
+        ({lakeWaterPolygon,riverWaterPolygon,seaShoreLine,harborPocketWaterPolygon,
+          practicePondBounds,riverBridgeBounds,harborWalkwayPolygons,harborCornerPassageBounds,
+          mainShrineApproachBounds,danRaceFront,samShopApproachBounds,samShopInteractionBounds,
+          questBoardInteractionBounds,riaoShopFront,structureBounds}=ShuVillageReference.geometry);
+        worldLandmarks=worldLandmarks.map(landmark=>({...landmark,...ShuVillageReference.landmarks[landmark.id]}));
+        const riao=worldLandmarks.find(p=>p.id==='riao-tcg-shop');
+        riao.hint='リアオの魚TCGショップ（右上の魚看板へ仮配置・準備中）。Aで案内。';
+        riao.message+=' この原画試作では右上の魚看板の建物に仮配置しています。';
+        const board=worldLandmarks.find(p=>p.id==='quest-board');
+        board.hint='依頼掲示板（右上の立て看板へ仮配置）。Aで依頼を見る。';
+        const banner=document.createElement('div');banner.id='villageReferenceNotice';
+        banner.textContent='原画試作・未公開｜右上のリアオ・依頼看板は仮配置｜通常セーブへの書込なし';
+        banner.style.cssText='position:fixed;left:50%;bottom:max(6px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(640px,calc(100vw - 340px));box-sizing:border-box;z-index:20;padding:4px 6px;border-radius:5px;background:#241b10e8;color:#fff1c7;font:11px/1.4 sans-serif;text-align:center;pointer-events:none';
+        document.body.append(banner);
+      }
+      const PLAYER_HOME_MAP_ENTRY = ShuVillageReference.enabled ? ShuVillageReference.exits.home.bounds : {
           left: 2,
           right: 6,
           top: 73,
           bottom: 85,
         },
-        PLAYER_HOME_MAP_RETURN = { x: 10, y: 79, direction: "right" },
+        PLAYER_HOME_MAP_RETURN = ShuVillageReference.enabled ? ShuVillageReference.exits.home.return : { x: 10, y: 79, direction: "right" },
         PLAYER_HOME_TRANSITION_MS = 180,
         playerHomeAreaData = {
           exterior: {
@@ -15248,6 +15311,7 @@
         return inWorldRect(x, y, samShopInteractionBounds);
       }
       function isOnLakeDock(x, y) {
+        if(ShuVillageReference.enabled)return inWorldRect(x,y,ShuVillageReference.geometry.lakeDockBounds);
         return x >= 105.5 && x <= 114 && y >= 10.5 && y <= 19.5;
       }
       function isLakeWater(x, y) {
@@ -15263,6 +15327,7 @@
           pointInPolygon(x, y, riverWaterPolygon);
       }
       function isRiverWater(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.water(x,y)==="river";
         // Keep the established river/sea fishing-zone boundary at y=132.
         return y >= 50 && y <= 132 && !isOnRiverBridge(x, y) &&
           pointInPolygon(x, y, riverWaterPolygon);
@@ -15275,11 +15340,13 @@
         return sampleWorldLine(seaShoreLine, x);
       }
       function isSeaWater(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.water(x,y)==="sea";
         const mouth = y > 132 && pointInPolygon(x, y, riverWaterPolygon);
         return (y >= seaWaterY(x) || mouth || pointInPolygon(x, y, harborPocketWaterPolygon)) &&
           !isOnHarborWalkway(x, y);
       }
       function isPracticePondWater(x, y) {
+        if(ShuVillageReference.enabled)return pointInPolygon(x,y,ShuVillageReference.geometry.practicePondPolygon);
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         const dx = (x - practicePondBounds.centerX) / practicePondBounds.radiusX;
         const dy = (y - practicePondBounds.centerY) / practicePondBounds.radiusY;
@@ -15292,6 +15359,7 @@
         ) < 9;
       }
       function isBlockedStructure(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.blocked(x,y);
         if (riaoShopFront.props.some((bounds) => inWorldRect(x, y, bounds))) return true;
         return structureBounds.some((bounds) => {
           if (!inWorldRect(x, y, bounds)) return false;
@@ -15395,6 +15463,7 @@
           ? foragePointData.find((candidate) => candidate.id === pointOrId)
           : pointOrId;
         if (!point) return null;
+        if(ShuVillageReference.enabled&&ShuVillageReference.forage[point.id])return ShuVillageReference.forage[point.id];
         if (!point.walkablePosition) {
           point.walkablePosition = nearestWalkableWorld(point.x, point.y, 10);
         }
@@ -18067,15 +18136,21 @@
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
         mapElement.classList.toggle("offshore",offshore);
-        $("#ruralSign").hidden=s.mapRegion!=="village";
+        $("#ruralSign").hidden=ShuVillageReference.enabled||s.mapRegion!=="village";
         $("#mountainPixels").dataset.region=mountain?s.mapRegion:"inactive";
-        const ferry=$("#offshoreShip");ferry.hidden=!(offshore||s.mapRegion==="village");
+        const ferry=$("#offshoreShip");ferry.hidden=!(offshore||(!ShuVillageReference.enabled&&s.mapRegion==="village"));
         if(!ferry.hidden){const point=offshore?{x:118,y:104}:{x:214,y:119};ferry.style.left=`${worldToMapX(point.x)}%`;ferry.style.top=`${worldToMapY(point.y)}%`;ShuOffshore.paintShip(ferry,offshore);}
         if(mountain) {
           const canvas=$("#mountainPixels"), label=ShuMountain.regionData(s.mapRegion).name;
           if(canvas.getAttribute("aria-label")!==label)canvas.setAttribute("aria-label",label);
         }
         mapElement.classList.toggle("boating",coast&&s.boatActive);
+        if(ShuVillageReference.enabled&&s.referenceVillageLayout!=='source-11016-1'){
+          // Old coordinates may be dry but isolated. One-time re-entry onto the
+          // connected village road changes position only, never inventory/stats.
+          if(s.mapRegion==='village')Object.assign(s,ShuVillageReference.rescuePosition(s));
+          s.referenceVillageLayout='source-11016-1';
+        }
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
         if (!isWalkableWorld(s.x, s.y)) {
@@ -18763,7 +18838,9 @@
           showRescueToast(landmark.message, 4200);
           return;
         }
-        const foragePoint = nearbyForagePoint();
+        // Reference facility fronts take priority over nearby random forage.
+        const foragePoint = ShuVillageReference.enabled && (landmark || isAtSamShopEntrance())
+          ? null : nearbyForagePoint();
         if (foragePoint) return collectForagePoint(foragePoint.point.id);
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
@@ -24458,7 +24535,7 @@
       }, 2500);
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
-      if ("serviceWorker" in navigator)
+      if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
         navigator.serviceWorker.register("./sw.js?v=252-59").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,

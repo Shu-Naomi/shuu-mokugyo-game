@@ -6,6 +6,8 @@
   else root.ShuRivals = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function () {
   "use strict";
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
   const asset = "assets/rival-anglers-v179.png";
   const dogAsset = "assets/rival-dogs-v179.png";
   const hostAsset = "assets/sam-sprites-v199.webp";
@@ -91,6 +93,10 @@
     { id: "jamie", x: 103, y: 62, facing: "right", place: "ダンサーのそば" },
     { id: "chappie", x: 208, y: 96, facing: "left", place: "サムの店先" },
   ];
+  if(reference){
+    for(const placement of placements)Object.assign(placement,reference.npc.anglers[placement.id]);
+    for(const placement of dogPlacements)Object.assign(placement,reference.npc.dogs[placement.id]);
+  }
   const profiles = [
     { id: "liao", count: [5, 7], length: [2200, 3450], total: [12500, 14400] },
     { id: "asual", count: [4, 6], length: [2400, 4100], total: [13200, 16900] },
