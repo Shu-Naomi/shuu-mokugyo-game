@@ -28,7 +28,7 @@ test('normal offline game boots safely when optional reference module is missing
 test('requested reference preview fails visibly and blocks play when module is missing',()=>{
  const app=harness.boot(undefined,undefined,{url:'http://localhost/nushi-tsuri/?villageReference=1',start:false});
  try{
-  assert.deepEqual(app.errors,[]);
+  assert.equal(app.errors.length,1);assert.match(app.errors[0],/Reference village safety check blocked startup/);
   const screen=app.window.document.querySelector('#villageReferenceLoadFailure');
   assert.ok(screen);assert.equal(screen.getAttribute('role'),'alertdialog');
   assert.match(screen.textContent,/読み込めません/);

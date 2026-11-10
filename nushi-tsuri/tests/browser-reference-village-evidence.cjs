@@ -14,9 +14,9 @@ function legacyFixture(){
  assert.equal(state.petLife.mutationSeed,STORED_MUTATION_SEED);
  return state;
 }
-const ROOT=path.resolve(__dirname,'..'),FROZEN='9e3891d1b4eae8a35856611f74d1d5cb10535700';
+const ROOT=path.resolve(__dirname,'..'),FROZEN='reference-7f2940a-plus-main-f220d0a';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='5912c96640d7d843195a2ffad3555f9badaa29af60156ed43f72dac2a6037124';
+const RUNTIME_TREE_SHA256='dc235bb32dbf7b578f338c30cca8206cab42164ae5af078ff7899da05380fc9c';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
@@ -93,6 +93,12 @@ async function run(){
   await advance(700);await page.waitForTimeout(700);
   const metrics=await page.evaluate(dinerVisualMetrics);
   assert.equal(metrics.ready,true);assert.equal(metrics.category,'food','same-condition diner diagnostic uses food tab');
+  const released=require('./browser-location-layer-alignment-evidence.cjs');
+  const layout=await page.evaluate(released.measureLayers,{id:'locationPixels',dialogueId:'locationDialogue'});
+  released.assertGeometry(layout,'cover',mode+' integrated diner');
+  assert.equal(layout.foregroundOverlapsDialogue,false,mode+' retains the released diner overlap fix');
+  assert.equal(layout.dialogue.textFits,true,mode+' diner dialogue fits its padded box');
+  metrics.releasedLayout=layout;
   report.dinerDiagnostics??={};report.dinerDiagnostics[mode]=metrics;
   await screenshot(mode+'-diner-food-ready');
   if(report.dinerDiagnostics.normal&&report.dinerDiagnostics.reference)report.dinerDiagnostics.comparison=compareDinerDiagnostics(report.dinerDiagnostics.normal,report.dinerDiagnostics.reference);

@@ -6468,12 +6468,12 @@
     <link rel="stylesheet" href="save-slots.css?v=207-1" />
     <link rel="stylesheet" href="title-flow.css?v=252-1" />
     <link rel="stylesheet" href="player-options.css?v=251-9" />
-    <link rel="stylesheet" href="cast-tackle.css?v=252-3" />
+    <link rel="stylesheet" href="cast-tackle.css?v=252-59" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=251-5" />
+    <link rel="stylesheet" href="compact-ui.css?v=252-58" />
     <link rel="stylesheet" href="offshore-island.css?v=251-2" />
   </head>
   <body>
@@ -6534,7 +6534,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-56</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-59</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7404,30 +7404,31 @@
     </section>
     <script src="village-reference.js?v=pilot-1"></script>
     <script>
-      // Older offline caches do not contain this opt-in pilot module. The
-      // normal game must remain usable without changing the service worker.
+      // Keep normal offline play usable, but fail closed for an unsafe preview.
+      function showReferenceVillageFailure(reason) {
+        let failure = document.getElementById("villageReferenceLoadFailure");
+        if (failure) { failure.textContent = reason; return; }
+        failure = document.createElement("div");
+        failure.id = "villageReferenceLoadFailure";
+        failure.setAttribute("role", "alertdialog");
+        failure.setAttribute("aria-modal", "true");
+        failure.setAttribute("aria-label", "参考原画の試作を読み込めませんでした");
+        failure.tabIndex = -1;
+        failure.textContent = reason;
+        failure.style.cssText = "position:fixed;inset:0;z-index:2147483647;display:grid;place-content:center;padding:32px;background:#241b10;color:#fff1c7;font:18px/1.7 sans-serif;text-align:center";
+        document.body.append(failure);
+        failure.focus();
+        for (const type of ["keydown", "keyup", "pointerdown", "pointerup", "click", "touchstart", "touchend"])
+          window.addEventListener(type, event => {
+            if (event.type.startsWith("key") && (event.ctrlKey || event.metaKey || event.key === "F5")) return;
+            event.stopImmediatePropagation();
+            event.preventDefault();
+          }, { capture: true, passive: false });
+      }
       if (!globalThis.ShuVillageReference) {
         globalThis.ShuVillageReference = { enabled: false, moduleLoadFailed: true };
-        if (new URLSearchParams(location.search).get("villageReference") === "1") {
-          const failure = document.createElement("div");
-          failure.id = "villageReferenceLoadFailure";
-          failure.setAttribute("role", "alertdialog");
-          failure.setAttribute("aria-modal", "true");
-          failure.setAttribute("aria-label", "参考原画の試作を読み込めませんでした");
-          failure.tabIndex = -1;
-          failure.textContent = "参考原画の試作を読み込めませんでした。通信を確認して再読み込みしてください。通常版を試作として表示することはできません。";
-          failure.style.cssText = "position:fixed;inset:0;z-index:2147483647;display:grid;place-content:center;padding:32px;background:#241b10;color:#fff1c7;font:18px/1.7 sans-serif;text-align:center";
-          document.body.append(failure);
-          failure.focus();
-          // Do not let keyboard controls operate the normal game behind the
-          // explicit failure screen. Reloading the browser remains available.
-          for (const type of ["keydown", "keyup", "pointerdown", "pointerup", "click", "touchstart", "touchend"])
-            window.addEventListener(type, event => {
-              if (event.type.startsWith("key") && (event.ctrlKey || event.metaKey || event.key === "F5")) return;
-              event.stopImmediatePropagation();
-              event.preventDefault();
-            }, { capture: true, passive: false });
-        }
+        if (new URLSearchParams(location.search).get("villageReference") === "1")
+          showReferenceVillageFailure("参考原画の試作を読み込めませんでした。通信を確認して再読み込みしてください。通常版を試作として表示することはできません。");
       }
     </script>
     <script src="player-options.js?v=251-9"></script>
@@ -7442,7 +7443,7 @@
     <script src="pet-life.js?v=252-27"></script>
     <script src="fish-motion.js?v=252-56"></script>
     <script src="aquarium-life.js?v=252-56"></script>
-    <script src="compact-ui.js?v=252-53"></script>
+    <script src="compact-ui.js?v=252-58"></script>
     <script src="pet-life-ui.js?v=252-28"></script>
     <script src="tackle-balance.js?v=252-53"></script>
     <script src="fishing-duel.js?v=252-56"></script>
@@ -7487,6 +7488,23 @@
     <script src="scene-layers.js?v=252-55"></script>
     <script src="layered-scenery.js?v=252-55"></script>
     <script>
+      // Abort this same script before create(), save reads, migrations or UI
+      // handlers. A previous worker can otherwise serve the old save module.
+      if (new URLSearchParams(location.search).get("villageReference") === "1") {
+        let isolatedPreview = false;
+        try {
+          isolatedPreview = ShuVillageReference.enabled === true &&
+            !navigator.serviceWorker?.controller &&
+            ShuSaveSlots.preview === true &&
+            ShuSaveSlots.keyFor(1) === "nushi-reference-village-pilot-v1-slot1" &&
+            ShuSaveSlots.keyFor(2) === "nushi-reference-village-pilot-v1-slot2" &&
+            ShuSaveSlots.lastSlotKey === "nushi-reference-village-pilot-v1-last-slot";
+        } catch (_) {}
+        if (!isolatedPreview) {
+          showReferenceVillageFailure("参考原画の試作を安全に読み込めませんでした。保存データを守るため起動を止めました。この試作は通常版のキャッシュがない専用の検証環境で確認してください。");
+          throw new Error("Reference village safety check blocked startup");
+        }
+      }
       function uiArt(key) {
         const [kind, id] = key.split(":");
         return kind === "ui" ? UiPixelArt.get(id) : kind === "extra" ? UiExtraArt.get(id)
@@ -24518,7 +24536,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-56").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-59").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
