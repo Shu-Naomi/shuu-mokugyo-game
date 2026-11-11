@@ -594,7 +594,7 @@
 #store.compact-store #samCategory-bait .compact-product-grid{grid-auto-rows:var(--compact-row-height,60px)}
 #store.compact-store #samCategory-bait .compact-product-select{height:60px!important;min-height:60px!important;max-height:60px!important}
 #store.compact-store #samCategory-bait .compact-product-stock{font-size:12px;line-height:15px;max-height:none;white-space:pre-line}
-#store.compact-store .compact-sam-list .bait-quantity-presets button{font-size:12px;white-space:pre-line;line-height:15px}
+#store.compact-store .compact-sam-list .bait-quantity-presets button{flex:0 0 50px!important;min-width:50px!important;width:50px!important;font-size:12px;white-space:pre;line-height:15px}
 #store.compact-store .bait-quantity-presets::after{content:"セット数を選ぶ"}
 #store.compact-store .compact-sam-list .bait-quantity-label,#store.compact-store .bait-quantity-presets::after{font-size:12px;line-height:14px}
 #store.compact-store .compact-sam-list .bait-purchase-count{font-size:12px}
