@@ -131,7 +131,39 @@ test('resize and Cancel keep the selected fish visible and focused when the page
   Object.defineProperty(w,'innerWidth',{configurable:true,value:1280});Object.defineProperty(w,'innerHeight',{configurable:true,value:720});w.eval('petUi.render()');
   click(w,'[data-pet-boarding-fish="pet-4"]');
   Object.defineProperty(w,'innerWidth',{configurable:true,value:820});Object.defineProperty(w,'innerHeight',{configurable:true,value:366});w.dispatchEvent(new w.Event('resize'));
+  assert.equal(w.document.activeElement.id,'petBoardingHeading');
   click(w,'[data-pet-action="boarding-cancel"]');assert.equal(w.document.activeElement.dataset.petBoardingFish,'pet-4');
   click(w,'[data-pet-boarding-fish="pet-4"]');w.document.querySelector('#petBoardingHeading').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(w.document.activeElement.dataset.petBoardingFish,'pet-4');assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
+
+test('resize preserves boarding keyboard focus and Escape cancels without closing the shop or saving',()=>{
+ const a=owned(),w=a.window;try{
+  const before=read(w,'s'),bytes=w.localStorage.getItem(saveKey);
+  const resize=()=>w.dispatchEvent(new w.Event('resize'));
+  const escape=()=>w.document.activeElement.dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));
+  click(w,'[data-pet-boarding-fish="pet-1"]');resize();assert.equal(w.document.activeElement.id,'petBoardingHeading');escape();
+  assert.equal(w.document.querySelector('.pet-boarding-detail'),null);assert.equal(w.document.querySelector('#petLifeModal').classList.contains('open'),true);assert.equal(w.document.activeElement.dataset.petBoardingFish,'pet-1');
+  click(w,'[data-pet-action="boarding-help"]');resize();assert.equal(w.document.activeElement.dataset.petAction,'boarding-help-close');escape();assert.equal(w.document.querySelector('.pet-boarding-rules').hidden,true);
+  w.document.querySelector('#petBoardingSpecies').focus();resize();assert.equal(w.document.activeElement.id,'petBoardingSpecies');
+  Object.defineProperty(w,'innerWidth',{configurable:true,value:1280});Object.defineProperty(w,'innerHeight',{configurable:true,value:720});resize();
+  w.document.querySelector('[data-pet-boarding-fish="pet-4"]').focus();Object.defineProperty(w,'innerWidth',{configurable:true,value:820});Object.defineProperty(w,'innerHeight',{configurable:true,value:366});resize();assert.equal(w.document.activeElement.dataset.petBoardingFish,'pet-4');
+  click(w,'[data-pet-action="boarding-prev"]');resize();assert.equal(w.document.activeElement.matches('.pet-boarding-pager span'),true);
+  w.document.querySelector('[data-pet-action="boarding-next"]').focus();Object.defineProperty(w,'innerWidth',{configurable:true,value:1280});Object.defineProperty(w,'innerHeight',{configurable:true,value:720});resize();assert.equal(w.document.querySelector('[data-pet-action="boarding-next"]').disabled,true);assert.equal(w.document.activeElement.matches('.pet-boarding-pager span'),true);
+  assert.deepEqual(read(w,'s'),before);assert.equal(w.localStorage.getItem(saveKey),bytes);
+  confirmDeposit(w,'pet-1');click(w,'[data-pet-boarding-view="withdraw"]');click(w,'[data-pet-boarding-fish="pet-1"]');select(w,'#petBoardingTank','2');
+  const deposited=read(w,'s'),stored=w.localStorage.getItem(saveKey);resize();assert.equal(w.document.activeElement.id,'petBoardingTank');assert.equal(w.document.activeElement.value,'2');escape();
+  assert.equal(w.document.querySelector('.pet-boarding-detail'),null);assert.equal(w.document.querySelector('#petLifeModal').classList.contains('open'),true);assert.deepEqual(read(w,'s'),deposited);assert.equal(w.localStorage.getItem(saveKey),stored);assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
+
+test('boarding shop selector transfers focus to the destination control without saving',()=>{
+ const a=owned(),w=a.window;try{
+  const before=read(w,'s'),bytes=w.localStorage.getItem(saveKey);
+  for(const section of ['fish','supplies','legends','buyback','contests']){
+   w.document.querySelector('#petShopSection').focus();select(w,'#petShopSection',section);assert.equal(w.document.activeElement.dataset.petTab,section);openBoarding(w);
+  }
+  w.document.querySelector('#petShopSection').focus();select(w,'#petShopSection','aquarium');assert.equal(w.document.activeElement.dataset.petAction,'tanks');
+  assert.deepEqual(read(w,'s'),before);assert.equal(w.localStorage.getItem(saveKey),bytes);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });

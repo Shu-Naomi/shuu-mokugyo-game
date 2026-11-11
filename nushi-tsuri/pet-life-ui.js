@@ -193,7 +193,7 @@
       if(!f){boardingUid=null;boardingTank=null;}
       const size=boardingPageSize(),pages=Math.max(1,Math.ceil(group.length/size));
       if(boardingLastPageSize&&boardingLastPageSize!==size){
-        const anchor=boardingUid||modal.querySelector('[data-pet-boarding-fish]')?.dataset.petBoardingFish,index=group.findIndex(a=>a.uid===anchor);
+        const anchor=boardingUid||document.activeElement?.dataset.petBoardingFish||modal.querySelector('[data-pet-boarding-fish]')?.dataset.petBoardingFish,index=group.findIndex(a=>a.uid===anchor);
         if(index>=0)boardingPage=Math.floor(index/size);
       }
       boardingLastPageSize=size;boardingPage=Math.max(0,Math.min(boardingPage,pages-1));
@@ -543,7 +543,7 @@
     };
     modal.onchange=event=>{
       const el=event.target;if(!live())return;rehomeId=null;
-      if(el.id==="petShopSection"&&mode==="shop"&&tab==="boarding"){boardingHelp=false;boardingUid=null;boardingTank=null;message="";if(el.value==="aquarium"){mode="aquarium";}else tab=el.value;render();return;}
+      if(el.id==="petShopSection"&&mode==="shop"&&tab==="boarding"){boardingHelp=false;boardingUid=null;boardingTank=null;message="";if(el.value==="aquarium"){mode="aquarium";noteFocus='[data-pet-action="tanks"]';}else{tab=el.value;noteFocus=tab==="boarding"?'#petShopSection':`[data-pet-tab="${tab}"]`;}render();return;}
       if(el.id==="petBoardingSpecies"&&mode==="shop"&&tab==="boarding"){boardingSpecies=el.value;boardingPage=0;boardingUid=null;boardingTank=null;boardingHelp=false;noteFocus="#petBoardingSpecies";render();return;}
       if(el.id==="petTankSelect"){feeding=null;focus=false;zoom=false;P.selectTank(s,Number(el.value));message="";changed();render();}
       else if(el.id==="petBoardingTank"&&mode==="shop"&&tab==="boarding"){boardingTank=el.value!==""&&Number.isInteger(Number(el.value))?Number(el.value):null;noteFocus="#petBoardingTank";render();}
@@ -580,7 +580,18 @@
     modal.onsubmit=event=>{if(event.target.id==="petNameForm"){event.preventDefault();event.stopPropagation();saveName();}};
     document.addEventListener("visibilitychange",()=>document.hidden?stop({preserveBoarding:true}):start());
     window.addEventListener("pagehide",stop);
-    window.addEventListener("resize",()=>{if(live()){if(mode==="shop"&&tab==="boarding"){render(false);return;}paintSpecimens();if(mode==="aquarium"){stop();start();}}});
+    window.addEventListener("resize",()=>{if(live()){if(mode==="shop"&&tab==="boarding"){
+      // Rendering replaces the controls. Keep the same keyboard target, including
+      // a fish whose page changes, so Escape still reaches the boarding handler.
+      const active=modal.contains(document.activeElement)?document.activeElement:null;
+      const attribute=active&&["id","data-pet-action","data-pet-boarding-view","data-pet-boarding-fish"].find(name=>active.hasAttribute(name));
+      const value=attribute&&active.getAttribute(attribute),pager=active?.matches('.pet-boarding-pager span');
+      render(false);
+      const target=attribute?[...modal.querySelectorAll(`[${attribute}]`)].find(el=>el.getAttribute(attribute)===value):pager?modal.querySelector('.pet-boarding-pager span'):null;
+      if(target){if(pager)target.tabIndex=-1;target.focus({preventScroll:true});
+        if(document.activeElement!==target){const status=modal.querySelector('.pet-boarding-pager span');if(status){status.tabIndex=-1;status.focus({preventScroll:true});}}
+      }return;
+    }paintSpecimens();if(mode==="aquarium"){stop();start();}}});
     return {open,render,stop,get mode(){return mode;},get active(){return live();},
       get music(){return live()&&mode==="shop"&&tab==="contests"?(kind==="fish"?"contest-fish":"contest-pet"):null;}};
   }

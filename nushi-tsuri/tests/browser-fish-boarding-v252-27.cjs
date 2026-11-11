@@ -131,7 +131,11 @@ async function run(url, screen, state) {
     await page.waitForSelector(`[data-pet-specimen="${rareUid}"] canvas[data-art-variant="funaGold"]`);
     await shot('rare-confirmation', '.pet-boarding-actions');
     await press('[data-pet-action="boarding-cancel"]'); await unchanged(initial, 'Cancel is not a deposit');
-    await selectFish(rareUid); await page.keyboard.press('Escape'); await unchanged(initial, 'Escape is not a deposit');
+    await selectFish(rareUid);
+    await page.setViewportSize({width:width+1,height});await page.setViewportSize({width,height});
+    await page.waitForFunction(()=>document.activeElement.id==='petBoardingHeading');
+    await page.keyboard.press('Escape'); await unchanged(initial, 'Escape after resize is not a deposit');
+    assert.equal(await page.locator('#petLifeModal').evaluate(el=>el.classList.contains('open')),true,'resize keeps Escape inside boarding');
     assert.equal(await page.locator('.pet-boarding-detail').count(), 0);
     await selectFish(rareUid); await page.locator('#petShopSection').selectOption('supplies'); await press('[data-pet-tab="boarding"]');
     assert.equal(await page.locator('.pet-boarding-detail').count(), 0); await unchanged(initial, 'tab navigation drops only the pending selection');
