@@ -23,7 +23,7 @@ test('tab changes, boarding, aquarium, close and reopen do not leave misplaced o
   click(w,'[data-pet-tab="supplies"]');click(w,'[data-pet-action="food-1"]');notice(w,/10食買った/);const saved=w.localStorage.getItem(saveKey);
   for(let i=0;i<2;i++){
    click(w,'[data-pet-tab="boarding"]');assert.equal(w.document.querySelector('.pet-message').parentElement,w.document.querySelector('.pet-shell'));assert.equal(w.document.querySelector('.pet-message').hidden,true);assert.equal(w.document.querySelector('#petLifeModal').classList.contains('compact-pet-shop'),false);
-   click(w,'[data-pet-tab="supplies"]');assert.equal(w.document.querySelector('.pet-message').hidden,true);assert.equal(w.document.querySelectorAll('.pet-shop-host > div > .pet-message').length,1);
+   const section=w.document.querySelector('#petShopSection');section.value='supplies';section.dispatchEvent(new w.Event('change',{bubbles:true}));assert.equal(w.document.querySelector('.pet-message').hidden,true);assert.equal(w.document.querySelectorAll('.pet-shop-host > div > .pet-message').length,1);
    click(w,'[data-pet-tab="fish"]');assert.equal(w.document.querySelector('.pet-message').parentElement,w.document.querySelector('.pet-fish-sales'));
   }
   click(w,'[data-pet-action="aquarium"]');assert.equal(w.document.querySelectorAll('.pet-shop-host').length,0);assert.equal(w.document.querySelector('.pet-message').parentElement,w.document.querySelector('.pet-shell'));

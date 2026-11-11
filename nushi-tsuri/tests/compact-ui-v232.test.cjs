@@ -53,7 +53,7 @@ test('tackle groups preserve duplicate-rod rules and cast settings while browsin
 test('cursor selection and keyboard navigation reveal the native action without buying or changing a save',()=>{
  const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');const before=snapshot(w),saved=w.localStorage.getItem(saveKey),native=w.document.querySelector('[data-buy-bait="river"]'),row=native.closest('.compact-product').querySelector('[data-compact-select]');
   row.click();assert.equal(row.getAttribute('aria-selected'),'true');assert.equal(native.closest('.compact-selection-panel').hidden,false);assert.deepEqual(snapshot(w),before);assert.equal(w.localStorage.getItem(saveKey),saved);
-  row.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowDown',bubbles:true}));const selected=w.document.querySelector('#samCategory-bait [aria-selected="true"]');assert.match(selected.getAttribute('aria-label'),/練りエサ/);assert.equal(w.document.activeElement,selected);assert.deepEqual(snapshot(w),before);assert.equal(w.localStorage.getItem(saveKey),saved);
+  row.dispatchEvent(new w.KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true}));const selected=w.document.querySelector('#samCategory-bait [aria-selected="true"]');assert.match(selected.getAttribute('aria-label'),/練りエサ/);assert.equal(w.document.activeElement,selected);assert.deepEqual(snapshot(w),before);assert.equal(w.localStorage.getItem(saveKey),saved);
   row.click();assert.equal(w.document.querySelector('[data-buy-bait="river"]'),native);native.click();assert.equal(read(w,'s.baits.river'),before.baits.river+2);assert.equal(read(w,'s.money'),before.money-180);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });

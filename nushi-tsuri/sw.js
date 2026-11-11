@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-cast-hints-252-59";
+const CACHE_NAME = "nushi-tsuri-v252-shop-one-screen-252-60";
 
 const CORE_ASSETS = [
   "./assets/fish-takabe-v252-56.png",
@@ -91,8 +91,8 @@ const CORE_ASSETS = [
   "./assets/settlement-buildings-v238.png",
   "./assets/village-residents-v238.png",
 
-  "./compact-ui.js?v=252-58",
-  "./compact-ui.css?v=252-58",
+  "./compact-ui.js?v=252-60",
+  "./compact-ui.css?v=252-60",
   "./catch-memories.js?v=229-1",
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
@@ -129,7 +129,7 @@ const CORE_ASSETS = [
   "./item-categories.css?v=217-1",
   "./pet-life.js?v=252-27",
   "./pet-notebook.js?v=252-27",
-  "./pet-life-ui.js?v=252-28",
+  "./pet-life-ui.js?v=252-60",
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
@@ -190,7 +190,7 @@ const CORE_ASSETS = [
   "./aquarium-life.js?v=252-56",
   "./fish-motion.js?v=252-56",
   "./assets/audio/fish-feed-v183.wav",
-  "./pet-life.css?v=252-27",
+  "./pet-life.css?v=252-60",
   "./rival-anglers.js?v=252-55",
   "./assets/audio/dog-friendly-whine-v183.wav",
   "./tournament-npcs.js?v=252-55",
