@@ -335,7 +335,7 @@
 .pet-boarding-workspace.is-help .pet-boarding-main{visibility:hidden}
 @media(max-height:500px){
  .pet-boarding-workspace{grid-template-columns:190px minmax(0,1fr);gap:7px}
- .pet-boarding-rail{gap:5px}
+ .pet-boarding-rail{gap:2px}
  .pet-boarding-mode .pet-content{padding:6px}
  .pet-boarding-mode .pet-boarding-intro h3{font-size:14px}
  .pet-boarding-mode .pet-boarding-intro h3 span{font-size:12px}

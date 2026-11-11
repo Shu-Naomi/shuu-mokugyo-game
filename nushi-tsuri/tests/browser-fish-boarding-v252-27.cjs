@@ -217,10 +217,16 @@ async function run(url, screen, state) {
       for(let t=0;t<6;t++)for(let i=0;i<5;i++)ShuPetLife.acquire(s,t%2?'aji':'funa',petCatalog,gameClockAt(s.gameMinutes).dayIndex,t);
       for(const entry of petCatalog.filter(f=>ShuPetLife.isLegend(f)))ShuPetLife.acquire(s,entry.id,petCatalog,gameClockAt(s.gameMinutes).dayIndex);
       for(const f of s.petLife.fish)ShuPetLife.renameFish(s,f.uid,'あいうえおかきくけこさし');
+      s.petLife.fish[0].mutation={checked:true,kind:'gold',ruleVersion:1};s.petLife.fish[0].generation=20;
       petUi.render();
     });
     await page.locator('#petBoardingSpecies').selectOption('all');
     await shot('maximum-long-name-list');
+    const longRare=await page.evaluate(()=>s.petLife.fish[0].uid);
+    await selectFish(longRare);await shot('long-rare-confirmation');await confirmOnce('boarding-confirm');
+    await press('[data-pet-boarding-view="withdraw"]');await selectFish(longRare);await page.locator('#petBoardingTank').selectOption('0');
+    await page.evaluate(()=>{window.__boardingFailSave=true;});await press('[data-pet-action="boarding-withdraw-confirm"]');await shot('long-rare-withdraw-failure');
+    await page.evaluate(()=>{window.__boardingFailSave=false;});await confirmOnce('boarding-withdraw-confirm');await press('[data-pet-boarding-view="deposit"]');
     const reached=[];
     for(let n=0;n<100;n++){
       reached.push(...await page.locator('[data-pet-boarding-fish]').evaluateAll(els=>els.map(el=>el.dataset.petBoardingFish)));

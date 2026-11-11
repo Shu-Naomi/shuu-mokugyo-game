@@ -14,7 +14,7 @@ for(const count of [1,5,10,20,100])test(`Sam labels packs, actual units and tota
    assert.equal(w.document.querySelector('#samBaitPurchaseCount').textContent,`${count}セット`);
   }
   assert.equal(read(w,'s.money'),100000);assert.equal(read(w,'s.baits.corn'),92);
-  assert.equal(w.document.querySelector('[data-bait-count="5"]').textContent,'5セット');
+  assert.equal(w.document.querySelector('[data-bait-count="5"]').textContent,'5\nセット');
   assert.equal(w.document.querySelector('[data-bait-count="5"]').getAttribute('aria-label'),'購入数を5セットにする');
   assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}

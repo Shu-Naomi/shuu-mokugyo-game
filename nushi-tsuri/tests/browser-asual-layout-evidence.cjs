@@ -61,8 +61,8 @@ async function run(url,screen,provenance){
   assert.equal(await page.evaluate(()=>s.petLife.fish.some(f=>f.uid==='pet-29')),false);
   await press('[data-pet-tab="contests"]');await shot('contest-register');
   const beforeBoarding=await snapshot();await press('[data-pet-tab="boarding"]');await page.locator('.pet-boarding-intro').scrollIntoViewIfNeeded();await shot('boarding-intro');
-  await page.locator('[data-pet-boarding-fish="pet-28"]').scrollIntoViewIfNeeded();await press('[data-pet-boarding-fish="pet-28"]');await page.locator('.pet-boarding-actions').scrollIntoViewIfNeeded();await shot('boarding-confirm');await press('[data-pet-action="boarding-cancel"]');
-  await press('[data-pet-tab="fish"]');await shot('fish-after-boarding');assert.equal(await snapshot(),beforeBoarding,'boarding selection and cancel preserve resources');
+  for(let pageIndex=0;pageIndex<30&&!await page.locator('[data-pet-boarding-fish="pet-28"]').count();pageIndex++)await press('[data-pet-action="boarding-next"]');await press('[data-pet-boarding-fish="pet-28"]');await page.locator('.pet-boarding-actions').scrollIntoViewIfNeeded();await shot('boarding-confirm');await press('[data-pet-action="boarding-cancel"]');
+  await page.locator('#petShopSection').selectOption('fish');await shot('fish-after-boarding');assert.equal(await snapshot(),beforeBoarding,'boarding selection and cancel preserve resources');
   await press('[data-pet-action="close"]');await press('#action');await shot('fish-reopened',/アスアル/);
   await page.setViewportSize(screen.height>500?{width:820,height:366}:{width:1280,height:720});await shot('fish-resized',/アスアル/);await page.setViewportSize({width:screen.width,height:screen.height});await shot('fish-restored',/アスアル/);
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.httpErrors,[]);report.passed=true;

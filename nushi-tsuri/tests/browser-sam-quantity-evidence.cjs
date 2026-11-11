@@ -18,10 +18,10 @@ async function run(url,screen){
   const metrics=await page.locator('[data-buy-bait="corn"]').evaluate(b=>{
    const row=b.closest('.compact-product'),name=row.querySelector('.compact-product-name'),stock=row.querySelector('.compact-product-stock'),modal=document.querySelector('#store').getBoundingClientRect();
    const box=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
-   return {label:b.dataset.compactActionLabel,name:name.textContent,nameFits:name.scrollWidth<=name.clientWidth+1,stock:stock.textContent,stockFits:stock.scrollWidth<=stock.clientWidth+1,action:box(b),picker:box(document.querySelector('.bait-quantity-picker')),modal:{left:modal.left,right:modal.right,top:modal.top,bottom:modal.bottom},count:document.querySelector('#samBaitPurchaseCount').textContent};
+   return {label:b.dataset.compactActionLabel,name:name.textContent,nameFits:name.scrollWidth<=name.clientWidth+1,stock:stock.textContent,stockFits:stock.scrollWidth<=stock.clientWidth+1&&stock.scrollHeight<=stock.clientHeight+1,fontSize:parseFloat(getComputedStyle(stock).fontSize),presets:[...document.querySelectorAll('[data-bait-count]')].map(n=>({fontSize:parseFloat(getComputedStyle(n).fontSize),...box(n)})),action:box(b),picker:box(document.querySelector('.bait-quantity-picker')),modal:{left:modal.left,right:modal.right,top:modal.top,bottom:modal.bottom},count:document.querySelector('#samBaitPurchaseCount').textContent};
   });
   checks.push({name,...metrics});await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-${name}.png`)});
-  assert.equal(metrics.nameFits,true,name+': pack size fits');assert.equal(metrics.stockFits,true,name+': actual units and total fit');
+  assert.ok(metrics.fontSize>=12,name+': stock text stays readable');for(const p of metrics.presets){assert.ok(p.fontSize>=12&&p.width>=44&&p.height>=44,name+': readable presets and touch targets');}assert.equal(metrics.nameFits,true,name+': pack size fits');assert.equal(metrics.stockFits,true,name+': actual units and total fit');
   for(const key of ['action','picker']){const b=metrics[key],m=metrics.modal;assert.ok(b.width>0&&b.height>0&&b.left>=m.left&&b.right<=m.right+1&&b.top>=m.top&&b.bottom<=m.bottom+1,name+': '+key+' is visible inside the shop');}
   return metrics;
  }
