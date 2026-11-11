@@ -69,7 +69,7 @@ async function run(url, screen, state) {
     const fish = uid => page.evaluate(uid => ShuPetLife.allFish(s).find(f => f.uid === uid), uid);
     const snapshot = () => page.evaluate(() => ({ money: s.money, caught: s.caught, sizeRecords: s.sizeRecords, petLife: s.petLife, petNotebook: s.petNotebook }));
     const saved = () => page.evaluate(key => JSON.parse(localStorage.getItem(key)), saveKey);
-    const selectFish = uid => press(`[data-pet-boarding-fish="${uid}"]`);
+    const selectFish = async uid => {for(let i=0;i<50&&!await page.locator(`[data-pet-boarding-fish="${uid}"]`).count();i++){if(await page.locator('[data-pet-action="boarding-next"]').isDisabled())break;await press('[data-pet-action="boarding-next"]');}await press(`[data-pet-boarding-fish="${uid}"]`);};
     async function enter() {
       await require('./browser-start-adventure.cjs')(page, mobile);
       if (await page.locator('#lakeIntroSkip').isVisible()) await press('#lakeIntroSkip');
@@ -77,7 +77,7 @@ async function run(url, screen, state) {
       await press('[data-pet-tab="boarding"]');
     }
     async function shot(name, focus = '.pet-boarding-intro') {
-      if (focus) await page.locator(focus).scrollIntoViewIfNeeded();
+      if (focus && !await page.locator('.pet-boarding-mode').count()) await page.locator(focus).scrollIntoViewIfNeeded();
       await page.evaluate(() => new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve))));
       const layout = await page.evaluate(() => {
         const modal = document.querySelector('#petLifeModal'), content = modal.querySelector('.pet-content'), r = modal.getBoundingClientRect();
@@ -87,6 +87,18 @@ async function run(url, screen, state) {
       assert.ok(layout.x >= -1 && layout.y >= -1 && layout.x + layout.width <= width + 1 && layout.y + layout.height <= height + 1, `${name}: modal fits viewport ${JSON.stringify(layout)}`);
       assert.ok(layout.scrollWidth <= layout.clientWidth + 1, `${name}: no horizontal content clipping`);
       assert.ok(layout.buttons.every(button => button.height >= 44), `${name}: boarding controls have 44px touch targets`);
+      if (await page.locator('.pet-boarding-mode').count()) {
+        const fit = await page.locator('.pet-boarding-mode').evaluate(modal => {
+          const box=modal.getBoundingClientRect(),content=modal.querySelector('.pet-content');
+          const controls=[...modal.querySelectorAll('button,select')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden'&&!el.closest('[inert]'));
+          const text=[...modal.querySelectorAll('.pet-boarding-card-info,.pet-boarding-identity,.pet-boarding-transfer,.pet-boarding-rules')].filter(el=>el.getClientRects().length&&getComputedStyle(el).visibility!=='hidden');
+          return {text:text.map(el=>({label:el.textContent.trim(),overflow:el.scrollHeight-el.clientHeight})),scroll:content.scrollHeight-content.clientHeight,controls:controls.map(el=>{const r=el.getBoundingClientRect();return {label:el.textContent.trim(),height:r.height,fits:r.top>=box.top&&r.bottom<=box.bottom&&r.left>=box.left&&r.right<=box.right};})};
+        });
+        assert.ok(fit.text.every(t=>t.overflow<=1), `${name}: all fish text remains readable ${JSON.stringify(fit)}`);
+        assert.ok(fit.scroll<=1, `${name}: boarding needs no vertical scroll ${JSON.stringify(fit)}`);
+        assert.ok(fit.controls.every(c=>c.fits&&c.height>=44), `${name}: visible controls fit and have 44px targets ${JSON.stringify(fit)}`);
+        checks.push({name,oneScreen:fit});
+      }
       await page.screenshot({ path: path.join(directory, `${width}x${height}-${name}.png`) });
       checks.push({ name, layout });
     }
@@ -107,9 +119,11 @@ async function run(url, screen, state) {
     await page.goto(url, { waitUntil: 'load' }); await enter();
     const original = await fish(rareUid), initial = await snapshot();
     assert.match(await page.locator('.pet-boarding-intro').innerText(), /無料.*0円/s);
+    await press('[data-pet-action="boarding-help"]');
     assert.match(await page.locator('.pet-boarding-intro').innerText(), /通常色・希少色を合わせて2匹/);
     assert.match(await page.locator('.pet-boarding-intro').innerText(), /成長・空腹・繁殖/);
-    assert.equal(await page.locator('[data-pet-boarding-count="funa"]').innerText(), '0/2');
+    await shot('boarding-rules'); await press('[data-pet-action="boarding-help-close"]');
+    assert.match(await page.locator('#petBoardingSpecies option[value="funa"]').textContent(), /0\/2$/);
     await shot('deposit-list');
     await selectFish(rareUid);
     assert.match(await page.locator('.pet-boarding-detail').innerText(), /こはく.*黄金/s);
@@ -119,7 +133,7 @@ async function run(url, screen, state) {
     await press('[data-pet-action="boarding-cancel"]'); await unchanged(initial, 'Cancel is not a deposit');
     await selectFish(rareUid); await page.keyboard.press('Escape'); await unchanged(initial, 'Escape is not a deposit');
     assert.equal(await page.locator('.pet-boarding-detail').count(), 0);
-    await selectFish(rareUid); await press('[data-pet-tab="supplies"]'); await press('[data-pet-tab="boarding"]');
+    await selectFish(rareUid); await page.locator('#petShopSection').selectOption('supplies'); await press('[data-pet-tab="boarding"]');
     assert.equal(await page.locator('.pet-boarding-detail').count(), 0); await unchanged(initial, 'tab navigation drops only the pending selection');
     await selectFish(rareUid); await press('[data-pet-action="close"]'); await press('#action'); await press('[data-pet-tab="boarding"]');
     assert.equal(await page.locator('.pet-boarding-detail').count(), 0); await unchanged(initial, 'Close leaves fish in place');
@@ -137,10 +151,10 @@ async function run(url, screen, state) {
     assert.equal(await page.evaluate(uid => s.petLife.fish.some(f => f.uid === uid), rareUid), false);
     const boarded = await fish(rareUid); assert.equal(boarded.boardedDay, startDay);
     await selectFish('pet-2'); await confirmOnce('boarding-confirm');
-    assert.equal(await page.locator('[data-pet-boarding-count="funa"]').innerText(), '2/2');
+    assert.match(await page.locator('#petBoardingSpecies option[value="funa"]').textContent(), /2\/2$/);
     assert.equal(await page.locator('[data-pet-boarding-fish="pet-3"]').isDisabled(), true, 'normal and rare share one species limit');
     await selectFish('pet-5'); await confirmOnce('boarding-confirm');
-    assert.equal(await page.locator('[data-pet-boarding-count="moroko"]').innerText(), '1/2', 'another species has independent capacity');
+    assert.match(await page.locator('#petBoardingSpecies option[value="moroko"]').textContent(), /1\/2$/, 'another species has independent capacity');
     // Put the Moroko back, retaining a genuinely full destination for the checks below.
     await press('[data-pet-boarding-view="withdraw"]'); await selectFish('pet-5');
     await page.locator('#petBoardingTank').selectOption('2'); await confirmOnce('boarding-withdraw-confirm');
@@ -194,6 +208,34 @@ async function run(url, screen, state) {
     assert.equal(await page.evaluate(key => localStorage.getItem(key + '-slot2'), saveKey), otherSlot, 'other adventure slot untouched');
     await noDuplicates(); await selectFish(rareUid); await shot('returned-rare-fish', '.pet-boarding-actions');
     assert.deepEqual(errors, []); assert.deepEqual(httpErrors, []); assert.deepEqual(requestErrors, []);
+    // Stress the actual supported minimum with a full catalogue, every tank,
+    // twelve-character names, and the distinct empty/egg-only states.
+    await press('[data-pet-action="boarding-cancel"]');
+    await page.evaluate(() => {
+      s.petLife.fish=[];s.petLife.boarded=[];s.petLife.eggs=[];s.petLife.unlockedTanks=6;s.petLife.legendClaims={};
+      for(const entry of petCatalog)s.caught[entry.id]=1;
+      for(let t=0;t<6;t++)for(let i=0;i<5;i++)ShuPetLife.acquire(s,t%2?'aji':'funa',petCatalog,gameClockAt(s.gameMinutes).dayIndex,t);
+      for(const entry of petCatalog.filter(f=>ShuPetLife.isLegend(f)))ShuPetLife.acquire(s,entry.id,petCatalog,gameClockAt(s.gameMinutes).dayIndex);
+      for(const f of s.petLife.fish)ShuPetLife.renameFish(s,f.uid,'あいうえおかきくけこさし');
+      petUi.render();
+    });
+    await page.locator('#petBoardingSpecies').selectOption('all');
+    await shot('maximum-long-name-list');
+    const reached=[];
+    for(let n=0;n<100;n++){
+      reached.push(...await page.locator('[data-pet-boarding-fish]').evaluateAll(els=>els.map(el=>el.dataset.petBoardingFish)));
+      if(await page.locator('[data-pet-action="boarding-next"]').isDisabled())break;
+      await press('[data-pet-action="boarding-next"]');
+    }
+    assert.deepEqual(reached,await page.evaluate(()=>s.petLife.fish.map(f=>f.uid)),'every fish in maximum collection is reachable by paging');
+    await shot('maximum-last-page');
+    await selectFish(reached.at(-1));await shot('long-name-confirmation');
+    await press('[data-pet-action="boarding-cancel"]');
+    assert.equal(await page.locator(`[data-pet-boarding-fish="${reached.at(-1)}"]`).count(),1,'Cancel keeps the current page');
+    await page.evaluate(()=>{s.petLife.fish=[];s.petLife.boarded=[];s.petLife.eggs=[{uid:'egg-empty-1',species:'funa',tank:0,laidDay:gameClockAt(s.gameMinutes).dayIndex,hatchDay:gameClockAt(s.gameMinutes).dayIndex+3,generation:1,water:100}];petUi.render();});
+    await shot('empty-with-eggs');assert.equal(await page.locator('[data-pet-boarding-fish]').count(),0);
+    await press('[data-pet-boarding-view="withdraw"]');await shot('empty-boarding');
+    assert.deepEqual(errors, []);
     const result = { screen, pausedDays, checks, destinations, identityRetained: true, noCatchUp: true,
       sharedSpeciesLimit: true, saveRollbackAndRetry: ['deposit', 'withdraw'], cancellationAndRepeat: true,
       nicknameAndReload: true, slotIsolation: true, errors, httpErrors, requestErrors };

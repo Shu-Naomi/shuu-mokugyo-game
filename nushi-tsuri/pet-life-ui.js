@@ -35,7 +35,7 @@
     modal.id="petLifeModal";modal.className="modal pet-life-modal";modal.setAttribute("role","dialog");
     modal.setAttribute("aria-modal","true");modal.setAttribute("aria-labelledby","petLifeTitle");ctx.parent.append(modal);
     let mode="aquarium",tab="fish",kind="bond",course="beginner",participant=s.dog,message="",zoom=false,focus=false,frame=0,lastPaint=0,started=0,feeding=null,lastPoses={},elapsed=0,rehomeId=null,buybackId=null,buybackTank=null,contestCue=null,panel=null,panelReturn="records",moveTank=null,toastTimer=0,restoreFocus=false;
-    let waterFilter="all",boardingView="deposit",boardingSpecies="all",boardingUid=null,boardingTank=null,boardingBusy=false;
+    let waterFilter="all",boardingView="deposit",boardingSpecies="all",boardingUid=null,boardingTank=null,boardingBusy=false,boardingPage=0,boardingHelp=false,boardingLastPageSize=0;
     const allFish=()=>P.allFish(s),isBoarded=f=>(s.petLife.boarded||[]).some(a=>a.uid===f.uid);
     const boardingBadge=f=>isBoarded(f)?'<span class="pet-boarding-badge">お預かり中</span>':"";
     const spec=id=>ctx.catalog.find(f=>f.id===id);
@@ -76,7 +76,7 @@
       if(view==="notebook"&&!N.owned(s))return false;
       naming=null;composingNickname=false;
       noteReturn=null;
-      ctx.close();mode=view;zoom=false;focus=false;message="";tab="fish";buybackId=null;buybackTank=null;rehomeId=null;panel=null;moveTank=null;boardingUid=null;boardingTank=null;boardingView="deposit";boardingSpecies="all";
+      ctx.close();mode=view;zoom=false;focus=false;message="";tab="fish";buybackId=null;buybackTank=null;rehomeId=null;panel=null;moveTank=null;boardingUid=null;boardingTank=null;boardingView="deposit";boardingSpecies="all";boardingPage=0;boardingHelp=false;
       if(s.petLife.contest){mode="shop";tab="contests";kind=s.petLife.contest.kind;course=s.petLife.contest.course;participant=s.petLife.contest.participant;}
       if(view==="shop")message="アスアル「育てる時間も、立派な楽しみよ。クラウドと一緒に待っていたわ」";
       P.sync(s,ctx.catalog,ctx.day());render();ctx.open(modal.id);start();announceDiscovery();announceNotebook();
@@ -128,6 +128,7 @@
       const p=s.petLife,known=ctx.catalog.filter(f=>f.id!=="nushi"&&!f.legendary&&s.caught?.[f.id]>0),locked=ctx.catalog.filter(f=>f.id!=="nushi"&&!f.legendary).length-known.length;
       const stock=known.filter(f=>waterFilter==="all"||f.waterLabel===(waterFilter==="fresh"?"淡水":"海水"));
       const nextPrice=P.TANK_PRICES[p.unlockedTanks];
+      if(tab==="boarding")return boarding();
       return `<div class="pet-shop-host"><canvas width="96" height="128" data-rival-art="asual" role="img" aria-label="店主アスアル"></canvas><div><b>水車の家のペットショップ</b><p>魚との出会い、お世話用品、ワンコと魚のコンテスト。</p><small>飼育魚 ${p.fish.length}/${P.totalCapacity(s)}匹 ・ 通常水槽 ${p.unlockedTanks}/6槽 ・ 魚のエサ ${p.food}食</small></div><canvas width="128" height="96" data-rival-art="cloud" role="img" aria-label="クラウド"></canvas></div>
         <nav class="pet-tabs" aria-label="ペットショップの売り場">${[["fish","魚の生体"],["supplies","お世話用品・水槽"],["legends","ぬしの飼育"],["boarding","魚のお預かり"],["buyback","魚の買い取り"],["contests","コンテスト受付"]].map(([id,label])=>`<button data-pet-tab="${id}" aria-pressed="${tab===id}">${label}</button>`).join("")}${btn("aquarium","飼育水槽を見る")}</nav>
         ${tab==="fish"?`<p class="pet-note">自分で釣って図鑑に登録した魚種から迎えられるよ。未登録 ${locked}種。1槽に同じ水の魚を5匹まで。</p><nav class="pet-water-filters" aria-label="生体販売の水の種類">${[["all","すべて"],["fresh","淡水"],["sea","海水"]].map(([id,label])=>`<button data-pet-water="${id}" aria-pressed="${waterFilter===id}">${label}<small>${id==="all"?known.length:known.filter(f=>f.waterLabel===(id==="fresh"?"淡水":"海水")).length}種</small></button>`).join("")}</nav>${tankPicker("迎える水槽")}<div class="pet-stock pet-fish-sales" data-pet-water-filter="${waterFilter}">${stock.length?stock.map(f=>`<article><div class="pet-fish-thumb" data-pet-preview="${f.id}" role="img" aria-label="${f.name}"></div><div><b>${f.name}</b><small>${P.cm(P.purchaseSize(f))}cm ・ ${f.waterLabel}${f.id==="buri"?" · モジャコから育てる":""}</small><p class="pet-stock-reason">${purchaseReason(f)}</p><button data-pet-buy="${f.id}" ${!P.canHouse(s,f.id,ctx.catalog,p.selectedTank)||s.money<f.price?"disabled":""}>迎える · ${f.price.toLocaleString("ja-JP")}円</button></div></article>`).join(""):`<p class="pet-note">${waterFilter==="all"?"魚を一匹釣ると、その魚種の販売が始まるよ。":`まだ迎えられる${waterFilter==="fresh"?"淡水":"海水"}魚はいないよ。自分で釣って図鑑に登録しよう。`}</p>`}</div>`:
@@ -178,23 +179,39 @@
       if(tankWater(tank)!=="空き"&&tankWater(tank)!==species.waterLabel)return `${species.waterLabel}の魚は入れられないよ`;
       return P.canHouse(s,f.species,ctx.catalog,tank)?"空きあり":"この魚は入れられないよ";
     }
+    function boardingPageSize(){return root.innerWidth<900||root.innerHeight<600?2:4;}
+    function boardingReturnToList(){
+      const uid=boardingUid,source=boardingView==="deposit"?s.petLife.fish:s.petLife.boarded||[];
+      const index=source.filter(f=>boardingSpecies==="all"||f.species===boardingSpecies).findIndex(f=>f.uid===uid);
+      if(index>=0)boardingPage=Math.floor(index/boardingPageSize());
+      boardingUid=null;boardingTank=null;noteFocus=`[data-pet-boarding-fish="${uid}"]`;render();
+    }
     function boarding(){
       const p=s.petLife,boarded=p.boarded||[],deposit=boardingView==="deposit",source=deposit?p.fish:boarded;
       const species=ctx.catalog.filter(f=>allFish().some(a=>a.species===f.id)||s.caught?.[f.id]>0);
       const group=source.filter(f=>boardingSpecies==="all"||f.species===boardingSpecies),f=source.find(a=>a.uid===boardingUid);
       if(!f){boardingUid=null;boardingTank=null;}
-      const intro=`<section class="pet-boarding-intro" aria-label="魚のお預かりの案内"><h3>魚のお預かり <span>無料 · 0円</span></h3><p>魚種ごとに2匹まで。通常色・希少色を合わせて2匹だよ。名前・体長・世代・色をそのまま大切に預かるよ。</p><p>お預かり中は成長・空腹・繁殖が止まるよ。卵は預けられないよ。引き取りには、同じ水の種類で空きのある水槽が必要だよ。</p></section>`;
-      const tabs=`<div class="pet-boarding-switch" role="group" aria-label="お預かりの手続き"><button data-pet-boarding-view="deposit" aria-pressed="${deposit}">預ける · 水槽 ${p.fish.length}匹</button><button data-pet-boarding-view="withdraw" aria-pressed="${!deposit}">引き取る · お預かり ${boarded.length}匹</button></div>`;
+      const size=boardingPageSize(),pages=Math.max(1,Math.ceil(group.length/size));
+      if(boardingLastPageSize&&boardingLastPageSize!==size){
+        const anchor=boardingUid||modal.querySelector('[data-pet-boarding-fish]')?.dataset.petBoardingFish,index=group.findIndex(a=>a.uid===anchor);
+        if(index>=0)boardingPage=Math.floor(index/size);
+      }
+      boardingLastPageSize=size;boardingPage=Math.max(0,Math.min(boardingPage,pages-1));
+      const help=`<div class="pet-boarding-rules" ${boardingHelp?"":"hidden"}><h4>安心して預けるために</h4><p>通常色・希少色を合わせて2匹だよ。名前・体長・世代・色をそのまま大切に預かるよ。</p><p>お預かり中は成長・空腹・繁殖が止まるよ。卵は預けられないよ。</p><p>引き取りには、同じ水の種類で空きのある水槽が必要だよ。</p>${btn("boarding-help-close","手続きに戻る")}</div>`;
+      const rail=`<aside class="pet-boarding-rail"><section class="pet-boarding-intro" aria-label="魚のお預かりの案内"><h3>魚のお預かり <span>無料 · 0円</span></h3><p>魚種ごとに2匹まで</p>${help}</section><label class="pet-boarding-section">売り場<select id="petShopSection" aria-label="ペットショップの売り場">${[["fish","魚の生体"],["supplies","お世話用品・水槽"],["legends","ぬしの飼育"],["boarding","魚のお預かり"],["buyback","魚の買い取り"],["contests","コンテスト受付"],["aquarium","飼育水槽を見る"]].map(([id,label])=>`<option value="${id}" ${id==="boarding"?"selected":""}>${label}</option>`).join("")}</select></label><div class="pet-boarding-switch" role="group" aria-label="お預かりの手続き"><button data-pet-boarding-view="deposit" aria-pressed="${deposit}">預ける<small>水槽 ${p.fish.length}匹</small></button><button data-pet-boarding-view="withdraw" aria-pressed="${!deposit}">引き取る<small>お預かり ${boarded.length}匹</small></button></div><label class="pet-boarding-filter">魚種<select id="petBoardingSpecies" aria-label="魚種ごとのお預かり数"><option value="all">すべて · ${source.length}匹</option>${species.map(a=>`<option value="${esc(a.id)}" ${boardingSpecies===a.id?"selected":""}>${esc(a.name)} · お預かり ${boardingCount(a.id)}/${P.BOARDING_CAPACITY}</option>`).join("")}</select></label>${btn("boarding-help", "お預かりの説明")}</aside>`;
+      let body;
       if(f){
         const canDeposit=boardingCount(f.species)<P.BOARDING_CAPACITY&&!(p.contest?.kind==="fish"&&p.contest.participant===f.uid);
         const tanks=[...new Set([...P.tankIds(s),...(P.isLegend(spec(f.species))?[P.legendTank(spec(f.species))]:[])])];
         const canWithdraw=Number.isInteger(boardingTank)&&P.canHouse(s,f.species,ctx.catalog,boardingTank);
-        return `${intro}${tabs}<article class="pet-boarding-detail">${thumbnail(f,true)}<div><h3 id="petBoardingHeading" tabindex="-1">${esc(fishName(f))}</h3>${mutationTag(f)}${boardingBadge(f)}<p>${P.cm(f.length)}cm · ${esc(sizeLabel(f))} · ${identity(f).sexText} · ${identity(f).generation}</p><p>Lv.${f.level} · 元気${f.health}% · お世話${f.careDays}日</p><p>${esc(spec(f.species).name)}のお預かり ${boardingCount(f.species)}/${P.BOARDING_CAPACITY}匹</p>${deposit?`<p>${esc(boardingReason(f))}</p><p>この一匹を水槽からアスアルのお預かりへ移すよ。あとから引き取れるよ。</p>`:`<label class="pet-boarding-destination" for="petBoardingTank">引き取る水槽<select id="petBoardingTank" aria-describedby="petBoardingTankHelp"><option value="">水槽を選んでね</option>${tanks.map(t=>`<option value="${t}" ${boardingTank===t?"selected":""} ${!P.canHouse(s,f.species,ctx.catalog,t)?"disabled":""}>${P.tankLabel(t)} · ${P.residents(s,t).length}匹・卵${P.eggsIn(s,t).length}組 / ${P.tankCapacity(t)}枠 · ${tankWater(t)} · ${esc(boardingTankReason(f,t))}</option>`).join("")}</select></label><p id="petBoardingTankHelp">${tanks.some(t=>P.canHouse(s,f.species,ctx.catalog,t))?"空きのある水槽を選ぶと、無料で引き取れるよ。":"今は引き取れる水槽がないよ。満員・水の種類・ぬし専用水槽を確認してね。"} 戻したあとは、同じ水槽の魚たちと水質を共有するよ。</p>`}<div class="pet-boarding-actions">${btn(deposit?"boarding-confirm":"boarding-withdraw-confirm",deposit?"この一匹を無料で預ける":"この一匹を無料で引き取る",deposit?!canDeposit:!canWithdraw)}${btn("boarding-cancel","やめる・一覧に戻る")}</div></div></article>`;
+        body=`<article class="pet-boarding-detail">${thumbnail(f,true)}<div class="pet-boarding-identity"><h3 id="petBoardingHeading" tabindex="-1">${esc(fishName(f))}</h3><div>${mutationTag(f)}${boardingBadge(f)}</div><p>${P.cm(f.length)}cm · ${esc(sizeLabel(f))} · ${identity(f).sexText} · ${identity(f).generation}</p><p>Lv.${f.level} · 元気${f.health}% · お世話${f.careDays}日</p><p>${esc(spec(f.species).name)}のお預かり ${boardingCount(f.species)}/${P.BOARDING_CAPACITY}匹</p></div><div class="pet-boarding-transfer">${deposit?`<p>${esc(boardingReason(f))} この一匹を預けても、あとから引き取れるよ。</p>`:`<label class="pet-boarding-destination" for="petBoardingTank">引き取る水槽<select id="petBoardingTank" aria-describedby="petBoardingTankHelp"><option value="">水槽を選んでね</option>${tanks.map(t=>`<option value="${t}" ${boardingTank===t?"selected":""} ${!P.canHouse(s,f.species,ctx.catalog,t)?"disabled":""}>${P.tankLabel(t)} · ${P.residents(s,t).length}匹・卵${P.eggsIn(s,t).length}組 / ${P.tankCapacity(t)}枠 · ${tankWater(t)} · ${esc(boardingTankReason(f,t))}</option>`).join("")}</select></label><p id="petBoardingTankHelp">${tanks.some(t=>P.canHouse(s,f.species,ctx.catalog,t))?"空きのある水槽を選んでね。":"引き取れる水槽がないよ。満員・水の種類・ぬし専用水槽を確認してね。"} 同じ水槽の魚たちと水質を共有するよ。</p>`}</div><div class="pet-boarding-actions">${btn(deposit?"boarding-confirm":"boarding-withdraw-confirm",deposit?"この一匹を無料で預ける":"この一匹を無料で引き取る",deposit?!canDeposit:!canWithdraw)}${btn("boarding-cancel","やめる・一覧に戻る")}</div></article>`;
+      }else{
+        body=`<div class="pet-boarding-catalog"><p class="pet-boarding-hint">${deposit?"預けたい一匹を選んでね。次の画面で確認するよ。":"引き取りたい一匹を選んでね。次に水槽を選べるよ。"}</p><div class="pet-boarding-fish" style="--boarding-rows:${size/2}">${group.slice(boardingPage*size,(boardingPage+1)*size).map(a=>{
+          const disabled=deposit&&(boardingCount(a.species)>=P.BOARDING_CAPACITY||(p.contest?.kind==="fish"&&p.contest.participant===a.uid));
+          return `<article>${thumbnail(a)}<div class="pet-boarding-card-info"><h4>${esc(fishName(a))}</h4><div>${mutationTag(a)}${boardingBadge(a)}</div><p>${P.cm(a.length)}cm · ${identity(a).sexText} · ${identity(a).generation}</p><small>${deposit?`${P.tankLabel(a.tank)} · ${esc(boardingReason(a))}`:`${esc(spec(a.species).name)} · お預かり ${boardingCount(a.species)}/${P.BOARDING_CAPACITY}匹`}</small></div><button data-pet-boarding-fish="${a.uid}" ${disabled?"disabled":""} aria-label="${esc(fishName(a))}を${deposit?"預ける":"引き取る"}確認へ">${deposit?"この子を預ける":"この子を引き取る"}</button></article>`;
+        }).join("")||`<p class="pet-boarding-empty">${deposit?"預けられる魚がいないよ。卵は水槽で孵化を待とう。":"この魚種のお預かりはないよ。"}</p>`}</div><nav class="pet-boarding-pager" aria-label="魚の一覧ページ">${btn("boarding-prev","前のページ",boardingPage===0)}<span role="status">${group.length?`${boardingPage*size+1}〜${Math.min((boardingPage+1)*size,group.length)} / ${group.length}匹`:"0匹"} · ${boardingPage+1}/${pages}ページ</span>${btn("boarding-next","次のページ",boardingPage===pages-1)}</nav></div>`;
       }
-      return `${intro}${tabs}<nav class="pet-boarding-species" aria-label="魚種ごとのお預かり数"><button data-pet-boarding-species="all" aria-pressed="${boardingSpecies==="all"}">すべて</button>${species.map(f=>`<button data-pet-boarding-species="${f.id}" aria-pressed="${boardingSpecies===f.id}">${esc(f.name)} <b data-pet-boarding-count="${f.id}">${boardingCount(f.id)}/${P.BOARDING_CAPACITY}</b></button>`).join("")}</nav><p class="pet-boarding-hint">${deposit?"預けたい一匹を選んでね。まだ移動はしないよ。":"引き取りたい一匹を選んでね。次に水槽を選べるよ。"}</p><div class="pet-boarding-fish">${group.map(a=>{
-        const disabled=deposit&&(boardingCount(a.species)>=P.BOARDING_CAPACITY||(p.contest?.kind==="fish"&&p.contest.participant===a.uid));
-        return `<article>${thumbnail(a)}<h4>${esc(fishName(a))}</h4><div>${mutationTag(a)}${boardingBadge(a)}</div><p>${P.cm(a.length)}cm · ${identity(a).sexText} · ${identity(a).generation}</p><small>${deposit?`${P.tankLabel(a.tank)} · ${esc(boardingReason(a))}`:`${esc(spec(a.species).name)} · お預かり ${boardingCount(a.species)}/${P.BOARDING_CAPACITY}匹`}</small><button data-pet-boarding-fish="${a.uid}" ${disabled?"disabled":""} aria-label="${esc(fishName(a))}を${deposit?"預ける":"引き取る"}確認へ">${deposit?"この子を預ける":"この子を引き取る"}</button></article>`;
-      }).join("")||`<p class="pet-boarding-hint">${deposit?"預けられる魚がいないよ。卵は水槽で孵化を待とう。":"この魚種のお預かりはないよ。"}</p>`}</div>`;
+      return `<div class="pet-boarding-workspace ${boardingHelp?"is-help":""}">${rail}<div class="pet-boarding-main" ${boardingHelp?"inert":""}>${body}</div></div>`;
     }
     function tankWater(tank=s.petLife.selectedTank){
       const species=P.residents(s,tank)[0]?.species||P.eggsIn(s,tank)[0]?.species;
@@ -332,6 +349,7 @@
       const previousScroll=modal.querySelector('.pet-fish-roster')?.scrollLeft||0;
       root.ShuCompactUI?.release(modal);
       if(focus&&!P.residents(s).some(a=>a.uid===s.petLife.selected))focus=false;
+      modal.classList.toggle("pet-boarding-mode",mode==="shop"&&tab==="boarding");
       pause();if(sync)P.sync(s,ctx.catalog,ctx.day());modal.classList.toggle("pet-notebook",mode==="notebook");modal.classList.toggle("pet-zoomed",mode==="aquarium"&&zoom);modal.classList.toggle("pet-aquarium",mode==="aquarium");
       modal.innerHTML=`<div class="pet-shell" ${naming?"inert":""}>${header()}<p class="pet-message ${message&&message===discoveryMessage?'pet-discovery':''}" role="status" ${!message?"hidden":""}>${esc(message)}</p><div class="pet-content">${mode==="notebook"?notebook():mode==="aquarium"?tank():shop()}</div></div>${naming?nameEditor():""}`;
       ctx.paintRivals();ctx.paintVillagers?.();
@@ -444,8 +462,8 @@
       if(b.dataset.petBuy){const result=P.acquire(s,b.dataset.petBuy,ctx.catalog,ctx.day(),s.petLife.selectedTank);message=result.message;if(result.ok)changed();render();return;}
       if(b.dataset.petInspect){inspect(b.dataset.petInspect);return;}
       if(mode==="shop"&&tab==="boarding"){
-        if(["deposit","withdraw"].includes(b.dataset.petBoardingView)){boardingView=b.dataset.petBoardingView;boardingUid=null;boardingTank=null;message="";noteFocus=`[data-pet-boarding-view="${boardingView}"]`;render();return;}
-        if(b.dataset.petBoardingSpecies){boardingSpecies=b.dataset.petBoardingSpecies;boardingUid=null;boardingTank=null;noteFocus=`[data-pet-boarding-species="${boardingSpecies}"]`;render();return;}
+        if(["deposit","withdraw"].includes(b.dataset.petBoardingView)){boardingPage=0;boardingHelp=false;boardingView=b.dataset.petBoardingView;boardingUid=null;boardingTank=null;message="";noteFocus=`[data-pet-boarding-view="${boardingView}"]`;render();return;}
+        if(b.dataset.petBoardingSpecies){boardingPage=0;boardingSpecies=b.dataset.petBoardingSpecies;boardingUid=null;boardingTank=null;noteFocus=`[data-pet-boarding-species="${boardingSpecies}"]`;render();return;}
         if(b.dataset.petBoardingFish){const source=boardingView==="deposit"?s.petLife.fish:s.petLife.boarded||[];boardingUid=source.some(f=>f.uid===b.dataset.petBoardingFish)?b.dataset.petBoardingFish:null;boardingTank=null;noteFocus="#petBoardingHeading";render();return;}
       }
       if(b.dataset.petBuybackTank!==undefined){const tank=Number(b.dataset.petBuybackTank);if(Number.isInteger(tank)&&tank>=0&&tank<s.petLife.unlockedTanks){buybackTank=tank;buybackId=null;render();}return;}
@@ -460,7 +478,9 @@
       if(action==="tank-prev"||action==="tank-next"){const tanks=P.tankIds(s),index=tanks.indexOf(s.petLife.selectedTank);chooseTank(tanks[(index+(action==="tank-prev"?-1:1)+tanks.length)%tanks.length]);return;}
       if(action==="focus-selected"){inspect(s.petLife.selected);return;}
       if(action==="shop"){mode="shop";tab="fish";panel=null;focus=false;zoom=false;message="";render();return;}
-      if(action==="boarding-cancel"){const uid=boardingUid;boardingUid=null;boardingTank=null;noteFocus=`[data-pet-boarding-fish="${uid}"]`;render();return;}
+      if(mode==="shop"&&tab==="boarding"&&["boarding-help","boarding-help-close"].includes(action)){boardingHelp=action==="boarding-help";noteFocus=boardingHelp?'[data-pet-action="boarding-help-close"]':'[data-pet-action="boarding-help"]';render();return;}
+      if(mode==="shop"&&tab==="boarding"&&["boarding-prev","boarding-next"].includes(action)){boardingPage+=action==="boarding-next"?1:-1;noteFocus=".pet-boarding-pager span";render();modal.querySelector('.pet-boarding-pager span')?.setAttribute('tabindex','-1');modal.querySelector('.pet-boarding-pager span')?.focus({preventScroll:true});return;}
+      if(action==="boarding-cancel"){boardingReturnToList();return;}
       if(action==="boarding-confirm"||action==="boarding-withdraw-confirm"){
         if(boardingBusy||mode!=="shop"||tab!=="boarding"||!boardingUid)return;
         const deposit=action==="boarding-confirm",source=deposit?s.petLife.fish:s.petLife.boarded||[];
@@ -523,6 +543,8 @@
     };
     modal.onchange=event=>{
       const el=event.target;if(!live())return;rehomeId=null;
+      if(el.id==="petShopSection"&&mode==="shop"&&tab==="boarding"){boardingHelp=false;boardingUid=null;boardingTank=null;message="";if(el.value==="aquarium"){mode="aquarium";}else tab=el.value;render();return;}
+      if(el.id==="petBoardingSpecies"&&mode==="shop"&&tab==="boarding"){boardingSpecies=el.value;boardingPage=0;boardingUid=null;boardingTank=null;boardingHelp=false;noteFocus="#petBoardingSpecies";render();return;}
       if(el.id==="petTankSelect"){feeding=null;focus=false;zoom=false;P.selectTank(s,Number(el.value));message="";changed();render();}
       else if(el.id==="petBoardingTank"&&mode==="shop"&&tab==="boarding"){boardingTank=el.value!==""&&Number.isInteger(Number(el.value))?Number(el.value):null;noteFocus="#petBoardingTank";render();}
       else if(el.id==="petFishSelect")inspect(el.value);
@@ -541,8 +563,9 @@
         if(event.key==="Tab"){const items=[...modal.querySelectorAll('button:not([disabled])')].filter(el=>el.getClientRects().length),first=items[0],last=items.at(-1);if(first&&(!modal.contains(document.activeElement)||(event.shiftKey&&document.activeElement===first)||(!event.shiftKey&&document.activeElement===last))){event.preventDefault();(event.shiftKey?last:first).focus({preventScroll:true});}}
         return;
       }
+      if(mode==="shop"&&tab==="boarding"&&boardingHelp&&event.key==="Escape"){event.preventDefault();event.stopPropagation();boardingHelp=false;noteFocus='[data-pet-action="boarding-help"]';render();return;}
       if(mode==="shop"&&tab==="boarding"&&boardingUid&&event.key==="Escape"){
-        event.preventDefault();event.stopPropagation();const uid=boardingUid;boardingUid=null;boardingTank=null;noteFocus=`[data-pet-boarding-fish="${uid}"]`;render();return;
+        event.preventDefault();event.stopPropagation();boardingReturnToList();return;
       }
       if(!panel)return;
       if(event.key==="Escape"){event.preventDefault();event.stopPropagation();panel=null;rehomeId=null;restoreFocus=true;render();return;}
@@ -557,7 +580,7 @@
     modal.onsubmit=event=>{if(event.target.id==="petNameForm"){event.preventDefault();event.stopPropagation();saveName();}};
     document.addEventListener("visibilitychange",()=>document.hidden?stop({preserveBoarding:true}):start());
     window.addEventListener("pagehide",stop);
-    window.addEventListener("resize",()=>{if(live()){paintSpecimens();if(mode==="aquarium"){stop();start();}}});
+    window.addEventListener("resize",()=>{if(live()){if(mode==="shop"&&tab==="boarding"){render(false);return;}paintSpecimens();if(mode==="aquarium"){stop();start();}}});
     return {open,render,stop,get mode(){return mode;},get active(){return live();},
       get music(){return live()&&mode==="shop"&&tab==="contests"?(kind==="fish"?"contest-fish":"contest-pet"):null;}};
   }
