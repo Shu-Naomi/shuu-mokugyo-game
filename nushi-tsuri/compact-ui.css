@@ -617,3 +617,12 @@
 #store.compact-store #samCategory-bait .compact-pager{position:absolute;top:calc(var(--compact-list-height) + 4px);left:148px;width:calc(100% - 148px);height:44px;min-height:44px;z-index:3}
 #store.compact-store #samCategory-bait .compact-product-actions{align-self:flex-end;margin-bottom:4px}
 #store.compact-store #samCategory-bait .compact-action::after{font-size:13px;line-height:18px}
+/* On very short landscape screens, use the scene's upper edge for the
+   persistent shop actions rather than shrinking touch targets or scrolling. */
+@media(max-height:350px){
+ #store.compact-store .compact-panel{position:static}
+ #store.compact-store .compact-window-heading{position:absolute;z-index:10;left:8px;top:8px;width:calc(40% - 16px);height:44px;min-height:44px;justify-content:flex-end}
+ #store.compact-store .compact-window-heading h2{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
+ #store.compact-store .compact-window-heading .compact-wallet{font-size:11px;margin-right:auto}
+}
+@media(max-height:350px) and (max-width:720px){#store.compact-store .compact-window-heading{width:calc(34% - 16px)}}
