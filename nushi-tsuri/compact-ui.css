@@ -603,13 +603,17 @@
 /* Three separate digit columns keep 1, 10 and 100 changes predictable. */
 #store.compact-store #samCategory-bait .compact-product-select{height:60px!important;min-height:60px!important;max-height:60px!important}
 #store.compact-store #samCategory-bait .compact-product-stock{white-space:pre-line;font-size:12px;line-height:15px}
-#store.compact-store #samCategory-bait .compact-operation-space{height:120px;min-height:120px;flex-basis:120px}
-#store.compact-store #samCategory-bait .compact-selection-panel{height:120px;min-height:120px;align-items:center;gap:10px}
+#store.compact-store #samCategory-bait .compact-operation-space{height:128px;min-height:128px;flex-basis:128px}
+#store.compact-store #samCategory-bait .compact-selection-panel{height:128px;min-height:128px;align-items:center;gap:10px}
 #store.compact-store #samCategory-bait .compact-product-actions{flex:1!important;max-width:none}
-#store.compact-store #samCategory-bait .bait-quantity-picker{order:-1;display:grid;grid-template-columns:138px;grid-template-rows:16px 104px;flex:0 0 138px;gap:0}
+#store.compact-store #samCategory-bait .bait-quantity-picker{order:-1;display:grid;grid-template-columns:138px;grid-template-rows:16px 112px;flex:0 0 138px;gap:0}
 #store.compact-store #samCategory-bait .bait-quantity-label{position:static;display:block;grid-row:1;font-size:12px;line-height:16px}
 #store.compact-store #samCategory-bait .bait-quantity-label small{display:none}
 #store.compact-store #samCategory-bait .bait-digit-picker{grid-row:2;display:flex;gap:3px}
-#store.compact-store #samCategory-bait .bait-digit-column{display:grid;grid-template-rows:44px 16px 44px;grid-template-columns:44px;text-align:center;font-variant-numeric:tabular-nums;font-size:17px;line-height:16px;font-weight:bold;color:#463422}
+#store.compact-store #samCategory-bait .bait-digit-column{display:grid;grid-template-rows:44px 24px 44px;grid-template-columns:44px;text-align:center;font-variant-numeric:tabular-nums;font-size:17px;line-height:24px;font-weight:bold;color:#463422}
 #store.compact-store #samCategory-bait .bait-purchase-count{position:absolute;clip-path:inset(50%);width:1px;min-width:1px;height:1px;overflow:hidden;white-space:nowrap}
 #store.compact-store #samCategory-bait .compact-action{white-space:pre-line;font-size:13px;line-height:18px;min-height:60px!important;height:60px!important;max-height:none!important}
+
+#store.compact-store #samCategory-bait .compact-pager{position:absolute;top:calc(var(--compact-list-height) + 4px);left:148px;width:calc(100% - 148px);height:44px;min-height:44px;z-index:3}
+#store.compact-store #samCategory-bait .compact-product-actions{align-self:flex-end;margin-bottom:4px}
+#store.compact-store #samCategory-bait .compact-action::after{font-size:13px;line-height:18px}
