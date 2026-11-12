@@ -7033,18 +7033,26 @@
                   <div class="bait-quantity-picker" role="group" aria-labelledby="samBaitQuantityHeading">
                     <span class="bait-quantity-label">
                       <b id="samBaitQuantityHeading">購入セット数</b>
-                      <small>1セットの内容はそのまま</small>
+                      <small>矢印で変更 · 001〜100</small>
                     </span>
-                    <div class="bait-quantity-stepper">
-                      <button type="button" data-bait-count-step="-1" aria-label="購入セット数を1減らす">−</button>
-                      <output class="bait-purchase-count" id="samBaitPurchaseCount" aria-live="polite">1セット</output>
-                      <button type="button" data-bait-count-step="1" aria-label="購入セット数を1増やす">＋</button>
+                    <div class="bait-digit-picker" aria-label="購入セット数を桁ごとに変更">
+                      <div class="bait-digit-column">
+                        <button type="button" data-bait-count-step="100" aria-label="購入セット数を100増やす">▲</button>
+                        <span data-bait-digit="0" aria-hidden="true">0</span>
+                        <button type="button" data-bait-count-step="-100" aria-label="購入セット数を100減らす">▼</button>
+                      </div>
+                      <div class="bait-digit-column">
+                        <button type="button" data-bait-count-step="10" aria-label="購入セット数を10増やす">▲</button>
+                        <span data-bait-digit="1" aria-hidden="true">0</span>
+                        <button type="button" data-bait-count-step="-10" aria-label="購入セット数を10減らす">▼</button>
+                      </div>
+                      <div class="bait-digit-column">
+                        <button type="button" data-bait-count-step="1" aria-label="購入セット数を1増やす">▲</button>
+                        <span data-bait-digit="2" aria-hidden="true">1</span>
+                        <button type="button" data-bait-count-step="-1" aria-label="購入セット数を1減らす">▼</button>
+                      </div>
                     </div>
-                    <div class="bait-quantity-presets" aria-label="購入セット数の早選び">
-                      <button type="button" data-bait-count="1" class="active">×1</button>
-                      <button type="button" data-bait-count="5">×5</button>
-                      <button type="button" data-bait-count="10">×10</button>
-                    </div>
+                    <output class="bait-purchase-count" id="samBaitPurchaseCount" aria-live="polite">001セット</output>
                   </div>
                   <div class="grid shop-goods">
                     <button data-buy-bait="worm">
@@ -16947,7 +16955,8 @@
         const purchaseCount = samBaitPurchaseCount;
         const purchaseCountOutput = $("#samBaitPurchaseCount");
         if (purchaseCountOutput)
-          purchaseCountOutput.textContent = `${purchaseCount}セット`;
+          purchaseCountOutput.textContent = `${String(purchaseCount).padStart(3,"0")}セット`;
+        document.querySelectorAll("[data-bait-digit]").forEach(n => n.textContent = String(purchaseCount).padStart(3,"0")[Number(n.dataset.baitDigit)]);
         document.querySelectorAll("[data-bait-count]").forEach((button) =>
           button.classList.toggle(
             "active",
@@ -16959,9 +16968,9 @@
           button.disabled = step < 0
             ? purchaseCount <= 1
             : purchaseCount >= 100;
-          const next = nextPurchaseCount(purchaseCount,step);
+          const next = Math.max(1,Math.min(100,purchaseCount+step));
           button.setAttribute("aria-label",`購入セット数を${Math.abs(next-purchaseCount)}${step<0?"減らす":"増やす"}`);
-          button.textContent = `${step<0?"−":"＋"}${Math.abs(next-purchaseCount)||1}`;
+          button.textContent = step<0?"▼":"▲";
         });
         document.querySelectorAll("[data-buy-bait]").forEach((button) => {
           const id = button.dataset.buyBait;
@@ -24301,7 +24310,7 @@
       );
       document.querySelectorAll("[data-bait-count-step]").forEach((button) =>
         button.onclick = () => setSamBaitPurchaseCount(
-          nextPurchaseCount(samBaitPurchaseCount, Number(button.dataset.baitCountStep)),
+          samBaitPurchaseCount + Number(button.dataset.baitCountStep),
         ),
       );
       document.querySelectorAll("[data-bait-count]").forEach((button) =>

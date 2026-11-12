@@ -37,7 +37,7 @@ module.exports=async function categories(url,mobile=false){
   await press('#inventory [data-close]');await bag();await selected('inventory','ingredients');await press('#inventory [data-close]');
   // Scene setup is independent of the category UI: buy through actual buttons.
   await page.evaluate(()=>{renderSamShop();open('store');});
-  await press('[data-sam-category="bait"]');await press('[data-bait-count="5"]');await press('[data-buy-bait="worm"]');assert.equal(await page.evaluate(()=>s.baits.worm),22);
+  await press('[data-sam-category="bait"]');await page.evaluate(()=>setSamBaitPurchaseCount(5));await press('[data-buy-bait="worm"]');assert.equal(await page.evaluate(()=>s.baits.worm),22);
   await press('[data-sam-category="rods"]');assert.equal(await page.locator('#samCategory-bait').isVisible(),false);assert.equal(await page.locator('#samCategory-rods').isVisible(),true);
   await press('[data-sam-category="lures"]');await press('[data-buy-lure="silverSpoon"]');assert.equal(await page.evaluate(()=>s.lures.silverSpoon),1);
   await press('[data-sam-shop-tab="goods"]');await press('[data-sam-category="dogTreats"]');assert.equal(await page.locator('[data-buy-dog-good="rubberBall"]').isVisible(),false);await press('[data-buy-dog-good="samBiscuit"]');

@@ -84,7 +84,7 @@
         item.description.textContent=[opts.summary?item.title.textContent:'',...detailsOf(n,opts).filter(t=>t!==stock)].filter(Boolean).join(' · ')||'この品物の説明と操作を確認できるよ。';item.pick.setAttribute('aria-label',item.title.textContent+' · '+item.stock.textContent);item.pick.setAttribute('aria-selected',String(i===c.selected));item.wrap.classList.toggle('compact-selected',i===c.selected);item.detail.hidden=i!==c.selected;
         item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
       });};
-    c.apply=()=>{const boxHeight=node.clientHeight,style=boxHeight?getComputedStyle(node):null,height=boxHeight?boxHeight-parseFloat(style.paddingTop||0)-parseFloat(style.paddingBottom||0):(innerHeight>500?350:150),available=height-(opts.list?(opts.quantity?61:48):0),rowHeight=opts.rowHeight||44,step=opts.list?rowHeight+2:48,all=Math.max(1,Math.floor((available+step-rowHeight)/step));
+    c.apply=()=>{const boxHeight=node.clientHeight,style=boxHeight?getComputedStyle(node):null,height=boxHeight?boxHeight-parseFloat(style.paddingTop||0)-parseFloat(style.paddingBottom||0):(innerHeight>500?350:150),available=height-(opts.list?(opts.quantity?124:48):0),rowHeight=opts.rowHeight||44,step=opts.list?rowHeight+2:48,all=Math.max(1,Math.floor((available+step-rowHeight)/step));
       c.columns=opts.list&&items.length>all&&(node.clientWidth||innerWidth*.55)>=300?(opts.summary&&(node.clientWidth||innerWidth*.55)>=560?3:2):1;node.style.setProperty('--compact-list-columns',c.columns);c.size=opts.inlinePager||items.length<=all*c.columns?all*c.columns:Math.max(1,Math.floor((available-44)/step))*c.columns;
       const total=Math.max(1,Math.ceil(items.length/c.size));c.selected=Math.max(0,Math.min(c.selected,items.length-1));c.page=Math.floor(c.selected/c.size);
       items.forEach((it,i)=>it.wrap.hidden=Math.floor(i/c.size)!==c.page);pager.hidden=total===1;previous.disabled=c.page===0;next.disabled=c.page===total-1;label.textContent=(c.page+1)+' / '+total+' · '+items.length+'品';pages.set(id,c.page);selections.set(id,c.selected);c.update();opts.onLayout?.();
@@ -112,7 +112,7 @@
     const nav=el('nav','compact-kind-nav');nav.setAttribute('aria-label','サムの売り場');d.nodes.push(nav);panel.querySelector('.compact-window-heading').after(nav);
     for(const [tab,entries] of Object.entries(ctx.categories))for(const entry of entries){const holder=scope.querySelector(tab==='tackle'?'#samTackleCategories':'#samGoodsCategories'),b=holder.querySelector('[data-sam-category="'+entry.id+'"]'),art=el('i','sam-category-icon');art.setAttribute('aria-hidden','true');art.innerHTML=samCategoryArt(entry.id);b.prepend(art);d.cleanup.push(()=>art.remove());move(b,nav,d);b.dataset.compactSamTab=tab;d.cleanup.push(()=>b.removeAttribute('data-compact-sam-tab'));b.setAttribute('aria-pressed',String(ctx.tab===tab&&ctx.selected[tab]===entry.id));b.onclick=()=>ctx.select(tab,entry.id);}
     const parking=add(panel,el('div','compact-quantity-parking'),d),quantity=panel.querySelector('.bait-quantity-picker');parking.hidden=true;move(quantity,parking,d);
-    move(quantity.querySelector('.bait-quantity-label'),quantity.querySelector('.bait-quantity-stepper'),d);
+
     // Read the transaction's own rendered totals, so this view never changes pack math.
     const baitPurchase=b=>{
       if(b.dataset.buyBait==null)return null;
@@ -120,11 +120,10 @@
       if(!bundle||!price)return null;
       return {sets:Number(bundle[1]),units:Number(bundle[2]),total:Number(price[0].replace(/,/g,'')).toLocaleString('ja-JP')};
     };
-    quantity.querySelectorAll('[data-bait-count]').forEach(b=>{const previous=b.textContent,label=b.getAttribute('aria-label');b.textContent=b.dataset.baitCount+'\nセット';b.setAttribute('aria-label','購入数を'+b.dataset.baitCount+'セットにする');d.cleanup.push(()=>{b.textContent=previous;if(label==null)b.removeAttribute('aria-label');else b.setAttribute('aria-label',label);});});
     panel.querySelectorAll('[data-sam-category-panel]').forEach(n=>catalog(n,{selector:'.shop-goods > button',key:'sam:'+n.id,art:b=>b.dataset.buyHand?samCategoryArt('hands'):ctx.art?.(b)||samCategoryArt(n.dataset.samCategoryPanel),
-      name:b=>{const name=nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'');return b.dataset.buyBait!=null?name.replace(/\s*×(\d+)$/, '（1セット$1個）'):name;},
-      purchaseSummary:b=>{const p=baitPurchase(b);return p?p.units+'個 · 合計'+p.total+'円\n'+clean(b.querySelector('[data-sam-stock]')):null;},
-      action:b=>{const p=baitPurchase(b);return p?p.units+'個を購入\n合計'+p.total+'円':actionText(b).replace(/^購入 · ([\d,]+)円$/,(_,amount)=>'購入\n'+Number(amount.replace(/,/g,'')).toLocaleString('ja-JP')+'円');},
+      name:b=>{const name=nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'');return b.dataset.buyBait!=null?name.replace(/\s*×\d+$/, ''):name;},
+      purchaseSummary:b=>{const p=baitPurchase(b);return p?'1セット'+(p.units/p.sets)+'個 · '+(Number(p.total.replace(/,/g,''))/p.sets).toLocaleString('ja-JP')+'円\n'+clean(b.querySelector('[data-sam-stock]')):null;},
+      action:b=>{const p=baitPurchase(b);return p?nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'').replace(/\s*×\d+$/,'')+' '+p.units+'個を購入\n'+p.sets+'セット · 合計'+p.total+'円':actionText(b).replace(/^購入 · ([\d,]+)円$/,(_,amount)=>'購入\n'+Number(amount.replace(/,/g,'')).toLocaleString('ja-JP')+'円');},
       list:true,rowHeight:n.dataset.samCategoryPanel==='bait'?60:44,quantity:n.dataset.samCategoryPanel==='bait'?quantity:null,infoOpener:more,describe:(name,description,b)=>{speaker.textContent='サム · '+name;ctx.describe(name,description,b);}}));samCategory(scope,ctx.tab,ctx.selected[ctx.tab],scope.classList.contains('open'));if(!scope.classList.contains('open'))ctx.greet?.();restoreFocus(scope);
   }
   function samCategory(scope,tab,id,announce=true){if(!scope.classList.contains('compact-window'))return;scope.querySelectorAll('[data-compact-sam-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.compactSamTab===tab&&b.dataset.samCategory===id)));if(announce)[...controllers].find(c=>scope.contains(c.root)&&c.root.dataset.samCategoryPanel===id)?.announce();}
