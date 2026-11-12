@@ -59,7 +59,7 @@ test('Sam shelves preserve bulk bait prices, reusable lures, unique toys and equ
  try{
   w.eval('renderSamShop();open("store")');const before=resources(w);
   click(w,'[data-sam-category="rods"]');assert.equal(w.document.querySelector('#samCategory-bait').hidden,true);assert.deepEqual(resources(w),before);
-  click(w,'[data-sam-category="bait"]');click(w,'[data-bait-count="5"]');click(w,'[data-buy-bait="worm"]');assert.equal(read(w,'s.baits.worm'),22);assert.equal(read(w,'s.money'),99400);
+  click(w,'[data-sam-category="bait"]');w.setSamBaitPurchaseCount(5);click(w,'[data-buy-bait="worm"]');assert.equal(read(w,'s.baits.worm'),22);assert.equal(read(w,'s.money'),99400);
   click(w,'[data-sam-category="lures"]');click(w,'[data-buy-lure="silverSpoon"]');assert.equal(read(w,'s.lures.silverSpoon'),1);assert.equal(read(w,'s.money'),98800);
   click(w,'[data-sam-shop-tab="goods"]');click(w,'[data-sam-category="dogTreats"]');click(w,'[data-buy-dog-good="samBiscuit"]');assert.equal(read(w,'s.dogTreats.samBiscuit'),1);
   click(w,'[data-sam-category="dogToys"]');click(w,'[data-buy-dog-good="rubberBall"]');const toyMoney=read(w,'s.money');click(w,'[data-buy-dog-good="rubberBall"]');assert.equal(read(w,'s.money'),toyMoney);assert.deepEqual(read(w,'s.ownedDogToys'),['rubberBall']);

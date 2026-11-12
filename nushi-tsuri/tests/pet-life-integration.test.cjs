@@ -44,9 +44,9 @@ test('yaoya and Sam quantity buttons step 10 to 20 to 30, charge totals, and nev
     assert.equal(read(w,`s.items['${id}']`),before.count+20);assert.equal(read(w,'s.money'),before.money-before.price*20);
     w.eval('s.money=1');const items=read(w,'s.items');click(w,`[data-buy-location-item="${id}"]`);assert.deepEqual(read(w,'s.items'),items);assert.equal(read(w,'s.money'),1);
     w.close();w.eval('s.money=100000;open("store");renderSamShop()');
-    click(w,'[data-bait-count="10"]');click(w,'[data-bait-count-step="1"]');assert.equal(read(w,'samBaitPurchaseCount'),20);
-    click(w,'[data-bait-count-step="1"]');assert.equal(read(w,'samBaitPurchaseCount'),30);
-    click(w,'[data-bait-count-step="-1"]');assert.equal(read(w,'samBaitPurchaseCount'),20);
+    w.setSamBaitPurchaseCount(10);click(w,'[data-bait-count-step="10"]');assert.equal(read(w,'samBaitPurchaseCount'),20);
+    click(w,'[data-bait-count-step="10"]');assert.equal(read(w,'samBaitPurchaseCount'),30);
+    click(w,'[data-bait-count-step="-10"]');assert.equal(read(w,'samBaitPurchaseCount'),20);
     const bait=w.document.querySelector('[data-buy-bait]').dataset.buyBait;
     const b=read(w,`({count:s.baits['${bait}']||0,money:s.money,price:baitData['${bait}'].price,amount:baitData['${bait}'].amount})`);
     click(w,`[data-buy-bait="${bait}"]`);assert.equal(read(w,`s.baits['${bait}']`),b.count+b.amount*20);assert.equal(read(w,'s.money'),b.money-b.price*20);
