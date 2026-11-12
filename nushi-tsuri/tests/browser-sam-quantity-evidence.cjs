@@ -15,29 +15,28 @@ async function run(url,screen){
  const state=()=>page.evaluate(()=>({money:s.money,corn:s.baits.corn}));
  const enter=async()=>{await require('./browser-start-adventure.cjs')(page,screen.mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await page.locator('#store.open').waitFor();};
  async function shot(name){
-  const metrics=await page.locator('[data-buy-bait="corn"]').evaluate(b=>{
-   const row=b.closest('.compact-product'),name=row.querySelector('.compact-product-name'),stock=row.querySelector('.compact-product-stock'),modal=document.querySelector('#store').getBoundingClientRect();
-   const box=e=>{const r=e.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,width:r.width,height:r.height};};
-   // Range rectangles measure rendered text, including clipped or overflowing lines.
-   const textBounds=n=>{const r=n.getBoundingClientRect(),range=document.createRange();range.selectNodeContents(n);const rects=[...range.getClientRects()].filter(x=>x.width>0&&x.height>0);return {text:n.textContent,lines:new Set(rects.map(x=>Math.round(x.top))).size,textFits:rects.length>0&&rects.every(x=>x.left>=r.left-1&&x.right<=r.right+1&&x.top>=r.top-1&&x.bottom<=r.bottom+1),textRects:rects.map(x=>({left:x.left,right:x.right,top:x.top,bottom:x.bottom})),...box(n)};};
-   const pseudo=getComputedStyle(b,'::after'),canvas=document.createElement('canvas'),ctx=canvas.getContext('2d');ctx.font=pseudo.font;const labelLines=b.dataset.compactActionLabel.split('\n'),labelFits=labelLines.every(t=>ctx.measureText(t).width<=b.clientWidth-16)&&labelLines.length*parseFloat(pseudo.lineHeight)<=b.clientHeight-8;
-   return {labelFits,label:b.dataset.compactActionLabel,name:name.textContent,nameFits:name.scrollWidth<=name.clientWidth+1,stock:stock.textContent,stockFits:stock.scrollWidth<=stock.clientWidth+1&&stock.scrollHeight<=stock.clientHeight+1,fontSize:parseFloat(getComputedStyle(stock).fontSize),presets:[...document.querySelectorAll('[data-bait-count-step]')].map(n=>({fontSize:parseFloat(getComputedStyle(n).fontSize),...textBounds(n)})),quantityTexts:[...document.querySelectorAll('[data-bait-digit]')].map(textBounds),action:box(b),picker:box(document.querySelector('.bait-quantity-picker')),modal:{left:modal.left,right:modal.right,top:modal.top,bottom:modal.bottom},count:document.querySelector('#samBaitPurchaseCount').textContent};
+  const metrics=await page.locator('.sam-purchase-layer').evaluate(layer=>{
+   const body=layer.querySelector('.compact-sheet-body'),m=body.getBoundingClientRect();
+   const nodes=[...layer.querySelectorAll('[data-bait-count-step], [data-bait-digit], .sam-purchase-name, .sam-purchase-pack, .sam-purchase-units, .sam-purchase-total, .sam-purchase-wallet, .sam-purchase-actions button')];
+   return {bodyFits:body.scrollHeight<=body.clientHeight+1&&body.scrollWidth<=body.clientWidth+1,count:document.querySelector('#samBaitPurchaseCount').textContent,units:layer.querySelector('.sam-purchase-units').textContent,total:layer.querySelector('.sam-purchase-total').textContent,nodes:nodes.map(n=>{const r=n.getBoundingClientRect();return {text:n.textContent,width:r.width,height:r.height,button:n.tagName==='BUTTON',fits:n.scrollWidth<=n.clientWidth+1&&n.scrollHeight<=n.clientHeight+1,inside:r.top>=m.top-1&&r.bottom<=m.bottom+1&&r.left>=m.left-1&&r.right<=m.right+1};})};
   });
   checks.push({name,...metrics});await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-${name}.png`)});
-  assert.ok(metrics.labelFits,name+': purchase label is fully readable');assert.ok(metrics.fontSize>=12,name+': stock text stays readable');for(const p of metrics.presets){assert.ok(p.fontSize>=12&&p.width>=44&&p.height>=44,name+': readable presets and touch targets');assert.ok(p.textFits&&p.lines===1,name+': arrow has one unclipped line '+p.text);}for(const q of metrics.quantityTexts)assert.ok(q.textFits,name+': quantity text fits '+q.text);assert.equal(metrics.nameFits,true,name+': pack size fits');assert.equal(metrics.stockFits,true,name+': actual units and total fit');
-  for(const key of ['action','picker']){const b=metrics[key],m=metrics.modal;assert.ok(b.width>0&&b.height>0&&b.left>=m.left&&b.right<=m.right+1&&b.top>=m.top&&b.bottom<=m.bottom+1,name+': '+key+' is visible inside the shop');}
+  assert.ok(metrics.bodyFits,name+': no scrolling');for(const n of metrics.nodes){assert.ok(n.fits&&n.inside,name+': fully visible '+n.text);if(n.button)assert.ok(n.width>=44&&n.height>=44,name+': touch target '+n.text);}
   return metrics;
  }
  try{
   await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),money:10000,baits:{corn:92},x:197,y:91,direction:'up',soundEnabled:false}});
   await page.goto(url,{waitUntil:'load'});await enter();
-  await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="-1"]');
-  await revealProduct(page,'[data-buy-bait="corn"]',screen.mobile);
-  const m=await shot('20-sets');assert.equal(m.name,'トウモロコシ');assert.equal(m.count,'020セット');assert.match(m.stock,/1セット3個 · 260円/);assert.equal(m.label,'トウモロコシ 60個を購入\n20セット · 合計5,200円');
-  await press('[data-sam-more]');assert.match(await page.locator('.compact-detail-actions button').textContent(),/60個を購入\s*20セット · 合計5,200円/);await press('[data-compact-sheet-close]');assert.deepEqual(await state(),{money:10000,corn:92});
-  await press('[data-buy-bait="corn"]');assert.deepEqual(await state(),{money:4800,corn:152});await shot('purchased');
-  await press('[data-buy-bait="corn"]');assert.deepEqual(await state(),{money:4800,corn:152},'unaffordable repeated purchase leaves state unchanged');
-  await press('[data-bait-count-step="-100"]');for(let i=0;i<4;i++)await press('[data-bait-count-step="1"]');const five=await shot('5-sets');assert.match(five.stock,/1セット3個 · 260円/);assert.equal(five.count,'005セット');
+  assert.equal(await page.locator('.bait-quantity-picker').isVisible(),false,'no quantity editor on shelf');
+  await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-shelf.png`)});
+  const open=async()=>{const target=await revealProduct(page,'[data-buy-bait="corn"]',screen.mobile);await target[screen.mobile?'tap':'click']();};
+  await open();await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="-1"]');
+  const m=await shot('20-sets');assert.equal(m.count,'020セット');assert.equal(m.units,'受け取る数：60個（20セット）');assert.equal(m.total,'合計：5,200円');
+  await press('[data-sam-confirm-cancel]');assert.deepEqual(await state(),{money:10000,corn:92});
+  await open();await press('[data-sam-confirm-buy]');assert.deepEqual(await state(),{money:4800,corn:152});
+  await open();assert.equal(await page.locator('[data-sam-confirm-buy]').isDisabled(),true);await shot('insufficient');assert.deepEqual(await state(),{money:4800,corn:152});
+  await press('[data-bait-count-step="-100"]');for(let i=0;i<4;i++)await press('[data-bait-count-step="1"]');const five=await shot('5-sets');assert.equal(five.count,'005セット');
+  await page.keyboard.press('Escape');assert.equal(await page.locator('.sam-purchase-layer').count(),0);
   await press('#store [data-close]');await press('#action');await page.locator('#store.open').waitFor();assert.equal(await page.locator('.bait-quantity-picker').count(),1);
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual(await state(),{money:4800,corn:152},'purchase survives reload');
   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);

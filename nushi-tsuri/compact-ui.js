@@ -64,14 +64,16 @@
       const controls=original.tagName==='BUTTON'?[original]:[...original.querySelectorAll('button')],paths=new Set(),aria=new Map();
       controls.forEach(b=>{aria.set(b,b.getAttribute('aria-label'));b.classList.add('compact-action');for(let p=b.parentElement;p&&p!==original&&original.contains(p);p=p.parentElement){p.classList.add('compact-action-path');paths.add(p);}});
       wrap.classList.toggle('compact-read-only',controls.length===0);
-      const item={original,wrap,pick,thumb,art,title,stock,detail,name,status,description,info,controls,picture,artMark,paths,aria};
+      const confirm=opts.confirm?button('購入内容を確認'):null;
+      if(confirm){confirm.dataset.samConfirmOpen=String(i);actions.append(confirm);original.classList.add('compact-confirm-source');confirm.onclick=e=>{e.stopPropagation();opts.confirm(original,confirm);};}
+      const item={original,wrap,pick,thumb,art,title,stock,detail,name,status,description,info,controls,picture,artMark,paths,aria,confirm};
       pick.onclick=e=>{e.stopPropagation();c.choose(i);};
       pick.onkeydown=e=>{const step={ArrowDown:c.columns||1,ArrowRight:1,ArrowUp:-(c.columns||1),ArrowLeft:-1,PageDown:c.size,PageUp:-c.size}[e.key];let index=e.key==='Home'?0:e.key==='End'?items.length-1:step==null?null:i+step;if(index==null)return;e.preventDefault();index=Math.max(0,Math.min(items.length-1,index));c.choose(index);items[index].pick.focus({preventScroll:true});};
       info.onclick=e=>{e.stopPropagation();openSheet(scope,nameOf(original,opts),opts.infoOpener||info,body=>{
         const hero=el('div','compact-detail-art');hero.append(cloneArt(opts.summary&&picture?picture:art));body.append(hero);
         for(const text of detailsOf(original,opts))body.append(el('p','',text));
         const status=opts.stock?.(original)||clean(original.querySelector('[data-sam-stock]'))||clean(original.querySelector('.inventory-purpose,strong'));if(status)body.append(el('p','compact-detail-status',status));
-        const dock=el('div','compact-detail-actions');controls.forEach(b=>{const action=button(opts.action?.(b)||actionText(b));action.disabled=b.disabled;action.onclick=e=>{e.stopPropagation();if(b.disabled||!b.isConnected)return;closeSheet(false);b.focus({preventScroll:true});b.click();};dock.append(action);});if(dock.children.length)body.append(dock);
+        const dock=el('div','compact-detail-actions');controls.forEach(b=>{const action=button(opts.action?.(b)||actionText(b));action.disabled=b.disabled;action.onclick=e=>{e.stopPropagation();if(b.disabled||!b.isConnected)return;closeSheet(false);if(opts.confirm){opts.confirm(b,opts.infoOpener||info);return;}b.focus({preventScroll:true});b.click();};dock.append(action);});if(dock.children.length)body.append(dock);
       });};return item;
     });
     if(!items.length){const empty=el('div','compact-catalog-empty');empty.innerHTML=icon(opts.icon||'box');empty.append(el('p','',opts.empty||clean(grid)||'この分類の品物はまだないよ。'));grid.replaceChildren(empty);}
@@ -82,7 +84,7 @@
         if(opts.list&&price){item.stock.replaceChildren(el('strong','sam-price',price[0]),...(stock?[document.createTextNode(' · '),el('span','sam-owned',stock)]:[]));}
         if(opts.purchaseSummary){const summary=opts.purchaseSummary(n);if(summary)item.stock.textContent=summary;}
         item.description.textContent=[opts.summary?item.title.textContent:'',...detailsOf(n,opts).filter(t=>t!==stock)].filter(Boolean).join(' · ')||'この品物の説明と操作を確認できるよ。';item.pick.setAttribute('aria-label',item.title.textContent+' · '+item.stock.textContent);item.pick.setAttribute('aria-selected',String(i===c.selected));item.wrap.classList.toggle('compact-selected',i===c.selected);item.detail.hidden=i!==c.selected;
-        item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));
+        item.controls.forEach(b=>{const label=opts.action?.(b)||actionText(b);b.setAttribute('data-compact-action-label',label);if(item.aria.get(b)==null)b.setAttribute('aria-label',label+' · '+item.title.textContent);});item.wrap.classList.toggle('compact-unavailable',item.controls.length>0&&item.controls.every(b=>b.disabled));if(item.confirm){item.confirm.disabled=item.controls.every(b=>b.disabled);item.confirm.textContent=item.confirm.disabled?'購入済み':'購入内容を確認';}
       });};
     c.apply=()=>{const boxHeight=node.clientHeight,style=boxHeight?getComputedStyle(node):null,height=boxHeight?boxHeight-parseFloat(style.paddingTop||0)-parseFloat(style.paddingBottom||0):(innerHeight>500?350:150),available=height-(opts.list?(opts.quantity?132:48):0),rowHeight=opts.rowHeight||44,step=opts.list?rowHeight+2:48,all=Math.max(1,Math.floor((available+step-rowHeight)/step));
       c.columns=opts.list&&items.length>all&&(node.clientWidth||innerWidth*.55)>=300?(opts.summary&&(node.clientWidth||innerWidth*.55)>=560?3:2):1;node.style.setProperty('--compact-list-columns',c.columns);c.size=opts.inlinePager||items.length<=all*c.columns?all*c.columns:Math.max(1,Math.floor((available-44)/step))*c.columns;
@@ -95,7 +97,7 @@
     c.announce=()=>{const it=items[c.selected];if(it)opts.describe?.(it.name.textContent,it.description.textContent,it.original);};
     c.choose=i=>{c.selected=i;c.page=Math.floor(i/c.size);c.apply();c.announce();};c.reveal=n=>{const i=items.findIndex(it=>it.wrap.contains(n));if(i>=0){if(opts.summary){c.selected=i;c.apply();}else c.choose(i);}};
     previous.onclick=()=>c.choose((c.page-1)*c.size);next.onclick=()=>c.choose((c.page+1)*c.size);
-    c.release=()=>{c.observer?.disconnect();items.forEach(it=>{if(it.artMark?.parentNode)it.artMark.replaceWith(it.picture);it.controls.forEach(b=>{b.classList.remove('compact-action');b.removeAttribute('data-compact-action-label');if(it.aria.get(b)==null)b.removeAttribute('aria-label');else b.setAttribute('aria-label',it.aria.get(b));});it.paths.forEach(n=>n.classList.remove('compact-action-path'));it.original.classList.remove('compact-original');it.wrap.replaceWith(it.original);});groupNodes.forEach(n=>n.classList.remove('compact-grid-source'));children.forEach(n=>node.insertBefore(n,grid));grid.remove();pager.remove();operationSpace?.remove();['--compact-list-columns','--compact-list-height','--compact-operation-top','--compact-row-height'].forEach(p=>node.style.removeProperty(p));node.classList.remove('compact-catalog','compact-sam-list');controllers.delete(c);};
+    c.release=()=>{c.observer?.disconnect();items.forEach(it=>{if(it.artMark?.parentNode)it.artMark.replaceWith(it.picture);it.controls.forEach(b=>{b.classList.remove('compact-action');b.removeAttribute('data-compact-action-label');if(it.aria.get(b)==null)b.removeAttribute('aria-label');else b.setAttribute('aria-label',it.aria.get(b));});it.paths.forEach(n=>n.classList.remove('compact-action-path'));it.original.classList.remove('compact-original','compact-confirm-source');it.wrap.replaceWith(it.original);});groupNodes.forEach(n=>n.classList.remove('compact-grid-source'));children.forEach(n=>node.insertBefore(n,grid));grid.remove();pager.remove();operationSpace?.remove();['--compact-list-columns','--compact-list-height','--compact-operation-top','--compact-row-height'].forEach(p=>node.style.removeProperty(p));node.classList.remove('compact-catalog','compact-sam-list');controllers.delete(c);};
     controllers.add(c);c.apply();if(typeof ResizeObserver==='function'){c.observer=new ResizeObserver(()=>c.apply());c.observer.observe(opts.list?node:grid);}return c;
   }
   function release(scope,remember=true){if(!scope)return;if(sheet&&scope.contains(sheet.scope))closeSheet(false);if(remember)rememberFocus(scope);else focusAfter.delete(scope.id);[...controllers].filter(c=>scope.contains(c.root)).forEach(c=>c.release());
@@ -122,9 +124,47 @@
     };
     panel.querySelectorAll('[data-sam-category-panel]').forEach(n=>catalog(n,{selector:'.shop-goods > button',key:'sam:'+n.id,art:b=>b.dataset.buyHand?samCategoryArt('hands'):ctx.art?.(b)||samCategoryArt(n.dataset.samCategoryPanel),
       name:b=>{const name=nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'');return b.dataset.buyBait!=null?name.replace(/\s*×\d+$/, ''):name;},
-      purchaseSummary:b=>{const p=baitPurchase(b);return p?'1セット'+(p.units/p.sets)+'個 · '+(Number(p.total.replace(/,/g,''))/p.sets).toLocaleString('ja-JP')+'円\n'+clean(b.querySelector('[data-sam-stock]')):null;},
+      purchaseSummary:b=>{const p=baitPurchase(b);return p?'1セット'+(p.units/p.sets)+'個 · '+(Number(p.total.replace(/,/g,''))/p.sets).toLocaleString('ja-JP')+'円':null;},
       action:b=>{const p=baitPurchase(b);return p?nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'').replace(/\s*×\d+$/,'')+' '+p.units+'個を購入\n'+p.sets+'セット · 合計'+p.total+'円':actionText(b).replace(/^購入 · ([\d,]+)円$/,(_,amount)=>'購入\n'+Number(amount.replace(/,/g,'')).toLocaleString('ja-JP')+'円');},
-      list:true,inlinePager:n.dataset.samCategoryPanel==='bait',rowHeight:n.dataset.samCategoryPanel==='bait'?60:44,quantity:n.dataset.samCategoryPanel==='bait'?quantity:null,infoOpener:more,describe:(name,description,b)=>{speaker.textContent='サム · '+name;ctx.describe(name,description,b);}}));samCategory(scope,ctx.tab,ctx.selected[ctx.tab],scope.classList.contains('open'));if(!scope.classList.contains('open'))ctx.greet?.();restoreFocus(scope);
+      list:true,rowHeight:44,confirm:(b,opener)=>samPurchase(scope,b,opener,ctx.money),infoOpener:more,describe:(name,description,b)=>{speaker.textContent='サム · '+name;ctx.describe(name,description,b);}}));samCategory(scope,ctx.tab,ctx.selected[ctx.tab],scope.classList.contains('open'));if(!scope.classList.contains('open'))ctx.greet?.();restoreFocus(scope);
+  }
+  // Purchase controls live in their own tab, never on the product shelf.
+  function samPurchase(scope,b,opener,money){
+    const selected=key(b);if(!selected)return;
+    const title=nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'').replace(/\s*×\d+$/,'');
+    const body=openSheet(scope,'購入確認',opener,(body,state)=>{
+      state.purchase={attribute:selected[0],value:selected[1]};
+      state.layer.classList.add('sam-purchase-layer');
+      const summary=el('div','sam-purchase-summary'),art=el('div','sam-purchase-art');
+      art.append(cloneArt(b.closest('.compact-product')?.querySelector('.compact-art')));
+      summary.append(art,el('h4','sam-purchase-name',title));
+      const bundle=clean(b.querySelector('[data-sam-bundle]')).match(/(\d+)セット\s*→\s*(\d+)個/);
+      const price=clean(b.querySelector('[data-sam-total],[data-sam-price],strong')).match(/[\d,]+円/);
+      const total=price?Number(price[0].replace(/[^\d]/g,'')):0;
+      const sets=bundle?Number(bundle[1]):1,units=bundle?Number(bundle[2]):1;
+      summary.append(el('p','sam-purchase-pack',bundle?'1セット '+units/sets+'個入り · '+(total/sets).toLocaleString('ja-JP')+'円':'1点 · '+total.toLocaleString('ja-JP')+'円'));
+      summary.append(el('p','sam-purchase-stock',clean(b.querySelector('[data-sam-stock]'))));
+      body.append(summary);
+      if(bundle){const quantity=scope.querySelector('.bait-quantity-picker'),mark=document.createComment('purchase-quantity');quantity.before(mark);state.moves.push({n:quantity,mark});body.append(quantity);}
+      const receipt=el('div','sam-purchase-receipt');
+      receipt.append(el('p','sam-purchase-units','受け取る数：'+units+(bundle?'個（'+sets+'セット）':'点')),
+        el('p','sam-purchase-total','合計：'+total.toLocaleString('ja-JP')+'円'),
+        el('p','sam-purchase-wallet','所持金：'+Number(money||0).toLocaleString('ja-JP')+'円'));
+      const confirm=button('購入する'),cancel=button('選び直す'),actions=el('div','sam-purchase-actions');
+      confirm.dataset.samConfirmBuy='';cancel.dataset.samConfirmCancel='';
+      confirm.disabled=b.disabled||total>money;
+      if(total>money)receipt.append(el('p','sam-purchase-shortfall','あと'+(total-money).toLocaleString('ja-JP')+'円必要です'));
+      let committed=false;
+      confirm.onclick=e=>{e.stopPropagation();if(committed||confirm.disabled||sheet!==state||!b.isConnected)return;committed=true;confirm.disabled=true;closeSheet(false);b.click();};
+      cancel.onclick=e=>{e.stopPropagation();closeSheet();};actions.append(cancel,confirm);receipt.append(actions);body.append(receipt);
+    });
+    body.closest('.compact-sheet').querySelector('[data-compact-sheet-close]').textContent='一覧へ戻る';
+  }
+  function samPurchaseSelection(){return sheet?.purchase?{...sheet.purchase,step:document.activeElement?.dataset.baitCountStep}:null;}
+  function resumeSamPurchase(selection){if(!selection)return;const scope=document.querySelector('#store.open');if(!scope)return;
+    const b=[...scope.querySelectorAll('button')].find(n=>n.getAttribute(selection.attribute)===selection.value);if(!b)return;
+    const opener=b.closest('.compact-product')?.querySelector('[data-sam-confirm-open]');opener?.click();
+    if(selection.step!=null){const target=sheet?.layer.querySelector('[data-bait-count-step="'+selection.step+'"]');if(target&&!target.disabled)target.focus({preventScroll:true});}
   }
   function samCategory(scope,tab,id,announce=true){if(!scope.classList.contains('compact-window'))return;scope.querySelectorAll('[data-compact-sam-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.compactSamTab===tab&&b.dataset.samCategory===id)));if(announce)[...controllers].find(c=>scope.contains(c.root)&&c.root.dataset.samCategoryPanel===id)?.announce();}
   function location(scope,ctx){release(scope);if(!ctx.enabled)return;scope.classList.add('compact-location-shop');const panel=scope.querySelector('.location-panel'),d=frame(scope,panel,ctx.money,()=>[...scope.querySelectorAll('#locationDialogue,#locationNote,.cooking-kitchen-status,.sam-window-note')]);
@@ -185,5 +225,5 @@
     const r=description.getBoundingClientRect(),box=scope.getBoundingClientRect();notice.style.left=r.left-box.left-scope.clientLeft+'px';notice.style.top=r.top-box.top-scope.clientTop+'px';notice.style.width=r.width+'px';
   }
   function toast(scope,message){if(!scope?.classList.contains('compact-window')||!scope.classList.contains('open'))return;if(scope.querySelector('.compact-scene-dialogue'))return;scope.querySelector('.compact-toast')?.remove();const n=el('p','compact-toast',String(message).replace(/[「」]/g,''));n.setAttribute('role','status');scope.append(n);placeInventoryToast(scope);setTimeout(()=>n.remove(),4500);}
-  root.ShuCompactUI=Object.freeze({catalog,release,closeSheet,hasSheet:()=>!!sheet,sam,samCategory,location,vehicle,inventory,pet,refresh,toast});
+  root.ShuCompactUI=Object.freeze({catalog,release,closeSheet,hasSheet:()=>!!sheet,samPurchaseSelection,resumeSamPurchase,sam,samCategory,location,vehicle,inventory,pet,refresh,toast});
 })(typeof window==='undefined'?globalThis:window);

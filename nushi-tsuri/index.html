@@ -17082,7 +17082,9 @@
           : 1;
         if (next === samBaitPurchaseCount) return false;
         samBaitPurchaseCount = next;
+        const purchase = ShuCompactUI.samPurchaseSelection();
         renderSamShop();
+        ShuCompactUI.resumeSamPurchase(purchase);
         vibrate(10);
         return true;
       }

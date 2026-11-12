@@ -56,3 +56,38 @@ test('digit arrows are exact +/-1,10,100 with bounds, persistent selection and s
   assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
+
+const openConfirm=(w,id)=>row(w,id).querySelector('[data-sam-confirm-open]').click();
+test('purchase tab separates choosing, quantity, cancellation and one-time payment',()=>{
+ const a=boot({...seed(),money:20000,baits:{corn:92}}),w=a.window;
+ try{
+  w.eval('renderSamShop();open("store")');const before=read(w,'({money:s.money,baits:s.baits})');
+  row(w,'corn').querySelector('[data-compact-select]').click();assert.equal(w.ShuCompactUI.hasSheet(),false);
+  assert.equal(w.document.querySelector('.compact-quantity-parking').hidden,true);openConfirm(w,'corn');
+  assert.match(w.document.querySelector('.sam-purchase-name').textContent,/トウモロコシ/);
+  assert.ok(w.document.querySelector('.sam-purchase-layer .bait-quantity-picker'));
+  click(w,'[data-bait-count-step="10"]');assert.equal(w.document.querySelector('#samBaitPurchaseCount').textContent,'011セット');
+  assert.match(w.document.querySelector('.sam-purchase-units').textContent,/33個（11セット）/);
+  assert.match(w.document.querySelector('.sam-purchase-total').textContent,/2,860円/);
+  assert.deepEqual(read(w,'({money:s.money,baits:s.baits})'),before);
+  click(w,'[data-sam-confirm-cancel]');assert.equal(w.ShuCompactUI.hasSheet(),false);
+  assert.equal(w.document.querySelector('.compact-quantity-parking').hidden,true);
+  assert.equal(w.document.activeElement,row(w,'corn').querySelector('[data-sam-confirm-open]'));
+  openConfirm(w,'corn');const action=w.document.querySelector('[data-sam-confirm-buy]');action.click();action.click();
+  assert.equal(read(w,'s.money'),17140);assert.equal(read(w,'s.baits.corn'),125);
+  assert.equal(w.ShuCompactUI.hasSheet(),false);assert.equal(w.document.querySelectorAll('.bait-quantity-picker').length,1);
+  assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
+test('unaffordable, Escape, detail action and category transitions cannot buy accidentally',()=>{
+ const a=boot({...seed(),money:100,baits:{corn:92}}),w=a.window;
+ try{
+  w.eval('renderSamShop();open("store")');openConfirm(w,'corn');
+  assert.equal(w.document.querySelector('[data-sam-confirm-buy]').disabled,true);assert.match(w.document.querySelector('.sam-purchase-shortfall').textContent,/160円/);
+  w.document.querySelector('.compact-sheet').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(w.ShuCompactUI.hasSheet(),false);
+  row(w,'corn').querySelector('[data-compact-select]').click();click(w,'[data-sam-more]');click(w,'.compact-detail-actions button');
+  assert.ok(w.document.querySelector('.sam-purchase-layer'));assert.equal(read(w,'s.money'),100);assert.equal(read(w,'s.baits.corn'),92);
+  w.close();w.eval('renderSamShop();open("store")');assert.equal(w.ShuCompactUI.hasSheet(),false);assert.equal(w.document.querySelectorAll('.bait-quantity-picker').length,1);
+  assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
