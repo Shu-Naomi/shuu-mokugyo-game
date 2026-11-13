@@ -2,20 +2,21 @@ name: Natural fish swimming
 on:
   push:
     branches: [main, codex/fish-motion-v252-30]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
   pull_request:
     branches: [main]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
   workflow_dispatch:
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: fish-swimming-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
   swimming:
     runs-on: ubuntu-24.04
-    timeout-minutes: 30
+    timeout-minutes: 45
     container:
       image: mcr.microsoft.com/playwright:v1.63.0-noble
       options: --shm-size=1gb
@@ -34,6 +35,8 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
+      - name: Test deployment wait gate
+        run: node --test ../../.github/scripts/wait-for-pages.test.cjs
       - name: Verify volume, motion, fixed lips, variants, cache and retained behavior
         run: node --test --test-concurrency=2 fish-swimming-v252-30.test.cjs fish-motion-v213.test.cjs fish-raster-v214.test.cjs fish-turn-v216.test.cjs fight-moray-v250.test.cjs fish-render-transitions.test.cjs render-efficiency.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs
       - name: Fetch the exact read-only comparison baseline
@@ -42,6 +45,11 @@ jobs:
         run: node fish-swimming-evidence.cjs
       - name: Exercise native five-fish tank, full inspection turns and touch layout
         run: node browser-fish-swimming.cjs
+      - name: Wait for this commit's successful Pages deployment
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        run: node ../../.github/scripts/wait-for-pages.cjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
       - name: Check the deployed runtime after merge
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: node fish-swimming-public-source.cjs
