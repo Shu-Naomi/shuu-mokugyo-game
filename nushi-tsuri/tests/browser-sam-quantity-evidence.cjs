@@ -29,12 +29,19 @@ async function run(url,screen){
   await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),money:10000,baits:{corn:92},x:197,y:91,direction:'up',soundEnabled:false}});
   await page.goto(url,{waitUntil:'load'});await enter();
   assert.equal(await page.locator('.bait-quantity-picker').isVisible(),false,'no quantity editor on shelf');
+  const shelfStock=await page.locator('#samCategory-bait .compact-product:not([hidden])').evaluateAll(rows=>rows.map(row=>{
+   const name=row.querySelector('.compact-product-name'),owned=row.querySelector('.sam-shelf-owned'),caption=row.querySelector('.compact-row-caption'),a=name.getBoundingClientRect(),b=owned.getBoundingClientRect(),c=caption.getBoundingClientRect();
+   return {text:owned.textContent,inside:b.right<=c.right+1&&b.left>=c.left-1,notOverlapping:a.right<=b.left+1,fits:owned.scrollWidth<=owned.clientWidth+1};
+  }));
+  assert.ok(shelfStock.length>0);for(const item of shelfStock)assert.ok(item.inside&&item.notOverlapping&&item.fits,'owned bait visible without overlap '+item.text);
+  checks.push({name:'shelf-stock',rows:shelfStock});
   await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-shelf.png`)});
   const open=async()=>{const target=await revealProduct(page,'[data-buy-bait="corn"]',screen.mobile);await target[screen.mobile?'tap':'click']();};
   await open();await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="-1"]');
   const m=await shot('20-sets');assert.equal(m.count,'020セット');assert.equal(m.units,'受け取る数：60個（20セット）');assert.equal(m.total,'合計：5,200円');
   await press('[data-sam-confirm-cancel]');assert.deepEqual(await state(),{money:10000,corn:92});
   await open();await page.locator('[data-sam-confirm-buy]').focus();await page.keyboard.press('Enter');assert.deepEqual(await state(),{money:4800,corn:152});
+  assert.equal(await page.locator('[data-buy-bait="corn"]').evaluate(b=>b.closest('.compact-product').querySelector('.sam-shelf-owned').textContent),'所持 152個');
   assert.equal(await page.evaluate(()=>document.activeElement===document.querySelector('[data-buy-bait="corn"]').closest('.compact-product').querySelector('[data-sam-confirm-open]')),true,'keyboard purchase restores rebuilt opener');
   await open();assert.equal(await page.locator('[data-sam-confirm-buy]').isDisabled(),true);await shot('insufficient');assert.deepEqual(await state(),{money:4800,corn:152});
   await press('[data-bait-count-step="-100"]');for(let i=0;i<4;i++)await press('[data-bait-count-step="1"]');const five=await shot('5-sets');assert.equal(five.count,'005セット');

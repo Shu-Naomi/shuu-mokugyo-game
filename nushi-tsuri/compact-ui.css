@@ -631,3 +631,9 @@
  #store.compact-store .sam-purchase-summary{grid-template-columns:36px minmax(0,1fr)}
  #store.compact-store .sam-purchase-stock{display:none}
 }
+
+/* Keep owned bait visible on the shelf without adding rows or quantity controls. */
+#store.compact-store #samCategory-bait .compact-row-caption{display:grid;grid-template-columns:minmax(0,1fr) auto;column-gap:5px;row-gap:2px;align-items:center}
+#store.compact-store #samCategory-bait .compact-product-name{min-width:0}
+#store.compact-store #samCategory-bait .sam-shelf-owned{font-size:11px;line-height:14px;color:#554d3b;white-space:nowrap;font-variant-numeric:tabular-nums;font-weight:600}
+#store.compact-store #samCategory-bait .compact-product-stock{grid-column:1/-1}

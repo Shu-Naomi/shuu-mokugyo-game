@@ -106,3 +106,19 @@ for(const [attribute,value,category,disabled] of [['data-buy-bait','corn','bait'
   assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
+
+test('bait shelf owns counts stay visible independently of packs and refresh after buying',()=>{
+ const a=boot({...seed(),money:10000,baits:{corn:92,river:0}}),w=a.window;
+ const owned=id=>row(w,id).querySelector('.sam-shelf-owned').textContent;
+ try{
+  w.eval('renderSamShop();open("store")');
+  assert.equal(owned('corn'),'所持 92個');assert.equal(owned('river'),'所持 0個');
+  assert.match(row(w,'corn').querySelector('[data-compact-select]').getAttribute('aria-label'),/所持 92個/);
+  w.setSamBaitPurchaseCount(20);assert.equal(owned('corn'),'所持 92個');
+  openConfirm(w,'corn');click(w,'[data-sam-confirm-cancel]');assert.equal(owned('corn'),'所持 92個');
+  openConfirm(w,'corn');click(w,'[data-sam-confirm-buy]');assert.equal(owned('corn'),'所持 152個');
+  click(w,'[data-sam-category="rods"]');click(w,'[data-sam-category="bait"]');assert.equal(owned('corn'),'所持 152個');
+  w.close();w.eval('renderSamShop();open("store")');assert.equal(owned('corn'),'所持 152個');
+  assert.equal(row(w,'corn').querySelectorAll('.sam-shelf-owned').length,1);assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});
