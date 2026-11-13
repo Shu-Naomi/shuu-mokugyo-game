@@ -18,10 +18,11 @@ async function run(url,screen){
   const metrics=await page.locator('.sam-purchase-layer').evaluate(layer=>{
    const body=layer.querySelector('.compact-sheet-body'),m=body.getBoundingClientRect();
    const nodes=[...layer.querySelectorAll('[data-bait-count-step], [data-bait-digit], .sam-purchase-name, .sam-purchase-pack, .sam-purchase-units, .sam-purchase-total, .sam-purchase-wallet, .sam-purchase-actions button')];
-   return {bodyFits:body.scrollHeight<=body.clientHeight+1&&body.scrollWidth<=body.clientWidth+1,count:document.querySelector('#samBaitPurchaseCount').textContent,units:layer.querySelector('.sam-purchase-units').textContent,total:layer.querySelector('.sam-purchase-total').textContent,nodes:nodes.map(n=>{const r=n.getBoundingClientRect();return {text:n.textContent,width:r.width,height:r.height,button:n.tagName==='BUTTON',fits:n.scrollWidth<=n.clientWidth+1&&n.scrollHeight<=n.clientHeight+1,inside:r.top>=m.top-1&&r.bottom<=m.bottom+1&&r.left>=m.left-1&&r.right<=m.right+1};})};
+   const summary=layer.querySelector('.sam-purchase-summary').getBoundingClientRect(),picker=layer.querySelector('.bait-quantity-picker').getBoundingClientRect(),label=layer.querySelector('.bait-quantity-label').getBoundingClientRect(),digits=layer.querySelector('.bait-digit-picker').getBoundingClientRect();
+   return {notOverlapping:summary.bottom<=picker.top+1&&label.bottom<=digits.top+1,bodyFits:body.scrollHeight<=body.clientHeight+1&&body.scrollWidth<=body.clientWidth+1,count:document.querySelector('#samBaitPurchaseCount').textContent,units:layer.querySelector('.sam-purchase-units').textContent,total:layer.querySelector('.sam-purchase-total').textContent,nodes:nodes.map(n=>{const r=n.getBoundingClientRect();return {text:n.textContent,width:r.width,height:r.height,button:n.tagName==='BUTTON',fits:n.scrollWidth<=n.clientWidth+1&&n.scrollHeight<=n.clientHeight+1,inside:r.top>=m.top-1&&r.bottom<=m.bottom+1&&r.left>=m.left-1&&r.right<=m.right+1};})};
   });
   checks.push({name,...metrics});await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-${name}.png`)});
-  assert.ok(metrics.bodyFits,name+': no scrolling');for(const n of metrics.nodes){assert.ok(n.fits&&n.inside,name+': fully visible '+n.text);if(n.button)assert.ok(n.width>=44&&n.height>=44,name+': touch target '+n.text);}
+  assert.ok(metrics.notOverlapping,name+': summary and quantity rows do not overlap');assert.ok(metrics.bodyFits,name+': no scrolling');for(const n of metrics.nodes){assert.ok(n.fits&&n.inside,name+': fully visible '+n.text);if(n.button)assert.ok(n.width>=44&&n.height>=44,name+': touch target '+n.text);}
   return metrics;
  }
  try{

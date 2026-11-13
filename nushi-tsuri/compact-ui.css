@@ -612,7 +612,7 @@
 #store.compact-store .sam-purchase-art .compact-art{height:44px;max-height:44px;min-height:0;background:none}
 #store.compact-store .sam-purchase-name{margin:0;font-size:17px;line-height:22px;color:#493421}
 #store.compact-store .sam-purchase-layer p{margin:0;font-size:13px;line-height:18px}
-#store.compact-store .sam-purchase-layer .bait-quantity-picker{display:grid;grid-template-rows:18px 112px;align-self:start;width:148px;margin:0;padding:0;background:none;border:0;gap:0}
+#store.compact-store .sam-purchase-layer .bait-quantity-picker{display:grid;grid-template-columns:148px;grid-template-rows:18px 112px;align-items:start;align-self:start;width:148px;margin:0;padding:0;background:none;border:0;gap:0}
 #store.compact-store .sam-purchase-layer .bait-quantity-label{position:static;display:block;font-size:13px;line-height:18px;color:#59412b;text-align:center}
 #store.compact-store .sam-purchase-layer .bait-digit-picker{display:flex;gap:5px}
 #store.compact-store .sam-purchase-layer .bait-digit-column{display:grid;grid-template-rows:44px 24px 44px;grid-template-columns:46px;text-align:center;font-variant-numeric:tabular-nums;font-size:20px;line-height:24px;font-weight:bold;color:#463422}
