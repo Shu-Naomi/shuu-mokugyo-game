@@ -101,6 +101,8 @@ for(const [attribute,value,category,disabled] of [['data-buy-bait','corn','bait'
   const confirm=w.document.querySelector('[data-sam-confirm-buy]');confirm.focus();assert.equal(w.document.activeElement,confirm);confirm.click();
   assert.equal(product().querySelector('[data-sam-confirm-open]').disabled,disabled);
   assert.equal(w.document.activeElement,product().querySelector(disabled?'[data-compact-select]':'[data-sam-confirm-open]'));
-  assert.equal(product().hidden,false);assert.equal(w.ShuCompactUI.hasSheet(),false);assert.deepEqual(a.errors,[]);
+  assert.equal(product().hidden,false);assert.equal(w.ShuCompactUI.hasSheet(),false);
+  if(value==='corn')assert.match(w.document.querySelector('#shopDialogue').textContent,/トウモロコシを1セット、3個/);
+  assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });

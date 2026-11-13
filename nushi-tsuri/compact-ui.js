@@ -160,7 +160,9 @@
         // removed opener, and keep owned items reachable through their selector.
         const rebuilt=[...scope.querySelectorAll('button')].find(n=>n.getAttribute(selected[0])===selected[1]);
         if(!scope.classList.contains('open')||!rebuilt)return;
-        const controller=[...controllers].find(c=>c.root.contains(rebuilt));controller?.reveal(rebuilt);
+        const controller=[...controllers].find(c=>c.root.contains(rebuilt));
+        // Reveal without re-announcing the description over the purchase receipt.
+        if(controller){controller.selected=controller.items.findIndex(it=>it.wrap.contains(rebuilt));controller.apply();}
         const row=rebuilt.closest('.compact-product'),next=row?.querySelector('[data-sam-confirm-open]');
         (next&&!next.disabled?next:row?.querySelector('[data-compact-select]'))?.focus({preventScroll:true});
       };
