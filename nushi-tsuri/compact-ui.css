@@ -600,30 +600,34 @@
 #store.compact-store .compact-sam-list .bait-purchase-count{font-size:12px}
 #store.compact-store #samCategory-bait .compact-pager button,#store.compact-store #samCategory-bait .compact-page-label{font-size:12px}
 
-/* Three separate digit columns keep 1, 10 and 100 changes predictable. */
-#store.compact-store #samCategory-bait .compact-product-select{height:60px!important;min-height:60px!important;max-height:60px!important}
-#store.compact-store #samCategory-bait .compact-product-stock{white-space:pre-line;font-size:12px;line-height:15px}
-#store.compact-store #samCategory-bait .compact-operation-space{height:128px;min-height:128px;flex-basis:128px}
-#store.compact-store #samCategory-bait .compact-selection-panel{height:128px;min-height:128px;align-items:center;gap:10px}
-#store.compact-store #samCategory-bait .compact-product-actions{flex:1!important;max-width:none}
-#store.compact-store #samCategory-bait .bait-quantity-picker{order:-1;display:grid;grid-template-columns:138px;grid-template-rows:16px 112px;flex:0 0 138px;gap:0}
-#store.compact-store #samCategory-bait .bait-quantity-label{position:static;display:block;grid-row:1;font-size:12px;line-height:16px}
-#store.compact-store #samCategory-bait .bait-quantity-label small{display:none}
-#store.compact-store #samCategory-bait .bait-digit-picker{grid-row:2;display:flex;gap:3px}
-#store.compact-store #samCategory-bait .bait-digit-column{display:grid;grid-template-rows:44px 24px 44px;grid-template-columns:44px;text-align:center;font-variant-numeric:tabular-nums;font-size:17px;line-height:24px;font-weight:bold;color:#463422}
-#store.compact-store #samCategory-bait .bait-purchase-count{position:absolute;clip-path:inset(50%);width:1px;min-width:1px;height:1px;overflow:hidden;white-space:nowrap}
-#store.compact-store #samCategory-bait .compact-action{white-space:pre-line;font-size:13px;line-height:18px;min-height:60px!important;height:60px!important;max-height:none!important}
-
-#store.compact-store #samCategory-bait .compact-pager{position:absolute;top:calc(var(--compact-list-height) + 4px);left:148px;width:calc(100% - 148px);height:44px;min-height:44px;z-index:3}
-#store.compact-store #samCategory-bait .compact-product-actions{align-self:flex-end;margin-bottom:4px}
-#store.compact-store #samCategory-bait .compact-action::after{font-size:13px;line-height:18px}
-/* On very short landscape screens, use the scene's upper edge for the
-   persistent shop actions rather than shrinking touch targets or scrolling. */
+/* Purchase confirmation is a separate no-scroll tab; the shelf stays compact. */
+#store.compact-store .compact-confirm-source{display:none!important}
+#store.compact-store .compact-product-actions [data-sam-confirm-open]{flex:1;min-width:0;height:44px;min-height:44px;margin:0;padding:4px 10px;font-size:13px;background:linear-gradient(#bd783f,#94512f);color:#fff5dc;border:1px solid #955e36}
+#store.compact-store #samCategory-bait .compact-product-select{height:44px!important;min-height:44px!important;max-height:44px!important}
+#store.compact-store #samCategory-bait .compact-product-stock{white-space:nowrap;font-size:12px;line-height:15px;max-height:15px}
+#store.compact-store .sam-purchase-layer .compact-sheet{width:min(700px,96%);inset:0 0 0 auto}
+#store.compact-store .sam-purchase-layer .compact-sheet-body{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-rows:auto 1fr;gap:8px 18px;padding:12px;overflow:hidden;line-height:1.3}
+#store.compact-store .sam-purchase-summary{grid-column:1/-1;display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 10px;align-content:start}
+#store.compact-store .sam-purchase-art{grid-row:1/4;align-self:center;height:44px;overflow:hidden}
+#store.compact-store .sam-purchase-art .compact-art{height:44px;max-height:44px;min-height:0;background:none}
+#store.compact-store .sam-purchase-name{margin:0;font-size:17px;line-height:22px;color:#493421}
+#store.compact-store .sam-purchase-layer p{margin:0;font-size:13px;line-height:18px}
+#store.compact-store .sam-purchase-layer .bait-quantity-picker{display:grid;grid-template-columns:148px;grid-template-rows:18px 112px;align-items:start;align-self:start;width:148px;margin:0;padding:0;background:none;border:0;gap:0}
+#store.compact-store .sam-purchase-layer .bait-quantity-label{position:static;display:block;font-size:13px;line-height:18px;color:#59412b;text-align:center}
+#store.compact-store .sam-purchase-layer .bait-digit-picker{display:flex;gap:5px}
+#store.compact-store .sam-purchase-layer .bait-digit-column{display:grid;grid-template-rows:44px 24px 44px;grid-template-columns:46px;text-align:center;font-variant-numeric:tabular-nums;font-size:20px;line-height:24px;font-weight:bold;color:#463422}
+#store.compact-store .sam-purchase-layer .bait-digit-column button{min-width:44px;min-height:44px;height:44px;padding:0;margin:0;font-size:18px;border:1px solid #9c794a;background:linear-gradient(#dfc594,#bea16e);color:#463422;box-shadow:inset 0 -2px #947448}
+#store.compact-store .sam-purchase-layer .bait-purchase-count{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
+#store.compact-store .sam-purchase-receipt{grid-column:2;display:flex;flex-direction:column;gap:6px;align-self:start;min-width:0}
+#store.compact-store .sam-purchase-total{font-size:19px!important;line-height:24px!important;font-weight:bold;color:#814126}
+#store.compact-store .sam-purchase-actions{display:flex;gap:8px;margin-top:4px}
+#store.compact-store .sam-purchase-actions button{min-width:90px;min-height:44px;margin:0;flex:1;padding:5px;font-size:14px}
+#store.compact-store [data-sam-confirm-buy]{background:linear-gradient(#bd783f,#94512f);color:#fff5dc;border:1px solid #955e36}
+#store.compact-store .sam-purchase-shortfall{color:#902d26;font-weight:bold}
 @media(max-height:350px){
- #store.compact-store .compact-panel{position:static}
- #store.compact-store .compact-window-heading{position:absolute;z-index:10;left:8px;top:8px;width:calc(40% - 16px);height:44px;min-height:44px;justify-content:flex-end}
- #store.compact-store .compact-window-heading h2{position:absolute!important;width:1px;height:1px;clip-path:inset(50%);overflow:hidden}
- #store.compact-store .compact-window-heading .compact-wallet{font-size:11px;margin-right:auto}
+ #store.compact-store .sam-purchase-layer .compact-sheet-body{padding:6px 12px;gap:4px 18px}
+ #store.compact-store .sam-purchase-layer .compact-sheet-heading{flex-basis:44px;min-height:44px;padding:0 10px}
+ #store.compact-store .sam-purchase-receipt{gap:2px}
+ #store.compact-store .sam-purchase-summary{grid-template-columns:36px minmax(0,1fr)}
+ #store.compact-store .sam-purchase-stock{display:none}
 }
-@media(max-height:350px) and (max-width:720px){#store.compact-store .compact-window-heading{width:calc(34% - 16px)}}
-#store.compact-store #samCategory-bait .compact-product-actions{min-height:60px;max-height:60px;height:60px}

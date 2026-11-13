@@ -33,7 +33,8 @@ async function revealProduct(page,selector,mobile=false){
   const guide=page.locator('#'+where.scope+' [data-compact-guide]');
   if(await guide.isVisible())await press(guide);
  }
+ if(where.scope==='store'&&await catalog.count())return target.locator('xpath=ancestor::*[contains(concat(" ", normalize-space(@class), " "), " compact-product ")][1]').locator('[data-sam-confirm-open]');
  return target;
 }
-async function pressProduct(page,selector,mobile=false){const target=await revealProduct(page,selector,mobile);await target[mobile?'tap':'click']();}
+async function pressProduct(page,selector,mobile=false){const target=await revealProduct(page,selector,mobile);await target[mobile?'tap':'click']();const confirm=page.locator('[data-sam-confirm-buy]');if(await confirm.isVisible()){if(await confirm.isDisabled()){await page.locator('[data-sam-confirm-cancel]')[mobile?'tap':'click']();}else await confirm[mobile?'tap':'click']();}}
 module.exports={revealProduct,pressProduct};
