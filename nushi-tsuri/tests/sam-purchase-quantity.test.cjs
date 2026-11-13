@@ -91,3 +91,18 @@ test('unaffordable, Escape, detail action and category transitions cannot buy ac
   assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
+
+for(const [attribute,value,category,disabled] of [['data-buy-bait','corn','bait',false],['data-buy-rod','clearStream','rods',true]])test(`confirmation restores keyboard focus to rebuilt ${value} shelf control`,()=>{
+ const a=boot({...seed(),money:100000}),w=a.window;
+ try{
+  w.eval('renderSamShop();open("store")');click(w,`[data-sam-category="${category}"]`);
+  const product=()=>w.document.querySelector(`[${attribute}="${value}"]`).closest('.compact-product');
+  product().querySelector('[data-compact-select]').click();product().querySelector('[data-sam-confirm-open]').click();
+  const confirm=w.document.querySelector('[data-sam-confirm-buy]');confirm.focus();assert.equal(w.document.activeElement,confirm);confirm.click();
+  assert.equal(product().querySelector('[data-sam-confirm-open]').disabled,disabled);
+  assert.equal(w.document.activeElement,product().querySelector(disabled?'[data-compact-select]':'[data-sam-confirm-open]'));
+  assert.equal(product().hidden,false);assert.equal(w.ShuCompactUI.hasSheet(),false);
+  if(value==='corn')assert.match(w.document.querySelector('#shopDialogue').textContent,/トウモロコシを1セット、3個/);
+  assert.deepEqual(a.errors,[]);
+ }finally{a.dispose();}
+});

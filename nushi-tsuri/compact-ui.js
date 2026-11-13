@@ -155,7 +155,17 @@
       confirm.disabled=b.disabled||total>money;
       if(total>money)receipt.append(el('p','sam-purchase-shortfall','あと'+(total-money).toLocaleString('ja-JP')+'円必要です'));
       let committed=false;
-      confirm.onclick=e=>{e.stopPropagation();if(committed||confirm.disabled||sheet!==state||!b.isConnected)return;committed=true;confirm.disabled=true;closeSheet(false);b.click();};
+      confirm.onclick=e=>{e.stopPropagation();if(committed||confirm.disabled||sheet!==state||!b.isConnected)return;committed=true;confirm.disabled=true;closeSheet(false);b.click();
+        // The transaction rebuilds the shelf. Resolve by product identity, not the
+        // removed opener, and keep owned items reachable through their selector.
+        const rebuilt=[...scope.querySelectorAll('button')].find(n=>n.getAttribute(selected[0])===selected[1]);
+        if(!scope.classList.contains('open')||!rebuilt)return;
+        const controller=[...controllers].find(c=>c.root.contains(rebuilt));
+        // Reveal without re-announcing the description over the purchase receipt.
+        if(controller){controller.selected=controller.items.findIndex(it=>it.wrap.contains(rebuilt));controller.apply();}
+        const row=rebuilt.closest('.compact-product'),next=row?.querySelector('[data-sam-confirm-open]');
+        (next&&!next.disabled?next:row?.querySelector('[data-compact-select]'))?.focus({preventScroll:true});
+      };
       cancel.onclick=e=>{e.stopPropagation();closeSheet();};actions.append(cancel,confirm);receipt.append(actions);body.append(receipt);
     });
     body.closest('.compact-sheet').querySelector('[data-compact-sheet-close]').textContent='一覧へ戻る';
