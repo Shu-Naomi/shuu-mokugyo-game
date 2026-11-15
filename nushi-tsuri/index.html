@@ -7513,6 +7513,7 @@
           throw new Error("Reference village safety check blocked startup");
         }
       }
+      let villageSaveSuspended = false;
       function uiArt(key) {
         const [kind, id] = key.split(":");
         return kind === "ui" ? UiPixelArt.get(id) : kind === "extra" ? UiExtraArt.get(id)
@@ -13184,6 +13185,7 @@
       ShuLakeStory.normalize(s);
       if(Object.hasOwn(s,"villageGuide"))s.villageGuide=ShuVillageGuide.normalize(s.villageGuide);
       function save() {
+        if (villageSaveSuspended) return false;
         clearTimeout(saveTimer);
         saveTimer = 0;
         if (!gameStarted || saveSuppressed || pendingSaveDeletion?.id===activeSaveSlot) return false;
@@ -13204,6 +13206,7 @@
         }
       }
       function scheduleSave() {
+        if (villageSaveSuspended) return false;
         if (saveSuppressed) return;
         clearTimeout(saveTimer);
         saveTimer = setTimeout(save, 700);
@@ -14135,6 +14138,7 @@
         return rain || birds || Boolean(enabled && scene.music);
       }
       function syncExpectedLoopAudio() {
+        if (villageSaveSuspended) return false;
         const scenePlaying = syncSceneSound();
         if (!s.soundEnabled || document.hidden) return false;
         if (battle?.phase === "escape") {
@@ -14614,6 +14618,7 @@
         return context;
       }
       function recoverGameAudio(options = null) {
+        if (villageSaveSuspended) return false;
         if (!s.soundEnabled || document.hidden) return false;
         unlockGameAudio(options);
         // Run inside the current gesture first (important on mobile), then
@@ -15231,6 +15236,7 @@
           c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
+        if (villageSaveSuspended) return false;
         worldLife?.render(performance.now(),true);
         const env = gameSceneryEnvironment();
         if (s.mapRegion === ShuOffshore.id && !battle) {
@@ -15261,6 +15267,7 @@
         ShuScenery.syncVisibility();
       }
       function resumeRegionalScenery() {
+        if (villageSaveSuspended) return false;
         if (ShuMountain.isRegion(s.mapRegion) && !battle && !document.hidden &&
             !document.querySelector(".modal.open") && !fieldMenuIsOpen())
           renderPixelScenery();
@@ -16013,7 +16020,7 @@
           Math.max(1, Math.floor((now - previous + .001) / HOME_VISUAL_INTERVAL)) * HOME_VISUAL_INTERVAL;
       }
       function homeDogAnimationCanRun() {
-        return playerHomeState.area === "interior" && !playerHomeState.transitioning &&
+        return !villageSaveSuspended && playerHomeState.area === "interior" && !playerHomeState.transitioning &&
           !document.hidden && !battle && !document.querySelector(".modal.open") &&
           $("#game").classList.contains("active");
       }
@@ -16040,6 +16047,7 @@
         homeDogAnimationTimer = requestAnimationFrame(animateHomeDogs);
       }
       function renderHomeDogs() {
+        if (villageSaveSuspended) return false;
         const indoors = playerHomeState.area === "interior";
         $("#homeDogs").hidden = !indoors;
         if (indoors && !homeDogs.length) initializeHomeDogs();
@@ -16279,6 +16287,7 @@
         rivalDogAnimation = requestAnimationFrame(animateRivalDogReaction);
       }
       function animateRivalDogReaction(now) {
+        if (villageSaveSuspended) return false;
         rivalDogAnimation = 0;
         const reaction = rivalDogReaction;
         if (!reaction) return;
@@ -16798,6 +16807,7 @@
           tank.right <= box.right - 16 && tank.top >= box.top + 16 && tank.bottom <= box.bottom - 16;
       }
       function renderHomeAquarium() {
+        if (villageSaveSuspended) return false;
         const indoors = playerHomeState.area === "interior";
         $("#homeAquarium").hidden = !indoors;
         const id = normalizeAquariumFishId(s.homeAquariumFishId);
@@ -16826,6 +16836,7 @@
           aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function advanceAquariumAnimation(now) {
+        if (villageSaveSuspended) return false;
         aquariumAnimationTimer = 0;
         if (!aquariumRenderedFishId || playerHomeState.area !== "interior" || document.hidden || aquariumCovered) {
           stopAquariumAnimation();
@@ -16933,6 +16944,7 @@
         return { x, y };
       }
       function movePlayerHome(direction) {
+        if (villageSaveSuspended) return false;
         if (
           !playerHomeIsActive() ||
           playerHomeState.transitioning ||
@@ -17506,6 +17518,7 @@
         updateTimedRestPreview();open("timedRest");$("[data-rest-time]").focus({preventScroll:true});return true;
       }
       function finishTimedRest() {
+        if (villageSaveSuspended) return;
         const presentation=timedRestPresentation;timedRestPresentation=null;
         timedRestSession=null;presentation?.finish();
         if($("#timedRest").classList.contains("open"))close();
@@ -17703,6 +17716,7 @@
         surfaceCastLastPaintAt = null;
       }
       function animateSurfaceCast() {
+        if (villageSaveSuspended) return false;
         surfaceCastAnimationFrame = 0;
         if (document.hidden || battle?.phase !== "cast-flight") return;
         // RAF supplies time since page load; the existing cast deadline uses
@@ -17715,10 +17729,12 @@
         if (!finished) surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
       }
       function startSurfaceCastAnimation() {
+        if (villageSaveSuspended) return false;
         if (!surfaceCastAnimationFrame && !document.hidden && battle?.phase === "cast-flight")
           surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
       }
       function syncSurfaceCastRig(now = Date.now()) {
+        if (villageSaveSuspended) return false;
         if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase) || document.hidden) return;
         paintSurfaceScenery();
         renderPixelCast(now);
@@ -18131,6 +18147,7 @@
         }
       }
       function advancePetSceneFrame() {
+        if (villageSaveSuspended) return false;
         if (document.hidden) return;
         if (companionReaction !== "pet") return;
         const scene = $("#petScene");
@@ -18421,6 +18438,7 @@
         else if (target === "saveSlots") return returnToSaveSelection();
       }
       function move(d) {
+        if (villageSaveSuspended) return false;
         if (playerHomeState.transitioning) return;
         if (playerHomeIsActive()) return movePlayerHome(d);
         if (battle || rescueInProgress || forageDiscoveryInProgress ||
@@ -19619,6 +19637,7 @@
           : "黄色い枠へ来るまで待つ";
       }
       function drawDogCareScene(now = Date.now()) {
+        if (villageSaveSuspended) return false;
         if (document.hidden) return false;
         const canvas = $("#dogCareSceneCanvas");
         if (!canvas) return false;
@@ -19843,6 +19862,7 @@
         return true;
       }
       function advanceDogCareScene() {
+        if (villageSaveSuspended) return false;
         if (!$("#dogCare")?.classList.contains("open")) return;
         dogCareScene.frame = (dogCareScene.frame + 1) % 8;
         const now = Date.now();
@@ -22403,6 +22423,7 @@
         battleArtAnimationFrame=0;battleArtLastPaintAt=0;
       }
       function startBattleFishArt() {
+        if (villageSaveSuspended) return false;
         stopBattleFishArt();
         const paint=now=>{
           battleArtAnimationFrame=0;
@@ -22792,7 +22813,7 @@
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
-          if (!battle || document.hidden || battle.pausedAt) return;
+          if (villageSaveSuspended || !battle || document.hidden || battle.pausedAt) return;
           if(battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase)){updateLurePresentation();updateWaterFx();return;}
           if(battle.phase==="escape"){updateFishEscape();return;}
           if (battle.phase !== "fight") updateWaterFx();
@@ -24236,6 +24257,7 @@
         setBattleReeling(false);
       }
       function pressBattleAction(){
+        if (villageSaveSuspended) return false;
         if(battleActionHeld||document.hidden||battle?.pausedAt)return;
         battleActionHeld=true;pull();
       }
@@ -24244,6 +24266,7 @@
         stopFishEscapeAudio();releaseHeldInputs();
       }
       function resumeBattle(){
+        if (villageSaveSuspended) return false;
         if(battle?.pausedAt){
           const now=Date.now(),paused=battle.pausedAt;
           for(const key of ["biteAt","nibbleAt"])if(Number.isFinite(battle[key]))battle[key]+=now-Math.max(paused,battle.biteScheduledAt||paused);
@@ -24257,6 +24280,37 @@
         }
         releaseHeldInputs();
       }
+      // Called only by the verified save gate. Recovery reloads the page; there
+      // is deliberately no resume API that could revive stale in-memory state.
+      globalThis.ShuVillageSaveRuntime = Object.freeze({
+        isSuspended: () => villageSaveSuspended,
+        suspend() {
+          if (villageSaveSuspended) return;
+          villageSaveSuspended = true;
+          pauseBattle(); // Releases pointer holds and reeling before any redraw.
+          clearTimeout(saveTimer); saveTimer = 0;
+          for (const handle of [catchTimer, landingTimer, hookRevealTimer,
+            castLandingTimer, surfaceTransitionTimer, walkTimer, dogWalkTimer,
+            idleTimer, idleActionTimer, companionReactionTimer, reactionTransitionTimer,
+            rescueTimer, forageDiscoveryTimer, playerHomeTransitionTimer]) clearTimeout(handle);
+          // Hide covered game surfaces without close()/finish callbacks mutating
+          // the adventure. Independent scenery controllers then see no viewport.
+          $("#game").style.display = "none";
+          document.querySelectorAll(".modal.open").forEach(node => node.classList.remove("open"));
+          ShuScenery.syncVisibility();
+          eventCeremonies?.stop();
+          timedRestPresentation?.finish(); timedRestPresentation = null;
+          clearInterval(timer); timer = 0;
+          clearInterval(playerWalkInterval); playerWalkInterval = 0;
+          clearInterval(catchAnimationTimer); catchAnimationTimer = 0;
+          stopSurfaceCastAnimation(); stopBattleFishArt();
+          stopAquariumAnimation(); stopHomeDogAnimation(); stopRivalDogReaction();
+          petUi?.stop(); dialogueTyper.cancelAll();
+          stopCastingWaterSound(.05); stopUnderwaterSound(.05);
+          stopRainSound(); stopWildlifeSound(); stopAllGameAudioSamples();
+          setMasterAudioLevel(false); gameAudio.unlocked = false;
+        }
+      });
       function releaseHeldInputs() {stopMoving();releaseBattleAction();if(battle)battle.lurePulse=false;}
       document.querySelectorAll("[data-move]").forEach((b) => {
         b.onpointerdown = (e) => {
@@ -24482,6 +24536,7 @@
         if (e.key === "z" || e.key === "Enter") releaseBattleAction();
       });
       addEventListener("resize", () => {
+        if (villageSaveSuspended) return;
         if ($("#game").classList.contains("active")) {
           requestAnimationFrame(() => {
             render();
@@ -24509,6 +24564,7 @@
         gameAudio.unlocked = false;
       });
       document.addEventListener("visibilitychange", () => {
+        if (villageSaveSuspended) return;
         renderHomeAquarium();
         renderHomeDogs();
         if (document.hidden) {
@@ -24530,12 +24586,14 @@
       });
       addEventListener("focus", () => {resumeBattle();recoverGameAudio();});
       addEventListener("pageshow", () => {
+        if (villageSaveSuspended) return;
         recoverGameAudio();
         startSurfaceCastAnimation();
         renderHomeAquarium();
         renderHomeDogs();
       });
       setInterval(() => {
+        if (villageSaveSuspended) return;
         worldLife?.render();
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
@@ -24550,7 +24608,7 @@
         navigator.serviceWorker.register("./sw.js?v=252-64").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
-        visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
+        visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
       titleFlow=ShuTitleFlow.create({element:$("#title"),slots:saveSlots,options:ShuPlayerOptions,initialSlot:activeSaveSlot,
         selectSlot:id=>{selectedSaveSlot=id;},summary:optionsSlotSummary,start:startTitleAdventure,settings:openOptions});

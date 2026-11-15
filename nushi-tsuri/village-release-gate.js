@@ -4,6 +4,7 @@
  let session,started=false,closed=false,modal;
  const keys=[1,2],migration=globalThis.ShuVillageSaveMigration;
  function screen(text){
+  if(started)globalThis.ShuVillageSaveRuntime?.suspend();
   if(!modal){modal=document.createElement('div');modal.id='villageSaveGate';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#172a35;color:#fff1c7;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font:16px sans-serif';document.body.append(modal);for(const type of ['keydown','keyup'])modal.addEventListener(type,e=>e.stopPropagation());}
   if(!modal.isConnected)document.body.append(modal);
   modal.replaceChildren();const p=document.createElement('p');p.textContent=text;modal.append(p);return modal;
