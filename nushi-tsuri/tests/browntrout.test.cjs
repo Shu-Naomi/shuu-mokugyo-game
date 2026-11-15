@@ -19,6 +19,10 @@ for(const mode of ['gauge','nushi'])test('walk to the pond, ordinary encounter, 
 for(const mode of ['gauge','nushi'])for(const tier of [.5,.999999])test('brown trout physics, '+mode+', size roll '+tier,()=>{
  const r=runFight({id:'browntrout',mode,tier,rod:tier>.9?'starGazer':'clearStream',delayMs:600,rngSeed:301,gaugeThreshold:45,gaugeResumeThreshold:20});console.log('BROWN_TROUT_FIGHT '+JSON.stringify(r));assert.deepEqual(r.errors,[]);assert.equal(r.start.id,'browntrout');assert.equal(r.phase,'landing');assert.ok(r.seconds<180);assert.ok(r.maxTension<100);
 });
+// Real water-particle RNG changes the authored window sequence. Keep it active.
+for(const tier of [.5,.8])test('brown trout with live water FX, size roll '+tier,()=>{
+ const r=runFight({id:'browntrout',mode:'nushi',tier,rod:'clearStream',delayMs:600,rngSeed:301,waterFxSeed:301});console.log('BROWN_TROUT_WATER_FX '+JSON.stringify(r));assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing');assert.ok(r.seconds<180);assert.ok(r.maxTension<100);
+});
 test('original atlas stays within bounds and mouth remains connected through 97 headings',async()=>{
  const im=await loadImage(path.join(__dirname,'..',A.species.browntrout.asset)),ctx=createCanvas(448,224).getContext('2d');for(let n=0;n<=96;n++){A.draw(ctx,im,'browntrout',7,n/16,()=>im);const data=ctx.getImageData(0,0,448,224).data;let count=0,edge=0;for(let i=0;i<448*224;i++)if(data[i*4+3]>100){count++;const x=i%448,y=Math.floor(i/448);if(x<2||x>445||y<2||y>221)edge++;}assert.ok(count>3500,'body '+n);assert.equal(edge,0,'edge '+n);const h=A.pose('browntrout',7,n/16).target;assert.ok(ctx.getImageData(Math.round(h[0]*448)-6,Math.round(h[1]*224)-6,13,13).data.some((v,i)=>i%4===3&&v>100),'mouth '+n);}
 });

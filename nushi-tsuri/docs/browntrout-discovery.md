@@ -28,3 +28,9 @@ Release cache suffix/module URL updates are coordinated with the parallel villag
 ## Calibration result
 
 The inherited physics fixture used distance 95, exceeding the recommended clearStream rod's maximum 90. Brown trout now uses reachable deep distance 80. At that distance the initial classic fatigue budget landed successfully but exceeded the 180-second playability target (185/202 sec). Its new-species-only endurance override is 250 active-run ticks, still 2.5× the former shared 100-tick budget. Same 600ms reaction, same seed and same assertions: normal 143.52 sec / giant 151.68 sec, 16/17 warning episodes. Tension remains 21.48/37.68 sec. This is tuning a new species, not weakening a test or changing existing fish.
+
+### Native-browser correction
+
+On head aa9b454, the native browser caught a 45.65cm medium specimen in tension mode but classic mode remained fighting after 216 seconds (retrieval .15036, no JS errors/escape). The initial 33cm DOM fixture was not enough: activating water FX at the same seed increased that case from 143.52 to 216.72 seconds, and a 46.80cm specimen on clearStream took 260.52 seconds even without FX. These are distinct real simulation inputs, not proof of broken pointer input.
+
+Brown trout now has its own burst/recovery rhythm: unchanged dart speed 1.8, shake 1.15 and tempo 1.25, runs 1800–3000ms and pull budgets 2400–4800ms. Strength 2.4 and endurance 250 remain unchanged. Existing species/rhythms, 600ms test reaction and 180/216-second test limits are unchanged. Tests explicitly include 33cm and 46.8cm specimens with active water FX; browser results also retain specimen and failure physics details. Final native/mobile verification remains required.

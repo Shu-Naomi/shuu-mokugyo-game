@@ -98,6 +98,9 @@
   const rhythms={
     gentle:{pull:[2800,6400],run:[1800,3000],speed:1.15,shake:.85,tempo:.8},
     shoal:{pull:[2400,5600],run:[1500,2500],speed:1.35,shake:1,tempo:1.3},
+    // Brown trout keeps the dart speed/head shakes, but offers a full
+    // pull window between short bursts, including medium-size fish on clearStream.
+    trout:{pull:[2400,4800],run:[1800,3000],speed:1.8,shake:1.15,tempo:1.25},
     dart:{pull:[1600,4400],run:[2100,3800],speed:1.8,shake:1.15,tempo:1.25},
     heavy:{pull:[2200,6000],run:[2400,4400],speed:1.5,shake:1.3,tempo:.85},
     ambush:{pull:[1800,5000],run:[2100,4100],speed:1.95,shake:1.4,tempo:1.1},
@@ -110,7 +113,8 @@
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
     gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    dart:'browntrout ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
+    trout:'browntrout',
+    dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     shoal:'takabe',
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
