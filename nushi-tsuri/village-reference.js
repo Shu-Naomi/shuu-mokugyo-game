@@ -1,7 +1,7 @@
 /* Reference-only pilot. Measurements are source-image pixels, never a repainted map. */
 (function(root,factory){const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;if(root)root.ShuVillageReference=api;})(typeof globalThis!=='undefined'?globalThis:this,function(){
 'use strict';
-const enabled=typeof location!=='undefined'&&new URLSearchParams(location.search).get('villageReference')==='1';
+const enabled=!!globalThis.ShuVillageReleaseCandidate||(typeof location!=='undefined'&&new URLSearchParams(location.search).get('villageReference')==='1');
 const source={width:1672,height:941,asset:'assets/village-reference-pilot.png',reference:'11016(1).png',provisional:['riao-tcg-shop','quest-board']};
 const point=([x,y])=>[x/1672*240,y/941*135], polygon=p=>p.map(point), rect=(l,r,t,b)=>({left:l/1672*240,right:r/1672*240,top:t/941*135,bottom:b/941*135});
 const anchor=(x,y)=>({x:x/1672*240,y:y/941*135});

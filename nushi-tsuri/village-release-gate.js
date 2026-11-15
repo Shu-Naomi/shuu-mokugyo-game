@@ -26,7 +26,11 @@
   screen('保存保護のため停止しました（'+reason+'）。このタブを閉じ、ほかのゲームのタブも閉じてから開き直してください。保存は削除していません。');
  }
  screen('セーブを保護して村を準備しています…');
- if(navigator.serviceWorker?.controller||!globalThis.ShuVillageReference?.enabled||!migration){blocked('起動条件不一致');return;}
+ if(globalThis.ShuVillageReleaseCandidate){
+  const check=await globalThis.ShuVillageReleaseVerifier?.verify();
+  if(!check?.ok){blocked(check?.reason||'release-verifier-missing');return;}
+ }else if(navigator.serviceWorker?.controller){blocked('起動条件不一致');return;}
+ if(!globalThis.ShuVillageReference?.enabled||!migration){blocked('起動条件不一致');return;}
  session=await ShuVillageSaveStore.acquire({storage:localStorage,locks:navigator.locks,migration,options:{reference:ShuVillageReference,otherRegions:['coast','offshore','stream','mountainPond','mountainMarsh','wetland','cave','ruralCanals']}});
  if(!session.ok){blocked(session.reason);return;}
  for(const slot of keys){const r=session.importSlot(slot);if(!r.ok){if(r.reason==='invalid-or-ambiguous-json'||r.reason==='invalid-save-root')continue;if(r.reason==='legacy-changed')conflict(slot);else blocked(r.reason);return;}}

@@ -10,8 +10,8 @@ function register(search,supported=true){
  return calls;
 }
 
-test('integrated normal mode retains the live v252-60 service worker',()=>{
- for(const search of ['', '?villageReference=0','?villageReference=false'])assert.deepEqual(register(search),['./sw.js?v=252-60']);
+test('integrated normal mode retains the live v252-64 service worker',()=>{
+ for(const search of ['', '?villageReference=0','?villageReference=false'])assert.deepEqual(register(search),['./sw.js?v=252-64']);
  assert.deepEqual(register('',false),[],'unsupported browser does not try to register');
 });
 test('reference mode still never registers the production service worker',()=>{

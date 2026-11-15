@@ -125,7 +125,7 @@
   };
   const referenceEnabled = env => env?.referenceVillage === undefined ? !!root?.ShuVillageReference?.enabled : !!env.referenceVillage;
   function referenceDefinition() {
-    return {...world,source:'assets/village-reference-pilot.png',underlay:'assets/village-reference-pilot.png',
+    return {...world,source:root?.ShuVillageReference?.source?.asset||'assets/village-reference-pilot.png',underlay:root?.ShuVillageReference?.source?.asset||'assets/village-reference-pilot.png',
       units:[1672,941],referenceVillage:true,waterColorMasks:[],edits:[],patches:[],
       parts:world.parts.map(p=>{
         const polygon=referencePolygons[p.id] || rect(...referenceBoxes[p.id]);
