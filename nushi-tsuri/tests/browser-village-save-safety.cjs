@@ -11,13 +11,13 @@ async function run(){
  try{
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
   await context.route('**/seed-only',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Storage fixture</title>'}));
-  const first=await context.newPage();first.on('pageerror',e=>report.errors.push(e.message));
+  const first=await context.newPage();globalThis.diagnosticPages=[first];first.on('pageerror',e=>report.errors.push(e.message));
   await first.goto(base+'/seed-only');const raw=JSON.stringify(legacyFixture());
   await first.evaluate(raw=>{localStorage.clear();localStorage.setItem('nushi-inugoya-v2',raw);},raw);
   const url=base+'/village-release-rehearsal.html?villageReference=1';await first.goto(url);
   await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
   assert.equal(await first.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),raw);report.checks.push('lock acquired before runtime; source unchanged');
-  const second=await context.newPage();await second.goto(url);await second.getByText(/another-tab-open/).waitFor();
+  const second=await context.newPage();globalThis.diagnosticPages.push(second);second.on('pageerror',e=>report.errors.push(e.message));await second.goto(url);await second.getByText(/another-tab-open/).waitFor();
   assert.equal(await second.evaluate(()=>!!globalThis.ShuVillageReleaseGate),false);report.checks.push('second real tab blocked before runtime');
   await require('./browser-start-adventure.cjs')(first,true);if(await first.locator('#lakeIntroSkip').isVisible())await first.locator('#lakeIntroSkip').tap();
   await first.screenshot({path:path.join(out,'running-phone-landscape.png')});
@@ -25,11 +25,12 @@ async function run(){
   await second.evaluate(()=>localStorage.setItem('nushi-inugoya-v2','{"money":7654,"x":74,"y":39.5}'));
   await first.getByText(/別の旧版タブで保存が変わりました/).waitFor();
   await first.screenshot({path:path.join(out,'conflict-phone-landscape.png')});
+  const pos=await first.evaluate('JSON.stringify({x:s.x,y:s.y})');await first.getByRole('button',{name:'新しい村の冒険を続ける'}).focus();await first.keyboard.press('ArrowRight');assert.equal(await first.evaluate('JSON.stringify({x:s.x,y:s.y})'),pos);report.checks.push('conflict-dialog keyboard does not move underlying player');
   const after=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));assert.equal(after.currentRaw,before.currentRaw);report.checks.push('legacy change detected; current preserved');
   await second.close();await first.getByRole('button',{name:'新しい村の冒険を続ける'}).tap();await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
   const recovered=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));assert.equal(recovered.originalRaw,raw);report.checks.push('explicit recovery restarts with original intact');
-  await first.goto(base+'/seed-only');await first.goto(url);await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);report.checks.push('navigation releases lock and reopening reacquires');
+  await first.evaluate('s.money=8765; scheduleSave()');await first.goto(base+'/seed-only');const flushed=await first.evaluate(()=>JSON.parse(JSON.parse(localStorage.getItem('nushi-production-reference-11016-v1-slot1')).currentRaw).money);assert.equal(flushed,8765);report.checks.push('pagehide flushes pending save before releasing lock');await first.goto(url);await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);report.checks.push('navigation releases lock and reopening reacquires');
   assert.deepEqual(report.errors,[]);report.status='passed';
- }finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>host.close(r));}
+ }catch(error){report.failure=String(error);for(const [i,p]of (globalThis.diagnosticPages||[]).entries())if(!p.isClosed()){report['page'+i]=await p.locator('body').innerText().catch(()=>'<unavailable>');await p.screenshot({path:path.join(out,'failure-'+i+'.png')}).catch(()=>{});}throw error;}finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>host.close(r));}
 }
 if(require.main===module)run().catch(e=>{console.error(e);process.exitCode=1;});module.exports=run;
