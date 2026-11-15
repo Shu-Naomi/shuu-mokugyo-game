@@ -24,3 +24,7 @@ Prompt: detailed natural SFC-style pixel-art brown trout, olive back/golden flan
 `browntrout.test.cjs`: real route collision, ordinary candidate picker with deterministic rolls, both modes, bait consumption, exactly-once catch, catalogue #65, aquarium/boarding/reload, real fight physics with 600ms reaction, 97 rendered headings. DOM tests use explicit canvas/layout doubles except native canvas art test. Browser runner records real desktop/touch inputs with seeded encounter/randomness and screenshots/video. CI runs it alongside the existing Donko workflow to avoid creating another duplicate broad validation job.
 
 Release cache suffix/module URL updates are coordinated with the parallel village release before integration. Do not merge until exact-head browser/CI checks and final screenshot review complete.
+
+## Calibration result
+
+The inherited physics fixture used distance 95, exceeding the recommended clearStream rod's maximum 90. Brown trout now uses reachable deep distance 80. At that distance the initial classic fatigue budget landed successfully but exceeded the 180-second playability target (185/202 sec). Its new-species-only endurance override is 250 active-run ticks, still 2.5× the former shared 100-tick budget. Same 600ms reaction, same seed and same assertions: normal 143.52 sec / giant 151.68 sec, 16/17 warning episodes. Tension remains 21.48/37.68 sec. This is tuning a new species, not weakening a test or changing existing fish.

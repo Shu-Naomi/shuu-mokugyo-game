@@ -132,7 +132,7 @@
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.
-  const enduranceOverrides={hiramasa:400,kanpachi:380};
+  const enduranceOverrides={hiramasa:400,kanpachi:380,browntrout:250};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);

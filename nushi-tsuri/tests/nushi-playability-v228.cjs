@@ -14,7 +14,7 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
  try{
   if(upland)for(const direction of findRoute(w,'highPond').path)w.move(direction);
   if(wet)for(const direction of findRoute(w,'wetMarsh').path)w.move(direction);
- const spot=upland?'mountain-highPond-deep':island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':island.distance<67?'mid':'deep'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=island?.distance||(wet?50:95);
+ const spot=upland?'mountain-highPond-deep':island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':island.distance<67?'mid':'deep'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=upland?80:island?.distance||(wet?50:95);
   w.eval(`${upland||island?'action()':sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
   const encounter=read(w,`(()=>{for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;
    if(pick(${distance},${JSON.stringify(spot)})?.id===${JSON.stringify(id)})return r;}return null;})()`);
