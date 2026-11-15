@@ -1,8 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-shop-shelf-stock-252-64";
+const CACHE_NAME = "nushi-tsuri-v252-reference-village-252-66";
 
+importScripts("./village-precache-252-66.js");
 const CORE_ASSETS = [
+  ...self.SHU_VILLAGE_PRECACHE,
+  "./assets/fish-browntrout.png",
   "./assets/fish-takabe-v252-56.png",
   "./assets/fish-kuromejina-v252-56.png",
   "./assets/fish-houraihimeji-v252-56.png",
@@ -81,7 +84,7 @@ const CORE_ASSETS = [
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
   "./world-life.js?v=252-55",
-  "./fish-additions.js?v=252-56",
+  "./fish-additions.js?v=252-65",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
   "./assets/fish-himemasu-v238.png",
@@ -134,7 +137,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=252-53",
-  "./fishing-duel.js?v=252-56",
+  "./fishing-duel.js?v=252-65",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
@@ -187,8 +190,8 @@ const CORE_ASSETS = [
   "./assets/ui-lantern-v252-28.svg",
   "./assets/ui-paw-v252-28.svg",
   "./assets/ui-heart-v252-28.svg",
-  "./aquarium-life.js?v=252-56",
-  "./fish-motion.js?v=252-56",
+  "./aquarium-life.js?v=252-65",
+  "./fish-motion.js?v=252-65",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-60",
   "./rival-anglers.js?v=252-55",
@@ -432,26 +435,12 @@ const CORE_ASSETS = [
   "./assets/terrain-field-v45.svg",
 ];
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-      .then(() => self.skipWaiting()),
-  );
+  // Atomic addAll: a partial download does not activate this release.
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([...new Set(CORE_ASSETS)])));
 });
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
-            .map((key) => caches.delete(key)),
-        ),
-      )
-      .then(() => self.clients.claim()),
-  );
+  // Do not claim old tabs or delete their caches. They still use legacy saves.
+  event.waitUntil(Promise.resolve());
 });
 async function matchGameCache(request) {
   try {
@@ -475,7 +464,9 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  if (request.mode === "navigate" || url.pathname.endsWith("/index.html")) {
+  const scopePath=new URL(self.registration.scope).pathname;
+  const canonical=url.pathname===scopePath||url.pathname===scopePath+'index.html';
+  if (request.mode === "navigate" && canonical) {
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then(async (response) => {

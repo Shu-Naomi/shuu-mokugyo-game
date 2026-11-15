@@ -32,7 +32,7 @@ function bootstrap(html) {
 test('candidate hashes every local dependency, defers runtime, preserves source and exact image bytes',t=>{
  const {root,html:original}=fixture(t),html=build({root}),{config}=bootstrap(html);
  assert.equal(fs.readFileSync(path.join(root,'index.html'),'utf8'),original);
- assert.match(html,/<head>\n<script id="villageCandidateBootstrap">/);
+ assert.match(html,/<head>\n<meta charset="utf-8">\n<script id="villageCandidateBootstrap">/);
  assert.match(html,/<script type="text\/plain" id="villageDeferredRuntime">/);
  assert.match(html,/if \(!globalThis.ShuVillageProductionSession\)/);
  assert.match(html,/ShuVillageReference.enabled&&!globalThis.ShuVillageProductionSession/);

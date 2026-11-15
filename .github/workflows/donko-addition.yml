@@ -34,6 +34,10 @@ jobs:
       - run: bash install-ci-fonts.sh
       - name: Verify Donko encounters, atlas, records, boarding and old saves
         run: node --test --test-concurrency=2 donko-v252-47.test.cjs
+      - name: Verify brown trout regional discovery
+        run: node --test browntrout.test.cjs
+      - name: Inspect brown trout on desktop and landscape touch
+        run: node browser-browntrout.cjs
       - name: Play both fight styles and inspect the aquarium on desktop and touch
         run: node browser-donko-v252-47.cjs
       - name: Wait for matching deployed source and original atlas
@@ -52,6 +56,7 @@ jobs:
           name: donko-evidence
           path: |
             nushi-tsuri/tests/donko-evidence/
+            nushi-tsuri/tests/browntrout-evidence/
             nushi-tsuri/tests/public-donko-evidence/
           retention-days: 14
           if-no-files-found: warn

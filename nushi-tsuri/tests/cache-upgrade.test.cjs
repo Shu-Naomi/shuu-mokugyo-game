@@ -6,14 +6,29 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
-const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
+const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css', 'village-precache-252-66.js'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
-// Deliberately synthetic old fixture; CI uses the actual pinned prior commit.
-const previous = {
-  'index.html': files['index.html'].replace(`>v${current.release}</span>`, '>v252-56</span>').replace(current.workerUrl, './sw.js?v=252-56').replace(current.cssUrl.slice(2), 'compact-ui.css?v=251-5'),
-  'sw.js': files['sw.js'].replace(current.cacheName, 'nushi-tsuri-v252-island-fish-252-56').replace(current.cssUrl, './compact-ui.css?v=251-5'),
-  'compact-ui.css': files['compact-ui.css'].replace(',\n#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-motion', '').replace(',\n#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-foreground', ''),
+// Deliberately synthetic historical CSS-only fixture, never production evidence.
+const historical = {
+  'index.html':'<span id="gameRelease">v252-57</span><link href="compact-ui.css?v=252-57"><script>navigator.serviceWorker.register("./sw.js?v=252-57")</script>',
+  'sw.js':'const CACHE_NAME = "nushi-tsuri-v252-island-fish-252-57"; const CORE_ASSETS = ["./index.html", "./compact-ui.css?v=252-57", "./compact-ui.js?v=252-56"];',
+  'compact-ui.css':files['compact-ui.css'],
 };
+const historicalCurrent = inspectRelease(historical);
+const previous = {
+  'index.html':historical['index.html'].replaceAll('252-57','252-56').replace('compact-ui.css?v=252-56','compact-ui.css?v=251-5'),
+  'sw.js':historical['sw.js'].replaceAll('252-57','252-56').replace('compact-ui.css?v=252-56','compact-ui.css?v=251-5'),
+  'compact-ui.css':historical['compact-ui.css'].replace(',\n#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-motion', '').replace(',\n#locationInterior.compact-location-shop:not(.compact-service) .location-scene>.scenery-foreground', ''),
+};
+
+test('production inspection requires supplied generated manifest and forbids historical retirement evidence',()=>{
+ assert.equal(current.cachePolicy,'preserve-old-tabs');
+ const missing={...files};delete missing['village-precache-252-66.js'];
+ assert.throws(()=>inspectRelease(missing),/supplied explicitly/);
+ assert.throws(()=>inspectRelease({...files,'village-precache-252-66.js':files['village-precache-252-66.js'].replace(current.cssUrl,'./missing.css')}),/actual install list/);
+ assert.throws(()=>assertReleaseUpgrade(previous,files),/historical CSS-only retirement runner/);
+ assert.throws(()=>assertCacheRetirement({},current),/production preserves old caches/);
+});
 
 test('native cache-upgrade runner refuses non-CI and unspecified heads before starting anything', () => {
   for (const env of [{}, { GITHUB_ACTIONS: 'false' }, { GITHUB_ACTIONS: 'true' }, { GITHUB_ACTIONS: 'true', NUSHI_EXPECTED_HEAD_SHA: 'main' }])
@@ -22,31 +37,31 @@ test('native cache-upgrade runner refuses non-CI and unspecified heads before st
 });
 
 test('upgrade source guard requires new CSS, complete metadata and only the reviewed production changes', () => {
-  assertReleaseUpgrade(previous, files);
+  assertReleaseUpgrade(previous, historical);
   assert.throws(() => assertReleaseUpgrade(previous, previous), /new release/);
-  assert.throws(() => inspectRelease({ ...files, 'sw.js': files['sw.js'].replace(current.cssUrl, './compact-ui.css?v=251-5') }), /actual install list/);
-  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'index.html': files['index.html'] + '<!-- unrelated change -->' }), /HTML changes only/);
-  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'sw.js': files['sw.js'] + '\n// changed behavior' }), /worker behavior/);
-  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'compact-ui.css': files['compact-ui.css'] + '\nbody{display:none}' }), /two reviewed selectors/);
-  const unrelatedUrl = current.coreAssets.find(url => url.startsWith('./compact-ui.js?'));
+  assert.throws(() => inspectRelease({ ...historical, 'sw.js': historical['sw.js'].replace(historicalCurrent.cssUrl, './compact-ui.css?v=251-5') }), /actual install list/);
+  assert.throws(() => assertReleaseUpgrade(previous, { ...historical, 'index.html': historical['index.html'] + '<!-- unrelated change -->' }), /HTML changes only/);
+  assert.throws(() => assertReleaseUpgrade(previous, { ...historical, 'sw.js': historical['sw.js'] + '\n// changed behavior' }), /worker behavior/);
+  assert.throws(() => assertReleaseUpgrade(previous, { ...historical, 'compact-ui.css': historical['compact-ui.css'] + '\nbody{display:none}' }), /two reviewed selectors/);
+  const unrelatedUrl = historicalCurrent.coreAssets.find(url => url.startsWith('./compact-ui.js?'));
   assert.ok(unrelatedUrl, 'unrelated module is present in the actual precache list');
-  assert.throws(() => assertReleaseUpgrade(previous, { ...files, 'sw.js': files['sw.js'].replace(unrelatedUrl, './compact-ui.js?v=0-0') }), /unrelated precache URLs/);
+  assert.throws(() => assertReleaseUpgrade(previous, { ...historical, 'sw.js': historical['sw.js'].replace(unrelatedUrl, './compact-ui.js?v=0-0') }), /unrelated precache URLs/);
 });
 
 test('native installation fixture serves old bytes, targeted failure and corrected immutable CSS at distinct URLs', () => {
-  const sources = { previous, current: files, ...assertReleaseUpgrade(previous, files) };
+  const sources = { previous, current: historical, ...assertReleaseUpgrade(previous, historical) };
   const old = resourceFor('/nushi-tsuri/compact-ui.css?v=251-5', 'baseline', sources, root);
   assert.equal(old.status, 200); assert.equal(old.body, previous['compact-ui.css']);
   assert.match(old.headers['Cache-Control'], /immutable/);
-  const failingUrl = '/nushi-tsuri/' + current.cssUrl.slice(2);
+  const failingUrl = '/nushi-tsuri/' + historicalCurrent.cssUrl.slice(2);
   const failed = resourceFor(failingUrl, 'failed-upgrade', sources, root);
   assert.equal(failed.status, 503); assert.equal(failed.headers['Cache-Control'], 'no-store');
   assert.equal(resourceFor('/nushi-tsuri/compact-ui.css?v=251-5', 'failed-upgrade', sources, root).status, 200, 'only new CSS fails');
   const corrected = resourceFor(failingUrl, 'current', sources, root);
-  assert.equal(corrected.status, 200); assert.equal(corrected.body, files['compact-ui.css']);
+  assert.equal(corrected.status, 200); assert.equal(corrected.body, historical['compact-ui.css']);
   assert.match(corrected.headers['Cache-Control'], /immutable/);
   for (const phase of ['baseline', 'current']) {
-    const expected = phase === 'baseline' ? previous : files;
+    const expected = phase === 'baseline' ? previous : historical;
     assert.equal(resourceFor('/nushi-tsuri/', phase, sources, root).body, expected['index.html']);
     assert.equal(resourceFor('/nushi-tsuri/sw.js?v=anything', phase, sources, root).body, expected['sw.js']);
     assert.equal(resourceFor('/nushi-tsuri/sw.js?v=anything', phase, sources, root).headers['Cache-Control'], 'no-store');

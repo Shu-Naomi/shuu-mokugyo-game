@@ -3,18 +3,19 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('n
 async function run(){
  assert.equal(process.env.CI,'true','GitHub CI only');assert.equal(process.env.GITHUB_ACTIONS,'true','GitHub Actions required');
  assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),process.env.EXPECTED_HEAD_SHA);
- require('../tools/build-village-release-rehearsal.cjs')();
+ // Test the actual generated production entry, not a rehearsal route.
  const {server,legacyFixture}=require('./browser-reference-village-evidence.cjs'),{chromium}=require('playwright');
- const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+host.address().port+'/nushi-tsuri';
+ const host=server(),serveGame=host.listeners('request')[0];host.removeAllListeners('request');
+ host.on('request',(req,res)=>{if(new URL(req.url,'http://localhost').pathname==='/nushi-tsuri/seed-only'){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end('<!doctype html><title>Storage fixture (no game runtime)</title>');return;}serveGame(req,res);});
+ await new Promise(r=>host.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+host.address().port+'/nushi-tsuri';
  const out=path.join(__dirname,'artifacts/village-save-safety');fs.mkdirSync(out,{recursive:true});
  const report={head:process.env.EXPECTED_HEAD_SHA,physicalDevice:false,checks:[],errors:[]};let browser;
  try{
   browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
-  await context.route('**/seed-only',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Storage fixture</title>'}));
   const first=await context.newPage();globalThis.diagnosticPages=[first];first.on('pageerror',e=>report.errors.push(e.message));
   await first.goto(base+'/seed-only');const raw=JSON.stringify(legacyFixture());
   await first.evaluate(raw=>{localStorage.clear();localStorage.setItem('nushi-inugoya-v2',raw);},raw);
-  const url=base+'/village-release-rehearsal.html?villageReference=1';await first.goto(url);
+  const url=base+'/index.html';await first.goto(url);
   await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
   assert.equal(await first.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),raw);report.checks.push('lock acquired before runtime; source unchanged');
   const second=await context.newPage();globalThis.diagnosticPages.push(second);second.on('pageerror',e=>report.errors.push(e.message));await second.goto(url);await second.getByText(/another-tab-open/).waitFor();
@@ -33,10 +34,45 @@ async function run(){
   await second.close();await Promise.all([first.waitForNavigation({waitUntil:'load'}),first.getByRole('button',{name:'新しい村の冒険を続ける'}).tap()]);await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
   const recovered=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));assert.equal(recovered.originalRaw,raw);assert.equal(recovered.currentRaw,before.currentRaw);assert.equal(JSON.parse(recovered.generationRaw).baselineRaw,after.legacyRaw);report.checks.push('explicit recovery restarts with original intact');
   await require('./browser-start-adventure.cjs')(first,true);assert.equal(await first.evaluate('gameStarted'),true);await first.clock.install({time:new Date('2026-11-15T08:00:00Z')});await first.clock.pauseAt(new Date('2026-11-15T08:00:00.100Z'));await first.evaluate('s.money=8765; scheduleSave()');assert.equal(await first.evaluate('!!saveTimer'),true);assert.notEqual(await first.evaluate(()=>JSON.parse(ShuVillageProductionSession.read(1).raw).money),8765);await first.goto(base+'/seed-only');const flushed=await first.evaluate(()=>JSON.parse(JSON.parse(localStorage.getItem('nushi-production-reference-11016-v1-slot1')).currentRaw).money);assert.equal(flushed,8765);report.checks.push('pagehide flushes pending save before releasing lock');await first.goto(url);await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);report.checks.push('navigation releases lock and reopening reacquires');
+  // Actual production entry with isolated fixture storage; no runtime state is
+  // fabricated after load. Character selection uses the existing title UI.
+  for(const scenario of ['empty-slot2','existing-mountain-slot2']){
+   const c=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
+   try{
+    const p=await c.newPage();globalThis.diagnosticPages.push(p);p.on('pageerror',e=>report.errors.push(e.message));
+    await p.goto(base+'/seed-only');
+    const slot1Raw=scenario==='empty-slot2'?null:JSON.stringify({...legacyFixture(),money:3210});
+    const mountain={...legacyFixture(),mapRegion:'mountainPond',x:120,y:128,direction:'up',money:6789,lakeStory:{introSeen:true,introPending:false}};
+    const slot2Raw=scenario==='empty-slot2'?null:JSON.stringify(mountain);
+    await p.evaluate(({slot1Raw,slot2Raw})=>{localStorage.clear();if(slot1Raw!==null)localStorage.setItem('nushi-inugoya-v2',slot1Raw);if(slot2Raw!==null)localStorage.setItem('nushi-inugoya-v2-slot2',slot2Raw);},{slot1Raw,slot2Raw});
+    const slotURL=url+'?saveSlot=2';await p.goto(slotURL);await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+    const slot1Generation=await p.evaluate(()=>localStorage.getItem('nushi-production-reference-11016-v1-slot1'));
+    const persistedFields=()=>({mapRegion:s.mapRegion,x:s.x,y:s.y,money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,cookingIngredients:s.cookingIngredients,preparedMeals:s.preparedMeals,playerName:s.playerName,dog:s.dog});
+    if(scenario==='existing-mountain-slot2'){
+     // Compare original non-village coordinates and resources before starting.
+     const migrated=await p.evaluate(()=>JSON.parse(ShuVillageProductionSession.read(2).raw));
+     for(const key of ['mapRegion','x','y','money','hp','baits','caught','cookingIngredients','preparedMeals'])assert.deepEqual(migrated[key],mountain[key],key+' unchanged during migration');
+    }else{
+     assert.equal(await p.evaluate(()=>ShuVillageProductionSession.read(1).exists),false);
+     assert.equal(await p.evaluate(()=>ShuVillageProductionSession.read(2).exists),false);
+    }
+    await require('./browser-start-adventure.cjs')(p,true,{slot:2,isNew:scenario==='empty-slot2',name:'検証の旅人',dog:'shuu'});
+    if(await p.locator('#lakeIntroSkip').isVisible())await p.locator('#lakeIntroSkip').tap();
+    assert.equal(await p.evaluate('gameStarted && activeSaveSlot===2'),true);
+    if(scenario==='existing-mountain-slot2')assert.deepEqual(await p.evaluate('({mapRegion:s.mapRegion,x:s.x,y:s.y,money:s.money,hp:s.hp})'),{mapRegion:mountain.mapRegion,x:mountain.x,y:mountain.y,money:mountain.money,hp:mountain.hp});
+    assert.equal(await p.evaluate(()=>save()),true);const beforeReload=await p.evaluate(persistedFields);
+    await p.reload({waitUntil:'load'});await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+    await require('./browser-start-adventure.cjs')(p,true,{slot:2,isNew:false});assert.equal(await p.evaluate('gameStarted && activeSaveSlot===2'),true);
+    assert.deepEqual(await p.evaluate(persistedFields),beforeReload);assert.equal(await p.evaluate(()=>save()),true);
+    assert.deepEqual(await p.evaluate(()=>({one:localStorage.getItem('nushi-inugoya-v2'),two:localStorage.getItem('nushi-inugoya-v2-slot2')})),{one:slot1Raw,two:slot2Raw});
+    assert.equal(await p.evaluate(()=>localStorage.getItem('nushi-production-reference-11016-v1-slot1')),slot1Generation);
+    if(scenario==='empty-slot2')assert.equal(await p.evaluate(()=>ShuVillageProductionSession.read(1).exists),false);
+    report.checks.push(scenario==='empty-slot2'?'actual production: create slot2 through title UI, save and reload; both legacy keys remain absent and slot1 remains empty':'actual production: existing slot2 mountainPond coordinates/resources survive migration, start, save and reload; slot1 generation and original legacy bytes untouched');
+   }finally{await c.close();}
+  }
   // Controlled encounter/animation fixtures, not a catch-rate test. Each has isolated storage.
   for(const activity of ['fight','care']){
    const c=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
-   await c.route('**/seed-only',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Legacy fixture</title>'}));
    const p=await c.newPage(),old=await c.newPage();globalThis.diagnosticPages.push(p,old);p.on('pageerror',e=>report.errors.push(e.message));
    await old.goto(base+'/seed-only');await old.evaluate(raw=>localStorage.setItem('nushi-inugoya-v2',raw),raw);
    await p.goto(url);await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started);await require('./browser-start-adventure.cjs')(p,true);if(await p.locator('#lakeIntroSkip').isVisible())await p.locator('#lakeIntroSkip').tap();

@@ -40,22 +40,45 @@ function requireGitHubCI(env) {
   assert.match(env.NUSHI_EXPECTED_HEAD_SHA || '', /^[0-9a-f]{40}$/, 'exact pull request head is required');
 }
 function inspectRelease(files) {
-  const html = files['index.html'], worker = files['sw.js'];
-  const release = /id="gameRelease"[^>]*>v([0-9-]+)<\/span>/.exec(html)?.[1];
-  const registration = /serviceWorker\.register\("(\.\/sw\.js\?v=([0-9-]+))"\)/.exec(html);
-  const cacheName = /const CACHE_NAME = "([^"]+)"/.exec(worker)?.[1];
-  const cssUrl = /href="(compact-ui\.css\?v=[0-9-]+)"/.exec(html)?.[1];
-  const core = /const CORE_ASSETS = \[([\s\S]*?)\];/.exec(worker)?.[1];
-  assert.ok(release && registration && cacheName && cssUrl && core, 'complete release metadata');
-  assert.equal(registration[2], release, 'matching registration and badge');
-  assert.ok(cacheName.endsWith('-' + release), 'matching cache release');
-  const coreAssets = [...core.matchAll(/"([^"]+)"/g)].map(match => match[1]);
-  assert.equal(coreAssets.filter(url => url.startsWith('./compact-ui.css?')).length, 1);
-  assert.ok(coreAssets.includes('./' + cssUrl), 'CSS URL belongs to the actual install list');
-  assert.equal(new Set(coreAssets).size, coreAssets.length, 'no duplicate precache entries');
-  return { release, workerUrl: registration[1], cacheName, cssUrl: './' + cssUrl, coreAssets };
+  const { JSDOM } = require('jsdom'), vm = require('node:vm');
+  const html = files['index.html'], worker = files['sw.js'], dom = new JSDOM(html);
+  try {
+    const release = /^v([0-9-]+)$/.exec(dom.window.document.querySelector('#gameRelease')?.textContent)?.[1];
+    const bootstrap = dom.window.document.querySelector('#villageCandidateBootstrap');
+    const config = bootstrap ? JSON.parse(/const config = (.*);/.exec(bootstrap.textContent)[1]) : null;
+    const workerUrl = config?.workerURL || /serviceWorker\.register\("(\.\/sw\.js\?v=[0-9-]+)"\)/.exec(html)?.[1];
+    const cacheName = /const CACHE_NAME = "([^"]+)"/.exec(worker)?.[1];
+    const css = [...dom.window.document.querySelectorAll('link[href]')].find(el=>el.getAttribute('href').startsWith('compact-ui.css?'));
+    const cssUrl = css && './' + css.getAttribute('href');
+    const core = /const CORE_ASSETS = \[([\s\S]*?)\];/.exec(worker)?.[1];
+    assert.ok(release && workerUrl && cacheName && cssUrl && core, 'complete release metadata');
+    assert.equal(workerUrl, './sw.js?v=' + release, 'matching registration and badge');
+    assert.ok(cacheName.endsWith('-' + release), 'matching cache release');
+    let imported = [];
+    for(const [,name] of worker.matchAll(/importScripts\("\.\/([^"/]+)"\)/g)) {
+      assert.equal(typeof files[name], 'string', 'imported precache must be supplied explicitly: ' + name);
+      const context = {self:{}}; vm.runInNewContext(files[name],context,{timeout:1000});
+      assert.ok(Array.isArray(context.self.SHU_VILLAGE_PRECACHE), 'generated precache array');
+      imported.push(...context.self.SHU_VILLAGE_PRECACHE);
+    }
+    const direct = [...core.matchAll(/"([^"]+)"/g)].map(match => match[1]);
+    assert.ok(!core.includes('...self.SHU_VILLAGE_PRECACHE') || imported.length, 'spread manifest must be loaded');
+    const all = [...imported,...direct];
+    const deduplicates = /addAll\(\[\.\.\.new Set\(CORE_ASSETS\)\]\)/.test(worker);
+    if(!deduplicates)assert.equal(new Set(all).size,all.length,'no duplicate precache entries');
+    const coreAssets = deduplicates ? [...new Set(all)] : all;
+    assert.ok(coreAssets.includes(cssUrl), 'CSS URL belongs to the actual install list');
+    if(config) {
+      const hash = new URL(cssUrl,'https://game.test/').searchParams.get('sha256');
+      assert.equal(hash,sha256(files['compact-ui.css']),'CSS URL pins actual bytes');
+      assert.equal(css.getAttribute('integrity'),'sha256-'+createHash('sha256').update(files['compact-ui.css']).digest('base64'),'CSS SRI pins actual bytes');
+      assert.equal(css.getAttribute('crossorigin'),'anonymous');
+    } else assert.equal(coreAssets.filter(url=>url.startsWith('./compact-ui.css?')).length,1);
+    return {release,workerUrl,cacheName,cssUrl,coreAssets,cachePolicy:config?'preserve-old-tabs':'historical-retirement'};
+  } finally {dom.window.close();}
 }
 function assertReleaseUpgrade(previous, current) {
+  assert.ok(!current['index.html'].includes('id="villageCandidateBootstrap"'), 'historical CSS-only retirement runner cannot verify save-safe production; use production upgrade evidence');
   const old = inspectRelease(previous), next = inspectRelease(current);
   assert.equal(old.release, BASELINE_RELEASE);
   assert.equal(old.cacheName, BASELINE_CACHE);
@@ -157,7 +180,8 @@ async function retirementEvidence(page, client, origin, release) {
   return { ...inventory, sentinel: stored.sentinel, oldCssPresent: stored.css !== null,
     oldCssSha256: stored.css === null ? null : sha256(stored.css), htmlSha256: stored.html === null ? null : sha256(stored.html) };
 }
-function assertCacheRetirement(evidence) {
+function assertCacheRetirement(evidence, release) {
+  assert.notEqual(release?.cachePolicy, "preserve-old-tabs", "production preserves old caches; retirement is not its success criterion");
   // A late response from the already-deployed old worker can reopen its old
   // cache name after activation deleted it. Require the original contents to
   // be gone, not a permanent-name-absence guarantee that worker cannot give.

@@ -16,7 +16,7 @@ function server(){
    const name=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/nushi-tsuri\//,'')||'index.html';
    if(name==='__reference_safety_setup__'){res.writeHead(200,{'Content-Type':'text/html','Cache-Control':'no-store'});res.end('<!doctype html><title>Synthetic reference safety fixture</title>');return;}
    if(name==='reference-safety-worker.js'){res.writeHead(200,{'Content-Type':'text/javascript','Cache-Control':'no-store'});res.end(workerFixture);return;}
-   const file=path.resolve(root,name);if(!file.startsWith(root+path.sep)||!fs.statSync(file).isFile())throw Error('path');
+   const file=path.resolve(root,name==='index.html'?'tools/templates/game-index.html':name);if(!file.startsWith(root+path.sep)||!fs.statSync(file).isFile())throw Error('path');
    res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(file).pipe(res);
   }catch{res.writeHead(404);res.end();}
  });
@@ -26,7 +26,7 @@ async function run(){
  const head=execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim();assert.equal(head,process.env.NUSHI_EXPECTED_HEAD_SHA);
  assert.equal(execFileSync('git',['status','--porcelain','--untracked-files=no'],{cwd:root,encoding:'utf8'}).trim(),'');
  fs.mkdirSync(output,{recursive:true});
- const report={head,physicalDevice:false,viewport:{width:844,height:390},fixture:'Synthetic ordinary saves and a test worker. This tests rejection, not production worker upgrade.',checks:[]};
+ const report={head,physicalDevice:false,viewport:{width:844,height:390},fixture:'Synthetic ordinary saves and a test worker. Source-template preview negative fixture, not the generated production entry or production worker upgrade.',checks:[]};
  const host=server();let browser;
  try{
   await new Promise(resolve=>host.listen(0,'127.0.0.1',resolve));const url=`http://127.0.0.1:${host.address().port}/nushi-tsuri/`;

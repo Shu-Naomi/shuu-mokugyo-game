@@ -1,10 +1,10 @@
-/* Opt-in CI rehearsal startup only. Does not load on the ordinary game page. */
+/* Save-safe release startup. Rehearsal omits the production worker URL. */
 (async function(){
  'use strict';
  let session,started=false,closed=false,modal;
  const keys=[1,2],migration=globalThis.ShuVillageSaveMigration;
  function screen(text){
-  if(started)globalThis.ShuVillageSaveRuntime?.suspend();
+  globalThis.ShuVillageSaveRuntime?.suspend();
   if(!modal){modal=document.createElement('div');modal.id='villageSaveGate';modal.setAttribute('role','dialog');modal.setAttribute('aria-modal','true');modal.style.cssText='position:fixed;inset:0;z-index:2147483647;background:#172a35;color:#fff1c7;padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;font:16px sans-serif';document.body.append(modal);for(const type of ['keydown','keyup'])modal.addEventListener(type,e=>e.stopPropagation());}
   if(!modal.isConnected)document.body.append(modal);
   modal.replaceChildren();const p=document.createElement('p');p.textContent=text;modal.append(p);return modal;
@@ -42,8 +42,17 @@
  window.addEventListener('storage',e=>{if(e.storageArea===localStorage)for(const slot of keys){const r=session.read(slot);if(!r.ok){blocked(r.reason);break;}}});
  // The game registers its existing pagehide final-save handler during runtime.
  window.addEventListener('pageshow',e=>{if(e.persisted){closed=true;screen('再開前に保存を確認します。');location.reload();}});
- modal.remove();const script=document.createElement('script');script.textContent=document.getElementById('villageDeferredRuntime').textContent;document.body.append(script);started=true;
+ modal.remove();const script=document.createElement('script');script.textContent=document.getElementById('villageDeferredRuntime').textContent;globalThis.ShuVillageRuntimeReady=false;
+ let startupError=false;const captureError=()=>{startupError=true;};
+ window.addEventListener('error',captureError);
+ try{document.body.append(script);}finally{window.removeEventListener('error',captureError);}
+ if(startupError||!globalThis.ShuVillageRuntimeReady||modal.isConnected){blocked('runtime-startup-incomplete');return;}
+ started=true;
  // Registered after the game: flush its pending final save before releasing ownership.
  window.addEventListener('pagehide',()=>{closed=true;session.close();});
  globalThis.ShuVillageReleaseGate={started,adapter};
+ // Register only after verified startup. No forced waiting-worker activation;
+ // existing tabs retain their worker and immutable legacy save generation.
+ const workerURL=globalThis.ShuVillageReleaseCandidate?.workerURL;
+ if(workerURL&&navigator.serviceWorker)navigator.serviceWorker.register(workerURL,{updateViaCache:'none'}).catch(()=>{});
 })().catch(()=>{const p=document.createElement('p');p.textContent='村の安全な起動に失敗しました。このタブを閉じてください。';document.body.append(p);});
