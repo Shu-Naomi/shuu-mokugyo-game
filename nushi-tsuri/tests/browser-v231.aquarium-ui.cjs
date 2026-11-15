@@ -20,13 +20,23 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
    // Walk the shipped village geometry instead of relying on obsolete (199,36).
    const predicate='(x,y,d)=>{const old=[s.x,s.y,s.direction];s.x=x;s.y=y;s.direction=d;const ok=nearbyWorldLandmark(x,y,d)?.id==="watermill"&&!activeLandingDock()&&!nearbyRival()&&!nearbyTournamentNpc();[s.x,s.y,s.direction]=old;return ok;}';
    const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,predicate);
+   await page.evaluate(()=>{if(window.__aquariumMoveCount===undefined){window.__aquariumMoveCount=0;document.addEventListener('pointerdown',e=>{if(e.target.closest('[data-move]'))window.__aquariumMoveCount++;},true);}});
+   const ready=()=>page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:8000});
    for(const d of route){
+    // The dog's finite discovery animation intentionally blocks movement.
+    // Wait before input, never retry or relax the expected one-tap step.
+    await ready();
+    const before=await page.evaluate(()=>({events:window.__aquariumMoveCount,forage:forageDiscoveryInProgress,rescue:rescueInProgress,home:playerHomeIsActive(),transition:playerHomeState.transitioning,battle:!!battle,modals:document.querySelectorAll('.modal.open').length}));
+    assert.ok(!before.forage&&!before.rescue&&!before.home&&!before.transition&&!before.battle&&!before.modals,'aquarium approach ready '+JSON.stringify(before));
     const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d);
-    await press('[data-move="'+d+'"]');await page.waitForTimeout(50);
-    assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y})),expected,'actual watermill approach '+d);
+    await press('[data-move="'+d+'"]');
+    const actual=await page.evaluate(()=>({x:s.x,y:s.y}));
+    assert.equal(await page.evaluate(()=>window.__aquariumMoveCount),before.events+1,'one pointerdown per aquarium approach tap');
+    assert.deepEqual(actual,expected,'actual watermill approach '+d+' '+JSON.stringify({before,expected,actual}));
     assert.equal(await page.evaluate(()=>s.mapRegion),'village');
     assert.equal(await page.evaluate(()=>playerHomeIsActive()),false);
    }
+   await ready();
    assert.equal(await page.evaluate(()=>nearbyWorldLandmark(s.x,s.y,s.direction)?.id),'watermill');
    await press('#action');await page.locator('#petLifeModal.open').waitFor({state:'visible'});
    await press('[data-pet-action="aquarium"]');

@@ -56,7 +56,7 @@ async function run(url, screen, state) {
       window.__boardingFailSave = false;
       const original = Storage.prototype.setItem;
       Storage.prototype.setItem = function (name, value) {
-        if (name === key && window.__boardingFailSave) throw new DOMException('Injected storage quota failure', 'QuotaExceededError');
+        if (name === 'nushi-production-reference-11016-v1-slot1' && window.__boardingFailSave) throw new DOMException('Injected storage quota failure', 'QuotaExceededError');
         return original.call(this, name, value);
       };
     }, { key: saveKey, state, otherSlot });
@@ -68,12 +68,23 @@ async function run(url, screen, state) {
     const press = selector => page.locator(selector)[mobile ? 'tap' : 'click']();
     const fish = uid => page.evaluate(uid => ShuPetLife.allFish(s).find(f => f.uid === uid), uid);
     const snapshot = () => page.evaluate(() => ({ money: s.money, caught: s.caught, sizeRecords: s.sizeRecords, petLife: s.petLife, petNotebook: s.petNotebook }));
-    const saved = () => page.evaluate(key => JSON.parse(localStorage.getItem(key)), saveKey);
+    const saved = () => page.evaluate(() => JSON.parse(ShuVillageProductionSession.inspectRecovery(1).currentRaw));
     const selectFish = async uid => {for(let i=0;i<50&&!await page.locator(`[data-pet-boarding-fish="${uid}"]`).count();i++){if(await page.locator('[data-pet-action="boarding-next"]').isDisabled())break;await press('[data-pet-action="boarding-next"]');}await press(`[data-pet-boarding-fish="${uid}"]`);};
     async function enter() {
       await require('./browser-start-adventure.cjs')(page, mobile);
       if (await page.locator('#lakeIntroSkip').isVisible()) await press('#lakeIntroSkip');
+      const goal="(x,y,d)=>inWorldRect(x,y,ShuVillageReference.landmarks.watermill.interaction)&&d==='up'";
+      const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,goal);
+      for(const direction of route){
+        const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),direction);
+        await press(`[data-move="${direction}"]`);
+        const actual=await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion}));
+        assert.equal(actual.region,'village');assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'real boarding entrance controls respect collisions');
+      }
+      assert.equal(await page.evaluate(()=>nearbyWorldLandmark()?.petShop===true),true,'at actual Asual pet-service entrance');
+      checks.push({name:'actual-asual-entrance',steps:route.length,...await page.evaluate(()=>({x:s.x,y:s.y}))});
       await press('#action');
+      await page.locator('#petLifeModal.open').waitFor();
       await press('[data-pet-tab="boarding"]');
     }
     async function shot(name, focus = '.pet-boarding-intro') {
@@ -118,6 +129,7 @@ async function run(url, screen, state) {
     }
     await page.goto(url, { waitUntil: 'load' }); await enter();
     const original = await fish(rareUid), initial = await snapshot();
+    const otherGeneration=await page.evaluate(()=>localStorage.getItem('nushi-production-reference-11016-v1-slot2'));
     assert.match(await page.locator('.pet-boarding-intro').innerText(), /無料.*0円/s);
     await press('[data-pet-action="boarding-help"]');
     assert.match(await page.locator('.pet-boarding-intro').innerText(), /通常色・希少色を合わせて2匹/);
@@ -145,11 +157,15 @@ async function run(url, screen, state) {
     const beforeFailure = await snapshot(), savedBeforeFailure = await saved();
     await page.evaluate(() => { window.__boardingFailSave = true; });
     await press('[data-pet-action="boarding-confirm"]');
-    assert.match(await page.locator('.pet-message').innerText(), /保存できなかった/);
+    await page.locator('#villageSaveGate').getByText(/save-storage-failed/).waitFor();
+    assert.equal(await page.evaluate(()=>ShuVillageSaveRuntime.isSuspended()),true,'quota failure stops production runtime');
     await unchanged(beforeFailure, 'failed deposit rolls back the complete state');
     assert.deepEqual(await saved(), savedBeforeFailure, 'failed deposit does not overwrite the save');
-    await shot('deposit-save-failure', '.pet-boarding-actions');
-    await page.evaluate(() => { window.__boardingFailSave = false; });
+    await page.screenshot({path:path.join(directory,`${width}x${height}-deposit-save-failure.png`)});
+    checks.push({name:'deposit-save-failure',suspended:true,lastGoodPreserved:true});
+    // Production save errors are irreversible in this tab: reload the last good
+    // snapshot, then repeat the real selection instead of bypassing suspension.
+    await page.reload({waitUntil:'load'});await enter();await selectFish(rareUid);
     await confirmOnce('boarding-confirm');
     assert.deepEqual(identity(await fish(rareUid)), identity(original));
     assert.equal(await page.evaluate(uid => s.petLife.fish.some(f => f.uid === uid), rareUid), false);
@@ -192,10 +208,12 @@ async function run(url, screen, state) {
     const beforeReturnFailure = await snapshot(), savedBeforeReturnFailure = await saved();
     await page.evaluate(() => { window.__boardingFailSave = true; });
     await press('[data-pet-action="boarding-withdraw-confirm"]');
-    assert.match(await page.locator('.pet-message').innerText(), /保存できなかった/);
+    await page.locator('#villageSaveGate').getByText(/save-storage-failed/).waitFor();
+    assert.equal(await page.evaluate(()=>ShuVillageSaveRuntime.isSuspended()),true,'quota failure stops production runtime');
     await unchanged(beforeReturnFailure, 'failed withdrawal rolls back the complete state');
     assert.deepEqual(await saved(), savedBeforeReturnFailure, 'failed withdrawal keeps last good save');
-    await page.evaluate(() => { window.__boardingFailSave = false; });
+    checks.push({name:'withdraw-save-failure',suspended:true,lastGoodPreserved:true});
+    await page.reload({waitUntil:'load'});await enter();await press('[data-pet-boarding-view="withdraw"]');await selectFish(rareUid);await page.locator('#petBoardingTank').selectOption('3');
     await confirmOnce('boarding-withdraw-confirm');
     const returned = await fish(rareUid);
     assert.deepEqual(identity(returned), identity(paused)); assert.equal(returned.tank, 3); assert.equal(Object.hasOwn(returned, 'boardedDay'), false);
@@ -210,6 +228,8 @@ async function run(url, screen, state) {
     assert.equal(await page.evaluate(() => s.money), initial.money, 'all boarding and return transactions are free');
     assert.deepEqual(await page.evaluate(() => s.caught), initial.caught);
     assert.equal(await page.evaluate(key => localStorage.getItem(key + '-slot2'), saveKey), otherSlot, 'other adventure slot untouched');
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),JSON.stringify(state),'original legacy fish adventure untouched');
+    assert.equal(await page.evaluate(()=>localStorage.getItem('nushi-production-reference-11016-v1-slot2')),otherGeneration,'other generation slot untouched');
     await noDuplicates(); await selectFish(rareUid); await shot('returned-rare-fish', '.pet-boarding-actions');
     assert.deepEqual(errors, []); assert.deepEqual(httpErrors, []); assert.deepEqual(requestErrors, []);
     // Stress the actual supported minimum with a full catalogue, every tank,
@@ -229,8 +249,12 @@ async function run(url, screen, state) {
     const longRare=await page.evaluate(()=>s.petLife.fish[0].uid);
     await selectFish(longRare);await shot('long-rare-confirmation');await confirmOnce('boarding-confirm');
     await press('[data-pet-boarding-view="withdraw"]');await selectFish(longRare);await page.locator('#petBoardingTank').selectOption('0');
-    await page.evaluate(()=>{window.__boardingFailSave=true;});await press('[data-pet-action="boarding-withdraw-confirm"]');await shot('long-rare-withdraw-failure');
-    await page.evaluate(()=>{window.__boardingFailSave=false;});await confirmOnce('boarding-withdraw-confirm');await press('[data-pet-boarding-view="deposit"]');
+    const longBefore=await snapshot(),longSaved=await saved();
+    await page.evaluate(()=>{window.__boardingFailSave=true;});await press('[data-pet-action="boarding-withdraw-confirm"]');
+    await page.locator('#villageSaveGate').getByText(/save-storage-failed/).waitFor();assert.equal(await page.evaluate(()=>ShuVillageSaveRuntime.isSuspended()),true);
+    await unchanged(longBefore,'stress failed withdrawal rolls back complete state');assert.deepEqual(await saved(),longSaved,'stress failed withdrawal retains last good save');
+    await page.screenshot({path:path.join(directory,`${width}x${height}-long-rare-withdraw-failure.png`)});checks.push({name:'long-rare-withdraw-failure',suspended:true,lastGoodPreserved:true});
+    await page.reload({waitUntil:'load'});await enter();await press('[data-pet-boarding-view="withdraw"]');await selectFish(longRare);await page.locator('#petBoardingTank').selectOption('0');await confirmOnce('boarding-withdraw-confirm');await press('[data-pet-boarding-view="deposit"]');
     const reached=[];
     for(let n=0;n<100;n++){
       reached.push(...await page.locator('[data-pet-boarding-fish]').evaluateAll(els=>els.map(el=>el.dataset.petBoardingFish)));
@@ -247,7 +271,7 @@ async function run(url, screen, state) {
     await press('[data-pet-boarding-view="withdraw"]');await shot('empty-boarding');
     assert.deepEqual(errors, []);
     const result = { screen, pausedDays, checks, destinations, identityRetained: true, noCatchUp: true,
-      sharedSpeciesLimit: true, saveRollbackAndRetry: ['deposit', 'withdraw'], cancellationAndRepeat: true,
+      sharedSpeciesLimit: true, saveRollbackAndRetry: ['deposit-reload-reselect', 'withdraw-reload-reselect'], cancellationAndRepeat: true,
       nicknameAndReload: true, slotIsolation: true, errors, httpErrors, requestErrors };
     fs.writeFileSync(path.join(directory, `${width}x${height}-result.json`), JSON.stringify(result, null, 2));
     console.log(`FISH_BOARDING_PASS ${width}x${height}: ${checks.length} screenshots, deposit/return/cancel/reload/rollback`);

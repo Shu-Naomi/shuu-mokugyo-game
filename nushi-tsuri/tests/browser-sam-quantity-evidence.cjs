@@ -10,7 +10,7 @@ async function run(url,screen){
  const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});
  const context=await browser.newContext({viewport:{width:screen.width,height:screen.height},isMobile:screen.mobile,hasTouch:screen.mobile,deviceScaleFactor:screen.dpr,locale:'ja-JP',serviceWorkers:'block'});
- const page=await context.newPage(),errors=[],httpErrors=[],checks=[];
+ const page=await context.newPage(),errors=[],httpErrors=[],checks=[];let moveDiagnostic=null;
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)httpErrors.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[screen.mobile?'tap':'click']();
  const state=()=>page.evaluate(()=>({money:s.money,corn:s.baits.corn}));
@@ -23,15 +23,29 @@ async function run(url,screen){
   // Plan against live collision geometry; execute each step through real controls.
   const goal="(x,y,d)=>inWorldRect(x,y,ShuVillageReference.geometry.samShopInteractionBounds)&&d==='up'";
   const route=await page.evaluate(planVillageRoute,goal);
+  await page.evaluate(()=>{window.__samMoveEvents=[];document.addEventListener('pointerdown',e=>{if(e.target.closest('[data-move]'))window.__samMoveEvents.push({direction:e.target.closest('[data-move]').dataset.move,pointerType:e.pointerType,time:performance.now(),forage:forageDiscoveryInProgress});},true);});
   for(const direction of route){
+   // A dog-discovery animation intentionally disables movement. Wait for that
+   // known finite activity BEFORE issuing a tap, never retry a lost tap.
+   if(await page.evaluate(()=>forageDiscoveryInProgress)){
+    checks.push({name:'wait-for-dog-discovery-before-input',direction});
+    await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:8000});
+   }
+   const before=await page.evaluate(()=>({x:s.x,y:s.y,forage:forageDiscoveryInProgress,rescue:rescueInProgress,homeTransition:playerHomeState.transitioning,home:playerHomeIsActive(),battle:!!battle,suspended:ShuVillageSaveRuntime.isSuspended(),modals:[...document.querySelectorAll('.modal.open')].map(n=>n.id),events:window.__samMoveEvents.length}));
+   assert.ok(!before.forage&&!before.rescue&&!before.homeTransition&&!before.home&&!before.battle&&!before.suspended&&!before.modals.length,'shop route is input-ready '+JSON.stringify(before));
    const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),direction);
+   moveDiagnostic={direction,before,expected};
    await press(`[data-move="${direction}"]`);
    const actual=await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion}));
+   const input=await page.evaluate(()=>({events:window.__samMoveEvents.slice(-4),count:window.__samMoveEvents.length,forage:forageDiscoveryInProgress,hold:!!moveHoldInterval,modals:[...document.querySelectorAll('.modal.open')].map(n=>n.id)}));
+   moveDiagnostic={direction,before,expected,actual,input};
+   assert.equal(input.count,before.events+1,'exactly one pointerdown per directional tap '+JSON.stringify(moveDiagnostic));
    assert.equal(actual.region,'village');
-   assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'actual directional input follows collision-safe shop route');
+   assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'actual directional input follows collision-safe shop route '+JSON.stringify(moveDiagnostic));
   }
   assert.equal(await page.evaluate(()=>isAtSamShopEntrance()&&isWalkableWorld(s.x,s.y)&&s.direction==='up'),true,'at actual painted Sam entrance');
   checks.push({name:'actual-sam-entrance',steps:route.length,...await page.evaluate(()=>({x:s.x,y:s.y,bounds:ShuVillageReference.geometry.samShopInteractionBounds}))});
+  if(await page.evaluate(()=>forageDiscoveryInProgress))await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:8000});
   await press('#action');await page.locator('#store.open').waitFor();
  };
  async function shot(name){
@@ -81,7 +95,7 @@ async function run(url,screen){
   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
   fs.writeFileSync(path.join(directory,`${screen.width}x${screen.height}-result.json`),JSON.stringify({screen,passed:true,checks,errors,httpErrors},null,2));
   console.log(`SAM_QUANTITY_PASS ${screen.width}x${screen.height}: pack size, units, total, cancel, purchase, insufficient funds, preset, reopen, reload`);
- }catch(error){await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-failure.png`)}).catch(()=>{});fs.writeFileSync(path.join(directory,`${screen.width}x${screen.height}-failure.json`),JSON.stringify({screen,error:error.stack,checks,errors,httpErrors},null,2));throw error;}
+ }catch(error){await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-failure.png`)}).catch(()=>{});fs.writeFileSync(path.join(directory,`${screen.width}x${screen.height}-failure.json`),JSON.stringify({screen,error:error.stack,checks,errors,httpErrors,moveDiagnostic},null,2));throw error;}
  finally{await context.close();await browser.close();}
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
