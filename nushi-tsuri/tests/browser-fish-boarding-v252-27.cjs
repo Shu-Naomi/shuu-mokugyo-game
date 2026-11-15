@@ -74,15 +74,12 @@ async function run(url, screen, state) {
       await require('./browser-start-adventure.cjs')(page, mobile);
       if (await page.locator('#lakeIntroSkip').isVisible()) await press('#lakeIntroSkip');
       const goal="(x,y,d)=>inWorldRect(x,y,ShuVillageReference.landmarks.watermill.interaction)&&d==='up'";
-      const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,goal);
-      for(const direction of route){
-        const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),direction);
-        await press(`[data-move="${direction}"]`);
-        const actual=await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion}));
-        assert.equal(actual.region,'village');assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'real boarding entrance controls respect collisions');
-      }
+      // Keep the companion dog and let discoveries finish naturally before
+      // each input and before A. The helper asserts one pointerdown and exact
+      // collision-derived displacement, without retries or relaxed tolerances.
+      const approach=await require('./browser-walk-village-route.cjs')(page,mobile,goal,{label:'boarding Asual approach'});
       assert.equal(await page.evaluate(()=>nearbyWorldLandmark()?.petShop===true),true,'at actual Asual pet-service entrance');
-      checks.push({name:'actual-asual-entrance',steps:route.length,...await page.evaluate(()=>({x:s.x,y:s.y}))});
+      checks.push({name:'actual-asual-entrance',...approach});
       await press('#action');
       await page.locator('#petLifeModal.open').waitFor();
       await press('[data-pet-tab="boarding"]');

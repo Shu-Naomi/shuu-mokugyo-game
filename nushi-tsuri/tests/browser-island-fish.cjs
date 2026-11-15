@@ -21,20 +21,8 @@ module.exports=async function offshore(url,mobile=false,options={}){
  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}await require('./browser-release.cjs').assertRelease(page);}
  async function fitFerry(){await page.locator('#offshoreFerry.open').waitFor({state:'visible'});const result=await page.locator('.ferry-window').evaluate(n=>{const r=n.getBoundingClientRect();return {inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,buttons:[...n.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.width>=44&&q.height>=44&&q.top>=r.top&&q.bottom<=r.bottom+1;})};});assert.ok(result.inside&&result.buttons&&result.scroll<=1,JSON.stringify(result));}
  async function walkToHarbor(){
-  // Legacy saves resume at the safe home arrival in the production layout,
-  // not at Node's historical offshore-island.harbor fixture coordinates.
-  // Plan against the loaded production geometry; move only with real controls.
-  const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,'(x,y,d)=>ShuOffshore.atPier({...s,x,y,direction:d})');
-  for(const d of route){
-   const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d);
-   await press('[data-move="'+d+'"]');await page.clock.runFor(50);
-   assert.equal(await value('s.mapRegion'),'village','harbor approach stays in village');
-   assert.equal(await value('playerHomeIsActive()'),false,'harbor approach does not enter home');
-   assert.deepEqual(await value('({x:s.x,y:s.y})'),expected,'actual village directional movement '+d);
-   villageWalked++;
-  }
-  assert.equal(await value('ShuOffshore.atPier(s)'),true,'actual player reaches the loaded harbor');
-  await page.clock.runFor(400);
+  const visit=await require('./browser-walk-village-route.cjs')(page,mobile,'(x,y,d)=>ShuOffshore.atPier({...s,x,y,direction:d})',{frozenClock:true,label:'production harbor approach'});
+  villageWalked+=visit.steps;await page.clock.runFor(400);
  }
  async function walkTo(target){
   // Plan from the shipped collision function; execute every step through

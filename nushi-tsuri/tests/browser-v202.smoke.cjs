@@ -250,6 +250,14 @@ async function saveSlotSmoke(url,mobile){
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
   const press=selector=>page.locator(selector)[mobile?'tap':'click']();
   const stored=key=>page.evaluate(key=>localStorage.getItem(key),key);
+  const ready=async()=>{
+    await page.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true,null,{timeout:45000});
+    assert.equal(await page.evaluate(()=>!!globalThis.ShuVillageReleaseCandidate&&!!globalThis.ShuVillageProductionSession),true,'actual generated production, not source-template baseline');
+  };
+  const record=slot=>page.evaluate(slot=>ShuVillageProductionSession.read(slot),slot);
+  const currentRaw=async slot=>{const r=await record(slot);assert.equal(r.ok,true,'production slot '+slot+' is readable');return r.raw;};
+  const current=async slot=>{const raw=await currentRaw(slot);assert.equal(typeof raw,'string','production slot '+slot+' has a save');return JSON.parse(raw);};
+  const originalsUnchanged=async()=>{assert.equal(await stored(saveKey),JSON.stringify(original),'migrated legacy first slot remains byte-identical');assert.equal(await stored(secondKey),null,'new production second slot never creates a legacy save');};
   const playing=async slot=>{
     try{await page.waitForFunction(slot=>document.querySelector('#game')?.classList.contains('active')&&document.querySelector('#activeSaveSlot')?.textContent===`セーブ${slot}`,slot);}
     catch(error){
@@ -260,14 +268,14 @@ async function saveSlotSmoke(url,mobile){
   async function selection(){
     await press('#menu');
     await Promise.all([page.waitForEvent('domcontentloaded'),press('[data-field-menu-target="saveSlots"]')]);
-    await page.locator('#title.active').waitFor({state:'visible'});
+    await ready();await page.locator('#title.active').waitFor({state:'visible'});
   }
   async function launch(slot,options={}){
     await require('./browser-start-adventure.cjs')(page,mobile,{slot,...options});
     await playing(slot);
   }
   try{
-    await page.goto(url,{waitUntil:'domcontentloaded'});const oldBytes=await stored(saveKey);
+    await page.goto(url,{waitUntil:'domcontentloaded'});await ready();const oldBytes=await stored(saveKey);
     await press('#titleNew');await press('[data-save-slot="2"]');
     assert.equal(await stored(saveKey),oldBytes);assert.equal(await stored(secondKey),null);
     const layout=await page.locator('.title-box').evaluate(box=>({inside:box.getBoundingClientRect().top>=-1&&box.getBoundingClientRect().bottom<=innerHeight+1,horizontal:box.scrollWidth<=box.clientWidth+1,cards:[...box.querySelectorAll('[data-save-slot]')].every(b=>b.getBoundingClientRect().width>90)}));
@@ -275,23 +283,53 @@ async function saveSlotSmoke(url,mobile){
     console.log('SAVE_SLOT_SCREENSHOT '+(mobile?'mobile':'desktop')+' data:image/jpeg;base64,'+(await page.screenshot({type:'jpeg',quality:75})).toString('base64'));
     await press('[data-title-panel="slots"] [data-title-back]');await launch(2,{avatar:'girl',dog:'grey'});assert.equal(await stored(saveKey),oldBytes);
     await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
-    const fresh=JSON.parse(await stored(secondKey));assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
-    await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await stored(secondKey);
+    const fresh=await current(2);assert.equal(fresh.money,300);assert.equal(fresh.dog,'grey');assert.equal(fresh.avatar,'girl');assert.deepEqual(fresh.caught,{});
+    await page.evaluate(()=>{s.money=8888;s.items.fishBento=4;save();});const secondBytes=await currentRaw(2);
     await selection();await launch(1);
-    assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await stored(secondKey),secondBytes);
+    assert.equal(await page.evaluate(()=>s.money),4321);assert.equal(await page.evaluate(()=>s.dog),'shuu');assert.equal(await currentRaw(2),secondBytes);
     await page.evaluate(()=>{s.money=11111;save();});await selection();await launch(2);
     assert.equal(await page.evaluate(()=>s.money),8888);assert.equal(await page.evaluate(()=>s.items.fishBento),4);
     const discovery=await page.evaluate(()=>{const cycle=ensureForageCycle(),point=foragePointData.find(p=>!cycle.harvested.includes(p.id));delete cycle.active[point.id];const before=s.baits.shell,amount=ShuPetLife.forageCount(s,s.dog);startDogForageDiscovery(point,'shell');return {id:point.id,before,amount};});
     await page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:10000});
     assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
     assert.equal(await page.locator(`[data-forage-point="${discovery.id}"]`).count(),0);assert.match(await page.locator('#rescueToast').innerText(),/Grey.*貝.*掘り出した/);
-    assert.equal(JSON.parse(await stored(secondKey)).baits.shell,discovery.before+discovery.amount);assert.equal(JSON.parse(await stored(saveKey)).money,11111);
+    assert.equal((await current(2)).baits.shell,discovery.before+discovery.amount);assert.equal((await current(1)).money,11111);await originalsUnchanged();
     await page.reload({waitUntil:'domcontentloaded'});await launch(2);assert.equal(await page.evaluate(()=>s.baits.shell),discovery.before+discovery.amount);
-    await selection(); // On the title page, pagehide must preserve damaged data.
-    await page.evaluate(key=>localStorage.setItem(key,'{broken'),secondKey);await page.reload({waitUntil:'domcontentloaded'});
-    await press('#titleContinue');assert.equal(await page.locator('[data-save-slot="2"]').isDisabled(),true);assert.equal(await stored(secondKey),'{broken');await press('[data-title-panel="slots"] [data-title-back]');
-    await launch(1);assert.equal(await stored(secondKey),'{broken');assert.equal(await page.evaluate(()=>s.money),11111);
-    assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,dogPickup:true,corruptProtected:true,errors}));
+    // Explicit UI deletion applies only to the production generation. Original
+    // legacy bytes and the other modern slot must survive both cancel and confirm.
+    await selection();const firstBeforeDelete=await currentRaw(1),secondBeforeDelete=await currentRaw(2);
+    await press('#titleOptions');await press('[data-delete-save="2"]');
+    assert.equal(await page.locator('#optionsDeleteConfirm').isDisabled(),true);
+    await press('#optionsDeleteCancel');assert.equal(await currentRaw(2),secondBeforeDelete);
+    await press('[data-delete-save="2"]');await page.locator('#optionsDeleteCheck').check();
+    await Promise.all([page.waitForEvent('domcontentloaded'),press('#optionsDeleteConfirm')]);await ready();
+    let deleted=await record(2);assert.equal(deleted.ok,true);assert.equal(deleted.deleted,true);assert.equal(deleted.exists,false);assert.equal(deleted.raw,null);
+    assert.equal(await currentRaw(1),firstBeforeDelete);await originalsUnchanged();
+    await page.reload({waitUntil:'domcontentloaded'});await ready();
+    deleted=await record(2);assert.equal(deleted.deleted,true);assert.equal(deleted.exists,false,'deleted generation must not resurrect');
+    await launch(2,{isNew:true,avatar:'boy',dog:'shuu'});await page.locator('#lakeIntro.open').waitFor({state:'visible'});await press('#lakeIntroSkip');
+    const recreated=await current(2);assert.equal(recreated.money,300);assert.equal(recreated.dog,'shuu');assert.equal(recreated.avatar,'boy');assert.deepEqual(recreated.caught,{});
+    assert.equal(await currentRaw(1),firstBeforeDelete);await originalsUnchanged();
+    await selection();await launch(1);assert.equal(await page.evaluate(()=>s.money),11111);await originalsUnchanged();
+    await selection();
+    // Explicit corruption fixture on the title page, after gameplay has stopped.
+    // New production must block instead of treating unreadable modern data as
+    // an empty slot, rewriting it, or silently resuming the other slot.
+    const damaged=await page.evaluate(()=>{
+      const firstKey=ShuVillageSaveStore.keyFor(1),secondKey=ShuVillageSaveStore.keyFor(2);
+      const firstRaw=localStorage.getItem(firstKey),envelope=JSON.parse(localStorage.getItem(secondKey));
+      envelope.currentRaw='{broken';const corruptRaw=JSON.stringify(envelope);localStorage.setItem(secondKey,corruptRaw);
+      return {firstKey,secondKey,firstRaw,corruptRaw};
+    });
+    const blockedUrl=new URL(page.url());blockedUrl.searchParams.set('saveSlot','1');
+    await page.goto(blockedUrl.href,{waitUntil:'load'});
+    await page.locator('#villageSaveGate').waitFor({state:'visible'});
+    await page.waitForFunction(()=>document.querySelector('#villageSaveGate')?.textContent.includes('import-storage-failed'));
+    assert.equal(await page.evaluate(()=>globalThis.ShuVillageReleaseGate?.started===true),false);
+    assert.equal(await page.locator('#game.active').count(),0,'corrupt generation cannot start gameplay');
+    assert.equal(await stored(damaged.firstKey),damaged.firstRaw,'good slot is not rewritten during blocked startup');
+    assert.equal(await stored(damaged.secondKey),damaged.corruptRaw,'damaged generation is preserved byte-for-byte');await originalsUnchanged();
+    assert.deepEqual(errors,[]);console.log('SAVE_SLOT_SMOKE_PASS '+JSON.stringify({mobile,independent:true,resume:true,legacyPreserved:true,productionGeneration:true,dogPickup:true,deleteCancel:true,deleteIsolation:true,noResurrection:true,recreated:true,corruptProtected:true,corruptionBlocksStartup:true,errors}));
   }finally{await browser.close();}
 }
 async function audioSmoke(url,mobile){

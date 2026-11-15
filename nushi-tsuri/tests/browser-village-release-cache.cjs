@@ -46,7 +46,17 @@ async function run(){
   const stage=async label=>{const state=await old.evaluate(async()=>{const reg=await navigator.serviceWorker.getRegistration();const item=w=>w?{url:w.scriptURL,state:w.state}:null;return {active:item(reg?.active),waiting:item(reg?.waiting),installing:item(reg?.installing),lifecycle:globalThis.__swLifecycle};});report.registrationStages.push({label,at:Date.now(),...state});};
   const url=base+'/index.html';let p=await context.newPage();await p.goto(url);await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started,{},{timeout:45000});
   assert.ok(await p.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-65')));
-  await old.waitForFunction(async()=>{const r=await navigator.serviceWorker.getRegistration();return r?.waiting?.scriptURL.endsWith('/sw.js?v=252-67')&&r.waiting.state==='installed';},{},{timeout:120000});
+  // Playwright's polling predicate must be synchronous. An async predicate
+  // produces a truthy Promise before getRegistration resolves, falsely passing
+  // while install/addAll is still running. Await snapshots from the host instead.
+  const installDeadline=Date.now()+120000;let installedWaiting=false;
+  while(Date.now()<installDeadline){
+   const snapshot=await old.evaluate(async()=>{const r=await navigator.serviceWorker.getRegistration();const item=w=>w?{url:w.scriptURL,state:w.state}:null;return {active:item(r?.active),waiting:item(r?.waiting),installing:item(r?.installing)};});
+   report.installFinal=snapshot;
+   if(snapshot.waiting?.url.endsWith('/sw.js?v=252-67')&&snapshot.waiting.state==='installed'){installedWaiting=true;break;}
+   await new Promise(resolve=>setTimeout(resolve,250));
+  }
+  assert.ok(installedWaiting,'new worker actually reaches installed waiting before offline disruption; see installFinal');
   assert.ok(await old.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-65')));
   await stage('new-installed-waiting');
   const manifest=await p.evaluate(()=>({urls:ShuVillageReleaseCandidate.expectedUrls,mapURL:ShuVillageReleaseCandidate.mapURL}));
