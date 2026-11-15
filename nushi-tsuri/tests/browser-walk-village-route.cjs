@@ -25,5 +25,5 @@ module.exports=async function walkVillage(page,mobile,predicate,{frozenClock=fal
  }
  await ready();
  assert.equal(await page.evaluate(p=>eval('('+p+')')(s.x,s.y,s.direction),predicate),true,label+': real player meets destination');
- return {label,steps:route.length,...await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction}))};
+ return {label,steps:route.length,path:route,...await page.evaluate(()=>({x:s.x,y:s.y,direction:s.direction}))};
 };

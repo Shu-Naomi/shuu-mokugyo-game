@@ -1,14 +1,16 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
 const {pressProduct}=require('./compact-ui-helpers.cjs');
+const enterFacility=require('./browser-production-facility.cjs');
 module.exports=async function run(url,mobile=false){
  const browser=await chromium.launch({headless:true,args:['--no-sandbox']}),errors=[];
  const viewport=mobile?{width:844,height:390}:{width:1280,height:720};
  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile}),page=await context.newPage();
  page.on('pageerror',e=>errors.push(e.message));
  const saved={...seed(),caught:{...seed().caught,bass:1,moroko:1},money:9000,x:199,y:36};
+ const enterShop=()=>enterFacility(page,{id:'watermill',modal:'#petLifeModal',mobile,legacyKey:saveKey,legacyRaw:JSON.stringify(saved)});
  try{
   await page.addInitScript(({saved,key})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(saved));},{saved,key:saveKey});
-  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await page.locator('#action').click();
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await enterShop();
   for(let i=0;i<3;i++)await pressProduct(page,'[data-pet-buy="bass"]',mobile);
   await page.locator('[data-pet-action="aquarium"]').click();
   await page.locator('#petTankStage').scrollIntoViewIfNeeded();
@@ -45,8 +47,9 @@ module.exports=async function run(url,mobile=false){
    return {poses,visible};
   });
   assert.equal(raster.poses,25);assert.deepEqual(await page.evaluate(()=>({money:s.money,food:s.petLife.food,fish:JSON.stringify(s.petLife.fish),caught:JSON.stringify(s.caught)})),before);
-  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await page.locator('#action').click();await page.locator('[data-pet-action="aquarium"]').click();
+  await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await enterShop();await page.locator('[data-pet-action="aquarium"]').click();
   assert.equal(await page.locator('#petTankStage [data-pet-fish]').count(),3);assert.deepEqual(await page.evaluate(()=>({money:s.money,food:s.petLife.food,fish:JSON.stringify(s.petLife.fish),caught:JSON.stringify(s.caught)})),before);
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),JSON.stringify(saved));
   assert.deepEqual(errors,[]);console.log('V214_AQUARIUM_AND_INTACT_RASTER_PASS '+JSON.stringify({mobile,marker,background,raster,tank,reload:true,errors}));
  }finally{await browser.close();}
 };

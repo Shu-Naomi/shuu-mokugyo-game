@@ -5,7 +5,7 @@ const {pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function features(url,mobile){
   const browser=await chromium.launch({headless:true}),errors=[],failedAssets=[];
   const context=await browser.newContext({viewport:mobile?{width:844,height:390}:{width:1280,height:720},
-    isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
+    isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'});
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
     if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));
   },{key:saveKey,state:{...seed(),x:10,y:79,direction:'left',hp:80,soundEnabled:false,
@@ -17,8 +17,18 @@ module.exports=async function features(url,mobile){
   const settle=()=>page.waitForFunction(()=>!playerHomeState.transitioning);
   const careIdle=()=>page.waitForFunction(()=>!dogCareIsBusy());
   async function enterHome(){
-    await press('[data-move="left"]');await settle();
-    await page.evaluate(()=>{for(let i=0;i<9;i++)move('left');for(let i=0;i<3;i++)move('up');});
+    await require('./browser-walk-village-route.cjs')(page,mobile,'(x,y,d)=>!isAtPlayerHomeMapEntrance(x,y)&&((n)=>isAtPlayerHomeMapEntrance(n.x,n.y))(ShuWorldLife.moveTarget(x,y,"left",4,isWalkableWorld))',{label:'current home west approach'});
+    await press('[data-move="left"]');await settle();assert.equal(await page.evaluate(()=>playerHomeState.area),'exterior');
+    const route=await page.evaluate(()=>{
+      const queue=[{x:playerHomeState.x,y:playerHomeState.y,path:[]}],seen=new Set();
+      for(let i=0;i<queue.length;i++){
+        const p=queue[i],key=p.x+','+p.y;if(seen.has(key))continue;seen.add(key);
+        if(nearbyPlayerHomeEvent('exterior',p.x,p.y)?.id==='front-door')return p.path;
+        for(const d of ['left','right','up','down']){const n=playerHomeMoveTarget('exterior',p.x,p.y,d);if(n.x!==p.x||n.y!==p.y)queue.push({...n,path:[...p.path,d]});}
+      }throw Error('No exterior path to the home front door');
+    });
+    for(const d of route){const expected=await page.evaluate(d=>playerHomeMoveTarget('exterior',playerHomeState.x,playerHomeState.y,d),d);await press('[data-move="'+d+'"]');assert.deepEqual(await page.evaluate(()=>({x:playerHomeState.x,y:playerHomeState.y})),expected,'actual home doorstep movement '+d);}
+    assert.equal(await page.evaluate(()=>nearbyPlayerHomeEvent()?.id),'front-door');
     await press('#action');await settle();assert.equal(await page.evaluate(()=>playerHomeState.area),'interior');
   }
   const screenshot=async name=>console.log(name+'_SCREENSHOT '+(mobile?'mobile':'desktop')+
@@ -41,6 +51,7 @@ module.exports=async function features(url,mobile){
   }
   try{
     await page.goto(url,{waitUntil:'domcontentloaded'});await require('./browser-start-adventure.cjs')(page,mobile);
+    const legacyRaw=await page.evaluate(key=>localStorage.getItem(key),saveKey);
     // Material-specific dishes are made and eaten through the kitchen UI.
     await page.evaluate(()=>openLocationInterior('diner'));
     await press('#locationInterior [data-location-category="recipes"]');
@@ -199,6 +210,7 @@ module.exports=async function features(url,mobile){
       await page.waitForFunction(()=>!document.querySelector('#fishScene').classList.contains('surface-diving'));
       await screenshot('FISH_'+id.toUpperCase());
     }
+    assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'home care and cooking leave legacy save unchanged');
     console.log('V214_FEATURE_SMOKE_PASS '+JSON.stringify({mobile,fish:fishCount,poses:fishResult.length,fightModes:2,recipes:3,
       speciesArt:fishResult.filter(r=>r.tallFins!==null).map(({mode,id,tallFins})=>({mode,id,tallFins})),
       dogs:3,careArt,petReaction,catchScore:3,companion:true,stayHomeReload:true,layout,rotationResume,errors}));

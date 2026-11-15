@@ -1,6 +1,7 @@
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const {pressProduct}=require('./compact-ui-helpers.cjs');
+const enterFacility=require('./browser-production-facility.cjs');
 
 // Real Chromium pixels and clicks/touches; pre-existing specimen records are
 // fixtures. Breeding below uses the real shop, care and game-clock routes.
@@ -14,8 +15,9 @@ module.exports=async function aquariumGrowth(url,mobile=false){
   page.on('response',r=>{if(r.status()>=400&&/nushi-tsuri/.test(r.url()))failed.push(r.status()+' '+r.url());});
   const press=q=>pressProduct(page,q,mobile);
   await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
-  await press('#action');assert.equal(await page.locator('#petLifeModal.open').count(),1);
-  return {context,page,press};
+  const enterShop=()=>enterFacility(page,{id:'watermill',modal:'#petLifeModal',mobile,legacyKey:saveKey,legacyRaw:JSON.stringify(state)});
+  const entrance=await enterShop();assert.equal(await page.locator('#petLifeModal.open').count(),1);
+  return {context,page,press,enterShop,entrance,legacyRaw:JSON.stringify(state)};
  }
  const specimen=(uid,species,tank,length,bornSize=length)=>({uid,species,tank,length,bornSize,acquiredDay:0,lastDay:3,fedDay:3,changedDay:3,water:100,health:90,careDays:4,generation:0,stars:1,xp:40,sex:uid==='pet-2'?'female':'male'});
  const initial={...seed(),gameMinutes:4820,soundEnabled:false,money:50000,x:199,y:36,
@@ -34,7 +36,7 @@ module.exports=async function aquariumGrowth(url,mobile=false){
   console.log('V230_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:85})).toString('base64')}));
  };
  try{
-  const {context,page,press}=await open(initial);
+  const {context,page,press,enterShop,entrance,legacyRaw}=await open(initial);
   try{
    await press('[data-pet-tab="buyback"]');assert.equal(await page.locator('[data-pet-buyback]').count(),0);
    await screenshot(page,'tank-selection');
@@ -72,12 +74,13 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    assert.match(await page.locator('.pet-tank-current').innerText(),/淡水ぬし総合水槽.*4\/8/s);
    assert.equal(await page.locator('[data-pet-action="rehome"]').count(),0);await screenshot(page,'freshwater-legend-tank');
    await press('[data-pet-action="tanks"]');await press('[data-pet-tank="7"]');assert.match(await page.locator('.pet-tank-current').innerText(),/海水ぬし総合水槽.*1\/8/s);
-   const saved=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');assert.deepEqual(await snap(page),saved);
-   console.log('V230_SHOP_AND_LEGENDS_PASS '+JSON.stringify({mobile,oldSave:true,exactUid:true,cancel:true,portraits:widths,adultPixels:actual,waterPools:true,reload:true,errors,failed}));
+   const saved=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await enterShop();assert.deepEqual(await snap(page),saved);
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw);
+   console.log('V230_SHOP_AND_LEGENDS_PASS '+JSON.stringify({mobile,entrance,legacyBytesPreserved:true,oldSave:true,exactUid:true,cancel:true,portraits:widths,adultPixels:actual,waterPools:true,reload:true,errors,failed}));
   }finally{await context.close();}
   const bred=await open({...seed(),gameMinutes:500,money:50000,soundEnabled:false,x:199,y:36,caught:{moroko:1}});
   try{
-   const {page,press}=bred;await press('[data-pet-buy="moroko"]');await press('[data-pet-buy="moroko"]');
+   const {page,press,enterShop}=bred;await press('[data-pet-buy="moroko"]');await press('[data-pet-buy="moroko"]');
    await press('[data-pet-tab="supplies"]');await press('[data-pet-action="food-10"]');await press('[data-pet-action="aquarium"]');
    async function day(){await press('[data-pet-action="feed"]');if(await page.locator('[data-pet-action="water"]').isEnabled())await press('[data-pet-action="water"]');await page.evaluate(()=>{advanceGameTime(s,1440);save();petUi.render();});}
    for(let i=0;i<3;i++)await day();assert.equal(await page.locator('.pet-eggs').count(),1);await screenshot(page,'bred-eggs');
@@ -88,10 +91,11 @@ module.exports=async function aquariumGrowth(url,mobile=false){
    await page.waitForFunction(()=>Number(document.querySelector('#petInspectFish')?.dataset.specimenLength)>0);
    const tinyWidth=await page.locator('#petInspectFish').evaluate(el=>parseFloat(el.style.width));assert.ok(tinyWidth>=14);
    assert.match(await page.locator('[data-pet-size-rank]').innerText(),/稚魚（繁殖限定）/);await screenshot(page,'bred-fry');
-   const newborn=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snap(page),newborn);
+   const newborn=await snap(page);await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await enterShop();await press('[data-pet-action="aquarium"]');assert.deepEqual(await snap(page),newborn);
    for(let i=0;i<4;i++)await day();const grown=await page.evaluate(uid=>s.petLife.fish.find(f=>f.uid===uid),fry.uid);assert.ok(grown.length>fry.length);
    assert.equal(await page.evaluate(uid=>ShuPetLife.lifeStage(s.petLife.fish.find(f=>f.uid===uid),petCatalog),fry.uid),'juvenile');
    assert.deepEqual(await page.evaluate(()=>s.caught),{moroko:1});
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),bred.legacyRaw);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V230_BREEDING_AND_GROWTH_PASS '+JSON.stringify({mobile,eggs:true,fryCm:fry.length/100,fryWidth:tinyWidth,grownCm:grown.length/100,reload:true,wildCatchesUnchanged:true,errors,failed}));
   }finally{await bred.context.close();}

@@ -35,11 +35,18 @@ module.exports=async function run(url,mobile=false){
   await page.keyboard.press('Escape');await page.locator('#lakeStory.open').waitFor({state:'visible'});
   assert.equal(await page.evaluate(()=>JSON.stringify(s.lakeStory)),story);assert.equal(await resources(),before);
   assert.equal(await page.locator('#lakeStoryReplayIntro').evaluate(el=>document.activeElement===el),true);
-  const second=await context.newPage(),first=JSON.stringify(seed());second.on('pageerror',e=>errors.push(e.message));
-  await second.goto(url,{waitUntil:'load'});await second.evaluate(({key,first})=>{localStorage.setItem(key,first);localStorage.removeItem(key+'-slot2');},{key:saveKey,first});
-  await second.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(second,mobile,{slot:2});await second.locator('#lakeIntro.open').waitFor({state:'visible'});
+  // Independent two-slot migration fixture, seeded before any production
+  // session starts. Never rewrite legacy storage under a live game lock.
+  const secondContext=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile}),first=JSON.stringify(seed());
+  await secondContext.addInitScript(({key,first})=>{if(!localStorage.getItem('v215-slot-fixture')){localStorage.setItem(key,first);localStorage.setItem('v215-slot-fixture','1');}localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,first});
+  const second=await secondContext.newPage();second.on('pageerror',e=>errors.push(e.message));
+  await second.goto(url,{waitUntil:'load'});await second.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started);
+  const firstGeneration=await second.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1).generationRaw);
+  await require('./browser-start-adventure.cjs')(second,mobile,{slot:2});await second.locator('#lakeIntro.open').waitFor({state:'visible'});
   await second.locator('#lakeIntroSkip').click();assert.equal(await second.evaluate(key=>localStorage.getItem(key),saveKey),first);
-  assert.equal(await second.evaluate(key=>JSON.parse(localStorage.getItem(key+'-slot2')).lakeStory.introSeen,saveKey),true);
+  assert.equal(await second.evaluate(()=>ShuSaveSlots.read(2).data.lakeStory.introSeen),true);
+  assert.equal(await second.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1).generationRaw),firstGeneration,'slot2 intro preserves migrated slot1');
+  assert.equal(await second.evaluate(key=>localStorage.getItem(key+'-slot2'),saveKey),null,'new slot2 does not write legacy namespace');
   await second.evaluate(()=>{s.cookingIngredients.fishFillet=1;s.items.wildGreens=1;openLocationInterior('diner');});
   const sizeChance=()=>second.evaluate(()=>{const counts={};for(let i=0;i<10000;i++){let n=0;const p=rollFishSpecimen(fish.find(f=>f.id==='funa'),()=>n++?.5:(i+.5)/10000);counts[p.tierId]=(counts[p.tierId]||0)+1;}return counts;});
   const plain=await sizeChance();assert.equal(plain.large+plain.giant,1400);
@@ -74,6 +81,7 @@ module.exports=async function run(url,mobile=false){
   });
   console.log('V215_FISH_ART_SCREENSHOT '+JSON.stringify({mobile,base64:nativeFish.preview}));
   delete nativeFish.preview;
+  assert.equal(await second.evaluate(key=>localStorage.getItem(key),saveKey),first);assert.equal(await second.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1).generationRaw),firstGeneration);
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V215_STORY_OPENING_PASS '+JSON.stringify({mobile,pages:16,resume:true,skip:true,replay:true,secondSlot:true,resourcesPreserved:true,largeFishChance:[.14,.25],mealReload:true,nativeFish,errors,failed}));
  }finally{await browser.close();}
