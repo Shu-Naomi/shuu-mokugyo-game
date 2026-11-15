@@ -268,5 +268,5 @@ test("noncanonical navigations never overwrite or receive the canonical offline 
   }
   app.state.network = async () => { throw new TypeError("Offline"); };
   assert.equal((await app.fetch("./uncached-page", { mode: "navigate" })).type, "error");
-  assert.equal(await (await app.fetch("./?v=252-66", { mode: "navigate" })).text(), "canonical game");
+  assert.equal(await (await app.fetch("./?v=252-67", { mode: "navigate" })).text(), "canonical game");
 });

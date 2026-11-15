@@ -15,6 +15,22 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
   const directory=path.join(__dirname,'browser-evidence-v231');fs.mkdirSync(directory,{recursive:true});
   const shot=async screen=>{const name=(mobile?'touch':'pc')+'-'+viewport.width+'x'+viewport.height+'-'+screen+'.png';await page.screenshot({path:path.join(directory,name)});await artFits();console.log('V231_UI_IMAGE '+name);};
   const snapshot=()=>page.evaluate(()=>({money:s.money,time:s.gameMinutes,food:s.petLife.food,fish:s.petLife.fish,caught:s.caught,records:s.sizeRecords}));
+  async function openShopAquarium(){
+   // Production migrates the historical watermill save to a safe home arrival.
+   // Walk the shipped village geometry instead of relying on obsolete (199,36).
+   const predicate='(x,y,d)=>{const old=[s.x,s.y,s.direction];s.x=x;s.y=y;s.direction=d;const ok=nearbyWorldLandmark(x,y,d)?.id==="watermill"&&!activeLandingDock()&&!nearbyRival()&&!nearbyTournamentNpc();[s.x,s.y,s.direction]=old;return ok;}';
+   const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,predicate);
+   for(const d of route){
+    const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d);
+    await press('[data-move="'+d+'"]');await page.waitForTimeout(50);
+    assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y})),expected,'actual watermill approach '+d);
+    assert.equal(await page.evaluate(()=>s.mapRegion),'village');
+    assert.equal(await page.evaluate(()=>playerHomeIsActive()),false);
+   }
+   assert.equal(await page.evaluate(()=>nearbyWorldLandmark(s.x,s.y,s.direction)?.id),'watermill');
+   await press('#action');await page.locator('#petLifeModal.open').waitFor({state:'visible'});
+   await press('[data-pet-action="aquarium"]');
+  }
   async function artFits(){
    const images=await page.locator('[data-pet-card-art] canvas').evaluateAll(els=>els.map(c=>{const p=c.parentElement.getBoundingClientRect(),r=c.getBoundingClientRect();return {uid:c.parentElement.dataset.petCardArt,parent:{x:p.x,y:p.y,w:p.width,h:p.height},image:{x:r.x,y:r.y,w:r.width,h:r.height}};}).filter(a=>a.image.w>0&&a.image.h>0));
    for(const a of images){const p=a.parent,r=a.image;assert.ok(p.w>0&&p.h>0&&r.x>=p.x-1&&r.y>=p.y-1&&r.x+r.w<=p.x+p.w+1&&r.y+r.h<=p.y+p.h+1,'fish artwork stays inside its own frame: '+JSON.stringify(a));}
@@ -26,7 +42,7 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
    for(const b of layout.buttons){assert.ok(b.visible&&b.height>=44&&b.x>=0&&b.x+b.width<=viewport.width+1&&b.y>=0&&b.y+b.height<=viewport.height+1,'pinned accessible action '+JSON.stringify(b));}
    return layout;
   }
-  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');
+  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await openShopAquarium();
   await page.waitForFunction(()=>[...document.querySelectorAll('[data-pet-card-art="pet-28"] canvas')].some(c=>{const a=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let n=0;for(let i=3;i<a.length;i+=4)if(a[i]>100)n++;return n>3000;}));
   const overview=await fit();assert.equal(await page.locator('.pet-fish-roster canvas').count(),4);assert.equal(await page.locator('.pet-stats').count(),0);assert.equal(await page.locator('#petFishSelect,#petMoveTank').count(),0);await shot('overview');
   const before=await snapshot();await press('[data-pet-action="records"]');assert.match(await page.locator('.pet-stats').innerText(),/生まれた体長.*14\.00cm.*成長.*10\.00cm/s);
@@ -43,7 +59,7 @@ module.exports=async function aquariumUI(url,mobile=false,options={}){
   await press('[data-pet-action="rehome"]');assert.match(await page.locator('.pet-rehome').innerText(),/マダイ #32/);await press('[data-pet-action="rehome-cancel"]');assert.deepEqual(await snapshot(),beforeMove);
   await press('[data-pet-move-target="4"]');await press('[data-pet-action="move"]');assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);
   const moved=await snapshot();assert.deepEqual(moved.fish,beforeMove.fish.map(f=>f.uid==='pet-32'?{...f,tank:4}:f));assert.equal(moved.money,beforeMove.money);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);await fit();
-  const saved=await snapshot();await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await press('#action');await press('[data-pet-action="aquarium"]');assert.deepEqual(await snapshot(),saved);assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);await fit();
+  const saved=await snapshot();await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);await openShopAquarium();assert.deepEqual(await snapshot(),saved);assert.equal(await page.evaluate(()=>s.petLife.selectedTank),4);await fit();
   const eggs=await page.evaluate(()=>s.petLife.eggs);await press('[data-pet-action="tanks"]');
   assert.match(await page.locator('[data-pet-tank="3"]').innerText(),/淡水.*卵1/s);assert.match(await page.locator('[data-pet-tank="5"]').innerText(),/海水.*卵1/s);await shot('egg-cards');
   for(const [tank,water,label] of [[3,'淡水','fresh'],[5,'海水','salt']]){

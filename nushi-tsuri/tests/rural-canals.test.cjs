@@ -39,7 +39,7 @@ test('rural scene is registered and packaged for offline reload',()=>{
  assert.ok(M.isRegion(R.id));assert.equal(M.regions[R.id].asset,R.asset);
  const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  assert.match(html,/rural-canals.js\?v=/);assert.ok(sw.includes(R.asset));assert.ok(fs.existsSync(path.join(root,R.asset)));
- const script=html.match(/rural-canals.js\?v=[^"']+/)[0];assert.ok(sw.includes(script));
+ require('./release-assets.cjs').releaseAssets().assertPageAsset('rural-canals.js');
 });
 test('ordinary rural funa, dojo and namazu can be landed once and their catch records survive reload',()=>{
  const app=boot(fixture({mapRegion:R.id,...R.entry,baits:{worm:10},selectedBait:'worm',selectedHook:'medium',ownedRods:['bamboo','starGazer'],selectedRod:'starGazer'})),w=app.window;let saved;

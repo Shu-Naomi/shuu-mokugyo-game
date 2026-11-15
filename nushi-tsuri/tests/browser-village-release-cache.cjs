@@ -27,7 +27,7 @@ async function run(){
   await old.waitForFunction(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-65'),{},{timeout:120000});
   const url=base+'/index.html';let p=await context.newPage();await p.goto(url);await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started,{},{timeout:45000});
   assert.ok(await p.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-65')));
-  await old.waitForFunction(async()=>{const r=await navigator.serviceWorker.getRegistration();return r?.waiting?.scriptURL.endsWith('/sw.js?v=252-66')&&r.waiting.state==='installed';},{},{timeout:120000});
+  await old.waitForFunction(async()=>{const r=await navigator.serviceWorker.getRegistration();return r?.waiting?.scriptURL.endsWith('/sw.js?v=252-67')&&r.waiting.state==='installed';},{},{timeout:120000});
   assert.ok(await old.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-65')));
   const manifest=await p.evaluate(()=>({urls:ShuVillageReleaseCandidate.expectedUrls,mapURL:ShuVillageReleaseCandidate.mapURL}));
   const saves=()=>Object.fromEntries(Object.keys(localStorage).filter(k=>/nushi-(production-reference|inugoya-v2)/.test(k)).sort().map(k=>[k,localStorage.getItem(k)]));
@@ -48,12 +48,41 @@ async function run(){
     await p?.close();await old.evaluate(async({cacheName,target})=>{const c=await caches.open(cacheName),original=await c.match(target+'&fixture-backup=1');if(!original)throw Error('Restore response absent');await c.put(target,original);await c.delete(target+'&fixture-backup=1');},{cacheName,target});
    }
   }
-  const nextWorker=context.serviceWorkers().find(w=>w.url().endsWith('/sw.js?v=252-66'));assert.ok(nextWorker,'waiting new worker is inspectable');
+  assert.ok(context.serviceWorkers().some(w=>w.url().endsWith('/sw.js?v=252-67')),'waiting new worker is inspectable');
   await old.close();
-  // No page may hold the old controller while waiting for normal activation.
-  await nextWorker.evaluate(async()=>{const deadline=Date.now()+45000;while(!self.registration.active?.scriptURL.endsWith('/sw.js?v=252-66')||self.registration.active.state!=='activated'){if(Date.now()>deadline)throw Error('New worker did not naturally activate');await new Promise(r=>setTimeout(r,100));}});
+  // Observe from the host with short calls: never keep a 45-second promise
+  // running inside a waiting worker, nor pin one possibly superseded Worker.
+  assert.equal(context.pages().length,0,'all old controlled pages closed before activation');
+  report.activationObservations=[];
+  const activationStart=Date.now(),activationDeadline=activationStart+45000;
+  let activated=false,lastSignature='';
+  while(Date.now()<activationDeadline){
+   const observations=[];
+   for(const workerHandle of context.serviceWorkers()){
+    let timeout;
+    try{
+     const details=await Promise.race([
+      workerHandle.evaluate(async()=>{
+       const state=w=>w?{url:w.scriptURL,state:w.state}:null;
+       const clients=await self.clients.matchAll({type:'all',includeUncontrolled:true});
+       return {active:state(self.registration.active),waiting:state(self.registration.waiting),installing:state(self.registration.installing),clients:clients.map(c=>({id:c.id,url:c.url,type:c.type}))};
+      }),
+      new Promise((_,reject)=>{timeout=setTimeout(()=>reject(Error('short worker observation timed out')),1500);})
+     ]);
+     observations.push({workerURL:workerHandle.url(),...details});
+     if(workerHandle.url().endsWith('/sw.js?v=252-67')&&details.active?.url.endsWith('/sw.js?v=252-67')&&details.active.state==='activated')activated=true;
+    }catch(error){observations.push({workerURL:workerHandle.url(),error:String(error)});}finally{clearTimeout(timeout);}
+   }
+   const observation={pages:context.pages().map(p=>p.url()),pageCount:context.pages().length,workers:observations};
+   const signature=JSON.stringify(observation);
+   if(signature!==lastSignature){report.activationObservations.push({elapsedMs:Date.now()-activationStart,...observation});lastSignature=signature;}
+   report.activationFinal=observation;
+   if(activated)break;
+   await new Promise(resolve=>setTimeout(resolve,250));
+  }
+  assert.ok(activated,'New worker did not naturally activate; see activationObservations/activationFinal (URLs, states, pages, clients)');
   await context.setOffline(true);p=await context.newPage();await p.goto(url);await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started,{},{timeout:45000});
-  assert.ok(await p.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-66')));assert.deepEqual(await p.evaluate(saves),initial);
+  assert.ok(await p.evaluate(()=>navigator.serviceWorker.controller?.scriptURL.endsWith('/sw.js?v=252-67')));assert.deepEqual(await p.evaluate(saves),initial);
   assert.ok((await p.evaluate(()=>caches.keys())).includes(cacheName));
   report.checks.push('after old clients close, new worker naturally activates and actual index starts offline with saves intact and old cache retained');
   report.status='passed';

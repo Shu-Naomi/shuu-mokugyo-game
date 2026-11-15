@@ -16,10 +16,26 @@ module.exports=async function offshore(url,mobile=false,options={}){
   return page.screenshot({path:path.join(directory,(options.public?'public-':'local-')+viewport.width+'x'+viewport.height+'-'+name+'.png')});
  };
  const snapshot=()=>value('({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction,money:s.money,time:s.gameMinutes,hp:s.hp,caught:s.caught,records:s.fishCatchRecords,memories:s.catchMemories,baits:s.baits,equipment:s.equipment,pet:s.petLife})');
- let held=false,button,walked=0,lastFightTrace=[];
+ let held=false,button,walked=0,villageWalked=0,lastFightTrace=[];
  async function hold(on){if(on===held)return;if(mobile)await cdp.send('Input.dispatchTouchEvent',{type:on?'touchStart':'touchEnd',touchPoints:on?[{x:button.x,y:button.y,id:1}]:[]});else if(on){await page.mouse.move(button.x,button.y);await page.mouse.down();}else await page.mouse.up();held=on;}
  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}await require('./browser-release.cjs').assertRelease(page);}
- async function fitFerry(){const result=await page.locator('.ferry-window').evaluate(n=>{const r=n.getBoundingClientRect();return {inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,buttons:[...n.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.width>=44&&q.height>=44&&q.top>=r.top&&q.bottom<=r.bottom+1;})};});assert.ok(result.inside&&result.buttons&&result.scroll<=1,JSON.stringify(result));}
+ async function fitFerry(){await page.locator('#offshoreFerry.open').waitFor({state:'visible'});const result=await page.locator('.ferry-window').evaluate(n=>{const r=n.getBoundingClientRect();return {inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,scroll:n.scrollHeight-n.clientHeight,buttons:[...n.querySelectorAll('button')].every(b=>{const q=b.getBoundingClientRect();return q.width>=44&&q.height>=44&&q.top>=r.top&&q.bottom<=r.bottom+1;})};});assert.ok(result.inside&&result.buttons&&result.scroll<=1,JSON.stringify(result));}
+ async function walkToHarbor(){
+  // Legacy saves resume at the safe home arrival in the production layout,
+  // not at Node's historical offshore-island.harbor fixture coordinates.
+  // Plan against the loaded production geometry; move only with real controls.
+  const route=await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,'(x,y,d)=>ShuOffshore.atPier({...s,x,y,direction:d})');
+  for(const d of route){
+   const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d);
+   await press('[data-move="'+d+'"]');await page.clock.runFor(50);
+   assert.equal(await value('s.mapRegion'),'village','harbor approach stays in village');
+   assert.equal(await value('playerHomeIsActive()'),false,'harbor approach does not enter home');
+   assert.deepEqual(await value('({x:s.x,y:s.y})'),expected,'actual village directional movement '+d);
+   villageWalked++;
+  }
+  assert.equal(await value('ShuOffshore.atPier(s)'),true,'actual player reaches the loaded harbor');
+  await page.clock.runFor(400);
+ }
  async function walkTo(target){
   // Plan from the shipped collision function; execute every step through
   // actual directional buttons. Never assign the player's map or position.
@@ -33,7 +49,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
   assert.equal(await value('s.mapRegion'),'offshore');assert.ok(await page.evaluate(t=>Math.hypot(s.x-t.x,s.y-t.y)<=(t.radius||3),target));await page.clock.runFor(400);
  }
  try{
-  await page.clock.install({time:new Date('2026-10-22T03:00:00Z')});await page.clock.pauseAt('2026-10-22T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
+  await page.clock.install({time:new Date('2026-10-22T03:00:00Z')});await page.clock.pauseAt('2026-10-22T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();await walkToHarbor();
   assert.equal(await value('s.equipment.vehicle'),null);const otherSlot=await page.evaluate(key=>localStorage.getItem(key+'-slot2'),saveKey);const original=await snapshot();await press('#action');await fitFerry();await shot('harbor-fare');await press('#offshoreFerryCancel');assert.deepEqual(await snapshot(),original);
   await press('#action');await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'offshore');assert.equal(await value('s.money'),original.money-800);assert.equal(await value('s.gameMinutes'),original.time+60);assert.equal(await value('s.boatActive'),false);
   await page.waitForFunction(()=>{const p=document.querySelector('#offshorePixels').getContext('2d').getImageData(0,0,1672,941).data;return p[0]!==20||p[1]!==92||p[2]!==124;});await shot('island-arrival');
@@ -63,7 +79,7 @@ module.exports=async function offshore(url,mobile=false,options={}){
   await press('#menu');await press('[data-field-menu-target="items"]');await press('#openPetAquarium');await page.clock.runFor(1000);
   for(const id of ['takabe','kuromejina','houraihimeji']){const uid=await value('s.petLife.fish.find(f=>f.species==="'+id+'").uid');await press('.pet-fish-roster [data-pet-inspect="'+uid+'"]');await page.clock.runFor(120);await page.waitForSelector('#petInspectFish canvas[data-art-paint-key]');assert.equal(await page.locator('#petInspectFish canvas').getAttribute('data-art-species'),id);for(let n=0;n<3;n++){await page.clock.runFor(2100);await shot(id+'-aquarium-'+n);}await press('[data-pet-action="focus-close"]');}
   await press('[data-pet-action="close"]');await page.evaluate(()=>save());const onIsland=await snapshot();await page.reload({waitUntil:'domcontentloaded'});await start();assert.deepEqual(await snapshot(),onIsland);assert.equal(await value('fish.length'),65);assert.equal(await value('s.playerName'),'島の釣り人');assert.equal(await page.evaluate(key=>localStorage.getItem(key+'-slot2'),saveKey),otherSlot);await walkTo(I.entry);await press('#action');await fitFerry();assert.match(await page.locator('#offshoreFerryNote').innerText(),/追加料金なし/);await shot('paid-return');const beforeReturn=await snapshot();await press('#offshoreFerryGo');assert.equal(await value('s.mapRegion'),'village');assert.equal(await value('s.money'),beforeReturn.money);assert.equal(await value('s.gameMinutes'),beforeReturn.time+60);assert.deepEqual(await value('s.caught'),beforeReturn.caught);await shot('returned-to-harbor');assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
-  console.log('V252_56_OFFSHORE_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,roundTripFare:800,departureOnce:true,cancelFree:true,noPersonalBoat:true,walked,visited:['cove','west','east','entry'],actualMovementChecked:true,results,islandSaveReload:true,freeReturn:true,catchRecordsPreserved:true,errors:0,httpErrors:0}));
+  console.log('V252_56_OFFSHORE_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,roundTripFare:800,departureOnce:true,cancelFree:true,noPersonalBoat:true,villageWalked,walked,visited:['cove','west','east','entry'],actualMovementChecked:true,results,islandSaveReload:true,freeReturn:true,catchRecordsPreserved:true,errors:0,httpErrors:0}));
  }catch(error){
   await shot('failure').catch(()=>{});const state=await value('({region:s.mapRegion,x:s.x,y:s.y,log:s.log.slice(0,4),phase:battle?.phase,tension:battle?.ten})').catch(()=>null);
   fs.writeFileSync(path.join(directory,'failure-'+viewport.width+'.json'),JSON.stringify({error:error.stack,state,lastFightTrace,errors,failed},null,2));console.error('V252_56_FAILURE '+JSON.stringify({state,lastFightTrace}));throw error;

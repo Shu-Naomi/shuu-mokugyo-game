@@ -24,15 +24,40 @@ function preserved(value) {
   return copy;
 }
 
-test('dormant helper has no runtime inclusion, storage access, writes or import-time side effects', () => {
+test('production migration helper is pure on import and loaded only as a dependency of verified save-safe startup', () => {
   const source = fs.readFileSync(path.join(__dirname, '../village-save-migration.js'), 'utf8');
   const context = { globalThis: {} };
-  Object.defineProperty(context.globalThis, 'localStorage', { get() { throw Error('must not read storage'); } });
+  for (const name of ['localStorage', 'sessionStorage', 'indexedDB', 'document', 'fetch']) {
+    for (const target of [context, context.globalThis]) Object.defineProperty(target, name, {
+      get() { throw Error('import must not access ' + name); }
+    });
+  }
   vm.runInNewContext(source, context);
   assert.equal(typeof context.globalThis.ShuVillageSaveMigration.plan, 'function');
+  assert.deepEqual(Object.keys(context.globalThis), ['ShuVillageSaveMigration'], 'only public helper API is installed');
   assert.equal('write' in Migration, false); assert.equal('commit' in Migration, false);
-  for (const file of ['index.html', 'sw.js'])
-    assert.doesNotMatch(fs.readFileSync(path.join(__dirname, '..', file), 'utf8'), /village-save-migration/);
+  const html=fs.readFileSync(path.join(__dirname, '../index.html'),'utf8');
+  const {JSDOM}=require('jsdom'),dom=new JSDOM(html);
+  try {
+    const scripts=[...dom.window.document.querySelectorAll('script')];
+    const runtime=dom.window.document.getElementById('villageDeferredRuntime');
+    assert.equal(runtime?.type,'text/plain','game cannot run before startup gate');
+    const names=['village-save-migration','village-save-store','village-save-adapter','village-release-verifier','village-release-gate'];
+    let previous=scripts.indexOf(runtime);
+    const offline=require('./release-assets.cjs').releaseAssets();
+    for(const name of names){
+      offline.assertPageAsset(name+'.js');
+      const index=scripts.findIndex(script=>script.getAttribute('src')?.startsWith(name+'.js?'));
+      assert.ok(index>previous,name+' dependency order');previous=index;
+    }
+    for(const script of scripts.filter(script=>!script.src&&script.type!=='text/plain'))
+      assert.doesNotMatch(script.textContent,/ShuVillageSaveMigration\.(?:plan|prepare|apply)\s*\(/,'inline bootstrap cannot invoke migration');
+  } finally {dom.window.close();}
+  const gate=fs.readFileSync(path.join(__dirname,'../village-release-gate.js'),'utf8');
+  const verify=gate.indexOf('ShuVillageReleaseVerifier?.verify()'),acquire=gate.indexOf('await ShuVillageSaveStore.acquire'),imports=gate.indexOf('session.importSlot(slot)'),start=gate.indexOf('document.body.append(script)');
+  assert.ok(verify>=0&&verify<acquire&&acquire<imports&&imports<start,'verification, exclusive acquisition and imports precede runtime');
+  assert.match(gate,/if\(!check\?\.ok\)[^\n]*return;/,'failed verification stops before acquisition');
+  assert.match(gate,/if\(!session.ok\)[^\n]*return;/,'failed lock stops before import');
 });
 
 test('village preparation changes only position, direction and distinct production marker', () => {

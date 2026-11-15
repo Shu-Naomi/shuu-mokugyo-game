@@ -3,6 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {seed,saveKey}=require('./game-harness.cjs');
 const {revealProduct}=require('./compact-ui-helpers.cjs');
+const {planVillageRoute}=require('./browser-reference-village-evidence.cjs');
 const root=path.resolve(__dirname,'..'),directory=path.join(__dirname,'sam-quantity-evidence');
 const screens=[{width:740,height:320,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875},{width:844,height:390,mobile:true,dpr:1},{width:1280,height:720,mobile:false,dpr:1}];
 async function run(url,screen){
@@ -13,7 +14,26 @@ async function run(url,screen){
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400)httpErrors.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[screen.mobile?'tap':'click']();
  const state=()=>page.evaluate(()=>({money:s.money,corn:s.baits.corn}));
- const enter=async()=>{await require('./browser-start-adventure.cjs')(page,screen.mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await page.locator('#store.open').waitFor();};
+ const enter=async()=>{
+  await page.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+  await require('./browser-start-adventure.cjs')(page,screen.mobile);
+  if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  assert.equal(await page.evaluate(()=>ShuVillageReference.enabled),true,'actual production reference geometry');
+  // Legacy coordinates are only a migration fixture, not the current shop door.
+  // Plan against live collision geometry; execute each step through real controls.
+  const goal="(x,y,d)=>inWorldRect(x,y,ShuVillageReference.geometry.samShopInteractionBounds)&&d==='up'";
+  const route=await page.evaluate(planVillageRoute,goal);
+  for(const direction of route){
+   const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),direction);
+   await press(`[data-move="${direction}"]`);
+   const actual=await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion}));
+   assert.equal(actual.region,'village');
+   assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'actual directional input follows collision-safe shop route');
+  }
+  assert.equal(await page.evaluate(()=>isAtSamShopEntrance()&&isWalkableWorld(s.x,s.y)&&s.direction==='up'),true,'at actual painted Sam entrance');
+  checks.push({name:'actual-sam-entrance',steps:route.length,...await page.evaluate(()=>({x:s.x,y:s.y,bounds:ShuVillageReference.geometry.samShopInteractionBounds}))});
+  await press('#action');await page.locator('#store.open').waitFor();
+ };
  async function shot(name){
   const metrics=await page.locator('.sam-purchase-layer').evaluate(layer=>{
    const body=layer.querySelector('.compact-sheet-body'),m=body.getBoundingClientRect();
@@ -25,8 +45,9 @@ async function run(url,screen){
   assert.ok(metrics.notOverlapping,name+': summary and quantity rows do not overlap');assert.ok(metrics.bodyFits,name+': no scrolling');for(const n of metrics.nodes){assert.ok(n.fits&&n.inside,name+': fully visible '+n.text);if(n.button)assert.ok(n.width>=44&&n.height>=44,name+': touch target '+n.text);}
   return metrics;
  }
+ const legacyRaw=JSON.stringify({...seed(),money:10000,baits:{corn:92},x:197,y:91,direction:'up',soundEnabled:false});
  try{
-  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),money:10000,baits:{corn:92},x:197,y:91,direction:'up',soundEnabled:false}});
+  await context.addInitScript(({key,raw})=>{if(!localStorage.getItem(key))localStorage.setItem(key,raw);localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,raw:legacyRaw});
   await page.goto(url,{waitUntil:'load'});await enter();
   assert.equal(await page.locator('.bait-quantity-picker').isVisible(),false,'no quantity editor on shelf');
   const shelfStock=await page.locator('#samCategory-bait .compact-product:not([hidden])').evaluateAll(rows=>rows.map(row=>{
@@ -48,11 +69,15 @@ async function run(url,screen){
   await page.keyboard.press('Escape');assert.equal(await page.locator('.sam-purchase-layer').count(),0);
   await press('#store [data-close]');await press('#action');await page.locator('#store.open').waitFor();assert.equal(await page.locator('.bait-quantity-picker').count(),1);
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual(await state(),{money:4800,corn:152},'purchase survives reload');
+  const storedPurchase=await page.evaluate(()=>JSON.parse(ShuVillageProductionSession.read(1).raw));
+  assert.deepEqual({money:storedPurchase.money,corn:storedPurchase.baits.corn},{money:4800,corn:152},'purchase persisted in production generation');
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'original legacy bytes untouched after purchase and reload');
   await page.evaluate(()=>{s.money=100000;renderSamShop();});
   await press('[data-sam-category="rods"]');
   const rod=await revealProduct(page,'[data-buy-rod="youngBamboo"]',screen.mobile);await rod[screen.mobile?'tap':'click']();
   await page.locator('[data-sam-confirm-buy]').focus();await page.keyboard.press('Enter');
   assert.equal(await page.evaluate(()=>{const row=document.querySelector('[data-buy-rod="youngBamboo"]').closest('.compact-product');return row.querySelector('[data-sam-confirm-open]').disabled&&document.activeElement===row.querySelector('[data-compact-select]');}),true,'owned rod restores selection focus');
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'legacy fixture stays immutable through equipment purchase');
   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
   fs.writeFileSync(path.join(directory,`${screen.width}x${screen.height}-result.json`),JSON.stringify({screen,passed:true,checks,errors,httpErrors},null,2));
   console.log(`SAM_QUANTITY_PASS ${screen.width}x${screen.height}: pack size, units, total, cancel, purchase, insufficient funds, preset, reopen, reload`);
