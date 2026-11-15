@@ -44,7 +44,7 @@ module.exports=async function run(url,mobile=false){
   const firstGeneration=await second.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1).generationRaw);
   await require('./browser-start-adventure.cjs')(second,mobile,{slot:2});await second.locator('#lakeIntro.open').waitFor({state:'visible'});
   await second.locator('#lakeIntroSkip').click();assert.equal(await second.evaluate(key=>localStorage.getItem(key),saveKey),first);
-  assert.equal(await second.evaluate(()=>ShuSaveSlots.read(2).data.lakeStory.introSeen),true);
+  assert.equal(await second.evaluate(()=>ShuSaveSlots.create().read(2).data.lakeStory.introSeen),true);
   assert.equal(await second.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1).generationRaw),firstGeneration,'slot2 intro preserves migrated slot1');
   assert.equal(await second.evaluate(key=>localStorage.getItem(key+'-slot2'),saveKey),null,'new slot2 does not write legacy namespace');
   await second.evaluate(()=>{s.cookingIngredients.fishFillet=1;s.items.wildGreens=1;openLocationInterior('diner');});
