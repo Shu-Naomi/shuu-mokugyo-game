@@ -2,6 +2,8 @@
  const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuWorldLife=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
  const art = {"buildings":[[117,9,548,455],[849,72,631,397],[54,503,767,464],[920,513,579,474]],"doorX":[.51,.71,.52,.48],"residents":[[[155,16,150,312],[506,16,166,312],[872,16,173,312],[1234,16,148,311]],[[154,353,135,320],[512,353,179,320],[857,353,183,320],[1243,353,128,320]],[[140,693,151,315],[508,693,184,315],[863,693,186,315],[1231,693,153,313]]]};
  // v252-35: size the valley buildings against their door openings, not roof
  // height. Keep door anchors on the south edge; collision uses these same sizes.
@@ -28,6 +30,7 @@
   {id:'wetland-resident',region:'wetland',name:'水郷の住人',sprite:1,route:[[46,70],[68,71]],speed:1.1},
   {id:'wetland-worker',region:'wetland',name:'売店帰りの住人',sprite:2,route:[[149,39],[164,36]],speed:1}
  ];
+ if(reference)for(const resident of residents){const route=reference.npc.residentRoutes[resident.id];if(route)resident.route=route.map(p=>[...p]);}
  const rect=(x,y,b)=>x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
  function centerX(b){return b.x+(.5-(art.doorX?.[b.sprite]??.5))*b.w;}
  function footprint(b){return {left:centerX(b)-b.w*.36,right:centerX(b)+b.w*.36,top:b.y-b.h*.64,bottom:b.y-1.5};}

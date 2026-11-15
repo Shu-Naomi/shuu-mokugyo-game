@@ -2,8 +2,10 @@
   const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOffshore=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
   const id='offshore',name='潮風島',fare=800,minutes=60;
-  const harbor={x:216,y:109,direction:'up'},entry={x:130,y:96,direction:'up'};
+  const harbor=reference?.routes.offshore.harbor || {x:216,y:109,direction:'up'},entry={x:130,y:96,direction:'up'};
   const rest={x:114,y:57},lighthouse={x:132,y:23};
   const assets={world:'assets/offshore-world-v252-18.png',ship:'assets/offshore-ferry-v251.png'};
   // Trace the widened 1672 x 941 painting. Keep the usable lanes inside

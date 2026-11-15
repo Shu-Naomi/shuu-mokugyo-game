@@ -1,0 +1,38 @@
+name: Village save safety rehearsal
+on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/village-save-safety.yml']
+permissions:
+  contents: read
+concurrency:
+  group: village-save-safety-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  safety:
+    if: github.head_ref == 'codex/village-safe-recovery-20261114'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: node --test village-save-store.test.cjs
+      - run: node browser-village-save-safety.cjs
+        env:
+          EXPECTED_HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: village-save-safety
+          path: nushi-tsuri/tests/artifacts/village-save-safety/

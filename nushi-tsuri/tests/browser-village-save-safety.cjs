@@ -1,0 +1,35 @@
+'use strict';
+const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process');
+async function run(){
+ assert.equal(process.env.CI,'true','GitHub CI only');assert.equal(process.env.GITHUB_ACTIONS,'true','GitHub Actions required');
+ assert.equal(execFileSync('git',['rev-parse','HEAD'],{encoding:'utf8'}).trim(),process.env.EXPECTED_HEAD_SHA);
+ require('../tools/build-village-release-rehearsal.cjs')();
+ const {server,legacyFixture}=require('./browser-reference-village-evidence.cjs'),{chromium}=require('playwright');
+ const host=server();await new Promise(r=>host.listen(0,'127.0.0.1',r));const base='http://127.0.0.1:'+host.address().port+'/nushi-tsuri';
+ const out=path.join(__dirname,'artifacts/village-save-safety');fs.mkdirSync(out,{recursive:true});
+ const report={head:process.env.EXPECTED_HEAD_SHA,physicalDevice:false,checks:[],errors:[]};let browser;
+ try{
+  browser=await chromium.launch({headless:true});const context=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
+  await context.route('**/seed-only',route=>route.fulfill({contentType:'text/html',body:'<!doctype html><title>Storage fixture</title>'}));
+  const first=await context.newPage();first.on('pageerror',e=>report.errors.push(e.message));
+  await first.goto(base+'/seed-only');const raw=JSON.stringify(legacyFixture());
+  await first.evaluate(raw=>{localStorage.clear();localStorage.setItem('nushi-inugoya-v2',raw);},raw);
+  const url=base+'/village-release-rehearsal.html?villageReference=1';await first.goto(url);
+  await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+  assert.equal(await first.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),raw);report.checks.push('lock acquired before runtime; source unchanged');
+  const second=await context.newPage();await second.goto(url);await second.getByText(/another-tab-open/).waitFor();
+  assert.equal(await second.evaluate(()=>!!globalThis.ShuVillageReleaseGate),false);report.checks.push('second real tab blocked before runtime');
+  await require('./browser-start-adventure.cjs')(first,true);if(await first.locator('#lakeIntroSkip').isVisible())await first.locator('#lakeIntroSkip').tap();
+  await first.screenshot({path:path.join(out,'running-phone-landscape.png')});
+  const before=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));
+  await second.evaluate(()=>localStorage.setItem('nushi-inugoya-v2','{"money":7654,"x":74,"y":39.5}'));
+  await first.getByText(/別の旧版タブで保存が変わりました/).waitFor();
+  await first.screenshot({path:path.join(out,'conflict-phone-landscape.png')});
+  const after=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));assert.equal(after.currentRaw,before.currentRaw);report.checks.push('legacy change detected; current preserved');
+  await second.close();await first.getByRole('button',{name:'新しい村の冒険を続ける'}).tap();await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+  const recovered=await first.evaluate(()=>ShuVillageProductionSession.inspectRecovery(1));assert.equal(recovered.originalRaw,raw);report.checks.push('explicit recovery restarts with original intact');
+  await first.goto(base+'/seed-only');await first.goto(url);await first.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);report.checks.push('navigation releases lock and reopening reacquires');
+  assert.deepEqual(report.errors,[]);report.status='passed';
+ }finally{fs.writeFileSync(path.join(out,'report.json'),JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>host.close(r));}
+}
+if(require.main===module)run().catch(e=>{console.error(e);process.exitCode=1;});module.exports=run;

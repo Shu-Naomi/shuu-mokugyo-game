@@ -7,6 +7,8 @@
   else root.ShuTournamentNpcs = api;
 })(typeof globalThis !== "undefined" ? globalThis : this, function (Rivals) {
   "use strict";
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
   const roster = [
     { id: "gen", name: "源じい", role: "釣り好きのおじいさん", column: 0,
       greeting: ["今日は負けんぞ。草の際には、ええフナがおる。", "フナの口に合うエサを選ぶんじゃ。道具の値段だけでは決まらんぞ。"],
@@ -38,6 +40,7 @@
       { id: "haru", x: 93, y: 27, facing: "right", place: "湖の西岸" },
     ],
   };
+  if(reference)for(const placement of venues.lakeFuna)Object.assign(placement,reference.npc.anglers[placement.id]);
   const asset = "assets/tournament-villagers-v175.png";
   // Source rectangles select the two complete poses from the original alpha
   // atlas without modifying the artwork. Feet share a bottom-centre anchor.

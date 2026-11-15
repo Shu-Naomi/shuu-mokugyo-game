@@ -3,10 +3,10 @@
  * Coordinates refer to the unscaled master, independently of game coordinates.
  */
 (function(root, factory) {
-  const api = factory();
+  const api = factory(root);
   if (typeof module === 'object' && module.exports) module.exports = api;
   else root.ShuSceneLayers = api;
-})(typeof globalThis !== 'undefined' ? globalThis : this, function() {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function(root) {
   'use strict';
   const rect = (x,y,w,h) => [[x,y],[x+w,y],[x+w,y+h],[x,y+h]];
   const part = (id,kind,polygon,extra={}) => ({id,kind,polygons:[polygon],...extra});
@@ -79,6 +79,60 @@
     // Both dock links are painted into the cohesive master. No tiled patches.
     patches:[],
   };
+  // Opt-in static reference pilot. Coordinates are traced against the original
+  // 1672×941 image, not stretched from the different 1536×864 authored map.
+  // Parts remain editable labels, but none move: the same untouched master is
+  // also the underlay, so this pilot can never uncover the previous painting.
+  const referencePolygons = {
+    lake:[[435,215],[452,178],[499,146],[556,128],[620,108],[686,102],[728,107],[786,108],[850,124],[908,145],[950,168],[982,202],[992,229],[977,258],[943,280],[890,299],[832,312],[781,325],[749,334],[722,325],[662,319],[601,311],[544,297],[495,281],[460,256],[440,236]],
+    stream:[[728,329],[751,333],[747,362],[754,385],[742,414],[727,439],[718,471],[722,495],[715,529],[713,561],[722,586],[735,612],[745,641],[734,665],[710,686],[705,710],[708,736],[719,766],[727,794],[744,820],[760,840],[664,829],[648,813],[659,787],[672,763],[677,733],[683,710],[690,689],[703,663],[704,639],[696,612],[682,590],[676,564],[679,536],[680,507],[688,477],[699,449],[707,421],[716,394],[721,367]],
+    sea:[[0,755],[48,741],[111,735],[182,751],[254,769],[330,787],[412,810],[488,825],[549,843],[590,856],[635,866],[671,851],[722,853],[773,869],[828,861],[894,860],[976,846],[994,828],[1001,798],[1000,758],[1060,749],[1164,745],[1203,732],[1204,678],[1281,673],[1354,671],[1428,679],[1515,702],[1581,715],[1602,741],[1597,797],[1559,839],[1579,879],[1672,908],[1672,941],[0,941]],
+    'harbor-water':[[1205,675],[1280,672],[1380,675],[1476,681],[1532,697],[1584,715],[1597,743],[1593,791],[1562,831],[1573,867],[1672,900],[1672,941],[942,941],[972,850],[993,826],[999,794],[995,752],[1168,746],[1204,728]],
+    'practice-pond':[[1440,500],[1456,480],[1482,473],[1512,477],[1539,493],[1550,513],[1538,532],[1507,544],[1475,536],[1452,522]],
+    farmhouse:[[178,140],[188,83],[276,81],[280,70],[292,70],[292,82],[330,83],[333,110],[349,125],[346,190],[181,188]],
+    watermill:[[1239,119],[1288,92],[1292,82],[1370,81],[1371,99],[1414,124],[1425,153],[1414,193],[1242,196]],
+    'riao-tcg-shop':[[1440,131],[1458,96],[1498,96],[1512,83],[1526,96],[1566,96],[1579,132],[1580,197],[1441,200]],
+    'dan-race-venue':[[163,312],[184,294],[219,282],[232,267],[246,286],[283,293],[319,312],[336,380],[324,416],[269,432],[263,469],[207,473],[204,435],[158,407]],
+    yaoya:[[428,417],[446,381],[475,380],[478,351],[490,351],[490,373],[509,351],[542,374],[571,376],[597,421],[594,480],[565,501],[447,493],[429,472]],
+    diner:[[867,412],[886,358],[1015,358],[1039,410],[1040,474],[1022,493],[889,495],[870,470]],
+    'main-shrine':[[1227,286],[1245,264],[1285,248],[1289,229],[1298,228],[1305,253],[1344,267],[1356,293],[1351,310],[1339,310],[1337,371],[1314,393],[1268,391],[1247,372],[1245,309],[1228,307]],
+    'sam-shop':[[1223,511],[1244,466],[1276,465],[1277,452],[1294,451],[1296,464],[1375,463],[1392,515],[1392,573],[1410,590],[1211,595],[1216,552]],
+    'fish-market':[[976,587],[1025,562],[1043,550],[1055,559],[1083,569],[1124,573],[1145,611],[1143,651],[1115,665],[980,660],[968,640]],
+    'harbor-shop':[[839,721],[864,695],[888,688],[900,675],[913,689],[943,707],[954,740],[946,788],[839,786]],
+    'stone-bridge':[[653,510],[666,498],[681,499],[684,502],[729,501],[737,498],[759,500],[766,519],[765,560],[751,570],[739,558],[724,552],[696,552],[679,559],[667,574],[654,562]],
+    'north-forest':[[0,0],[1672,0],[1672,80],[1510,76],[1441,89],[1390,66],[1260,75],[1201,48],[1168,41],[1116,83],[1026,116],[937,62],[809,47],[774,28],[765,0],[721,0],[713,44],[645,68],[535,84],[436,91],[341,91],[300,53],[184,54],[120,106],[0,198]],
+    'west-forest':[[0,0],[141,0],[132,139],[108,195],[127,233],[63,283],[29,348],[0,409]],
+    'east-forest':[[1593,0],[1672,0],[1672,525],[1628,461],[1612,414],[1571,332],[1528,291],[1483,269],[1462,244],[1672,234]],
+  };
+  const referenceBoxes = {
+    meadow:[0,0,1672,941],paths:[0,0,1672,941],
+    'west-coast-bushes':[0,544,168,120],'east-coast-bushes':[1602,437,70,177],
+    'shrine-tree':[397,289,62,78],'river-tree':[519,532,54,74],'east-tree':[1069,147,103,100],
+    'west-cherry':[43,256,107,112],'east-cherry':[1505,324,105,103],
+    'lake-reeds':[466,124,74,39],'river-reeds':[741,435,22,56],
+    'wayside-shrine':[48,355,46,52],'lake-dock':[685,80,42,59],
+    'farm-fences':[142,190,216,61],'west-torii':[159,375,175,59],
+    'shrine-fence':[1152,248,317,183],'beach-stones':[0,766,230,77],
+    'north-bank-stones':[543,87,392,62],'diner-props':[804,447,70,45],
+    'diner-parasol':[1038,426,55,66],'village-board':[808,548,20,37],
+    'sam-bait-chest':[1342,572,29,23],'sam-front-pail':[1262,581,22,23],
+    'inn-noren':[220,150,39,15],'inn-doorstep':[219,178,45,18],
+    'market-noren':[1029,618,38,27],'market-fish-counter':[982,637,32,24],
+    'market-ice-chest':[1081,642,30,24],'market-handcart':[1117,633,26,25],
+    'beach-umbrella':[426,662,37,40],'west-boat':[1005,796,61,37],
+    'middle-boat':[1167,719,69,42],'east-boat':[1264,684,77,43],
+    'harbor-pier':[1390,666,173,126],
+  };
+  const referenceEnabled = env => env?.referenceVillage === undefined ? !!root?.ShuVillageReference?.enabled : !!env.referenceVillage;
+  function referenceDefinition() {
+    return {...world,source:'assets/village-reference-pilot.png',underlay:'assets/village-reference-pilot.png',
+      units:[1672,941],referenceVillage:true,waterColorMasks:[],edits:[],patches:[],
+      parts:world.parts.map(p=>{
+        const polygon=referencePolygons[p.id] || rect(...referenceBoxes[p.id]);
+        const {motion,offset,flipX,...fixed}=p;
+        return {...fixed,polygons:[polygon]};
+      })};
+  }
   const garden = {
     id:'home-exterior',source:'assets/player-home-exterior-v160.webp',
     underlay:'assets/layered-v163/home-exterior-underlay.png', units:[1774,887],
@@ -208,7 +262,7 @@
   }
   function get(id,env={period:'day'}) {
     if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));
-    if(id==='world') return world;
+    if(id==='world') return referenceEnabled(env)?referenceDefinition():world;
     if(id==='home-exterior') return garden;
     if(id==='home-interior'||id==='room-player-home') return room;
     if(id.startsWith('surface-')) return surface(id.slice(8),env.period);
@@ -238,7 +292,7 @@
   const villageArtSize=[1672,941];
   const trunks=[[459,384],[584,635],[1184,240],[1227,240],[108,369],[1583,430]];
   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
-  const propSolid=(x,y)=>trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
-    shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom);
-  return {get,ids,assets,propSolid};
+  const propSolid=(x,y,env)=>!referenceEnabled(env)&&(trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
+    shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom));
+  return {get,ids,assets,propSolid,referenceDefinition};
 });
