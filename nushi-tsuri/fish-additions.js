@@ -189,6 +189,10 @@
    ecology:'桃色の体に、あごから伸びる二本のひげを持つ。尾の付け根の黒い鞍状の模様は体側の中央より下まで届く。ひげで底の小さな生き物を探す。',locations:'潮風島・入り江（中層〜深場）',time:'いつでも',rods:['clearStream','shoreReed'],baits:['smallShrimp','worm','shrimp'],tip:'入り江で小エビ＋ハリ中を深場へ。砂底を伝う引きが止まり、ひげを休めた間にそっと寄せよう。',intro:'桃色の体に二本ひげ。底を探るホウライヒメジだ！',lengths:[8,13,18,24,31,39,50],baitWeights:{smallShrimp:3.6,worm:2.7,shrimp:2.3,crab:1.4,shell:.25,liveMinnow:.1,river:.15,paste:.02,corn:.01}}
  );
  Object.assign(art,{"takabe":{"asset":"assets/fish-takabe-v252-56.png","boxes":[[10,204,366,143],[414,153,342,228],[850,135,260,259],[1214,120,269,280],[46,642,270,256],[401,665,329,206],[778,701,360,146],[1167,699,359,152]],"heads":[[0.9918,0.5594],[0.9825,0.5614],[0.7692,0.5676],[0.5056,0.5786],[0.2704,0.5508],[0.0122,0.5777],[0.0111,0.5274],[0.9833,0.4868]],"continuousBody":true},"kuromejina":{"asset":"assets/fish-kuromejina-v252-56.png","boxes":[[9,178,388,207],[422,141,380,281],[838,125,323,322],[1219,116,280,334],[30,611,314,313],[375,631,364,268],[760,658,378,209],[1154,653,374,213]],"heads":[[0.9871,0.5314],[0.9816,0.5516],[0.7802,0.5466],[0.5036,0.5689],[0.2102,0.5399],[0.0192,0.5784],[0.0132,0.5502],[0.9786,0.4742]],"continuousBody":true},"houraihimeji":{"asset":"assets/fish-houraihimeji-v252-56.png","boxes":[[12,183,377,177],[415,150,351,230],[830,126,267,288],[1221,126,247,302],[60,622,269,286],[400,645,350,242],[777,673,367,177],[1160,674,368,176]],"heads":[[0.9814,0.6384],[0.9687,0.6261],[0.8127,0.5833],[0.498,0.6026],[0.1896,0.6049],[0.02,0.6322],[0.0245,0.661],[0.9837,0.5852]],"continuousBody":true}});
+ // Regional freshwater discovery. Encounter and fight values are game tuning.
+ definitions.push({id:'browntrout',name:'ブラウントラウト',base:'nijimasu',number:65,price:880,resistance:155,band:'medium',hook:'medium',scientific:'Salmo trutta',habitats:['lake'],rarity:3,label:'峠の池の赤い斑点',
+  ecology:'褐色の背と、淡い縁のある赤い斑点が目印のサケ科の魚。冷たい川や湖に暮らし、昆虫や小魚を食べる。日本では外来種。',locations:'峠の池（中層〜深場）',time:'いつでも',rods:['clearStream','starGazer'],baits:['liveMinnow','river','worm'],tip:'峠の池で活き小魚＋ハリ中を深場へ。鋭い走りと首振りを受け流し、向き直る間に寄せよう。',intro:'褐色の体に赤い斑点。ブラウントラウトだ！',lengths:[12,20,28,38,49,62,80],baitWeights:{liveMinnow:3.8,river:2.8,worm:1.8,smallShrimp:.6,shrimp:.15,paste:.02,corn:.02,shell:.01,crab:.01}});
+ art.browntrout={asset:'assets/fish-browntrout.png',boxes:[[9,173,418,177],[457,142,341,234],[856,115,251,287],[1221,112,248,294],[54,622,244,280],[355,646,349,230],[727,679,391,175],[1146,682,381,174]],heads:[[.995,.57],[.99,.58],[.87,.58],[.50,.57],[.13,.59],[.01,.60],[.01,.61],[.99,.53]],continuousBody:true};
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -198,7 +202,7 @@
   'mountain-stream-shallow':{kawamutsu:.18},'mountain-stream-mid':{kawamutsu:.1},
   'mountain-wetCreek-shallow':{kawamutsu:.16},'mountain-wetCreek-mid':{kawamutsu:.1},
   'lake-shallow':{herabuna:.15},'lake-mid':{herabuna:.32},'lake-deep':{herabuna:.18},
-  'mountain-highPond-shallow':{herabuna:.18},'mountain-highPond-mid':{herabuna:.26,himemasu:.38},'mountain-highPond-deep':{herabuna:.18,himemasu:.34},
+  'mountain-highPond-shallow':{herabuna:.18},'mountain-highPond-mid':{herabuna:.26,himemasu:.38,browntrout:.18},'mountain-highPond-deep':{herabuna:.18,himemasu:.34,browntrout:.34},
   'mountain-wetPond-shallow':{herabuna:.12},'mountain-wetPond-mid':{herabuna:.25},'mountain-wetPond-deep':{herabuna:.18},
   'sea-shallow':{mahaze:.25,sayori:.24},'sea-mid':{mahaze:.1,masaba:.3},'sea-deep':{masaba:.24},
   'coast-sand-shallow':{mahaze:.22,sayori:.14},'coast-sand-mid':{mahaze:.1,masaba:.2},'coast-sand-deep':{masaba:.18},
@@ -248,6 +252,13 @@
    {id:'stone-dart',name:'石陰への短い突進',icon:'➜',weight:.34,min:650,max:1000,motion:'deep',speedX:2.7,speedY:.6,tension:5.3,release:5.6,reel:.65,scale:1,frameEvery:1,danger:true,hold:'石陰へ短く走る！Aを離して受け流そう。',loose:'底へ戻る突進が止まるまで待とう。'},
    {id:'bottom-brace',name:'底で踏ん張る',icon:'≋',weight:.22,min:700,max:1100,motion:'heavy',speedX:.7,speedY:.2,tension:4.1,release:5.1,reel:.85,scale:1,frameEvery:3,hold:'底で踏ん張っている。強く引かず、糸の緩みを待とう。',loose:'丸い胸びれで底に留まっている。'},
    {id:'rest',name:'底でひと休み',icon:'◎',weight:.44,min:950,max:1500,motion:'rest',speedX:.15,speedY:.1,tension:1.3,release:5.3,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'突進が止まって糸が緩んだ！Aでそっと寄せよう。',loose:'底でひと休み。今が寄せる番。'}
+  ]};
+  Object.assign(fishMotionProfiles.browntrout,{beat:.72,speedBeat:.11,burst:1.6,thrust:.12,recoil:.015,sway:.02,roll:.015,turnFrames:18,turnArc:1.5,turnRoll:.8});
+  Object.assign(fishLifeProfiles.browntrout,{wave:.045,bend:.035,pulse:.03});
+  fightProfiles.browntrout={intro:definitions.find(d=>d.id==='browntrout').intro,moods:[
+   {id:'trout-run',name:'岸陰への鋭い走り',icon:'➜',weight:.35,min:750,max:1250,motion:'rush',speedX:4.4,speedY:.8,tension:7.2,release:5.8,reel:.55,scale:1,frameEvery:1,danger:true,hold:'鋭く走り出した！Aを離して受け流そう。',loose:'岸陰へ向かう走りが緩むまで待とう。'},
+   {id:'trout-shake',name:'向きを変えて首を振る',icon:'≋',weight:.27,min:750,max:1150,motion:'heavy',speedX:1.6,speedY:1,tension:5.4,release:5.5,reel:.8,scale:1,frameEvery:2,hold:'首を振っている。無理に引かず、糸が緩むのを待とう。',loose:'向きを変えながら粘っている。'},
+   {id:'rest',name:'泳ぎを緩める',icon:'◎',weight:.38,min:850,max:1350,motion:'rest',speedX:.25,speedY:.15,tension:1.5,release:5.4,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aでやさしく寄せよう。',loose:'今が寄せる番。Aで距離を取り返そう。'}
   ]};
   // Long-bodied morays glide and undulate instead of inheriting the eel's
   // quick zig-zags and rolling turns. The renderer keeps their lips fixed.

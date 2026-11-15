@@ -28,7 +28,7 @@ test('guide pagination, map selection and return preserve progress and fishdex s
  try{const before=snapshot(w),save=w.localStorage.getItem(saveKey);w.open('record');w.eval("fishdexSelectedId='nijimasu';renderRecord()");
   w.document.querySelector('#fishdexFieldGuide').click();assert.ok(w.document.querySelector('#fieldGuide.open'));assert.equal(w.document.querySelector('#record.open'),null);assert.equal(w.document.querySelector('#fieldGuideRegion').textContent,'峠の池');
   let places=Array.from(w.document.querySelectorAll('[data-guide-place]'));assert.equal(places.length,3);assert.equal(places[0].getAttribute('aria-pressed'),'true');
-  assert.deepEqual(Array.from(w.document.querySelectorAll('[data-guide-fish]')).map(n=>n.dataset.guideFish),['herabuna','himemasu']);
+  assert.deepEqual(Array.from(w.document.querySelectorAll('[data-guide-fish]')).map(n=>n.dataset.guideFish),['herabuna','himemasu','browntrout']);
   places[1].click();assert.match(w.document.querySelector('#fieldGuideMap').getAttribute('aria-label'),/峠の釣り人の小屋/);assert.equal(w.document.querySelector('#fieldGuideNote').textContent.includes('扉へ向いてA'),true);
   w.document.querySelector('#fieldGuideNext').click();assert.equal(w.document.querySelector('#fieldGuidePage').textContent,'2 / 2');assert.equal(w.document.querySelector('#fieldGuideNext').disabled,true);
   places=Array.from(w.document.querySelectorAll('[data-guide-place]'));assert.equal(places.length,1);assert.match(w.document.querySelector('#fieldGuideNote').textContent,/峠の沼/);
