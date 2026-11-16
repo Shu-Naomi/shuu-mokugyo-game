@@ -391,12 +391,14 @@ async function audioSmoke(url,mobile){
         for(let x=p.x-6;x<=p.x+6;x+=2)for(let y=p.y-6;y<=p.y+6;y+=2)
         for(const direction of ['up','down','left','right']){
           if(!isWalkableWorld(x,y))continue;s.x=x;s.y=y;s.direction=direction;
-          if(nearbyRival()?.id===id){render();return true;}
+          const rival=nearbyRival(),npc=nearbyTournamentNpc();
+          if(rival?.id===id&&(!npc||rival.distance<npc.distance)){render();return true;}
         }return false;
       },id);
       assert.equal(reached,true,id+' reachable for a real A press');
       await page.waitForFunction(()=>performance.now()-rivalDogLastSound>=300);
       await page.locator('#action')[mobile?'tap':'click']();
+      assert.deepEqual(await page.evaluate(()=>({rival:activeRivalId,npc:activeTournamentNpcId,reaction:rivalDogReaction?.id})),{rival:id,npc:null,reaction:id},id+' actual A selects this dog before waiting for bark');
       await page.waitForFunction(()=>{
         const voice=gameAudioSample('rivalDogBark');return !voice.paused&&voice.currentTime>.02;
       });
