@@ -1,7 +1,7 @@
 name: Aquarium identity display
 on:
   push:
-    branches: [main, codex/aquarium-identity-v251-7]
+    branches: [main, fix/main-suite-production-fixtures, codex/aquarium-identity-v251-7]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'

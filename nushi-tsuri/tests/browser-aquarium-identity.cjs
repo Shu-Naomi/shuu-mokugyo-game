@@ -11,7 +11,7 @@ module.exports=async function identityUI(url,screen){
   page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
   const shot=async name=>page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});
   const snapshot=()=>page.evaluate(()=>({fish:s.petLife.fish,eggs:s.petLife.eggs,money:s.money,food:s.petLife.food,time:s.gameMinutes,caught:s.caught}));
-  async function enter(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await press('#action');await press('[data-pet-action="aquarium"]');}
+  async function enter(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');await require('./browser-production-facility.cjs')(page,{id:'watermill',modal:'#petLifeModal',mobile,legacyKey:saveKey,legacyRaw:JSON.stringify(fixture())});await press('[data-pet-action="aquarium"]');}
   async function fits(){
    const layout=await page.evaluate(()=>{
     const box=e=>{const r=e.getBoundingClientRect();return {x:r.x,y:r.y,w:r.width,h:r.height};},sidebar=document.querySelector('.pet-tank-info'),content=document.querySelector('.pet-content');
@@ -42,7 +42,7 @@ module.exports=async function identityUI(url,screen){
   await press('.pet-fish-roster [data-pet-inspect="pet-34"]');await press('[data-pet-action="records"]');
   assert.match(await page.locator('.pet-stats').innerText(),/性別\s*性別不明.*世代・星\s*世代不明/s);await shot('legacy-records');await press('.pet-sheet [data-pet-action="panel-close"]');
   assert.deepEqual(await snapshot(),before);
-  const saved=await page.evaluate(key=>JSON.parse(localStorage.getItem(key)),saveKey);assert.equal(saved.petLife.version,6);
+  const saved=await page.evaluate(()=>JSON.parse(ShuVillageProductionSession.read(1).raw));assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),JSON.stringify(fixture()),'legacy bytes preserved');assert.equal(saved.petLife.version,6);
   await page.reload({waitUntil:'load'});await enter();assert.deepEqual(await snapshot(),before);assert.equal(await page.locator('.pet-profile-identity').innerText(),'性別不明 · 世代不明');await fits();await shot('legacy-resumed');
   // Existing care operations still apply once to the same five fish and survive resume.
   await press('[data-pet-action="feed"]');assert.equal(await page.evaluate(()=>s.petLife.food),before.food-5);assert.equal(await page.locator('[data-pet-action="feed"]').isDisabled(),true);

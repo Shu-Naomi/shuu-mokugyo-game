@@ -1,7 +1,7 @@
 name: Care gestures and inn UI
 on:
   push:
-    branches: [main, codex/dog-care-inn-ui-v251-5, codex/dog-care-no-human-hand]
+    branches: [main, fix/main-suite-production-fixtures, codex/dog-care-inn-ui-v251-5, codex/dog-care-no-human-hand]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/compact-ui.*'

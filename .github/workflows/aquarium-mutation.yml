@@ -1,7 +1,7 @@
 name: Aquarium colours and notebook
 on:
   push:
-    branches: [main, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook, codex/fish-nicknames-v252-11, codex/namazu-albino-v252-12, codex/medaka-gold-v252-13, codex/unagi-albino-v252-14, codex/dojo-albino-v252-15, codex/offshore-collision-v252-16, codex/offshore-ground-boundaries-v252-17, codex/offshore-wide-trails-v252-18, codex/offshore-open-ground-v252-19, codex/offshore-reef-return-v252-20, codex/madai-blue-v252-21, codex/kamatsuka-albino-v252-22, codex/raigyo-albino-v252-23, codex/tanago-gold-v252-24]
+    branches: [main, fix/main-suite-production-fixtures, codex/funa-gold-mutation-v251-8, codex/koi-gold-mutation, codex/pet-notebook, codex/fish-nicknames-v252-11, codex/namazu-albino-v252-12, codex/medaka-gold-v252-13, codex/unagi-albino-v252-14, codex/dojo-albino-v252-15, codex/offshore-collision-v252-16, codex/offshore-ground-boundaries-v252-17, codex/offshore-wide-trails-v252-18, codex/offshore-open-ground-v252-19, codex/offshore-reef-return-v252-20, codex/madai-blue-v252-21, codex/kamatsuka-albino-v252-22, codex/raigyo-albino-v252-23, codex/tanago-gold-v252-24]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'
