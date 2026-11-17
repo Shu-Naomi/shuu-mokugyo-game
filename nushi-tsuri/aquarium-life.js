@@ -8,7 +8,7 @@
   // Each fish has its own tank pacing and water column. Gameplay and feeding
   // use the same layout and never change catch records or reel physics.
   const gaits=Object.freeze({
-    kawamutsu:[1.31,.82,-.018],herabuna:[.73,.56,.03],himemasu:[1.21,.96,-.035],browntrout:[1.08,.86,-.025],
+    kawamutsu:[1.31,.82,-.018],herabuna:[.73,.56,.03],himemasu:[1.21,.96,-.035],laketrout:[.93,.68,.045],browntrout:[1.08,.86,-.025],
     mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],
     bluegill:[.98,.65,-.015],aburahaya:[1.36,.7,-.025],magochi:[.63,.26,.075],
     oyanirami:[.79,.49,.015],akakamasu:[1.58,.91,-.055],ishidai:[.92,.68,.035],
