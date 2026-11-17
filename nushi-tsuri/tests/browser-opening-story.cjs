@@ -52,7 +52,7 @@ module.exports=async function openingStory(url,screen){
    // Continue an adventure that predates the story: no forced intro, aquarium and dogs survive.
    await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});const second=new URL(url);second.searchParams.set('saveSlot','2');await page.goto(second.href,{waitUntil:'load'});await enter(page,mobile,{slot:2,isNew:false});assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.evaluate(()=>s.playerName),'先輩');assert.deepEqual(await page.evaluate(()=>s.dogTricks),legacy.dogTricks);assert.equal(await page.evaluate(()=>s.extraFuture.keep),8);assert.equal(await page.evaluate(()=>fish.length),66);
    await legacyUnchanged();assert.equal((await current(1)).lakeStory.introSeen,true);assert.equal((await current(1)).playerName,'直美♡');
-   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({dog,avatar,layouts,assets,renamed:true,resumed:'retort',finished:true,oldSave:true,legacyBytesPreserved:true,modernCheckpoint:true,slotIsolation:true,catalogue:65,errors,httpErrors});
+   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({dog,avatar,layouts,assets,renamed:true,resumed:'retort',finished:true,oldSave:true,legacyBytesPreserved:true,modernCheckpoint:true,slotIsolation:true,catalogue:66,errors,httpErrors});
   }catch(error){await shot('failure').catch(()=>{});fs.writeFileSync(path.join(dir,`${width}x${height}-${dog}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors},null,2));throw error;}
   finally{await context.close();}
  }
