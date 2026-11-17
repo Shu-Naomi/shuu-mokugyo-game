@@ -1,7 +1,7 @@
 name: Title and first character setup
 on:
   push:
-    branches: [main, codex/title-character-setup-v252]
+    branches: [main, fix/main-suite-production-fixtures, codex/title-character-setup-v252]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/pet-life-ui.js'

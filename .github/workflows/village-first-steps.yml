@@ -1,7 +1,7 @@
 name: Village first steps and safe fishing
 on:
   push:
-    branches: [main, codex/village-first-steps]
+    branches: [main, fix/main-suite-production-fixtures, codex/village-first-steps]
     paths:
       - 'nushi-tsuri/index.html'
       - 'nushi-tsuri/village-guide.*'
