@@ -1,7 +1,7 @@
 # Village production entry (252-67, pending release)
 
 This draft currently incorporates baseline main `09025ae58547709d99b0e604df9e789570da1858` (brown trout).
-Village release 252-67 is reserved after the brown-trout correction release 252-66. That correction is not yet integrated here; integrate its final main commit before release review.
+Village release 252-67 follows the verified public 252-65 baseline. On 2026-11-17 the coordinator confirmed no brown-trout gameplay correction is needed: public/main core files match, and the 740x360, 45.65cm, 600ms-input diagnostic caught the fish in 165.36 seconds. The earlier 216-second failure was not reproduced and its cause remains unidentified. Diagnostic PR #339 (run 43998909519, artifact 14289804974) is evidence only and must not be merged as a dependency. No 252-66 integration is required.
 It is not approved for public deployment until exact-head CI and release review finish.
 
 ## Editing and generating
@@ -29,4 +29,4 @@ The old worker itself can cache a newly fetched canonical game document before t
 - Preview-negative and historic coordinate life/audio tests are explicitly source-template baselines. Current production village/facilities/fishing have separately identified browser coverage.
 - CI mobile emulation is not physical-device heat/performance testing.
 
-Before merge: exact head checks, review current village facilities and exit readability, confirm brown trout deployment, and report any unverified physical-device limits. No cache clearing or legacy save deletion is a migration step.
+Before merge: verify required checks and unchanged runtime evidence, review current village facilities and exit readability, and report unverified physical-device limits. Runtime head f68ce3 passed all 32 workflows (29 success, 3 skips); the subsequent change to this document does not alter runtime, tests, configuration or dependencies. Three-size visual review retained the reference art/colors. Riao TCG remains a preparation notice, not a finished card game. Physical-device heat/performance remains unmeasured. No cache clearing or legacy save deletion is a migration step.
