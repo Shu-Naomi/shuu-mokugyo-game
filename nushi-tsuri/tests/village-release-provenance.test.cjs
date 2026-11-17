@@ -9,7 +9,7 @@ test('future browser checks pin the rebuilt runtime and agree with the workflow 
   assert.ok(workflow.includes("if(digest!=='" + runner.RUNTIME_TREE_SHA256 + "')"));
   assert.equal((workflow.match(/github\.head_ref == 'codex\/village-safe-recovery-20261114'/g) || []).length, 2,
     'both browser jobs may run on this branch if a later PR is explicitly authorized');
-  assert.equal(runner.FROZEN, 'reference-production-plus-main-09025ae-252-67');
+  assert.equal(runner.FROZEN, 'reference-fishmarket-sign-252-68');
 });
 test('the original reference painting stays byte-identical during preparation', () => {
   const bytes = fs.readFileSync(path.join(__dirname, '../assets/village-reference-pilot.png'));
