@@ -193,6 +193,9 @@
  definitions.push({id:'browntrout',name:'ブラウントラウト',base:'nijimasu',number:65,price:880,resistance:155,band:'medium',hook:'medium',scientific:'Salmo trutta',habitats:['lake'],rarity:3,label:'峠の池の赤い斑点',
   ecology:'褐色の背と、淡い縁のある赤い斑点が目印のサケ科の魚。冷たい川や湖に暮らし、昆虫や小魚を食べる。日本では外来種。',locations:'峠の池（中層〜深場）',time:'いつでも',rods:['clearStream','starGazer'],baits:['liveMinnow','river','worm'],tip:'峠の池で活き小魚＋ハリ中を深場へ。鋭い走りと首振りを受け流し、向き直る間に寄せよう。',intro:'褐色の体に赤い斑点。ブラウントラウトだ！',lengths:[12,20,28,38,49,62,80],baitWeights:{liveMinnow:3.8,river:2.8,worm:1.8,smallShrimp:.6,shrimp:.15,paste:.02,corn:.02,shell:.01,crab:.01}});
  art.browntrout={asset:'assets/fish-browntrout.png',boxes:[[9,173,418,177],[457,142,341,234],[856,115,251,287],[1221,112,248,294],[54,622,244,280],[355,646,349,230],[727,679,391,175],[1146,682,381,174]],heads:[[.995,.57],[.99,.58],[.87,.58],[.50,.57],[.13,.59],[.01,.60],[.01,.61],[.99,.53]],continuousBody:true};
+ definitions.push({id:'laketrout',name:'レイクトラウト',base:'iwana',number:66,price:960,resistance:150,band:'medium',hook:'medium',scientific:'Salvelinus namaycush',habitats:['lake'],rarity:3,label:'深場の白い星',
+  ecology:'冷たい湖の深みに暮らすイワナの仲間。暗い背から体側へクリーム色の斑点が散り、尾びれは深く二叉する。大きく育つと小魚も食べる。',locations:'峠の池（深場）',time:'朝・夕に出やすい',rods:['clearStream','starGazer'],baits:['liveMinnow','worm'],tip:'朝夕の峠の池で、活き小魚とハリ中を深場へ。底へ潜る間は糸を送り、水平に泳ぎ始めたら寄せよう。',intro:'深い水に白い斑点が光る。レイクトラウトだ！',lengths:[15,24,34,46,60,77,98],baitWeights:{liveMinnow:3.8,worm:1.6,river:2.2,smallShrimp:.5,shrimp:.1,paste:.02,corn:.02,shell:.01,crab:.01}});
+ art.laketrout={asset:'assets/fish-laketrout.png',boxes:[[16,144,420,149],[470,116,404,203],[973,93,321,249],[1415,67,281,295],[87,538,309,259],[464,554,396,220],[901,585,416,158],[1345,588,417,152]],heads:[[.99,.56],[.99,.53],[.99,.60],[.50,.68],[.01,.60],[.01,.59],[.01,.62],[.99,.60]],continuousBody:true};
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -202,7 +205,7 @@
   'mountain-stream-shallow':{kawamutsu:.18},'mountain-stream-mid':{kawamutsu:.1},
   'mountain-wetCreek-shallow':{kawamutsu:.16},'mountain-wetCreek-mid':{kawamutsu:.1},
   'lake-shallow':{herabuna:.15},'lake-mid':{herabuna:.32},'lake-deep':{herabuna:.18},
-  'mountain-highPond-shallow':{herabuna:.18},'mountain-highPond-mid':{herabuna:.26,himemasu:.38,browntrout:.18},'mountain-highPond-deep':{herabuna:.18,himemasu:.34,browntrout:.34},
+  'mountain-highPond-shallow':{herabuna:.18},'mountain-highPond-mid':{herabuna:.26,himemasu:.38,browntrout:.18},'mountain-highPond-deep':{herabuna:.18,himemasu:.34,browntrout:.34,laketrout:.29},
   'mountain-wetPond-shallow':{herabuna:.12},'mountain-wetPond-mid':{herabuna:.25},'mountain-wetPond-deep':{herabuna:.18},
   'sea-shallow':{mahaze:.25,sayori:.24},'sea-mid':{mahaze:.1,masaba:.3},'sea-deep':{masaba:.24},
   'coast-sand-shallow':{mahaze:.22,sayori:.14},'coast-sand-mid':{mahaze:.1,masaba:.2},'coast-sand-deep':{masaba:.18},
@@ -259,6 +262,12 @@
    {id:'trout-run',name:'岸陰への鋭い走り',icon:'➜',weight:.35,min:750,max:1250,motion:'rush',speedX:4.4,speedY:.8,tension:7.2,release:5.8,reel:.55,scale:1,frameEvery:1,danger:true,hold:'鋭く走り出した！Aを離して受け流そう。',loose:'岸陰へ向かう走りが緩むまで待とう。'},
    {id:'trout-shake',name:'向きを変えて首を振る',icon:'≋',weight:.27,min:750,max:1150,motion:'heavy',speedX:1.6,speedY:1,tension:5.4,release:5.5,reel:.8,scale:1,frameEvery:2,hold:'首を振っている。無理に引かず、糸が緩むのを待とう。',loose:'向きを変えながら粘っている。'},
    {id:'rest',name:'泳ぎを緩める',icon:'◎',weight:.38,min:850,max:1350,motion:'rest',speedX:.25,speedY:.15,tension:1.5,release:5.4,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aでやさしく寄せよう。',loose:'今が寄せる番。Aで距離を取り返そう。'}
+  ]};
+  Object.assign(fishMotionProfiles.laketrout,{beat:.56,speedBeat:.08,burst:1.32,thrust:.10,turnFrames:20});
+  Object.assign(fishLifeProfiles.laketrout,{wave:.04,bend:.03,pulse:.025});
+  fightProfiles.laketrout={intro:definitions.find(d=>d.id==='laketrout').intro,moods:[
+   {id:'lake-dive',name:'深場へ潜る',icon:'↘',weight:.48,min:1100,max:1600,motion:'deep',speedX:2.5,speedY:1.4,tension:5.6,release:5.5,reel:.7,scale:1,frameEvery:2,danger:true,hold:'尾を振って底へ潜る！Aを離そう。',loose:'深く潜る間は糸を送ろう。'},
+   {id:'rest',name:'水平に泳ぐ',icon:'◎',weight:.52,min:1250,max:1750,motion:'rest',speedX:.65,speedY:.12,tension:1.4,release:5.3,reel:1.8,scale:1,frameEvery:3,calm:true,hold:'水平に泳ぎ始めた。Aで寄せよう。',loose:'糸が緩んだ。今が寄せる番。'}
   ]};
   // Long-bodied morays glide and undulate instead of inheriting the eel's
   // quick zig-zags and rolling turns. The renderer keeps their lips fixed.

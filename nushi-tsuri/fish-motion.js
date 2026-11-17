@@ -13,7 +13,7 @@
     heavy:{amplitude:6.5,shoulder:.32,falloff:1.8,wave:3.3,fin:1.7,pulse:.17},
   };
   const groups={
-    cruise:'browntrout moroko funa ayu yamame nijimasu iwana amago bora suzuki madai isaki ugui kawamutsu herabuna himemasu aburahaya bluegill tanago motsugo nigoi',
+    cruise:'laketrout browntrout moroko funa ayu yamame nijimasu iwana amago bora suzuki madai isaki ugui kawamutsu herabuna himemasu aburahaya bluegill tanago motsugo nigoi',
     swift:'aji wakasagi oikawa sayori masaba akakamasu buri hiramasa kanpachi shimaaji takabe',
     hover:'mebaru kawahagi oyanirami medaka',
     bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko houraihimeji',

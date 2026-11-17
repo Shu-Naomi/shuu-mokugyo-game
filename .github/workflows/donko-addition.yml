@@ -38,6 +38,8 @@ jobs:
         run: node --test browntrout.test.cjs
       - name: Inspect brown trout on desktop and landscape touch
         run: node browser-browntrout.cjs
+      - name: Play lake trout on desktop and touch
+        run: node browser-browntrout.cjs --lake-trout
       - name: Play both fight styles and inspect the aquarium on desktop and touch
         run: node browser-donko-v252-47.cjs
       - name: Wait for matching deployed source and original atlas
@@ -57,6 +59,7 @@ jobs:
           path: |
             nushi-tsuri/tests/donko-evidence/
             nushi-tsuri/tests/browntrout-evidence/
+            nushi-tsuri/tests/laketrout-evidence/
             nushi-tsuri/tests/public-donko-evidence/
           retention-days: 14
           if-no-files-found: warn

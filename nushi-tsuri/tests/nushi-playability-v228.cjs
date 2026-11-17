@@ -5,7 +5,7 @@ const I=require('../offshore-island.js');
 
 function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',holdAlways=false,gaugeThreshold=65,gaugeResumeThreshold=gaugeThreshold,waterFxSeed=null,rod='tideMaster'}){
  const island={takabe:{area:'east',bait:'shrimp',distance:50,hook:'small'},kuromejina:{area:'west',bait:'shrimp',distance:50,hook:'medium'},houraihimeji:{area:'cove',bait:'smallShrimp',distance:80,hook:'medium'},shimaaji:{area:'east',bait:'shrimp',distance:50},ishigakidai:{area:'west',bait:'shell',distance:50},akahata:{area:'cove',bait:'smallShrimp',distance:20}}[id];
- const upland=id==='browntrout';
+ const upland=id==='browntrout'||id==='laketrout';
  const wet=id==='raigyo',sea=['utsubo','buri','hiramasa','kanpachi'].includes(id),bait=island?.bait||(wet||sea?'liveMinnow':id==='nushi'||id==='starNushi'?'nushiSecret':'worm');
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:wet?600:1320,
   ...(upland?{mapRegion:'mountainPond',...M.regions.mountainPond.entry}:island?{mapRegion:I.id,...I.fishingPoints.find(p=>p.id===island.area)}:wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
@@ -14,8 +14,17 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
  try{
   if(upland)for(const direction of findRoute(w,'highPond').path)w.move(direction);
   if(wet)for(const direction of findRoute(w,'wetMarsh').path)w.move(direction);
- const spot=upland?'mountain-highPond-deep':island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':island.distance<67?'mid':'deep'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep',distance=upland?80:island?.distance||(wet?50:95);
+ const spot=upland?'mountain-highPond-deep':island?'offshore-'+island.area+'-'+(island.distance<34?'shallow':island.distance<67?'mid':'deep'):wet?'mountain-wetMarsh-mid':sea?'sea-deep':'lake-deep';
   w.eval(`${upland||island?'action()':sea?"cast({zone:'sea',waterZone:'sea',waterX:s.x,waterY:s.y+6})":"cast()"};beginFishing();clearInterval(timer);`);
+  const distance=id==='laketrout'?read(w,`(()=>{
+   let tick;const original=setInterval;
+   try{setInterval=fn=>(tick=fn,0);battleTick();}finally{setInterval=original;}
+   for(let n=0;n<120;n++){
+    if(depthForCast(battle.waterZone,battle.cast,battle.minimumDepth)==='deep')return battle.cast;
+    tick();
+   }
+   throw Error('Selected rod cannot reach the high pond deep pool');
+  })()`):upland?80:island?.distance||(wet?50:95);
   const encounter=read(w,`(()=>{for(let i=0;i<10000;i++){const r=(i+.5)/10000;Math.random=()=>r;
    if(pick(${distance},${JSON.stringify(spot)})?.id===${JSON.stringify(id)})return r;}return null;})()`);
   if(encounter===null)throw Error('No legal encounter for '+id);

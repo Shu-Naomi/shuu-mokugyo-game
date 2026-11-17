@@ -52,8 +52,8 @@
   Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4,donko:.45});
   Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
   Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
-  Object.assign(fishStrength,{browntrout:2.4,takabe:1.05,kuromejina:2.7,houraihimeji:1.65});
-  Object.assign(spoon,{browntrout:3.1,takabe:.25,kuromejina:.18,houraihimeji:.4});
+  Object.assign(fishStrength,{laketrout:2.1,browntrout:2.4,takabe:1.05,kuromejina:2.7,houraihimeji:1.65});
+  Object.assign(spoon,{laketrout:3.0,browntrout:3.1,takabe:.25,kuromejina:.18,houraihimeji:.4});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
@@ -113,7 +113,7 @@
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
     gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    trout:'browntrout',
+    trout:'browntrout laketrout',
     dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     shoal:'takabe',
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
@@ -136,7 +136,7 @@
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.
-  const enduranceOverrides={hiramasa:400,kanpachi:380,browntrout:250};
+  const enduranceOverrides={hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
