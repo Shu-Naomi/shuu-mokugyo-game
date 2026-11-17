@@ -1,0 +1,59 @@
+name: Sign water base-head diagnosis
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/sign-water-diagnostic.yml']
+permissions:
+  contents: read
+jobs:
+  compare:
+    if: github.head_ref == 'fix/fish-market-sign-silhouette'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        revision: [base, head]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ matrix.revision == 'base' && 'c7c81c5cdee7c86b019a26d919fc192ce89791e3' || 'a56e951b750eda935f560d7cfd78798839ba9283' }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - working-directory: nushi-tsuri/tests
+        run: |
+          npm install --no-audit --no-fund
+          npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+          npx playwright install --with-deps chromium
+          bash install-ci-fonts.sh
+      - name: Fixed three observations; original assertion preserved
+        working-directory: nushi-tsuri/tests
+        run: |
+          node <<'JS'
+          const fs=require('fs');
+          const p='browser-v221.water.cjs'; let s=fs.readFileSync(p,'utf8');
+          s=s.replace('[[cases[0],780],[cases[0],1020],[cases[1],780],[cases[3],780],[cases[5],780],[cases[8],780],[cases[10],780]]','[[cases[0],780],[cases[0],1020]]');
+          const needle="    assert.ok(visibleChange<.035,'calm crests leave most painted reflection unchanged');";
+          if(!s.includes(needle))throw Error('diagnostic anchor changed');
+          s=s.replace(needle,`    const fs=require('fs'),dir='water-diagnostic/'+process.env.TRIAL;fs.mkdirSync(dir,{recursive:true});
+              const label=mobile+'-'+clock;
+              fs.writeFileSync(dir+'/'+label+'.json',JSON.stringify({mobile,clock,changes,visibleChange,minimum,first,second},null,2));
+              for(let i=0;i<images.length;i++){const c=createCanvas(images[i].width,images[i].height);c.getContext('2d').drawImage(images[i],0,0);fs.writeFileSync(dir+'/'+label+'-'+i+'.png',c.toBuffer('image/png'));}
+              console.log('DIAGNOSTIC '+JSON.stringify({mobile,clock,changes,visibleChange,minimum}));
+          `+needle);
+          fs.writeFileSync(p,s);
+          fs.writeFileSync('water-diagnostic-run.cjs',`const {server}=require('./browser-reference-village-evidence.cjs');const host=server();host.listen(0,'127.0.0.1',async()=>{try{await require('./browser-v221.water.cjs')('http://127.0.0.1:'+host.address().port+'/nushi-tsuri/',true);}catch(e){console.error(e);process.exitCode=1;}finally{host.close();}});`);
+          JS
+          mkdir -p water-diagnostic
+          git rev-parse HEAD > water-diagnostic/revision.txt
+          for trial in 1 2 3; do
+            TRIAL="$trial" node water-diagnostic-run.cjs > "water-diagnostic/trial-$trial.log" 2>&1
+            echo "$trial:$?" >> water-diagnostic/outcomes.txt
+          done
+        shell: bash {0}
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: water-diagnostic-${{ matrix.revision }}
+          path: nushi-tsuri/tests/water-diagnostic/
