@@ -4,6 +4,8 @@ on:
     branches: [main, fix/main-suite-production-fixtures, codex/aquarium-identity-v251-7]
     paths:
       - 'nushi-tsuri/index.html'
+      - 'nushi-tsuri/tests/browser-start-adventure.cjs'
+      - 'nushi-tsuri/tests/browser-production-facility.cjs'
       - 'nushi-tsuri/pet-life-ui.js'
       - 'nushi-tsuri/pet-life.css'
       - 'nushi-tsuri/sw.js'
