@@ -29,6 +29,9 @@ module.exports=async function castingWater(url,mobile=false){
      let hash=2166136261,visible=0;for(let i=3;i<d.length;i+=4){if(d[i])visible++;hash=Math.imul(hash^d[i-3]^d[i-2]^d[i-1]^d[i],16777619);}
      const r=c.getBoundingClientRect();return {hash:hash>>>0,visible,frame:c.dataset.waterFrame,style:c.dataset.waterStyle,samples:Number(c.dataset.waterSamples),locale:document.querySelector('#castBackdrop').dataset.locale,width:r.width,height:r.height};
     });
+    // Forage completion precedes its 3.2s notification timeout. The toast alone
+    // changes 5.1% of the surface, unrelated to the unchanged water bounds.
+    await page.waitForFunction(()=>!document.querySelector('#rescueToast').classList.contains('show'));
     const first=await read();assert.ok(first.visible>100&&first.width>300&&first.height>80);
     const surface=page.locator('.cast-surface'),firstShot=await surface.screenshot({animations:'disabled'});
     await page.waitForFunction(previous=>{
@@ -50,6 +53,8 @@ module.exports=async function castingWater(url,mobile=false){
      if(!images||changed>visibleChange){images=[firstImage,secondImage];visibleChange=changed;}
      if(visibleChange>=minimum)break;
     }
+    console.log('V223_WATER_MEASUREMENT '+JSON.stringify({mobile,clock,locale:first.locale,changes,visibleChange,minimum,maximum:.035}));
+    if(visibleChange>=.035)console.log('V223_WATER_FAILURE_FRAMES '+JSON.stringify(images.map(image=>{const c=createCanvas(image.width,image.height);c.getContext('2d').drawImage(image,0,0);return c.toBuffer('image/png').toString('base64');})));
     assert.ok(visibleChange<.035,'calm crests leave most painted reflection unchanged');
     console.log('V223_WATER_SAMPLE '+JSON.stringify({mobile,locale:first.locale,style:first.style,changes,visibleChange,minimum}));
     if(mobile&&clock===780&&['lake','reef'].includes(sample.type)){

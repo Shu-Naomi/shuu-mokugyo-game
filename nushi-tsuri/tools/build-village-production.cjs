@@ -3,9 +3,9 @@
 const fs=require('node:fs'),path=require('node:path');
 function build(){
  const root=path.resolve(__dirname,'..');
- const result=require('./build-village-production-candidate.cjs').withMetadata({root,sourcePath:'tools/templates/game-index.html',outputPath:'index.html',production:true});
+ const result=require('./build-village-production-candidate.cjs').withMetadata({root,sourcePath:'tools/templates/game-index.html',outputPath:'index.html',production:true,mapSource:'assets/village-fishmarket-sign-v252-68.png'});
  const assets=['./index.html',...result.manifest.expectedUrls.map(u=>'./'+u),'./'+result.manifest.mapURL];
- fs.writeFileSync(path.join(root,'village-precache-252-67.js'),'// Generated with index.html; do not edit.\nself.SHU_VILLAGE_PRECACHE = '+JSON.stringify(assets,null,2)+';\n');
+ fs.writeFileSync(path.join(root,'village-precache-252-68.js'),'// Generated with index.html; do not edit.\nself.SHU_VILLAGE_PRECACHE = '+JSON.stringify(assets,null,2)+';\n');
  return result;
 }
 if(require.main===module)build();module.exports=build;

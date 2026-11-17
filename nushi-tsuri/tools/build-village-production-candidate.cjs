@@ -5,7 +5,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest();
-function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputPath = 'village-production-candidate.html', production = false} = {}) {
+function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputPath = 'village-production-candidate.html', production = false, mapSource = 'assets/village-reference-pilot.png'} = {}) {
   root = fs.realpathSync(path.resolve(root));
   if (production && !sourcePath) throw Error('Production requires explicit sourcePath');
   function inside(value, exists) {
@@ -62,10 +62,10 @@ function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputP
     next = next.replace(/\s*\/?>$/, ' integrity="sha256-' + digest.toString('base64') + '" crossorigin="anonymous">');
     return next + element.slice(openEnd + 1);
   });
-  const image = fs.readFileSync(path.join(root, 'assets/village-reference-pilot.png'));
+  const image = fs.readFileSync(inside(mapSource, true));
   const mapSHA256 = hash(image).toString('hex');
   const mapURL = 'assets/village-reference-' + mapSHA256.slice(0, 16) + '.png';
-  const manifest = {expectedUrls: [...new Set(expectedUrls)], mapURL, mapSHA256, ...(production ? {workerURL: './sw.js?v=252-67'} : {})};
+  const manifest = {expectedUrls: [...new Set(expectedUrls)], mapURL, mapSHA256, ...(production ? {workerURL: './sw.js?v=252-68'} : {})};
   const config = JSON.stringify(manifest).replace(/</g, '\\u003c');
   const bootstrap = `<script id="villageCandidateBootstrap">\n(function(){\n  const config = ${config};\n  config.expectedUrls = config.expectedUrls.map(url => new URL(url, location.href).href);\n  config.mapURL = new URL(config.mapURL, location.href).href;\n  config.loaded = new Set(); config.failed = [];\n  globalThis.ShuVillageReleaseCandidate = config;\n  function blocked() {\n    if (!config.failed.length || !document.body || document.getElementById('villageCandidateFailure')) return;\n    const notice = document.createElement('div');\n    notice.id = 'villageCandidateFailure'; notice.setAttribute('role', 'alert');\n    notice.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#10202b;color:white;padding:24px;display:grid;place-content:center;font:18px sans-serif';\n    notice.textContent = '起動を止めました。必要なファイルを確認できませんでした。保存データは変更していません。接続を確認して再読み込みしてください。';\n    document.body.appendChild(notice);\n  }\n  document.addEventListener('DOMContentLoaded', blocked, {once:true});\n  function record(event) {\n    const target = event.target;\n    if (!target || !/^(SCRIPT|LINK)$/.test(target.tagName)) return;\n    const url = target.src || target.href;\n    if (!config.expectedUrls.includes(url)) return;\n    if (event.type === 'load') config.loaded.add(url);\n    else { if (!config.failed.includes(url)) config.failed.push(url); blocked(); }\n  }\n  document.addEventListener('load', record, true);\n  document.addEventListener('error', record, true);\n})();\n</script>`;
   if (!/<head\b[^>]*>/i.test(html)) throw Error('Head missing');

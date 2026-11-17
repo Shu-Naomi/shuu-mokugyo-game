@@ -1,0 +1,33 @@
+name: Fish-market sign focused check
+on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/fishmarket-sign.yml']
+permissions:
+  contents: read
+jobs:
+  sign:
+    if: github.head_ref == 'fix/fish-market-sign-silhouette'
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: node --test fishmarket-sign-art.test.cjs village-production-build.test.cjs village-release-provenance.test.cjs reference-village-render.test.cjs
+      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-68.js
+      - run: node browser-fishmarket-sign.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: fishmarket-sign-mobile
+          path: nushi-tsuri/tests/artifacts/fishmarket-sign/
