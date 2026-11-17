@@ -28,7 +28,20 @@ jobs:
       - run: npm install --no-audit --no-fund
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
+      - name: Verify published gameplay matches this checkout
+        run: |
+          node <<'NODE'
+          const fs=require('fs'),crypto=require('crypto'),assert=require('assert/strict');
+          (async()=>{for(const name of ['index.html','fishing-duel.js','fish-additions.js']){
+            const url='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/'+name+'?brown-diagnostic='+Date.now();
+            const r=await fetch(url);assert.equal(r.status,200);const data=Buffer.from(await r.arrayBuffer());
+            const local=fs.readFileSync('../'+name),sha=b=>crypto.createHash('sha256').update(b).digest('hex');
+            console.log(JSON.stringify({name,local:sha(local),published:sha(data)}));assert.equal(sha(data),sha(local),'published source differs: '+name);
+          }})().catch(e=>{console.error(e);process.exitCode=1;});
+          NODE
       - name: Preserve exact source and run only the reported screen
+        env:
+          BROWN_TROUT_PUBLIC_URL: https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/
         run: |
           git rev-parse HEAD
           sha256sum browser-browntrout.cjs ../../nushi-tsuri/fishing-duel.js
