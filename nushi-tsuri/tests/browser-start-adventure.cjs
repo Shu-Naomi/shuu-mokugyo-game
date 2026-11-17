@@ -4,7 +4,9 @@ module.exports=async function startAdventure(page,mobile=false,options={}){
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  if(await page.locator('#game.active').count())return;
  const slot=options.slot||await page.evaluate(()=>(globalThis.ShuVillageReleaseGate?.adapter||ShuSaveSlots.create(()=>localStorage)).initial(location.search));
- const exists=await page.evaluate(id=>(globalThis.ShuVillageReleaseGate?.adapter||ShuSaveSlots.create(()=>localStorage)).read(id).exists,slot),fresh=options.isNew??!exists;
+ const saved=await page.evaluate(id=>(globalThis.ShuVillageReleaseGate?.adapter||ShuSaveSlots.create(()=>localStorage)).read(id),slot);
+ if(saved.ok===false)throw Error('Selected save is protected: '+saved.error);
+ const fresh=options.isNew??!saved.exists;
  await press(fresh?'#titleNew':'#titleContinue');await press(`[data-save-slot="${slot}"]`);
  if(!fresh){await press('#titleResume');await page.locator('#game.active').waitFor({state:'visible'});return;}
  await press('#titleSlotsNext');if(options.avatar)await press(`[data-avatar="${options.avatar}"]`);
