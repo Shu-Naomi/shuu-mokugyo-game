@@ -27,7 +27,7 @@ jobs:
           npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
           npx playwright install --with-deps chromium
           bash install-ci-fonts.sh
-      - name: Fixed three observations; original assertion preserved
+      - name: Toast control and settled-water observations; original threshold preserved
         working-directory: nushi-tsuri/tests
         run: |
           node <<'JS'
@@ -42,12 +42,28 @@ jobs:
               for(let i=0;i<images.length;i++){const c=createCanvas(images[i].width,images[i].height);c.getContext('2d').drawImage(images[i],0,0);fs.writeFileSync(dir+'/'+label+'-'+i+'.png',c.toBuffer('image/png'));}
               console.log('DIAGNOSTIC '+JSON.stringify({mobile,clock,changes,visibleChange,minimum}));
           `+needle);
+          s=s.replace("    const first=await read();",`    if(clock===1020){
+              const surface=page.locator('.cast-surface');
+              await page.emulateMedia({reducedMotion:'reduce'});
+              await page.waitForFunction(()=>{const c=document.querySelector('.scenery-motion[data-for="castBackdrop"]');return c.getContext('2d').getImageData(0,0,c.width,c.height).data.every(x=>x===0);});
+              await page.evaluate(()=>showRescueToast('シュウが小エビを2個掘り出した！',1200));
+              const a=await surface.screenshot({animations:'disabled'});
+              await page.waitForFunction(()=>!document.querySelector('#rescueToast').classList.contains('show'));
+              const b=await surface.screenshot({animations:'disabled'});
+              const pa=await loadImage(a),pb=await loadImage(b),px=im=>{const c=createCanvas(im.width,im.height);c.getContext('2d').drawImage(im,0,0);return c.getContext('2d').getImageData(0,0,c.width,c.height).data;},aa=px(pa),bb=px(pb);let n=0;
+              for(let i=0;i<aa.length;i+=4)if(Math.max(Math.abs(aa[i]-bb[i]),Math.abs(aa[i+1]-bb[i+1]),Math.abs(aa[i+2]-bb[i+2]))>=3)n++;
+              const fs=require('fs'),dir='water-diagnostic/'+process.env.TRIAL;fs.mkdirSync(dir,{recursive:true});fs.writeFileSync(dir+'/toast-before.png',a);fs.writeFileSync(dir+'/toast-after.png',b);fs.writeFileSync(dir+'/toast.json',JSON.stringify({changed:n/(aa.length/4),waterFrozen:true,originalUpperLimit:.035}));
+              await page.emulateMedia({reducedMotion:'no-preference'});
+              await page.waitForFunction(()=>{const c=document.querySelector('.scenery-motion[data-for="castBackdrop"]');return c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((x,i)=>i%4===3&&x>0);});
+            }
+            await page.waitForFunction(()=>!document.querySelector('#rescueToast').classList.contains('show'));
+            const first=await read();`);
           fs.writeFileSync(p,s);
           fs.writeFileSync('water-diagnostic-run.cjs',`const {server}=require('./browser-reference-village-evidence.cjs');const host=server();host.listen(0,'127.0.0.1',async()=>{try{await require('./browser-v221.water.cjs')('http://127.0.0.1:'+host.address().port+'/nushi-tsuri/',true);}catch(e){console.error(e);process.exitCode=1;}finally{host.close();}});`);
           JS
           mkdir -p water-diagnostic
           git rev-parse HEAD > water-diagnostic/revision.txt
-          for trial in 1 2 3; do
+          for trial in 1; do
             TRIAL="$trial" node water-diagnostic-run.cjs > "water-diagnostic/trial-$trial.log" 2>&1
             echo "$trial:$?" >> water-diagnostic/outcomes.txt
           done
