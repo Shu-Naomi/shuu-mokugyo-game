@@ -20,3 +20,26 @@ test('adapter guards new/changed/deleted slots and produces production marker',a
 test('successful update and reopened session preserve exact original',async()=>{const {s,l,session:t}=await setup();const before=s.getItem(migration.keyFor(1));const r=t.importSlot(1);a.equal(t.write(1,JSON.stringify({...JSON.parse(r.raw),money:77})).ok,true);t.close();await new Promise(r=>setImmediate(r));const n=await store.acquire({storage:s,locks:l,migration,options});try{a.equal(JSON.parse(n.importSlot(1).raw).money,77);a.equal(JSON.parse(s.getItem(store.keyFor(1))).originalRaw,before);}finally{n.close();}});
 test('failed update quota preserves last complete save and lock rejection fails closed',async()=>{const {s,session:t}=await setup();try{const r=t.importSlot(1),saved=s.getItem(store.keyFor(1));s.setItem=()=>{throw Error('quota');};a.equal(t.write(1,r.raw).ok,false);a.equal(s.getItem(store.keyFor(1)),saved);}finally{t.close();}a.equal((await store.acquire({storage:s,locks:{request:()=>Promise.reject(Error('denied'))},migration,options})).ok,false);});
 test('adapter slot preference persists separately without modifying legacy preference',async()=>{const {s,l,session:t}=await setup();try{s.setItem('nushi-inugoya-last-slot','2');const ui=require('../village-save-adapter.js').create(t,()=>s);a.equal(ui.initial(''),2);a.equal(ui.remember(1),true);a.equal(ui.initial(''),1);a.equal(s.getItem('nushi-inugoya-last-slot'),'2');a.equal(ui.initial('?saveSlot=2'),2);}finally{t.close();}});
+for(const broken of ['broken','[]','{"money":1,"money":2}'])for(const healthy of [1,2])test(`adapter isolates corrupt legacy reads (${broken}; healthy ${healthy})`,async()=>{
+ const {s,session:t}=await setup(),bad=3-healthy,failures=[];
+ try{
+  s.setItem(migration.keyFor(healthy),'{"money":4321,"x":74,"y":39.5}');s.setItem(migration.keyFor(bad),broken);
+  const ui=require('../village-save-adapter.js').create(t,()=>s,r=>failures.push(r));
+  for(const order of [[1,2],[2,1]])for(const slot of order)a.equal(ui.read(slot).ok,slot===healthy);
+  a.deepEqual(failures,[]);a.equal(ui.error(),null);a.equal(ui.read(bad).exists,true);
+  a.equal(ui.remember(healthy),true);a.equal(ui.write(healthy,{money:1234}),true);a.equal(ui.read(healthy).data.money,1234);
+  a.equal(s.getItem(migration.keyFor(bad)),broken);a.equal(s.getItem(store.keyFor(bad)),null);
+  for(const operation of [()=>ui.capture(bad).ok,()=>ui.write(bad,{}),()=>ui.writeNew(bad,{}),()=>ui.writeIfUnchanged(bad,{},broken),()=>ui.remove(bad,broken),()=>ui.remember(bad)]){const n=failures.length;a.equal(operation(),false);a.equal(failures.length,n+1);}
+  a.equal(s.getItem(migration.keyFor(bad)),broken);a.equal(s.getItem(store.keyFor(bad)),null);
+  s.setItem(migration.keyFor(healthy),'{"money":999}');a.equal(ui.read(healthy).error,'legacy-changed');a.equal(failures.at(-1),'legacy-changed');
+  const snap=t.inspectRecovery(healthy);a.equal(t.resolveRecovery(snap,'current').ok,true);a.equal(ui.read(healthy).data.money,1234);a.equal(s.getItem(migration.keyFor(bad)),broken);
+ }finally{t.close();}
+});
+test('adapter both corrupt slots stay local; generation corruption still blocks reads',async()=>{
+ const {s,session:t}=await setup(),failures=[];try{
+  for(const slot of [1,2])s.setItem(migration.keyFor(slot),'broken');
+  const ui=require('../village-save-adapter.js').create(t,()=>s,r=>failures.push(r));
+  for(const slot of [1,2])a.equal(ui.read(slot).ok,false);a.deepEqual(failures,[]);
+  s.setItem(store.keyFor(2),'broken');a.equal(ui.read(2).ok,false);a.deepEqual(failures,['import-storage-failed']);
+ }finally{t.close();}
+});

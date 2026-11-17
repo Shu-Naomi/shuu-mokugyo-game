@@ -70,6 +70,34 @@ async function run(){
     report.checks.push(scenario==='empty-slot2'?'actual production: create slot2 through title UI, save and reload; both legacy keys remain absent and slot1 remains empty':'actual production: existing slot2 mountainPond coordinates/resources survive migration, start, save and reload; slot1 generation and original legacy bytes untouched');
    }finally{await c.close();}
   }
+  // A damaged inactive legacy slot must not suspend the healthy adventure.
+  for(const healthy of [1,2,0]){
+   const c=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});
+   try{
+    const p=await c.newPage();globalThis.diagnosticPages.push(p);p.on('pageerror',e=>report.errors.push(e.message));
+    await p.goto(base+'/seed-only');
+    const damaged='{"money":';const valid=JSON.stringify({...legacyFixture(),money:4321,lakeStory:{introSeen:true,introPending:false}});
+    await p.evaluate(({healthy,damaged,valid})=>{localStorage.clear();for(const id of [1,2])localStorage.setItem(id===1?'nushi-inugoya-v2':'nushi-inugoya-v2-slot2',id===healthy?valid:damaged);},{healthy,damaged,valid});
+    // Select the damaged slot initially, then choose the healthy slot in the title.
+    await p.goto(url+'?saveSlot='+(healthy===1?2:1));await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+    assert.equal(await p.evaluate(()=>ShuVillageSaveRuntime.isSuspended()),false);
+    for(const id of [1,2])assert.equal(await p.locator(`[data-save-slot="${id}"]`).isDisabled(),id!==healthy);
+    await p.locator('#titleOptions').tap();
+    for(const id of [1,2])assert.equal(await p.locator(`[data-delete-save="${id}"]`).isDisabled(),id!==healthy);
+    await p.locator('#optionsClose').tap();
+    if(healthy){
+     await require('./browser-start-adventure.cjs')(p,true,{slot:healthy,isNew:false});
+     assert.equal(await p.evaluate(()=>save()),true);
+     await p.reload();await p.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true);
+     await require('./browser-start-adventure.cjs')(p,true,{slot:healthy,isNew:false});
+     assert.equal(await p.evaluate('s.money'),4321);assert.equal(await p.evaluate(()=>save()),true);
+    }
+    const stored=await p.evaluate(()=>[1,2].map(id=>({legacy:localStorage.getItem(id===1?'nushi-inugoya-v2':'nushi-inugoya-v2-slot2'),current:localStorage.getItem('nushi-production-reference-11016-v1-slot'+id)})));
+    for(const id of [1,2]){assert.equal(stored[id-1].legacy,id===healthy?valid:damaged);if(id!==healthy)assert.equal(stored[id-1].current,null);}
+    assert.equal(await p.evaluate(()=>ShuVillageSaveRuntime.isSuspended()),false);
+    report.checks.push('corrupt legacy isolation: healthy slot '+healthy+'; title protects corrupt slots, healthy resume/save/reload, raw unchanged');
+   }finally{await c.close();}
+  }
   // Controlled encounter/animation fixtures, not a catch-rate test. Each has isolated storage.
   for(const activity of ['fight','care']){
    const c=await browser.newContext({viewport:{width:844,height:390},isMobile:true,hasTouch:true});

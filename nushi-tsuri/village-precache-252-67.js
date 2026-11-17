@@ -71,7 +71,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc",
   "./village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427",
   "./village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381",
-  "./village-save-adapter.js?sha256=f2343e17cc3df1e4451c2c4d0fd43ff221e5407abbd309856363c6f742991dbf",
+  "./village-save-adapter.js?sha256=f8173a08cedea16defc391e054e2cd4fe1c6417e832bd5fb658827d7551c19fe",
   "./village-release-verifier.js?sha256=e1139706b34da1036826c6eaeee54a94991136ed228b0fa5014130e4d4a96b70",
   "./village-release-gate.js?sha256=38abaf87f02d1624134b56b0dd9ee3fe7e026ae76070562fcc73bbd16c29e1f9",
   "./assets/village-reference-2bdd42f26e3f1ed8.png"

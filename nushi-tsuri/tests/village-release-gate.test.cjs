@@ -20,11 +20,13 @@ test('gate starts only after lock and imports and restores BFCache via reload',(
 
 test('returned modal is reattached and its keyboard events do not reach gameplay',()=>{const s=fs.readFileSync(path.join(__dirname,'../village-release-gate.js'),'utf8');a.match(s,/if\(!modal.isConnected\)document.body.append\(modal\)/);a.match(s,/modal.addEventListener\(type,e=>e.stopPropagation\(\)\)/);a.match(s,/session\?\.read\?\.\(slot\)/);});
 
-test('selected production save read failure aborts before initialization rather than replacing it with defaults',()=>{
+test('selected production save only permits protected corrupt legacy reads at the title',()=>{
  const vm=require('node:vm'),source=fs.readFileSync(path.join(__dirname,'../tools/templates/game-index.html'),'utf8');
- const guard=source.match(/if\(globalThis\.ShuVillageProductionSession&&!loadedSaveSlot\.ok\)throw Error\('Initial save read blocked'\);/);
+ const guard=source.match(/if\(globalThis\.ShuVillageProductionSession[^\n]+throw Error\('Initial save read blocked'\);/);
  a.ok(guard,'source template has explicit initial save failure guard');
  a.ok(source.indexOf(guard[0])<source.indexOf('let selectedSaveSlot ='),'guard precedes mutable game initialization');
- for(const loadedSaveSlot of [{ok:false,reason:'invalid-save-root'},{ok:false,reason:'read-failed'}])a.throws(()=>vm.runInNewContext(guard[0],{ShuVillageProductionSession:{},loadedSaveSlot}),/Initial save read blocked/);
+ for(const loadedSaveSlot of ['legacy-changed','generation-changed','unreadable-record','read-failed',undefined].map(error=>({ok:false,error})))a.throws(()=>vm.runInNewContext(guard[0],{ShuVillageProductionSession:{},loadedSaveSlot}),/Initial save read blocked/);
+ for(const error of ['invalid-or-ambiguous-json','invalid-save-root'])a.doesNotThrow(()=>vm.runInNewContext(guard[0],{ShuVillageProductionSession:{},loadedSaveSlot:{ok:false,error}}));
+ a.match(source,/const initialSaveCapture = loadedSaveSlot.ok \? saveSlots.capture\(activeSaveSlot\) : \{ok:false\}/);
  a.doesNotThrow(()=>vm.runInNewContext(guard[0],{ShuVillageProductionSession:{},loadedSaveSlot:{ok:true,exists:false}}));
 });

@@ -9,8 +9,10 @@
   function failed(reason){lastError=reason;onFailure(reason);}
   const id=v=>v===1||v==='1'?1:v===2||v==='2'?2:null;
   function slot(v){const s=id(v);if(!s)throw Error('Invalid save slot');return s;}
-  function raw(v){const result=session.importSlot(slot(v));if(!result.ok)failed(result.reason);return result;}
-  function read(v){const r=raw(v);if(!r.ok)return {ok:false,exists:true,error:r.reason};try{return {ok:true,exists:r.exists,data:r.raw===null?{}:JSON.parse(r.raw)};}catch(_){failed('invalid');return {ok:false,exists:true,error:'invalid'};}}
+  // A malformed legacy slot is protected locally while the title inspects both slots.
+  // Mutating operations and all concurrency/storage failures still fail globally.
+  function raw(v,reading=false){const result=session.importSlot(slot(v));if(!result.ok&&!(reading&&['invalid-or-ambiguous-json','invalid-save-root'].includes(result.reason)))failed(result.reason);return result;}
+  function read(v){const r=raw(v,true);if(!r.ok)return {ok:false,exists:true,error:r.reason};try{return {ok:true,exists:r.exists,data:r.raw===null?{}:JSON.parse(r.raw)};}catch(_){failed('invalid');return {ok:false,exists:true,error:'invalid'};}}
   function capture(v){const r=raw(v);return r.ok?{ok:true,raw:r.raw}:{ok:false};}
   function write(v,data){try{const r=raw(v);if(!r.ok)return false;const result=session.write(slot(v),JSON.stringify({...data,villageLayoutVersion:'reference-11016-v1'}));if(!result.ok)failed(result.reason);return result.ok===true;}catch(_){failed('invalid');return false;}}
   function writeNew(v,data){const r=raw(v);return r.ok&&r.raw===null?write(v,data):false;}

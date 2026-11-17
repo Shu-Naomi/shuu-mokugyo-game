@@ -7536,9 +7536,9 @@
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
       const loadedSaveSlot = saveSlots.read(activeSaveSlot);
-      if(globalThis.ShuVillageProductionSession&&!loadedSaveSlot.ok)throw Error('Initial save read blocked');
+      if(globalThis.ShuVillageProductionSession&&!loadedSaveSlot.ok&&!['invalid-or-ambiguous-json','invalid-save-root'].includes(loadedSaveSlot.error))throw Error('Initial save read blocked');
       let selectedSaveSlot = activeSaveSlot, gameStarted = false, saveSuppressed = false, titleFlow = null;
-      const initialSaveCapture = saveSlots.capture(activeSaveSlot);
+      const initialSaveCapture = loadedSaveSlot.ok ? saveSlots.capture(activeSaveSlot) : {ok:false};
       let newAdventurePending = !loadedSaveSlot.exists, startSaveExpectedRaw;
       const playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
       let textSpeed = playerOptions.read().textSpeed, pendingSaveDeletion = null, optionsReturnFocus = null;
@@ -24086,7 +24086,7 @@
         renderIdentityOptions(state,editable,id);
         for(const button of document.querySelectorAll("[data-text-speed]"))button.setAttribute("aria-pressed",String(button.dataset.textSpeed===textSpeed));
         $("#optionsSaveList").innerHTML=[1,2].map(id=>{
-          const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable";
+          const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable"&&(!globalThis.ShuVillageProductionSession||saved.ok);
           return `<div class="options-save"><b>セーブ${id}${gameStarted&&id===activeSaveSlot?" · プレイ中":""}</b><small>${ShuLakeStory.escape(optionsSlotSummary(id))}</small><button type="button" class="delete-save" data-delete-save="${id}" ${available?"":"disabled"}>セーブ${id}を削除…</button></div>`;
         }).join("");
         setDialogue($("#optionsTextPreview"),"星降る湖へようこそ。今日は、どの魚に会えるかな？",true);
@@ -24116,6 +24116,7 @@
         if(gameStarted&&id===activeSaveSlot&&!save()){
           $("#optionsNotice").textContent="今の進行を保存できなかったので、削除を止めたよ。もう一度試してね。";return false;
         }
+        if(globalThis.ShuVillageProductionSession&&!saveSlots.read(id).ok)return false;
         const snapshot=saveSlots.capture(id);
         if(!snapshot.ok||snapshot.raw===null){$("#optionsNotice").textContent="このセーブを確認できないよ。";return false;}
         pendingSaveDeletion={id,raw:snapshot.raw};
@@ -24220,7 +24221,8 @@
       function renderSaveSlotSelection() { titleFlow?.render(); }
       function startTitleAdventure({slot, isNew, choices}) {
         if(gameStarted||saveSuppressed)return false;
-        const selected=saveSlots.read(slot),capture=saveSlots.capture(slot);
+        const selected=saveSlots.read(slot);if(!selected.ok)return false;
+        const capture=saveSlots.capture(slot);
         if(!selected.ok||!capture.ok||(isNew?selected.exists:!selected.exists))return false;
         // A changed save must be loaded afresh, never replaced by the stale state behind the title.
         if(slot!==activeSaveSlot||capture.raw!==initialSaveCapture.raw){
