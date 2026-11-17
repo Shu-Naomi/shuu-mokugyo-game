@@ -4,17 +4,23 @@ module.exports=async function waterAndFish(url,mobile=false){
  const browser=await chromium.launch({headless:true}),errors=[],failed=[],routes=[];
  const viewport=mobile?{width:844,height:390}:{width:1280,height:720};
  async function create(state){
-  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP'});
+  const context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'});
   await context.addInitScript(({key,state})=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));},{key:saveKey,state});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&/v220|fish-art|coast-voyage|mountain-region/.test(r.url()))failed.push(r.status()+' '+r.url());});
   await page.goto(url,{waitUntil:'load'});await require('./browser-release.cjs').assertRelease(page);
   await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip')[mobile?'tap':'click']();
-  return {context,page,press:q=>page.locator(q)[mobile?'tap':'click']()};
+  const legacyRaw=await page.evaluate(key=>localStorage.getItem(key),saveKey);
+  return {context,page,legacyRaw,press:q=>page.locator(q)[mobile?'tap':'click']()};
  }
  const state=extra=>({...seed(),hp:100,maxHp:100,gameMinutes:420,soundEnabled:false,ownedRods:['bamboo','clearStream','shoreReed'],selectedRod:'clearStream',
   ownedVehicles:['canoe'],equipment:{vehicle:'canoe'},baits:{worm:20,river:20,shrimp:20},selectedBait:'worm',selectedHook:'small',...extra});
  const screenshot=async(page,screen)=>console.log('V220_SCREENSHOT '+JSON.stringify({mobile,screen,base64:(await page.screenshot({type:'jpeg',quality:76})).toString('base64')}));
  async function walkToWater(page,press,type,region){
+  if(region==='village'){
+   const predicate=`(x,y,d)=>{const old=[s.x,s.y,s.direction];s.x=x;s.y=y;s.direction=d;const ok=fishingWaterNearPlayer()?.zone===${JSON.stringify(type)}&&!ShuOffshore.atPier(s)&&!ShuRural.atVillageGate(x,y)&&!ShuMountain.atVillageGate(x,y)&&!activeLandingDock()&&!nearbyTournamentNpc()&&!nearbyRival()&&!nearbyForagePoint()&&!isNearPracticePond()&&!nearbyWorldLandmark()&&!isAtSamShopEntrance()&&!isOnRiverBridgeSpan(x,y);[s.x,s.y,s.direction]=old;return ok;}`;
+   return require('./browser-walk-village-route.cjs')(page,mobile,predicate,{label:'current village '+type+' fishing approach'});
+  }
+
   const route=await page.evaluate(({fn,type})=>(0,eval)('('+fn+')')(window,type),{fn:findRoute.toString(),type});
   for(const direction of route.path){
    // The real companion bark/dig/collection sequence owns movement until finished.
@@ -50,13 +56,14 @@ module.exports=async function waterAndFish(url,mobile=false){
   }finally{await context.close();}
   }
   {
-  const {context,page,press}=await create(state({mapRegion:'village',boatActive:false,x:125,y:58,direction:'up'}));
+  const {context,page,press,legacyRaw}=await create(state({mapRegion:'village',boatActive:false}));
   try{
    for(const [id,region,x,y,direction,bait,hook,spot]of [
     ['wakasagi','village',125,58,'up','river','small','lake-mid'],
     ['dojo','stream',172,96,'right','worm','small','mountain-marsh-mid'],
     ['isaki','coast',95,84,'up','shrimp','medium','coast-reef-mid']]){
-    await page.evaluate(({region,x,y,direction,bait,hook})=>{close();Object.assign(s,{mapRegion:region,x,y,direction,boatActive:region==='coast',selectedBait:bait,selectedHook:hook,fightMode:'nushi',fishingMethod:'bait'});render();},{region,x,y,direction,bait,hook});
+    // Non-village region fixtures are unchanged; village casts walk from the real current position.
+    await page.evaluate(({region,x,y,direction,bait,hook})=>{close();Object.assign(s,{mapRegion:region,...(region==='village'?{}:{x,y,direction}),boatActive:region==='coast',selectedBait:bait,selectedHook:hook,fightMode:'nushi',fishingMethod:'bait'});render();},{region,x,y,direction,bait,hook});
     await walkToWater(page,press,{wakasagi:'lake',dojo:'marsh',isaki:'reef'}[id],region);
     const entry=await page.evaluate(()=>({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction,spot:nearbyFishingSpot()?.id,forage:nearbyForagePoint()?.point?.id,modal:document.querySelector('.modal.open')?.id,home:playerHomeIsActive(),discovery:forageDiscoveryInProgress,button:document.querySelector('#action').disabled}));
     await press('#action');const opened=await page.evaluate(()=>({phase:battle?.phase,modal:document.querySelector('.modal.open')?.id,hint:document.querySelector('#hint').textContent}));
@@ -89,6 +96,7 @@ module.exports=async function waterAndFish(url,mobile=false){
     assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),spot);
    }
    await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>['wakasagi','dojo','isaki'].map(id=>s.caught[id])),[1,1,1]);
+   assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'fish catches leave legacy save unchanged');const modern=await page.evaluate(()=>ShuVillageProductionSession.read(1));assert.equal(modern.ok,true);assert.ok(modern.raw);
    assert.equal(await page.evaluate(()=>fish.length),65);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V220_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:await page.evaluate(()=>fish.length),saved:true,shoreBlocks:true,errors,failed}));

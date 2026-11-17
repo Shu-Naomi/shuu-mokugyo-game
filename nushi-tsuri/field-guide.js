@@ -2,6 +2,8 @@
  const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuFieldGuide=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
  'use strict';
+  // Geometry is opt-in and captured after village-reference.js loads.
+  const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
  const PAGE_SIZE=3,depths={shallow:'岸際',mid:'中層',deep:'深場'};
  function waterNotes(prefix,{additions,baits,hooks}){
   return additions.definitions.filter(f=>Object.keys(depths).some(d=>additions.pools[prefix+d]?.[f.id]>0)).map(f=>{
@@ -35,13 +37,14 @@
    for(const [id,name]of [['sand','白砂の小島'],['reef','岩礁の小島']])water(id,name,data.coast.docks[id].land,null,'coast-'+id+'-');
    entries.push({id:'coast-harbor',kind:'exit',name:data.coast.docks.harbor.name,point:data.coast.docks.harbor.land,notes:[{text:'小島からは舟でこの桟橋へ。ここでAを押すと村へ戻れるよ。'}]});
   }else{
-   water('lake','星降る湖',{x:118,y:33},data.lakePolygon,'lake-');
-   water('river','民家川',{x:88,y:109},null,'river-');
-   water('sea','潮見浜・港',{x:195,y:122},null,'sea-');
+   water('lake','星降る湖',reference?.guide.waterPoints.lake || {x:118,y:33},data.lakePolygon,'lake-');
+   water('river','民家川',reference?.guide.waterPoints.river || {x:88,y:109},null,'river-');
+   water('sea','潮見浜・港',reference?.guide.waterPoints.sea || {x:195,y:122},null,'sea-');
+   if(reference)entries.push({id:'village-mountain',kind:'exit',name:'山への北道',point:reference.routes.mountain.guide,notes:[{text:'湖の北の道でAを押すと星見渓流へ。来た道から村へ戻れるよ。'}]});
    if(Array.isArray(data.villagePlaces))entries.push(...data.villagePlaces);
    if(data.offshore)entries.push({id:'village-ferry',kind:'exit',name:'潮風島への漁船',point:data.offshore.harbor,notes:[{text:'船長タツにAで相談。潮風島へ往復800円・片道1時間。帰りもこの漁船で戻れるよ。'}]});
   }
-  return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':'assets/village-world-v252-55-riao-clear.png'),
+  return {region,name:offshore?.name||mountain?.name||(region==='coast'?'海の小島':'星降る湖と村'),asset:offshore?.assets.world||mountain?.asset||(region==='coast'?'assets/coast-world-v197.webp':reference?.source.asset || 'assets/village-world-v252-55-riao-clear.png'),
    entries,buildings:data.life.buildings.filter(b=>b.region===region),player:{x:state.x,y:state.y},playerLabel:state.home?'家の入口':'現在地'};
  }
  function create({element,life}){

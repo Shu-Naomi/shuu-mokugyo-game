@@ -1,5 +1,6 @@
 // Old feature checks use this common, real UI entry after the staged title was added.
 module.exports=async function startAdventure(page,mobile=false,options={}){
+ if(await page.locator('#villageCandidateBootstrap').count()){for(let i=0;i<450;i++){if(await page.evaluate(()=>globalThis.ShuVillageReleaseGate?.started===true))break;if(i===449)throw Error('Production save gate did not start');await new Promise(r=>setTimeout(r,100));}}
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  if(await page.locator('#game.active').count())return;
  const slot=options.slot||await page.evaluate(()=>ShuSaveSlots.create(()=>localStorage).initial(location.search));

@@ -1,3 +1,11 @@
+// Poll outside the page's frozen clock while the verified production gate loads.
+async function productionReady(page){
+ for(let i=0;i<300;i++){
+  if(await page.evaluate(()=>globalThis.ShuVillageReleaseGate?.started===true))return;
+  await page.waitForTimeout(100);
+ }
+ throw Error('Verified production save gate did not start');
+}
 // Prepared for a separately authorized GitHub Actions run. Do not launch a
 // local browser as a substitute for CI verification in restricted executors.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
@@ -52,7 +60,7 @@ async function run(url,screen,output,provenance){
  const {chromium}=require('playwright'),{width,height,dpr,mobile}=screen;
  const dir=path.join(output,`${width}x${height}-dpr${dpr}`);fs.mkdirSync(dir,{recursive:true});
  const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport:{width,height},deviceScaleFactor:dpr,isMobile:mobile,hasTouch:mobile,locale:'ja-JP',serviceWorkers:'block'});
- const page=await context.newPage(),report={screen,provenance,entry:'Injected room entry fixtures; tabs, detail dismissal and exits use UI controls.',checks:[],errors:[],httpErrors:[]};
+ const page=await context.newPage(),report={screen,provenance,entry:'Production index without preview flag. Injected room entry fixtures; tabs, detail dismissal and exits use UI controls.',checks:[],errors:[],httpErrors:[]};
  page.on('pageerror',e=>report.errors.push(e.message));page.on('response',r=>{if(r.status()>=400)report.httpErrors.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[mobile?'tap':'click']();
  const progress=()=>page.evaluate(()=>JSON.stringify({money:s.money,hp:s.hp,time:s.gameMinutes,baits:s.baits,items:s.items,ingredients:s.cookingIngredients,meals:s.preparedMeals,equipment:s.equipment,caught:s.caught,story:s.lakeStory,records:s.fishCatchRecords,mode:s.fightMode}));
@@ -100,9 +108,9 @@ async function run(url,screen,output,provenance){
  try{
   await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state:{...seed(),gameMinutes:500,items:{wildGreens:2},soundEnabled:false}});
   await page.clock.install({time:new Date('2026-11-09T03:00:00Z')});await page.clock.pauseAt('2026-11-09T03:00:01Z');
-  await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);
+  await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await productionReady(page);await require('./browser-start-adventure.cjs')(page,mobile);await page.clock.runFor(240);
   if(await page.locator('#lakeIntroSkip').isVisible()){await press('#lakeIntroSkip');await page.clock.runFor(240);}
-  await page.evaluate(()=>{Math.random=()=>.999999;});const before=await progress(),saved=await page.evaluate(key=>localStorage.getItem(key),saveKey);
+  await page.evaluate(()=>{Math.random=()=>.999999;});const before=await progress(),saved=await page.evaluate(key=>localStorage.getItem(key),saveKey),currentRaw=await page.evaluate(()=>ShuVillageProductionSession.read(1).raw);assert.ok(currentRaw,'modern generation exists');
   // Start, dismiss and replace a cold room before its asynchronous art settles.
   await page.evaluate(()=>{openLocationInterior('diner');close();openLocationInterior('yaoya');close();openLocationInterior('diner');});
   await ready('locationPixels','room-diner');
@@ -124,7 +132,7 @@ async function run(url,screen,output,provenance){
   }
   await page.evaluate(()=>{renderSamShop();open('store');});await ready('shopPixels','room-sam-shop');const sam=await capture('sam-ready',{sam:true});assert.ok(Number(sam.dialogue.box.zIndex)>Number(sam.foreground.zIndex),'Sam keeps dialogue above foreground');await press('#store [data-close]');
   await openRoom('diner');await capture('diner-reopened',{textFits:true});await press('#locationInterior [data-close]');
-  assert.equal(await page.locator('.compact-sheet').count(),0,'no orphan detail after dismissal');assert.equal(await progress(),before,'read-only flows preserve economy and progress');assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),saved,'read-only flows preserve saved bytes');
+  assert.equal(await page.locator('.compact-sheet').count(),0,'no orphan detail after dismissal');assert.equal(await progress(),before,'read-only flows preserve economy and progress');assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),saved,'read-only flows preserve legacy saved bytes');assert.equal(await page.evaluate(()=>ShuVillageProductionSession.read(1).raw),currentRaw,'read-only flows preserve modern currentRaw');
   assert.deepEqual(report.errors,[]);assert.deepEqual(report.httpErrors,[]);report.passed=true;
  }catch(error){report.passed=false;report.failure=error.stack;await page.screenshot({path:path.join(dir,'failure.png')}).catch(()=>{});throw error;
  }finally{fs.writeFileSync(path.join(dir,'report.json'),JSON.stringify(report,null,2)+'\n');await context.close();await browser.close();}

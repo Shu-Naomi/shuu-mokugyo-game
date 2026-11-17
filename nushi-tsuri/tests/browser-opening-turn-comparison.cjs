@@ -4,6 +4,7 @@ const fs = require('node:fs');
 const path = require('node:path');
 const http = require('node:http');
 const {execFileSync} = require('node:child_process');
+const {createHash} = require('node:crypto');
 const {chromium} = require('playwright');
 const {createCanvas, loadImage} = require('@napi-rs/canvas');
 const enter = require('./browser-start-adventure.cjs');
@@ -11,12 +12,25 @@ const assertDiaryTurnTrace = require('./opening-turn-trace.cjs');
 const root = path.resolve(__dirname, '..');
 const dir = path.resolve(__dirname, 'opening-turn-comparison');
 const baselineRef = process.env.OPENING_TURN_BASE_REF || '20141e1';
-const baseline = execFileSync('git', ['show', `${baselineRef}:nushi-tsuri/lake-intro.js`], {cwd:root, encoding:'utf8'});
+const baselineCommit=execFileSync('git',['rev-parse',baselineRef+'^{commit}'],{cwd:root,encoding:'utf8'}).trim();
+const baseline = execFileSync('git', ['show', `${baselineCommit}:nushi-tsuri/lake-intro.js`], {cwd:root, encoding:'utf8'});
+// A visual algorithm comparison, not an old production/save upgrade fixture.
+// Before uses today's unpinned source template plus the pinned historical intro
+// module. After uses the untouched generated production entry and its real gate.
+const baselineEntry='__opening_source_baseline__.html';
+const baselineHtml=fs.readFileSync(path.join(root,'tools/templates/game-index.html'),'utf8');
+assert.doesNotMatch(baselineHtml,/id="villageCandidateBootstrap"|src="village-release-gate\.js/,'source comparison must not impersonate verified production');
+const sha256=bytes=>createHash('sha256').update(bytes).digest('hex');
+const entryContract={
+ before:{kind:'source-template comparison fixture with historical lake-intro.js only',baselineCommit,moduleSHA256:sha256(baseline),templateSHA256:sha256(baselineHtml),productionEvidence:false},
+ after:{kind:'actual generated production index.html; no intercepted modules',indexSHA256:sha256(fs.readFileSync(path.join(root,'index.html'))),moduleSHA256:sha256(fs.readFileSync(path.join(root,'lake-intro.js'))),productionEvidence:true}
+};
 const screens = [{width:1280,height:720,mobile:false}, {width:844,height:390,mobile:true}, {width:820,height:366,mobile:true}];
 const types = {'.html':'text/html', '.js':'text/javascript', '.css':'text/css', '.webp':'image/webp', '.png':'image/png', '.svg':'image/svg+xml'};
 const server = http.createServer((req,res) => {
   try {
     const relative = new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'') || 'index.html';
+    if(relative===baselineEntry){res.writeHead(200,{'Content-Type':'text/html; charset=utf-8','Cache-Control':'no-store'});res.end(baselineHtml);return;}
     const file = path.resolve(root, relative);
     if (!file.startsWith(root + path.sep) || !fs.statSync(file).isFile()) throw Error('path');
     res.writeHead(200, {'Content-Type':types[path.extname(file)] || 'application/octet-stream', 'Cache-Control':'no-store'});
@@ -37,14 +51,29 @@ async function contactSheet(frames, prefix) {
 async function capture(browser,url,screen,avatar,version) {
   const prefix=`${screen.width}x${screen.height}-${avatar}-${version}`;
   const context=await browser.newContext({viewport:{width:screen.width,height:screen.height},deviceScaleFactor:1,isMobile:screen.mobile,hasTouch:screen.mobile,locale:'ja-JP',serviceWorkers:'block',recordVideo:{dir:path.join(dir,'raw-video'),size:{width:screen.width,height:screen.height}}});
-  const page=await context.newPage(),video=page.video(),errors=[];
+  const page=await context.newPage(),video=page.video(),errors=[],httpErrors=[];let baselineResponses=0;
+  await context.addInitScript(()=>localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'})));
+  page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(r.status()+' '+r.url());});
   page.on('pageerror',e=>errors.push(e.message));
-  if(version==='before')await page.route('**/lake-intro.js*',route=>route.fulfill({status:200,contentType:'text/javascript',body:baseline}));
+  if(version==='before')await page.route('**/lake-intro.js*',route=>{baselineResponses++;return route.fulfill({status:200,contentType:'text/javascript',body:baseline});});
   const press=q=>page.locator(q)[screen.mobile?'tap':'click']();
   try {
-    await page.goto(url,{waitUntil:'load'});
-    await page.evaluate(()=>localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'})));
-    await page.reload();await enter(page,screen.mobile,{slot:1,avatar,dog:'grey',name:'直美♡'});
+    const entryURL=version==='before'?new URL(baselineEntry,url).href:url;
+    await page.goto(entryURL,{waitUntil:'load'});
+    await enter(page,screen.mobile,{slot:1,avatar,dog:'grey',name:'直美♡'});
+    if(version==='before'){
+      assert.equal(baselineResponses,1,'only the historical intro module is substituted once');
+      assert.equal(await page.locator('#villageCandidateBootstrap').count(),0);
+      assert.equal(await page.evaluate(()=>!!globalThis.ShuVillageReleaseCandidate||!!globalThis.ShuVillageProductionSession),false,'before is explicitly not production');
+    }else{
+      assert.equal(baselineResponses,0,'production dependencies are never replaced');
+      assert.equal(await page.evaluate(()=>ShuVillageReleaseGate.started&&!!ShuVillageProductionSession),true);
+      assert.equal(await page.evaluate(()=>ShuVillageReleaseCandidate.failed.length),0);
+      const modulePin=await page.locator('script[src^="lake-intro.js?"]').evaluate(n=>({url:n.getAttribute('src'),integrity:n.integrity}));
+      assert.equal(new URL(modulePin.url,url).searchParams.get('sha256'),entryContract.after.moduleSHA256);
+      assert.equal(modulePin.integrity,'sha256-'+createHash('sha256').update(fs.readFileSync(path.join(root,'lake-intro.js'))).digest('base64'));
+      assert.equal(await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),null,'new production adventure leaves absent legacy original untouched');
+    }
     await press('#lakeIntroNext');await press('#lakeIntroNext');
     await page.waitForFunction(()=>document.querySelector('#lakeIntroPicture').dataset.artState==='ready'&&document.querySelector('#lakeIntroPicture').dataset.motion!=='loading');
     assert.equal(await page.locator('#lakeIntroPicture').getAttribute('data-step'),'notebook');
@@ -85,11 +114,11 @@ async function capture(browser,url,screen,avatar,version) {
     }
     result.contactSheet=await contactSheet(result.frames,prefix);
     result.uniqueFrames=new Set(result.frames.map(f=>f.hash)).size;
-    result.errors=errors;result.version=version;result.avatar=avatar;result.screen=screen;
+    result.errors=errors;result.httpErrors=httpErrors;result.entry=entryContract[version];result.version=version;result.avatar=avatar;result.screen=screen;
     await page.screenshot({path:path.join(dir,`${prefix}-settled-ui.png`)});
     await page.waitForTimeout(350);
     fs.writeFileSync(path.join(dir,`${prefix}.json`),JSON.stringify(result,null,2));
-    assert.deepEqual(errors,[]);assert.ok(result.frames[0].progress<.18,'missed initial native frame');
+    assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);assert.ok(result.frames[0].progress<.18,'missed initial native frame');
     assert.ok(result.frames.at(-1).wallMs>=1000,'animation must use real elapsed time');
     assert.equal(result.frames.at(-1).scheduled,false);
     assert.ok(result.frames.every(f=>f.outsideChanged===0),'background outside paper region must stay pixel-identical');
@@ -102,7 +131,7 @@ async function capture(browser,url,screen,avatar,version) {
     return result;
   } catch(error) {
     await page.screenshot({path:path.join(dir,`${prefix}-failure.png`)}).catch(()=>{});
-    fs.writeFileSync(path.join(dir,`${prefix}-failure.json`),JSON.stringify({error:error.stack,errors},null,2));
+    fs.writeFileSync(path.join(dir,`${prefix}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors,entry:entryContract[version]},null,2));
     throw error;
   } finally {
     await context.close();
@@ -123,7 +152,7 @@ async function capture(browser,url,screen,avatar,version) {
       const novelFrames=after.frames.filter(f=>!oldHashes.has(f.hash)).length;
       assert.ok(novelFrames>=5,'after must show a different trajectory, not repeat the old stills');
       comparisons.push({screen,avatar,beforeUnique:before.uniqueFrames,afterUnique:after.uniqueFrames,novelFrames,beforeVideo:`${screen.width}x${screen.height}-${avatar}-before.webm`,afterVideo:`${screen.width}x${screen.height}-${avatar}-after.webm`,protectedPixelsUnchanged:true});
-      fs.writeFileSync(path.join(dir,'comparison.json'),JSON.stringify({baselineRef,currentRef:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),capture:'actual native-RAF browser video and sampled canvas frames',visualReview:'pending independent human/agent review; pixel tests are not aesthetic signoff',comparisons},null,2));
+      fs.writeFileSync(path.join(dir,'comparison.json'),JSON.stringify({baselineRef,entryContract,currentRef:execFileSync('git',['rev-parse','HEAD'],{cwd:root,encoding:'utf8'}).trim(),capture:'actual native-RAF browser video and sampled canvas frames',visualReview:'pending independent human/agent review; pixel tests are not aesthetic signoff',comparisons},null,2));
       console.log('OPENING_TURN_COMPARISON_PASS',screen.width,screen.height,avatar,JSON.stringify(comparisons.at(-1)));
     }
   } finally {if(browser)await browser.close();await new Promise(resolve=>server.close(resolve));}

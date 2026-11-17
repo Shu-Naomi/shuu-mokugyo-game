@@ -15,15 +15,25 @@ module.exports=async function openingStory(url,screen){
    assert.ok(result.box.x>=0&&result.box.y>=0&&result.box.right<=width+1&&result.box.bottom<=height+1,JSON.stringify(result));assert.ok(result.paperOverflow.every(v=>v<=1),JSON.stringify(result));for(const c of result.controls)assert.ok(c.inside&&c.height>=44,JSON.stringify(c));layouts.push(result);if(name)await shot(name);
   }
   try{
-   await page.goto(url,{waitUntil:'load'});const legacy={...fixture(),playerName:'先輩',dogNames:{shuu:'先輩のシュウ',riku:'先輩のリク',grey:'先輩のGrey'},dogTricks:{shuu:321,riku:123,grey:543},extraFuture:{keep:8}};
-   await page.evaluate(({key2,legacy})=>{localStorage.clear();localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));localStorage.setItem(key2,JSON.stringify(legacy));},{key2,legacy});await page.reload({waitUntil:'load'});
+   const legacy={...fixture(),playerName:'先輩',dogNames:{shuu:'先輩のシュウ',riku:'先輩のリク',grey:'先輩のGrey'},dogTricks:{shuu:321,riku:123,grey:543},extraFuture:{keep:8}};
+   const legacyRaw=JSON.stringify(legacy);
+   // Seed an empty first slot and existing second adventure before any gate runs.
+   // Never clear storage beneath a live production session.
+   await context.addInitScript(({key2,legacyRaw})=>{
+    if(localStorage.getItem(key2)===null)localStorage.setItem(key2,legacyRaw);
+    localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
+   },{key2,legacyRaw});
+   const legacyUnchanged=async()=>{assert.equal(await stored(key),null,'new production adventure never creates a legacy first slot');assert.equal(await stored(key2),legacyRaw,'second legacy original remains byte-identical');};
+   const current=async slot=>{const result=await page.evaluate(slot=>ShuVillageProductionSession.read(slot),slot);assert.equal(result.ok,true);assert.ok(result.raw,'modern checkpoint exists');return JSON.parse(result.raw);};
+   const ready=()=>page.waitForFunction(()=>globalThis.ShuVillageReleaseGate?.started===true,null,{timeout:45000});
+   await page.goto(url,{waitUntil:'load'});await ready();await legacyUnchanged();
    const other=await stored(key2),avatar=i%2?'boy':'girl',name='星降る湖へ帰ってきた旅人';
    await enter(page,mobile,{slot:1,dog,avatar,name});await page.locator('#lakeIntro.open').waitFor();assert.equal(await step(),'arrival');const before=await stats();await fits(i===0?'arrival':null);
    assert.equal(await page.evaluate(()=>s.avatar),avatar);assert.equal(await page.locator('#lakeIntroPaper small').innerText(),name);assert.equal(await stored(key2),other);
    for(const id of ids.slice(0,10)){assert.equal(await step(),id);await fits(i===0&&id==='sam'?'sam':null);if(id!=='retort')await press('#lakeIntroNext');}
    // Going back checkpoints the actual displayed scene, and returning restores it.
-   await press('#lakeIntroPrevious');assert.equal(await step(),'push');await press('#lakeIntroNext');assert.equal(await step(),'retort');assert.equal(JSON.parse(await stored(key)).lakeStory.introStep,'retort');
-   await page.reload({waitUntil:'load'});assert.equal(await page.locator('#lakeIntro.open').count(),0);
+   await press('#lakeIntroPrevious');assert.equal(await step(),'push');await press('#lakeIntroNext');assert.equal(await step(),'retort');assert.equal((await current(1)).lakeStory.introStep,'retort');await legacyUnchanged();
+   await page.reload({waitUntil:'load'});await ready();await legacyUnchanged();assert.equal(await page.locator('#lakeIntro.open').count(),0);
    // Existing title settings edit this slot; the opening does not own a second identity store.
    await press('#titleOptions');const names={shuu:'こむぎもち',riku:'風の子',grey:'夜空'};
    for(const [id,value] of Object.entries({player:'直美♡',...names})){
@@ -38,10 +48,11 @@ module.exports=async function openingStory(url,screen){
    await page.evaluate(()=>renderLakeIntro());await openingArtReady(page,expectedArt);const colors=await page.locator('#lakeIntroPicture').evaluate(c=>{const p=c.getContext('2d').getImageData(0,0,c.width,c.height).data,s=new Set();for(let i=0;i<p.length;i+=16)s.add(`${p[i]},${p[i+1]},${p[i+2]}`);return s.size;});assert.ok(colors>200,colors);await shot('cling-loaded');
    for(const id of ids.slice(12)){await press('#lakeIntroNext');assert.equal(await step(),id);await fits(i===0&&id==='first-day'?'first-day':null);}
    await press('#lakeIntroNext');assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.evaluate(()=>s.lakeStory.introSeen),true);assert.equal(await page.evaluate(()=>s.lakeStory.introPending),false);assert.equal(await page.evaluate(()=>document.querySelector('.controls').inert),false);assert.match(await page.locator('#rescueToast').innerText(),/家と三匹/);assert.equal(await stats(),before);await shot('free-action');
-   await page.reload({waitUntil:'load'});await enter(page,mobile,{slot:1,isNew:false});assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.evaluate(()=>s.playerName),'直美♡');assert.equal(await page.evaluate(()=>s.dog),dog);assert.equal(await stored(key2),other);assert.equal(await page.evaluate(()=>fish.length),65);assert.equal(await page.evaluate(()=>s.petLife.version),6);
+   await page.reload({waitUntil:'load'});await ready();await enter(page,mobile,{slot:1,isNew:false});assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.evaluate(()=>s.playerName),'直美♡');assert.equal(await page.evaluate(()=>s.dog),dog);assert.equal(await stored(key2),other);assert.equal(await page.evaluate(()=>fish.length),65);assert.equal(await page.evaluate(()=>s.petLife.version),6);
    // Continue an adventure that predates the story: no forced intro, aquarium and dogs survive.
    await press('#menu');await press('[data-field-menu-target="saveSlots"]');await page.locator('#title.active').waitFor({state:'visible'});const second=new URL(url);second.searchParams.set('saveSlot','2');await page.goto(second.href,{waitUntil:'load'});await enter(page,mobile,{slot:2,isNew:false});assert.equal(await page.locator('#lakeIntro.open').count(),0);assert.equal(await page.evaluate(()=>s.playerName),'先輩');assert.deepEqual(await page.evaluate(()=>s.dogTricks),legacy.dogTricks);assert.equal(await page.evaluate(()=>s.extraFuture.keep),8);assert.equal(await page.evaluate(()=>fish.length),65);
-   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({dog,avatar,layouts,assets,renamed:true,resumed:'retort',finished:true,oldSave:true,slotIsolation:true,catalogue:65,errors,httpErrors});
+   await legacyUnchanged();assert.equal((await current(1)).lakeStory.introSeen,true);assert.equal((await current(1)).playerName,'直美♡');
+   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);results.push({dog,avatar,layouts,assets,renamed:true,resumed:'retort',finished:true,oldSave:true,legacyBytesPreserved:true,modernCheckpoint:true,slotIsolation:true,catalogue:65,errors,httpErrors});
   }catch(error){await shot('failure').catch(()=>{});fs.writeFileSync(path.join(dir,`${width}x${height}-${dog}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors},null,2));throw error;}
   finally{await context.close();}
  }

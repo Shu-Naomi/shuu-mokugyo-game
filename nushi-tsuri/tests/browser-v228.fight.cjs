@@ -78,9 +78,9 @@ module.exports=async function fightControls(url,mobile=false){
     oldPhase=ui.phase;await page.clock.runFor(120);seconds=(tick+1)*.12;
    }
    assert.equal(await page.evaluate(()=>battle?.phase),'landing',id+' natural landing');await setHeld(false);await page.clock.runFor(2000);
-   const outcome=await page.evaluate(({id,bait,key})=>({caught:s.caught[id],bait:s.baits[bait],saved:JSON.parse(localStorage.getItem(key)).caught[id],giant:s.fishCrowns[id]?.giant,
-    memories:s.catchMemories[id],savedMemories:JSON.parse(localStorage.getItem(key)).catchMemories[id]}),{id,bait,key:saveKey});
-   assert.equal(outcome.caught,1);assert.equal(outcome.saved,1);assert.equal(outcome.bait,baitBeforeCast-1);
+   const outcome=await page.evaluate(({id,bait,key})=>({caught:s.caught[id],bait:s.baits[bait],saved:ShuSaveSlots.create().read(1).data.caught[id],giant:s.fishCrowns[id]?.giant,
+    memories:s.catchMemories[id],savedMemories:ShuSaveSlots.create().read(1).data.catchMemories[id],legacyRaw:localStorage.getItem(key)}),{id,bait,key:saveKey});
+   assert.equal(outcome.legacyRaw,JSON.stringify(initial),'fight saves retain original legacy bytes');assert.equal(outcome.caught,1);assert.equal(outcome.saved,1);assert.equal(outcome.bait,baitBeforeCast-1);
    assert.equal(outcome.giant,true);
    assert.ok(outcome.memories.first);assert.deepEqual(outcome.memories.first,outcome.memories.best);
    assert.equal(outcome.memories.first.hundredths,Math.round(Number(size)*100));

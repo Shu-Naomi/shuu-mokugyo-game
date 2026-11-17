@@ -30,7 +30,7 @@ module.exports=async function research(url,screen){
   const basicFit=await page.locator('#lakeResearchArticle').evaluate(n=>({height:n.clientHeight,scroll:n.scrollHeight}));
   assert.ok(basicFit.scroll<=basicFit.height+1,'basics should fit on one page '+JSON.stringify(basicFit));
   await shot('basics');
-  const before=await value('s'),raw=await page.evaluate(k=>localStorage.getItem(k),key);
+  const modernBefore=await page.evaluate(()=>ShuVillageProductionSession.read(1).raw);assert.ok(modernBefore);const before=await value('s'),raw=await page.evaluate(k=>localStorage.getItem(k),key);
   assert.equal(await page.locator('#lakeResearchFish option').count(),60);
   const firstFish=await page.locator('#lakeResearchFish').inputValue();await page.locator('#lakeResearchFish').focus();
   assert.equal(await page.locator('#lakeResearchTitle').textContent(),await value('fish.find(f=>f.id==='+JSON.stringify(firstFish)+').name'));
@@ -46,20 +46,20 @@ module.exports=async function research(url,screen){
    assert.equal(await page.locator('#lakeResearchFish').evaluate((el,region)=>[...el.options].every(o=>region==='all'||fishEncyclopediaData[o.value].habitats.includes(region)),region),true);
   }
   await press('#lakeResearchClues');assert.doesNotMatch(await page.locator('#lakeResearchDetail').textContent(),/星降るヌシ|渓流のヌシ|沿岸のヌシ|地底湖のヌシ/);await fits('clues');await shot('clues');
-  assert.deepEqual(await value('s'),before);assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw);
+  assert.deepEqual(await value('s'),before);assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw);assert.equal(await page.evaluate(()=>ShuVillageProductionSession.read(1).raw),modernBefore,'read-only research preserves modern save bytes');
   await change('lakeResearchHabitat','all');await change('lakeResearchFish','funa');
   await press('#villageGuideJournal');await page.locator('#fieldGuide.open').waitFor();await press('#fieldGuideClose');
   assert.equal(await page.locator('#lakeResearchPanel').isVisible(),true);assert.equal(await page.locator('#lakeResearchTitle').textContent(),'フナ');
   await press('#lakeStoryMemories');assert.equal(await page.locator('#lakeStoryReading').isVisible(),true);
   await press('#lakeStoryResearch');await fits('return from map and memories');await press('#lakeStoryClose');
   await menu('record');await press('#fishdexStoryOffer');await press('#lakeStoryResearch');await page.keyboard.press('Escape');await page.locator('#record.open').waitFor();await page.keyboard.press('Escape');
-  if(!fresh){await press('#action');await page.locator('#store.open').waitFor();if(!await page.locator('#samStoryOffer').isVisible())await press('#store [data-compact-guide]');await press('#samStoryOffer');await press('#lakeStoryResearch');await press('#lakeStoryClose');await page.locator('#store.open').waitFor();await page.keyboard.press('Escape');}
+  if(!fresh){await require('./browser-walk-village-route.cjs')(page,mobile,"(x,y,d)=>inWorldRect(x,y,ShuVillageReference.geometry.samShopInteractionBounds)&&d==='up'",{frozenClock:true,label:'research Sam source-return approach'});assert.equal(await value('isAtSamShopEntrance()'),true);await press('#action');await page.locator('#store.open').waitFor();if(!await page.locator('#samStoryOffer').isVisible())await press('#store [data-compact-guide]');await press('#samStoryOffer');await press('#lakeStoryResearch');await press('#lakeStoryClose');await page.locator('#store.open').waitFor();await page.keyboard.press('Escape');}
   assert.deepEqual(await value('s.caught'),before.caught);assert.equal(await value('fish.length'),65);
   assert.equal(await page.evaluate(k=>localStorage.getItem(k),other),otherRaw);
   pointers.push(...await value('researchPointers'));assert.ok(pointers.some(p=>p.id==='lakeStoryResearch'&&p.type===(mobile?'touch':'mouse')));
   await page.reload({waitUntil:'load'});await enter(page,mobile,{slot:1,isNew:false});await menu('story');await press('#lakeStoryResearch');await fits('saved adventure');
   assert.deepEqual(await value('s.caught'),before.caught);if(!fresh){assert.equal(await value('s.extraFuture.keep'),42);assert.deepEqual(await value('s.petLife.fish.map(f=>f.uid)'),before.petLife.fish.map(f=>f.uid));assert.deepEqual(await value('s.petLife.eggs'),before.petLife.eggs);}
-  pointers.push(...await value('researchPointers').catch(()=>[]));assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
+  assert.equal(await page.evaluate(k=>localStorage.getItem(k),key),raw,'legacy primary slot remains unchanged');assert.equal(await page.evaluate(k=>localStorage.getItem(k),other),otherRaw,'legacy other slot remains unchanged');pointers.push(...await value('researchPointers').catch(()=>[]));assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
   const result={screen,fresh,readOnly:true,catalogue:60,fishCount:65,slotIsolation:true,saveResume:true,unknownNamesHidden:true,sourceReturn:true,errors,httpErrors,layouts,pointers};
   fs.writeFileSync(path.join(dir,width+'x'+height+'-result.json'),JSON.stringify(result,null,2));console.log('LAKE_RESEARCH_PASS '+JSON.stringify({...result,layouts:undefined}));
  }catch(error){await shot('failure').catch(()=>{});throw error;}finally{await context.close();await browser.close();}

@@ -1,3 +1,11 @@
+// Poll outside the page's frozen clock while the verified production gate loads.
+async function productionReady(page){
+ for(let i=0;i<300;i++){
+  if(await page.evaluate(()=>globalThis.ShuVillageReleaseGate?.started===true))return;
+  await page.waitForTimeout(100);
+ }
+ throw Error('Verified production save gate did not start');
+}
 // Asual's own catalogue and boarding layouts, separate from location scenery.
 // Browser execution belongs to the authorized PR's GitHub Actions job.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
@@ -19,7 +27,7 @@ async function run(url,screen,provenance){
  const {chromium}=require('playwright'),browser=await chromium.launch({headless:true});
  const context=await browser.newContext({viewport:{width:screen.width,height:screen.height},deviceScaleFactor:screen.dpr,isMobile:screen.mobile,hasTouch:screen.mobile,locale:'ja-JP',serviceWorkers:'block'});
  const page=await context.newPage(),dir=path.join(output,`${screen.width}x${screen.height}`);fs.mkdirSync(dir,{recursive:true});
- const report={screen,provenance,fixture:'Synthetic save; no user save is read or modified. Entry uses the watermill action, then real UI controls.',checks:[],errors:[],httpErrors:[]};
+ const report={screen,provenance,fixture:'Synthetic save; no user save is read or modified. Production index without preview flag; injected production watermill position, entry uses the watermill action, then real UI controls.',checks:[],errors:[],httpErrors:[]};
  page.on('pageerror',e=>report.errors.push(e.message));page.on('response',r=>{if(r.status()>=400)report.httpErrors.push(r.status()+' '+new URL(r.url()).pathname);});
  const press=q=>page.locator(q)[screen.mobile?'tap':'click']();
  async function shot(name,noticePattern=null){
@@ -38,7 +46,10 @@ async function run(url,screen,provenance){
  try{
   await context.addInitScript(({state,key})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{state,key:saveKey});
   await page.clock.install({time:new Date('2026-11-09T03:00:00Z')});await page.clock.pauseAt('2026-11-09T03:00:01Z');
-  await page.goto(url,{waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,screen.mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  await page.goto(url,{waitUntil:'load'});await productionReady(page);await require('./browser-start-adventure.cjs')(page,screen.mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
+  // Explicit production landmark placement; subsequent entry and all shop actions use real UI.
+  await page.evaluate(()=>{const p=ShuVillageReference.landmarks.watermill;Object.assign(s,{mapRegion:'village',x:p.x,y:p.y,direction:p.facing});render();});
+  assert.equal(await page.evaluate(()=>nearbyWorldLandmark(s.x,s.y,s.direction)?.id),'watermill');
   await press('#action');await page.locator('#petLifeModal.open').waitFor();
   await shot('fish-welcome',/アスアル/);await page.clock.runFor(4600);await shot('fish-ready');const firstState=await snapshot();
   await press('#petLifeModal [data-compact-guide]');await shot('fish-guide');await press('#petLifeModal [data-compact-sheet-close]');
@@ -65,7 +76,7 @@ async function run(url,screen,provenance){
   await page.locator('#petShopSection').selectOption('fish');await shot('fish-after-boarding');assert.equal(await snapshot(),beforeBoarding,'boarding selection and cancel preserve resources');
   await press('[data-pet-action="close"]');await press('#action');await shot('fish-reopened',/アスアル/);
   await page.setViewportSize(screen.height>500?{width:820,height:366}:{width:1280,height:720});await shot('fish-resized',/アスアル/);await page.setViewportSize({width:screen.width,height:screen.height});await shot('fish-restored',/アスアル/);
-  assert.deepEqual(report.errors,[]);assert.deepEqual(report.httpErrors,[]);report.passed=true;
+  assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),JSON.stringify(state),'production purchases leave legacy bytes immutable');const current=await page.evaluate(()=>ShuVillageProductionSession.read(1));assert.equal(current.ok,true);assert.ok(current.raw);assert.equal(JSON.parse(current.raw).petLife.food,purchaseBefore.food+110,'purchases persist in modern currentRaw');assert.deepEqual(report.errors,[]);assert.deepEqual(report.httpErrors,[]);report.passed=true;
  }catch(e){report.passed=false;report.failure=e.stack;await page.screenshot({path:path.join(dir,'failure.png')}).catch(()=>{});throw e;
  }finally{fs.writeFileSync(path.join(dir,'report.json'),JSON.stringify(report,null,2)+'\n');await context.close();await browser.close();}
 }

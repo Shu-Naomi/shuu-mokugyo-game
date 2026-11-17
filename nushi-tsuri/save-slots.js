@@ -3,11 +3,41 @@
   if(root)root.ShuSaveSlots=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(){
   'use strict';
-  const keys={1:'nushi-inugoya-v2',2:'nushi-inugoya-v2-slot2'};
-  const lastSlotKey='nushi-inugoya-last-slot';
+  // The reference-layout study never writes to the player's regular saves.
+  // Its first visit copies raw slot bytes once, so both valid and corrupt saves
+  // retain their existing protections. Returning to the ordinary URL uses the
+  // unchanged original keys and progress.
+  const sourceKeys={1:'nushi-inugoya-v2',2:'nushi-inugoya-v2-slot2'};
+  const preview=!!globalThis.ShuVillageReference?.enabled ||
+    (typeof globalThis.location!=='undefined' && new URLSearchParams(globalThis.location.search).get('villageReference')==='1');
+  const keys=preview?{1:'nushi-reference-village-pilot-v1-slot1',2:'nushi-reference-village-pilot-v1-slot2'}:sourceKeys;
+  const sourceLastSlotKey='nushi-inugoya-last-slot';
+  const lastSlotKey=preview?'nushi-reference-village-pilot-v1-last-slot':sourceLastSlotKey;
   const slot=v=>v===1||v==='1'?1:v===2||v==='2'?2:null;
   function keyFor(value){const id=slot(value);if(!id)throw Error('Unknown save slot');return keys[id];}
   function create(getStorage=()=>globalThis.localStorage){
+    if(preview){
+      // Never overwrite an existing preview adventure, including a damaged
+      // one. Failure to read storage is handled by the normal read guards.
+      try{
+        const storage=getStorage();
+        for(const id of [1,2]){
+          const marker=keys[id]+'-imported';
+          if(storage.getItem(marker)==='1')continue;
+          if(storage.getItem(keys[id])===null){
+            const raw=storage.getItem(sourceKeys[id]);
+            if(raw!==null)storage.setItem(keys[id],raw);
+          }
+          // A deleted pilot adventure stays deleted on the next visit.
+          // Set only after the optional copy succeeds, never over a source.
+          storage.setItem(marker,'1');
+        }
+        if(storage.getItem(lastSlotKey)===null){
+          const raw=storage.getItem(sourceLastSlotKey);
+          if(raw!==null)storage.setItem(lastSlotKey,raw);
+        }
+      }catch(_){}
+    }
     function read(value){
       try{
         const raw=getStorage().getItem(keyFor(value));
@@ -67,5 +97,5 @@
     return {play:p.get('play')==='1',playerName:p.get('playerName'),avatar:['boy','girl'].includes(p.get('avatar'))?p.get('avatar'):null,
       dog:['shuu','riku','grey'].includes(p.get('dog'))?p.get('dog'):null};
   }
-  return {keys,lastSlotKey,keyFor,create,titleUrl,launchUrl,launchSettings};
+  return {keys,lastSlotKey,keyFor,create,titleUrl,launchUrl,launchSettings,preview};
 });

@@ -5,6 +5,7 @@ const {chromium}=require('playwright');
 const {pressProduct,revealProduct}=require('./compact-ui-helpers.cjs');
 const {assertRelease}=require('./browser-release.cjs');
 const enter=require('./browser-start-adventure.cjs');
+const {planVillageRoute}=require('./browser-reference-village-evidence.cjs');
 const root=path.resolve(__dirname,'..'),dir=path.resolve(process.env.HOOK_PURCHASES_EVIDENCE_DIR||'/tmp/hook-purchases-evidence');
 const screens=[{width:1280,height:720,mobile:false},{width:844,height:390,mobile:true},{width:820,height:366,mobile:true}];
 async function run(url,screen){
@@ -15,8 +16,28 @@ async function run(url,screen){
  const stock=()=>page.evaluate(()=>({money:s.money,ownedHooks:[...s.ownedHooks],selectedHook:s.selectedHook,baits:{...s.baits},lures:{...s.lures},time:s.gameMinutes}));
  async function start(fresh){await enter(page,mobile,{slot:1,isNew:fresh});await page.clock.runFor(240);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');}
  async function openBag(){await press('#menu');await press('[data-field-menu-target="items"]');await press('[data-inventory-tab="tackle"]');await press('[data-compact-group="hook"]');}
- async function setPlace(shop=false){await page.evaluate(shop=>{s.mapRegion='village';s.x=shop?197:127;s.y=shop?91:56;s.direction='up';s.dogFollowing=false;s.forageCycle={version:1,dayIndex:0,period:'morning',expiresAt:620,active:{},harvested:[],dogFound:[]};render();},shop);await page.clock.runFor(3000);}
- async function shop(){await setPlace(true);await press('#action');await page.locator('#store.open').waitFor();await press('#store [data-sam-category="hooks"]');}
+ // Explicit fishing-position fixture, resolved against current water geometry.
+ // The old (127,56) point no longer reaches the repainted lake within cast range.
+ async function setPlace(){await page.evaluate(()=>{s.mapRegion='village';s.x=127;s.y=56;s.direction='up';s.dogFollowing=false;s.forageCycle={version:1,dayIndex:0,period:'morning',expiresAt:620,active:{},harvested:[],dogFound:[]};
+  while(s.y>=40&&!(isWalkableWorld(s.x,s.y)&&fishingWaterNearPlayer()?.zone==='lake'&&!nearbyWorldLandmark()&&!nearbyRival()&&!nearbyTournamentNpc()))s.y-=.5;
+  if(s.y<40)throw Error('No valid lake casting fixture near prior shoreline');render();});await page.clock.runFor(3000);
+  assert.equal(await page.evaluate(()=>fishingWaterNearPlayer()?.zone==='lake'),true,'fixture reaches actual current lake before cast controls');}
+
+ async function shop(){
+  await page.evaluate(()=>{s.dogFollowing=false;s.forageCycle={version:1,dayIndex:0,period:'morning',expiresAt:620,active:{},harvested:[],dogFound:[]};});
+  assert.equal(await page.evaluate(()=>ShuVillageReference.enabled&&s.mapRegion==='village'&&isWalkableWorld(s.x,s.y)),true,'production shop route starts on actual village ground');
+  const goal="(x,y,d)=>inWorldRect(x,y,ShuVillageReference.geometry.samShopInteractionBounds)&&d==='up'";
+  const route=await page.evaluate(planVillageRoute,goal);
+  for(const direction of route){
+   const expected=await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),direction);
+   await press(`[data-move="${direction}"]`);await page.clock.runFor(50);
+   const actual=await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion}));
+   assert.equal(actual.region,'village');assert.ok(Math.abs(actual.x-expected.x)<1e-7&&Math.abs(actual.y-expected.y)<1e-7,'actual shop-route controls respect collisions');
+  }
+  await page.clock.runFor(700);
+  assert.equal(await page.evaluate(()=>isAtSamShopEntrance()&&isWalkableWorld(s.x,s.y)&&s.direction==='up'),true,'at current reference Sam door, not old fixture (197,91)');
+  await press('#action');await page.locator('#store.open').waitFor();await press('#store [data-sam-category="hooks"]');
+ }
  async function assertFit(selector){const fit=await page.locator(selector).evaluate(n=>{const r=n.getBoundingClientRect(),top=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {width:r.width,height:r.height,inside:r.left>=0&&r.top>=0&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1,unblocked:top===n||n.contains(top)};});assert.ok(fit.width>=44&&fit.height>=44&&fit.inside&&fit.unblocked,selector+' '+JSON.stringify(fit));}
  try{
   await context.addInitScript(()=>{localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));window.purchasePointers=[];document.addEventListener('pointerdown',e=>purchasePointers.push(e.pointerType));});
@@ -40,10 +61,12 @@ async function run(url,screen){
   const beforeCast=await stock();await press('#beginCast');await page.clock.runFor(240);await press('#pull');assert.equal(await page.evaluate(()=>battle.hook),'micro');assert.ok(await page.evaluate(()=>!!battle.specimen));
   for(let i=0;i<60&&await page.evaluate(()=>battle?.phase)==='cast-flight';i++)await page.clock.runFor(40);await press('#wait');const afterCast=await stock();assert.deepEqual(afterCast.ownedHooks,beforeCast.ownedHooks);assert.equal(afterCast.baits.worm,beforeCast.baits.worm-1);
   await page.reload({waitUntil:'load'});await start(false);assert.deepEqual((await stock()).ownedHooks,beforeCast.ownedHooks);await shop();for(const id of ['small','large','micro','carp'])assert.equal(await page.locator(`#store [data-buy-hook="${id}"]`).isDisabled(),true);await shot('reload-owned');await press('#store [data-close]');
+  assert.equal(await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),null,'new production adventure never writes a legacy save');
+  const persisted=await page.evaluate(()=>JSON.parse(ShuVillageProductionSession.read(1).raw));assert.deepEqual(persisted.ownedHooks,(await stock()).ownedHooks,'ownership persists in production generation');
   if(mobile)assert.ok((await page.evaluate(()=>purchasePointers)).includes('touch'));assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
   fs.writeFileSync(path.join(dir,`${width}x${height}-result.json`),JSON.stringify({screen,fresh:true,prices:[200,400,600,800],insufficient:true,reload:true,secretBait:true,reusableCast:true,errors,httpErrors},null,2));console.log('HOOK_PURCHASES_PASS',width,height);
- }catch(error){await shot('failure').catch(()=>{});fs.writeFileSync(path.join(dir,`${width}x${height}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors,state:await stock().catch(()=>null)},null,2));throw error;}finally{await context.close();await browser.close();}
+ }catch(error){await shot('failure').catch(()=>{});fs.writeFileSync(path.join(dir,`${width}x${height}-failure.json`),JSON.stringify({error:error.stack,errors,httpErrors,state:await stock().catch(()=>null),entrance:await page.evaluate(()=>({x:s.x,y:s.y,region:s.mapRegion,direction:s.direction,walkable:isWalkableWorld(s.x,s.y),atSam:isAtSamShopEntrance(),bounds:ShuVillageReference.geometry.samShopInteractionBounds,openModals:[...document.querySelectorAll('.modal.open')].map(n=>n.id)})).catch(()=>null)},null,2));throw error;}finally{await context.close();await browser.close();}
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
 const server=http.createServer((req,res)=>{try{const name=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',file=path.resolve(root,name);if(!file.startsWith(root+path.sep)||!fs.statSync(file).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(file).pipe(res);}catch{res.writeHead(404);res.end();}});
-(async()=>{fs.mkdirSync(dir,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));const failures=[];try{for(const screen of screens)try{await run(process.env.HOOK_PURCHASES_BASE_URL||`http://127.0.0.1:${server.address().port}/nushi-tsuri/`,screen);}catch(e){failures.push(e.stack);console.error(e);}if(failures.length)throw Error(failures.join('\n'));}finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});
+(async()=>{fs.mkdirSync(dir,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));try{for(const screen of screens)await run(process.env.HOOK_PURCHASES_BASE_URL||`http://127.0.0.1:${server.address().port}/nushi-tsuri/`,screen);}finally{await new Promise(r=>server.close(r));}})().catch(e=>{console.error(e);process.exitCode=1;});

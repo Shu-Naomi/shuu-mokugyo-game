@@ -26,14 +26,32 @@ async function run(url,screen){
  const surfaceReady=type=>page.waitForFunction(type=>{const c=document.querySelector('#castBackdrop'),motion=document.querySelector('.scenery-motion[data-for="castBackdrop"]');if(c.dataset.locale!=='mountain-'+type||c.style.backgroundImage!=='none'||motion?.dataset.scene!=='surface-mountain-'+type)return false;const data=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<data.length;i+=4*47)if(data[i+3])colors.add(data[i]+','+data[i+1]+','+data[i+2]);return colors.size>100;},type);
  const shot=async name=>{await settleCamera();await page.screenshot({path:path.join(directory,`${width}x${height}-${name}.png`)});};
  async function start(){await require('./browser-start-adventure.cjs')(page,mobile);if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');}
- async function walk(target){const route=await page.evaluate(planRuralRoute,target);for(const d of route){if(mobile)await press('[data-move="'+d+'"]');else await page.keyboard.press('Arrow'+d[0].toUpperCase()+d.slice(1));assert.ok(await page.evaluate(()=>isWalkableWorld(s.x,s.y)),'walkable native step '+target);}evidence.push({target,steps:route.length,...await state()});}
+ async function walk(target){
+  const village=target==='villageGate';
+  const route=village?await page.evaluate(require('./browser-reference-village-evidence.cjs').planVillageRoute,'(x,y)=>ShuRural.atVillageGate(x,y)'):await page.evaluate(planRuralRoute,target);
+  const ready=()=>page.waitForFunction(()=>!forageDiscoveryInProgress,null,{timeout:8000});
+  if(village)await page.evaluate(()=>{if(window.__ruralMoveCount===undefined){window.__ruralMoveCount=0;document.addEventListener('pointerdown',e=>{if(e.target.closest('[data-move]'))window.__ruralMoveCount++;},true);}});
+  for(const d of route){
+   if(village)await ready();
+   const expected=village?await page.evaluate(d=>ShuWorldLife.moveTarget(s.x,s.y,d,4,isWalkableWorld),d):null;
+   const before=village?await page.evaluate(()=>({events:window.__ruralMoveCount,forage:forageDiscoveryInProgress,rescue:rescueInProgress,home:playerHomeIsActive(),transition:playerHomeState.transitioning,battle:!!battle,modals:document.querySelectorAll('.modal.open').length})):null;
+   if(village)assert.ok(!before.forage&&!before.rescue&&!before.home&&!before.transition&&!before.battle&&!before.modals,'rural approach ready '+JSON.stringify(before));
+   if(mobile||village)await press('[data-move="'+d+'"]');else await page.keyboard.press('Arrow'+d[0].toUpperCase()+d.slice(1));
+   assert.ok(await page.evaluate(()=>isWalkableWorld(s.x,s.y)),'walkable native step '+target);
+   if(village){assert.equal(await page.evaluate(()=>window.__ruralMoveCount),before.events+1,'one pointerdown per rural approach tap');assert.equal((await state()).region,'village');assert.equal(await page.evaluate(()=>playerHomeIsActive()),false,'route does not auto-enter home');assert.deepEqual(await page.evaluate(()=>({x:s.x,y:s.y})),expected,'actual village step '+d+' '+JSON.stringify({before,expected}));}
+  }
+  if(village)await ready();
+  if(village)assert.equal(await page.evaluate(()=>ShuRural.atVillageGate(s.x,s.y)),true,'actual player reaches production rural gate');
+  evidence.push({target,steps:route.length,...await state()});
+ }
+ const legacyBytes=()=>page.evaluate(key=>localStorage.getItem(key),saveKey);
  const sample=async()=>page.evaluate(async()=>{window.__paints={};await new Promise(r=>setTimeout(r,300));return window.__paints;});
  async function delayRuralImage(){let release,requested;const gate=new Promise(r=>release=r),seen=new Promise(r=>requested=r);await page.route('**/'+R.asset+'*',async route=>{requested();await gate;await route.continue();});return {release,seen};}
  const assertNoRegionalPaint=(counts,label)=>{for(const [name,count]of Object.entries(counts))if(/mountainPixels|rural/i.test(name))assert.equal(count,0,label+' '+name);};
  const waitForRuralImage=()=>page.waitForFunction(()=>window.__ruralImages.some(i=>i.complete&&i.naturalWidth>0));
  const initialImage=await delayRuralImage();
  const sourceDigests={};for(const file of sourceFiles){const response=await context.request.get(new URL(file,url).href);assert.ok(response.ok(),'source available '+file);const hash=digest(await response.body());assert.equal(hash,digest(fs.readFileSync(path.join(root,file))),'exact checkout source '+file);sourceDigests[file]=hash;}
- await page.goto(url,{waitUntil:'load'});await start();await require('./browser-release.cjs').assertRelease(page);const before=await progress();await walk('villageGate');await shot('entrance');await press('#action');assert.equal((await state()).region,'ruralCanals');
+ await page.goto(url,{waitUntil:'load'});await start();await require('./browser-release.cjs').assertRelease(page);const originalLegacy=await legacyBytes(),beforeApproach=await progress();await walk('villageGate');const before=await progress();for(const key of ['money','hp','caught','equipment','questCompletions','gameMinutes'])assert.deepEqual(before[key],beforeApproach[key],'approach preserves '+key);for(const [bait,count]of Object.entries(beforeApproach.baits))assert.ok(before.baits[bait]>=count,'dog discovery cannot spend bait '+bait);evidence.push({target:'approach-natural-dog-discoveries',before:beforeApproach,after:before});await shot('entrance');await press('#action');assert.equal((await state()).region,'ruralCanals');
  await initialImage.seen;const arrivalBeforeImage=await state();await page.evaluate(()=>showFieldMenu());assert.equal(await page.evaluate(()=>fieldMenuIsOpen()),true);
  await page.evaluate(()=>{window.__paints={};});initialImage.release();await waitForRuralImage();await page.waitForTimeout(100);
  const delayedMenuPaints=await page.evaluate(()=>window.__paints);assertNoRegionalPaint(delayedMenuPaints,'initial image finishes under field menu without painting');
@@ -82,7 +100,7 @@ async function run(url,screen){
   // Visibility changes save the rural arrival; return/save before the next cold reload.
   await press('#action');assert.equal((await state()).region,'village');await page.evaluate(()=>save());
  }
- assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);const result={screen,url,sourceDigests,layout,evidence,paintCounts:{visible,menu,hidden,resumed,delayedMenuPaints,staleVillagePaints,delayedCoverPaints},delayedFirstImage:true,areaReload:true,returnReload:true,legacyProgress:true,errors,failures};fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify(result,null,2));console.log('RURAL_CANALS_BROWSER_PASS',width,height,dpr);
+ assert.equal(await legacyBytes(),originalLegacy,'rural journey never overwrites the legacy save');const modern=await page.evaluate(()=>ShuVillageProductionSession.read(1));assert.equal(modern.ok,true);assert.equal(JSON.parse(modern.raw).mapRegion,'village');assert.equal(JSON.parse(modern.raw).gameMinutes,afterFishing.gameMinutes);assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);const result={screen,url,sourceDigests,layout,evidence,paintCounts:{visible,menu,hidden,resumed,delayedMenuPaints,staleVillagePaints,delayedCoverPaints},delayedFirstImage:true,areaReload:true,returnReload:true,legacyProgress:true,errors,failures};fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify(result,null,2));console.log('RURAL_CANALS_BROWSER_PASS',width,height,dpr);
  }finally{await context.close();await browser.close();}
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};

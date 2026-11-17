@@ -1,7 +1,36 @@
 <!doctype html>
 <html lang="ja">
   <head>
-    <meta charset="utf-8" />
+<meta charset="utf-8">
+<script id="villageCandidateBootstrap">
+(function(){
+  const config = {"expectedUrls":["item-categories.css?v=217-1&sha256=11df933b17adb72198f12fa6ff27f68b3cfaba9c2909e8c35584cb43f2f6b89c","pixel-scenes.css?v=240-1&sha256=9257fc29b5175bdd44965c3703c170a9c7e432093f502dff4c6ad7c1ed5587d6","field-guide.css?v=248-2&sha256=2d5b1ac4cfb4135b1d6c3e7af278df5efffabd54e3140e24fa16b07a3190664d","village-guide.css?v=252-5&sha256=f3df710581517063aa87f8e864511c34079691f010f5da987f8a846699b8004a","pet-life.css?v=252-60&sha256=c422116f4cf783c273e3dd0bd4a77b80e52456dac0ce65c7c4da99ccbe6781d6","lake-story.css?v=206-1&sha256=ed3a9c43fd215c324217a02ab8ed2ab9b023f28c896b40b00a2938c328f80cd7","lake-research.css?v=252-6&sha256=6caf9db98b2b29bb174a3873d9b680051e6ff7ebd5ae975a690791e6d36db721","lake-intro.css?v=252-44&sha256=252a77358f99c76ae42911a0f866a7f2fecb94d1534b0aa9e0b8cf5d49fb8793","timed-rest.css?v=252-43&sha256=64717536adbf3acdc145f86ab2af9b8207471a6696eefbc0fb352696fb810727","save-slots.css?v=207-1&sha256=25440817ba851e0124c2ecfd7b789a65185d7f8f8a8e0f4eaa3d5abf68af498b","title-flow.css?v=252-1&sha256=61049f640f42a76a9084c02608ba1cf5258cbe204e2199da087450fb941a74e4","player-options.css?v=251-9&sha256=6ecb69d629c2a43aaa455da1f66731881837f36aac5f5eeae230a6446cac4f15","cast-tackle.css?v=252-59&sha256=ada4cb9c77c38c7a6bc26ac3b35b41e0225416a6d1e2094cd434e11fcf0708e7","event-ceremony.css?v=186-1&sha256=c1a491665203e2f75c356e7bbb83f87ec87c89affe055271c98f334aabd2efe7","fortune-capsules.css?v=185-1&sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3","fishing-duel.css?v=246-1&sha256=45e509091a6c94a656913355b8f91af14fc66af6933d6aae8b01700194f8a2e5","catch-memories.css?v=229-1&sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402","compact-ui.css?v=252-64&sha256=beed293a6fc27bebea769f128707696f79a2848b5e8dec15f0a7fe9f046253cb","offshore-island.css?v=251-2&sha256=7ae382d9752302d95ebaa0a6056f214ef412b833a6fa625716d617cc6fa0f517","village-reference.js?v=pilot-1&sha256=2e7cb5063e5fe6406206529a94e2ce68314700f576cd36b27d90bc3223704a22","player-options.js?v=251-9&sha256=b88b04471e0a166a665be2aa34850cebd0894ad54e7a7ff91028803aea318203","fortune-capsules.js?v=187-1&sha256=0ac23b2005199992a72ec77087540f3216d32622dd202bfef2afaf95f52d6f20","music-tracks.js?v=205-1&sha256=495fa1eb5ce93cf156175f24a8d0af982a3676fa883d1c9aff16ca17ee699b0e","soundscape.js?v=186-1&sha256=a04b52b377b5acee46a8907f28c0e5ef2c5dc038e07b548a1a40f9b009aaf8aa","ui-feedback.js?v=187-1&sha256=66e8c7618e1d7ec97a84a9968038cd32d501995c9dd9576805c17199fe648708","weather.js?v=169-1&sha256=f89b96f02b5a9665644722f523f762bb20898f2aff3cf04c14f11f320dd8dbd6","event-ceremony.js?v=186-1&sha256=e8b3720b874e6e0bed689acfa0a27c7065ef7a53e3713acbb8667d79e2a9a581","aquarium-mutations.js?v=252-24&sha256=540a4ee7667d6d25ff286720c21baf9221964e91f7d7e0765984c7803e90627d","pet-notebook.js?v=252-27&sha256=4a946a6c41640aeefd84a348831f3c4f4cb89f000b216a2a8301384192219738","pet-life.js?v=252-27&sha256=8360fdf3e11942d5a4e6c4f971ed3e77a0889cb857205bb84a67276f8f033431","fish-motion.js?v=252-65&sha256=6b10d07cc0401d6831bb08ed861c38bedb3bce5629db90e49a6d533dfd9b2a17","aquarium-life.js?v=252-65&sha256=dcb4df6d8163789b97c1c7d9622fd801fd97f9f8a54a16290867f7359e371a35","compact-ui.js?v=252-64&sha256=cb9d51b0396ec9a86a2a919604fe071d0aa4a7b79fc2cd3e56a3ac682d46c091","pet-life-ui.js?v=252-60&sha256=f2bebc1aa5d7005338aae533d7bfcf8e879785521662fd9b7b3e3e6911e36aaf","tackle-balance.js?v=252-53&sha256=6be69c8b43324ee39ecb1e794935acfb2bdf4535daeddf059662da9595d603d4","fishing-duel.js?v=252-65&sha256=0fe29cb7a09b19023f61c1cadb4c9a263ccf3fbe058d7a03d85434ece125527f","underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b","nushi-presentation.js?v=246-1&sha256=48588c4621ff679cc7f92b4d439a4b51628bdf54c0d36a38e4ff333c9a3368ac","catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb","coast-voyage.js?v=226-1&sha256=a8de812b9da5cc8d232f3e71c50e83d9ae4fc0fc86e5097bcc8b196f1e200596","offshore-island.js?v=252-56&sha256=23f9c823284b33e55b1fc09ad501e2b41d33a36e487951bffd631c01bf396e96","world-life.js?v=252-55&sha256=0180091d6bf480b08e3eb4e99d5ca7f028c36dc5570a31cccc8fb480c2cf46c4","field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd","rural-canals.js?v=252-55&sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a","mountain-region.js?v=252-55&sha256=5f49fcb232daa806bdf786e763c3333654fd336544af194e8a0ee9d3dd5b67e0","regional-nushi.js?v=202-1&sha256=e1451cb806ce9d8fec3a653f386dd181834f23865e2ad9b7c095048a3f8846a0","lake-intro.js?v=252-55&sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df","timed-rest.js?v=252-32&sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f","village-guide.js?v=252-5&sha256=2c0ee2cc394727eb1730a7fb01845de929de9c0e77141c2ca807499361968301","lake-story.js?v=252-51&sha256=618f94ff3609be734b30315d3c0e5fc32af5849acdbae65609bd10526c916cad","lake-research.js?v=252-52&sha256=5d0f20db77ef47487bac7f576f950a657af81305d7d73c2cbc725296b524b732","save-slots.js?v=252-1&sha256=3c3d1b9e847b90c7f9c39470e8b3a35ab43df8b6b15c204a977369f55848aa00","title-flow.js?v=252-1&sha256=c2f71d4d2bc242c71440d8cf66c6ca4b8f9f4146d4a5617e9a17ff14c40a9496","nushi-atlas.js?v=202-1&sha256=dab6dc8d7146ccd883604bb0d5ccd9edc5e4c02ebcea24603bf9c5a47376d472","fish-additions.js?v=252-65&sha256=dcb9d64b804093089af338ded0b403634bc633c42596beaa1ec0b53aed9ff731","fish-art.js?v=252-42&sha256=de5fc3ca152ff0cf9aa6334cf571650bfe5139b900b7bb1467b9918b45f387e4","tackle-art.js?v=252-52&sha256=11217e934cd7fcc3246f480fcdbac67afd96a80a082a040aa44a92817d2d90c2","item-art.js?v=252-28&sha256=d06708b4d40e705c222fe1d3633dc7fe8696fb60d23ec7052cda39a6b84ee3ac","item-object-art.js?v=252-28&sha256=d75acd9ffa0c370f00d741b80763371495d361745215bf697ac122e52b8caa10","ui-pixel-art.js?v=252-28&sha256=c2f12bcc6215b4a56cfec7caa44239ea083168c66f19475a855a564c3371f00f","ui-extra-art.js?v=252-28&sha256=9ac00eee6580bd681b18b5ad58d7f0900ab055588c2a921a1129136a83fbfbaf","rival-anglers.js?v=252-55&sha256=e3927cf9c78c007f07b22a66aa44eb989c1e5023d95ad6a8feb3c97405e2c5ba","tournament-npcs.js?v=252-55&sha256=fa1e09fe4945904ced961f4d655e8dc77b6b6c65684b89b8c532d00de6e520ed","tournament.js?v=180-1&sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a","pixel-world.js?v=165-1&sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55","pixel-cast.js?v=247-1&sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b","scene-layers.js?v=252-55&sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872","layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc","village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427","village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381","village-save-adapter.js?sha256=f8173a08cedea16defc391e054e2cd4fe1c6417e832bd5fb658827d7551c19fe","village-release-verifier.js?sha256=e1139706b34da1036826c6eaeee54a94991136ed228b0fa5014130e4d4a96b70","village-release-gate.js?sha256=38abaf87f02d1624134b56b0dd9ee3fe7e026ae76070562fcc73bbd16c29e1f9"],"mapURL":"assets/village-reference-2bdd42f26e3f1ed8.png","mapSHA256":"2bdd42f26e3f1ed82bfedee17466af59816c7bc597ac1b5358ecd2a17669e0a6","workerURL":"./sw.js?v=252-67"};
+  config.expectedUrls = config.expectedUrls.map(url => new URL(url, location.href).href);
+  config.mapURL = new URL(config.mapURL, location.href).href;
+  config.loaded = new Set(); config.failed = [];
+  globalThis.ShuVillageReleaseCandidate = config;
+  function blocked() {
+    if (!config.failed.length || !document.body || document.getElementById('villageCandidateFailure')) return;
+    const notice = document.createElement('div');
+    notice.id = 'villageCandidateFailure'; notice.setAttribute('role', 'alert');
+    notice.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#10202b;color:white;padding:24px;display:grid;place-content:center;font:18px sans-serif';
+    notice.textContent = '起動を止めました。必要なファイルを確認できませんでした。保存データは変更していません。接続を確認して再読み込みしてください。';
+    document.body.appendChild(notice);
+  }
+  document.addEventListener('DOMContentLoaded', blocked, {once:true});
+  function record(event) {
+    const target = event.target;
+    if (!target || !/^(SCRIPT|LINK)$/.test(target.tagName)) return;
+    const url = target.src || target.href;
+    if (!config.expectedUrls.includes(url)) return;
+    if (event.type === 'load') config.loaded.add(url);
+    else { if (!config.failed.includes(url)) config.failed.push(url); blocked(); }
+  }
+  document.addEventListener('load', record, true);
+  document.addEventListener('error', record, true);
+})();
+</script>
+
     <meta
       name="viewport"
       content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no"
@@ -9,7 +38,7 @@
     <meta name="theme-color" content="#10283a" />
     <title>ぬし釣り犬小屋・星降る湖</title>
     <link rel="manifest" href="manifest.json" />
-    <link rel="stylesheet" href="item-categories.css?v=217-1" />
+    <link rel="stylesheet" href="item-categories.css?v=217-1&amp;sha256=11df933b17adb72198f12fa6ff27f68b3cfaba9c2909e8c35584cb43f2f6b89c" integrity="sha256-Ed+TOxettyGY8S+m/yf2izz6upwpCejDVYTLQ/L2uJw=" crossorigin="anonymous">
     <style>
       :root {
         --ink: #172a35;
@@ -6457,24 +6486,24 @@
         .tournament-choices button { min-height: 44px; padding: 7px 10px; }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
-    <link rel="stylesheet" href="field-guide.css?v=248-2" />
-    <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="pet-life.css?v=252-60" />
-    <link rel="stylesheet" href="lake-story.css?v=206-1" />
-    <link rel="stylesheet" href="lake-research.css?v=252-6" />
-    <link rel="stylesheet" href="lake-intro.css?v=252-44" />
-    <link rel="stylesheet" href="timed-rest.css?v=252-43" />
-    <link rel="stylesheet" href="save-slots.css?v=207-1" />
-    <link rel="stylesheet" href="title-flow.css?v=252-1" />
-    <link rel="stylesheet" href="player-options.css?v=251-9" />
-    <link rel="stylesheet" href="cast-tackle.css?v=252-59" />
-    <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
-    <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
-    <link rel="stylesheet" href="catch-memories.css?v=229-1" />
-    <link rel="stylesheet" href="compact-ui.css?v=252-64" />
-    <link rel="stylesheet" href="offshore-island.css?v=251-2" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=240-1&amp;sha256=9257fc29b5175bdd44965c3703c170a9c7e432093f502dff4c6ad7c1ed5587d6" integrity="sha256-klf8KbUXW91Ellw3A8FwqcfkMgk/UC3/TGrXwe1Vh9Y=" crossorigin="anonymous">
+    <link rel="stylesheet" href="field-guide.css?v=248-2&amp;sha256=2d5b1ac4cfb4135b1d6c3e7af278df5efffabd54e3140e24fa16b07a3190664d" integrity="sha256-LVsaxM+0E1sdbD568njfXv/6vVTjFA4k+hawejGQZk0=" crossorigin="anonymous">
+    <link rel="stylesheet" href="village-guide.css?v=252-5&amp;sha256=f3df710581517063aa87f8e864511c34079691f010f5da987f8a846699b8004a" integrity="sha256-899xBYFRcGOqh/joZFEcNAeWkfAQ9dqYf4qEZpm4AEo=" crossorigin="anonymous">
+    <link rel="stylesheet" href="pet-life.css?v=252-60&amp;sha256=c422116f4cf783c273e3dd0bd4a77b80e52456dac0ce65c7c4da99ccbe6781d6" integrity="sha256-xCIRb0z3g8Jz490L1Kd7gOUkVtrAzmXHxNqZzL5ngdY=" crossorigin="anonymous">
+    <link rel="stylesheet" href="lake-story.css?v=206-1&amp;sha256=ed3a9c43fd215c324217a02ab8ed2ab9b023f28c896b40b00a2938c328f80cd7" integrity="sha256-7TqcQ/0hXDJCF6AquO0qubAj8oyJa0CwCik4wyj4DNc=" crossorigin="anonymous">
+    <link rel="stylesheet" href="lake-research.css?v=252-6&amp;sha256=6caf9db98b2b29bb174a3873d9b680051e6ff7ebd5ae975a690791e6d36db721" integrity="sha256-bK+duYsrKbsXSjhz2baABR5v9+vVrpdaaQeR5tNttyE=" crossorigin="anonymous">
+    <link rel="stylesheet" href="lake-intro.css?v=252-44&amp;sha256=252a77358f99c76ae42911a0f866a7f2fecb94d1534b0aa9e0b8cf5d49fb8793" integrity="sha256-JSp3NY+Zx2rkKRGg+Gan8v7LlNFTSwqp4LjPXUn7h5M=" crossorigin="anonymous">
+    <link rel="stylesheet" href="timed-rest.css?v=252-43&amp;sha256=64717536adbf3acdc145f86ab2af9b8207471a6696eefbc0fb352696fb810727" integrity="sha256-ZHF1Nq2/Os3BRfhqsq+bggdHGmaW7vvA+zUmlvuBByc=" crossorigin="anonymous">
+    <link rel="stylesheet" href="save-slots.css?v=207-1&amp;sha256=25440817ba851e0124c2ecfd7b789a65185d7f8f8a8e0f4eaa3d5abf68af498b" integrity="sha256-JUQIF7qFHgEkwuz9e3iaZRhdf4+Kjg9Oqj1av2ivSYs=" crossorigin="anonymous">
+    <link rel="stylesheet" href="title-flow.css?v=252-1&amp;sha256=61049f640f42a76a9084c02608ba1cf5258cbe204e2199da087450fb941a74e4" integrity="sha256-YQSfZA9Cp2qQhMAmCLoc9SWMviBOIZnaCHRQ+5QadOQ=" crossorigin="anonymous">
+    <link rel="stylesheet" href="player-options.css?v=251-9&amp;sha256=6ecb69d629c2a43aaa455da1f66731881837f36aac5f5eeae230a6446cac4f15" integrity="sha256-bstp1inCpDqqRV2h9mcxiBg382qsX17q4jCmRGysTxU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="cast-tackle.css?v=252-59&amp;sha256=ada4cb9c77c38c7a6bc26ac3b35b41e0225416a6d1e2094cd434e11fcf0708e7" integrity="sha256-raTLnHfDjHprwmrDs1tB4CJUFqbR4glM1DThH88HCOc=" crossorigin="anonymous">
+    <link rel="stylesheet" href="event-ceremony.css?v=186-1&amp;sha256=c1a491665203e2f75c356e7bbb83f87ec87c89affe055271c98f334aabd2efe7" integrity="sha256-waSRZlID4vdcNW57u4P4fsh8ia/+BVJxyY8zSqvS7+c=" crossorigin="anonymous">
+    <link rel="stylesheet" href="fortune-capsules.css?v=185-1&amp;sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3" integrity="sha256-b8t5zkHILGxHGu8w6wexj/B/OKVHg8jfBVwJzsKybKM=" crossorigin="anonymous">
+      <link rel="stylesheet" href="fishing-duel.css?v=246-1&amp;sha256=45e509091a6c94a656913355b8f91af14fc66af6933d6aae8b01700194f8a2e5" integrity="sha256-ReUJCRpslKZWkTNVuPka8U/GavaTPWquiwFwAZT4ouU=" crossorigin="anonymous">
+    <link rel="stylesheet" href="catch-memories.css?v=229-1&amp;sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402" integrity="sha256-vg4f16djiQSSPEFDGtWRQ3DUTHugjRMamw7UDEugVAI=" crossorigin="anonymous">
+    <link rel="stylesheet" href="compact-ui.css?v=252-64&amp;sha256=beed293a6fc27bebea769f128707696f79a2848b5e8dec15f0a7fe9f046253cb" integrity="sha256-vu0pOm/Ce+vqdp8Shwdpb3mihItejewV8Kf+nwRiU8s=" crossorigin="anonymous">
+    <link rel="stylesheet" href="offshore-island.css?v=251-2&amp;sha256=7ae382d9752302d95ebaa0a6056f214ef412b833a6fa625716d617cc6fa0f517" integrity="sha256-euOC2XUjAtleuqCmBW8hTvQSuDOm+mJXFtYXzG+g9Rc=" crossorigin="anonymous">
   </head>
   <body>
     <div class="landscape-warning">
@@ -6534,7 +6563,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-65</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-67</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7410,25 +7439,54 @@
         <button id="optionsDeletedReturn" type="button" hidden>セーブ選択画面へ戻る</button>
       </div>
     </section>
-    <script src="player-options.js?v=251-9"></script>
-    <script src="fortune-capsules.js?v=187-1"></script>
-    <script src="music-tracks.js?v=205-1"></script>
-    <script src="soundscape.js?v=186-1"></script>
-    <script src="ui-feedback.js?v=187-1"></script>
-    <script src="weather.js?v=169-1"></script>
-    <script src="event-ceremony.js?v=186-1"></script>
-    <script src="aquarium-mutations.js?v=252-24"></script>
-    <script src="pet-notebook.js?v=252-27"></script>
-    <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-65"></script>
-    <script src="aquarium-life.js?v=252-65"></script>
-    <script src="compact-ui.js?v=252-64"></script>
-    <script src="pet-life-ui.js?v=252-60"></script>
-    <script src="tackle-balance.js?v=252-53"></script>
-    <script src="fishing-duel.js?v=252-65"></script>
-    <script src="underwater-camera.js?v=246-1"></script>
-    <script src="nushi-presentation.js?v=246-1"></script>
-    <script src="catch-memories.js?v=229-1"></script>
+    <script src="village-reference.js?v=pilot-1&amp;sha256=2e7cb5063e5fe6406206529a94e2ce68314700f576cd36b27d90bc3223704a22" integrity="sha256-Lny1Bj5f5kBiBlKalOLOaDFHAPV2zTayfZC8MiNwSiI=" crossorigin="anonymous"></script>
+    <script>
+      // Keep normal offline play usable, but fail closed for an unsafe preview.
+      function showReferenceVillageFailure(reason) {
+        let failure = document.getElementById("villageReferenceLoadFailure");
+        if (failure) { failure.textContent = reason; return; }
+        failure = document.createElement("div");
+        failure.id = "villageReferenceLoadFailure";
+        failure.setAttribute("role", "alertdialog");
+        failure.setAttribute("aria-modal", "true");
+        failure.setAttribute("aria-label", "参考原画の試作を読み込めませんでした");
+        failure.tabIndex = -1;
+        failure.textContent = reason;
+        failure.style.cssText = "position:fixed;inset:0;z-index:2147483647;display:grid;place-content:center;padding:32px;background:#241b10;color:#fff1c7;font:18px/1.7 sans-serif;text-align:center";
+        document.body.append(failure);
+        failure.focus();
+        for (const type of ["keydown", "keyup", "pointerdown", "pointerup", "click", "touchstart", "touchend"])
+          window.addEventListener(type, event => {
+            if (event.type.startsWith("key") && (event.ctrlKey || event.metaKey || event.key === "F5")) return;
+            event.stopImmediatePropagation();
+            event.preventDefault();
+          }, { capture: true, passive: false });
+      }
+      if (!globalThis.ShuVillageReference) {
+        globalThis.ShuVillageReference = { enabled: false, moduleLoadFailed: true };
+        if (new URLSearchParams(location.search).get("villageReference") === "1")
+          showReferenceVillageFailure("参考原画の試作を読み込めませんでした。通信を確認して再読み込みしてください。通常版を試作として表示することはできません。");
+      }
+    </script>
+    <script src="player-options.js?v=251-9&amp;sha256=b88b04471e0a166a665be2aa34850cebd0894ad54e7a7ff91028803aea318203" integrity="sha256-uIsERx4KFmpmW+KqNIUM69CJStVOen/5ECiAOuoxggM=" crossorigin="anonymous"></script>
+    <script src="fortune-capsules.js?v=187-1&amp;sha256=0ac23b2005199992a72ec77087540f3216d32622dd202bfef2afaf95f52d6f20" integrity="sha256-CsI7IAUZmZKnLsdwh1QPMhbTJiLdICv+8q+vlfUtbyA=" crossorigin="anonymous"></script>
+    <script src="music-tracks.js?v=205-1&amp;sha256=495fa1eb5ce93cf156175f24a8d0af982a3676fa883d1c9aff16ca17ee699b0e" integrity="sha256-SV+h61zpPPFWF18kqNCvmCo2dvqIPRya/xbKF+5pmw4=" crossorigin="anonymous"></script>
+    <script src="soundscape.js?v=186-1&amp;sha256=a04b52b377b5acee46a8907f28c0e5ef2c5dc038e07b548a1a40f9b009aaf8aa" integrity="sha256-oEtSs3e1rO5GqJB/KMDl7yxdwDjge1SKGkD5sAmq+Ko=" crossorigin="anonymous"></script>
+    <script src="ui-feedback.js?v=187-1&amp;sha256=66e8c7618e1d7ec97a84a9968038cd32d501995c9dd9576805c17199fe648708" integrity="sha256-ZujHYY4dfsl6hKmWgDjNMtUBmVyd2VdoBcFxmf5khwg=" crossorigin="anonymous"></script>
+    <script src="weather.js?v=169-1&amp;sha256=f89b96f02b5a9665644722f523f762bb20898f2aff3cf04c14f11f320dd8dbd6" integrity="sha256-+JuW8CtalmVkRyL1I/diuyCJjyr/PPBMFPEfMg3Y29Y=" crossorigin="anonymous"></script>
+    <script src="event-ceremony.js?v=186-1&amp;sha256=e8b3720b874e6e0bed689acfa0a27c7065ef7a53e3713acbb8667d79e2a9a581" integrity="sha256-6LNyC4dObgvtaJrPoKJ8cGXvelPjcTrLuGZ9eeKppYE=" crossorigin="anonymous"></script>
+    <script src="aquarium-mutations.js?v=252-24&amp;sha256=540a4ee7667d6d25ff286720c21baf9221964e91f7d7e0765984c7803e90627d" integrity="sha256-VApO52Z9bSX/KGcgwhuvkiGWTpH31+B2WYTHgD6QYn0=" crossorigin="anonymous"></script>
+    <script src="pet-notebook.js?v=252-27&amp;sha256=4a946a6c41640aeefd84a348831f3c4f4cb89f000b216a2a8301384192219738" integrity="sha256-SpRqbEFkCu79hKNIgx88T0y4nwALIWoqgwE4QZIhlzg=" crossorigin="anonymous"></script>
+    <script src="pet-life.js?v=252-27&amp;sha256=8360fdf3e11942d5a4e6c4f971ed3e77a0889cb857205bb84a67276f8f033431" integrity="sha256-g2D98+EZQtWk5sT5ce0+d6CInLhXIFu4Smcnb48DNDE=" crossorigin="anonymous"></script>
+    <script src="fish-motion.js?v=252-65&amp;sha256=6b10d07cc0401d6831bb08ed861c38bedb3bce5629db90e49a6d533dfd9b2a17" integrity="sha256-axDQfMBAHWgxuwjthhw4vts7zlYp25Dkmm1TPf2bKhc=" crossorigin="anonymous"></script>
+    <script src="aquarium-life.js?v=252-65&amp;sha256=dcb4df6d8163789b97c1c7d9622fd801fd97f9f8a54a16290867f7359e371a35" integrity="sha256-3LTfbYFjeJuXwcfZYi/YAf2X+filShYpCGf3NZ43GjU=" crossorigin="anonymous"></script>
+    <script src="compact-ui.js?v=252-64&amp;sha256=cb9d51b0396ec9a86a2a919604fe071d0aa4a7b79fc2cd3e56a3ac682d46c091" integrity="sha256-y51RsDluyahqKpGWBP4HHQqkp7efws0+VqOsaC1GwJE=" crossorigin="anonymous"></script>
+    <script src="pet-life-ui.js?v=252-60&amp;sha256=f2bebc1aa5d7005338aae533d7bfcf8e879785521662fd9b7b3e3e6911e36aaf" integrity="sha256-8r68GqXXAFM4quUz17/PjoeXhVIWYv2bez4+aRHjaq8=" crossorigin="anonymous"></script>
+    <script src="tackle-balance.js?v=252-53&amp;sha256=6be69c8b43324ee39ecb1e794935acfb2bdf4535daeddf059662da9595d603d4" integrity="sha256-a+aci0MyTuOeyx55STWs+yvfRTXa7d8FlmLalZXWA9Q=" crossorigin="anonymous"></script>
+    <script src="fishing-duel.js?v=252-65&amp;sha256=0fe29cb7a09b19023f61c1cadb4c9a263ccf3fbe058d7a03d85434ece125527f" integrity="sha256-D+Kct6CbGQI/YcHK20yaJjzPP74FjXoD2FQ07OElUn8=" crossorigin="anonymous"></script>
+    <script src="underwater-camera.js?v=246-1&amp;sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b" integrity="sha256-202W9JOUzBsqWrA7B1ids7iUcmg35sxGrq1F5Ff5qBs=" crossorigin="anonymous"></script>
+    <script src="nushi-presentation.js?v=246-1&amp;sha256=48588c4621ff679cc7f92b4d439a4b51628bdf54c0d36a38e4ff333c9a3368ac" integrity="sha256-SFiMRiH/Z5zH+StNQ5pLUWKL31TA02o45P8zPJozaKw=" crossorigin="anonymous"></script>
+    <script src="catch-memories.js?v=229-1&amp;sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb" integrity="sha256-m/0Hvcq5qgdpYnY8dtFbqhLcCDGVon2j7smaWPIVHcs=" crossorigin="anonymous"></script>
     <section id="offshoreFerry" class="modal" role="dialog" aria-modal="true" aria-labelledby="offshoreFerryTitle">
       <div class="ferry-window"><h2 id="offshoreFerryTitle">漁師の渡し船 · 潮風島</h2>
         <div class="ferry-layout"><canvas class="ferry-picture" id="offshoreFerryPicture" width="540" height="198" role="img" aria-label="船長タツの漁船"></canvas>
@@ -7437,36 +7495,54 @@
           </div></div>
       </div>
     </section>
-    <script src="coast-voyage.js?v=226-1"></script>
-    <script src="offshore-island.js?v=252-56"></script>
-    <script src="world-life.js?v=252-55"></script>
-    <script src="field-guide.js?v=252-55"></script>
-    <script src="rural-canals.js?v=252-55"></script>
-    <script src="mountain-region.js?v=252-55"></script>
-    <script src="regional-nushi.js?v=202-1"></script>
-    <script src="lake-intro.js?v=252-55"></script>
-    <script src="timed-rest.js?v=252-32"></script>
-    <script src="village-guide.js?v=252-5"></script>
-    <script src="lake-story.js?v=252-51"></script>
-    <script src="lake-research.js?v=252-52"></script>
-    <script src="save-slots.js?v=252-1"></script>
-    <script src="title-flow.js?v=252-1"></script>
-    <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=252-65"></script>
-    <script src="fish-art.js?v=252-42"></script>
-    <script src="tackle-art.js?v=252-52"></script>
-    <script src="item-art.js?v=252-28"></script>
-    <script src="item-object-art.js?v=252-28"></script>
-    <script src="ui-pixel-art.js?v=252-28"></script>
-    <script src="ui-extra-art.js?v=252-28"></script>
-    <script src="rival-anglers.js?v=252-55"></script>
-    <script src="tournament-npcs.js?v=252-55"></script>
-    <script src="tournament.js?v=180-1"></script>
-    <script src="pixel-world.js?v=165-1"></script>
-    <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-55"></script>
-    <script src="layered-scenery.js?v=252-55"></script>
-    <script>
+    <script src="coast-voyage.js?v=226-1&amp;sha256=a8de812b9da5cc8d232f3e71c50e83d9ae4fc0fc86e5097bcc8b196f1e200596" integrity="sha256-qN6BK52lzI0jLz5xxQ6D2a5PwPyG5Ql7zIsZbx4gBZY=" crossorigin="anonymous"></script>
+    <script src="offshore-island.js?v=252-56&amp;sha256=23f9c823284b33e55b1fc09ad501e2b41d33a36e487951bffd631c01bf396e96" integrity="sha256-I/nIIyhLM+VbH8Ca1QHitB0zo25IeVG//WMcAb85bpY=" crossorigin="anonymous"></script>
+    <script src="world-life.js?v=252-55&amp;sha256=0180091d6bf480b08e3eb4e99d5ca7f028c36dc5570a31cccc8fb480c2cf46c4" integrity="sha256-AYAJHWv0gLCOPrTpnVyn8CjDbcVXCjHMzI+0gMLPRsQ=" crossorigin="anonymous"></script>
+    <script src="field-guide.js?v=252-55&amp;sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd" integrity="sha256-CQ0WrWAHOFgLz1FE2XDdQulk5Jl7f+Pyo8YIXQ7gmr0=" crossorigin="anonymous"></script>
+    <script src="rural-canals.js?v=252-55&amp;sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a" integrity="sha256-vvra+fxfg2iZKhIGH3vnPWDi9S3LcdO9EGCliuyLqgo=" crossorigin="anonymous"></script>
+    <script src="mountain-region.js?v=252-55&amp;sha256=5f49fcb232daa806bdf786e763c3333654fd336544af194e8a0ee9d3dd5b67e0" integrity="sha256-X0n8sjLaqAa994bnY8MzNlT9M2VErxlOig7p091bZ+A=" crossorigin="anonymous"></script>
+    <script src="regional-nushi.js?v=202-1&amp;sha256=e1451cb806ce9d8fec3a653f386dd181834f23865e2ad9b7c095048a3f8846a0" integrity="sha256-4UUcuAbOnY/sOmU/OG3RgYNPI4ZeKtm3wJUEij+IRqA=" crossorigin="anonymous"></script>
+    <script src="lake-intro.js?v=252-55&amp;sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df" integrity="sha256-CJgjBXeLhdDghe01gAbzMiNpjzwssPQ053xV5VSe098=" crossorigin="anonymous"></script>
+    <script src="timed-rest.js?v=252-32&amp;sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f" integrity="sha256-Wz2I7ZFEvSg0GecRcRIngQJwz/6/UwWsE931y11Xil8=" crossorigin="anonymous"></script>
+    <script src="village-guide.js?v=252-5&amp;sha256=2c0ee2cc394727eb1730a7fb01845de929de9c0e77141c2ca807499361968301" integrity="sha256-LA7izDlHJ+sXMKf7AYRd6SnenA53FBwsqAdJk2GWgwE=" crossorigin="anonymous"></script>
+    <script src="lake-story.js?v=252-51&amp;sha256=618f94ff3609be734b30315d3c0e5fc32af5849acdbae65609bd10526c916cad" integrity="sha256-YY+U/zYJvnNLMDFdPA5fwyr1hJrNuuZWCb0QUmyRbK0=" crossorigin="anonymous"></script>
+    <script src="lake-research.js?v=252-52&amp;sha256=5d0f20db77ef47487bac7f576f950a657af81305d7d73c2cbc725296b524b732" integrity="sha256-XQ8g23fvR0h7rH9Xb5UKZXr4EwXX1zwsvHJSlrUktzI=" crossorigin="anonymous"></script>
+    <script src="save-slots.js?v=252-1&amp;sha256=3c3d1b9e847b90c7f9c39470e8b3a35ab43df8b6b15c204a977369f55848aa00" integrity="sha256-PD0bnoR7kMf5w5Rw6LOjWrQ9+LaxXCBKl3Np9VhIqgA=" crossorigin="anonymous"></script>
+    <script src="title-flow.js?v=252-1&amp;sha256=c2f71d4d2bc242c71440d8cf66c6ca4b8f9f4146d4a5617e9a17ff14c40a9496" integrity="sha256-wvcdTSvCQscUQNjPZsbKS4+fQUbUpWF+mhf/FMQKlJY=" crossorigin="anonymous"></script>
+    <script src="nushi-atlas.js?v=202-1&amp;sha256=dab6dc8d7146ccd883604bb0d5ccd9edc5e4c02ebcea24603bf9c5a47376d472" integrity="sha256-2rbcjXFGzNiDYEuw1czZ7cXkwC686iRgO/nFpHN21HI=" crossorigin="anonymous"></script>
+    <script src="fish-additions.js?v=252-65&amp;sha256=dcb9d64b804093089af338ded0b403634bc633c42596beaa1ec0b53aed9ff731" integrity="sha256-3LnWS4BAkwia8zje0LQDY0vGM8Qllr6qHsC1Ou2f9zE=" crossorigin="anonymous"></script>
+    <script src="fish-art.js?v=252-42&amp;sha256=de5fc3ca152ff0cf9aa6334cf571650bfe5139b900b7bb1467b9918b45f387e4" integrity="sha256-3l/DyhUv8M+apjNM9XFlC/5RObkAt7sUZ7mRi0Xzh+Q=" crossorigin="anonymous"></script>
+    <script src="tackle-art.js?v=252-52&amp;sha256=11217e934cd7fcc3246f480fcdbac67afd96a80a082a040aa44a92817d2d90c2" integrity="sha256-ESF+k0zX/MMkb0gPzbrGev2WqAoIKgQKpEqSgX0tkMI=" crossorigin="anonymous"></script>
+    <script src="item-art.js?v=252-28&amp;sha256=d06708b4d40e705c222fe1d3633dc7fe8696fb60d23ec7052cda39a6b84ee3ac" integrity="sha256-0GcItNQOcFwiL+HTYz3H/oaW+2DSPscFLNo5prhO46w=" crossorigin="anonymous"></script>
+    <script src="item-object-art.js?v=252-28&amp;sha256=d75acd9ffa0c370f00d741b80763371495d361745215bf697ac122e52b8caa10" integrity="sha256-11rNn/oMNw8A10G4B2M3FJXTYXRSFb9pesEi5SuMqhA=" crossorigin="anonymous"></script>
+    <script src="ui-pixel-art.js?v=252-28&amp;sha256=c2f12bcc6215b4a56cfec7caa44239ea083168c66f19475a855a564c3371f00f" integrity="sha256-wvErzGIVtKVs/sfKpEI56ggxaMZvGUdahVpWTDNx8A8=" crossorigin="anonymous"></script>
+    <script src="ui-extra-art.js?v=252-28&amp;sha256=9ac00eee6580bd681b18b5ad58d7f0900ab055588c2a921a1129136a83fbfbaf" integrity="sha256-msAO7mWAvWgbGLWtWNfwkAqwVViMKpIaESkTaoP7+68=" crossorigin="anonymous"></script>
+    <script src="rival-anglers.js?v=252-55&amp;sha256=e3927cf9c78c007f07b22a66aa44eb989c1e5023d95ad6a8feb3c97405e2c5ba" integrity="sha256-45J8+ceMAH8HsipmqkTrmJweUCPZWtao/rPJdAXixbo=" crossorigin="anonymous"></script>
+    <script src="tournament-npcs.js?v=252-55&amp;sha256=fa1e09fe4945904ced961f4d655e8dc77b6b6c65684b89b8c532d00de6e520ed" integrity="sha256-+h4J/klFkEztlh9NZV6Nx3trbGVoS4m4xTLQDeblIO0=" crossorigin="anonymous"></script>
+    <script src="tournament.js?v=180-1&amp;sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a" integrity="sha256-Vm2NnSbIWT4K5dpG0Ty1bdvF+2irSMMl8P2fE5paTCo=" crossorigin="anonymous"></script>
+    <script src="pixel-world.js?v=165-1&amp;sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55" integrity="sha256-d6yPKJ4kW4i/zOYxCzDiUdGXsr5fhGbRSsp/EvyvalU=" crossorigin="anonymous"></script>
+    <script src="pixel-cast.js?v=247-1&amp;sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b" integrity="sha256-QddzwsheiiDJX3PhMnOHNeppI7acHW2jTOYEoM/Ij0s=" crossorigin="anonymous"></script>
+    <script src="scene-layers.js?v=252-55&amp;sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872" integrity="sha256-RQgYy40V/iNVY5K9U3g4qKahjkeL9EYRJqlLBd4vqHI=" crossorigin="anonymous"></script>
+    <script src="layered-scenery.js?v=252-55&amp;sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc" integrity="sha256-TElG3uRCfL6NOCuKd98lWj874PRgHLCgZVQuCYIXysw=" crossorigin="anonymous"></script>
+<script type="text/plain" id="villageDeferredRuntime">
+      // Abort this same script before create(), save reads, migrations or UI
+      // handlers. A previous worker can otherwise serve the old save module.
+      if (!globalThis.ShuVillageProductionSession) {
+        let isolatedPreview = false;
+        try {
+          isolatedPreview = ShuVillageReference.enabled === true &&
+            !navigator.serviceWorker?.controller &&
+            ShuSaveSlots.preview === true &&
+            ShuSaveSlots.keyFor(1) === "nushi-reference-village-pilot-v1-slot1" &&
+            ShuSaveSlots.keyFor(2) === "nushi-reference-village-pilot-v1-slot2" &&
+            ShuSaveSlots.lastSlotKey === "nushi-reference-village-pilot-v1-last-slot";
+        } catch (_) {}
+        if (!isolatedPreview) {
+          showReferenceVillageFailure("参考原画の試作を安全に読み込めませんでした。保存データを守るため起動を止めました。この試作は通常版のキャッシュがない専用の検証環境で確認してください。");
+          throw new Error("Reference village safety check blocked startup");
+        }
+      }
+      let villageSaveSuspended = false;
       function uiArt(key) {
         const [kind, id] = key.split(":");
         return kind === "ui" ? UiPixelArt.get(id) : kind === "extra" ? UiExtraArt.get(id)
@@ -7489,8 +7565,9 @@
       const saveSlots = ShuSaveSlots.create(() => localStorage);
       const activeSaveSlot = saveSlots.initial(location.search);
       const loadedSaveSlot = saveSlots.read(activeSaveSlot);
+      if(globalThis.ShuVillageProductionSession&&!loadedSaveSlot.ok&&!['invalid-or-ambiguous-json','invalid-save-root'].includes(loadedSaveSlot.error))throw Error('Initial save read blocked');
       let selectedSaveSlot = activeSaveSlot, gameStarted = false, saveSuppressed = false, titleFlow = null;
-      const initialSaveCapture = saveSlots.capture(activeSaveSlot);
+      const initialSaveCapture = loadedSaveSlot.ok ? saveSlots.capture(activeSaveSlot) : {ok:false};
       let newAdventurePending = !loadedSaveSlot.exists, startSaveExpectedRaw;
       const playerOptions = ShuPlayerOptions.create(()=>localStorage), dialogueTyper = ShuPlayerOptions.typer(window);
       let textSpeed = playerOptions.read().textSpeed, pendingSaveDeletion = null, optionsReturnFocus = null;
@@ -13127,8 +13204,8 @@
       if (s.mapRegion === "coast" && !s.equipment.vehicle) {
         s.mapRegion = "village";
         s.boatActive = false;
-        s.x = ShuCoast.docks.harbor.land.x;
-        s.y = ShuCoast.docks.harbor.land.y;
+        s.x = (ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x;
+        s.y = (ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y;
       }
       if (s.rod === "ホンモロコ竿" && !s.ownedRods.includes("moroko"))
         s.ownedRods.push("moroko");
@@ -13138,6 +13215,7 @@
       ShuLakeStory.normalize(s);
       if(Object.hasOwn(s,"villageGuide"))s.villageGuide=ShuVillageGuide.normalize(s.villageGuide);
       function save() {
+        if (villageSaveSuspended) return false;
         clearTimeout(saveTimer);
         saveTimer = 0;
         if (!gameStarted || saveSuppressed || pendingSaveDeletion?.id===activeSaveSlot) return false;
@@ -13158,6 +13236,7 @@
         }
       }
       function scheduleSave() {
+        if (villageSaveSuspended) return false;
         if (saveSuppressed) return;
         clearTimeout(saveTimer);
         saveTimer = setTimeout(save, 700);
@@ -14089,6 +14168,7 @@
         return rain || birds || Boolean(enabled && scene.music);
       }
       function syncExpectedLoopAudio() {
+        if (villageSaveSuspended) return false;
         const scenePlaying = syncSceneSound();
         if (!s.soundEnabled || document.hidden) return false;
         if (battle?.phase === "escape") {
@@ -14568,6 +14648,7 @@
         return context;
       }
       function recoverGameAudio(options = null) {
+        if (villageSaveSuspended) return false;
         if (!s.soundEnabled || document.hidden) return false;
         unlockGameAudio(options);
         // Run inside the current gesture first (important on mobile), then
@@ -14589,8 +14670,8 @@
       }
       function activeLandingDock() {
         if (ShuMountain.isRegion(s.mapRegion) || s.mapRegion===ShuOffshore.id) return null;
-        if (s.mapRegion === "village") return near(ShuCoast.docks.harbor.land.x,ShuCoast.docks.harbor.land.y,8)
-          ? { id:"harbor",...ShuCoast.docks.harbor } : null;
+        if (s.mapRegion === "village") return near((ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x,(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y,8)
+          ? { id:"harbor",...ShuCoast.docks.harbor,land:ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land } : null;
         return Object.entries(ShuCoast.docks)
           .filter(([id])=>id!=="harbor" || s.boatActive)
           .map(([id,dock])=>({id,...dock}))
@@ -14616,14 +14697,15 @@
         if (!s.boatActive || s.mapRegion!=="coast") return false;
         const dock=activeLandingDock();if(!dock)return false;
         s.boatActive=false;s.mapRegion=dock.id==="harbor"?"village":"coast";
-        s.x=dock.land.x;s.y=dock.land.y;s.direction="up";
+        const land=ShuVillageReference.enabled&&dock.id==="harbor"?ShuVillageReference.routes.boat.land:dock.land;
+        s.x=land.x;s.y=land.y;s.direction="up";
         dogWorldPosition=null;
         log(`${dock.name}に船を着けた。`);
         render();save();return true;
       }
       function rescueBoat() {
         s.mapRegion="village";s.boatActive=false;
-        s.x=ShuCoast.docks.harbor.land.x;s.y=ShuCoast.docks.harbor.land.y;
+        s.x=(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).x;s.y=(ShuVillageReference.enabled?ShuVillageReference.routes.boat.land:ShuCoast.docks.harbor.land).y;
         s.direction="up";dogWorldPosition=null;
         advanceGameTime(s,120);s.hp=Math.min(s.maxHp,Math.max(25,s.hp));
         log("体力が尽き、漁師に助けられて星見港へ戻った。体力を25まで回復した。");
@@ -14738,7 +14820,7 @@
       function worldToMapY(y) {
         return y / WORLD_SCALE_Y;
       }
-      const lakeWaterPolygon = [
+      let lakeWaterPolygon = [
           // Shore-side vertices measured in the final 1672×941 village art.
           // The larger TCG shop replaces the old western bank. Keep water
           // out of its forecourt, cover the small southwest reed pocket,
@@ -14955,13 +15037,31 @@
             message: "港の舟具屋。小島への航海に使えるタライとボートが並んでいる。",
           },
         ];
-      const PLAYER_HOME_MAP_ENTRY = {
+      if (ShuVillageReference.enabled) {
+        ({lakeWaterPolygon,riverWaterPolygon,seaShoreLine,harborPocketWaterPolygon,
+          practicePondBounds,riverBridgeBounds,harborWalkwayPolygons,harborCornerPassageBounds,
+          mainShrineApproachBounds,danRaceFront,samShopApproachBounds,samShopInteractionBounds,
+          questBoardInteractionBounds,riaoShopFront,structureBounds}=ShuVillageReference.geometry);
+        worldLandmarks=worldLandmarks.map(landmark=>({...landmark,...ShuVillageReference.landmarks[landmark.id]}));
+        const riao=worldLandmarks.find(p=>p.id==='riao-tcg-shop');
+        riao.hint=globalThis.ShuVillageProductionSession?'リアオの魚TCGショップ（右上の魚看板・準備中）。Aで案内。':'リアオの魚TCGショップ（右上の魚看板へ仮配置・準備中）。Aで案内。';
+        if(!globalThis.ShuVillageProductionSession)riao.message+=' この原画試作では右上の魚看板の建物に仮配置しています。';
+        const board=worldLandmarks.find(p=>p.id==='quest-board');
+        board.hint='依頼掲示板（右上の立て看板）。Aで依頼を見る。';
+        if(!globalThis.ShuVillageProductionSession){
+        const banner=document.createElement('div');banner.id='villageReferenceNotice';
+        banner.textContent='原画試作・未公開｜右上のリアオ・依頼看板は仮配置｜通常セーブへの書込なし';
+        banner.style.cssText='position:fixed;left:50%;bottom:max(6px,env(safe-area-inset-bottom));transform:translateX(-50%);width:min(640px,calc(100vw - 340px));box-sizing:border-box;z-index:20;padding:4px 6px;border-radius:5px;background:#241b10e8;color:#fff1c7;font:11px/1.4 sans-serif;text-align:center;pointer-events:none';
+        document.body.append(banner);
+        }
+      }
+      const PLAYER_HOME_MAP_ENTRY = ShuVillageReference.enabled ? ShuVillageReference.exits.home.bounds : {
           left: 2,
           right: 6,
           top: 73,
           bottom: 85,
         },
-        PLAYER_HOME_MAP_RETURN = { x: 10, y: 79, direction: "right" },
+        PLAYER_HOME_MAP_RETURN = ShuVillageReference.enabled ? ShuVillageReference.exits.home.return : { x: 10, y: 79, direction: "right" },
         PLAYER_HOME_TRANSITION_MS = 180,
         playerHomeAreaData = {
           exterior: {
@@ -15168,6 +15268,7 @@
           c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
       function renderPixelScenery() {
+        if (villageSaveSuspended) return false;
         worldLife?.render(performance.now(),true);
         const env = gameSceneryEnvironment();
         if (s.mapRegion === ShuOffshore.id && !battle) {
@@ -15198,6 +15299,7 @@
         ShuScenery.syncVisibility();
       }
       function resumeRegionalScenery() {
+        if (villageSaveSuspended) return false;
         if (ShuMountain.isRegion(s.mapRegion) && !battle && !document.hidden &&
             !document.querySelector(".modal.open") && !fieldMenuIsOpen())
           renderPixelScenery();
@@ -15256,6 +15358,7 @@
         return inWorldRect(x, y, samShopInteractionBounds);
       }
       function isOnLakeDock(x, y) {
+        if(ShuVillageReference.enabled)return inWorldRect(x,y,ShuVillageReference.geometry.lakeDockBounds);
         return x >= 105.5 && x <= 114 && y >= 10.5 && y <= 19.5;
       }
       function isLakeWater(x, y) {
@@ -15271,6 +15374,7 @@
           pointInPolygon(x, y, riverWaterPolygon);
       }
       function isRiverWater(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.water(x,y)==="river";
         // Keep the established river/sea fishing-zone boundary at y=132.
         return y >= 50 && y <= 132 && !isOnRiverBridge(x, y) &&
           pointInPolygon(x, y, riverWaterPolygon);
@@ -15283,11 +15387,13 @@
         return sampleWorldLine(seaShoreLine, x);
       }
       function isSeaWater(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.water(x,y)==="sea";
         const mouth = y > 132 && pointInPolygon(x, y, riverWaterPolygon);
         return (y >= seaWaterY(x) || mouth || pointInPolygon(x, y, harborPocketWaterPolygon)) &&
           !isOnHarborWalkway(x, y);
       }
       function isPracticePondWater(x, y) {
+        if(ShuVillageReference.enabled)return pointInPolygon(x,y,ShuVillageReference.geometry.practicePondPolygon);
         if (!Number.isFinite(x) || !Number.isFinite(y)) return false;
         const dx = (x - practicePondBounds.centerX) / practicePondBounds.radiusX;
         const dy = (y - practicePondBounds.centerY) / practicePondBounds.radiusY;
@@ -15300,6 +15406,7 @@
         ) < 9;
       }
       function isBlockedStructure(x, y) {
+        if(ShuVillageReference.enabled)return ShuVillageReference.blocked(x,y);
         if (riaoShopFront.props.some((bounds) => inWorldRect(x, y, bounds))) return true;
         return structureBounds.some((bounds) => {
           if (!inWorldRect(x, y, bounds)) return false;
@@ -15403,6 +15510,7 @@
           ? foragePointData.find((candidate) => candidate.id === pointOrId)
           : pointOrId;
         if (!point) return null;
+        if(ShuVillageReference.enabled&&ShuVillageReference.forage[point.id])return ShuVillageReference.forage[point.id];
         if (!point.walkablePosition) {
           point.walkablePosition = nearestWalkableWorld(point.x, point.y, 10);
         }
@@ -15944,7 +16052,7 @@
           Math.max(1, Math.floor((now - previous + .001) / HOME_VISUAL_INTERVAL)) * HOME_VISUAL_INTERVAL;
       }
       function homeDogAnimationCanRun() {
-        return playerHomeState.area === "interior" && !playerHomeState.transitioning &&
+        return !villageSaveSuspended && playerHomeState.area === "interior" && !playerHomeState.transitioning &&
           !document.hidden && !battle && !document.querySelector(".modal.open") &&
           $("#game").classList.contains("active");
       }
@@ -15971,6 +16079,7 @@
         homeDogAnimationTimer = requestAnimationFrame(animateHomeDogs);
       }
       function renderHomeDogs() {
+        if (villageSaveSuspended) return false;
         const indoors = playerHomeState.area === "interior";
         $("#homeDogs").hidden = !indoors;
         if (indoors && !homeDogs.length) initializeHomeDogs();
@@ -16210,6 +16319,7 @@
         rivalDogAnimation = requestAnimationFrame(animateRivalDogReaction);
       }
       function animateRivalDogReaction(now) {
+        if (villageSaveSuspended) return false;
         rivalDogAnimation = 0;
         const reaction = rivalDogReaction;
         if (!reaction) return;
@@ -16729,6 +16839,7 @@
           tank.right <= box.right - 16 && tank.top >= box.top + 16 && tank.bottom <= box.bottom - 16;
       }
       function renderHomeAquarium() {
+        if (villageSaveSuspended) return false;
         const indoors = playerHomeState.area === "interior";
         $("#homeAquarium").hidden = !indoors;
         const id = normalizeAquariumFishId(s.homeAquariumFishId);
@@ -16757,6 +16868,7 @@
           aquariumAnimationTimer = requestAnimationFrame(advanceAquariumAnimation);
       }
       function advanceAquariumAnimation(now) {
+        if (villageSaveSuspended) return false;
         aquariumAnimationTimer = 0;
         if (!aquariumRenderedFishId || playerHomeState.area !== "interior" || document.hidden || aquariumCovered) {
           stopAquariumAnimation();
@@ -16864,6 +16976,7 @@
         return { x, y };
       }
       function movePlayerHome(direction) {
+        if (villageSaveSuspended) return false;
         if (
           !playerHomeIsActive() ||
           playerHomeState.transitioning ||
@@ -17437,6 +17550,7 @@
         updateTimedRestPreview();open("timedRest");$("[data-rest-time]").focus({preventScroll:true});return true;
       }
       function finishTimedRest() {
+        if (villageSaveSuspended) return;
         const presentation=timedRestPresentation;timedRestPresentation=null;
         timedRestSession=null;presentation?.finish();
         if($("#timedRest").classList.contains("open"))close();
@@ -17634,6 +17748,7 @@
         surfaceCastLastPaintAt = null;
       }
       function animateSurfaceCast() {
+        if (villageSaveSuspended) return false;
         surfaceCastAnimationFrame = 0;
         if (document.hidden || battle?.phase !== "cast-flight") return;
         // RAF supplies time since page load; the existing cast deadline uses
@@ -17646,10 +17761,12 @@
         if (!finished) surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
       }
       function startSurfaceCastAnimation() {
+        if (villageSaveSuspended) return false;
         if (!surfaceCastAnimationFrame && !document.hidden && battle?.phase === "cast-flight")
           surfaceCastAnimationFrame = requestAnimationFrame(animateSurfaceCast);
       }
       function syncSurfaceCastRig(now = Date.now()) {
+        if (villageSaveSuspended) return false;
         if (!battle || !["cast", "cast-flight", "wait", "bite"].includes(battle.phase) || document.hidden) return;
         paintSurfaceScenery();
         renderPixelCast(now);
@@ -18062,6 +18179,7 @@
         }
       }
       function advancePetSceneFrame() {
+        if (villageSaveSuspended) return false;
         if (document.hidden) return;
         if (companionReaction !== "pet") return;
         const scene = $("#petScene");
@@ -18078,15 +18196,21 @@
         mapElement.classList.toggle("coast",coast);
         mapElement.classList.toggle("mountain",mountain);
         mapElement.classList.toggle("offshore",offshore);
-        $("#ruralSign").hidden=s.mapRegion!=="village";
+        $("#ruralSign").hidden=ShuVillageReference.enabled||s.mapRegion!=="village";
         $("#mountainPixels").dataset.region=mountain?s.mapRegion:"inactive";
-        const ferry=$("#offshoreShip");ferry.hidden=!(offshore||s.mapRegion==="village");
+        const ferry=$("#offshoreShip");ferry.hidden=!(offshore||(!ShuVillageReference.enabled&&s.mapRegion==="village"));
         if(!ferry.hidden){const point=offshore?{x:118,y:104}:{x:214,y:119};ferry.style.left=`${worldToMapX(point.x)}%`;ferry.style.top=`${worldToMapY(point.y)}%`;ShuOffshore.paintShip(ferry,offshore);}
         if(mountain) {
           const canvas=$("#mountainPixels"), label=ShuMountain.regionData(s.mapRegion).name;
           if(canvas.getAttribute("aria-label")!==label)canvas.setAttribute("aria-label",label);
         }
         mapElement.classList.toggle("boating",coast&&s.boatActive);
+        if(ShuVillageReference.enabled&&!globalThis.ShuVillageProductionSession&&s.referenceVillageLayout!=='source-11016-1'){
+          // Old coordinates may be dry but isolated. One-time re-entry onto the
+          // connected village road changes position only, never inventory/stats.
+          if(s.mapRegion==='village')Object.assign(s,ShuVillageReference.rescuePosition(s));
+          s.referenceVillageLayout='source-11016-1';
+        }
         s.x = Math.max(2, Math.min(WORLD_WIDTH - 2, s.x));
         s.y = Math.max(2, Math.min(WORLD_HEIGHT - 2, s.y));
         if (!isWalkableWorld(s.x, s.y)) {
@@ -18346,6 +18470,7 @@
         else if (target === "saveSlots") return returnToSaveSelection();
       }
       function move(d) {
+        if (villageSaveSuspended) return false;
         if (playerHomeState.transitioning) return;
         if (playerHomeIsActive()) return movePlayerHome(d);
         if (battle || rescueInProgress || forageDiscoveryInProgress ||
@@ -18774,7 +18899,9 @@
           showRescueToast(landmark.message, 4200);
           return;
         }
-        const foragePoint = nearbyForagePoint();
+        // Reference facility fronts take priority over nearby random forage.
+        const foragePoint = ShuVillageReference.enabled && (landmark || isAtSamShopEntrance())
+          ? null : nearbyForagePoint();
         if (foragePoint) return collectForagePoint(foragePoint.point.id);
         if (isNearPracticePond()) return openPracticePond();
         const spot = nearbyFishingSpot();
@@ -19542,6 +19669,7 @@
           : "黄色い枠へ来るまで待つ";
       }
       function drawDogCareScene(now = Date.now()) {
+        if (villageSaveSuspended) return false;
         if (document.hidden) return false;
         const canvas = $("#dogCareSceneCanvas");
         if (!canvas) return false;
@@ -19766,6 +19894,7 @@
         return true;
       }
       function advanceDogCareScene() {
+        if (villageSaveSuspended) return false;
         if (!$("#dogCare")?.classList.contains("open")) return;
         dogCareScene.frame = (dogCareScene.frame + 1) % 8;
         const now = Date.now();
@@ -22326,6 +22455,7 @@
         battleArtAnimationFrame=0;battleArtLastPaintAt=0;
       }
       function startBattleFishArt() {
+        if (villageSaveSuspended) return false;
         stopBattleFishArt();
         const paint=now=>{
           battleArtAnimationFrame=0;
@@ -22715,7 +22845,7 @@
       function battleTick() {
         clearInterval(timer);
         timer = setInterval(() => {
-          if (!battle || document.hidden || battle.pausedAt) return;
+          if (villageSaveSuspended || !battle || document.hidden || battle.pausedAt) return;
           if(battle.method==="lure"&&["lure","interest","bite"].includes(battle.phase)){updateLurePresentation();updateWaterFx();return;}
           if(battle.phase==="escape"){updateFishEscape();return;}
           if (battle.phase !== "fight") updateWaterFx();
@@ -23985,7 +24115,7 @@
         renderIdentityOptions(state,editable,id);
         for(const button of document.querySelectorAll("[data-text-speed]"))button.setAttribute("aria-pressed",String(button.dataset.textSpeed===textSpeed));
         $("#optionsSaveList").innerHTML=[1,2].map(id=>{
-          const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable";
+          const saved=saveSlots.read(id),available=saved.exists&&saved.error!=="unavailable"&&(!globalThis.ShuVillageProductionSession||saved.ok);
           return `<div class="options-save"><b>セーブ${id}${gameStarted&&id===activeSaveSlot?" · プレイ中":""}</b><small>${ShuLakeStory.escape(optionsSlotSummary(id))}</small><button type="button" class="delete-save" data-delete-save="${id}" ${available?"":"disabled"}>セーブ${id}を削除…</button></div>`;
         }).join("");
         setDialogue($("#optionsTextPreview"),"星降る湖へようこそ。今日は、どの魚に会えるかな？",true);
@@ -24015,6 +24145,7 @@
         if(gameStarted&&id===activeSaveSlot&&!save()){
           $("#optionsNotice").textContent="今の進行を保存できなかったので、削除を止めたよ。もう一度試してね。";return false;
         }
+        if(globalThis.ShuVillageProductionSession&&!saveSlots.read(id).ok)return false;
         const snapshot=saveSlots.capture(id);
         if(!snapshot.ok||snapshot.raw===null){$("#optionsNotice").textContent="このセーブを確認できないよ。";return false;}
         pendingSaveDeletion={id,raw:snapshot.raw};
@@ -24119,7 +24250,8 @@
       function renderSaveSlotSelection() { titleFlow?.render(); }
       function startTitleAdventure({slot, isNew, choices}) {
         if(gameStarted||saveSuppressed)return false;
-        const selected=saveSlots.read(slot),capture=saveSlots.capture(slot);
+        const selected=saveSlots.read(slot);if(!selected.ok)return false;
+        const capture=saveSlots.capture(slot);
         if(!selected.ok||!capture.ok||(isNew?selected.exists:!selected.exists))return false;
         // A changed save must be loaded afresh, never replaced by the stale state behind the title.
         if(slot!==activeSaveSlot||capture.raw!==initialSaveCapture.raw){
@@ -24159,6 +24291,7 @@
         setBattleReeling(false);
       }
       function pressBattleAction(){
+        if (villageSaveSuspended) return false;
         if(battleActionHeld||document.hidden||battle?.pausedAt)return;
         battleActionHeld=true;pull();
       }
@@ -24167,6 +24300,7 @@
         stopFishEscapeAudio();releaseHeldInputs();
       }
       function resumeBattle(){
+        if (villageSaveSuspended) return false;
         if(battle?.pausedAt){
           const now=Date.now(),paused=battle.pausedAt;
           for(const key of ["biteAt","nibbleAt"])if(Number.isFinite(battle[key]))battle[key]+=now-Math.max(paused,battle.biteScheduledAt||paused);
@@ -24180,6 +24314,37 @@
         }
         releaseHeldInputs();
       }
+      // Called only by the verified save gate. Recovery reloads the page; there
+      // is deliberately no resume API that could revive stale in-memory state.
+      globalThis.ShuVillageSaveRuntime = Object.freeze({
+        isSuspended: () => villageSaveSuspended,
+        suspend() {
+          if (villageSaveSuspended) return;
+          villageSaveSuspended = true;
+          pauseBattle(); // Releases pointer holds and reeling before any redraw.
+          clearTimeout(saveTimer); saveTimer = 0;
+          for (const handle of [catchTimer, landingTimer, hookRevealTimer,
+            castLandingTimer, surfaceTransitionTimer, walkTimer, dogWalkTimer,
+            idleTimer, idleActionTimer, companionReactionTimer, reactionTransitionTimer,
+            rescueTimer, forageDiscoveryTimer, playerHomeTransitionTimer]) clearTimeout(handle);
+          // Hide covered game surfaces without close()/finish callbacks mutating
+          // the adventure. Independent scenery controllers then see no viewport.
+          $("#game").style.display = "none";
+          document.querySelectorAll(".modal.open").forEach(node => node.classList.remove("open"));
+          ShuScenery.syncVisibility();
+          eventCeremonies?.stop();
+          timedRestPresentation?.finish(); timedRestPresentation = null;
+          clearInterval(timer); timer = 0;
+          clearInterval(playerWalkInterval); playerWalkInterval = 0;
+          clearInterval(catchAnimationTimer); catchAnimationTimer = 0;
+          stopSurfaceCastAnimation(); stopBattleFishArt();
+          stopAquariumAnimation(); stopHomeDogAnimation(); stopRivalDogReaction();
+          petUi?.stop(); dialogueTyper.cancelAll();
+          stopCastingWaterSound(.05); stopUnderwaterSound(.05);
+          stopRainSound(); stopWildlifeSound(); stopAllGameAudioSamples();
+          setMasterAudioLevel(false); gameAudio.unlocked = false;
+        }
+      });
       function releaseHeldInputs() {stopMoving();releaseBattleAction();if(battle)battle.lurePulse=false;}
       document.querySelectorAll("[data-move]").forEach((b) => {
         b.onpointerdown = (e) => {
@@ -24405,6 +24570,7 @@
         if (e.key === "z" || e.key === "Enter") releaseBattleAction();
       });
       addEventListener("resize", () => {
+        if (villageSaveSuspended) return;
         if ($("#game").classList.contains("active")) {
           requestAnimationFrame(() => {
             render();
@@ -24432,6 +24598,7 @@
         gameAudio.unlocked = false;
       });
       document.addEventListener("visibilitychange", () => {
+        if (villageSaveSuspended) return;
         renderHomeAquarium();
         renderHomeDogs();
         if (document.hidden) {
@@ -24453,12 +24620,14 @@
       });
       addEventListener("focus", () => {resumeBattle();recoverGameAudio();});
       addEventListener("pageshow", () => {
+        if (villageSaveSuspended) return;
         recoverGameAudio();
         startSurfaceCastAnimation();
         renderHomeAquarium();
         renderHomeDogs();
       });
       setInterval(() => {
+        if (villageSaveSuspended) return;
         worldLife?.render();
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
@@ -24469,11 +24638,11 @@
       }, 2500);
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
-      if ("serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-65").catch(() => {});
+      if (!globalThis.ShuVillageProductionSession && new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
+        navigator.serviceWorker.register("./sw.js?v=252-67").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
-        visible:()=>!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
+        visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
       renderRecord();
       titleFlow=ShuTitleFlow.create({element:$("#title"),slots:saveSlots,options:ShuPlayerOptions,initialSlot:activeSaveSlot,
         selectSlot:id=>{selectedSaveSlot=id;},summary:optionsSlotSummary,start:startTitleAdventure,settings:openOptions});
@@ -24486,6 +24655,13 @@
           titleFlow.notice('開始できなかったよ。保存先と空き容量を確認してね。');
         }
       }
-    </script>
+
+globalThis.ShuVillageRuntimeReady = true;
+</script>
+<script src="village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427" integrity="sha256-DWagcmnEjBniZTaIVZ7y22H9nNvRI34oKYyJezMyVCc=" crossorigin="anonymous"></script>
+<script src="village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381" integrity="sha256-rsPF7Zo0gw1lbs8J2wgzumV5BRPqCUmezkKcG2sNg4E=" crossorigin="anonymous"></script>
+<script src="village-save-adapter.js?sha256=f8173a08cedea16defc391e054e2cd4fe1c6417e832bd5fb658827d7551c19fe" integrity="sha256-+Bc6CM7eoW3vw5HgVOLNT+HGQX6DK9X7ZYgn11UcGf4=" crossorigin="anonymous"></script>
+<script src="village-release-verifier.js?sha256=e1139706b34da1036826c6eaeee54a94991136ed228b0fa5014130e4d4a96b70" integrity="sha256-4ROXBrNNoQNoJsbq7uVKlJkRNu0iiw+lAUEw5NSpa3A=" crossorigin="anonymous"></script>
+<script src="village-release-gate.js?sha256=38abaf87f02d1624134b56b0dd9ee3fe7e026ae76070562fcc73bbd16c29e1f9" integrity="sha256-OKuvh/AtFiQTS1aw3Z7j/n4CaudgcFYvzHO70Wwp4fk=" crossorigin="anonymous"></script>
   </body>
 </html>

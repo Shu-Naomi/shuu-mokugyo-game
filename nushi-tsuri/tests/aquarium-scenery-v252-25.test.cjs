@@ -1,3 +1,24 @@
+const {JSDOM}=require('jsdom');
+const {createHash}=require('node:crypto');
+const {inspectRelease}=require('./browser-cache-upgrade-evidence.cjs');
+function offlineContract(html,sw){
+ const files={'index.html':html,'sw.js':sw,'compact-ui.css':fs.readFileSync(path.join(__dirname,'../compact-ui.css'),'utf8')};
+ for(const [,name] of sw.matchAll(/importScripts\("\.\/([^"/]+)"\)/g))files[name]=fs.readFileSync(path.join(__dirname,'..',name),'utf8');
+ return inspectRelease(files).coreAssets;
+}
+function pinnedPageAsset(html,assets,file){
+ const dom=new JSDOM(html);try{
+  const nodes=[...dom.window.document.querySelectorAll('[src],link[href]')].filter(el=>(el.getAttribute('src')||el.getAttribute('href')).startsWith(file+'?'));
+  assert.equal(nodes.length,1,file+' loaded exactly once');
+  const node=nodes[0],href=node.getAttribute('src')||node.getAttribute('href'),url=new URL(href,'https://game.test/');
+  assert.ok(assets.includes('./'+href),file+' exact page URL is precached');
+  const digest=createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',file))).digest();
+  assert.equal(url.searchParams.get('sha256'),digest.toString('hex'),file+' URL hash');
+  assert.equal(node.getAttribute('integrity'),'sha256-'+digest.toString('base64'),file+' SRI');
+  assert.equal(node.getAttribute('crossorigin'),'anonymous');
+  return url;
+ }finally{dom.window.close();}
+}
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs');
@@ -83,19 +104,18 @@ test('scenery remains derived on reload and adds no saved state or gameplay chan
 });
 
 test('fresh and salt CSS assets preserve click-through scenery, fish layering and matching offline cache references',()=>{
-  const css=source('pet-life.css'),html=source('index.html'),sw=source('sw.js');
+  const css=source('pet-life.css'),html=source('index.html'),sw=source('sw.js'),assets=offlineContract(html,sw);
   const base=css.match(/\.pet-aquarium-scenery\s*\{([^}]+)\}/)?.[1];assert.ok(base);
   assert.match(base,/pointer-events\s*:\s*none/);assert.match(base,/z-index\s*:\s*0(?:;|$)/);
   assert.match(base,/aquarium-interior-v214\.webp/);
   for(const water of ['fresh','salt']){
     const rules=[...css.matchAll(/([^{}]+)\{([^{}]+)\}/g)];
     assert.ok(rules.some(([,selector,body])=>selector.includes(`[data-water-theme="${water}"]`)&&selector.includes('.pet-aquarium-scenery')&&body.includes(`assets/aquarium-${water}-v252-25.webp`)),`${water} explicit CSS asset routing`);
-    assert.ok(sw.includes(`./assets/aquarium-${water}-v252-25.webp`),`${water} offline asset`);
+    assert.ok(assets.includes(`./assets/aquarium-${water}-v252-25.webp`),`${water} offline asset`);
   }
   for(const file of ['pet-life.css','pet-life-ui.js']){
-    const ref=html.match(new RegExp(`${file.replace('.','\\.')}\\?v=([^"']+)`));assert.ok(ref);
-    assert.ok(sw.includes(`./${file}?v=${ref[1]}`),`${file} index/worker revisions agree`);
-    const [major,minor]=ref[1].split('-').map(Number);
+    const url=pinnedPageAsset(html,assets,file);
+    const [major,minor]=url.searchParams.get('v').split('-').map(Number);
     assert.ok(major>252||major===252&&minor>=25,`${file} cache revision keeps scenery or a later release`);
   }
   assert.match(css,/\.pet-inspect-fish\s*\{[^}]*z-index:\s*460/);

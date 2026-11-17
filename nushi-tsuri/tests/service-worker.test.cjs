@@ -9,7 +9,7 @@ const source = fs.readFileSync(path.join(__dirname, "../sw.js"), "utf8");
 
 function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const location = new URL("https://game.test/nushi-tsuri/sw.js");
-  const listeners = {}, requests = [], writes = [];
+  const listeners = {}, requests = [], writes = [], deletions = [];
   const state = {
     network: async () => { throw new TypeError("Offline"); },
     failOpen: false, failWrite: false, claimed: false, skippedWaiting: false,
@@ -22,11 +22,11 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const context = vm.createContext({
     URL, Response,
     self: {
-      location, addEventListener: (name, handler) => { listeners[name] = handler; },
+      location, registration: { scope: "https://game.test/nushi-tsuri/" }, addEventListener: (name, handler) => { listeners[name] = handler; },
       skipWaiting: async () => { state.skippedWaiting = true; }, clients: { claim: async () => { state.claimed = true; } },
     },
     caches: {
-      keys: async () => [...stores.keys()], delete: async (name) => stores.delete(name),
+      keys: async () => [...stores.keys()], delete: async (name) => { deletions.push(name); return stores.delete(name); },
       open: async (name) => {
         if (state.failOpen) throw new Error("Cache storage unavailable");
         entries(name);
@@ -61,11 +61,17 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
       return state.network(request, options);
     },
   });
+  context.importScripts = (...urls) => {
+    for (const url of urls) {
+      assert.match(url, /^\.\/village-precache-[0-9-]+\.js$/);
+      vm.runInContext(fs.readFileSync(path.join(__dirname, "..", url), "utf8"), context);
+    }
+  };
   vm.runInContext(workerSource, context);
   const name = vm.runInContext("CACHE_NAME", context);
   const coreAssets = Array.from(vm.runInContext("CORE_ASSETS", context));
   return {
-    state, stores, requests, writes, name, coreAssets,
+    state, stores, requests, writes, deletions, name, coreAssets,
     seed: (cache, resource, body) => entries(cache).set(key(resource), new Response(body)),
     cached: (resource) => entries(name).get(key(resource))?.clone(),
     install: async () => {
@@ -93,7 +99,7 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   };
 }
 
-test("installation fetches all core assets before skipWaiting and activation retires stale CSS", async () => {
+test("installation precaches all assets without taking over old tabs or deleting their CSS", async () => {
   const app = bootWorker(), previous = "nushi-tsuri-v252-island-fish-252-56";
   const css = app.coreAssets.find(resource => resource.startsWith("./compact-ui.css?"));
   assert.ok(css);
@@ -114,16 +120,17 @@ test("installation fetches all core assets before skipWaiting and activation ret
   assert.equal(app.stores.has(previous), true, "previous release survives while installing");
   releaseCss();
   await installing;
-  assert.equal(app.requests.length, app.coreAssets.length);
-  assert.equal(new Set(app.requests.map(({request}) => request.url)).size, app.coreAssets.length);
-  assert.equal(app.state.skippedWaiting, true);
+  assert.equal(app.requests.length, new Set(app.coreAssets).size);
+  assert.equal(new Set(app.requests.map(({request}) => request.url)).size, new Set(app.coreAssets).size);
+  assert.equal(app.state.skippedWaiting, false);
   assert.equal(app.state.claimed, false);
   assert.equal(await app.cached(css).text(), "corrected CSS");
   assert.equal(app.cached("./compact-ui.css?v=251-5"), undefined);
   await app.activate();
-  assert.equal(app.stores.has(previous), false);
+  assert.equal(app.stores.has(previous), true);
   assert.equal(app.stores.has("another-game-v1"), true);
-  assert.equal(app.state.claimed, true);
+  assert.equal(app.state.claimed, false);
+  assert.deepEqual(app.deletions, []);
   app.state.network = async () => { throw new TypeError("Offline"); };
   const requests = app.requests.length;
   assert.equal(await (await app.fetch(css)).text(), "corrected CSS");
@@ -149,34 +156,32 @@ test("failed precache cannot skip waiting or delete the previous working release
     assert.equal(app.stores.has(previous), true, failure);
     assert.equal(app.stores.has("another-game-v1"), true, failure);
     assert.equal(app.writes.length, 0, failure + ": no partial precache batch");
+    assert.deepEqual(app.deletions, [], failure + ": no cache deletion attempts");
   }
 });
 
-test("activation deletes only this game's old caches; resource lookup stays isolated", async () => {
+test("activation preserves all old caches while resource lookup stays isolated", async () => {
   const app = bootWorker();
   app.seed("another-game-v1", "./assets/fish.png", "another game's fish");
   app.seed("nushi-tsuri-v156-old", "./index.html", "old game");
   app.seed(app.name, "./index.html", "current game");
   await app.activate();
   assert.equal(app.stores.has("another-game-v1"), true);
-  assert.equal(app.stores.has("nushi-tsuri-v156-old"), false);
+  assert.equal(app.stores.has("nushi-tsuri-v156-old"), true);
   assert.equal(app.stores.has(app.name), true);
-  assert.equal(app.state.claimed, true);
+  assert.equal(app.state.claimed, false);
   app.state.network = async () => new Response("correct fish");
   assert.equal(await (await app.fetch("./assets/fish.png")).text(), "correct fish");
   assert.equal(app.requests.length, 1);
 });
 
-test("a late retired-worker response can recreate its deleted cache name without restoring old contents or affecting the new worker", async () => {
+test("a late old-worker response stays isolated while its original cache remains intact", async () => {
   const stores = new Map(), current = bootWorker({ stores });
-  // The prior deployed worker has this identical fetch/activation behavior;
-  // only the two release metadata strings differ in the source guard.
   const previousName = "nushi-tsuri-v252-island-fish-252-56", oldCss = "./compact-ui.css?v=251-5";
   const newCss = current.coreAssets.find(url => url.startsWith("./compact-ui.css?"));
-  const previous = bootWorker({ stores, workerSource: source.replace(current.name, previousName).replace(newCss, oldCss) });
+  const previous = bootWorker({ stores, workerSource: source.replace(current.name, previousName) });
   previous.seed(previous.name, oldCss, "old CSS");
-  previous.seed(previous.name, "./retirement-sentinel", "must be deleted");
-  previous.seed("another-game-v1", "./keep", "unrelated cache");
+  previous.seed(previous.name, "./retirement-sentinel", "must survive");
   current.seed(current.name, newCss, "new CSS");
   let started, finish;
   const networkStarted = new Promise(resolve => { started = resolve; });
@@ -185,15 +190,16 @@ test("a late retired-worker response can recreate its deleted cache name without
   const inFlight = previous.fetch("./late-request.png");
   await networkStarted;
   await current.activate();
-  assert.equal(stores.has(previous.name), false, "activation really deleted the old cache");
+  assert.deepEqual(current.deletions, [], "activation never deletes any cache");
+  assert.equal(current.state.claimed, false);
+  assert.equal(stores.has(previous.name), true);
   finish();
   assert.equal(await (await inFlight).text(), "late old-worker response");
-  assert.equal(stores.has(previous.name), true, "caches.open in the retired worker recreates its name");
-  assert.deepEqual([...stores.get(previous.name).keys()], ["https://game.test/nushi-tsuri/late-request.png"], "old precache contents and sentinel were not restored");
-  assert.equal(stores.has("another-game-v1"), true);
+  assert.equal(await previous.cached(oldCss).text(), "old CSS");
+  assert.equal(await previous.cached("./retirement-sentinel").text(), "must survive");
   assert.equal(await (await current.fetch(newCss)).text(), "new CSS");
-  assert.equal((await current.fetch("./late-request.png")).type, "error", "new worker never reads the recreated old cache");
-  assert.equal((await current.fetch(oldCss)).type, "error", "old CSS is absent after cleanup");
+  assert.equal((await current.fetch("./late-request.png")).type, "error", "new worker never reads old-worker writes");
+  assert.equal((await current.fetch(oldCss)).type, "error", "new worker never reads preserved old CSS");
 });
 
 test("navigation stores a good page and recovers it offline or on server failure", async () => {
@@ -205,9 +211,9 @@ test("navigation stores a good page and recovers it offline or on server failure
   app.state.network = async () => new Response("server error", { status: 503 });
   assert.equal(await (await app.fetch("./", { mode: "navigate" })).text(), "game page");
   app.state.network = async () => { throw new TypeError("Offline"); };
-  assert.equal(await (await app.fetch("./index.html")).text(), "game page");
+  assert.equal(await (await app.fetch("./index.html", { mode: "navigate" })).text(), "game page");
   app.state.network = async () => new Response("not found", { status: 404 });
-  assert.equal((await app.fetch("./index.html")).status, 404);
+  assert.equal((await app.fetch("./index.html", { mode: "navigate" })).status, 404);
   assert.equal(await app.cached("./index.html").text(), "game page");
   assert.equal(app.writes.length, 1, "errors never replace the saved page");
   assert.equal((await bootWorker().fetch("./", { mode: "navigate" })).type, "error");
@@ -250,4 +256,17 @@ test("POST and cross-origin requests pass through without cache interception", a
   assert.equal(await app.fetch("https://other.test/index.html", { mode: "navigate" }), undefined);
   assert.equal(app.requests.length, 0);
   assert.equal(app.writes.length, 0);
+});
+
+test("noncanonical navigations never overwrite or receive the canonical offline fallback", async () => {
+  const app = bootWorker();
+  app.seed(app.name, "./index.html", "canonical game");
+  app.state.network = async () => new Response("other page");
+  for (const url of ["./village-release-rehearsal.html", "./nested/index.html", "./not-found"]) {
+    assert.equal(await (await app.fetch(url, { mode: "navigate" })).text(), "other page");
+    assert.equal(await app.cached("./index.html").text(), "canonical game");
+  }
+  app.state.network = async () => { throw new TypeError("Offline"); };
+  assert.equal((await app.fetch("./uncached-page", { mode: "navigate" })).type, "error");
+  assert.equal(await (await app.fetch("./?v=252-67", { mode: "navigate" })).text(), "canonical game");
 });

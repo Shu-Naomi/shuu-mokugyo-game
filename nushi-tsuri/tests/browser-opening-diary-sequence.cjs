@@ -17,12 +17,15 @@ const server=http.createServer((req,res)=>{
 async function capture(browser,url,screen,avatar){
  const prefix=`${screen.width}x${screen.height}-${avatar}`;
  const context=await browser.newContext({viewport:{width:screen.width,height:screen.height},deviceScaleFactor:1,isMobile:screen.mobile,hasTouch:screen.mobile,locale:'ja-JP',serviceWorkers:'block',recordVideo:{dir:path.join(dir,'raw-video'),size:{width:screen.width,height:screen.height}}});
+ await context.addInitScript(()=>localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'})));
  const page=await context.newPage(),video=page.video(),errors=[],httpErrors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL(url).origin+'/nushi-tsuri/'))httpErrors.push(`${r.status()} ${r.url()}`);});
  const press=q=>page.locator(q)[screen.mobile?'tap':'click']();
  try{
-  await page.goto(url,{waitUntil:'load'});await page.evaluate(()=>localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'})));await page.reload();
+  await page.goto(url,{waitUntil:'load'});
   await enter(page,screen.mobile,{slot:1,avatar,dog:'grey',name:'直美♡'});
+  assert.equal(await page.evaluate(()=>ShuVillageReleaseGate.started&&!!ShuVillageProductionSession&&!!ShuVillageReleaseCandidate),true,'sequence uses actual verified production, not source comparison');
+  assert.equal(await page.evaluate(()=>ShuVillageReleaseCandidate.failed.length),0);
   // Decode files before observation, but do not restart/prepaint any director.
   // A separate Image does not populate the runtime cache: loading frames on
   // subsequent Next clicks are deliberately observed and must keep old pixels.
@@ -81,7 +84,8 @@ async function capture(browser,url,screen,avatar){
   for(const frame of result.frames)if(frame.png){frame.file=`${prefix}-${frame.id}-${frame.trigger==='navigation'?'navigation':frame.phase}.png`;fs.writeFileSync(path.join(dir,frame.file),Buffer.from(frame.png.split(',')[1],'base64'));delete frame.png;}
   for(const [id,final] of Object.entries(result.finals)){final.file=`${prefix}-${id}-completed-canvas.png`;fs.writeFileSync(path.join(dir,final.file),Buffer.from(final.png.split(',')[1],'base64'));delete final.png;}
   assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);
-  const report={screen,avatar,clock:'native browser RAF and timers',navigation:'actual Next clicks, no renderLakeIntro reset',video:`${prefix}.webm`,visualReview:'required; pixel checks do not establish visual quality',...result};
+  assert.equal(await page.evaluate(()=>localStorage.getItem('nushi-inugoya-v2')),null,'new production sequence leaves legacy original absent');
+  const report={screen,avatar,entry:'actual generated production index.html without module replacement',productionGateVerified:true,clock:'native browser RAF and timers',navigation:'actual Next clicks, no renderLakeIntro reset',video:`${prefix}.webm`,visualReview:'required; pixel checks do not establish visual quality',...result};
   fs.writeFileSync(path.join(dir,`${prefix}-sequence.json`),JSON.stringify(report,null,2));console.log('OPENING_DIARY_SEQUENCE_PASS',prefix);return {screen,avatar,video:report.video,report:`${prefix}-sequence.json`};
  }catch(error){
   await page.screenshot({path:path.join(dir,`${prefix}-failure.png`)}).catch(()=>{});

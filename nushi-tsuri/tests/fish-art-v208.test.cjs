@@ -58,9 +58,9 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 });
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
-  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
+  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8')+fs.readFileSync(path.join(__dirname,'../village-precache-252-67.js'),'utf8');
   const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
-  const painter=html.match(/<script src="(fish-art\.js\?v=[^"]+)"/u)?.[1];
+  const painter=html.match(/<script src="(fish-art\.js\?v=[^"]+)"/u)?.[1]?.replace(/&amp;/g,'&');
   assert.ok(painter,'the page loads a versioned fish painter');
   assert.ok(sw.includes(painter),'the offline cache includes the painter used by the page');
   for(const asset of new Set([...Object.keys(Art.species),...Object.keys(Art.aquarium)].flatMap(id=>Art.assets(id))))assert.ok(sw.includes(asset),asset);

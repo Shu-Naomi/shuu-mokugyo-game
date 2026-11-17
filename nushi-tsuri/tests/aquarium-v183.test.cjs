@@ -1,3 +1,24 @@
+const {JSDOM}=require('jsdom');
+const {createHash}=require('node:crypto');
+const {inspectRelease}=require('./browser-cache-upgrade-evidence.cjs');
+function offlineContract(html,sw){
+ const files={'index.html':html,'sw.js':sw,'compact-ui.css':fs.readFileSync(path.join(__dirname,'../compact-ui.css'),'utf8')};
+ for(const [,name] of sw.matchAll(/importScripts\("\.\/([^"/]+)"\)/g))files[name]=fs.readFileSync(path.join(__dirname,'..',name),'utf8');
+ return inspectRelease(files).coreAssets;
+}
+function pinnedPageAsset(html,assets,file){
+ const dom=new JSDOM(html);try{
+  const nodes=[...dom.window.document.querySelectorAll('[src],link[href]')].filter(el=>(el.getAttribute('src')||el.getAttribute('href')).startsWith(file+'?'));
+  assert.equal(nodes.length,1,file+' loaded exactly once');
+  const node=nodes[0],href=node.getAttribute('src')||node.getAttribute('href'),url=new URL(href,'https://game.test/');
+  assert.ok(assets.includes('./'+href),file+' exact page URL is precached');
+  const digest=createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',file))).digest();
+  assert.equal(url.searchParams.get('sha256'),digest.toString('hex'),file+' URL hash');
+  assert.equal(node.getAttribute('integrity'),'sha256-'+digest.toString('base64'),file+' SRI');
+  assert.equal(node.getAttribute('crossorigin'),'anonymous');
+  return url;
+ }finally{dom.window.close();}
+}
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
@@ -128,22 +149,21 @@ test('silent and reduced-motion feeding still saves care, without late sounds af
 });
 
 test('four new seasonal loops and pet sounds decode, avoid clipping and ship with matching cache references',()=>{
- const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
+ const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),assets=offlineContract(html,sw);
  for(const season of ['spring','summer','autumn','winter']){
   const track=Music['map-'+season];assert.ok(track.src.includes('music-v204'));
   const data=execFileSync('ffmpeg',['-v','error','-i',path.join(root,track.src),'-f','f32le','-ac','1','-ar','8000','pipe:1'],{maxBuffer:4e6});
   const values=new Float32Array(data.buffer,data.byteOffset,data.length/4);let peak=0,sum=0;
   for(const n of values){peak=Math.max(peak,Math.abs(n));sum+=n*n;}
   assert.ok(Math.abs(values.length/8000-track.duration)<.1);assert.ok(peak>.1&&peak<.9);assert.ok(Math.sqrt(sum/values.length)>.035);
-  assert.ok(sw.includes('./'+track.src));
+  assert.ok(assets.includes('./'+track.src));
  }
  for(const name of ['dog-friendly-whine-v183.wav','fish-feed-v183.wav']){
   const file='assets/audio/'+name,data=fs.readFileSync(path.join(root,file));let peak=0;
   for(let i=44;i<data.length;i+=2)peak=Math.max(peak,Math.abs(data.readInt16LE(i)));
   assert.ok(peak>5000&&peak<24000);assert.equal(data.readInt16LE(44),0);assert.equal(data.readInt16LE(data.length-2),0);
-  assert.ok(sw.includes(file));assert.ok(html.includes(file));
+  assert.ok(assets.includes('./'+file));assert.ok(html.includes(file));
  }
- const aquariumScript=html.match(/src="(aquarium-life\.js\?v=[^"]+)"/)?.[1];
- assert.ok(aquariumScript,'the page loads the aquarium module');assert.ok(sw.includes('./'+aquariumScript),'offline cache matches the page module');
+ pinnedPageAsset(html,assets,'aquarium-life.js');
  assert.ok(html.includes('sample.preservesPitch = true'));
 });

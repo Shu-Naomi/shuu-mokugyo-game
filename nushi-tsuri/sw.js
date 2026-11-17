@@ -1,8 +1,10 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-brown-trout-252-65";
+const CACHE_NAME = "nushi-tsuri-v252-reference-village-252-67";
 
+importScripts("./village-precache-252-67.js");
 const CORE_ASSETS = [
+  ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-browntrout.png",
   "./assets/fish-takabe-v252-56.png",
   "./assets/fish-kuromejina-v252-56.png",
@@ -433,26 +435,12 @@ const CORE_ASSETS = [
   "./assets/terrain-field-v45.svg",
 ];
 self.addEventListener("install", (event) => {
-  event.waitUntil(
-    caches
-      .open(CACHE_NAME)
-      .then((cache) => cache.addAll(CORE_ASSETS))
-      .then(() => self.skipWaiting()),
-  );
+  // Atomic addAll: a partial download does not activate this release.
+  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([...new Set(CORE_ASSETS)])));
 });
 self.addEventListener("activate", (event) => {
-  event.waitUntil(
-    caches
-      .keys()
-      .then((keys) =>
-        Promise.all(
-          keys
-            .filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME)
-            .map((key) => caches.delete(key)),
-        ),
-      )
-      .then(() => self.clients.claim()),
-  );
+  // Do not claim old tabs or delete their caches. They still use legacy saves.
+  event.waitUntil(Promise.resolve());
 });
 async function matchGameCache(request) {
   try {
@@ -476,7 +464,9 @@ self.addEventListener("fetch", (event) => {
   const request = event.request;
   const url = new URL(request.url);
   if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  if (request.mode === "navigate" || url.pathname.endsWith("/index.html")) {
+  const scopePath=new URL(self.registration.scope).pathname;
+  const canonical=url.pathname===scopePath||url.pathname===scopePath+'index.html';
+  if (request.mode === "navigate" && canonical) {
     event.respondWith(
       fetch(request, { cache: "no-store" })
         .then(async (response) => {
