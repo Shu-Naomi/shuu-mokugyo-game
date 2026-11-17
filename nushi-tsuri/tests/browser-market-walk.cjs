@@ -1,7 +1,7 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const reference=require('../village-reference.js'),{planVillageRoute}=require('./browser-reference-village-evidence.cjs');
-const {createHash}=require('node:crypto');
+const {createHash}=require('node:crypto'),{marketAsset}=require('./market-walk-assets.cjs');
 module.exports=async function marketWalk(url,screen){
  const {width,height,mobile,dpr}=screen,viewport={width,height},dir=path.join(__dirname,'market-walk-evidence');fs.mkdirSync(dir,{recursive:true});
  const browser=await chromium.launch({headless:true}),context=await browser.newContext({viewport,isMobile:mobile,hasTouch:mobile,deviceScaleFactor:dpr,locale:'ja-JP',serviceWorkers:'block'});
@@ -11,7 +11,7 @@ module.exports=async function marketWalk(url,screen){
  const legacyRaw=JSON.stringify(initial),point=(name,x,y,direction)=>({name,...reference.anchor(x,y),direction});
  const legacyUnchanged=async()=>{assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw);assert.equal(await page.evaluate(key=>localStorage.getItem(key+'-slot2'),saveKey),other);};
  let verifiedArt;
- page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const file=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+file);if(r.status()===200)resources.add(file);});
+ page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{const file=new URL(r.url()).pathname;if(r.status()>=400)failed.push(r.status()+' '+file);if(r.status()===200)resources.add(new URL(r.url()).origin+file);});
  const press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>JSON.parse(JSON.stringify(eval(q))),q);
  const state=()=>value('({x:s.x,y:s.y,direction:s.direction,avatar:s.avatar})');
  const progress=()=>value('({money:s.money,hp:s.hp,time:s.gameMinutes,caught:s.caught,baits:s.baits,items:s.items,equipment:s.equipment,pet:s.petLife,story:s.lakeStory,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
@@ -49,12 +49,12 @@ module.exports=async function marketWalk(url,screen){
   await page.clock.install({time:new Date('2026-10-27T03:00:00Z')});await page.clock.pauseAt('2026-10-27T03:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();
   assert.equal((await state()).avatar,'girl');verifiedArt=await page.evaluate(async()=>{
    const source=ShuVillageReference.source.asset,bytes=await(await fetch(source)).arrayBuffer();
-   return {source,rendered:ShuSceneLayers.get('world').source,path:new URL(ShuVillageReleaseCandidate.mapURL,location.href).pathname,expected:ShuVillageReleaseCandidate.mapSHA256,sha256:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('')};
+   return {source,rendered:ShuSceneLayers.get('world').source,url:new URL(ShuVillageReleaseCandidate.mapURL,location.href).href,path:new URL(ShuVillageReleaseCandidate.mapURL,location.href).pathname,expected:ShuVillageReleaseCandidate.mapSHA256,sha256:Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',bytes)),v=>v.toString(16).padStart(2,'0')).join('')};
   });
   assert.match(verifiedArt.source,/^blob:/);assert.equal(verifiedArt.rendered,verifiedArt.source);assert.equal(verifiedArt.sha256,verifiedArt.expected);
-  assert.equal(verifiedArt.sha256,createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',verifiedArt.path.replace(/^\/nushi-tsuri\//,'')))).digest('hex'));
-  assert.ok(resources.has(verifiedArt.path),'manifest-selected painting really loaded');
-  assert.ok(resources.has('/nushi-tsuri/assets/player-girl-front-walk-v252-8.png'),'girl walking sprite really loaded');
+  assert.equal(verifiedArt.sha256,createHash('sha256').update(fs.readFileSync(path.join(__dirname,'..',marketAsset(url,verifiedArt.url).relative))).digest('hex'));
+  assert.ok(resources.has(new URL(url).origin+verifiedArt.path),'manifest-selected painting really loaded');
+  assert.ok(resources.has(new URL(url).origin+marketAsset(url,'assets/player-girl-front-walk-v252-8.png').pathname),'girl walking sprite really loaded');
   await legacyUnchanged();const before=await progress();
   await walkTo(point('downward-walk-start',242,260,'down'));const from=await state(),expected=await page.evaluate(()=>ShuWorldLife.moveTarget(s.x,s.y,'down',4,isWalkableWorld));
   await movementReady();await press('[data-move="down"]');walked++;const moved=await state();assert.equal(moved.y,expected.y);assert.ok(moved.y>from.y);assert.equal(moved.x,from.x);
