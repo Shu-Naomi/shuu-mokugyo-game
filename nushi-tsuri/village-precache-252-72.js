@@ -40,7 +40,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b",
   "./nushi-presentation.js?v=246-1&sha256=48588c4621ff679cc7f92b4d439a4b51628bdf54c0d36a38e4ff333c9a3368ac",
   "./catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb",
-  "./coast-voyage.js?v=252-72&sha256=bca0cea4d8a46ffba3b4d147b20917f1a2c9a4504a0d8539f7398ed052500639",
+  "./coast-voyage.js?v=252-72&sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917",
   "./shiokakure.js?v=252-71&sha256=0f3ba91b7656276976fe4426ef2b4dc6ef25d3d3255f2baa3b4664a62ee9ee7e",
   "./offshore-island.js?v=252-56&sha256=23f9c823284b33e55b1fc09ad501e2b41d33a36e487951bffd631c01bf396e96",
   "./world-life.js?v=252-55&sha256=0180091d6bf480b08e3eb4e99d5ca7f028c36dc5570a31cccc8fb480c2cf46c4",

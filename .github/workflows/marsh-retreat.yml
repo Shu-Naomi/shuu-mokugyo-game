@@ -25,6 +25,7 @@ jobs:
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
       - run: node --test marsh-retreat.test.cjs marsh-paths-fish-v237.test.cjs mountain-coast-v201.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
+      - run: node browser-painted-field-paths.cjs
       - run: node browser-marsh-retreat.cjs
         env:
           MARSH_EVIDENCE_DIR: marsh-evidence

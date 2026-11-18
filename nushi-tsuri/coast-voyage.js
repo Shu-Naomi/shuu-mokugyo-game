@@ -9,10 +9,11 @@
     sand: [[122,52],[144,47],[166,52],[182,64],[184,81],[169,96],[143,103],[119,95],[109,78],[113,64]],
     reef: [[48,79],[62,71],[81,73],[92,87],[89,102],[76,113],[58,111],[44,100]],
   };
+  // Keep the established landing areas while mooring clear of the wooden decks.
   const docks = {
     harbor: { name: "星見港", land: { x:154,y:123 }, water: { x:166,y:123 }, radius: 8 },
-    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:98,y:77 }, radius: 8 },
-    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:106,y:92 }, radius: 8 },
+    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:98,y:77 }, approach: { x:100,y:77 }, radius: 8 },
+    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:106,y:92 }, approach: { x:104,y:92 }, radius: 8 },
   };
   const restPoint = { x:146,y:70 };
   function inside(x,y,polygon) {

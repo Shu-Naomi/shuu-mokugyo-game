@@ -14653,7 +14653,7 @@
         return Object.entries(ShuCoast.docks)
           .filter(([id])=>id!=="harbor" || s.boatActive)
           .map(([id,dock])=>({id,...dock}))
-          .find(dock=>ShuCoast.near(s,s.boatActive?dock.water:dock.land,dock.radius)) || null;
+          .find(dock=>ShuCoast.near(s,s.boatActive?(dock.approach || dock.water):dock.land,dock.radius)) || null;
       }
       function boardBoat() {
         if (!s.equipment.vehicle || !s.ownedVehicles.includes(s.equipment.vehicle)) {
