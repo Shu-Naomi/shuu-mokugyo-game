@@ -77,7 +77,7 @@ module.exports=async function waterAndFish(url,mobile=false){
    }
    await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>['ugui','oikawa','kawahagi'].map(id=>s.caught[id])),[1,1,1]);
    assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'fish catches leave legacy save unchanged');const modern=await page.evaluate(()=>ShuVillageProductionSession.read(1));assert.equal(modern.ok,true);assert.ok(modern.raw);
-   assert.equal(await page.evaluate(()=>fish.length),66);
+   assert.equal(await page.evaluate(()=>fish.length),67);
    assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
    console.log('V221_WATER_FISH_PASS '+JSON.stringify({mobile,routes,newFish:3,totalFish:await page.evaluate(()=>fish.length),saved:true,errors,failed}));
   }finally{await context.close();}

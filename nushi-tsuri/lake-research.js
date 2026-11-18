@@ -24,7 +24,7 @@
   const visits=state.lakeStory?.visited||{},clues=[];
   const gates=[['nushi',true,'湖の深場'],['streamNushi',visits.stream===true,'渓流の深場'],
    ['coastNushi',visits.coast===true,'小島の深場'],['caveNushi',visits.cave===true,'地下湖の深場'],
-   ['starNushi',data.finalReady(state),'夜の湖']];
+   ['starNushi',data.finalReady(state),'夜の湖'],['shiokakure',caught('shiokakure'),'潮風島']];
   // Reading never announces ordinary-fish completion or reveals an unknown name.
   const hiddenNames=data.fish.filter(f=>data.legendary(f.id)&&!caught(f.id)).map(f=>f.name).sort((a,b)=>b.length-a.length);
   const mask=text=>hiddenNames.reduce((s,name)=>s.split(name).join('まだ見ぬ一匹'),String(text||'記録なし'));

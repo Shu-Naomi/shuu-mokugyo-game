@@ -1,10 +1,11 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-lake-trout-252-69";
+const CACHE_NAME = "nushi-tsuri-v252-shiokakure-252-70";
 
-importScripts("./village-precache-252-69.js");
+importScripts("./village-precache-252-70.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
+  "./assets/shiokakure.svg",
   "./assets/fish-laketrout.png",
   "./assets/fish-browntrout.png",
   "./assets/fish-takabe-v252-56.png",
@@ -39,7 +40,7 @@ const CORE_ASSETS = [
   "./timed-rest.css?v=252-43",
   "./assets/player-girl-front-walk-v252-8.png",
   "./assets/village-fishmarket-v252-8.png",
-  "./lake-research.js?v=252-52",
+  "./lake-research.js?v=252-70",
   "./lake-research.css?v=252-6",
   "./village-guide.js?v=252-5",
   "./village-guide.css?v=252-5",
@@ -85,7 +86,7 @@ const CORE_ASSETS = [
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
   "./world-life.js?v=252-55",
-  "./fish-additions.js?v=252-69",
+  "./fish-additions.js?v=252-70",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
   "./assets/fish-himemasu-v238.png",
@@ -137,15 +138,15 @@ const CORE_ASSETS = [
   "./assets/aquarium-interior-v214.webp",
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
-  "./tackle-balance.js?v=252-53",
-  "./fishing-duel.js?v=252-69",
+  "./tackle-balance.js?v=252-70",
+  "./fishing-duel.js?v=252-70",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
   "./coast-voyage.js?v=226-1",
   "./mountain-region.js?v=252-55",
-  "./regional-nushi.js?v=202-1",
+  "./regional-nushi.js?v=252-70",
   "./lake-story.js?v=252-51",
   "./lake-intro.js?v=252-55",
   "./lake-intro.css?v=252-44",
@@ -153,7 +154,7 @@ const CORE_ASSETS = [
   "./save-slots.js?v=252-1",
   "./save-slots.css?v=207-1",
   "./nushi-atlas.js?v=202-1",
-  "./fish-art.js?v=252-42",
+  "./fish-art.js?v=252-70",
   "./assets/fish-suzuki-v216.png",
   "./assets/fish-kurodai-v216.png",
   "./assets/fish-moroko-v215.png",
@@ -191,8 +192,8 @@ const CORE_ASSETS = [
   "./assets/ui-lantern-v252-28.svg",
   "./assets/ui-paw-v252-28.svg",
   "./assets/ui-heart-v252-28.svg",
-  "./aquarium-life.js?v=252-69",
-  "./fish-motion.js?v=252-69",
+  "./aquarium-life.js?v=252-70",
+  "./fish-motion.js?v=252-70",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-60",
   "./rival-anglers.js?v=252-55",

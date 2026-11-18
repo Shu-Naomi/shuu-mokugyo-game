@@ -4,6 +4,8 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
   "use strict";
   const bosses={
+    shiokakure:{name:"潮隠れ",region:"offshore",asset:"assets/shiokakure.svg",price:4200,resistance:185,strength:3.1,minStrength:2.4,
+      lengths:[[45,60],[60,75],[75,95],[95,115],[115,140],[140,175]],base:"kasago"},
     streamNushi:{name:"渓流のヌシ",region:"stream",asset:"assets/stream-nushi-v202.png",price:3600,resistance:190,strength:3.2,minStrength:2.4,
       lengths:[[75,90],[90,110],[110,140],[140,170],[170,205],[205,250]],base:"yamame"},
     coastNushi:{name:"沿岸のヌシ",region:"coast",asset:"assets/coast-nushi-v202.png",price:5200,resistance:225,strength:3.8,minStrength:3,
@@ -23,7 +25,8 @@
     caveNushi:{habitats:["lake"],locations:"岩窟の地下湖・深場",ecology:"このゲームに登場する架空の巨大な洞窟魚。淡い真珠色の体と長いひげを持つ。地下湖の底で水のわずかな動きを感じ取る。",tip:"地下湖に暮らす通常の四種類を釣ったら、さらに深い水へ。大きな体の深潜りを落ち着いていなそう。",rods:["tideMaster","starGazer"],baits:["worm","star"]},
     starNushi:{habitats:["lake"],locations:"夜の星降る湖・沖の深場",ecology:"このゲームに登場する架空の最後のヌシ。夜空のような鱗と長い銀色のひれを持つ、ひときわ巨大な魚。星湖のヌシとは別の存在。",tip:"渓流・沿岸・地底湖の三匹のヌシを釣った夜、星降る湖の深場を探ろう。星湖秘伝の餌にも反応する。",rods:["tideMaster","starGazer"],baits:["star","nushiSecret"]},
   };
-  const encyclopedia=Object.fromEntries(Object.entries(descriptions).map(([id,d],i)=>[id,{...d,number:21+i,
+  descriptions.shiokakure={habitats:["sea"],locations:"潮風島の岩場",ecology:"この世界の架空のぬし。岩そっくりの斑紋と扁平な体を持つ。驚くと岩陰へ戻り、静かになるとまた姿を現す。",tip:"短い投げでそっと落とす。岩へ戻る間は糸を送り、止まった隙に寄せよう。",rods:["shoreReed","tideMaster"],baits:["shell","smallShrimp","worm"]};
+  const encyclopedia=Object.fromEntries(Object.entries(descriptions).map(([id,d],i)=>[id,{...d,number:id==="shiokakure"?67:21+i,
     scientific:"架空の魚",rarity:5,rarityLabel:id==="starNushi"?"星降る湖の最後のヌシ":"地域のヌシ",time:id==="starNushi"?"夜":"いつでも"}]));
   const record=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
   function regionForSpot(spotId=""){
