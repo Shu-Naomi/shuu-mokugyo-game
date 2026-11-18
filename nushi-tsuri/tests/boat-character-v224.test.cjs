@@ -45,6 +45,6 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
 test('the detailed tub is supplied by the released renderer and its offline cache',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   assert.ok(sw.includes('./assets/coast-tarai-v224.png'));
-  assert.ok(sw.includes('./coast-voyage.js?v=226-1'));
+  assert.ok(sw.includes('./coast-voyage.js?v=252-72'));
   assert.ok(fs.existsSync(path.join(root,'assets/coast-tarai-v224.png')));
 });

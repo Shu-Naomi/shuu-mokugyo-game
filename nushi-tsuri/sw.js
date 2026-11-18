@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-shiokakure-252-71";
+const CACHE_NAME = "nushi-tsuri-v252-field-paths-252-72";
 
-importScripts("./village-precache-252-71.js");
+importScripts("./village-precache-252-72.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/shiokakure.svg",
@@ -144,8 +144,8 @@ const CORE_ASSETS = [
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",
   "./assets/nushi-open-water-v245.webp",
-  "./coast-voyage.js?v=226-1",
-  "./mountain-region.js?v=252-55",
+  "./coast-voyage.js?v=252-72",
+  "./mountain-region.js?v=252-72",
   "./regional-nushi.js?v=252-71",
   "./lake-story.js?v=252-51",
   "./lake-intro.js?v=252-55",
