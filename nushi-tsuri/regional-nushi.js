@@ -4,7 +4,7 @@
 })(typeof globalThis!=="undefined"?globalThis:this,function(){
   "use strict";
   const bosses={
-    shiokakure:{name:"潮隠れ",region:"offshore",asset:"assets/shiokakure.svg",price:4200,resistance:185,strength:3.1,minStrength:2.4,
+    shiokakure:{name:"潮隠れ",region:"offshore",asset:"assets/shiokakure.svg",price:4200,resistance:185,strength:2.8,minStrength:2.4,
       lengths:[[45,60],[60,75],[75,95],[95,115],[115,140],[140,175]],base:"kasago"},
     streamNushi:{name:"渓流のヌシ",region:"stream",asset:"assets/stream-nushi-v202.png",price:3600,resistance:190,strength:3.2,minStrength:2.4,
       lengths:[[75,90],[90,110],[110,140],[140,170],[170,205],[205,250]],base:"yamame"},

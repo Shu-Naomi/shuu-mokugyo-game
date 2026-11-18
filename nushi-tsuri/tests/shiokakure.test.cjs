@@ -84,3 +84,8 @@ test('the gentle drop remains available after 600 ms on each recommended rod',()
   }finally{app.dispose();}
  }
 });
+
+for(const rngSeed of [301,735,191])test('largest shy boss with lure rod / varied water FX / 600ms '+rngSeed,()=>{
+ const r=runFight({id:'shiokakure',mode:'nushi',tier:.999999,rod:'lureRod',delayMs:600,rngSeed,waterFxSeed:rngSeed});
+ assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing',JSON.stringify(r));assert.ok(r.seconds<180&&r.maxTension<100,JSON.stringify(r));
+});
