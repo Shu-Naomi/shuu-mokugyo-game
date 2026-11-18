@@ -22415,15 +22415,7 @@
             ? 0
             : Math.pow(Math.max(0, 1 - centre), profile.falloff);
           const travellingPhase = phase - centre * profile.lag;
-          const translateY = Math.round(
-            Math.sin(travellingPhase) * amplitude * tailWeight,
-          );
-          const rotation =
-            Math.cos(travellingPhase + .28) *
-            profile.bend * activity * modeFactor * tailWeight;
-          const pulse = 1 +
-            Math.sin(phase * 2 - centre * .7) *
-              profile.pulse * activity * tailWeight;
+          const lateral = Math.round(Math.sin(travellingPhase)**2 * amplitude * tailWeight);
           slice.style.clipPath =
             `inset(0 ${(100 - end).toFixed(2)}% 0 ${start.toFixed(2)}%)`;
           slice.style.setProperty("--life-origin", `${(centre * 100).toFixed(2)}%`);
@@ -22434,10 +22426,9 @@
           slice.style.backgroundPositionY = "0%";
           slice.style.transform = isHead
             ? "none"
-            : `translateY(${translateY}px) rotate(${rotation.toFixed(2)}deg) ` +
-              `scaleY(${pulse.toFixed(4)})`;
-          slice.dataset.lifeOffset = String(translateY);
-          slice.dataset.lifeRotation = rotation.toFixed(2);
+            : `translateX(${lateral}px)`;
+          slice.dataset.lifeOffset = String(lateral);
+          slice.dataset.lifeRotation = "0";
         });
         return true;
       }
@@ -22476,8 +22467,8 @@
             (fixedHead ? 0 : battle.visualOffsetY || 0) +
               (battle.turnArcY || 0)+(resistance?.y||0)).toFixed(2)),
           displayFacing: showingTurn ? 1 : battle.facing || 1,
-          stretch: sandGrounded || fixedHead ? 1 : battle.bodyStretch || 1,
-          squash: sandGrounded || fixedHead ? 1 : battle.bodySquash || 1,
+          stretch: resistance || sandGrounded || fixedHead ? 1 : battle.bodyStretch || 1,
+          squash: resistance || sandGrounded || fixedHead ? 1 : battle.bodySquash || 1,
           rotation: sandGrounded ? 0 : (battle.renderAngle || 0) + (battle.turnRoll || 0)+(resistance?.angle||0),
           specimenScale,
           displayScale: (battle.renderScale || 1) * specimenScale,
