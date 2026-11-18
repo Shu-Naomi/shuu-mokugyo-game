@@ -54,6 +54,7 @@ test('observation does not invalidate scenery cache and reduced-motion still per
  const app=boot({...seed(),...shore}),w=app.window;
  try{
   w.eval("hideFieldMenu();var sceneryPaints=0;ShuOffshore.paint=()=>sceneryPaints++;pixelSceneCache.delete(document.querySelector('#offshorePixels'));renderPixelScenery();matchMedia=()=>({matches:true});for(let i=0;i<40;i++)renderShiokakure(true);renderPixelScenery()");
+  assert.notEqual(w.getComputedStyle(w.document.querySelector('#shiokakureContour')).display,'none');
   assert.equal(read(w,'sceneryPaints'),1);assert.ok(read(w,'ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))'));
   assert.equal(w.document.querySelector('#shiokakureContour').getAttribute('aria-hidden'),'true');
   w.eval('battle={phase:"prep"};renderShiokakure(true)');assert.equal(w.document.querySelector('#shiokakureContour').hidden,true);

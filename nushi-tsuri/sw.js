@@ -60,7 +60,7 @@ const CORE_ASSETS = [
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
   "./offshore-island.js?v=252-56",
-  "./offshore-island.css?v=251-2",
+  "./offshore-island.css?v=252-70",
   "./assets/offshore-world-v252-18.png",
   "./assets/offshore-ferry-v251.png",
   "./assets/fish-shimaaji-v251.png",
