@@ -1,5 +1,5 @@
-// Native desktop/touch QA. Fixture selects an existing river bank and RNG only;
-// cast, bite, reel, landing, aquarium and reload use shipped game paths.
+// Native desktop/touch QA. Fixtures select the island bank, gear and specimen size;
+// discovery, cast, bite, reel, landing and reload use shipped game paths.
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
 const species='shiokakure';
