@@ -281,7 +281,10 @@
         // into the projected body over the shoulder, on either facing.
         const blend=clamp((Math.abs(distance)-collar)/collar,0,1);
         const body=blend*blend*(3-2*blend);
-        return tx+distance*lerp(m.width,width,body)+bodyOffset(u)*body+bend(u).x*body;
+        // Preserve both authored silhouette endpoints as the source view changes.
+        const edge=clamp(Math.min(u,1-u)/collar,0,1);
+        const rigid=(1-body)*edge;
+        return tx+distance*lerp(width,m.width,rigid)+bodyOffset(u)+bend(u).x*body;
       };
       let u=0;
       for(let x=Math.max(0,Math.ceil(project(0)));x<Math.min(448,Math.ceil(project(1)));x++){
