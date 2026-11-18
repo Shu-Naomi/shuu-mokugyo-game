@@ -15022,7 +15022,7 @@
           questBoardInteractionBounds,riaoShopFront,structureBounds}=ShuVillageReference.geometry);
         worldLandmarks=worldLandmarks.map(landmark=>({...landmark,...ShuVillageReference.landmarks[landmark.id]}));
         const riao=worldLandmarks.find(p=>p.id==='riao-tcg-shop');
-        riao.hint=globalThis.ShuVillageProductionSession?'リアオの魚TCGショップ（右上の魚看板・準備中）。Aで案内。':'リアオの魚TCGショップ（右上の魚看板へ仮配置・準備中）。Aで案内。';
+        riao.hint=globalThis.ShuVillageProductionSession?'リアオの魚TCGショップ（右上のカード看板・準備中）。Aで案内。':'リアオの魚TCGショップ（右上の魚看板へ仮配置・準備中）。Aで案内。';
         if(!globalThis.ShuVillageProductionSession)riao.message+=' この原画試作では右上の魚看板の建物に仮配置しています。';
         const board=worldLandmarks.find(p=>p.id==='quest-board');
         board.hint='依頼掲示板（右上の立て看板）。Aで依頼を見る。';
