@@ -7736,7 +7736,7 @@
           { id: "shirogisu", name: "シロギス", price: 300, resistance: 84, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "ainame", name: "アイナメ", price: 570, resistance: 119, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "madai", name: "マダイ", price: 1200, resistance: 156, w: 0, icon: "🐠", shadowRow: 3 },
-          ...ShuRegional.fish,
+          ...ShuRegional.fish.filter(f=>f.id!=="shiokakure"),
         ],
         fishEncyclopediaData = {
           iwana: {number:25,scientific:"Salvelinus leucomaenis",habitats:["river"],rarity:2,rarityLabel:"渓流の住人",
@@ -11792,6 +11792,7 @@
       });
       ShuFishAdditions.install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,
         fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle:ShuTackle});
+      fish.push(ShuRegional.fish.find(f=>f.id==="shiokakure"));
       for(const [id,depth]of Object.entries({dojo:"岸際〜深場",kajika:"岸際〜深場",kamatsuka:"岸際〜中層",ugui:"岸際〜中層"})){
         fishEncyclopediaData[id].locations+=`／岩窟の地下湖（${depth}）`;
         if(!fishEncyclopediaData[id].habitats.includes("lake"))fishEncyclopediaData[id].habitats.push("lake");
@@ -22883,7 +22884,9 @@
           if (battle.phase === "cast") {
             const min = battle.castMin ?? 0;
             const max = battle.castMax ?? 100;
-            let next = battle.cast + battle.castDir * (battle.castSpeed || 3);
+            // A deliberate near-bank drop gets a generous touch-input window.
+            const gentle=battle.shiokakureObserved&&battle.cast<28?.25:1;
+            let next = battle.cast + battle.castDir * (battle.castSpeed || 3) * gentle;
             if (next >= max) {
               next = max;
               battle.castDir = -1;

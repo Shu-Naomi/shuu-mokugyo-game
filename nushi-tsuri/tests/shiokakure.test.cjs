@@ -39,7 +39,7 @@ for(const mode of ['gauge','nushi'])for(const tier of [.5,.999999])test('shy bos
 test('old save, hidden dex, unique 67, crowns and unchanged 61 ordinary fish',()=>{
  const app=boot(seed()),w=app.window;
  try{
-  assert.equal(read(w,'fish.length'),67);assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),61);
+  assert.equal(read(w,'fish.length'),67);assert.equal(read(w,'fish.at(-1).id'),'shiokakure');assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),61);
   assert.equal(read(w,'new Set(fish.map(f=>fishEncyclopediaData[f.id].number)).size'),67);
   assert.equal(read(w,'fishEncyclopediaData.shiokakure.number'),67);
   assert.equal(read(w,'fishdexIsKnown(fish.find(f=>f.id==="shiokakure"))'),false);
@@ -67,4 +67,14 @@ test('fast lure startles the fish, recovers the spoon and allows a later encount
   assert.equal(read(w,'battle'),null);assert.equal(read(w,'s.lures.silverSpoon'),10);
   w.eval('for(let i=0;i<80;i++)ShuShiokakure.step(shiokakureEncounter,s)');assert.ok(read(w,'ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))'));
  }finally{app.dispose();}
+});
+test('the gentle drop remains available after 600 ms on each recommended rod',()=>{
+ for(const rod of ['shoreReed','tideMaster','lureRod']){
+  const app=boot({...seed(),...shore,hp:100,ownedRods:[rod],selectedRod:rod,selectedBait:'shell',selectedHook:'large',baits:{shell:10}}),w=app.window;
+  try{
+   w.eval('for(let i=0;i<30;i++)ShuShiokakure.step(shiokakureEncounter,s);action();beginFishing();clearInterval(timer);var nearTick;setInterval=fn=>(nearTick=fn,0);battleTick();for(let i=0;i<5;i++)nearTick()');
+   assert.ok(read(w,'battle.cast<=24'),rod+' comfortable near cast');
+   const before=read(w,'battle.cast');w.eval('battle.shiokakureObserved=false;nearTick()');assert.ok(Math.abs(read(w,'battle.cast')-before-read(w,'battle.castSpeed'))<1e-9,rod+' ordinary meter unchanged');
+  }finally{app.dispose();}
+ }
 });
