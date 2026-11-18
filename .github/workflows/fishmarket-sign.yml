@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   sign:
-    if: github.head_ref == 'fix/fish-market-sign-silhouette'
+    if: github.head_ref == 'fix/fish-market-sign-silhouette' || github.head_ref == 'fix/lake-road-sign'
     runs-on: ubuntu-latest
     timeout-minutes: 8
     defaults:
@@ -24,7 +24,9 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: node --test fishmarket-sign-art.test.cjs village-production-build.test.cjs village-release-provenance.test.cjs reference-village-render.test.cjs
-      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-72.js
+      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-73.js
+      - run: node --test reference-village-dan-lane.test.cjs village-shop-signs-art.test.cjs
+      - run: node browser-dan-east-lane.cjs
       - run: node browser-fishmarket-sign.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
