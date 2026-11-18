@@ -1775,7 +1775,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign):not(#shiokakureContour) {
         display: none !important;
       }
       .map.v54-map #ruralSign { position:absolute; left:90.8%; top:20.8%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
@@ -6474,7 +6474,7 @@
       <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=252-64" />
-    <link rel="stylesheet" href="offshore-island.css?v=251-2" />
+    <link rel="stylesheet" href="offshore-island.css?v=252-71" />
   </head>
   <body>
     <div class="landscape-warning">
@@ -6534,7 +6534,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-70</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-71</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7449,12 +7449,12 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-69"></script>
-    <script src="aquarium-life.js?v=252-69"></script>
+    <script src="fish-motion.js?v=252-71"></script>
+    <script src="aquarium-life.js?v=252-71"></script>
     <script src="compact-ui.js?v=252-64"></script>
     <script src="pet-life-ui.js?v=252-60"></script>
-    <script src="tackle-balance.js?v=252-53"></script>
-    <script src="fishing-duel.js?v=252-70"></script>
+    <script src="tackle-balance.js?v=252-71"></script>
+    <script src="fishing-duel.js?v=252-71"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=246-1"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7467,22 +7467,23 @@
       </div>
     </section>
     <script src="coast-voyage.js?v=226-1"></script>
+    <script src="shiokakure.js?v=252-71"></script>
     <script src="offshore-island.js?v=252-56"></script>
     <script src="world-life.js?v=252-55"></script>
     <script src="field-guide.js?v=252-55"></script>
     <script src="rural-canals.js?v=252-55"></script>
     <script src="mountain-region.js?v=252-55"></script>
-    <script src="regional-nushi.js?v=202-1"></script>
+    <script src="regional-nushi.js?v=252-71"></script>
     <script src="lake-intro.js?v=252-55"></script>
     <script src="timed-rest.js?v=252-32"></script>
     <script src="village-guide.js?v=252-5"></script>
     <script src="lake-story.js?v=252-51"></script>
-    <script src="lake-research.js?v=252-52"></script>
+    <script src="lake-research.js?v=252-71"></script>
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=252-69"></script>
-    <script src="fish-art.js?v=252-42"></script>
+    <script src="fish-additions.js?v=252-71"></script>
+    <script src="fish-art.js?v=252-71"></script>
     <script src="tackle-art.js?v=252-52"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -7706,7 +7707,7 @@
           { id: "shirogisu", name: "シロギス", price: 300, resistance: 84, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "ainame", name: "アイナメ", price: 570, resistance: 119, w: 0, icon: "🐟", shadowRow: 3 },
           { id: "madai", name: "マダイ", price: 1200, resistance: 156, w: 0, icon: "🐠", shadowRow: 3 },
-          ...ShuRegional.fish,
+          ...ShuRegional.fish.filter(f=>f.id!=="shiokakure"),
         ],
         fishEncyclopediaData = {
           iwana: {number:25,scientific:"Salvelinus leucomaenis",habitats:["river"],rarity:2,rarityLabel:"渓流の住人",
@@ -10311,13 +10312,18 @@
         fishMouthProfiles[id]={...fishMouthProfiles.nushi,x:.4,y:.12};
         fishHookPoseOverrides[id]={mouth:[{xScale:1,yOffset:0},{xScale:1,yOffset:.035},{xScale:1,yOffset:.085}],
           turn:[{xScale:1,yOffset:0},{xScale:.725,yOffset:.06},{xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}]};
-        const rate={streamNushi:1.2,coastNushi:.95,caveNushi:.8,starNushi:1.1}[id];
+        const rate={shiokakure:.75,streamNushi:1.2,coastNushi:.95,caveNushi:.8,starNushi:1.1}[id];
         fishMotionProfiles[id]={...fishMotionProfiles.nushi,beat:.4*rate,stretch:0,squeeze:0};
         fightProfiles[id]={intro:`${definition.name}の力を、丈夫な竿で受け止めよう。`,
           moods:fightProfiles.nushi.moods.map(m=>({...m,speedX:(m.speedX||0)*rate,speedY:(m.speedY||0)*(id==="caveNushi"?1.25:1),
             hold:m.hold?.replaceAll("ヌシ",definition.name).replaceAll("湖","水辺"),loose:m.loose?.replaceAll("ヌシ",definition.name)}))};
         fishSizeProfiles[id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:definition.lengths[i][0]*100,maxHundredths:definition.lengths[i][1]*100-1}));
       }
+      fightProfiles.shiokakure={intro:"岩陰へ戻ろうとしている。走る間は糸を送り、止まったら静かに寄せよう。",moods:[
+        {id:"rush",name:"岩陰へ",icon:"↘",weight:.6,min:900,max:1400,motion:"deep",speedX:2.1,speedY:1.4,tension:6,release:6,reel:.5,danger:true,hold:"岩陰へ戻る！ Aを離していなそう。",loose:"岩陰への引きをいなしている。"},
+        {id:"sweep",name:"身をひるがえす",icon:"↔",weight:.3,min:850,max:1300,motion:"thrash",speedX:2.5,speedY:.8,tension:6.5,release:6,reel:.5,danger:true,hold:"驚いて切り返す！ 糸を送ろう。",loose:"切り返しが止まるのを待つ。"},
+        {id:"rest",name:"ためらい",icon:"◎",weight:.6,min:1200,max:1900,motion:"rest",speedX:.35,speedY:.2,tension:1.4,release:5,reel:1.4,calm:true,hold:"ためらっている隙に、静かに寄せる。",loose:"止まった。Aでそっと寄せよう。"}
+      ]};
       const SURFACE_CAST_MOTION_MS = ShuCast.DURATION;
       // Aji keeps the proven slender-fish motion rig but now has its own v68
       // side, mouth and turn drawings instead of recolouring the moroko.
@@ -11757,6 +11763,7 @@
       });
       ShuFishAdditions.install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,
         fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle:ShuTackle});
+      fish.push(ShuRegional.fish.find(f=>f.id==="shiokakure"));
       for(const [id,depth]of Object.entries({dojo:"岸際〜深場",kajika:"岸際〜深場",kamatsuka:"岸際〜中層",ugui:"岸際〜中層"})){
         fishEncyclopediaData[id].locations+=`／岩窟の地下湖（${depth}）`;
         if(!fishEncyclopediaData[id].habitats.includes("lake"))fishEncyclopediaData[id].habitats.push("lake");
@@ -13001,7 +13008,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["shiokakure","coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       // The title stays read-only. Persist the draw seed on Start, before
@@ -15238,7 +15245,18 @@
         paintPixelScene(canvas, `${playerHomeState.area}:${env.key}`,
           c => ShuScenery.paint(c, `home-${playerHomeState.area}`, env));
       }
+      const shiokakureEncounter=ShuShiokakure.create();
+      function renderShiokakure(advance=false){
+        let canvas=$("#shiokakureContour");
+        const active=!villageSaveSuspended&&gameStarted&&!document.hidden&&!battle&&!document.querySelector('.modal.open')&&!fieldMenuIsOpen()&&ShuShiokakure.eligible(s);
+        if(!active){if(canvas)canvas.hidden=true;if(!battle&&!document.hidden&&!ShuShiokakure.eligible(s))ShuShiokakure.step(shiokakureEncounter,s);return;}
+        if(advance)ShuShiokakure.step(shiokakureEncounter,s);
+        if(!canvas){canvas=document.createElement('canvas');canvas.id='shiokakureContour';canvas.width=160;canvas.height=80;canvas.setAttribute('aria-hidden','true');canvas.style.cssText='position:absolute;pointer-events:none;z-index:3;width:3.6%;height:3.2%;min-width:30px;min-height:15px;transform:translate(-50%,-50%)';$('#map').append(canvas);}
+        canvas.style.left=`${worldToMapX(45)}%`;canvas.style.top=`${worldToMapY(36)}%`;canvas.hidden=!ShuShiokakure.visible(shiokakureEncounter);
+        ShuShiokakure.paint(canvas,shiokakureEncounter,matchMedia('(prefers-reduced-motion: reduce)').matches);
+      }
       function renderPixelScenery() {
+        renderShiokakure();
         if (villageSaveSuspended) return false;
         worldLife?.render(performance.now(),true);
         const env = gameSceneryEnvironment();
@@ -18420,7 +18438,7 @@
         hideFieldMenu();
         fieldMenuTimer = setTimeout(() => {
           fieldMenuTimer = 0;
-          showFieldMenu();
+          if(!ShuShiokakure.eligible(s))showFieldMenu();
         }, 5000);
       }
       function toggleFieldMenu() {
@@ -19179,6 +19197,7 @@
         const profile = fishingSpotById(offshoreType?`offshore-${offshoreType}-${minimumDepth}`:mountainType?`mountain-${mountainType}-${minimumDepth}`:coastType?`coast-${coastType}-${minimumDepth}`:`${zone}-${minimumDepth}`);
         battle = {
           phase: "prep",
+          shiokakureObserved:ShuShiokakure.ready(shiokakureEncounter,s,{x:spot.waterX,y:spot.waterY}),
           reeling: false,
           spot: profile.id,
           waterZone: zone,
@@ -20520,6 +20539,7 @@
           showRescueToast(problem);
           return false;
         }
+        const shiokakureObserved=Boolean(battle?.shiokakureObserved)&&!s.tournament;
         const practice = Boolean(battle?.practice);
         const tutorial = Boolean(battle?.tutorial);
         const practiceBait = battle?.bait || "paste";
@@ -20550,6 +20570,7 @@
         close();
         battle = {
           phase: "cast",
+          shiokakureObserved,
           fightMode:s.fightMode,
           rod:practice?"bamboo":s.selectedRod,
           equipment:ShuFishing.rod(s,practice?"bamboo":s.selectedRod,rodData),
@@ -20704,7 +20725,9 @@
           ? `coast-${battle.coastType}-${depth}`
           : `${battle.waterZone || "lake"}-${depth}`;
         const spot = fishingSpotById(battle.spot);
-        const f = battle.practice
+        const concealed=!s.tournament&&ShuShiokakure.claim(shiokakureEncounter,battle.shiokakureObserved,battle,distance);
+        battle.shiokakureObserved=false;
+        const f = concealed ? fish.find(f=>f.id==="shiokakure") : battle.practice
           ? fish.find((candidate) => candidate.id === "funa")
           : pick(distance, battle.spot);
         setFishingSceneTheme(spot.zone, spot.depth, f.id);
@@ -20871,6 +20894,10 @@
           const tapped=battle.lurePulse;battle.lurePulse=false;
           const result=ShuFishing.stepLure(motion,battle.lureHeld,battle.phase==="interest",tapped);
           battle.attraction=motion.attraction;
+          if(battle.f.id==='shiokakure'){
+            battle.shiokakureFast=motion.speed>.8?(battle.shiokakureFast||0)+1:0;
+            if(battle.shiokakureFast>=10){ShuShiokakure.scare(shiokakureEncounter);log('魚影が岩陰へ消えた。少し静かに待ってみよう。');return endBattle();}
+          }
           if(result.recovered){log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");return endBattle();}
           if(result.depart){
             battle.phase="lure";
@@ -21278,6 +21305,7 @@
         }
         const base = {
           streamNushi: { minX: 43, maxX: 80, minY: 30, maxY: 72 },
+          shiokakure: {minX:43,maxX:76,minY:52,maxY:79},
           coastNushi: { minX: 43, maxX: 76, minY: 35, maxY: 72 },
           caveNushi: { minX: 44, maxX: 74, minY: 36, maxY: 70 },
           starNushi: { minX: 44, maxX: 67, minY: 36, maxY: 68 },
@@ -22835,7 +22863,9 @@
           if (battle.phase === "cast") {
             const min = battle.castMin ?? 0;
             const max = battle.castMax ?? 100;
-            let next = battle.cast + battle.castDir * (battle.castSpeed || 3);
+            // A deliberate near-bank drop gets a generous touch-input window.
+            const gentle=battle.shiokakureObserved&&battle.cast<28?.25:1;
+            let next = battle.cast + battle.castDir * (battle.castSpeed || 3) * gentle;
             if (next >= max) {
               next = max;
               battle.castDir = -1;
@@ -24609,6 +24639,7 @@
       setInterval(() => {
         if (villageSaveSuspended) return;
         worldLife?.render();
+        renderShiokakure(true);
         dogAnimFrame++;
         if (dogWalking || dogIdleMode === "idle-dig") drawDog();
       }, 170);
@@ -24619,7 +24650,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-70").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-71").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

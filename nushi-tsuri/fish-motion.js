@@ -16,7 +16,7 @@
     cruise:'laketrout browntrout moroko funa ayu yamame nijimasu iwana amago bora suzuki madai isaki ugui kawamutsu herabuna himemasu aburahaya bluegill tanago motsugo nigoi',
     swift:'aji wakasagi oikawa sayori masaba akakamasu buri hiramasa kanpachi shimaaji takabe',
     hover:'mebaru kawahagi oyanirami medaka',
-    bottom:'kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko houraihimeji',
+    bottom:'shiokakure kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko houraihimeji',
     long:'unagi dojo utsubo',flat:'hirame magochi',
     heavy:'koi namazu bass kurodai ishidai ishigakidai kuromejina raigyo streamNushi coastNushi caveNushi starNushi nushi',
   };

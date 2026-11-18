@@ -186,6 +186,7 @@
   };
   Object.assign(species,{
     streamNushi:{band:"large",baits:{river:1.6,worm:1.1,liveMinnow:1.4,grasshopper:1.2,star:5}},
+    shiokakure:{band:"large",baits:{shell:2,smallShrimp:1.5,worm:1.2,shrimp:1.5}},
     coastNushi:{band:"large",baits:{shrimp:1.2,smallShrimp:1.2,shell:2.2,crab:2,liveMinnow:1.1,star:5}},
     caveNushi:{band:"large",baits:{worm:1.8,liveMinnow:1.5,smallShrimp:.8,star:5.5}},
     starNushi:{band:"large",baits:{worm:.4,corn:1.8,paste:1.8,star:8}},
@@ -197,7 +198,7 @@
   };
   // Regional bosses use the same explicit fallback bait multipliers as the
   // rest of the catalogue, with their preferred foods overriding defaults.
-  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi"])
+  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi","shiokakure"])
     species[id].baits={...baitDefaults,...species[id].baits};
   function allowed(baitId, hookId) { return baitId !== "nushiSecret" || hookId === "large"; }
   function weight(fishId, baitId, hookId = "medium") {

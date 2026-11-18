@@ -14,10 +14,12 @@
   const fishStrength={tanago:.45,motsugo:.4,medaka:.25,kamatsuka:.85,nigoi:2.65,raigyo:3,moroko:.7,funa:1,wakasagi:.5,dojo:.65,isaki:1.65,ugui:1.35,oikawa:.65,kawahagi:1.6,ayu:1.1,yamame:1.3,iwana:1.5,amago:1.4,kajika:.8,aji:.9,kasago:1.2,mebaru:1.1,
     shirogisu:.9,bass:2,nijimasu:2.1,namazu:2.3,unagi:1.9,bora:2.1,koi:2.9,
     kurodai:2.8,suzuki:3.3,hirame:3,ainame:2.3,madai:3.2,nushi:4.4,streamNushi:3.2,coastNushi:3.8,caveNushi:4.4,starNushi:6};
-  const minStrength={nushi:3.5,streamNushi:2.4,coastNushi:3,caveNushi:3.4,starNushi:4};
+  fishStrength.shiokakure=2.8;
+  const minStrength={shiokakure:2.4,nushi:3.5,streamNushi:2.4,coastNushi:3,caveNushi:3.4,starNushi:4};
   const spoon={tanago:.05,motsugo:.10,medaka:.01,kamatsuka:.08,nigoi:1.4,raigyo:3.8,moroko:.2,funa:.35,wakasagi:.12,dojo:.08,isaki:1.15,ugui:1.3,oikawa:.25,kawahagi:.06,koi:.45,ayu:.35,yamame:2.3,iwana:2.4,amago:2.25,kajika:.15,nijimasu:2.5,bass:4.8,
     namazu:1.5,unagi:.55,aji:1.8,mebaru:1.6,kasago:1.4,suzuki:3.1,hirame:2.2,
     kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
+  spoon.shiokakure=1.2;
   // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
   // suspended phone, and presentation randomness never changes the specimen.
   function newLure(distance=20){
@@ -131,6 +133,7 @@
     ambush:{pull:[1800,5000],run:[2100,4100],speed:1.95,shake:1.4,tempo:1.1},
     bottom:{pull:[2000,5600],run:[2000,3800],speed:1.35,shake:1.2,tempo:1},
     bottomAmbush:{pull:[2800,5800],run:[1800,2900],speed:1.45,shake:1.1,tempo:1.3},
+    timid:{pull:[2800,5400],run:[1800,3000],speed:1.65,shake:1.2,tempo:.85},
     legendary:{pull:[1600,5200],run:[2600,4800],speed:2.25,shake:1.6,tempo:1.05},
     pelagic:{pull:[2200,5600],run:[2600,4200],speed:2.1,shake:1.15,tempo:1.2},
     reefRunner:{pull:[2200,5800],run:[2400,4400],speed:1.95,shake:1.65,tempo:1.05}
@@ -145,6 +148,7 @@
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
     bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
     bottomAmbush:'donko',
+    timid:'shiokakure',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi',
     pelagic:'hiramasa shimaaji',reefRunner:'kanpachi ishigakidai akahata kuromejina'
   }))for(const id of ids.split(' '))speciesRhythms[id]=kind;
@@ -161,7 +165,7 @@
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.
-  const enduranceOverrides={hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
+  const enduranceOverrides={shiokakure:190,hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
