@@ -80,7 +80,7 @@ test('spoon distance uses cast meters and its remaining distance and position ca
   try{
    assert.equal(read(w,'battle.lureMotion.distance'),read(w,'castMetersForDistance(50)'));
    assert.match(w.document.querySelector('#distanceLabel').textContent,/20m/);
-   w.eval(`battle.f=fish.find(f=>f.id===${JSON.stringify(id)});revealLureFish();battle.lureMotion.travel=${travel};battle.lureMotion.approach=1;updateLurePresentation()`);
+   w.eval(`battle.f=fish.find(f=>f.id===${JSON.stringify(id)});battle.lureMotion.travel=${travel};updateLurePresentation();revealLureFish();for(let i=0;i<85&&battle.phase==='interest';i++)updateLurePresentation()`);
    assert.equal(read(w,'battle.phase'),'bite');
    const before=read(w,'({x:battle.x,y:battle.y,meters:battle.lureMotion.distance*(1-battle.lureMotion.travel),id:battle.f.id,specimen:battle.specimen})');
    w.pressBattleAction();assert.equal(read(w,'battle.phase'),'fight');

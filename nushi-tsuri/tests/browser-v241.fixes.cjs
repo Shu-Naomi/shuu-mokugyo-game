@@ -17,12 +17,46 @@ module.exports=async function fixes(page,mobile,viewport){
    await press('#action');await press('#wait');await page.locator('#beginCast').waitFor({state:'visible'});await press('#beginCast');await page.evaluate(()=>battle.cast=50);await press('#pull');
    await page.waitForFunction(()=>battle?.phase==='lure');await page.locator('#distanceLabel').waitFor({state:'visible'});await page.locator('#distanceMeter').waitFor({state:'visible'});
    assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),'hidden','lure search hides the field hint');
-   const startMeters=await page.evaluate(()=>battle.lureMotion.distance);await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
+   const startMeters=await page.evaluate(()=>battle.lureMotion.distance);
+   // Capture the displayed mouth (including its CSS transition), once per simulation tick.
+   // A correct simulation could still flash the sprite across the screen on first reveal.
+   await page.evaluate(()=>{
+    const fish=document.querySelector('#battleFish'),spoon=document.querySelector('#lurePreview');
+    const samples=[];
+    const observer=new MutationObserver(()=>{
+     if(!battle||!['interest','bite'].includes(battle.phase))return;
+     const tick=battle.lureMotion.ticks;
+     if(samples.at(-1)?.tick===tick&&samples.at(-1)?.phase===battle.phase)return;
+     const mouth=battleMouthAndHook();
+     samples.push({tick,phase:battle.phase,x:mouth.rootX/10,y:mouth.rootY/5,
+      spoonX:parseFloat(spoon.style.left),spoonY:parseFloat(spoon.style.top)});
+     if(battle.phase==='bite')observer.disconnect();
+    });
+    observer.observe(fish,{attributes:true,attributeFilter:['style','class']});
+    window.v241LureSamples=samples;
+   });
+   for(let tap=0;tap<3;tap++){
+    const tick=await page.evaluate(()=>battle.lureMotion.ticks);
+    await press('#pull');await page.waitForFunction(before=>battle.lureMotion.ticks>=before+2,tick);
+   }
+   assert.equal(await page.evaluate(()=>battle.phase),'lure','three short flicks do not summon a fish');
+   await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
    const display=await page.evaluate(()=>({remaining:battle.lureMotion.distance*(1-battle.lureMotion.travel),label:document.querySelector('#distanceLabel').innerText,meter:parseFloat(document.querySelector('#distanceMeter').style.width)}));assert.ok(display.remaining<startMeters);
    assert.equal(display.label,'スプーンまで '+Math.ceil(display.remaining)+'m');assert.ok(display.meter<100);
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);
+   const samples=await page.evaluate(()=>window.v241LureSamples);
+   fs.writeFileSync(path.join(directory,`${mobile?'touch':'pc'}-${viewport.width}x${viewport.height}-lure-${mode}-approach.json`),JSON.stringify(samples));
+   const first=samples[0],last=samples.at(-1);
+   assert.ok(first?.x>=90&&first.x-first.spoonX>=20,'first visible mouth enters at the right edge and away from the spoon: '+JSON.stringify(first));
+   assert.ok(samples.some(p=>p.x>p.spoonX+5&&p.x<first.x-5),'the visible fish actually covers the intervening water');
+   for(let i=1;i<samples.length;i++){
+    const previous=samples[i-1],current=samples[i],ticks=Math.max(1,current.tick-previous.tick);
+    assert.ok(Math.hypot(current.x-previous.x,current.y-previous.y)<=5*ticks,'visible pursuit jumps: '+JSON.stringify([previous,current]));
+   }
+   assert.equal(last.phase,'bite');
+   assert.ok(Math.hypot(last.x-last.spoonX,last.y-last.spoonY)<3,'the rendered mouth reaches the spoon before the hook prompt: '+JSON.stringify(last));
    assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),'hidden',mode+' fight hides the field hint');assert.equal(await page.locator(mode==='nushi'?'#nushiCue':'#battleMsg').isVisible(),true,mode+' keeps its own fight guidance');
    await hold(true);assert.equal(await page.evaluate(()=>battle.reeling),true);await hold(false);await shot('lure-fight-'+mode);
    const after=await page.evaluate(()=>JSON.parse(JSON.stringify([s.baits,s.lures,s.gameMinutes])));assert.deepEqual(after.slice(0,2),before.slice(0,2));assert.equal(after[2]-before[2],10);

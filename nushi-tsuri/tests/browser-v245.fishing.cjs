@@ -64,7 +64,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
    assert.equal(await value('battle.phase'),'interest');assert.equal(await value('battle.f.id'),'himemasu');
    await page.evaluate(async()=>{await Promise.all(ShuFishArt.assets(battle.f.id).map(src=>fishAtlasImage(src).decode()));renderBattleFish();});
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('interested-fish');
-   for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
+   for(let i=0;i<64&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
    assert.equal(await value('battle.phase'),'bite');assert.match(await page.locator('#pull').innerText(),/アワセ/);await shot('bite');
    const remaining=Number((await page.locator('#distanceLabel').innerText()).match(/\d+/)[0]);
    const shownAge=await value('Date.now()-battle.biteShownAt'),cameraShown=await page.locator('#underwaterTravel').getAttribute('data-offset');
@@ -151,7 +151,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     await press('#pull');await finishCast();
     await page.evaluate(()=>{window.v245Rng=907;Math.random=()=>((window.v245Rng=Math.imul(window.v245Rng,1664525)+1013904223>>>0)/4294967296);});
     for(let i=0;i<18&&await value('battle.phase')==='lure';i++){await press('#pull');await page.clock.runFor(480);}
-    for(let i=0;i<20&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
+    for(let i=0;i<64&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);
     assert.equal(await value('battle.phase'),'bite');await press('#pull');assert.equal(await value('battle.phase'),'fight');
     const resistOnly=mobile&&viewport.width===844;
     const unsafeStart=resistOnly?'slack':'running';

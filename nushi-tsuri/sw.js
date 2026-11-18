@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-lake-trout-252-69";
+const CACHE_NAME = "nushi-tsuri-v252-lure-approach-252-70";
 
-importScripts("./village-precache-252-69.js");
+importScripts("./village-precache-252-70.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-laketrout.png",
@@ -138,7 +138,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=252-53",
-  "./fishing-duel.js?v=252-69",
+  "./fishing-duel.js?v=252-70",
   "./fishing-duel.css?v=246-1",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=246-1",

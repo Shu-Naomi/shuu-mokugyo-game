@@ -20,27 +20,52 @@
     kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
   // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
   // suspended phone, and presentation randomness never changes the specimen.
-  function newLure(distance=20){return {speed:0,depth:.42,travel:0,attraction:0,approach:0,chase:0,
-    distance:clamp(distance,1,100),ticks:0,x:68,y:41};}
+  function newLure(distance=20){
+    return {
+      distance:clamp(distance,1,100), speed:0, depth:.42, travel:0, ticks:0,
+      x:68, y:41, attraction:0, chase:0, fishX:100, fishY:33, inContact:false
+    };
+  }
   function stepLure(lure,held,interested=false,tapped=false){
     lure.ticks++;
     const active=held||tapped;
     lure.speed=clamp(lure.speed+(active?(tapped?.28:.16):-.24),0,1);
-    // Distance is measured in the same meters as the cast and hooked fight.
     lure.travel=clamp(lure.travel+lure.speed*.08/lure.distance,0,1);
     lure.depth=clamp(lure.depth+(active?-.006*lure.speed:.009),.18,.82);
     lure.x=68-lure.travel*46+Math.sin(lure.ticks*.55)*lure.speed*.65;
     lure.y=20+lure.depth*50+Math.sin(lure.ticks*.7)*lure.speed*.45;
-    lure.attraction=clamp(lure.attraction+(tapped?.24:held?.11:-.018),0,1);
     lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
-    if(interested){
-      lure.chase++;
-      // Let the player see the chase and decide to slow/stop the spoon.
-      // A full-speed retrieve can outrun the fish; a pause lets it catch up.
-      lure.approach=clamp(lure.approach+(lure.speed>.8?.009:active?.045:.065),0,1);
+
+    const result={recovered:lure.travel>=1,reveal:false,bite:false,depart:false};
+    if (!interested) {
+      // A flick catches the light; a steady retrieve also draws attention.
+      const interest=lure.speed*.036+(tapped?.082:0)-(lure.speed===0?.003:0);
+      lure.attraction=clamp(lure.attraction+interest,0,1);
+      result.reveal=lure.attraction>=1;
+      return result;
     }
-    return {recovered:lure.travel>=1,reveal:!interested&&lure.attraction>=1,
-      bite:interested&&lure.approach>=1,depart:interested&&lure.chase>=60&&lure.approach<1};
+
+    // Swim from the edge, using the fish's previous mouth position. At high
+    // speed it trails the spoon; slowing it gives the fish a chance to close.
+    lure.chase++;
+    const trail=clamp((lure.speed-.55)/.45,0,1)*10;
+    const dx=lure.x+trail-lure.fishX;
+    const dy=lure.y-lure.fishY;
+    const distance=Math.hypot(dx,dy*.5);
+    const swimStep=.65+.75*Math.min(lure.chase/20,1);
+    const fraction=distance>swimStep?swimStep/distance:1;
+    lure.fishX+=dx*fraction;
+    lure.fishY+=dy*fraction;
+    const touching=trail===0 && fraction===1;
+    // Allow the last swimming step to be displayed before opening the hook window.
+    result.bite=touching && lure.inContact;
+    lure.inContact=touching;
+    result.depart=lure.chase>=60 && !touching && lure.speed>.8;
+    if (result.depart) {
+      lure.attraction=0; lure.chase=0; lure.inContact=false;
+      lure.fishX=100; lure.fishY=33;
+    }
+    return result;
   }
   Object.assign(fishStrength,{kawamutsu:.75,herabuna:1.4,himemasu:1.7,mahaze:.6,sayori:.8,masaba:1.9,gigi:1.5});
   Object.assign(spoon,{kawamutsu:.8,herabuna:.08,himemasu:2.6,mahaze:.25,sayori:.2,masaba:2.2,gigi:.7});
