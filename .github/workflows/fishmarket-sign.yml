@@ -24,7 +24,7 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: node --test fishmarket-sign-art.test.cjs village-production-build.test.cjs village-release-provenance.test.cjs reference-village-render.test.cjs
-      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-74.js
+      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-75.js
       - run: node --test reference-village-dan-lane.test.cjs village-shop-signs-art.test.cjs
       - run: node browser-dan-east-lane.cjs
       - run: node browser-fishmarket-sign.cjs

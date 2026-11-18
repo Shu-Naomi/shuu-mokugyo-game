@@ -2,6 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),path=requ
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const A=require('../fish-art.js'),M=require('../fish-motion.js'),L=require('../aquarium-life.js');
 const all={...A.species,...A.aquarium};
+const {projectedSilhouette,reference}=require('./projected-fish-silhouette.cjs');
 function shape(ctx){
  const px=ctx.getImageData(0,0,448,224).data;let count=0,left=448,right=0,edge=0;
  for(let n=0;n<448*224;n++)if(px[n*4+3]>100){const x=n%448,y=Math.floor(n/448);count++;left=Math.min(left,x);right=Math.max(right,x);if(x<2||x>445||y<2||y>221)edge++;}
@@ -29,19 +30,22 @@ test('continuous individual swimming has equal elapsed poses at 10, 20, 30, 60 a
  const poses=L.layout(fish,[{id:'moroko',max:3000}],720,350,1,()=>2).poses;
  assert.equal(new Set(poses.map(p=>p.swimFrame)).size,6,'individuals do not beat in lockstep');
 });
-test('all originals keep body volume, pixel count, fixed lips and original width throughout swimming and turns',async()=>{
+test('all originals keep body volume, pixel count, fixed lips and exact projected width throughout swimming and turns',async()=>{
  const images=new Map(),ctx=createCanvas(448,224).getContext('2d');
  for(const [id,spec]of Object.entries(all)){
   if(!images.has(spec.asset))images.set(spec.asset,await loadImage(path.join(__dirname,'..',spec.asset)));
   const image=images.get(spec.asset),resolve=()=>image;
   for(const heading of [0,.125,1.25,2.5,3,3.5,4.75,5.875,6]){
    let first,lip;const target=A.pose(id,7,heading).target,x=Math.round(target[0]*448)-10,y=Math.round(target[1]*224)-10;
+   const projected=projectedSilhouette(ctx,image,id,7,heading,resolve);
    for(const phase of [0,.1,2,4,6,7.9,8]){
     assert.equal(A.draw(ctx,image,id,7,heading,resolve,{swimFrame:phase}),true);
     const s=shape(ctx),head=Buffer.from(ctx.getImageData(x,y,21,21).data);
     assert.ok(s.count>3500,id+'/'+heading+' complete');assert.equal(s.edge,0,id+'/'+heading+' unclipped');
+    const expected=projected(phase);
+    assert.equal(s.count,expected.count,id+'/'+heading+' exact projected pixel count');
+    assert.equal(s.width,expected.width,id+'/'+heading+' exact projected width');
     if(!first){first=s;lip=head;}else{
-     assert.equal(s.count,first.count,id+'/'+heading+' volume never vanishes');assert.equal(s.width,first.width,id+'/'+heading+' no squeeze');
      assert.deepEqual(head,lip,id+'/'+heading+' lip and hook stable');
     }
     if(phase===8)assert.deepEqual(s.bytes,first.bytes,id+'/'+heading+' wraps without resetting shape');
@@ -74,6 +78,38 @@ test('side swimming and turn endpoints share identical pixels, including the mir
    A.draw(ctx,image,id,7,6,()=>image,{swimFrame:phase});
    const left=shape(ctx).bytes;let changed=0;for(let n=0;n<left.length;n+=4)if(left[n]!==flipped.data[n]||left[n+1]!==flipped.data[n+1]||left[n+2]!==flipped.data[n+2]||left[n+3]!==flipped.data[n+3])changed++;
    assert.equal(changed,0,id+' mirrored left endpoint has no seam');
+  }
+ }
+});
+
+test('side strokes carry original columns sideways with an unchanged face and no vertical shear',async()=>{
+ const ctx=createCanvas(448,224).getContext('2d');
+ function columns(){
+  const bytes=Buffer.from(ctx.getImageData(0,0,448,224).data);
+  return Array.from({length:448},(_,x)=>{
+   const column=Buffer.alloc(224*4);
+   for(let y=0;y<224;y++)column.writeUInt32LE(bytes.readUInt32LE((448*y+x)*4),y*4);
+   return column.toString('base64');
+  });
+ }
+ for(const id of ['moroko','utsubo','hirame','starNushi']){
+  const assets=new Map();
+  for(const src of A.assets(id))assets.set(src,await loadImage(path.join(__dirname,'..',src)));
+  const image=assets.get(all[id].asset),resolve=src=>assets.get(src);
+  reference.ShuFishArt.draw(ctx,image,id,7,0,resolve,{swimFrame:0});
+  const original=columns(),head=Math.round(A.pose(id,7,0).target[0]*448);
+  const limit=Math.ceil(M.profile(id).amplitude*2.8)+1;
+  for(const phase of [0,2,4,6]){
+   A.draw(ctx,image,id,7,0,resolve,{swimFrame:phase,swimEffort:2.8});
+   const projected=columns();
+   assert.deepEqual(projected.slice(head-20),original.slice(head-20),id+' preserves authored head pixels');
+   let moved=0;
+   for(let x=0;x<head-20;x++){
+    if(projected[x]===original[x])continue;
+    assert.ok(original.slice(Math.max(0,x-limit),x+limit+1).includes(projected[x]),id+' exact source column, at original height');
+    moved++;
+   }
+   assert.ok(moved>0,id+' visible horizontal tail displacement');
   }
  }
 });

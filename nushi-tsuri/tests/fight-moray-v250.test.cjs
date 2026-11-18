@@ -41,18 +41,20 @@ for(const id of ['utsubo','hiramasa','kanpachi'])test('giant sea fish can be lan
  console.log('V250_FIGHT '+JSON.stringify(r));assert.deepEqual(r.errors,[]);assert.equal(r.start.id,id);assert.equal(r.phase,'landing');assert.ok(r.seconds<180);assert.ok(r.warningCount>=1);
 });
 
-test('moray waves travel along the body while the head, mouth anchor and pixel count stay stable',async()=>{
+test('moray waves travel along the body while the face stays fixed and each projected outline matches the original artwork',async()=>{
  const image=await loadImage(path.join(__dirname,'..',A.species.utsubo.asset)),ctx=createCanvas(448,224).getContext('2d');
- const hashes=new Set(),heads=[],counts=[],widths=[];
+ const hashes=new Set(),heads=[];
+ const projected=require('./projected-fish-silhouette.cjs').projectedSilhouette(ctx,image,'utsubo',8,0,()=>image);
  for(const frame of [0,1,2,3,4,5,6,7]){
   A.draw(ctx,image,'utsubo',8,frame,()=>image,{swimFrame:frame});
   const head=A.pose('utsubo',8,frame).target;
   heads.push(Buffer.from(ctx.getImageData(Math.round(head[0]*448)-10,Math.round(head[1]*224)-10,21,21).data));
   const px=ctx.getImageData(0,0,448,224).data;let count=0,min=448,max=0;
   for(let i=0;i<448*224;i++)if(px[i*4+3]>100){count++;min=Math.min(min,i%448);max=Math.max(max,i%448);assert.ok(i%448>=2&&i%448<=445&&i/448>=2&&i/448<222);}
-  counts.push(count);widths.push(max-min);hashes.add(createHash('sha256').update(px).digest('hex'));
+  assert.deepEqual({count,width:max-min+1},projected(frame));
+  hashes.add(createHash('sha256').update(px).digest('hex'));
  }
- assert.equal(hashes.size,8);assert.equal(new Set(counts).size,1);assert.equal(new Set(widths).size,1);
+ assert.equal(hashes.size,8);
  for(const head of heads)assert.deepEqual(head,heads[0],'only the trailing body should undulate');
  for(const jaw of [0,1,2]){
   A.draw(ctx,image,'utsubo',3,jaw,()=>image,{swimFrame:2});const p=A.pose('utsubo',3,jaw),point=p.target;

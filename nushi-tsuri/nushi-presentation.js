@@ -60,7 +60,7 @@
     const wave=reduced?0:Math.sin(phase)*effort;
     const yaw=.95+wave*.9;
     return {frame:facing>0?yaw:6-yaw,angle:wave*3.4*profile.shake,
-      x:wave*1.6,y:Math.sin(phase*.5)*.55*(reduced?0:1),bend:-wave*profile.shake};
+      x:wave*1.6,y:Math.sin(phase*.5)*.55*(reduced?0:1),bend:-wave*(.72-.28*Math.sin(phase*2))*profile.shake};
   }
   const escapeDuration=4320;
   function createEscape(now,{x=65,y=45,facing=1,scale=1}={}){

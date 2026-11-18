@@ -268,14 +268,24 @@
         const rear=lerp(left,right,(1+Math.cos(angle))/2);
         // A yaw bend is projected through the slightly elevated camera only
         // during a turn, independently of the continuous tail-beat phase.
-        return {x:-width*.05*Math.sin(angle)*Math.cos(angle)*rear,
-          y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear+
-            bendAmount*Math.min(18,width*.06)*rear*rear};
+        return {x:(-width*.05*Math.sin(angle)*Math.cos(angle)+bendAmount*Math.min(22,width*.08))*rear,
+          y:-Math.min(18,width*.075)*Math.sin(angle*2)*rear};
       };
       // Use a uniform projection around the lip. Matching a frontal mouth to
       // a side-view outline stretched the two pixels before the lip into a
       // long false beak. Only the rear bends; the face keeps its proportions.
-      const project=u=>tx+(u-h)*width+bodyOffset(u)+bend(u).x;
+      const collar=Math.min(.18,32/m.width);
+      const project=u=>{
+        const distance=u-h;
+        // Keep the authored face at its native scale around the lip. Ease
+        // into the projected body over the shoulder, on either facing.
+        const blend=clamp((Math.abs(distance)-collar)/collar,0,1);
+        const body=blend*blend*(3-2*blend);
+        // Preserve both authored silhouette endpoints as the source view changes.
+        const edge=clamp(Math.min(u,1-u)/collar,0,1);
+        const rigid=(1-body)*edge;
+        return tx+distance*lerp(width,m.width,rigid)+bodyOffset(u)+bend(u).x*body;
+      };
       let u=0;
       for(let x=Math.max(0,Math.ceil(project(0)));x<Math.min(448,Math.ceil(project(1)));x++){
         let low=u,high=1;
@@ -285,7 +295,7 @@
         if(m.bottom[index]<=m.top[index])continue;
         // Keep the spine, scale rows and fin roots together. Stretching each
         // column to a different outline tore the pattern across its back.
-        const vertical=lerp(a.height,b.height,t);
+        const vertical=lerp(m.height,lerp(a.height,b.height,t),clamp((Math.abs(u-h)-collar)/collar,0,1));
         const top=(m.top[index]/m.image.height-m.head[1])*vertical;
         const bottom=(m.bottom[index]/m.image.height-m.head[1])*vertical;
         const sy=ty+top+clamp(bend(u).y,8-ty-top,216-ty-bottom),height=bottom-top;
@@ -326,20 +336,20 @@
     const heading=p.heading===undefined?0:p.heading/6*Math.PI,head=p.target[0]*448;
     const facing=Math.cos(heading),side=Math.abs(facing),front=1-side;
     const span=Math.max(1,facing>=0?head-raster.left-.5:raster.right+.5-head),profile=Motion.profile(id);
-    // One source column per destination column, no translucent overlays, scale
-    // squeezing or frame readback. The face collar remains fixed for the hook.
-    // The shallow camera projects lateral tail beats slightly vertically; the
-    // whole fish never pitches or bobs as a substitute for spine movement.
-    for(let x=raster.left;x<=raster.right;x++){
+    // A side view sees the tail shorten as it swings into depth. Oblique
+    // views also see its signed lateral excursion across the image plane.
+    const amplitude=Math.min(span*.035,profile.amplitude*effort);
+    for(let x=Math.max(0,raster.left-Math.ceil(amplitude));x<=Math.min(447,raster.right+Math.ceil(amplitude));x++){
       const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
       const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
-      const wave=profile.amplitude*effort*weight*side*Math.sin(phase-rear*profile.wave);
-      // At the frontal heading the tail is behind the body. Only the outer
-      // paired fin columns flutter; the lip and central torso retain volume.
+      const wave=Math.sin(phase-rear*profile.wave);
+      const offset=amplitude*weight*(facing*(.67*wave*wave+.33*wave)+Math.sin(heading)*wave);
+      const source=Math.round(x-offset);
+      if(source<raster.left||source>raster.right)continue;
+      const top=raster.top[source],bottom=raster.bottom[source];
       const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
-      const top=raster.top[x],bottom=raster.bottom[x];if(bottom<top)continue;
-      const shift=Math.round(clamp(wave+fin,2-top,221-bottom));
-      for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+x];
+      const shift=Math.round(clamp(fin,2-top,221-bottom));
+      for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+source];
     }
     ctx.putImageData(output.data,0,0);counters.paints++;
   }
