@@ -36,8 +36,8 @@ jobs:
         run: node --test --test-concurrency=2 fight-motion.test.cjs fish-resistance-v244.test.cjs fish-motion-v213.test.cjs fish-render-transitions.test.cjs fishing-spec-v242.test.cjs render-efficiency.test.cjs
       - name: Capture the exact unchanged comparison runtime
         run: |
-          git fetch --depth=1 origin f45b14d49e4d7f2ad88bb4fcbf5a3d3891408845
-          git worktree add /tmp/fight-motion-baseline f45b14d49e4d7f2ad88bb4fcbf5a3d3891408845
+          git fetch --depth=1 origin 3398d176ca00678221aea0297baa94184e0e3976
+          git worktree add /tmp/fight-motion-baseline 3398d176ca00678221aea0297baa94184e0e3976
           MOTION_ROOT=/tmp/fight-motion-baseline/nushi-tsuri MOTION_OUT=fight-motion-evidence/before node browser-fight-motion.cjs
       - name: Capture stronger strokes, warning cues, pauses and reduced motion
         run: MOTION_ENHANCED=1 MOTION_OUT=fight-motion-evidence/after node browser-fight-motion.cjs

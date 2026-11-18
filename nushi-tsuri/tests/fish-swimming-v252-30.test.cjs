@@ -2,11 +2,7 @@ const {test}=require('node:test'),assert=require('node:assert/strict'),path=requ
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const A=require('../fish-art.js'),M=require('../fish-motion.js'),L=require('../aquarium-life.js');
 const all={...A.species,...A.aquarium};
- const {runInNewContext}=require('node:vm'),fs=require('node:fs');
- const reference={ShuFishAdditions:require('../fish-additions.js'),ShuFishMotion:{
-  profile:id=>({...M.profile(id),amplitude:0,fin:0})
- }};
- runInNewContext(fs.readFileSync(path.join(__dirname,'../fish-art.js'),'utf8'),reference);
+const {projectedSilhouette,reference}=require('./projected-fish-silhouette.cjs');
 function shape(ctx){
  const px=ctx.getImageData(0,0,448,224).data;let count=0,left=448,right=0,edge=0;
  for(let n=0;n<448*224;n++)if(px[n*4+3]>100){const x=n%448,y=Math.floor(n/448);count++;left=Math.min(left,x);right=Math.max(right,x);if(x<2||x>445||y<2||y>221)edge++;}
@@ -41,34 +37,14 @@ test('all originals keep body volume, pixel count, fixed lips and exact projecte
   const image=images.get(spec.asset),resolve=()=>image;
   for(const heading of [0,.125,1.25,2.5,3,3.5,4.75,5.875,6]){
    let first,lip;const target=A.pose(id,7,heading).target,x=Math.round(target[0]*448)-10,y=Math.round(target[1]*224)-10;
-   reference.ShuFishArt.draw(ctx,image,id,7,heading,resolve,{swimFrame:0});
-   const neutral=shape(ctx),counts=new Uint16Array(448);
-   let left=448,right=-1;
-   for(let i=0;i<448*224;i++){
-    const alpha=neutral.bytes[i*4+3],column=i%448;
-    if(alpha){left=Math.min(left,column);right=Math.max(right,column);}
-    if(alpha>100)counts[column]++;
-   }
-   // Horizontal yaw changes column multiplicity. Each sampled source column
-   // must contribute exactly its original number of occupied pixels.
-   const theta=heading*Math.PI/6,cos=Math.cos(theta),headX=target[0]*448;
-   const span=Math.max(1,cos>=0?headX-left-.5:right+.5-headX),profile=M.profile(id);
+   const projected=projectedSilhouette(ctx,image,id,7,heading,resolve);
    for(const phase of [0,.1,2,4,6,7.9,8]){
     assert.equal(A.draw(ctx,image,id,7,heading,resolve,{swimFrame:phase}),true);
     const s=shape(ctx),head=Buffer.from(ctx.getImageData(x,y,21,21).data);
     assert.ok(s.count>3500,id+'/'+heading+' complete');assert.equal(s.edge,0,id+'/'+heading+' unclipped');
-    let expectedCount=0,minX=448,maxX=-1;
-    for(let dx=0;dx<448;dx++){
-     const rear=Math.min(1,Math.max(0,(cos>=0?headX-dx-.5:dx+.5-headX)/span));
-     const tail=Math.max(0,(rear-profile.shoulder)/(1-profile.shoulder))**profile.falloff;
-     const beat=Math.sin(phase*Math.PI/4-rear*profile.wave);
-     const horizontal=Math.min(.035*span,profile.amplitude)*tail*
-      (cos*(.67*beat**2+.33*beat)+Math.sin(theta)*beat);
-     const occupied=counts[Math.round(dx-horizontal)]||0;
-     if(occupied){expectedCount+=occupied;minX=Math.min(dx,minX);maxX=Math.max(dx,maxX);}
-    }
-    assert.equal(s.count,expectedCount,id+'/'+heading+' exact projected pixel count');
-    assert.equal(s.width,maxX-minX+1,id+'/'+heading+' exact projected width');
+    const expected=projected(phase);
+    assert.equal(s.count,expected.count,id+'/'+heading+' exact projected pixel count');
+    assert.equal(s.width,expected.width,id+'/'+heading+' exact projected width');
     if(!first){first=s;lip=head;}else{
      assert.deepEqual(head,lip,id+'/'+heading+' lip and hook stable');
     }
