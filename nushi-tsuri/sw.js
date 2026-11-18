@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-dan-lane-252-73";
+const CACHE_NAME = "nushi-tsuri-v252-island-reef-252-74";
 
-importScripts("./village-precache-252-73.js");
+importScripts("./village-precache-252-74.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/shiokakure.svg",
@@ -59,7 +59,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-tanago-gold-v252-24.png",
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
-  "./offshore-island.js?v=252-56",
+  "./offshore-island.js?v=252-74",
   "./offshore-island.css?v=252-71",
   "./assets/offshore-world-v252-18.png",
   "./assets/offshore-ferry-v251.png",
@@ -85,7 +85,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=252-55",
+  "./world-life.js?v=252-74",
   "./fish-additions.js?v=252-71",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -93,7 +93,7 @@ const CORE_ASSETS = [
   "./assets/fish-mahaze-v238.png",
   "./assets/fish-sayori-v238.png",
   "./assets/fish-masaba-v238.png",
-  "./assets/settlement-buildings-v238.png",
+  "./assets/settlement-buildings-sam-signs.png",
   "./assets/village-residents-v238.png",
 
   "./compact-ui.js?v=252-64",

@@ -34,6 +34,18 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
+      - run: node --test offshore-shelter-verge.test.cjs offshore-north-reef-edge.test.cjs offshore-south-shore.test.cjs remote-shop-signs-art.test.cjs
+      - if: matrix.screen.width == 844
+        run: node browser-island-rest.cjs
+      - if: matrix.screen.width == 844
+        run: node browser-remote-shop-signs.cjs
+      - if: always() && matrix.screen.width == 844
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: island-path-and-shop-sign-evidence
+          path: |
+            nushi-tsuri/tests/artifacts/remote-shop-signs/
+            nushi-tsuri/tests/artifacts/island-rest/
       - run: node browser-v251-evidence.cjs
         env:
           V251_WIDTH: ${{ matrix.screen.width }}
