@@ -11,8 +11,8 @@
   };
   const docks = {
     harbor: { name: "星見港", land: { x:154,y:123 }, water: { x:166,y:123 }, radius: 8 },
-    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:100,y:77 }, radius: 8 },
-    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:104,y:92 }, radius: 8 },
+    sand: { name: "白砂の小島", land: { x:115,y:77 }, water: { x:98,y:77 }, radius: 8 },
+    reef: { name: "岩礁の小島", land: { x:88,y:92 }, water: { x:106,y:92 }, radius: 8 },
   };
   const restPoint = { x:146,y:70 };
   function inside(x,y,polygon) {
@@ -23,7 +23,12 @@
     }
     return hit;
   }
-  function shore(x,y) { return Object.values(islands).some(poly=>inside(x,y,poly)); }
+  // Only the boards between the corner posts extend the two island shores.
+  function shore(x,y) {
+    const sandDeck = x >= 107 && x <= 115 && y >= 75 && y <= 78.25;
+    const reefDeck = x >= 88 && x <= 96 && y >= 90 && y <= 93.5;
+    return sandDeck || reefDeck || Object.values(islands).some(poly=>inside(x,y,poly));
+  }
   function water(x,y) { return Number.isFinite(x) && Number.isFinite(y) && x>=2 && x<=width-2 && y>=2 && y<=height-2 && !shore(x,y) && !(x>=148 && x<=157 && y>=119 && y<=129); }
   function near(a,b,r=8) { return Math.hypot(a.x-b.x,a.y-b.y)<=r; }
   function coastName(x,y) {
