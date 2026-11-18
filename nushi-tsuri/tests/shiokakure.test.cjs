@@ -20,6 +20,12 @@ for(const method of ['bait','lure'])test('gentle drop is exclusive to observed p
   w.eval('battle.cast=20;launchSurfaceCast();settleSurfaceCast()');assert.equal(read(w,'battle.f.id'),'shiokakure');
   assert.equal(read(w,'battle.shiokakureObserved'),false);assert.ok(read(w,'shiokakureEncounter.cooldown')>0);
   assert.ok(read(w,'Object.values(fishMotionProfiles.shiokakure).filter(v=>typeof v==="number").every(Number.isFinite)'));
+  if(method==='lure'){
+   w.eval("for(let i=0;i<240&&battle?.phase!=='bite';i++){battle.lurePulse=battle.phase==='lure'&&i%2===0;updateLurePresentation()}");
+   assert.equal(read(w,'battle.phase'),'bite');
+   assert.equal(read(w,'battle.lureMotion.inContact'),true);
+   assert.equal(read(w,'battle.shiokakureFast||0'),0);
+  }
   w.eval('endBattle();save()');const saved=JSON.parse(w.localStorage.getItem(saveKey));assert.equal(saved.shiokakureEncounter,undefined);
   assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}

@@ -50,11 +50,14 @@ test('gigi is naturally catchable with bait, has distinct art and dex, enters th
 });
 
 test('spoon speed ramps up, a stop sinks it and draws a chasing fish, continuous fast reeling lets it leave, and retrieval has an end',()=>{
-  const lure=F.newLure(50);for(let i=0;i<12;i++)F.stepLure(lure,true);
+  const lure=F.newLure(50);
+  let visible=false;
+  for(let i=0;i<60&&!visible;i++)visible=F.stepLure(lure,true).reveal;
+  assert.ok(visible,'a sustained retrieve attracts a follower');
   assert.equal(lure.speed,1);const before={x:lure.x,y:lure.y};assert.ok(lure.x<78);
   const fast={...lure},pause={...lure};let fastResult,pausedResult;
   for(let i=0;i<60;i++){fastResult=F.stepLure(fast,true,true);if(fastResult.depart)break;}
-  for(let i=0;i<16;i++){pausedResult=F.stepLure(pause,false,true);if(pausedResult.bite)break;}
+  for(let i=0;i<60;i++){pausedResult=F.stepLure(pause,false,true);if(pausedResult.bite)break;}
   assert.ok(fastResult.depart);assert.ok(pausedResult.bite);assert.ok(pause.y>before.y);assert.equal(pause.speed,0);
   let result;for(let i=0;i<1000;i++){result=F.stepLure(lure,true);if(result.recovered)break;}assert.ok(result.recovered);assert.equal(lure.travel,1);
 });
@@ -68,9 +71,31 @@ for(const mode of ['gauge','nushi'])test('native lure input keeps one specimen a
     assert.equal(w.document.querySelector('#distanceLabel').style.display,'block');
     assert.equal(w.document.querySelector('#distanceMeter').parentElement.style.display,'block');
     assert.match(w.document.querySelector('#distanceLabel').textContent,/スプーンまで/);
-    w.pressBattleAction();w.eval('for(let i=0;i<12;i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'interest');
+    for(let twitch=0;twitch<3;twitch++){
+      w.pressBattleAction();
+      for(let i=0;i<3;i++)w.updateLurePresentation();
+      w.releaseBattleAction();
+      for(let i=0;i<2;i++)w.updateLurePresentation();
+      assert.equal(read(w,'battle.phase'),'lure','short twitches move the spoon without summoning a fish');
+      assert.equal(w.document.querySelector('#battleFish').style.opacity,'0');
+    }
+    w.pressBattleAction();
+    w.eval('for(let i=0;i<60&&battle.phase==="lure";i++)updateLurePresentation()');
+    assert.equal(read(w,'battle.phase'),'interest');
+    const mouthPosition=()=>read(w,'[battleMouthAndHook(false).rootX/10,battleMouthAndHook(false).rootY/5]');
+    let previous=mouthPosition();
+    assert.ok(previous[0]-read(w,'battle.lureMotion.x')>15,'the first visible fish starts well away from the spoon');
     const specimen=read(w,'[battle.f.id,battle.specimen]'),position=read(w,'battle.lureMotion');w.pauseBattle();w.eval('for(let i=0;i<100;i++)updateLurePresentation()');assert.deepEqual(read(w,'battle.lureMotion'),position);w.resumeBattle();
-    w.eval('for(let i=0;i<16&&battle.phase!=="bite";i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'bite');
+    let pursuitTicks=0;
+    while(pursuitTicks<75&&read(w,'battle.phase')==='interest'){
+      w.updateLurePresentation();
+      const current=mouthPosition();
+      assert.ok(Math.hypot(current[0]-previous[0],current[1]-previous[1])<5,'no jump, including on the bite frame');
+      previous=current;
+      pursuitTicks++;
+    }
+    assert.ok(pursuitTicks>=12,'the fish visibly swims across the scene');
+    assert.equal(read(w,'battle.phase'),'bite');
     const root=read(w,'battleMouthAndHook()'),motion=read(w,'battle.lureMotion');assert.ok(Math.abs(root.rootX/10-motion.x)<.1&&Math.abs(root.rootY/5-motion.y)<.1);
     w.pressBattleAction();assert.equal(read(w,'battle.phase'),'fight');assert.equal(read(w,'battle.reeling'),false);w.pressBattleAction();assert.equal(read(w,'battle.reeling'),false);
     w.releaseBattleAction();w.pressBattleAction();assert.equal(read(w,'battle.reeling'),true);assert.equal(read(w,'battle.fightMode'),mode);assert.deepEqual(read(w,'[battle.f.id,battle.specimen]'),specimen);

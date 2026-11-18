@@ -123,7 +123,7 @@ test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibl
 
 test('release references and offline cache contain both pixel and balance modules',()=>{
   const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
-  for(const [id,version] of [['tackle-balance','252-70'],['tackle-art','252-52']]){
+  for(const [id,version] of [['tackle-balance','252-71'],['tackle-art','252-52']]){
     assert.ok(html.includes(`${id}.js?v=${version}`));assert.ok(sw.includes(`./${id}.js?v=${version}`));
   }
 });

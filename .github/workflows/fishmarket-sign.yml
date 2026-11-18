@@ -24,7 +24,7 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: node --test fishmarket-sign-art.test.cjs village-production-build.test.cjs village-release-provenance.test.cjs reference-village-render.test.cjs
-      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-70.js
+      - run: node ../tools/build-village-production.cjs && git diff --exit-code -- ../index.html ../village-precache-252-71.js
       - run: node browser-fishmarket-sign.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
