@@ -35,13 +35,23 @@ test('a stalled tick cannot jump straight from pulling into the fish run without
  }finally{app.dispose();}
 });
 
-test('fish chases remain visible for nearly two seconds when the spoon stops, and full-speed winding can lose a follower',()=>{
- const slow=F.newLure(20),fast=F.newLure(20);fast.speed=1;
+test('a spoon follower has a visible chase before contact and can abandon a full-speed retrieve',()=>{
+ const slow=F.newLure(20);
+ let visible=false;
+ for(let i=0;i<60&&!visible;i++)visible=F.stepLure(slow,true).reveal;
+ assert.ok(visible);
+ const fast={...slow};
  for(let i=0;i<12;i++)assert.equal(F.stepLure(slow,false,true).bite,false);
- let caught=false;for(let i=0;i<8;i++)caught ||= F.stepLure(slow,false,true).bite;
- assert.equal(caught,true);
- let departed=false;for(let i=0;i<60;i++)departed ||= F.stepLure(fast,true,true).depart;
- assert.equal(departed,true);assert.ok(fast.approach<1);
+ let caught=false;
+ for(let i=0;i<60&&!caught;i++)caught=F.stepLure(slow,false,true).bite;
+ assert.ok(caught);
+ let departed=false;
+ for(let i=0;i<60&&!departed;i++){
+  const result=F.stepLure(fast,true,true);
+  assert.equal(result.bite,false);
+  departed=result.depart;
+ }
+ assert.ok(departed);
 });
 
 test('mirrored scenery loops cover wide and narrow screens through positive, negative and complete turns without gaps',()=>{

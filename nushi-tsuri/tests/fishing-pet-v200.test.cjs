@@ -44,9 +44,13 @@ test('spoon reveals an interested fish before bite, held input cannot auto-hook 
   const app=boot({...seed(),ownedRods:['bamboo','lureRod'],selectedRod:'lureRod',fishingMethod:'lure',lures:{silverSpoon:1}}),w=app.window;
   try{const before=read(w,'[s.baits.worm,s.lures.silverSpoon,s.gameMinutes]');w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast()');
     assert.equal(read(w,'battle.phase'),'lure');assert.equal(w.document.querySelector('#battleFish').style.opacity,'0');
-    w.pressBattleAction();w.eval('for(let i=0;i<12;i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'interest');
+    w.pressBattleAction();w.eval('for(let i=0;i<60&&battle.phase==="lure";i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'interest');
     const fish=read(w,'[battle.f.id,battle.specimen]');assert.equal(w.document.querySelector('#battleFish').style.opacity,'1');
-    w.eval('battle.biteAt=Date.now();updateLurePresentation()');assert.equal(read(w,'battle.phase'),'bite');w.pressBattleAction();assert.equal(read(w,'battle.phase'),'bite');
+    w.releaseBattleAction();
+    // Press during the final approach and keep the button down as the contact frame becomes a bite.
+    w.eval('for(let i=0;i<75&&battle.phase==="interest"&&Math.hypot(battle.lureMotion.fishX-battle.lureMotion.x,battle.lureMotion.fishY-battle.lureMotion.y)>.01;i++)updateLurePresentation()');
+    assert.equal(read(w,'battle.phase'),'interest');
+    w.pressBattleAction();w.eval('for(let i=0;i<12&&battle.phase==="interest";i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'bite');w.pressBattleAction();assert.equal(read(w,'battle.phase'),'bite');
     w.releaseBattleAction();w.pressBattleAction();assert.equal(read(w,'battle.phase'),'fight');assert.equal(read(w,'battle.reeling'),false);
     w.pressBattleAction();assert.equal(read(w,'battle.reeling'),false);w.releaseBattleAction();w.pressBattleAction();assert.equal(read(w,'battle.reeling'),true);
     assert.deepEqual(read(w,'[battle.f.id,battle.specimen]'),fish);const after=read(w,'[s.baits.worm,s.lures.silverSpoon,s.gameMinutes]');assert.deepEqual(after.slice(0,2),before.slice(0,2));assert.ok(after[2]>before[2]);
