@@ -6,7 +6,7 @@ const species='shiokakure';
 const root=path.resolve(__dirname,'..'),dir=path.resolve(process.env.SHIOKAKURE_EVIDENCE_DIR||path.join(__dirname,'shiokakure-evidence'));
 async function run(url,screen){
  const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})}),context=await browser.newContext({viewport:screen,isMobile:screen.width<1000,hasTouch:screen.width<1000,deviceScaleFactor:1,locale:'ja-JP',serviceWorkers:'block',recordVideo:{dir:path.join(dir,'video'),size:screen}});
- const mobile=screen.width<1000,state={...seed(),soundEnabled:false,hp:100,money:50000,gameMinutes:720,mapRegion:'offshore',x:45,y:33,direction:'down',ownedRods:['shoreReed','lureRod'],selectedRod:'shoreReed',selectedBait:'shell',selectedHook:'large',baits:{shell:20},lures:{silverSpoon:20}},errors=[],failed=[],results=[];
+ const mobile=screen.width<1000,state={...seed(),soundEnabled:false,hp:100,money:50000,gameMinutes:720,mapRegion:'offshore',x:mobile?39:43,y:mobile?33:29,direction:'down',ownedRods:['tideMaster','lureRod'],selectedRod:'tideMaster',selectedBait:'smallShrimp',selectedHook:'medium',baits:{smallShrimp:20},lures:{silverSpoon:20}},errors=[],failed=[],results=[];
  await context.addInitScript(({key,state})=>{if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(state));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,state});
  const page=await context.newPage(),cdp=mobile?await context.newCDPSession(page):null,press=q=>page.locator(q)[mobile?'tap':'click'](),value=q=>page.evaluate(q=>{const v=eval(q);return v===undefined?null:JSON.parse(JSON.stringify(v));},q),shot=name=>page.screenshot({path:path.join(dir,screen.width+'-'+name+'.png')});let held=false,button;
  page.on('pageerror',e=>errors.push(e.message));page.on('response',r=>{if(r.status()>=400&&r.url().startsWith(new URL('./',url).href))failed.push(r.status()+' '+r.url());});
@@ -16,7 +16,9 @@ async function run(url,screen){
   await page.clock.install({time:new Date('2026-11-04T11:00:00Z')});await page.clock.pauseAt('2026-11-04T11:00:01Z');await page.goto(url,{waitUntil:'domcontentloaded',timeout:90000});await start();await page.evaluate(id=>window.troutSpecies=id,species);await page.evaluate(()=>fishAtlasImage(ShuFishArt.species[troutSpecies].asset).decode());
   // Position/gear/size fixtures; discovery uses the normal field clock and
   // the cast, lure, hook, reel and landing use actual pointer/touch controls.
-  await page.clock.runFor(170);await shot('map-early');
+  if(mobile)await press('[data-move="right"]');
+  await press('[data-move="down"]');await page.clock.runFor(170);
+  assert.deepEqual(await value('[s.x,s.y,s.direction]'),[43,33,'down']);await shot('map-early');
   await page.clock.runFor(4800);await shot('map-observed');
   assert.equal(await value('fieldMenuIsOpen()'),false);
   assert.equal(await value('ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))'),true);
@@ -24,12 +26,13 @@ async function run(url,screen){
   await page.emulateMedia({reducedMotion:'reduce'});await page.clock.runFor(170);await shot('map-reduced');await page.emulateMedia({reducedMotion:'no-preference'});
   for(const mode of ['gauge','nushi']){
    const method=mode==='nushi'?'lure':'bait';
-   await page.evaluate(({mode,method})=>{hideCatchCard();s.fightMode=mode;s.fishingMethod=method;s.selectedRod=method==='lure'?'lureRod':'shoreReed';}, {mode,method});
+   await page.evaluate(({mode,method})=>{hideCatchCard();s.fightMode=mode;s.fishingMethod=method;s.selectedRod=method==='lure'?'lureRod':'tideMaster';}, {mode,method});
    // A consumed encounter returns after its cooldown; wait in the map.
    for(let n=0;n<240&&!await value('ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))');n++)await page.clock.runFor(170);
    await press('#action');await press('#wait');await press('#beginCast');
-   const before=await value('({bait:s.baits.shell,caught:s.caught[troutSpecies]||0})');
+   const before=await value('({bait:s.baits.smallShrimp,caught:s.caught[troutSpecies]||0})');
    assert.equal(await value('battle.shiokakureObserved'),true);
+   if(method==='bait')assert.equal(await value('castMetersForDistance(battle.cast,battle.practice)'),12);
    for(let n=0;n<120&&await value('battle.cast')<15;n++)await page.clock.runFor(120);
    assert.ok(await value('battle.cast>=0&&battle.cast<=24'));
    await page.evaluate(()=>{clearInterval(timer);timer=0;window.browntroutRandom=Math.random;Math.random=()=>.999999;});
@@ -49,7 +52,7 @@ async function run(url,screen){
     const ui=await page.evaluate(()=>({phase:battle?.phase,cue:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),tension:parseFloat(document.querySelector('#ten').style.width)||0}));if(ui.phase!=='fight')break;
     const wish=!ui.leap&&(mode==='gauge'?ui.tension<(previous?45:20):['slack','pulling'].includes(ui.cue));if(wish!==previous){queue.push({at:ticks*120+600,on:wish});previous=wish;}if(ui.cue==='warning'&&last!=='warning')warnings++;last=ui.cue;while(queue.length&&queue[0].at<=ticks*120)await hold(queue.shift().on);await page.clock.runFor(120);
    }
-   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.shell'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');await shot(mode+'-caught');results.push({mode,method,specimen,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
+   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.smallShrimp'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');await shot(mode+'-caught');results.push({mode,method,specimen,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
   }
   await page.evaluate(()=>hideCatchCard());
   await page.evaluate(()=>save());const saved=await value('({caught:s.caught[troutSpecies],fish:s.petLife.fish,memories:s.catchMemories[troutSpecies]})');await page.reload({waitUntil:'domcontentloaded'});await start();await page.evaluate(id=>window.troutSpecies=id,species);assert.deepEqual(await value('({caught:s.caught[troutSpecies],fish:s.petLife.fish,memories:s.catchMemories[troutSpecies]})'),saved);
