@@ -24,15 +24,14 @@
   return distance>=0&&distance<=24&&(b.method==='lure'||b.bait!=='nushiSecret');
  }
  function paint(canvas,e,reduced=false){
-  const c=canvas.getContext('2d');c.clearRect(0,0,160,80);
+  const c=canvas.getContext('2d');c.clearRect(0,0,10,7);
   if(!visible(e))return;
-  const settled=Math.min(1,e.quiet/5000),wave=reduced?0:Math.sin(e.time/2100)*3;
-  c.save();c.translate(wave,0);c.globalAlpha=.42+settled*.24;
-  c.fillStyle='#697970';c.strokeStyle='#344c49';c.lineWidth=2;
-  c.beginPath();c.moveTo(25,38);c.lineTo(10,25+wave);c.lineTo(12,55-wave);c.lineTo(29,45);
-  c.bezierCurveTo(56,64,112,59,143,40);c.bezierCurveTo(115,20,61,19,25,38);c.closePath();c.fill();c.stroke();
-  c.strokeStyle='#99a394';c.beginPath();c.moveTo(39,39);c.lineTo(65,31);c.lineTo(81,43);c.lineTo(105,31);c.lineTo(127,39);c.stroke();
-  c.fillStyle='#344c49';c.fillRect(126,37,3,3);c.restore();
+  const glint=!reduced&&Math.floor(e.time/2000)%2===1;
+  const colors={s:'#455455',d:'#555e58',m:'#7f8173',l:glint?'#a6a18c':'#9c9986'};
+  const rows=['..........','...lll....','..lmmml...','.lmmmmdm..','.mmmmddd..','..dddddss.','....sss...'];
+  rows.forEach((row,y)=>Array.from(row).forEach((pixel,x)=>{
+   if(colors[pixel]){c.fillStyle=colors[pixel];c.fillRect(x,y,1,1);}
+  }));
  }
  return {home,create,eligible,visible,scare,step,ready,claim,paint};
 });
