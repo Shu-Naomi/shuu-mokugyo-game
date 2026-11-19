@@ -22,14 +22,44 @@
   spoon.shiokakure=1.2;
   // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
   // suspended phone, and presentation randomness never changes the specimen.
-  function newLure(distance=20){
+  // Coordinates describe each fish's mouth as a percentage of the underwater view.
+  // The first resident is the catch already selected for this cast.
+  const swimLanes=[
+    {x:79,y:32,facing:1,pace:.26},
+    {x:24,y:49,facing:-1,pace:.19},
+    {x:45,y:23,facing:1,pace:.32}
+  ];
+  function newLure(distance=20,residentIds=['funa']){
+    const residents=residentIds.slice(0,swimLanes.length).map((id,index)=>{
+      const lane=swimLanes[index];
+      const phase=(id.length+distance+index)*.8;
+      const x=lane.x+Math.sin(phase)*2, homeY=lane.y+Math.cos(phase)*3;
+      return {id,x,y:homeY,homeY,phase,pace:lane.pace,facing:lane.facing,heading:lane.facing};
+    });
+    const focus=residents[0];
     return {
       distance:clamp(distance,1,100), speed:0, depth:.42, travel:0, ticks:0,
-      x:68, y:41, attraction:0, chase:0, fishX:100, fishY:33, inContact:false
+      x:68,y:41,attraction:0,chase:0,inContact:false,noticing:false,
+      residents,fishX:focus.x,fishY:focus.y
     };
   }
-  function stepLure(lure,held,interested=false,tapped=false){
+  function turnResident(fish,facing){
+    fish.facing=facing;
+    fish.heading+=clamp(facing-fish.heading,-.32,.32);
+  }
+  function patrolResident(fish,ticks){
+    const facing=fish.x>=89?-1:fish.x<=11?1:fish.facing;
+    turnResident(fish,facing);
+    fish.x+=fish.heading*fish.pace;
+    const depth=fish.homeY+Math.sin(ticks*.045+fish.phase)*2.6;
+    fish.y+=clamp(depth-fish.y,-.24,.24);
+  }
+  function stepLureBystanders(lure){
     lure.ticks++;
+    for(let i=1;i<lure.residents.length;i++)patrolResident(lure.residents[i],lure.ticks);
+  }
+  function stepLure(lure,held,interested=false,tapped=false){
+    stepLureBystanders(lure);
     const active=held||tapped;
     lure.speed=clamp(lure.speed+(active?(tapped?.28:.16):-.24),0,1);
     lure.travel=clamp(lure.travel+lure.speed*.08/lure.distance,0,1);
@@ -39,34 +69,45 @@
     lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
 
     const result={recovered:lure.travel>=1,reveal:false,bite:false,depart:false};
+    const focus=lure.residents[0];
     if (!interested) {
-      // A flick catches the light; a steady retrieve also draws attention.
+      // First the flash interrupts the patrol. The fish turns to watch a few
+      // lengths from the spoon before sustained movement persuades it to follow.
       const interest=lure.speed*.036+(tapped?.082:0)-(lure.speed===0?.003:0);
       lure.attraction=clamp(lure.attraction+interest,0,1);
+      lure.noticing=lure.attraction>=.24;
+      if(lure.noticing){
+        const dx=lure.x-focus.x;
+        turnResident(focus,Math.abs(dx)>.75?Math.sign(dx):focus.facing);
+        if(Math.abs(dx)>8)focus.x+=focus.heading*.12;
+        focus.y+=clamp(lure.y-focus.y,-.08,.08);
+      }else{
+        patrolResident(focus,lure.ticks);
+      }
       result.reveal=lure.attraction>=1;
-      return result;
+    }else{
+      // Follow from this resident's current position. A quick retrieve keeps
+      // the mouth behind the spoon; a pause lets it close the remaining gap.
+      lure.chase++;
+      const trail=clamp((lure.speed-.55)/.45,0,1)*10;
+      const dx=lure.x+trail-focus.x,dy=lure.y-focus.y;
+      turnResident(focus,Math.abs(dx)>.75?Math.sign(dx):focus.facing);
+      const distance=Math.hypot(dx,dy*.5);
+      const swimStep=.65+.75*Math.min(lure.chase/20,1);
+      const fraction=distance>swimStep?swimStep/distance:1;
+      focus.x+=dx*fraction;
+      focus.y+=dy*fraction;
+      const touching=trail===0 && fraction===1;
+      // Show the last swimming step before opening the player's hook window.
+      result.bite=touching && lure.inContact;
+      lure.inContact=touching;
+      result.depart=lure.chase>=60 && !touching && lure.speed>.8;
+      if(result.depart){
+        lure.attraction=0; lure.chase=0; lure.inContact=false; lure.noticing=false;
+        turnResident(focus,focus.x>=lure.x?1:-1);
+      }
     }
-
-    // Swim from the edge, using the fish's previous mouth position. At high
-    // speed it trails the spoon; slowing it gives the fish a chance to close.
-    lure.chase++;
-    const trail=clamp((lure.speed-.55)/.45,0,1)*10;
-    const dx=lure.x+trail-lure.fishX;
-    const dy=lure.y-lure.fishY;
-    const distance=Math.hypot(dx,dy*.5);
-    const swimStep=.65+.75*Math.min(lure.chase/20,1);
-    const fraction=distance>swimStep?swimStep/distance:1;
-    lure.fishX+=dx*fraction;
-    lure.fishY+=dy*fraction;
-    const touching=trail===0 && fraction===1;
-    // Allow the last swimming step to be displayed before opening the hook window.
-    result.bite=touching && lure.inContact;
-    lure.inContact=touching;
-    result.depart=lure.chase>=60 && !touching && lure.speed>.8;
-    if (result.depart) {
-      lure.attraction=0; lure.chase=0; lure.inContact=false;
-      lure.fishX=100; lure.fishY=33;
-    }
+    lure.fishX=focus.x; lure.fishY=focus.y;
     return result;
   }
   Object.assign(fishStrength,{kawamutsu:.75,herabuna:1.4,himemasu:1.7,mahaze:.6,sayori:.8,masaba:1.9,gigi:1.5});
@@ -294,5 +335,5 @@
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
   return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
-    nushiTiming,rhythm,endurance,fatigue,hookState,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure});
+    nushiTiming,rhythm,endurance,fatigue,hookState,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure,stepLureBystanders});
 });

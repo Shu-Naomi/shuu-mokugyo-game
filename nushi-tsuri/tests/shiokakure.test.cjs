@@ -21,6 +21,9 @@ for(const method of ['bait','lure'])test('gentle drop is exclusive to observed p
   assert.equal(read(w,'battle.shiokakureObserved'),false);assert.ok(read(w,'shiokakureEncounter.cooldown')>0);
   assert.ok(read(w,'Object.values(fishMotionProfiles.shiokakure).filter(v=>typeof v==="number").every(Number.isFinite)'));
   if(method==='lure'){
+   const residents=read(w,'battle.lureMotion.residents.map(r=>r.id)');
+   assert.equal(residents[0],'shiokakure','the observed fish at splash is the hookable individual');
+   assert.equal(residents.filter(id=>id==='shiokakure').length,1,'no second shy boss in the school');
    w.eval("for(let i=0;i<240&&battle?.phase!=='bite';i++){battle.lurePulse=battle.phase==='lure'&&i%2===0;updateLurePresentation()}");
    assert.equal(read(w,'battle.phase'),'bite');
    assert.equal(read(w,'battle.lureMotion.inContact'),true);
@@ -66,6 +69,25 @@ test('observation does not invalidate scenery cache and reduced-motion still per
   w.eval('battle={phase:"prep"};renderShiokakure(true)');assert.equal(w.document.querySelector('#shiokakureContour').hidden,true);
  }finally{app.dispose();}
 });
+test('ordinary spoons at the hidden tide pool never reveal Shiokakure among the resident fish',()=>{
+ const app=boot({...seed(),...shore,hp:100,ownedRods:['lureRod'],selectedRod:'lureRod',fishingMethod:'lure',lures:{silverSpoon:1}}),w=app.window;
+ try{
+  // Try both an unobserved gentle drop and a cast too far after observation.
+  for(const [observeFirst,distance] of [[false,20],[true,65]]){
+   if(observeFirst)w.eval('for(let i=0;i<80;i++)ShuShiokakure.step(shiokakureEncounter,s)');
+   w.action();w.beginFishing();
+   assert.equal(read(w,'battle.shiokakureObserved'),observeFirst);
+   w.eval('battle.cast='+distance+';launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');
+   const residents=read(w,'battle.lureMotion.residents.map(r=>r.id)');
+   assert.ok(residents.length>=2&&residents.length<=3);
+   assert.ok(!residents.includes('shiokakure'),'the restricted fish cannot be a focal or background resident');
+   assert.equal(read(w,'battle.f.id'),residents[0]);
+   w.endBattle();
+  }
+  assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
+
 test('fast lure startles the fish, recovers the spoon and allows a later encounter',()=>{
  const app=boot({...seed(),...shore,hp:100,ownedRods:['lureRod'],selectedRod:'lureRod',fishingMethod:'lure',lures:{silverSpoon:10}}),w=app.window;
  try{

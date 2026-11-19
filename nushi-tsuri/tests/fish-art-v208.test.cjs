@@ -58,7 +58,7 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
 });
 
 test('new fish sources and painter are available offline; original fight strengths remain intact',()=>{
-  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8')+fs.readFileSync(path.join(__dirname,'../village-precache-252-75.js'),'utf8');
+  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8')+fs.readFileSync(path.join(__dirname,'../village-precache-252-76.js'),'utf8');
   const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8');
   const painter=html.match(/<script src="(fish-art\.js\?v=[^"]+)"/u)?.[1]?.replace(/&amp;/g,'&');
   assert.ok(painter,'the page loads a versioned fish painter');

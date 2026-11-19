@@ -18,42 +18,94 @@ module.exports=async function fixes(page,mobile,viewport){
    await page.waitForFunction(()=>battle?.phase==='lure');await page.locator('#distanceLabel').waitFor({state:'visible'});await page.locator('#distanceMeter').waitFor({state:'visible'});
    assert.equal(await page.locator('#hint').evaluate(n=>getComputedStyle(n).visibility),'hidden','lure search hides the field hint');
    const startMeters=await page.evaluate(()=>battle.lureMotion.distance);
-   // Capture the displayed mouth (including its CSS transition), once per simulation tick.
-   // A correct simulation could still flash the sprite across the screen on first reveal.
-   await page.evaluate(()=>{
+   const school=await page.evaluate(()=>{
     const fish=document.querySelector('#battleFish'),spoon=document.querySelector('#lurePreview');
-    const samples=[];
-    const observer=new MutationObserver(()=>{
-     if(!battle||!['interest','bite'].includes(battle.phase))return;
+    const world=document.querySelector('#lureWaterWorld'),controls=document.querySelector('.battle-actions');
+    const others=Array.from(document.querySelectorAll('#lureResidents .lure-resident'));
+    const samples=[],specimen=battle.specimen,target=battle.lureMotion.residents[0];
+    function record(){
+     if(!battle||!['lure','interest','bite'].includes(battle.phase))return;
      const tick=battle.lureMotion.ticks;
      if(samples.at(-1)?.tick===tick&&samples.at(-1)?.phase===battle.phase)return;
-     const mouth=battleMouthAndHook();
-     samples.push({tick,phase:battle.phase,x:mouth.rootX/10,y:mouth.rootY/5,
-      spoonX:parseFloat(spoon.style.left),spoonY:parseFloat(spoon.style.top)});
+     const box=world.getBoundingClientRect(),scene=document.querySelector('#fishScene').getBoundingClientRect();
+     const lure=spoon.getBoundingClientRect(),hud=controls.getBoundingClientRect();
+     const mouth=battleMouthAndHook(),sprite=fish.getBoundingClientRect();
+     const x=mouth.rootX/10,y=mouth.rootY/5;
+     const spoonX=(lure.left+lure.width/2-box.left)*100/box.width;
+     const spoonY=(lure.top+lure.height/2-box.top)*100/box.height;
+     const [originX,originY]=getComputedStyle(world).transformOrigin.split(' ').map(parseFloat);
+     samples.push({tick,phase:battle.phase,noticing:battle.lureMotion.noticing,
+      x,y,spoonX,spoonY,art:fish.dataset.spriteMode,projection:new DOMMatrix(getComputedStyle(fish).transform).a,zoom:box.width/world.offsetWidth,
+      pivotError:Math.hypot(originX*100/world.offsetWidth-spoonX,originY*100/world.offsetHeight-spoonY),
+      centerX:(sprite.left+sprite.width/2-box.left)*100/box.width,centerY:(sprite.top+sprite.height/2-box.top)*100/box.height,
+      visible:parseFloat(getComputedStyle(fish).opacity)>.5&&sprite.right>scene.left&&sprite.left<scene.right,
+      same:fish===document.querySelector('#battleFish')&&specimen===battle.specimen&&target===battle.lureMotion.residents[0],
+      hud:[hud.x,hud.y,hud.width,hud.height],
+      others:others.map(el=>[el.dataset.fishId,parseFloat(el.style.left),parseFloat(el.style.top)])});
      if(battle.phase==='bite')observer.disconnect();
-    });
-    observer.observe(fish,{attributes:true,attributeFilter:['style','class']});
-    window.v241LureSamples=samples;
+    }
+    const observer=new MutationObserver(record);
+    observer.observe(world,{subtree:true,attributes:true,attributeFilter:['style','class']});
+    record();window.v241LureSamples=samples;
+    return {ids:battle.lureMotion.residents.map(r=>r.id),species:battle.f.id,
+     local:Object.keys({...fishingSpotById(battle.spot).weights,...ShuRegional.candidates(s,battle.spot,gameClockAt(sceneGameMinutes()).period,battle.practice)}),visible:others.map(el=>{
+      const box=el.getBoundingClientRect(),view=world.getBoundingClientRect();
+      return Number(getComputedStyle(el).opacity)>0&&box.width>0&&box.height>0&&box.right>view.left&&box.left<view.right&&box.bottom>view.top&&box.top<view.bottom;
+     }),others:others.map(el=>el.dataset.fishId),hudOutside:!world.contains(controls)};
    });
+   assert.ok(school.ids.length>=2&&school.ids.length<=3,'two or three residents swim at the cast location');
+   assert.equal(school.ids[0],school.species);assert.deepEqual(school.others,school.ids.slice(1));
+   assert.ok(school.others.every(id=>school.local.includes(id))&&school.visible.every(Boolean),'the local bystanders are on screen');
+   assert.ok(school.hudOutside,'the action buttons stay outside the zoomed scene');
+   const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));
+   await shot('lure-residents-'+mode);
    for(let tap=0;tap<3;tap++){
     const tick=await page.evaluate(()=>battle.lureMotion.ticks);
     await press('#pull');await page.waitForFunction(before=>battle.lureMotion.ticks>=before+2,tick);
    }
-   assert.equal(await page.evaluate(()=>battle.phase),'lure','three short flicks do not summon a fish');
-   await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');await hold(false);
+   assert.equal(await page.evaluate(()=>battle.phase),'lure','three short flicks do not start a chase');
+   await hold(true);await page.waitForFunction(()=>battle?.phase==='interest');
+   if(mobile&&viewport.width===844&&mode==='gauge'){
+    const zoom=()=>{
+     const world=document.querySelector('#lureWaterWorld');
+     return world.getBoundingClientRect().width/world.offsetWidth;
+    };
+    await page.waitForFunction(()=>{const world=document.querySelector('#lureWaterWorld');return world.getBoundingClientRect().width/world.offsetWidth>=1.07;});
+    await page.emulateMedia({reducedMotion:'reduce'});assert.ok(Math.abs(await page.evaluate(zoom)-1)<.02,'reduced motion keeps the wide view');
+    await page.emulateMedia({reducedMotion:'no-preference'});
+    await page.waitForFunction(()=>battle.phase==='lure');
+    await hold(false);
+    await page.waitForFunction(()=>{const w=document.querySelector('#lureWaterWorld');return Math.abs(w.getBoundingClientRect().width/w.offsetWidth-1)<.01;});
+    assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual,'declining leaves the same fish in the water');
+    await shot('lure-declined');
+    // Track the second pursuit separately from the previous camera easing back out.
+    await page.evaluate(()=>{window.v241LureSamples.length=0;});
+    await hold(true);await page.waitForFunction(()=>battle.phase==='interest');
+   }
+   await hold(false);
    const display=await page.evaluate(()=>({remaining:battle.lureMotion.distance*(1-battle.lureMotion.travel),label:document.querySelector('#distanceLabel').innerText,meter:parseFloat(document.querySelector('#distanceMeter').style.width)}));assert.ok(display.remaining<startMeters);
    assert.equal(display.label,'スプーンまで '+Math.ceil(display.remaining)+'m');assert.ok(display.meter<100);
-   const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('lure-approach-'+mode);
+   await page.waitForFunction(()=>{const world=document.querySelector('#lureWaterWorld');return world.getBoundingClientRect().width/world.offsetWidth>=1.07;});
+   await shot('lure-approach-'+mode);
    await page.waitForFunction(()=>battle?.phase==='bite');assert.equal(await page.evaluate(()=>battle.reeling),false);await press('#pull');
    assert.equal(await page.evaluate(()=>battle.phase),'fight');assert.equal(await page.evaluate(()=>battle.reeling),false);assert.equal(await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen])),individual);
    const samples=await page.evaluate(()=>window.v241LureSamples);
    fs.writeFileSync(path.join(directory,`${mobile?'touch':'pc'}-${viewport.width}x${viewport.height}-lure-${mode}-approach.json`),JSON.stringify(samples));
-   const first=samples[0],last=samples.at(-1);
-   assert.ok(first?.x>=90&&first.x-first.spoonX>=20,'first visible mouth enters at the right edge and away from the spoon: '+JSON.stringify(first));
-   assert.ok(samples.some(p=>p.x>p.spoonX+5&&p.x<first.x-5),'the visible fish actually covers the intervening water');
+   const wide=samples.filter(p=>p.phase==='lure'),chase=samples.filter(p=>p.phase==='interest');
+   const first=wide[0],last=samples.at(-1);
+   const noticed=wide.filter(p=>p.noticing);
+   assert.ok(noticed.some(p=>p.art==='turn'||Math.sign(p.projection)===Math.sign(p.spoonX-p.x)),'the resident visibly turns or faces the spoon while still in the wide view');
+   assert.ok(wide.every(p=>Math.abs(p.zoom-1)<.02),'patrol and the preliminary turn keep the wide view');
+   assert.ok(samples.every(p=>p.visible&&p.same),'the same target stays visible from patrol to bite');
+   assert.ok(first.others.some(([id,x,y],i)=>wide.some(p=>Math.hypot(p.others[i][1]-x,p.others[i][2]-y)>.1)), 'other local fish swim during the search');
+   const distances=chase.map(p=>Math.hypot(p.x-p.spoonX,p.y-p.spoonY));
+   assert.ok(distances.some(d=>d>5)&&distances.some(d=>d>1&&d<distances[0]),'the fish crosses the intervening water');
+   assert.ok(chase.some(p=>p.zoom>=1.07&&p.zoom<=1.12&&p.pivotError<3),'the camera eases in slightly around the spoon during pursuit');
+   assert.ok(chase.every(p=>p.hud.every((value,i)=>Math.abs(value-first.hud[i])<2)),'water zoom must not move or enlarge the touch controls');
    for(let i=1;i<samples.length;i++){
     const previous=samples[i-1],current=samples[i],ticks=Math.max(1,current.tick-previous.tick);
-    assert.ok(Math.hypot(current.x-previous.x,current.y-previous.y)<=5*ticks,'visible pursuit jumps: '+JSON.stringify([previous,current]));
+    assert.ok(Math.hypot(current.centerX-previous.centerX,current.centerY-previous.centerY)<=6*ticks,
+     'no teleport from patrol into the chase: '+JSON.stringify([previous,current]));
    }
    assert.equal(last.phase,'bite');
    assert.ok(Math.hypot(last.x-last.spoonX,last.y-last.spoonY)<3,'the rendered mouth reaches the spoon before the hook prompt: '+JSON.stringify(last));

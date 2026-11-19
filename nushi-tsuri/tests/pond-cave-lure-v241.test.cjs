@@ -55,7 +55,7 @@ test('spoon speed ramps up, a stop sinks it and draws a chasing fish, continuous
   for(let i=0;i<60&&!visible;i++)visible=F.stepLure(lure,true).reveal;
   assert.ok(visible,'a sustained retrieve attracts a follower');
   assert.equal(lure.speed,1);const before={x:lure.x,y:lure.y};assert.ok(lure.x<78);
-  const fast={...lure},pause={...lure};let fastResult,pausedResult;
+  const fast=structuredClone(lure),pause=structuredClone(lure);let fastResult,pausedResult;
   for(let i=0;i<60;i++){fastResult=F.stepLure(fast,true,true);if(fastResult.depart)break;}
   for(let i=0;i<60;i++){pausedResult=F.stepLure(pause,false,true);if(pausedResult.bite)break;}
   assert.ok(fastResult.depart);assert.ok(pausedResult.bite);assert.ok(pause.y>before.y);assert.equal(pause.speed,0);
@@ -71,20 +71,41 @@ for(const mode of ['gauge','nushi'])test('native lure input keeps one specimen a
     assert.equal(w.document.querySelector('#distanceLabel').style.display,'block');
     assert.equal(w.document.querySelector('#distanceMeter').parentElement.style.display,'block');
     assert.match(w.document.querySelector('#distanceLabel').textContent,/スプーンまで/);
+    const sprite=w.document.querySelector('#battleFish');
+    const world=w.document.querySelector('#lureWaterWorld');
+    const mouthPosition=()=>read(w,'[battleMouthAndHook(false).rootX/10,battleMouthAndHook(false).rootY/5]');
+    const original=read(w,'[battle.f.id,battle.specimen,battle.lureMotion.residents.map(r=>r.id)]');
+    assert.equal(original[2][0],original[0]);
+    assert.ok(original[2].length>=2&&original[2].length<=3,'fish are already present at splash');
+    assert.equal(sprite.style.opacity,'1');
+    assert.equal(world.classList.contains('lure-focused'),false);
+    const initial=mouthPosition();
     for(let twitch=0;twitch<3;twitch++){
       w.pressBattleAction();
       for(let i=0;i<3;i++)w.updateLurePresentation();
       w.releaseBattleAction();
       for(let i=0;i<2;i++)w.updateLurePresentation();
-      assert.equal(read(w,'battle.phase'),'lure','short twitches move the spoon without summoning a fish');
-      assert.equal(w.document.querySelector('#battleFish').style.opacity,'0');
+      assert.equal(read(w,'battle.phase'),'lure','short twitches do not start a chase');
+      assert.equal(sprite.style.opacity,'1','the nearby fish is visible before it decides to chase');
+      assert.equal(world.classList.contains('lure-focused'),false);
     }
+    assert.notDeepEqual(mouthPosition(),initial,'the focal fish moves while the spoon is being worked');
     w.pressBattleAction();
-    w.eval('for(let i=0;i<60&&battle.phase==="lure";i++)updateLurePresentation()');
+    let previous=mouthPosition(),sawNotice=false;
+    for(let i=0;i<60&&read(w,'battle.phase')==='lure';i++){
+      if(read(w,'battle.lureMotion.noticing')){
+        sawNotice=true;
+        assert.equal(world.classList.contains('lure-focused'),false,'turning to look is still a wide view');
+      }
+      const prior=previous;
+      w.updateLurePresentation();
+      previous=mouthPosition();
+      assert.ok(Math.hypot(previous[0]-prior[0],previous[1]-prior[1])<5,'the visible resident starts its chase in place');
+    }
+    assert.ok(sawNotice,'the nearby fish acknowledges the spoon before chasing it');
     assert.equal(read(w,'battle.phase'),'interest');
-    const mouthPosition=()=>read(w,'[battleMouthAndHook(false).rootX/10,battleMouthAndHook(false).rootY/5]');
-    let previous=mouthPosition();
-    assert.ok(previous[0]-read(w,'battle.lureMotion.x')>15,'the first visible fish starts well away from the spoon');
+    assert.equal(world.classList.contains('lure-focused'),true);
+    assert.deepEqual(read(w,'[battle.f.id,battle.specimen,battle.lureMotion.residents.map(r=>r.id)]'),original);
     const specimen=read(w,'[battle.f.id,battle.specimen]'),position=read(w,'battle.lureMotion');w.pauseBattle();w.eval('for(let i=0;i<100;i++)updateLurePresentation()');assert.deepEqual(read(w,'battle.lureMotion'),position);w.resumeBattle();
     let pursuitTicks=0;
     while(pursuitTicks<75&&read(w,'battle.phase')==='interest'){
@@ -100,6 +121,48 @@ for(const mode of ['gauge','nushi'])test('native lure input keeps one specimen a
     w.pressBattleAction();assert.equal(read(w,'battle.phase'),'fight');assert.equal(read(w,'battle.reeling'),false);w.pressBattleAction();assert.equal(read(w,'battle.reeling'),false);
     w.releaseBattleAction();w.pressBattleAction();assert.equal(read(w,'battle.reeling'),true);assert.equal(read(w,'battle.fightMode'),mode);assert.deepEqual(read(w,'[battle.f.id,battle.specimen]'),specimen);
     const after=read(w,'[s.baits,s.lures,s.gameMinutes]');assert.deepEqual(after.slice(0,2),before.slice(0,2));assert.equal(after[2]-before[2],10);assert.deepEqual(app.errors,[]);
+  }finally{app.dispose();}
+});
+
+test('residents come from the water and depth of this cast, then a failed chase stays in the same school',()=>{
+  const app=boot({...seed(),hp:100,ownedRods:['bamboo','lureRod'],selectedRod:'lureRod',fishingMethod:'lure',lures:{silverSpoon:1}}),w=app.window;
+  try{
+    const world=w.document.querySelector('#lureWaterWorld');
+    for(const [spot,water,cast,roll,expectedCount] of [
+      ['mountain-highPond-deep',{zone:'lake',mountainType:'highPond'},80,.2,2],
+      ['offshore-east-mid',{zone:'sea',offshoreType:'east'},50,.8,3],
+    ]){
+      w.eval('Math.random=()=>'+roll);
+      w.cast(water);w.beginFishing();
+      w.eval('battle.cast='+cast+';launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');
+      assert.equal(read(w,'battle.spot'),spot);
+      const ids=read(w,'battle.lureMotion.residents.map(r=>r.id)');
+      assert.equal(ids.length,expectedCount);
+      const allowed=read(w,'Object.keys(fishingSpotById(battle.spot).weights)');
+      assert.ok(ids.every(id=>allowed.includes(id)),spot+' local residents: '+ids.join(', '));
+      assert.equal(ids[0],read(w,'battle.f.id'));
+      const bystanders=[...w.document.querySelectorAll('#lureResidents .lure-resident')];
+      assert.deepEqual(bystanders.map(el=>el.dataset.fishId),ids.slice(1));
+      w.eval('var originalResidents=battle.lureMotion.residents.slice()');
+      const specimen=read(w,'battle.specimen');
+      w.pressBattleAction();
+      w.eval('for(let i=0;i<75&&battle.phase==="lure";i++)updateLurePresentation()');
+      assert.equal(read(w,'battle.phase'),'interest');
+      assert.equal(world.classList.contains('lure-focused'),true);
+      w.eval('for(let i=0;i<90&&battle.phase==="interest";i++)updateLurePresentation()');
+      w.releaseBattleAction();
+      assert.equal(read(w,'battle.phase'),'lure','full speed lets the fish abandon this chase');
+      assert.equal(world.classList.contains('lure-focused'),false,'return to the wide water when pursuit ends');
+      assert.ok(read(w,'originalResidents.every((r,i)=>r===battle.lureMotion.residents[i])'));
+      assert.deepEqual(read(w,'[battle.f.id,battle.specimen]'),[ids[0],specimen]);
+      w.endBattle();
+      assert.equal(w.document.querySelectorAll('#lureResidents .lure-resident').length,0);
+    }
+    w.eval('s.fishingMethod="bait";s.selectedRod="bamboo";cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');
+    assert.equal(read(w,'battle.phase'),'wait','bait casts use their normal float');
+    assert.equal(world.classList.contains('lure-focused'),false);
+    assert.equal(w.document.querySelectorAll('#lureResidents .lure-resident').length,0);
+    assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}
 });
 
