@@ -20888,10 +20888,8 @@
       function renderLureWater(motion, phase, spoonX, spoonY) {
         const world = $("#lureWaterWorld");
         const focused = phase === "interest" || phase === "bite";
-        if (focused) {
-          const target = motion.residents[0];
-          world.style.transformOrigin = `${(target.x + spoonX) / 2}% ${(target.y + spoonY) / 2}%`;
-        }
+        // Zoom about the displayed spoon, including its short-viewport depth clamp.
+        world.style.transformOrigin = `${spoonX}% ${spoonY}%`;
         world.classList.toggle("lure-focused", focused);
         const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
         for (const sprite of $("#lureResidents").children) {

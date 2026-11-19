@@ -14,7 +14,7 @@
   position: absolute;
   inset: 0;
   pointer-events: none;
-  transition: transform 480ms ease-in-out, transform-origin 480ms ease-out;
+  transition: transform 480ms ease-in-out;
 }
 .lure-search #lureWaterWorld { z-index: 0; }
 #lureWaterWorld.lure-focused { transform: scale(1.1); }

@@ -16,7 +16,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./cast-tackle.css?v=252-59&sha256=ada4cb9c77c38c7a6bc26ac3b35b41e0225416a6d1e2094cd434e11fcf0708e7",
   "./event-ceremony.css?v=186-1&sha256=c1a491665203e2f75c356e7bbb83f87ec87c89affe055271c98f334aabd2efe7",
   "./fortune-capsules.css?v=185-1&sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3",
-  "./fishing-duel.css?v=252-76&sha256=049ee92f3591d002925bee9ba911624db0c535c985311d8dafd24c8b6b9d1092",
+  "./fishing-duel.css?v=252-76&sha256=a7eab2cb0e3872a520c7c070e190d2bc551fa414a9ac4ac6e265814e79a0a7c1",
   "./catch-memories.css?v=229-1&sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402",
   "./compact-ui.css?v=252-64&sha256=beed293a6fc27bebea769f128707696f79a2848b5e8dec15f0a7fe9f046253cb",
   "./offshore-island.css?v=252-71&sha256=0d09c178e93ded1d236e908c1cdad8fb6776b6af25c4e13792ae3d1568548f50",
