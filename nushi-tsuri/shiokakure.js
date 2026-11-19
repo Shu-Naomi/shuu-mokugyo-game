@@ -15,7 +15,8 @@
   e.last={x:s.x,y:s.y};e.cooldown=Math.max(0,e.cooldown-dt);
   e.time+=dt;e.quiet=moved?0:e.quiet+dt;return visible(e);
  }
- function ready(e,s,water){return eligible(s)&&!!e.last&&Math.hypot(s.x-e.last.x,s.y-e.last.y)<.15&&near(s,4.5)&&near(water,1.7)&&visible(e)&&e.quiet>=4000;}
+ // fishingWater samples the near edge of the pool, up to 2.3 units from its center.
+ function ready(e,s,water){return eligible(s)&&!!e.last&&Math.hypot(s.x-e.last.x,s.y-e.last.y)<.15&&near(s,4.5)&&near(water,2.3)&&visible(e)&&e.quiet>=4000;}
  function claim(e,observed,b,distance){
   if(!observed||b.practice)return false;
   // Existing near end of the casting meter is the gentle drop. No new button.

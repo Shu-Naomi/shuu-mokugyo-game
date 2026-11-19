@@ -12,6 +12,20 @@ test('reachable tide-pool, sustained observation, movement scare and repeating a
  const cycle=H.create();observe(cycle,shore,145);assert.equal(H.visible(cycle),false);observe(cycle,shore,40);assert.ok(H.visible(cycle));
  assert.equal(H.ready(e,{...shore,tournament:{}},water),false);
 });
+for(const [x,y,route,endX] of [[43,29,['down'],43],[39,33,['right','down'],43],[47,29,['down'],47]])test('short bait cast after walking from '+x+','+y,()=>{
+ const app=boot({...seed(),...shore,x,y,hp:100,ownedRods:['tideMaster'],selectedRod:'tideMaster',selectedBait:'smallShrimp',selectedHook:'medium',baits:{smallShrimp:20}}),w=app.window;
+ try{
+  for(const direction of route)w.eval('move('+JSON.stringify(direction)+')');
+  assert.deepEqual(read(w,'[s.x,s.y,s.direction]'),[endX,33,'down']);
+  w.eval('for(let i=0;i<30;i++)ShuShiokakure.step(shiokakureEncounter,s)');
+  assert.equal(read(w,"ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,'up'))"),false);
+  w.eval('action();beginFishing();clearInterval(timer)');
+  assert.equal(read(w,'battle.cast'),18);
+  w.eval('launchSurfaceCast();settleSurfaceCast()');
+  assert.deepEqual(read(w,'[battle.f.id,battle.phase]'),['shiokakure','wait']);
+  assert.deepEqual(app.errors,[]);
+ }finally{app.dispose();}
+});
 for(const method of ['bait','lure'])test('gentle drop is exclusive to observed pool: '+method,()=>{
  const app=boot({...seed(),...shore,hp:100,ownedRods:['tideMaster','lureRod'],selectedRod:method==='lure'?'lureRod':'tideMaster',fishingMethod:method,lures:{silverSpoon:10},selectedBait:'shell',selectedHook:'large',baits:{shell:10}}),w=app.window;
  try{
