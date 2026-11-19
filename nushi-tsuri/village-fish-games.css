@@ -1,0 +1,540 @@
+.village-fish-games.modal {
+  --fish-ink: #eff0de;
+  --fish-muted: #c5d4c5;
+  --fish-gold: #f4d694;
+  inset: max(12px, env(safe-area-inset-top)) max(12px, env(safe-area-inset-right)) max(12px, env(safe-area-inset-bottom)) max(12px, env(safe-area-inset-left));
+  width: auto;
+  height: auto;
+  max-width: 930px;
+  max-height: 590px;
+  margin: auto;
+  padding: 0;
+  overflow: hidden;
+  border: 4px double #d4bb7b;
+  border-radius: 10px;
+  background: #162c36;
+  color: var(--fish-ink);
+  box-shadow: 0 5px 0 #152123, 0 12px 28px #081b2480;
+}
+.village-fish-panel {
+  display: grid;
+  grid-template-rows: auto minmax(0, 1fr);
+  height: 100%;
+  min-height: 0;
+}
+.village-fish-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 17px;
+  border-bottom: 2px solid #a08a5b;
+  background: #203d43;
+}
+#villageFishTitle {
+  margin: 0;
+  font-size: clamp(17px, 2.15vw, 24px);
+  line-height: 1.25;
+  color: var(--fish-gold);
+}
+.village-fish-games button, .village-fish-games select {
+  min-height: 40px;
+  max-width: 100%;
+  padding: 5px 14px;
+  font-weight: 700;
+  font-family: inherit;
+  font-size: 14px;
+  line-height: 1.25;
+  border-radius: 6px;
+  cursor: pointer;
+}
+.village-fish-games button:focus-visible, .village-fish-games select:focus-visible {
+  outline: 3px solid #ffdf93;
+  outline-offset: -3px;
+}
+.village-fish-games button:disabled {
+  opacity: .65;
+  cursor: default;
+}
+.village-fish-games select {
+  min-width: 0;
+  color: var(--fish-ink);
+  background-color: #162e38;
+  border: 1px solid #99ada1;
+  font-weight: 600;
+}
+.village-fish-header button {
+  flex: 0 0 auto;
+  background: #253c42;
+  color: #f5dfad;
+  border: 1px solid #c0a777;
+  box-shadow: inset 0 -2px #14282e;
+}
+.village-fish-body {
+  min-height: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  padding: clamp(10px, 1.75vw, 20px);
+}
+.village-fish-body [hidden] { display: none !important; }
+
+.dan-race {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-height: 100%;
+  height: 100%;
+}
+.dan-race-entry, .dan-race-foot {
+  display: flex;
+  align-items: center;
+  gap: 9px 14px;
+  min-width: 0;
+}
+.dan-race-entry label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--fish-gold);
+}
+.dan-race-entry select {
+  max-width: min(55vw, 420px);
+  text-overflow: ellipsis;
+}
+.dan-race-course {
+  position: relative;
+  isolation: isolate;
+  flex: 1 0 115px;
+  min-height: 115px;
+  min-width: 0;
+  overflow: hidden;
+  border: 3px double #91a782;
+  border-radius: 5px;
+  background-color: #24554d;
+  background-image: linear-gradient(0deg, #16363565, #164c524a 48%, #32686025), url("assets/underwater-river-shallow-v64.jpg");
+  background-size: cover;
+  background-position: center 52%;
+  image-rendering: pixelated;
+}
+.dan-race-course-name {
+  position: absolute;
+  z-index: 1;
+  top: 4px;
+  left: 7px;
+  padding: 2px 6px;
+  border-left: 2px solid #cbb573;
+  background: #173736e8;
+  color: #f5e4af;
+  font-size: 11px;
+  line-height: 1.2;
+}
+.dan-race-course::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  border-top: 3px solid #a9d2b76b;
+  border-bottom: 4px solid #355b40;
+  background: linear-gradient(0deg, transparent 26%, #d6f1da35 26% 26.5%, transparent 26.5% 49.6%, #d6f1da35 49.6% 50.1%, transparent 50.1% 72%, #d6f1da35 72% 72.5%, transparent 72.5%);
+}
+.dan-race-gate {
+  position: absolute;
+  left: 41.8%;
+  width: 8.7%;
+  inset-block: 0;
+  pointer-events: none;
+}
+.dan-race-gate::before, .dan-race-gate::after {
+  content: "";
+  position: absolute;
+  inset-inline: 0;
+  height: 42%;
+  background: repeating-linear-gradient(72deg, #254a37 0 8px, #52814b 8px 12px, #6d9955 12px 14px, #396b46 14px 21px);
+  clip-path: polygon(0 0, 100% 0, 95% 49%, 88% 73%, 83% 70%, 83% 38%, 72% 68%, 69% 93%, 61% 100%, 58% 80%, 61% 48%, 51% 66%, 44% 91%, 39% 88%, 43% 51%, 33% 72%, 28% 78%, 24% 69%, 29% 38%, 18% 56%, 12% 66%, 9% 59%, 14% 27%, 5% 44%);
+}
+.dan-race-gate::before { top: 0; }
+.dan-race-gate::after { bottom: 0; transform: rotate(180deg); }
+.dan-race-finish {
+  position: absolute;
+  left: 94%;
+  inset-block: 0;
+  width: 7px;
+  background: repeating-conic-gradient(#f7e9b5 0 25%, #304641 0 50%) 0 0 / 7px 7px;
+  box-shadow: -2px 0 #344a40, 1px 0 #bad7ba;
+}
+.dan-race-runner {
+  position: absolute;
+  z-index: 2;
+  width: clamp(45px, 6vw, 77px);
+  height: clamp(23px, 3vw, 39px);
+  transform: translate(-77%, -50%);
+  pointer-events: none;
+}
+.dan-race-runner[data-racer="player"] { z-index: 3; }
+.dan-race-fish {
+  display: block;
+  position: relative;
+  width: 100%;
+  height: 100%;
+  filter: drop-shadow(1px 2px 0 #0c2c31a8);
+}
+.dan-race-fish canvas, .dan-race-fish img, .fish-card-art canvas, .fish-card-art img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.dan-race-tag {
+  position: absolute;
+  top: 90%;
+  left: 50%;
+  transform: translateX(-50%);
+  max-width: clamp(65px, 12vw, 108px);
+  padding: 1px 5px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  border: 1px solid #98b7aa;
+  border-radius: 3px;
+  background: #163a40f2;
+  color: #fff9df;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.15;
+}
+.dan-race-runner[data-racer="player"] .dan-race-tag {
+  border-color: #f0ca6c;
+  background: #ffe2a1;
+  color: #382d24;
+}
+.dan-race-foot { flex-wrap: wrap; }
+.dan-race-status {
+  flex: 1 1 200px;
+  margin: 0;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.village-fish-games[data-game="cards"] {
+  max-height: 470px;
+  background: #193b37;
+  --fish-muted: #d4d8bc;
+}
+.village-fish-games[data-game="cards"] .village-fish-header {
+  background: #283e33;
+  border-bottom-color: #ba9861;
+}
+.fish-card-shop {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  height: 100%;
+  min-width: 0;
+}
+.fish-card-shop h3, .fish-card-shop p { margin: 0; }
+.fish-game-options, .card-hand, .card-showdown {
+  display: flex;
+  align-items: stretch;
+  gap: clamp(8px, 1.4vw, 16px);
+}
+.fish-game-options {
+  flex-wrap: wrap;
+}
+.fish-game-options > * {
+  flex: 1 1 150px;
+}
+.village-fish-games .fish-game-choice {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 7px;
+  min-width: 0;
+  border: 3px double #a48b5e;
+  padding: 12px;
+  background: #ead9b3;
+  color: #293d33;
+  box-shadow: 0 3px 0 #122923;
+}
+.fish-game-choice small, .fish-playing-card small {
+  font-weight: 600;
+  font-size: 12px;
+}
+.card-situation, .card-verdict {
+  padding: 8px 12px;
+  border-left: 3px solid #cfaf70;
+  background: #142f2c;
+  color: #f4e7c8;
+  line-height: 1.45;
+}
+.card-situation strong, .card-verdict strong { color: #ffe49d; }
+.card-hand, .card-showdown {
+  justify-content: center;
+  align-items: stretch;
+}
+.village-fish-games .fish-playing-card {
+  position: relative;
+  display: flex;
+  flex: 0 1 190px;
+  flex-direction: column;
+  align-items: stretch;
+  justify-content: center;
+  gap: 3px;
+  min-width: 0;
+  padding: 6px;
+  text-align: center;
+  color: #273d36;
+  background: #eee0bc;
+  border: 4px double #b69c68;
+  border-radius: 5px;
+  box-shadow: 0 3px 0 #0d2623;
+}
+.fish-card-art {
+  display: block;
+  position: relative;
+  align-self: stretch;
+  width: 100%;
+  min-width: 0;
+  height: clamp(44px, 12vh, 90px);
+  overflow: hidden;
+  image-rendering: pixelated;
+}
+.fish-playing-card:has(.fish-card-art), .fish-game-choice:has(.fish-card-art) {
+  background: linear-gradient(150deg, #fff0c9, #dfcda3);
+}
+.fish-card-art::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  border: 1px solid #a3926b;
+  background: linear-gradient(#1c45433b, #23443a3d), url("assets/underwater-sea-shallow-v65.jpg") center 56% / cover;
+}
+.fish-card-art > canvas, .fish-card-art > img { z-index: 1; }
+.fish-card-art > canvas { position: relative; }
+.village-fish-games .fish-playing-card[aria-pressed="true"] {
+  border-color: #ffe696;
+  box-shadow: 0 0 0 2px #c2a166, 0 3px 0 2px #142b24;
+}
+.card-tackle, .fish-game-actions, .card-album-select {
+  display: flex;
+  align-items: center;
+  gap: 6px 10px;
+  flex-wrap: wrap;
+}
+.card-tackle button {
+  border: 1px solid #9caa89;
+  background: #26493e;
+  color: #f3eace;
+  box-shadow: inset 0 -2px #1a332d;
+}
+.card-tackle button[aria-pressed="true"] {
+  border-color: #ffdfa1;
+  background: #e7c989;
+  color: #2d382d;
+}
+.fish-game-actions { justify-content: flex-end; }
+.card-album-select select { max-width: 100%; }
+.card-verdict { font-size: 14px; }
+.village-fish-games [data-race-phase="result"] ol {
+  margin: 0;
+  padding: 0;
+  list-style-position: inside;
+}
+@media (max-height: 500px) {
+  .village-fish-games.modal {
+    inset: max(3px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-right)) max(3px, env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-left));
+  }
+  .village-fish-header { padding: 3px 11px; }
+  #villageFishTitle { font-size: 17px; }
+  .village-fish-body { padding: 6px 11px 8px; }
+  .village-fish-games button, .village-fish-games select { min-height: 36px; padding: 4px 10px; font-size: 13px; }
+  .fish-card-shop, .dan-race { gap: 6px; }
+  .village-fish-games .fish-game-choice { padding: 6px; gap: 4px; }
+  .village-fish-games .fish-playing-card { padding: 4px; border-width: 3px; }
+  .card-situation, .card-verdict { padding: 5px 8px; }
+  .card-situation, .card-verdict, .dan-race-status { font-size: 13px; }
+}
+@media (max-width: 550px) {
+  .village-fish-games.modal {
+    inset-inline: max(4px, env(safe-area-inset-left)) max(4px, env(safe-area-inset-right));
+  }
+  .village-fish-header { padding-inline: 8px; }
+  .village-fish-body { padding-inline: 8px; }
+  .fish-game-options { gap: 7px; }
+  .dan-race-foot { gap: 6px; }
+  .dan-race-entry { flex-wrap: wrap; gap: 6px; }
+  .dan-race-runner { width: 42px; height: 22px; }
+  .dan-race-tag { max-width: 62px; font-size: 10px; }
+}
+
+.card-prompt, .card-hint { line-height: 1.45; overflow-wrap: anywhere; }
+.card-prompt { font-size: 14px; }
+.card-hint { color: var(--fish-muted); font-size: 12px; }
+.card-choice-caption { display: grid; gap: 2px; }
+.card-choice-caption small { color: #485547; }
+.fish-game-choice[data-card-action="album"] {
+  color: #f6e8b9;
+  border-color: #bfa26c;
+  background: linear-gradient(90deg, #223f38 0 5px, #a68b58 5px 6px, #2b5144 6px 100%);
+}
+.fish-game-choice[data-card-action="album"] small { color: #dae3c3; }
+.fish-game-options .fish-card-art { height: clamp(65px, 17vh, 128px); }
+.fish-card-name { font-size: 15px; line-height: 1.2; overflow-wrap: anywhere; }
+.fish-card-imprint { border-top: 1px solid #aa9c71; color: #364f42; }
+.fish-playing-card.is-commemorative .fish-card-art::before {
+  background-image: linear-gradient(#1c45433b, #23443a3d), url("assets/underwater-river-shallow-v64.jpg");
+}
+.village-fish-games .fish-playing-card.is-foil {
+  border-color: #ffdc77;
+  background: linear-gradient(120deg, #d8ab58 0%, #f7e5ab 21%, #f1d184 48%, #fff1bd 68%, #d6a954 100%);
+}
+.card-foil-mark {
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  z-index: 2;
+  padding: 2px 4px;
+  border: 1px solid #e9c26d;
+  border-radius: 3px;
+  color: #fff1b4;
+  background: #514426;
+}
+.card-verdict span, .card-verdict strong { display: block; }
+.card-verdict strong { margin-bottom: 3px; }
+.card-album-select { color: var(--fish-gold); font-size: 13px; font-weight: 700; }
+.card-album-select select { flex: 1; min-width: 64px; }
+.village-fish-games .fish-game-actions button:not(.fish-game-primary), #danRaceAgain {
+  background: #284a40;
+  border: 1px solid #b8b391;
+  color: var(--fish-ink);
+  box-shadow: inset 0 -2px #17362d;
+}
+
+@media (min-width: 600px) {
+  .fish-card-shop { height: auto; min-height: 100%; align-content: center; }
+  .fish-card-shop[data-card-screen="shop"] { justify-content: center; }
+  .fish-card-shop[data-card-screen="play"] {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto auto;
+    grid-template-areas:
+      "score score"
+      "hand prompt"
+      "hand tackle"
+      "hand hint"
+      "picker actions";
+    align-items: center;
+  }
+  .card-situation { grid-area: score; }
+  [data-card-screen="play"] .card-prompt { grid-area: prompt; }
+  .card-hand { grid-area: hand; align-self: stretch; }
+  [data-card-screen="play"] .card-album-select { grid-area: picker; }
+  .card-tackle { grid-area: tackle; }
+  [data-card-screen="play"] .card-hint { grid-area: hint; }
+  [data-card-screen="play"] .fish-game-actions { grid-area: actions; justify-content: flex-start; }
+  .fish-card-shop[data-card-screen="result"] { justify-content: center; }
+  .card-showdown .fish-playing-card { flex-basis: 220px; }
+  .fish-card-shop[data-card-screen="album"]:has(.fish-playing-card) {
+    display: grid;
+    grid-template-columns: minmax(145px, .7fr) minmax(0, 1.3fr);
+    grid-template-rows: repeat(4, auto);
+    grid-template-areas:
+      "preview picker"
+      "preview prompt"
+      "preview count"
+      "preview actions";
+    align-items: center;
+  }
+  [data-card-screen="album"] .fish-playing-card { grid-area: preview; }
+  [data-card-screen="album"] .card-album-select { grid-area: picker; }
+  [data-card-screen="album"] .card-prompt { grid-area: prompt; }
+  [data-card-screen="album"] .card-hint { grid-area: count; }
+  [data-card-screen="album"] .fish-game-actions { grid-area: actions; justify-content: flex-start; }
+}
+@media (max-width: 599px) {
+  .fish-card-shop { height: auto; }
+  [data-card-screen="album"] .fish-playing-card { flex: none; align-self: center; width: min(220px, 100%); }
+  .fish-card-shop .fish-game-choice { flex: 1 1 120px; }
+}
+
+.dan-race[data-race-phase="result"] { justify-content: center; }
+.dan-race-result {
+  display: grid;
+  grid-template-columns: minmax(85px, .8fr) minmax(150px, 1.2fr);
+  grid-template-rows: auto 1fr;
+  gap: 8px 16px;
+  align-items: center;
+  padding: clamp(8px, 2vw, 20px);
+  border: 3px double #9eaa89;
+  border-radius: 5px;
+  background: #203f40;
+}
+.dan-race-result h3 {
+  grid-column: 2;
+  margin: 0;
+  font-size: clamp(18px, 2.4vw, 26px);
+  line-height: 1.3;
+  color: var(--fish-gold);
+  overflow-wrap: anywhere;
+}
+.dan-race-result ol {
+  grid-column: 2;
+  counter-reset: dan-place;
+  font-size: 13px;
+}
+.dan-race-result li {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding: 5px 1px;
+  border-bottom: 1px solid #75938566;
+  counter-increment: dan-place;
+}
+.dan-race-result li::before { content: counter(dan-place); color: #d7bf80; font-weight: bold; }
+.dan-race-result li b { overflow-wrap: anywhere; }
+.dan-race-result li span { margin-left: auto; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dan-race-portrait {
+  grid-column: 1;
+  grid-row: 1 / 3;
+  display: block;
+  position: relative;
+  min-height: 82px;
+  height: 100%;
+  overflow: hidden;
+  border: 2px solid #809680;
+  border-radius: 4px;
+}
+.dan-race-portrait::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(#153c4440, #16454440), url("assets/underwater-river-shallow-v64.jpg") center / cover;
+}
+.dan-race-portrait canvas, .dan-race-portrait img {
+  position: absolute;
+  inset: 6% 5%;
+  width: 90%;
+  height: 88%;
+  object-fit: contain;
+  image-rendering: pixelated;
+}
+.dan-race-runner.is-spurting::before {
+  content: "";
+  position: absolute;
+  right: 86%;
+  top: 32%;
+  width: 28%;
+  height: 2px;
+  background: #d8efcb;
+  box-shadow: -4px 6px #b0dad0, 3px 12px #90ccc1;
+}
+@media (max-height: 500px) {
+  .dan-race-result { padding: 8px; gap: 4px 12px; }
+  .dan-race-result li { padding: 3px 1px; }
+  .dan-race-result h3 { font-size: 18px; }
+}

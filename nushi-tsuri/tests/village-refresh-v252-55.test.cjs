@@ -57,7 +57,7 @@ test('all functioning building walls and entrance identities stay in their estab
    {id:'fish-market',left:146,right:174,top:86,bottom:103},{id:'harbor-shop',left:126,right:145,top:104,bottom:121}
   ]);
   assert.deepEqual(read(w,'worldLandmarks.map(p=>p.id)'),['farmhouse','west-shrine','riao-tcg-shop','yaoya','quest-board','diner','main-shrine','watermill','fish-market','harbor-shop']);
-  assert.equal(read(w,'worldLandmarks.find(p=>p.id==="west-shrine").message'),'ダンの魚レース場は準備中。今はまだレースに参加できません。');
+  assert.match(read(w,'worldLandmarks.find(p=>p.id==="west-shrine").hint'),/ダンの魚レース場/);
   assert.equal(read(w,'worldLandmarks.find(p=>p.id==="watermill").petShop'),true);
   assert.equal(saveKey,'nushi-inugoya-v2');assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}

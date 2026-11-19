@@ -47,7 +47,6 @@ module.exports=async function villageRefresh(url,screen){
  let browser,context,page,buttonPresses=0,walked=0;
  const value=q=>page.evaluate(q=>JSON.parse(JSON.stringify(eval(q))),q);
  const state=()=>value('({region:s.mapRegion,x:s.x,y:s.y,direction:s.direction})');
- const progress=()=>value('Object.fromEntries(Object.entries(s).filter(([key])=>!["x","y","direction","log"].includes(key)))');
  // Rural travel legitimately records a story visit. Resource checks still
  // include time, inventory, pet stock, quest completions and equipment.
  const economy=()=>value('({money:s.money,hp:s.hp,time:s.gameMinutes,baits:s.baits,caught:s.caught,items:s.items,ingredients:s.cookingIngredients,meals:s.preparedMeals,ownedRods:s.ownedRods,rodCopies:s.rodCopies,rodParts:s.rodParts,equipment:s.equipment,lures:s.lures,dogTreats:s.dogTreats,dogToys:s.dogToys,pet:s.petLife,quests:s.questCompletions,memories:s.catchMemories,records:s.fishCatchRecords,mode:s.fightMode})');
@@ -107,35 +106,77 @@ module.exports=async function villageRefresh(url,screen){
   if(target.landmark)assert.equal(await value('nearbyWorldLandmark()?.id||null'),target.landmark);
   visits.push({name:target.name,steps:route.length,...at});await feetAt(target.name);
  }
- async function assertNotice(front,expected){
+ const gameModal='#villageFishGames',exitGame=gameModal+' [data-close]';
+ async function openGame(front){
   assert.equal(await value('nearbyWorldLandmark()?.id||null'),front.id);
   assert.equal((await state()).direction,'up');
-  assert.match(await page.locator('#hint').textContent(),new RegExp(front.name+'.*準備中'));
-  await press('#action');await fieldReady();
-  assert.match(await page.locator('#rescueToast.show').textContent(),new RegExp(front.name+'.*準備中'));
-  assert.match(await page.locator('#rescueToast.show').textContent(),/今はまだ.*できません/);
-  const notice=await page.locator('#rescueToast.show').evaluate(n=>{const r=n.getBoundingClientRect();return {visible:r.width>0&&r.height>0,inside:r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1};});
-  assert.ok(notice.visible&&notice.inside,'notice remains readable on this viewport');
+  assert.match(await page.locator('#hint').textContent(),new RegExp(front.name));
+  await press('#action');
+  await page.locator(gameModal+'.open[data-game="'+front.game+'"]').waitFor();
   assert.notEqual(await value('currentSoundScene().music'),'shrine');
-  assert.deepEqual(await progress(),expected,'notice cannot alter resources, story, quests, pet inventory or schema');
  }
- async function visitNotice(front){
+ async function canPress(q){
+  const visible=await page.locator(q).evaluate(n=>{
+   const r=n.getBoundingClientRect(),hit=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);
+   return !n.disabled&&r.width>0&&r.height>0&&r.left>=-1&&r.top>=-1&&r.right<=innerWidth+1&&r.bottom<=innerHeight+1&&(hit===n||n.contains(hit));
+  });
+  assert.ok(visible,'button should be visible without scrolling: '+q);
+ }
+ async function race(){
+  await page.locator('#danEntrantPicker').selectOption('rental-funa');
+  await canPress('#danRaceStart');await press('#danRaceStart');
+  await page.clock.runFor(2200);
+  await canPress('#danRaceSpurt');
+  if(mobile)await press('#danRaceSpurt');
+  else {await page.keyboard.press('z');await page.clock.runFor(50);}
+  assert.equal(await page.locator('#danRaceSpurt').isDisabled(),true,'the single signal is spent');
+  await shot('race-running');
+  await page.clock.runFor(24000);
+  await page.locator('[data-race-phase="result"]').waitFor();
+  assert.match(await page.locator('#danRaceRank').innerText(),/[1-3一二三]/);
+  await canPress('#danRacePrint');await press('#danRacePrint');
+  assert.equal(await value('s.villageFishGames.records.length'),1);
+  assert.equal(await value('s.villageFishGames.records[0].species'),'funa');
+  return await value('s.villageFishGames.records[0].id');
+ }
+ async function cards(recordId){
+  const action=name=>'[data-card-action="'+name+'"]';
+  await press('[data-card-challenge="harbor-lead"]');
+  await canPress('[data-card-tackle="net"]');await press('[data-card-tackle="net"]');
+  await canPress(action('play'));await press(action('play'));
+  assert.ok(await value('s.villageFishGames.cleared.includes("harbor-lead")'));
+  await shot('cards-net-verdict');
+  await press(action('shop'));await press(action('album'));
+  await page.locator('select[data-card-record]').selectOption(recordId);
+  await canPress(action('practice'));await press(action('practice'));
+  const ownCard=page.locator('.fish-playing-card[data-record-id="'+recordId+'"]');
+  assert.ok((await ownCard.innerText()).includes(await value('s.villageFishGames.records[0].name')));
+  await shot('cards-race-keepsake');
+  await press('[data-card-tackle="net"]');await canPress(action('play'));await press(action('play'));
+  await page.locator('.card-verdict').waitFor();assert.equal(await ownCard.count(),1);
+ }
+ async function visitActivity(front,play){
   await walkTo({name:front.key+'-arrival',x:front.x,y:front.y,direction:'up',landmark:front.id});
-  await controlsFit('#action,[data-move]','field controls');const before=await progress();
-  await shot(front.key+'-front');
-  for(let i=0;i<3;i++)await assertNotice(front,before);
-  await shot(front.key+'-prepared-notice');
+  await controlsFit('#action,[data-move]','field controls');const before=await economy();
+  await shot(front.key+'-front');await openGame(front);await shot(front.key+'-inside');
+  const result=await play();
+  await canPress(exitGame);await press(exitGame);await fieldReady();
   const savedAt=await state(),record=await page.evaluate(()=>ShuVillageProductionSession.read(1));
-  assert.equal(record.ok,true);assert.ok(record.raw,'autosave exists in the modern generation');
-  const saved=JSON.parse(record.raw);await originalUnchanged();
-  assert.deepEqual({x:saved.x,y:saved.y,direction:saved.direction},{x:savedAt.x,y:savedAt.y,direction:savedAt.direction},'A autosaved the actual approach');
+  assert.equal(record.ok,true);assert.ok(record.raw,'modern-slot save exists');
+  const saved=JSON.parse(record.raw),games=await value('s.villageFishGames');await originalUnchanged();
+  assert.deepEqual(saved.villageFishGames,games,'minigame progress is saved in the active slot');
+  assert.deepEqual({x:saved.x,y:saved.y,direction:saved.direction},{x:savedAt.x,y:savedAt.y,direction:savedAt.direction});
   for(const type of await value('window.__villageRefreshPointers'))pointerTypes.add(type);
   await page.reload({waitUntil:'domcontentloaded'});await start();
-  assert.deepEqual(await state(),savedAt);assert.deepEqual(await progress(),before);await originalUnchanged();
-  await feetAt(front.key+'-reload');await assertNotice(front,before);await shot(front.key+'-reloaded');
-  const moved=await step('down');assert.notDeepEqual([moved.actual.x,moved.actual.y],[moved.before.x,moved.before.y],'repeat A never traps movement');
+  assert.deepEqual(await state(),savedAt);assert.deepEqual(await economy(),before);await originalUnchanged();
+  assert.deepEqual(await value('s.villageFishGames'),games);
+  await feetAt(front.key+'-reload');await openGame(front);
+  if(mobile)await press(exitGame);else {await page.keyboard.press('Escape');await page.clock.runFor(60);}
+  await fieldReady();
+  const moved=await step('down');assert.notDeepEqual([moved.actual.x,moved.actual.y],[moved.before.x,moved.before.y],'leaving the venue restores field movement');
   assert.notEqual(await value('nearbyWorldLandmark()?.id||null'),front.id,'turning away stops targeting the front');
-  await fieldReady();assert.deepEqual(await progress(),before);await feetAt(front.key+'-walk-away');
+  await fieldReady();assert.deepEqual(await economy(),before);await feetAt(front.key+'-walk-away');
+  return result;
  }
  async function openExisting(target,modal,closeSelector,inspect){
   await walkTo(target);const at=await state(),before=await economy();await shot(target.name+'-front');
@@ -169,8 +210,8 @@ module.exports=async function villageRefresh(url,screen){
   await originalUnchanged();assert.equal(await value('s.villageLayoutVersion'),'reference-11016-v1');
   assert.deepEqual(await value('({x:s.x,y:s.y,direction:s.direction})'),reference.exits.home.return,'legacy position migrates to connected source-image road');
   const initial=await economy();
-  await visitNotice({...front('ダンの魚レース場','west-shrine'),key:'dan',id:'west-shrine'});
-  await visitNotice({...front('リアオの魚TCGショップ','riao-tcg-shop'),key:'riao',id:'riao-tcg-shop'});
+  const printed=await visitActivity({...front('ダンの魚レース場','west-shrine'),key:'dan',id:'west-shrine',game:'race'},race);
+  await visitActivity({...front('リアオの魚TCGショップ','riao-tcg-shop'),key:'riao',id:'riao-tcg-shop',game:'cards'},()=>cards(printed));
   // Walk the public strip beside the shop rather than passing through it.
   await walkTo({name:'riao-public-forecourt',...reference.anchor(1568,250),direction:'right'});await shot('riao-road-clear');
   await openExisting(front('asuar','watermill'),'#petLifeModal','#petLifeModal [data-pet-action="close"]',async()=>{
@@ -199,7 +240,7 @@ module.exports=async function villageRefresh(url,screen){
   assert.ok(pointerTypes.has(mobile?'touch':'mouse'),'real '+(mobile?'touch':'mouse')+' controls were exercised');
   assert.ok(walked>20,'routes must contain real movement');assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);assert.deepEqual(requestErrors,[]);
   await originalUnchanged();
-  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],noticeReloads:2,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
+  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],activityReloads:2,printedAndPlayedRaceCard:true,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
   fs.writeFileSync(path.join(dir,prefix+'-result.json'),JSON.stringify(result,null,2));console.log('VILLAGE_REFRESH_PASS '+JSON.stringify(result));
  }catch(error){
   const failure={status:'failed',screen,message:error.message,at:page?await state().catch(()=>null):null,buttonPresses,walked,visits,errors,httpErrors,requestErrors,aborted};
