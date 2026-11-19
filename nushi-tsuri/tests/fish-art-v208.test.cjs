@@ -50,7 +50,11 @@ test('battle, catch, aquarium and dex use the new species cells and seven headin
         if(mode==='turn')assert.match(c.dataset.atlasKey,/\|7\|3\|/);
       }
       w.eval(`renderCatchFishLife(fish.find(f=>f.id==='${id}'),5);drawAquariumSprite($('#homeAquariumFish'),'${id}',4,{spriteMode:'turn',yaw:Math.PI/2,turnFrame:2})`);
-      assert.equal(w.document.querySelector('#catchFish canvas').dataset.artSpecies,id);
+      const catchFish=w.document.querySelector('#catchFish'),catchCanvas=catchFish.querySelector('canvas');
+      if(id==='shiokakure'){
+        assert.match(catchFish.style.backgroundImage,/shiokakure-catch\.png/);
+        assert.equal(catchCanvas.style.display,'none');
+      }else assert.equal(catchCanvas.dataset.artSpecies,id);
       assert.match(w.document.querySelector('#homeAquariumFish canvas').dataset.atlasKey,/\|7\|3\|/);
     }
     assert.deepEqual(read(w,'s'),before);assert.deepEqual(app.errors,[]);

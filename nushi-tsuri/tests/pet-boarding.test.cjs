@@ -111,8 +111,13 @@ test('malformed raw active and boarded lists remain bootable instead of spreadin
 });
 test('all changed boarding modules have matching fresh cache URLs',()=>{
  const fs=require('node:fs'),path=require('node:path'),html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');
- for(const file of ['pet-life.js','pet-notebook.js']){assert.ok(html.includes(file+'?v=252-27'),file);assert.ok(sw.includes(file+'?v=252-27'),file);}
- for(const file of ['pet-life-ui.js','pet-life.css']){assert.ok(html.includes(file+'?v=252-60'),file);assert.ok(sw.includes(file+'?v=252-60'),file);}
+ const offline=require('./release-assets.cjs').releaseAssets();
+ const minimumRevision={'pet-life.js':27,'pet-notebook.js':27,'pet-life-ui.js':79,'pet-life.css':60};
+ for(const [file,minimum] of Object.entries(minimumRevision)){
+  const url=new URL(offline.assertPageAsset(file),'https://game.test/');
+  const [major,minor]=url.searchParams.get('v').split('-').map(Number);
+  assert.ok(major>252||major===252&&minor>=minimum,file+' uses the updated module or a newer revision');
+ }
  // Later cosmetic releases keep the boarding modules but advance the worker.
  const release=html.match(/serviceWorker\.register\("\.\/sw\.js\?v=([0-9-]+)"\)/)?.[1];
  assert.ok(release,'versioned service worker registration');
