@@ -22,7 +22,8 @@ async function run(url,screen){
   await page.clock.runFor(4800);await shot('map-observed');
   assert.equal(await value('fieldMenuIsOpen()'),false);
   assert.equal(await value('ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))'),true);
-  const shape=await page.locator('#shiokakureContour').boundingBox();assert.ok(shape&&shape.width>4&&shape.width<25&&shape.height<18);
+  const shape=await page.locator('#shiokakureContour').boundingBox(),map=await page.locator('#map').boundingBox();
+  assert.ok(shape&&map&&shape.width>0&&Math.abs(shape.width-map.width*.01)<1&&Math.abs(shape.height-shape.width*.7)<1);
   if(screen.width===844){
    for(let tick=0;tick<180&&!await page.locator('#shiokakureContour').isHidden();tick++)await page.clock.runFor(170);
    assert.ok(await page.locator('#shiokakureContour').isHidden());await shot('pool-absent');
