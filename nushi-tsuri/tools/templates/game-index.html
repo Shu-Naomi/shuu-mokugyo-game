@@ -6534,7 +6534,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-77</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-78</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7471,7 +7471,7 @@
       </div>
     </section>
     <script src="coast-voyage.js?v=252-72"></script>
-    <script src="shiokakure.js?v=252-77"></script>
+    <script src="shiokakure.js?v=252-78"></script>
     <script src="offshore-island.js?v=252-74"></script>
     <script src="world-life.js?v=252-74"></script>
     <script src="field-guide.js?v=252-55"></script>
@@ -15255,7 +15255,7 @@
         const active=!villageSaveSuspended&&gameStarted&&!document.hidden&&!battle&&!document.querySelector('.modal.open')&&!fieldMenuIsOpen()&&ShuShiokakure.eligible(s);
         if(!active){if(canvas)canvas.hidden=true;if(!battle&&!document.hidden&&!ShuShiokakure.eligible(s))ShuShiokakure.step(shiokakureEncounter,s);return;}
         if(advance)ShuShiokakure.step(shiokakureEncounter,s);
-        if(!canvas){canvas=document.createElement('canvas');canvas.id='shiokakureContour';canvas.width=160;canvas.height=80;canvas.setAttribute('aria-hidden','true');canvas.style.cssText='position:absolute;pointer-events:none;z-index:3;width:3.6%;height:3.2%;min-width:30px;min-height:15px;transform:translate(-50%,-50%)';$('#map').append(canvas);}
+        if(!canvas){canvas=document.createElement('canvas');canvas.id='shiokakureContour';canvas.width=10;canvas.height=7;canvas.setAttribute('aria-hidden','true');canvas.style.cssText='position:absolute;pointer-events:none;z-index:3;width:1%;height:auto;image-rendering:pixelated;transform:translate(-50%,-50%)';$('#map').append(canvas);}
         canvas.style.left=`${worldToMapX(45)}%`;canvas.style.top=`${worldToMapY(36)}%`;canvas.hidden=!ShuShiokakure.visible(shiokakureEncounter);
         ShuShiokakure.paint(canvas,shiokakureEncounter,matchMedia('(prefers-reduced-motion: reduce)').matches);
       }
@@ -22243,10 +22243,10 @@
           : mode === "mouth"
             ? fishMouthFrameOverrides[f.id]?.[mouthState] ?? requestedFrame
             : requestedFrame;
-        const cells = usesHandDrawnMouth
+        const cells = f.id === "shiokakure" ? 8 : usesHandDrawnMouth
           ? swimCells
           : mode === "mouth" ? 3 : 8;
-        const asset = mode === "mouth"
+        const asset = f.id === "shiokakure" ? "assets/shiokakure-catch.png" : mode === "mouth"
           ? requestedFrame === 2
             ? fishMouthAssets[f.id]
             : fishMouthPartAssets[f.id] || fishMouthAssets[f.id]
@@ -22327,7 +22327,7 @@
           : specimen?.tierId === "giant"
             ? "giant"
             : "";
-        const badge = badgeOverride || (ShuRegional.legendary(f.id) ? "🌟 LEGEND!" : "🎣 GET!");
+        const badge = badgeOverride || (ShuRegional.legendary(f.id) ? "🌟 ぬしを釣り上げた！" : "🎣 GET!");
         const badgeArt = badge.startsWith("🎓") ? "graduation" : badge.startsWith("🌟") ? "sparkle" : "fishingRod";
         setIconText($("#catchBadge"), UiExtraArt.get(badgeArt), badge.replace(/^(?:🎓|🌟|🎣)\s*/u, ""));
         $("#catchTitle").textContent = f.name;
@@ -23595,7 +23595,7 @@
           specimenDetail || catchDetail + hazardDetail,
           specimen
             ? ShuRegional.legendary(f.id)
-              ? `🌟 ${specimen.tierLabel} LEGEND!`
+              ? "🌟 ぬしを釣り上げた！"
               : `🎣 ${specimen.tierLabel} GET!`
             : "",
           specimen,
@@ -24751,7 +24751,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-77").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-78").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

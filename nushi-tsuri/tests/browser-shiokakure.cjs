@@ -22,7 +22,13 @@ async function run(url,screen){
   await page.clock.runFor(4800);await shot('map-observed');
   assert.equal(await value('fieldMenuIsOpen()'),false);
   assert.equal(await value('ShuShiokakure.ready(shiokakureEncounter,s,ShuOffshore.fishingWater(s.x,s.y,s.direction))'),true);
-  const shape=await page.locator('#shiokakureContour').boundingBox();assert.ok(shape&&shape.width>=30&&shape.height>=15);
+  const shape=await page.locator('#shiokakureContour').boundingBox();assert.ok(shape&&shape.width>4&&shape.width<25&&shape.height<18);
+  if(screen.width===844){
+   for(let tick=0;tick<180&&!await page.locator('#shiokakureContour').isHidden();tick++)await page.clock.runFor(170);
+   assert.ok(await page.locator('#shiokakureContour').isHidden());await shot('pool-absent');
+   for(let tick=0;tick<60&&await page.locator('#shiokakureContour').isHidden();tick++)await page.clock.runFor(170);
+   assert.ok(await page.locator('#shiokakureContour').isVisible());await shot('pool-pebble');
+  }
   await page.emulateMedia({reducedMotion:'reduce'});await page.clock.runFor(170);await shot('map-reduced');await page.emulateMedia({reducedMotion:'no-preference'});
   for(const mode of ['gauge','nushi']){
    const method=mode==='nushi'?'lure':'bait';
@@ -52,7 +58,19 @@ async function run(url,screen){
     const ui=await page.evaluate(()=>({phase:battle?.phase,cue:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),tension:parseFloat(document.querySelector('#ten').style.width)||0}));if(ui.phase!=='fight')break;
     const wish=!ui.leap&&(mode==='gauge'?ui.tension<(previous?45:20):['slack','pulling'].includes(ui.cue));if(wish!==previous){queue.push({at:ticks*120+600,on:wish});previous=wish;}if(ui.cue==='warning'&&last!=='warning')warnings++;last=ui.cue;while(queue.length&&queue[0].at<=ticks*120)await hold(queue.shift().on);await page.clock.runFor(120);
    }
-   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.smallShrimp'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');await shot(mode+'-caught');results.push({mode,method,specimen,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
+   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.smallShrimp'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');if(screen.width===844&&method==='bait'){
+    await page.clock.runFor(600);
+    assert.equal((await page.locator('#catchBadge').innerText()).trim(),'ぬしを釣り上げた！');
+    assert.ok((await page.locator('#catchDetail').innerText()).includes(specimen.cmText+'cm'));
+    const frames=new Set();
+    for(let i=0;i<10;i++){
+     const art=await value("({asset:getComputedStyle(document.querySelector('#catchFish')).backgroundImage,step:catchAnimationStep%10,frame:document.querySelector('#catchFish').dataset.catchFrame})");
+     assert.match(art.asset,/shiokakure-catch\.png/);assert.ok(Number(art.frame)>=0&&Number(art.frame)<8);
+     frames.add(art.step);await shot('catch-cycle-'+art.step);await page.clock.runFor(130);
+    }
+    assert.equal(frames.size,10);
+   }
+   await shot(mode+'-caught');results.push({mode,method,specimen,seconds:ticks*.12,realInput:true,reactionMs:600,warnings});
   }
   await page.evaluate(()=>hideCatchCard());
   await page.evaluate(()=>save());const saved=await value('({caught:s.caught[troutSpecies],fish:s.petLife.fish,memories:s.catchMemories[troutSpecies]})');await page.reload({waitUntil:'domcontentloaded'});await start();await page.evaluate(id=>window.troutSpecies=id,species);assert.deepEqual(await value('({caught:s.caught[troutSpecies],fish:s.petLife.fish,memories:s.catchMemories[troutSpecies]})'),saved);
