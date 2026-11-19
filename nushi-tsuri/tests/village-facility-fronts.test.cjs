@@ -2,50 +2,47 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 
-// Notice-only facilities may change the log, position and facing, not the
-// save schema or any resources, progress, pet stock or activity state.
-const progress=w=>read(w,'Object.fromEntries(Object.entries(s).filter(([key])=>!["x","y","direction","log"].includes(key)))');
+// Looking inside either venue is free. Minigame progress is checked separately.
+const progress=w=>read(w,'Object.fromEntries(Object.entries(s).filter(([key])=>!["x","y","direction","log","villageFishGames"].includes(key)))');
 const stand=(w,x,y,direction='up')=>w.eval(`s.x=${x};s.y=${y};s.direction=${JSON.stringify(direction)};render()`);
 const fronts=[
  {id:'west-shrine',name:'ダンの魚レース場',x:35,y:60},
  {id:'riao-tcg-shop',name:'リアオの魚TCGショップ',x:74,y:39.5},
 ];
 
-for(const mode of ['gauge','nushi'])test('race and TCG fronts show honest notices, not activities or purchases: '+mode,()=>{
+function assertVenue(w,game){
+ assert.ok(w.document.querySelector('#villageFishGames.open[data-game="'+game+'"]'),game+' opens at its own front');
+}
+for(const mode of ['gauge','nushi'])test('race and card games open for free in both fishing modes: '+mode,()=>{
  const app=boot({...seed(),fightMode:mode,soundEnabled:false}),w=app.window;let saved,expected;
  try{
   w.Math.random=()=>.999999;
   for(const front of fronts){
    stand(w,front.x,front.y);
    assert.equal(w.nearbyWorldLandmark().id,front.id);
-   assert.match(w.document.querySelector('#hint').textContent,new RegExp(front.name+'.*準備中'));
-   const before=progress(w),keys=read(w,'Object.keys(s)');
-   assert.notEqual(w.currentSoundScene().music,'shrine','new venue does not inherit prayer ambience');
-   for(let i=0;i<3;i++){
-    w.action();
-    assert.match(read(w,'s.log[0]'),new RegExp(front.name+'.*準備中'));
-    assert.match(w.document.querySelector('#rescueToast').textContent,/今はまだ.*できません/);
-    assert.equal(w.document.querySelector('.modal.open'),null,'no game, shop or interior opens');
-    assert.equal(read(w,'battle'),null);
-    assert.equal(read(w,'petUi.active'),false);
-    assert.deepEqual(read(w,'Object.keys(s)'),keys,'no new save fields');
-    assert.deepEqual(progress(w),before,'notices retain all resources and progress');
+   assert.match(w.document.querySelector('#hint').textContent,new RegExp(front.name));
+   const before=progress(w),game=front.id==='west-shrine'?'race':'cards';
+   assert.notEqual(w.currentSoundScene().music,'shrine','race venue does not inherit prayer ambience');
+   for(let i=0;i<2;i++){
+    w.action();assertVenue(w,game);
+    assert.equal(read(w,'battle'),null);assert.equal(read(w,'petUi.active'),false);
+    w.close();assert.equal(w.document.querySelector('.modal.open'),null);
+    assert.deepEqual(progress(w),before,'looking around does not spend or award resources');
+    assert.equal(read(w,'s.villageFishGames?.records?.length||0'),0);
+    assert.equal(read(w,'s.villageFishGames?.cleared?.length||0'),0);
    }
-   // Close/back does not reveal an interior, and reading again remains safe.
-   w.close();w.action();assert.equal(w.document.querySelector('.modal.open'),null);
-   assert.deepEqual(progress(w),before);
   }
   expected=progress(w);w.save();saved=JSON.parse(w.localStorage.getItem(saveKey));
   assert.equal(saveKey,'nushi-inugoya-v2');assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const resumed=boot(saved);try{
   assert.deepEqual(progress(resumed.window),expected);
-  resumed.window.action();assert.match(read(resumed.window,'s.log[0]'),/リアオの魚TCGショップは準備中/);
+  resumed.window.action();assertVenue(resumed.window,'cards');
   assert.deepEqual(progress(resumed.window),expected);assert.deepEqual(resumed.errors,[]);
  }finally{resumed.dispose();}
 });
 
-test('TCG-facing notice wins over nearby forage without disabling forage on the public road',()=>{
+test('TCG shop entrance wins over nearby forage without disabling forage on the public road',()=>{
  const app=boot({...seed(),soundEnabled:false}),w=app.window;
  try{
   // Place a test-only sparkle on the clear apron to protect action priority
@@ -53,7 +50,7 @@ test('TCG-facing notice wins over nearby forage without disabling forage on the 
   w.eval(`const cycle=ensureForageCycle();cycle.active['grass-02']='wildGreens';cycle.harvested=cycle.harvested.filter(id=>id!=='grass-02');foragePointData.find(p=>p.id==='grass-02').walkablePosition={x:74,y:44};`);
   stand(w,74,39.5);assert.equal(w.nearbyForagePoint().point.id,'grass-02');
   const before=progress(w);w.action();assert.deepEqual(progress(w),before);
-  assert.match(w.document.querySelector('#hint').textContent,/リアオ.*準備中/);
+  assertVenue(w,'cards');w.close();
   stand(w,74,39.5,'down');assert.notEqual(w.nearbyWorldLandmark()?.id,'riao-tcg-shop');
   w.action();assert.equal(read(w,"s.forageCycle.active['grass-02'] || null"),null);
   assert.ok(read(w,'s.items.wildGreens')>(before.items.wildGreens||0),'nearby forage still works when not reading the front');
@@ -97,7 +94,7 @@ test('enlarged shop walls, tight retained props and the cleared inn connector ma
  }finally{app.dispose();}
 });
 
-test('Dan pools and outer fences block feet while only the dry porch reads an up-facing notice',()=>{
+test('Dan pools and outer fences block feet while only the dry porch opens the race',()=>{
  const app=boot({...seed(),soundEnabled:false}),w=app.window;
  try{
   assert.deepEqual(read(w,'danRaceFront'),{
@@ -128,13 +125,13 @@ test('Dan pools and outer fences block feet while only the dry porch reads an up
    assert.equal(w.isWalkableWorldSegment(ax,ay,bx,by),false,'cannot cross a side pool or fence');
   w.Math.random=()=>.999999;stand(w,35,68);const before=progress(w);
   for(let i=0;i<3;i++)w.move('up');assert.deepEqual(read(w,'[s.x,s.y]'),[35,56]);
-  w.action();assert.match(read(w,'s.log[0]'),/ダンの魚レース場は準備中/);
+  w.action();assertVenue(w,'race');w.close();
   for(let i=0;i<3;i++)w.move('down');assert.deepEqual(read(w,'[s.x,s.y]'),[35,68]);
   assert.deepEqual(progress(w),before);assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });
 
-test('every four-unit phase can approach, read and leave both notice fronts using real movement',()=>{
+test('every four-unit phase can approach, enter and leave both venues using real movement',()=>{
  const app=boot({...seed(),soundEnabled:false}),w=app.window;
  try{
   w.Math.random=()=>.999999;
@@ -143,7 +140,7 @@ test('every four-unit phase can approach, read and leave both notice fronts usin
     stand(w,x,y);const before=progress(w);
     w.move('up');assert.deepEqual(read(w,'[s.x,s.y]'),[x,y-4],id+' phase '+ox+','+oy);
     assert.equal(w.nearbyWorldLandmark().id,id);
-    w.action();assert.match(read(w,'s.log[0]'),/準備中/);assert.equal(w.document.querySelector('.modal.open'),null);
+    w.action();assertVenue(w,id==='west-shrine'?'race':'cards');w.close();
     w.move('down');assert.deepEqual(read(w,'[s.x,s.y]'),[x,y]);assert.deepEqual(progress(w),before);
    }
   }
@@ -296,7 +293,7 @@ test('the moved NPC lane, local forage recovery and direct inn connector preserv
   const route=['down','down','right','right','right','right','down','right','right','right','up'];
   const expected=[[43,39],[43,40],[47,40],[51,40],[55,40],[59,40],[59,44],[63,44],[67,44],[71,44],[71,40]];
   for(const [i,d]of route.entries()){w.move(d);assert.deepEqual(read(w,'[s.x,s.y]'),expected[i],'normal button-step handler follows cleared inn connector');}
-  assert.equal(w.nearbyWorldLandmark()?.id,'riao-tcg-shop');w.action();assert.match(read(w,'s.log[0]'),/リアオの魚TCGショップは準備中/);
+  assert.equal(w.nearbyWorldLandmark()?.id,'riao-tcg-shop');w.action();assertVenue(w,'cards');w.close();
   assert.deepEqual(progress(w),before);assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
 });

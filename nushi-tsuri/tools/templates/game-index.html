@@ -6460,6 +6460,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
+    <link rel="stylesheet" href="village-fish-games.css?v=252-79" />
     <link rel="stylesheet" href="pet-life.css?v=252-60" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
@@ -6534,7 +6535,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-78</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-79</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7378,6 +7379,12 @@
           </div>
         </div>
       </main>
+      <section class="modal village-fish-games" id="villageFishGames" role="dialog" aria-modal="true" aria-labelledby="villageFishTitle">
+        <div class="panel village-fish-panel">
+          <header class="village-fish-header"><h2 id="villageFishTitle"></h2><button type="button" data-close>村へ戻る</button></header>
+          <div id="villageFishBody" class="village-fish-body"></div>
+        </div>
+      </section>
     </section>
     <section class="modal world-house" id="worldHouse" role="dialog" aria-modal="true" aria-labelledby="worldHouseTitle">
       <header><h2 id="worldHouseTitle">水辺の民家</h2><button data-close>外へ出る</button></header>
@@ -7456,7 +7463,9 @@
     <script src="fish-motion.js?v=252-71"></script>
     <script src="aquarium-life.js?v=252-71"></script>
     <script src="compact-ui.js?v=252-64"></script>
-    <script src="pet-life-ui.js?v=252-60"></script>
+    <script src="pet-life-ui.js?v=252-79"></script>
+    <script src="village-fish-cards.js?v=252-79"></script>
+    <script src="village-fish-race.js?v=252-79"></script>
     <script src="tackle-balance.js?v=252-71"></script>
     <script src="fishing-duel.js?v=252-76"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -14965,16 +14974,14 @@
           {
             id: "west-shrine", x: 36, y: 61, radius: 8,
             interaction: danRaceFront.interaction, facing: "up",
-            hint: "ダンの魚レース場（準備中）。Aで案内を見る。",
-            message: "ダンの魚レース場は準備中。今はまだレースに参加できません。",
-            noticeOnly: true,
+            hint: "ダンの魚レース場。Aで水草の門に出走する。",
+            fishGame: "race",
           },
           {
             id: "riao-tcg-shop", ...riaoShopFront.door, radius: 4,
             interaction: riaoShopFront.interaction, facing: "up",
-            hint: "リアオの魚TCGショップ（準備中）。Aで案内を見る。",
-            message: "リアオの魚TCGショップは準備中。今はまだ対戦やカードの売買はできません。",
-            noticeOnly: true,
+            hint: "リアオの魚TCGショップ。Aで魚札の卓につく。",
+            fishGame: "cards",
           },
           {
             id: "yaoya", x: 79, y: 77, radius: 8,
@@ -15026,8 +15033,7 @@
           questBoardInteractionBounds,riaoShopFront,structureBounds}=ShuVillageReference.geometry);
         worldLandmarks=worldLandmarks.map(landmark=>({...landmark,...ShuVillageReference.landmarks[landmark.id]}));
         const riao=worldLandmarks.find(p=>p.id==='riao-tcg-shop');
-        riao.hint=globalThis.ShuVillageProductionSession?'リアオの魚TCGショップ（右上のカード看板・準備中）。Aで案内。':'リアオの魚TCGショップ（右上の魚看板へ仮配置・準備中）。Aで案内。';
-        if(!globalThis.ShuVillageProductionSession)riao.message+=' この原画試作では右上の魚看板の建物に仮配置しています。';
+        riao.hint='リアオの魚TCGショップ（右上のカード看板）。Aで魚札の卓につく。';
         const board=worldLandmarks.find(p=>p.id==='quest-board');
         board.hint='依頼掲示板（右上の立て看板）。Aで依頼を見る。';
         if(!globalThis.ShuVillageProductionSession){
@@ -18325,7 +18331,7 @@
           ? `${ShuRivals.character(rival.id).name}がいる。Aで挨拶する。`
           : tournamentNpc
           ? `${ShuTournamentNpcs.byId(tournamentNpc.id).name}がいる。Aで話しかける。`
-          : landmark?.noticeOnly
+          : landmark?.fishGame
           ? landmark.hint
           : foragePoint
           ? "小さなキラキラがある。Aで拾う。"
@@ -18865,6 +18871,105 @@
         setDogIdle(modes[Math.floor(Math.random() * modes.length)]);
         idleActionTimer = setTimeout(randomDogIdle, 8000 + Math.random() * 6000);
       }
+      let villageFishController = null;
+      let villageFishRunSerial = 0;
+      function villageFishBook() {
+        const data = s.villageFishGames;
+        return {
+          records: Array.isArray(data?.records) ? data.records.filter(r =>
+            r && typeof r.id === "string" && fish.some(f => f.id === r.species) &&
+            typeof r.name === "string" && [1, 2, 3].includes(r.rank)) : [],
+          cleared: Array.isArray(data?.cleared) ? data.cleared.filter(id => typeof id === "string") : [],
+          foils: Array.isArray(data?.foils) ? data.foils.filter(id => typeof id === "string") : [],
+        };
+      }
+      function storeVillageFishBook(book) {
+        if (villageSaveSuspended) return false;
+        const previous = s.villageFishGames;
+        s.villageFishGames = book;
+        if (save()) return true;
+        if (previous === undefined) delete s.villageFishGames;
+        else s.villageFishGames = previous;
+        return false;
+      }
+      function villageSpareCards(book, species) {
+        // Each subsequent print of this species includes a spare ordinary card.
+        const prints = book.records.filter(record => record.species === species).length;
+        return Math.max(0, prints - 1 - Number(book.foils.includes(species)));
+      }
+      function stopVillageFishGame() {
+        villageFishController?.stop();
+        villageFishController = null;
+        $("#villageFishBody").replaceChildren();
+      }
+      function openVillageFishGame(game) {
+        if (villageSaveSuspended || battle || document.querySelector(".modal.open")) return;
+        const modal = $("#villageFishGames"), host = $("#villageFishBody");
+        const isRace = game === "race";
+        const entrants = s.petLife.fish.map(specimen => {
+          const generation = petUi.generationOf(specimen);
+          return {
+            uid: specimen.uid, species: specimen.species, specimen,
+            name: ShuPetLife.individualName(specimen, petCatalog),
+            speciesName: ShuPetLife.displayName(specimen, petCatalog),
+            generation, generationLabel: generation === null ? "世代不明" : `第${generation}世代`,
+          };
+        });
+        let currentRun = null;
+        const context = {
+          entrants: () => entrants,
+          fishName: species => petCatalog.find(f => f.id === species)?.name ?? "魚",
+          drawFish: (element, species, frame = 0, specimen = null) =>
+            drawAquariumSprite(element, species, frame, {spriteMode: "swim", yaw: 0}, specimen),
+          newRunId() {
+            currentRun = globalThis.crypto?.randomUUID?.() ?? `race-${Date.now()}-${++villageFishRunSerial}`;
+            return currentRun;
+          },
+          printCard(result) {
+            if (villageSaveSuspended || !currentRun || result.runId !== currentRun ||
+                ![1, 2, 3].includes(result.rank)) return null;
+            const book = villageFishBook();
+            const printed = book.records.find(record => record.id === currentRun);
+            if (printed) return printed;
+            const entrant = entrants.find(f => f.uid === result.uid && f.species === result.species);
+            if (!entrant && !(result.rental && result.uid === "rental-" + result.species &&
+                petCatalog.some(f => f.id === result.species))) return null;
+            const f = entrant?.specimen;
+            const record = {
+              id: currentRun, uid: entrant?.uid ?? null, species: result.species,
+              name: entrant?.name ?? result.name, generation: entrant?.generation ?? null,
+              course: result.course, rank: result.rank, day: gameClockAt(s.gameMinutes).day,
+              rental: !entrant,
+              specimen: f ? {species: f.species, length: f.length, origin: f.origin,
+                generation: f.generation, mutation: ShuAquariumMutations.normalize(f.mutation)} : null,
+            };
+            book.records.push(record);
+            return storeVillageFishBook(book) ? record : null;
+          },
+          getRecords: () => villageFishBook().records,
+          getCleared: () => villageFishBook().cleared,
+          markCleared(id) {
+            const book = villageFishBook();
+            if (book.cleared.includes(id)) return true;
+            book.cleared.push(id);
+            return storeVillageFishBook(book);
+          },
+          getDuplicateCount: species => villageSpareCards(villageFishBook(), species),
+          hasFoil: species => villageFishBook().foils.includes(species),
+          foilCard(species) {
+            const book = villageFishBook();
+            if (book.foils.includes(species) || !villageSpareCards(book, species)) return false;
+            book.foils.push(species);
+            return storeVillageFishBook(book);
+          },
+        };
+        modal.dataset.game = game;
+        $("#villageFishTitle").textContent = isRace ? "ダンの魚レース場" : "リアオの魚札の卓";
+        releaseHeldInputs();
+        open("villageFishGames");
+        villageFishController = (isRace ? ShuVillageFishRace : ShuVillageFishCards).open(host, context);
+        (host.querySelector(isRace ? "#danRaceStart" : "button:not(:disabled)") || modal.querySelector("[data-close]")).focus({preventScroll:true});
+      }
       function action() {
         scheduleFieldMenu();
         if ($("#tournamentTalk").classList.contains("open")) return renderTournamentTalk(true);
@@ -18885,13 +18990,7 @@
         if (rival && (!tournamentNpc || rival.distance < tournamentNpc.distance)) return openRivalTalk(rival.id);
         if (tournamentNpc) return openTournamentTalk(tournamentNpc.id);
         const landmark = nearbyWorldLandmark();
-        // A front notice must not collect nearby forage or start another
-        // activity. These exteriors have no game, trade or interior yet.
-        if (landmark?.noticeOnly) {
-          log(landmark.message);
-          showRescueToast(landmark.message, 4200);
-          return;
-        }
+        if (landmark?.fishGame) return openVillageFishGame(landmark.fishGame);
         // Reference facility fronts take priority over nearby random forage.
         const foragePoint = ShuVillageReference.enabled && (landmark || isAtSamShopEntrance())
           ? null : nearbyForagePoint();
@@ -23638,7 +23737,7 @@
         // Counter both axes of the world scroller, including vertical focus
         // scrolling, so the title and close button stay below the HUD.
         const world = $("#world");
-        modal.style.transform = id === "tournamentTalk" ? "none"
+        modal.style.transform = id === "tournamentTalk" || id === "villageFishGames" ? "none"
           : `translate(${world.scrollLeft}px, ${world.scrollTop}px)`;
         modal.classList.add("open");
         if(id==="store")recordVillageGuide("sam");
@@ -23675,6 +23774,8 @@
           if (s.tournament.phase === "result") finishTournamentResults();
           return;
         }
+        const closingFishGame = $("#villageFishGames").classList.contains("open");
+        if (closingFishGame) stopVillageFishGame();
         const openModals = [...document.querySelectorAll(".modal.open")];
         openModals.forEach(modal=>ShuCompactUI.release(modal,false));
         const closingFieldGuide = $("#fieldGuide").classList.contains("open");
@@ -23716,6 +23817,7 @@
         }
         renderVillageGuideReminder();
         if(closingStory)$("#menu").focus({preventScroll:true});
+        if(closingFishGame)$("#action").focus({preventScroll:true});
         if (returnToShop) { renderSamShop(); open("store"); return; }
         if (playerHomeIsActive()) {
           hideIdleStatus();
@@ -24450,6 +24552,7 @@
           clearInterval(catchAnimationTimer); catchAnimationTimer = 0;
           stopSurfaceCastAnimation(); stopBattleFishArt();
           stopAquariumAnimation(); stopHomeDogAnimation(); stopRivalDogReaction();
+          stopVillageFishGame();
           petUi?.stop(); dialogueTyper.cancelAll();
           stopCastingWaterSound(.05); stopUnderwaterSound(.05);
           stopRainSound(); stopWildlifeSound(); stopAllGameAudioSamples();
@@ -24487,6 +24590,13 @@
       $("#lakeIntroPrevious").onclick=()=>{
         if(!$("#lakeIntro").classList.contains("open"))return;
         if(!lakeIntroIndex)return;lakeIntroIndex--;renderLakeIntro();$("#lakeIntroNext").focus({preventScroll:true});
+      };
+      $("#villageFishGames").onkeydown = event => {
+        if (event.key !== "Tab") return;
+        const controls = [...event.currentTarget.querySelectorAll("button:enabled, select:enabled")];
+        const first = controls[0], last = controls[controls.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
       };
       $("#lakeIntro").onkeydown=event=>{
         if(event.key!=="Tab")return;
@@ -24632,6 +24742,14 @@
         }
         const nativeInput = e.target?.closest?.("input, select, textarea, [contenteditable='true']");
         if (document.querySelector(".modal.open")) {
+          if (villageFishController && !nativeInput && ["z", "a", "A"].includes(e.key)) {
+            if (!e.repeat && !document.hidden && !villageSaveSuspended) {
+              if ($("#villageFishGames").dataset.game === "race") villageFishController.pressA();
+              else if ($("#villageFishGames").contains(document.activeElement)) document.activeElement.closest("button")?.click();
+            }
+            e.preventDefault();
+            return;
+          }
           if ($("#tournamentTalk").classList.contains("open") && !nativeInput &&
               (e.key === "z" || (e.key === "Enter" && !e.target?.closest?.("button, a")))) {
             uiFeedback.cue("confirm", e);
@@ -24751,7 +24869,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-78").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-79").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

@@ -22,9 +22,9 @@ function legacyFixture(){
  assert.equal(state.petLife.mutationSeed,STORED_MUTATION_SEED);
  return state;
 }
-const ROOT=path.resolve(__dirname,'..'),FROZEN='shiokakure-art-252-78';
+const ROOT=path.resolve(__dirname,'..'),FROZEN='fish-card-race-252-79';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='4c92679f38845513cb966f0c01ea76968511d97d42c78fd44946eb85cfd40166';
+const RUNTIME_TREE_SHA256='d9303ddcfcdce78dd17d835df22cfa0f6df47375ce08dad1ed1aaf134fc72a8f';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
@@ -155,14 +155,17 @@ async function run(){
   report.previewNoticeAbsent=true;
 
   await page.evaluate(()=>{ensureForageCycle();s.forageCycle.active=Object.fromEntries(foragePointData.map(p=>[p.id,'worm']));s.forageCycle.harvested=[];});report.injectedFixtures.push({label:'all forage active to challenge facility precedence',method:'spawn fixture only; subsequent movement/A are real UI'});
-  const facilities=[['farmhouse','locationInterior'],['west-shrine',null],['yaoya','locationInterior'],['diner','locationInterior'],['main-shrine','locationInterior'],['sam-shop','store'],['fish-market','locationInterior'],['harbor-shop','vehicleShop'],['watermill','petLifeModal'],['riao-tcg-shop',null],['quest-board','questBoard']];
+  const facilities=[['farmhouse','locationInterior'],['west-shrine','villageFishGames'],['yaoya','locationInterior'],['diner','locationInterior'],['main-shrine','locationInterior'],['sam-shop','store'],['fish-market','locationInterior'],['harbor-shop','vehicleShop'],['watermill','petLifeModal'],['riao-tcg-shop','villageFishGames'],['quest-board','questBoard']];
   for(const [id,modal]of facilities){
    const facility=id==='sam-shop'?'isAtSamShopEntrance(x,y)':`nearbyWorldLandmark(x,y,d)?.id===${JSON.stringify(id)}`;
    // Match the real dispatcher, not merely a broad overlapping entrance box.
    const predicate=`(x,y,d)=>{const old=[s.x,s.y,s.direction];s.x=x;s.y=y;s.direction=d;const ok=(${facility})&&!ShuOffshore.atPier(s)&&!ShuRural.atVillageGate(x,y)&&!ShuMountain.atVillageGate(x,y)&&!activeLandingDock()&&!nearbyRival()&&!nearbyTournamentNpc();[s.x,s.y,s.direction]=old;return ok;}`;
    await walk(id,predicate);const before=await resources();await screenshot(id+'-front');await press('#action');await advance(100);
-   if(modal){await page.locator('#'+modal+'.open').waitFor();if(modal==='locationInterior')assert.equal(await evaluate('activeLocationId'),id);if(id==='diner')await diagnoseDiner('reference');await screenshot(id+'-inside');await closeModal(modal);}
-   else {assert.equal(await page.locator('.modal.open').count(),0);assert.match(await page.locator('#rescueToast').innerText(),/準備中/);await screenshot(id+'-notice');}
+   await page.locator('#'+modal+'.open').waitFor();
+   if(modal==='locationInterior')assert.equal(await evaluate('activeLocationId'),id);
+   if(modal==='villageFishGames')assert.equal(await page.locator('#'+modal).getAttribute('data-game'),id==='west-shrine'?'race':'cards');
+   if(id==='diner')await diagnoseDiner('reference');
+   await screenshot(id+'-inside');await closeModal(modal);
    assert.deepEqual(await resources(),before,id+' does not spend resources');
   }
   await walk('ferry','(x,y,d)=>ShuOffshore.atPier({...s,x,y})');await press('#action');await page.locator('#offshoreFerry.open').waitFor();await screenshot('ferry-dialog');await closeModal('offshoreFerry');

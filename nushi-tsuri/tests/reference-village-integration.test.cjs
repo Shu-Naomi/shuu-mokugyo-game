@@ -40,17 +40,14 @@ try{
  assert.deepEqual(JSON.parse(JSON.stringify(phaseResults.failures)),[]);
  // Exercise the real A dispatcher from BFS-reachable grid points. Opening
  // menus and notices is free; never buy, rest, cast, or pay a ferry fare.
- const expected={farmhouse:'locationInterior',yaoya:'locationInterior',diner:'locationInterior','main-shrine':'locationInterior','fish-market':'locationInterior',watermill:'petLifeModal','harbor-shop':'vehicleShop','quest-board':'questBoard','sam-shop':'store',ferry:'offshoreFerry','west-shrine':null,'riao-tcg-shop':null};
+ const expected={farmhouse:'locationInterior',yaoya:'locationInterior',diner:'locationInterior','main-shrine':'locationInterior','fish-market':'locationInterior',watermill:'petLifeModal','harbor-shop':'vehicleShop','quest-board':'questBoard','sam-shop':'store',ferry:'offshoreFerry','west-shrine':'villageFishGames','riao-tcg-shop':'villageFishGames'};
  w.eval("ensureForageCycle();s.forageCycle.active=Object.fromEntries(foragePointData.map(p=>[p.id,'worm']));s.forageCycle.harvested=[];");
  const resources=read(w,'({money:s.money,hp:s.hp,gameMinutes:s.gameMinutes,baits:s.baits,caught:s.caught})');
  for(const [id,modal]of Object.entries(expected)){
   const [x,y]=phaseResults.representatives[id];
   w.eval(`close();s.x=${x};s.y=${y};s.direction='up';action();`);
-  if(modal)assert.ok(w.document.querySelector('#'+modal).classList.contains('open'),id+' A opens '+modal);
-  else {
-   assert.equal(w.document.querySelector('.modal.open'),null,id+' remains notice-only');
-   assert.match(w.document.querySelector('#rescueToast').textContent,/準備中/,id+' notice shown');
-  }
+  assert.ok(w.document.querySelector('#'+modal).classList.contains('open'),id+' A opens '+modal);
+  if(modal==='villageFishGames')assert.equal(w.document.getElementById(modal).dataset.game,id==='west-shrine'?'race':'cards');
   if(modal==='locationInterior')assert.equal(read(w,'activeLocationId'),id,id+' selects correct interior');
   assert.deepEqual(read(w,'({money:s.money,hp:s.hp,gameMinutes:s.gameMinutes,baits:s.baits,caught:s.caught})'),resources,id+' opening does not spend resources');
   w.eval('close()');

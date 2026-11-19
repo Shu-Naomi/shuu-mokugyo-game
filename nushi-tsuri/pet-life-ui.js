@@ -3,9 +3,11 @@
   "use strict";
   const knownSex=f=>f?.sex==="male"||f?.sex==="female";
   const knownGeneration=f=>f?.generation!==null&&f?.generation!==undefined&&/^(0|[1-9]\d*)$/.test(String(f.generation))&&Number(f.generation)<=20;
+  const generationNumber = (fish, missing) => missing?.generation || !knownGeneration(fish) ? null : Number(fish.generation) + 1;
   function identityLabels(f,missing={}){
     const sex=missing.sex||!knownSex(f)?"性別不明":f.sex==="male"?"♂":"♀";
-    const generation=missing.generation||!knownGeneration(f)?"世代不明":Number(f.generation)===0?"初代":`${Number(f.generation)+1}代目`;
+    const number=generationNumber(f,missing);
+    const generation=number===null?"世代不明":number===1?"初代":`${number}代目`;
     return {sex,sexText:sex==="♂"?"♂ オス":sex==="♀"?"♀ メス":sex,generation};
   }
   // The existing core fills gaps in old records. Remember only their display
@@ -592,7 +594,7 @@
         if(document.activeElement!==target){const status=modal.querySelector('.pet-boarding-pager span');if(status){status.tabIndex=-1;status.focus({preventScroll:true});}}
       }return;
     }paintSpecimens();if(mode==="aquarium"){stop();start();}}});
-    return {open,render,stop,get mode(){return mode;},get active(){return live();},
+    return {open,render,stop,generationOf:f=>generationNumber(f,missingIdentities.get(f.uid)),get mode(){return mode;},get active(){return live();},
       get music(){return live()&&mode==="shop"&&tab==="contests"?(kind==="fish"?"contest-fish":"contest-pet"):null;}};
   }
   root.ShuPetUI={create,identityLabels};
