@@ -40,7 +40,7 @@ test('a spoon follower has a visible chase before contact and can abandon a full
  let visible=false;
  for(let i=0;i<60&&!visible;i++)visible=F.stepLure(slow,true).reveal;
  assert.ok(visible);
- const fast={...slow};
+ const fast=structuredClone(slow);
  for(let i=0;i<12;i++)assert.equal(F.stepLure(slow,false,true).bite,false);
  let caught=false;
  for(let i=0;i<60&&!caught;i++)caught=F.stepLure(slow,false,true).bite;
@@ -52,6 +52,39 @@ test('a spoon follower has a visible chase before contact and can abandon a full
   departed=result.depart;
  }
  assert.ok(departed);
+});
+
+test('visible residents patrol, and the same fish turns toward the spoon before it gives chase',()=>{
+ const motion=F.newLure(20,['bass','koi','funa']);
+ const [focal,...neighbors]=motion.residents;
+ const before=motion.residents.map(r=>[r.x,r.y]);
+ for(let tick=0;tick<5;tick++)F.stepLure(motion,false);
+ motion.residents.forEach((r,i)=>{
+  assert.notDeepEqual([r.x,r.y],before[i],r.id+' is moving at splash');
+  assert.ok(r.x>0&&r.x<100&&r.y>0&&r.y<100);
+ });
+ // The first few short taps can draw a glance, never an immediate lunge.
+ for(let tap=0;tap<3;tap++){
+  assert.equal(F.stepLure(motion,false,false,true).reveal,false);
+  for(let idle=0;idle<3;idle++)assert.equal(F.stepLure(motion,false).reveal,false);
+ }
+ assert.equal(motion.noticing,true);
+ assert.equal(focal.facing,Math.sign(motion.x-focal.x));
+ assert.ok(focal.heading<1,'the fish has begun turning');
+ let chasing=false;
+ for(let i=0;i<60&&!chasing;i++){
+  const headingBefore=focal.heading;
+  chasing=F.stepLure(motion,true).reveal;
+  assert.ok(Math.abs(focal.heading-headingBefore)<1,'turning is gradual');
+ }
+ assert.ok(chasing);
+ const positions=neighbors.map(r=>[r.x,r.y]);
+ let bite=false;
+ for(let i=0;i<75&&!bite;i++)bite=F.stepLure(motion,false,true).bite;
+ assert.ok(bite);
+ assert.equal(motion.residents[0],focal);
+ assert.deepEqual([focal.x,focal.y],[motion.x,motion.y],'the original resident reaches the spoon');
+ neighbors.forEach((r,i)=>assert.notDeepEqual([r.x,r.y],positions[i],r.id+' keeps swimming during the chase'));
 });
 
 test('mirrored scenery loops cover wide and narrow screens through positive, negative and complete turns without gaps',()=>{

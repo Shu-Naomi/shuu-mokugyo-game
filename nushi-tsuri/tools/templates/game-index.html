@@ -6471,7 +6471,7 @@
     <link rel="stylesheet" href="cast-tackle.css?v=252-59" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=246-1" />
+      <link rel="stylesheet" href="fishing-duel.css?v=252-76" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=252-64" />
     <link rel="stylesheet" href="offshore-island.css?v=252-71" />
@@ -6534,7 +6534,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-75</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-76</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -6740,7 +6740,6 @@
           </div>
         </div>
         <div class="fish-scene" id="fishScene">
-          <div class="underwater-backdrop" aria-hidden="true"><canvas id="underwaterPixels" class="pixel-scene" width="640" height="320"></canvas><canvas id="underwaterTravel" width="640" height="320"></canvas></div>
           <div class="cast-surface" id="castSurface" aria-hidden="true">
             <canvas id="castBackdrop" class="pixel-scene" width="640" height="320"></canvas>
             <div class="cast-sky"><div class="cast-stars"></div></div>
@@ -6762,6 +6761,10 @@
               <div class="cast-angler boy" id="castAngler"></div>
             </div>
           </div>
+          <div id="lureWaterWorld">
+          <div class="underwater-backdrop" aria-hidden="true"><canvas id="underwaterPixels" class="pixel-scene" width="640" height="320"></canvas><canvas id="underwaterTravel" width="640" height="320"></canvas></div>
+          <div id="lureResidents" aria-hidden="true"></div>
+          <div id="lurePreview" aria-hidden="true" hidden></div>
           <div class="surface"></div>
           <canvas class="water-fx" id="waterFx" width="1000" height="500" aria-hidden="true"></canvas>
           <div class="surface-splash" id="surfaceSplash" aria-hidden="true">
@@ -6769,7 +6772,6 @@
             <i></i><i></i><i></i><i></i><i></i><i></i>
           </div>
           <div class="fisher"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span></div>
-          <div class="practice-badge" id="practiceBadge">SAM'S TRY POND　練習中</div>
           <svg
             class="line-svg"
             viewBox="0 0 1000 500"
@@ -6856,6 +6858,8 @@
               />
             </svg>
           </div>
+          </div>
+          <div class="practice-badge" id="practiceBadge">SAM'S TRY POND　練習中</div>
           <div class="nushi-cue" id="nushiCue" role="status"></div>
           <div class="fish-escape-caption" id="fishEscapeCaption" role="status" aria-live="polite" hidden></div>
           <div class="battle-ui" id="battleUi">
@@ -7454,7 +7458,7 @@
     <script src="compact-ui.js?v=252-64"></script>
     <script src="pet-life-ui.js?v=252-60"></script>
     <script src="tackle-balance.js?v=252-71"></script>
-    <script src="fishing-duel.js?v=252-71"></script>
+    <script src="fishing-duel.js?v=252-76"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=252-75"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -19010,7 +19014,10 @@
         if (battle?.method!=="lure" && baitId === "nushiSecret")
           return spot.id === "lake-deep" && ShuTackle.allowed(baitId, hookId)
             ? fish.find((candidate) => candidate.id === (ShuRegional.candidates(s,spot.id,period).starNushi?"starNushi":"nushi")) : null;
-        const weighted = Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
+        return rollWeightedFish(fishingCandidates(distance, spot, period, baitId, hookId));
+      }
+      function fishingCandidates(distance, spot, period, baitId, hookId) {
+        return Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
           let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
           if (id === "laketrout") weight *= {morning:1.6,day:.75,evening:1.5,night:.8}[period] || 1;
           if (id === "medaka") weight *= {morning:1.6,day:1.5,evening:.8,night:.12}[period] || 1;
@@ -19143,6 +19150,8 @@
           }
           return { fish: fish.find((candidate) => candidate.id === id), weight };
         }).filter((entry) => entry.fish && entry.weight > 0);
+      }
+      function rollWeightedFish(weighted) {
         const total = weighted.reduce((sum, entry) => sum + entry.weight, 0);
         let roll = Math.random() * total;
         for (const entry of weighted) {
@@ -20857,93 +20866,186 @@
         vibrate([28, 25, 48]);
         return true;
       }
-      function startLurePresentation(){
-        beginUnderwaterFromSurface();battle.phase="lure";battle.attraction=0;battle.lureHeld=false;battle.lurePulse=false;
-        battle.lureMotion=ShuFishing.newLure(battle.startMeters);
+      function clearLureWater() {
+        $("#lureWaterWorld").classList.remove("lure-focused");
+        $("#lureResidents").replaceChildren();
+      }
+      function showLureWater(motion) {
+        clearLureWater();
+        const layer = $("#lureResidents");
+        // Resident zero swims as the full battle sprite, including its mouth poses.
+        motion.residents.slice(1).forEach((resident, index) => {
+          const sprite = document.createElement("div");
+          sprite.className = "lure-resident";
+          sprite.dataset.residentIndex = String(index + 1);
+          sprite.dataset.fishId = resident.id;
+          const [width, height] = fishFrameFallbackSizes[resident.id] || [320, 160];
+          sprite.style.aspectRatio = `${width} / ${height}`;
+          layer.append(sprite);
+        });
+        renderLureWater(motion, "lure", motion.x, motion.y);
+      }
+      function renderLureWater(motion, phase, spoonX, spoonY) {
+        const world = $("#lureWaterWorld");
+        const focused = phase === "interest" || phase === "bite";
+        if (focused) {
+          const target = motion.residents[0];
+          world.style.transformOrigin = `${(target.x + spoonX) / 2}% ${(target.y + spoonY) / 2}%`;
+        }
+        world.classList.toggle("lure-focused", focused);
+        const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
+        for (const sprite of $("#lureResidents").children) {
+          const index = Number(sprite.dataset.residentIndex);
+          const resident = motion.residents[index];
+          sprite.style.left = `${resident.x}%`;
+          sprite.style.top = `${resident.y}%`;
+          const yaw = Math.acos(Math.max(-1, Math.min(1, reduced ? resident.facing : resident.heading)));
+          const pose = ShuAquariumLife.orientation(yaw);
+          sprite.style.transform = `translate(-50%, -50%) scaleX(${pose.flip})`;
+          const swimFrame = reduced ? 0 : Math.floor(ShuFishMotion.phase(
+            resident.id, motion.ticks * .12, ShuAquariumLife.gait(resident.id).speed, false, index,
+          ));
+          drawAquariumSprite(sprite, resident.id, swimFrame, pose);
+        }
+      }
+      function lureResidentIds() {
+        const spot = fishingSpotById(battle.spot);
+        const period = gameClockAt(sceneGameMinutes()).period;
+        const locals = fishingCandidates(battle.castDistance, spot, period, battle.bait, battle.hook)
+          .filter(({fish}) => fish.id !== "shiokakure" && !ShuRegional.legendary(fish.id));
+        const ids = [battle.f.id];
+        const count = Math.random() < .5 ? 2 : 3;
+        while (ids.length < count && locals.length) {
+          const distinct = locals.filter(({fish}) => !ids.includes(fish.id));
+          ids.push(rollWeightedFish(distinct.length ? distinct : locals).id);
+        }
+        return ids;
+      }
+      function startLurePresentation() {
+        beginUnderwaterFromSurface();
+        battle.phase = "lure";
+        battle.attraction = 0;
+        battle.lureHeld = battle.lurePulse = false;
+        battle.biteAt = Infinity;
+        battle.biteShownAt = null;
+        battle.sandLifted = true;
+        battle.lureMotion = ShuFishing.newLure(battle.startMeters, lureResidentIds());
         $("#castSurface").classList.remove("cast-throwing");
         $("#fishScene").classList.add("lure-search");
-        let lure=$("#lurePreview");if(!lure){lure=document.createElement("div");lure.id="lurePreview";$("#fishScene").append(lure);}
-        lure.innerHTML=ShuTackleArt.icon("silverSpoon");lure.hidden=false;
-        $("#fishName").textContent="スプーンで誘う";$("#phaseLabel").textContent=" 誘い中";
-        $("#distanceLabel").style.display="block";
-        $("#distanceMeter").parentElement.style.display="block";
-        $("#battleMsg").textContent="Aで巻いて誘う。魚が追ってきたら、巻きを緩めて様子を見よう。";
-        $("#pull").innerHTML="A<br><small>誘う</small>";$("#wait").innerHTML="B<br><small>回収する</small>";
-        updateLurePresentation();startBattleFishArt();return true;
+        showLureWater(battle.lureMotion);
+        const lure = $("#lurePreview");
+        lure.innerHTML = ShuTackleArt.icon("silverSpoon");
+        lure.hidden = false;
+        const sprite = $("#battleFish");
+        sprite.className = `battle-fish fish-${battle.f.id}`;
+        sprite.style.transition = "none";
+        $("#fishName").textContent = "スプーンで誘う";
+        $("#phaseLabel").textContent = " 誘い中";
+        $("#distanceLabel").style.display = "block";
+        $("#distanceMeter").parentElement.style.display = "block";
+        $("#battleMsg").textContent = "Aで巻いて、離すと沈む。スプーンに振り向く魚を見てみよう。";
+        $("#pull").innerHTML = "A<br><small>誘う</small>";
+        $("#wait").innerHTML = "B<br><small>回収する</small>";
+        updateLurePresentation();
+        // Settle on this cast's patrol position before enabling movement between ticks.
+        sprite.getBoundingClientRect();
+        sprite.style.removeProperty("transition");
+        sprite.style.opacity = "1";
+        startBattleFishArt();
+        return true;
       }
-      function revealLureFish(){
-        battle.phase="interest";battle.biteScheduledAt=Date.now();battle.biteAt=Infinity;
-        battle.biteShownAt=null;battle.sandLifted=true;
-        // Place the still-hidden sprite at the edge before enabling its swim transition.
-        const el=$("#battleFish");el.className=`battle-fish fish-${battle.f.id}`;
-        el.style.backgroundImage=`url("${fishAssets[battle.f.id]}")`;
-        el.style.backgroundSize=`${(fishSwimFrameCounts[battle.f.id]||8)*100}% 100%`;
-        el.style.transition="none";
-        battle.facing=-1;battle.turnMouthProjection=-1;
-        $("#fishName").textContent=battle.f.name;$("#phaseLabel").textContent=" 魚が接近";
-        $("#battleMsg").textContent=`${battle.f.name}がスプーンに興味を示した！口に触れるまで、まだ合わせない。`;
+      function revealLureFish() {
+        battle.phase = "interest";
+        battle.biteScheduledAt = Date.now();
+        $("#fishName").textContent = battle.f.name;
+        $("#battleMsg").textContent = `${battle.f.name}がスプーンを追ってきた！　巻きを緩めてみよう。`;
+      }
+      function renderLureFish(motion, contact) {
+        const resident = motion.residents[0];
+        const heading = resident.heading;
+        battle.facing = Math.sign(heading) || resident.facing;
+        battle.turnMouthProjection = heading;
+        if (Math.abs(heading) < .999) {
+          const frames = ShuFishArt.species[battle.f.id] ? 7 : 5;
+          const progress = (1 - heading) / 2;
+          battle.turning = {from: -resident.facing, to: resident.facing};
+          battle.turnSpriteFrame = frames === 7 ? progress * 6 : Math.round(progress * 4);
+          battle.turnProgress = resident.facing < 0 ? progress : 1 - progress;
+        } else {
+          battle.turning = null;
+          battle.turnProgress = 0;
+        }
+        const moods = fightProfiles[battle.f.id].moods;
+        animateFishBody(moods.find(mood => mood.calm) || moods[0], .65, .7);
+        if (motion.inContact || contact || battle.phase === "bite") {
+          battle.mouthState = "open";
+          battle.mouthOpen = 1;
+        }
+        // The authored turn and open-mouth frames each put the lip in a different place.
         renderBattleFish();
+        const scene = $("#fishScene");
+        const mouth = scene.clientWidth && scene.clientHeight ? battleMouthAndHook(false) : null;
+        const offsetX = mouth?.offsetPercentX || 0, offsetY = mouth?.offsetPercentY || 0;
+        const clearY = battleFishClearMaxY();
+        const maxMouthY = clearY === null ? 100 : clearY + offsetY;
+        battle.x = resident.x - offsetX;
+        battle.y = Math.min(resident.y, maxMouthY) - offsetY;
+        const sprite = $("#battleFish");
+        sprite.style.left = `${battle.x}%`;
+        sprite.style.top = `${battle.y}%`;
+        return Math.min(motion.y, maxMouthY);
       }
-      function updateLurePresentation(){
-        if(!battle||!["lure","interest","bite"].includes(battle.phase)||battle.method!=="lure")return;
-        if(document.hidden||battle.pausedAt)return;
-        const lure=$("#lurePreview");if(!lure)return;
-        const motion=battle.lureMotion;
-        let reveal=false, contact=false;
-        if(battle.phase!=="bite"){
-          const tapped=battle.lurePulse;battle.lurePulse=false;
-          const result=ShuFishing.stepLure(motion,battle.lureHeld,battle.phase==="interest",tapped);
-          battle.attraction=motion.attraction;
-          if(battle.f.id==='shiokakure'){
-            battle.shiokakureFast=motion.speed>.8?(battle.shiokakureFast||0)+1:0;
-            if(battle.shiokakureFast>=10){ShuShiokakure.scare(shiokakureEncounter);log('魚影が岩陰へ消えた。少し静かに待ってみよう。');return endBattle();}
+      function updateLurePresentation() {
+        if (!battle || !["lure", "interest", "bite"].includes(battle.phase) || battle.method !== "lure") return;
+        if (document.hidden || battle.pausedAt) return;
+        const motion = battle.lureMotion;
+        let contact = false;
+        if (battle.phase !== "bite") {
+          const tapped = battle.lurePulse;
+          battle.lurePulse = false;
+          const result = ShuFishing.stepLure(motion, battle.lureHeld, battle.phase === "interest", tapped);
+          battle.attraction = motion.attraction;
+          if (battle.f.id === "shiokakure") {
+            battle.shiokakureFast = motion.speed > .8 ? (battle.shiokakureFast || 0) + 1 : 0;
+            if (battle.shiokakureFast >= 10) {
+              ShuShiokakure.scare(shiokakureEncounter);
+              log("魚影が岩陰へ消えた。少し静かに待ってみよう。");
+              return endBattle();
+            }
           }
-          if(result.recovered){log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");return endBattle();}
-          if(result.depart){
-            battle.phase="lure";
-            $("#battleFish").style.opacity="0";$("#fishName").textContent="スプーンで誘う";
-            $("#battleMsg").textContent="魚が追うのをやめた。Aを短く押す・離して沈めるを試そう。";
-          }else if(result.reveal){revealLureFish();reveal=true;}
-          contact=result.bite;
-        }
-        const mood=fightProfiles[battle.f.id].moods.find(m=>m.calm)||fightProfiles[battle.f.id].moods[0];
-        const x=motion.x;
-        const scene=$("#fishScene"),sprite=$("#battleFish");
-        if(battle.phase!=="lure"){
-          animateFishBody(mood,.65,.7);
-          renderBattleFish();
-        }
-        const mouth=scene.clientWidth && scene.clientHeight ? battleMouthAndHook(false) : null;
-        const offsetX=mouth?.offsetPercentX || 0,offsetY=mouth?.offsetPercentY || 0;
-        const clearY=battleFishClearMaxY();
-        const maxMouthY=clearY===null ? 100 : clearY+offsetY;
-        const y=Math.min(motion.y,maxMouthY);
-        if(battle.phase!=="lure"){
-          battle.x=motion.fishX-offsetX;
-          battle.y=Math.min(motion.fishY,maxMouthY)-offsetY;
-          renderBattleFish();
-          if(reveal){
-            // Commit the starting position while hidden. Otherwise CSS sweeps
-            // across the screen from the previous cast in just one frame.
-            sprite.getBoundingClientRect();
-            sprite.style.removeProperty("transition");
-            sprite.style.opacity="1";
+          if (result.recovered) {
+            log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");
+            return endBattle();
           }
+          if (result.depart) {
+            battle.phase = "lure";
+            $("#fishName").textContent = "スプーンで誘う";
+            $("#battleMsg").textContent = "魚が追うのをやめた。Aを短く押す・離して沈めるを試そう。";
+          } else if (result.reveal) {
+            revealLureFish();
+          }
+          contact = result.bite;
+        } else {
+          ShuFishing.stepLureBystanders(motion);
         }
-        if(battle.phase!=="bite"){
-          const label={fast:"速く巻く",slow:"ゆっくり巻く",sink:"止めて沈める"}[motion.motion];
-          $("#phaseLabel").textContent=` ${battle.phase==="interest"?"魚が接近・":""}${label}`;
-          $("#distanceLabel").textContent=`スプーンまで ${Math.max(0,Math.ceil(motion.distance*(1-motion.travel)))}m`;
-          $("#distanceMeter").style.width=`${(1-motion.travel)*100}%`;
+        const x = motion.x, y = renderLureFish(motion, contact);
+        if (battle.phase !== "bite") {
+          const label = {fast:"速く巻く", slow:"ゆっくり巻く", sink:"止めて沈める"}[motion.motion];
+          $("#phaseLabel").textContent = ` ${battle.phase === "interest" ? "魚が接近・" : ""}${label}`;
+          $("#distanceLabel").textContent = `スプーンまで ${Math.max(0, Math.ceil(motion.distance * (1 - motion.travel)))}m`;
+          $("#distanceMeter").style.width = `${(1 - motion.travel) * 100}%`;
         }
-        lure.style.left=`${x}%`;lure.style.top=`${y}%`;
+        const lure = $("#lurePreview");
+        lure.style.left = `${x}%`;
+        lure.style.top = `${y}%`;
+        renderLureWater(motion, battle.phase, x, y);
         advanceUnderwaterTravel();
-        $("#linePath").setAttribute("d",`M 150 48 Q 285 160 ${x*10} ${y*5}`);
-        if(contact){
-          battle.biteAt=battle.biteScheduledAt=Date.now();
-          battle.phase="wait";syncBitePhase();
-        }
-        else if(battle.phase==="bite")syncBitePhase();
+        $("#linePath").setAttribute("d", `M 150 48 Q 285 160 ${x * 10} ${y * 5}`);
+        if (contact) {
+          battle.biteAt = battle.biteScheduledAt = Date.now();
+          battle.phase = "wait";
+          syncBitePhase();
+        } else if (battle.phase === "bite") syncBitePhase();
       }
       function beginUnderwaterFromSurface() {
         const scene = $("#fishScene");
@@ -22023,7 +22125,8 @@
         $("#fishEscapeCaption").hidden=true;$("#fishEscapeCaption").textContent="";
         $("#pull").parentElement.inert=false;
         delete $("#underwaterTravel").dataset.scenery;
-        if($("#lurePreview"))$("#lurePreview").hidden=true;
+        clearLureWater();
+        $("#lurePreview").hidden = true;
         const castSurface = $("#castSurface");
         castSurface.className = "cast-surface";
         castSurface.style.removeProperty("--cast-target-x");
@@ -22403,16 +22506,23 @@
         });
         return true;
       }
+      function battleWaterBounds(scene) {
+        const world = $("#lureWaterWorld").getBoundingClientRect();
+        return world.width && world.height ? world : scene.getBoundingClientRect();
+      }
       function battleFishViewport() {
         if(!battle||(battle.fightMode!=="nushi"&&battle.method!=="lure"))return null;
-        const scene=$("#fishScene"),view=scene.getBoundingClientRect(),actions=$("#pull").parentElement.getBoundingClientRect();
-        if(!view.width||!actions.width||!scene.clientHeight)return null;
-        return {height:scene.clientHeight,bottom:Math.max(32,actions.top-view.top-16)};
+        const scene=$("#fishScene"),view=battleWaterBounds(scene),actions=$("#pull").parentElement.getBoundingClientRect();
+        if(!view.height||!actions.width||!scene.clientHeight)return null;
+        // Controls stay in screen coordinates. Reserve their space in the
+        // water layer's local pixels, even halfway through a camera transition.
+        const screenScale=view.height/scene.clientHeight;
+        return {height:scene.clientHeight,screenScale,bottom:Math.max(32,(actions.top-view.top-16)/screenScale)};
       }
       function battleFishClearMaxY() {
         const view=battleFishViewport();if(!view)return null;
         const element=$("#battleFish"),pose=battleFishVisualPose(),radians=pose.rotation*Math.PI/180;
-        const height=Math.max(element.getBoundingClientRect().height,
+        const height=Math.max(element.getBoundingClientRect().height/view.screenScale,
           (Math.abs(Math.sin(radians))*element.offsetWidth*Math.abs(pose.stretch)+
           Math.abs(Math.cos(radians))*element.offsetHeight*Math.abs(pose.squash))*pose.displayScale);
         return Math.max(8,(view.bottom-height/2-Math.abs(pose.offsetY))*100/view.height);
@@ -22702,7 +22812,7 @@
         let centerX=battle.x*sceneWidth/100+visual.offsetX;
         let centerY=battle.y*sceneHeight/100+visual.offsetY;
         if(rendered){
-          const box=fishElement.getBoundingClientRect(),view=scene.getBoundingClientRect();
+          const box=fishElement.getBoundingClientRect(),view=battleWaterBounds(scene);
           const transform=box.width&&view.width?getComputedStyle(fishElement).transform:"";
           if(box.width&&view.width&&/^matrix/.test(transform))try{
             const matrix=new DOMMatrix(transform);
@@ -22716,7 +22826,8 @@
               const down=Math.hypot(matrix.c,matrix.d)||1;
               cos=matrix.d/down;sin=-matrix.c/down;angle=Math.atan2(sin,cos)*180/Math.PI;
               mouthProjection=projection*(Math.sign(matrix.a*matrix.d-matrix.b*matrix.c)||visual.displayFacing);
-              centerX=box.left+box.width/2-view.left;centerY=box.top+box.height/2-view.top;
+              centerX=(box.left+box.width/2-view.left)*sceneWidth/view.width;
+              centerY=(box.top+box.height/2-view.top)*sceneHeight/view.height;
             }
           }catch{}
         }
@@ -22970,7 +23081,8 @@
         $("#fishScene").classList.remove("lure-search");
         delete $("#fishScene").dataset.nushiPhase;
         $("#nushiCue").textContent="";
-        if($("#lurePreview"))$("#lurePreview").hidden=true;
+        clearLureWater();
+        $("#lurePreview").hidden = true;
         const f = battle.f;
         battle.waterAudioWeight = fishWaterWeight(
           f.id,
@@ -24641,7 +24753,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-75").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-76").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

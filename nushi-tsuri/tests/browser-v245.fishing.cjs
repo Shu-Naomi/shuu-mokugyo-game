@@ -45,6 +45,8 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     await ShuScenery.paint(source,`underwater-${battle.waterZone}-${battle.depth}-${battle.f?.id==='hirame'}`,gameSceneryEnvironment());
    });
    await page.clock.runFor(120);
+   const castIndividual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));
+   await shot('resident-school');
    // This down/up pair completes with no simulation tick between the events.
    await press('#pull');await page.clock.runFor(180);assert.ok(await value('battle.lureMotion.travel')>0);
    assert.ok(await value('battle.underwaterCamera.offset')<0,'winding the spoon moves the background towards shore');
@@ -62,6 +64,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     await press('#pull');await page.clock.runFor(120);
    }
    assert.equal(await value('battle.phase'),'interest');assert.equal(await value('battle.f.id'),'himemasu');
+   assert.equal(await value('JSON.stringify([battle.f.id,battle.specimen])'),castIndividual);
    await page.evaluate(async()=>{await Promise.all(ShuFishArt.assets(battle.f.id).map(src=>fishAtlasImage(src).decode()));renderBattleFish();});
    const individual=await page.evaluate(()=>JSON.stringify([battle.f.id,battle.specimen]));await shot('interested-fish');
    for(let i=0;i<64&&await value('battle.phase')==='interest';i++)await page.clock.runFor(120);

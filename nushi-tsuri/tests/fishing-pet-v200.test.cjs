@@ -40,10 +40,10 @@ test('fight setting is saved and latched per cast while both modes share bait se
   }finally{app.dispose();}
 });
 
-test('spoon reveals an interested fish before bite, held input cannot auto-hook and hook input cannot also reel',()=>{
+test('a visible spoon follower takes the lure before the manual hook, held input cannot auto-hook and hook input cannot also reel',()=>{
   const app=boot({...seed(),ownedRods:['bamboo','lureRod'],selectedRod:'lureRod',fishingMethod:'lure',lures:{silverSpoon:1}}),w=app.window;
   try{const before=read(w,'[s.baits.worm,s.lures.silverSpoon,s.gameMinutes]');w.eval('cast();beginFishing();battle.cast=50;launchSurfaceCast();settleSurfaceCast()');
-    assert.equal(read(w,'battle.phase'),'lure');assert.equal(w.document.querySelector('#battleFish').style.opacity,'0');
+    assert.equal(read(w,'battle.phase'),'lure');assert.equal(w.document.querySelector('#battleFish').style.opacity,'1');
     w.pressBattleAction();w.eval('for(let i=0;i<60&&battle.phase==="lure";i++)updateLurePresentation()');assert.equal(read(w,'battle.phase'),'interest');
     const fish=read(w,'[battle.f.id,battle.specimen]');assert.equal(w.document.querySelector('#battleFish').style.opacity,'1');
     w.releaseBattleAction();
