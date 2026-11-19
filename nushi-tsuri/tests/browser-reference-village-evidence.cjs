@@ -22,9 +22,9 @@ function legacyFixture(){
  assert.equal(state.petLife.mutationSeed,STORED_MUTATION_SEED);
  return state;
 }
-const ROOT=path.resolve(__dirname,'..'),FROZEN='resident-lure-fish-252-76';
+const ROOT=path.resolve(__dirname,'..'),FROZEN='shiokakure-shore-252-77';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='a0dd628198c9187b54263c23dc777182d356a261f959894737592f1a70a3fb2a';
+const RUNTIME_TREE_SHA256='3f777740824fd412de5ee212304f760c9d3e48688725a5e47897633466866032';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
