@@ -339,3 +339,97 @@ test('a legacy tank without a recorded shore never substitutes the current villa
     assert.deepEqual(app.errors,[]);
   } finally {app.dispose();}
 });
+
+function pick(w,selector,value) {
+  const select=w.document.querySelector(selector);
+  assert.ok(select && [...select.options].some(option=>option.value===value),selector+' offers '+value);
+  select.value=value;
+  select.dispatchEvent(new w.Event('change',{bubbles:true}));
+}
+
+test('mill branches share a repeatable current and rivals; training changes the chosen spurt phase', () => {
+  const {createRace,advance,spurt}=require('../village-fish-race.js');
+  function run(style,route,training,signalAt) {
+    const race=createRace(style,0,{course:'mill',route,training});
+    if(signalAt!=null){
+      advance(race,signalAt);assert.ok(spurt(race));assert.equal(spurt(race),false);
+    }
+    advance(race,30);
+    assert.equal(race.finished,true);
+    return race.runners.map(f=>({route:f.route,merge:f.mergeTime,finish:f.finishTime}));
+  }
+  const empty=run('finish','wheel',0,null),late=run('finish','bank',0,11);
+  assert.deepEqual(run('finish','wheel',0,null),empty,'retries start the wheel cycle at the same point');
+  assert.deepEqual(run('finish','wheel',2,null),empty,'training alone never changes automatic speed');
+  assert.deepEqual(late.slice(1),empty.slice(1),'both opponents keep their routes and splits');
+  assert.ok(late[0].merge>Math.max(late[1].merge,late[2].merge),'the bank entrant is last at the merge');
+  assert.ok(late[0].finish<Math.min(late[1].finish,late[2].finish),'one late spurt overtakes both rivals');
+  assert.ok(run('launch','wheel',-2,3.5)[0].finish<run('launch','wheel',2,3.5)[0].finish);
+  assert.ok(run('finish','bank',2,11)[0].finish<run('finish','bank',-2,11)[0].finish);
+});
+
+test('a third-place personal best on the mill persists before printing and imprints exactly one card', () => {
+  const older={id:'before-waterwheel',uid:null,species:'ayu',name:'アユ',generation:null,
+    course:'水草の門',rank:2,day:1,rental:true};
+  const app=boot({...seed(),villageFishGames:{records:[older]}}), w=app.window;
+  let saved,record;
+  try {
+    const advance=clock(w);
+    const best=()=>read(w,'s.villageFishGames?.raceBests || []');
+    const records=()=>read(w,'s.villageFishGames.records');
+    enter(w,'race');
+    pick(w,'#danEntrantPicker','rental-ayu');pick(w,'#danCoursePicker','mill');pick(w,'#danRoutePicker','wheel');
+    choose(w,'#danRaceStart');
+    w.eval('saveSuppressed=true');advance(25000);
+    assert.deepEqual(best(),[],'unwritten best is not kept in memory');
+    assert.deepEqual(records(),[older]);
+    w.eval('saveSuppressed=false');choose(w,'#danRaceRetryBest');
+    const [first]=best();
+    assert.equal(first.uid,'rental-ayu');assert.ok(first.timeCs>0);
+    assert.deepEqual(records(),[older],'recorded times do not create souvenirs');
+    assert.equal(w.document.querySelector('.dan-race-result').dataset.personalBest,'false');
+    function replay(spurtAt) {
+      choose(w,'#danRaceAgain');assert.equal(w.document.querySelector('#danEntrantPicker').value,'rental-ayu');
+      assert.equal(w.document.querySelector('#danCoursePicker').value,'mill');
+      assert.equal(w.document.querySelector('#danRoutePicker').value,'wheel');
+      choose(w,'#danRaceStart');
+      if(spurtAt){advance(spurtAt);choose(w,'#danRaceSpurt');}
+      advance(24000);
+      return w.document.querySelector('.dan-race-result').dataset;
+    }
+    const tie=replay();
+    assert.equal(Number(tie.timeCs),first.timeCs);assert.equal(tie.personalBest,'false');
+    const faster=replay(11000);
+    assert.equal(w.document.querySelector('#danRaceRank').dataset.rank,'3');
+    assert.equal(faster.personalBest,'true');
+    assert.ok(Number(faster.timeCs)<first.timeCs);assert.equal(best().length,1);
+    assert.equal(best()[0].timeCs,Number(faster.timeCs));
+    const print=w.document.querySelector('#danRacePrint');
+    w.eval('saveSuppressed=true');print.click();assert.equal(records().length,1);
+    w.eval('saveSuppressed=false');print.click();print.click();assert.equal(records().length,2);
+    record=records()[1];
+    assert.equal(record.personalBest,true);assert.equal(record.timeCs,Number(faster.timeCs));
+    assert.equal(record.route,'wheel');assert.equal(record.rank,3);
+    choose(w,'#danRaceAgain');pick(w,'#danCoursePicker','gate');choose(w,'#danRaceStart');advance(25000);
+    assert.equal(best().length,2,'the old course has a distinct time for the same fish');
+    const gate=best().find(r=>r.course==='水草の門');assert.equal(gate.uid,first.uid);
+    choose(w,'#danRaceAgain');pick(w,'#danEntrantPicker','rental-funa');pick(w,'#danCoursePicker','mill');
+    choose(w,'#danRaceStart');advance(25000);
+    assert.equal(best().length,3,'a different fish at the mill establishes its own first time');
+    saved=JSON.parse(w.localStorage.getItem(saveKey));
+    assert.deepEqual(saved.villageFishGames.raceBests,best());
+    assert.deepEqual(app.errors,[]);
+  } finally { app.dispose(); }
+  const resumed=boot(saved), rw=resumed.window;
+  try {
+    enter(rw,'cards');choose(rw,cardAction('album'));
+    pick(rw,'[data-card-record]',older.id);
+    let card=rw.document.querySelector('.fish-playing-card[data-record-id="'+older.id+'"]');
+    assert.ok(card);assert.equal(card.querySelector('.fish-card-race-time'),null,'old cards keep their actual untimed imprint');
+    pick(rw,'[data-card-record]',record.id);
+    card=rw.document.querySelector('.fish-playing-card[data-record-id="'+record.id+'"]');
+    assert.equal(card.querySelector('.card-best-stamp').textContent,'自己新');
+    assert.ok(card.querySelector('.fish-card-race-time').textContent.includes((record.timeCs/100).toFixed(2)+'秒'));
+    assert.deepEqual(resumed.errors,[]);
+  } finally { resumed.dispose(); }
+});

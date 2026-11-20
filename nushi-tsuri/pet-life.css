@@ -359,3 +359,16 @@
  .pet-boarding-rules{inset:220px 0 0;padding:10px}
  .pet-boarding-mode .pet-boarding-actions{flex-direction:row}
 }
+
+#petLifeModal .pet-race-treat-opener{position:absolute;top:7px;left:7px;z-index:500;display:inline-flex;align-items:center;gap:5px;min-height:32px;padding:5px 9px;border:1px solid #b3b986;border-radius:6px;background:#254952;color:#ffebaf;font-size:12px;line-height:1.2}
+.pet-race-treats .pet-record-hero{margin-bottom:8px}
+.pet-race-scale{display:flex;align-items:center;gap:8px;color:#d4e5da;font-size:12px}
+.pet-race-scale div{display:flex;flex:1;gap:4px}
+.pet-race-scale i{flex:1;height:7px;background:#41616b;border:1px solid #7d9a9a;border-radius:2px}
+.pet-race-scale .is-current{background:#ffe59a;outline:1px solid #ffe59a}
+.pet-race-treats p{margin:12px 0;line-height:1.6}
+.pet-treat-choices{display:grid;gap:7px;margin:8px 0 12px}
+#petLifeModal .pet-treat-choices button{display:flex;justify-content:space-between;align-items:center;gap:8px;text-align:left;padding:8px 10px}
+.pet-treat-choices strong,.pet-treat-choices small{display:block}
+.pet-race-treats>small,.pet-treat-choices small{font-size:12px;line-height:1.45}
+.pet-race-treats .pet-race-feedback{color:#ffe59a;font-weight:bold}

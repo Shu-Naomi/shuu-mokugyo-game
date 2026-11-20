@@ -6466,8 +6466,8 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="village-fish-games.css?v=252-83" />
-    <link rel="stylesheet" href="pet-life.css?v=252-60" />
+    <link rel="stylesheet" href="village-fish-games.css?v=252-84" />
+    <link rel="stylesheet" href="pet-life.css?v=252-84" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
     <link rel="stylesheet" href="lake-intro.css?v=252-44" />
@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-83</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-84</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7465,13 +7465,13 @@
     <script src="event-ceremony.js?v=186-1"></script>
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
-    <script src="pet-life.js?v=252-27"></script>
+    <script src="pet-life.js?v=252-84"></script>
     <script src="fish-motion.js?v=252-82"></script>
     <script src="aquarium-life.js?v=252-82"></script>
-    <script src="compact-ui.js?v=252-82"></script>
-    <script src="pet-life-ui.js?v=252-79"></script>
-    <script src="village-fish-cards.js?v=252-83"></script>
-    <script src="village-fish-race.js?v=252-79"></script>
+    <script src="compact-ui.js?v=252-84"></script>
+    <script src="pet-life-ui.js?v=252-84"></script>
+    <script src="village-fish-cards.js?v=252-84"></script>
+    <script src="village-fish-race.js?v=252-84"></script>
     <script src="tackle-balance.js?v=252-71"></script>
     <script src="fishing-duel.js?v=252-82"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -18997,6 +18997,9 @@
       function villageFishBook() {
         const data = s.villageFishGames;
         return {
+          raceBests: Array.isArray(data?.raceBests) ? data.raceBests.filter(row =>
+            row && typeof row.uid === "string" && typeof row.species === "string" &&
+            typeof row.course === "string" && Number.isSafeInteger(row.timeCs) && row.timeCs > 0) : [],
           records: Array.isArray(data?.records) ? data.records.filter(r =>
             r && typeof r.id === "string" && fish.some(f => f.id === r.species) &&
             typeof r.name === "string" && [1, 2, 3].includes(r.rank)) : [],
@@ -19042,8 +19045,13 @@
           };
         });
         let currentRun = null;
+        let finishedRun = null;
         const context = {
           entrants: () => entrants,
+          getSampleStatus: () => s.petLife.raceTreats?.sampled === true,
+          claimSamples: () => ShuPetLife.claimRaceSamples(s, () => save()),
+          getRaceBest: (uid, course) =>
+            villageFishBook().raceBests.find(row => row.uid === uid && row.course === course)?.timeCs ?? null,
           fishResistance: species => fish.find(f => f.id === species)?.resistance,
           getCatchCandidates() {
             const specimen = displayedAquariumSpecimen();
@@ -19078,22 +19086,51 @@
             drawAquariumSprite(element, species, frame, {spriteMode: "swim", yaw: 0}, specimen),
           newRunId() {
             currentRun = globalThis.crypto?.randomUUID?.() ?? `race-${Date.now()}-${++villageFishRunSerial}`;
+            finishedRun = null;
             return currentRun;
           },
+          finishRace(result) {
+            if (villageSaveSuspended || !currentRun || result.runId !== currentRun) return null;
+            const {uid, species, course, route, timeCs, rental} = result;
+            if (finishedRun) {
+              return finishedRun.uid === uid && finishedRun.species === species && finishedRun.course === course &&
+                finishedRun.route === (route ?? null) && finishedRun.timeCs === timeCs ? finishedRun : null;
+            }
+            if (!Number.isSafeInteger(timeCs) || timeCs < 1) return null;
+            const eligible = rental
+              ? ["funa", "ayu"].includes(species) && uid === "rental-" + species
+              : entrants.some(f => f.uid === uid && f.species === species);
+            const validCourse = course === "水草の門" ? route == null
+              : course === "水車の分かれ道" && ["wheel", "bank"].includes(route);
+            if (!eligible || !validCourse) return null;
+            const book = villageFishBook();
+            const index = book.raceBests.findIndex(row => row.uid === uid && row.course === course);
+            const previousCs = index < 0 ? null : book.raceBests[index].timeCs;
+            const isBest = previousCs !== null && timeCs < previousCs;
+            if (previousCs === null || isBest) {
+              const newBest = {uid, species, course, timeCs};
+              if (index < 0) book.raceBests.push(newBest);
+              else book.raceBests[index] = newBest;
+              if (!storeVillageFishBook(book)) return null;
+            }
+            finishedRun = {uid, species, course, route: route ?? null, timeCs,
+              previousCs, bestCs: Math.min(previousCs ?? timeCs, timeCs), isBest};
+            return finishedRun;
+          },
           printCard(result) {
-            if (villageSaveSuspended || !currentRun || result.runId !== currentRun ||
+            if (villageSaveSuspended || !finishedRun || result.runId !== currentRun ||
+                result.uid !== finishedRun.uid || result.species !== finishedRun.species || result.course !== finishedRun.course ||
                 ![1, 2, 3].includes(result.rank)) return null;
             const book = villageFishBook();
             const printed = book.records.find(record => record.id === currentRun);
             if (printed) return printed;
-            const entrant = entrants.find(f => f.uid === result.uid && f.species === result.species);
-            if (!entrant && !(result.rental && result.uid === "rental-" + result.species &&
-                petCatalog.some(f => f.id === result.species))) return null;
+            const entrant = entrants.find(f => f.uid === finishedRun.uid);
             const f = entrant?.specimen;
             const record = {
               id: currentRun, uid: entrant?.uid ?? null, species: result.species,
               name: entrant?.name ?? result.name, generation: entrant?.generation ?? null,
               course: result.course, rank: result.rank, day: gameClockAt(s.gameMinutes).day,
+              timeCs: finishedRun.timeCs, route: finishedRun.route, personalBest: finishedRun.isBest,
               rental: !entrant,
               specimen: f ? {species: f.species, length: f.length, origin: f.origin,
                 generation: f.generation, mutation: ShuAquariumMutations.normalize(f.mutation)} : null,
@@ -25050,7 +25087,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-83").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-84").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

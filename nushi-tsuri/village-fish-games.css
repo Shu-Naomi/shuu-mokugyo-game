@@ -408,7 +408,8 @@
 .card-verdict strong { margin-bottom: 3px; }
 .card-album-select { color: var(--fish-gold); font-size: 13px; font-weight: 700; }
 .card-album-select select { flex: 1; min-width: 64px; }
-.village-fish-games .fish-game-actions button:not(.fish-game-primary), #danRaceAgain {
+.village-fish-games .fish-game-actions button:not(.fish-game-primary),
+#danRaceAgain, #danRaceSamples, #danRaceRetryBest {
   background: #284a40;
   border: 1px solid #b8b391;
   color: var(--fish-ink);
@@ -700,4 +701,180 @@
 [data-card-screen="catch-print"] input:focus-visible {
   outline: 3px solid var(--fish-gold);
   outline-offset: -3px;
+}
+
+/* The fork and the millrace share the swimmers' coordinate system. */
+.dan-race-course[data-dan-course="mill"] {
+  background-image:
+    linear-gradient(0deg, #203e36b8, #205b5e87 25%, #36766ca3 49%, #256874ad 76%, #203e39b3),
+    url("assets/underwater-river-shallow-v64.jpg");
+}
+.dan-race-course[data-dan-course="mill"]::before {
+  border: 0;
+  background:
+    repeating-linear-gradient(117deg, transparent 0 13px, #adba6b 13px 16px, transparent 16px 29px) left bottom / 100% 3% no-repeat,
+    linear-gradient(180deg, #3d5535 0 2%, #83975a 2% 3%, #514834 3% 4%, #a1beb075 4% 6%, transparent 6% 92%, #91afa381 92% 94%, #594e34 94% 96%, #94a667 96% 98%, #48623d 98%);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%, 0 95%, 8% 95%, 8% 93%, 22% 93%, 22% 96%, 37% 96%, 37% 94%, 52% 94%, 52% 96%, 66% 96%, 66% 93%, 81% 93%, 81% 95%, 100% 95%, 100% 4%, 83% 4%, 83% 6%, 71% 6%, 71% 4%, 47% 4%, 47% 6%, 34% 6%, 34% 4%, 19% 4%, 19% 5%, 0 5%);
+}
+.dan-race-island {
+  position: absolute;
+  left: 27%;
+  top: 42%;
+  width: 42.5%;
+  height: 21%;
+  background: #8ac3b7;
+  clip-path: polygon(0 47%, 10% 39%, 15% 25%, 23% 24%, 29% 11%, 36% 11%, 40% 3%, 64% 3%, 66% 9%, 72% 9%, 79% 25%, 85% 25%, 90% 38%, 100% 47%, 92% 57%, 86% 72%, 79% 72%, 74% 86%, 67% 86%, 61% 100%, 38% 100%, 34% 92%, 27% 92%, 20% 75%, 13% 70%, 8% 56%);
+}
+.dan-race-island::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 3px;
+  clip-path: inherit;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 11px, #584c384d 11px 15px, transparent 15px 39px) center 81% / 100% 18% no-repeat,
+    repeating-linear-gradient(122deg, transparent 0 13px, #66793e 13px 15px, transparent 15px 31px) center 33% / 85% 17% no-repeat,
+    linear-gradient(#b1ba75 0 15%, #879951 15% 48%, #72884e 48% 59%, #b1a06a 59% 69%, #776343 69% 85%, #534f3d 85%);
+}
+
+/* A timber sluice house stands behind the turning paddle wheel. */
+.dan-race-course[data-dan-course="mill"]::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 53%;
+  width: clamp(32px, 6.3vw, 70px);
+  height: clamp(21px, 12%, 42px);
+  clip-path: polygon(0 25%, 12% 25%, 12% 12%, 22% 12%, 22% 0, 76% 0, 76% 12%, 88% 12%, 88% 25%, 100% 25%, 100% 36%, 93% 36%, 93% 100%, 8% 100%, 8% 36%, 0 36%);
+  background:
+    linear-gradient(#e2c88b 0 22%, #503e31 22% 100%) 63% 72% / 13% 30% no-repeat,
+    linear-gradient(#554437, #554437) 20% 100% / 7% 66% no-repeat,
+    linear-gradient(#554437, #554437) 82% 100% / 7% 66% no-repeat,
+    linear-gradient(#935d46 0 10%, #a76d4e 10% 22%, #7f4f3c 22% 30%, #4c4134 30% 39%, #ceae76 39% 85%, #78664b 85%);
+}
+.dan-race-wheel {
+  position: absolute;
+  z-index: 1;
+  left: 52%;
+  top: 1%;
+  width: clamp(30px, 5.1vw, 56px);
+  aspect-ratio: 1;
+  transform: translateX(-50%);
+  filter: drop-shadow(2px 2px 0 #253b3bc4);
+}
+.dan-race-wheel::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background:
+    radial-gradient(circle, #d5b87a 0 9%, #644e38 10% 17%, transparent 18% 45%, #453e32 46% 49%, #c49a62 50% 56%, #594533 57% 62%, transparent 63%),
+    repeating-conic-gradient(from 6deg, #4c4031 0 4deg, #d0a169 4deg 12deg, #966c43 12deg 20deg, transparent 20deg 45deg);
+  transform: rotate(var(--wheel-angle, 0deg));
+}
+.dan-race-wheel::after {
+  content: "";
+  position: absolute;
+  left: 43%;
+  top: 43%;
+  width: 14%;
+  height: 14%;
+  background: #ead29a;
+  border: 1px solid #584c35;
+  box-sizing: border-box;
+}
+.dan-race-flow {
+  position: absolute;
+  left: 43.5%;
+  top: 21%;
+  width: 10.5%;
+  height: 19%;
+  overflow: hidden;
+  opacity: .42;
+  background: linear-gradient(90deg, transparent, #8ac4bf44 70%, #c0e2cd87);
+  clip-path: polygon(0 57%, 18% 40%, 9% 33%, 34% 26%, 52% 13%, 46% 5%, 100% 0, 100% 79%, 82% 91%, 68% 85%, 48% 100%, 51% 81%, 27% 86%, 33% 67%);
+}
+.dan-race-flow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background:
+    repeating-linear-gradient(90deg, transparent 0 15px, #ccebdd 15px 23px, transparent 23px 31px) 0 30% / auto 2px repeat-x,
+    repeating-linear-gradient(90deg, #f2f1d7 0 10px, transparent 10px 24px) 0 62% / auto 3px repeat-x,
+    repeating-linear-gradient(90deg, transparent 0 9px, #b0ddd5 9px 23px, transparent 23px 33px) 0 82% / auto 2px repeat-x;
+  transform: translateX(calc(sin(var(--wheel-angle, 0deg)) * 5px));
+}
+[data-dan-course="mill"][data-flow="warning"] .dan-race-flow {
+  opacity: .82;
+  background: linear-gradient(90deg, transparent, #99ceca70, #eee2a1bd);
+}
+[data-dan-course="mill"][data-flow="surge"] .dan-race-flow {
+  opacity: 1;
+  background: repeating-linear-gradient(122deg, #77bbc1 0 5px, #acd9d4 5px 8px, #dfeddb 8px 11px, #70b0b0 11px 17px);
+}
+.dan-race-route-wheel, .dan-race-route-bank {
+  position: absolute;
+  z-index: 1;
+  left: 30%;
+  padding: 2px 5px;
+  border-left: 2px solid #aed1bc;
+  color: #e2ebd4;
+  background: #203f3ce8;
+  font-weight: 700;
+  font-size: 11px;
+  line-height: 1.15;
+  white-space: nowrap;
+}
+.dan-race-route-wheel { top: 7%; }
+.dan-race-route-bank { bottom: 7%; }
+[data-route="wheel"] .dan-race-route-wheel,
+[data-route="bank"] .dan-race-route-bank {
+  border-color: #f5d484;
+  color: #ffe6a1;
+  background: #403b26f2;
+}
+[data-route="wheel"] .dan-race-route-wheel::before,
+[data-route="bank"] .dan-race-route-bank::before { content: "▸ "; }
+
+.dan-race-entry:has(#danCoursePicker) { flex-wrap: wrap; gap: 4px 8px; }
+.dan-race-entry:has(#danCoursePicker) select { flex: 1 1 85px; width: 0; max-width: 100%; }
+.dan-race-entry:has(#danCoursePicker) #danEntrantPicker { flex-grow: 1.5; }
+.dan-race-entry label { white-space: nowrap; }
+.dan-race-result .dan-race-best,
+.dan-race-result .dan-race-commentary {
+  grid-column: 1 / -1;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.4;
+}
+.dan-race-result .dan-race-best { color: var(--fish-gold); font-variant-numeric: tabular-nums; }
+.dan-race-result .dan-race-commentary { color: var(--fish-muted); }
+.fish-card-race-time {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  line-height: 1.2;
+  color: #344638;
+  font-variant-numeric: tabular-nums;
+}
+.card-best-stamp {
+  padding: 1px 3px;
+  border: 1px solid #974939;
+  border-radius: 2px;
+  color: #853d30;
+  font-size: 10px;
+  line-height: 1;
+  white-space: nowrap;
+}
+@media (max-height: 500px) {
+  .dan-race-course[data-dan-course="mill"] .dan-race-wheel { width: clamp(28px, 4.5vw, 40px); }
+  .dan-race-result .dan-race-best, .dan-race-result .dan-race-commentary { font-size: 12px; }
+}
+@media (max-width: 550px) {
+  .dan-race-entry:has(#danCoursePicker) {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr) auto minmax(0, 1fr);
+  }
+  .dan-race-entry:has(#danCoursePicker) select { width: 100%; }
+  .dan-race-entry:has(#danRoutePicker:not([hidden])) #danEntrantPicker { grid-column: span 3; }
 }
