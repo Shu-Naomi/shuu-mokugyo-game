@@ -301,12 +301,12 @@
         return `<button data-pet-treat="${type}" ${disabled?"disabled":""}><span><strong>${treat.name}</strong><small>${treat.effect}</small></span><span>${stock[type]}粒所持${atLimit?" · 上限":""}</span></button>`;
       });
       const marks=[-2,-1,0,1,2].map(mark=>`<i class="${mark===level?'is-current':''}"></i>`).join("");
-      return `<section class="pet-race-treats"><div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b data-pet-training="${level}">${P.raceTrainingLabel(f)}</b></div></div>
+      return `<section class="pet-race-treats"><div class="pet-treat-specimen"><div class="pet-record-hero"><span data-pet-card-art="${f.uid}"></span><div><h3>${esc(fishName(f))}</h3><b data-pet-training="${level}">${P.raceTrainingLabel(f)}</b></div></div>
         <div class="pet-race-scale" aria-hidden="true"><span>先行</span><div>${marks}</div><span>追い込み</span></div>
-        <p>${served?"この子は今日のおやつを食べたよ。":"今日のおやつを1粒選んでね。"} いつものエサとは別に、一匹につき一日1粒。逆のおやつで泳ぎ方を戻せるよ。</p>
+        <p>${served?"今日はおやつ済み。":"今日はあと1粒。"} 逆のおやつで泳ぎ方を戻せるよ。</p></div>
         <div class="pet-treat-choices">${choices.join("")}</div>
         ${message?`<p class="pet-race-feedback" role="status">${esc(message)}</p>`:""}
-        <small>アスアルの「お世話用品・水槽」で買えるよ。ダンの魚レース受付では試食セットをもらえるよ。</small></section>`;
+        <small>普段のエサに加えて、一匹一日1粒。アスアルのお店で販売中。ダンのレース受付に試食もあるよ。</small></section>`;
     }
     function panelView(f,today){
       const titles={tanks:"水槽を選ぶ",records:"この子の記録",manage:"お引越し・託す",help:"水槽の育て方","race-treats":"育成おやつ"};
@@ -487,6 +487,7 @@
       if(b.dataset.petCourse){course=b.dataset.petCourse;render();return;}
       if(b.dataset.petBuyTreat&&mode==="shop"&&tab==="supplies"){
         const result=P.buyRaceTreat(s,b.dataset.petBuyTreat,ctx.persist||changed);
+        if(result.ok)ctx.refreshHud?.();
         message=result.message;render(result.ok);return;
       }
       if(b.dataset.petTreat&&mode==="aquarium"&&panel==="race-treats"){

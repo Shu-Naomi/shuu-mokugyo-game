@@ -243,7 +243,7 @@
       const spec=catalog.find(s=>s.id===egg.species),uid=`pet-${p.nextId++}`;
       const initial=frySize(spec);
       const child={uid,species:egg.species,tank:egg.tank,bornSize:initial,length:initial,origin:"bred",acquiredDay:day,lastDay:day,
-        raceTraining:0,raceTreatDay:-1,fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
+        fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,raceTraining:0,raceTreatDay:-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
         health:90,careDays:0,generation:egg.generation,sex:sexOf({uid}),stars:1,xp:0,level:1,mutation:M.normalize(egg.mutation)};
       normalizeGrowth(child,[],day);
       p.eggs=p.eggs.filter(e=>e.uid!==egg.uid);p.fish.push(child);
@@ -338,7 +338,7 @@
     state.money-=spec.price;
     const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):purchaseSize(spec);
     const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,origin:isLegend(spec)?"legend":"shop",acquiredDay:day,lastDay:day,
-      raceTraining:0,raceTreatDay:-1,fedDay:-1,changedDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1,mutation:M.normal()};
+      fedDay:-1,changedDay:-1,raceTraining:0,raceTreatDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1,mutation:M.normal()};
     f.sex=sexOf(f);p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);
     normalizeGrowth(f,[],day);
     if(!isLegend(spec))N?.grant(state,catalog,day);N?.observe(state,catalog,day);

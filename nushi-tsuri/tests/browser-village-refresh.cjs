@@ -340,12 +340,14 @@ module.exports=async function villageRefresh(url,screen){
     await select[mobile?'tap':'click']();
    }
    await canPress(buy);await press(buy);
+   assert.equal(Number((await page.locator('#money').textContent()).replaceAll(',','')),await value('s.money'),'wallet updates when the pack is bought');
    assert.deepEqual(await value('s.petLife.raceTreats'),{launch:1,finish:4,sampled:true});
    await press('[data-pet-action="aquarium"]');await press('[data-pet-action="focus-selected"]');
    await canPress('[data-pet-action="race-treats"]');await press('[data-pet-action="race-treats"]');
-   await canPress('[data-pet-treat="finish"]');await shot('aquarium-race-treats');await press('[data-pet-treat="finish"]');
+   await canPress('[data-pet-treat="launch"]');await canPress('[data-pet-treat="finish"]');await shot('aquarium-race-treats');await press('[data-pet-treat="finish"]');
    assert.equal(await value('s.petLife.fish[0].raceTraining'),1);
-   if(await page.locator('[data-pet-action="panel-close"]').isVisible())await press('[data-pet-action="panel-close"]');
+   assert.equal(await page.locator('[data-pet-treat]:disabled').count(),2,'today’s slot is spent for both flavors');
+   await press('.pet-sheet [data-pet-action="panel-close"]');
   },buyAndFeed);
   buyAndFeed(initial);
   await openExisting(front('right-shrine','main-shrine'),'#locationInterior','#locationInterior [data-close]',async()=>{

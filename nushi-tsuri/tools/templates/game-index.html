@@ -24455,7 +24455,7 @@
       petUi = ShuPetUI.create({state:s,initialFish:[loadedSaveSlot.data?.petLife?.fish,loadedSaveSlot.data?.petLife?.boarded].flatMap(rows=>Array.isArray(rows)?rows:[]),identityStorageKey:saveSlots.keyFor(activeSaveSlot),catalog:petCatalog,get dogs(){return dogIds.map(id=>({id,name:dogName(id)}));},playerName:()=>s.playerName,
         parent:$("#world"),day:()=>gameClockAt(s.gameMinutes).dayIndex,open,close,
         canOpen:()=>!battle&&!playerHomeState.transitioning&&!$("#catchCard").classList.contains("show")&&!s.tournament?.pending&&s.tournament?.phase!=="result",
-        persist:save,changed:()=>{const saved=save();render();return saved;},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
+        persist:save,refreshHud:render,changed:()=>{const saved=save();render();return saved;},paintRivals:paintRivalGuide,paintVillagers:paintTournamentPortraits,drawContestDog,pose:aquariumFishPose,
         presentationChanged:()=>{eventCeremonies?.sync();syncSceneSound();},
         feedSound:()=>{if(!s.soundEnabled||document.hidden)return false;return playGameAudioSample("fishFeed",{restart:true});},
         stopFeedSound:()=>stopGameAudioSample("fishFeed"),
