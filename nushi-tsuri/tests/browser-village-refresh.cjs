@@ -189,7 +189,7 @@ module.exports=async function villageRefresh(url,screen){
   await shot('cards-race-keepsake');
   await press('[data-card-tackle="net"]');await canPress(action('play'));await press(action('play'));
   await page.locator('.card-verdict').waitFor();assert.equal(await ownCard.count(),1);
-  await press(action('shop'));
+  await press(action('album'));await press(action('shop'));
   await canPress(action('catch-print'));await press(action('catch-print'));
   const name=page.locator('input[data-card-nickname]');
   const nickname='ほしふるみずうみのみなも';
