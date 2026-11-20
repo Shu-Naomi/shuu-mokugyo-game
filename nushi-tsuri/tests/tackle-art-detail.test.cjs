@@ -8,7 +8,7 @@ const Art = require('../tackle-art.js');
 const ids = [
   'worm', 'corn', 'liveMinnow', 'nushiSecret', 'grasshopper', 'river',
   'paste', 'shrimp', 'smallShrimp', 'shell', 'crab', 'hookSmall',
-  'hookMedium', 'hookLarge', 'hookMicro', 'hookCarp', 'silverSpoon', 'starMinnow', 'expeditionJoint', 'float',
+  'hookMedium', 'hookLarge', 'hookMicro', 'hookCarp', 'silverSpoon', 'softWorm', 'starMinnow', 'expeditionJoint', 'float',
 ];
 
 // Rasterize the intentionally tiny M/H/V path vocabulary without a DOM or an
@@ -101,7 +101,7 @@ function detailClusters(pixels) {
 const rendered = Object.fromEntries(ids.map(id => [id, raster(id)]));
 const pixel = (id, x, y) => rendered[id][y * 24 + x];
 
-test('all 20 tackle sprite IDs keep the small SVG API and browser export', () => {
+test('all 21 tackle sprite IDs keep the small SVG API and browser export', () => {
   assert.deepEqual(Object.keys(Art.sprites), ids);
   assert.equal(Art.icon('missing-item'), '');
   for (const id of ids) {

@@ -57,8 +57,8 @@ test('cursor selection and keyboard navigation reveal the native action without 
   row.click();assert.equal(w.document.querySelector('[data-buy-bait="river"]'),native);native.click();assert.equal(read(w,'s.baits.river'),before.baits.river+2);assert.equal(read(w,'s.money'),before.money-180);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
-test('a one-item shelf has no pager and keeps its action and explanation in the selected pane',()=>{
- const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');click(w,'[data-sam-category="lures"]');const shelf=w.document.querySelector('#samCategory-lures'),before=snapshot(w);assert.equal(shelf.querySelector('.compact-pager').hidden,true);assert.equal(shelf.querySelectorAll('[data-compact-select]').length,1);assert.equal(shelf.querySelector('.compact-selection-panel').hidden,false);assert.match(shelf.querySelector('.compact-selection-name').textContent,/銀のスプーン/);assert.match(shelf.querySelector('.compact-selection-description').textContent,/繰り返し使用/);assert.deepEqual(snapshot(w),before);assert.deepEqual(a.errors,[]);
+test('the two reusable lures fit on one shelf without a pager and keeps its action and explanation in the selected pane',()=>{
+ const a=boot(fixture()),w=a.window;try{w.eval('renderSamShop();open("store")');click(w,'[data-sam-category="lures"]');const shelf=w.document.querySelector('#samCategory-lures'),before=snapshot(w);assert.equal(shelf.querySelector('.compact-pager').hidden,true);assert.equal(shelf.querySelectorAll('[data-compact-select]').length,2);assert.equal(shelf.querySelector('.compact-selection-panel').hidden,false);assert.match(shelf.querySelector('.compact-selection-name').textContent,/銀のスプーン/);assert.match(shelf.querySelector('.compact-selection-description').textContent,/繰り返し使用/);assert.deepEqual(snapshot(w),before);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('Sam describes each choice without buying, keeps the quantity controls, and retains the purchase receipt',()=>{

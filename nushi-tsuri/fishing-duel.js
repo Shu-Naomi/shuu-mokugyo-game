@@ -9,7 +9,7 @@
   const roles={bamboo:"小魚との練習に。強い魚には力不足",youngBamboo:"小型魚をしなやかに寄せる",
     clearStream:"流れの速い川・中型魚向け",starGazer:"星の加護で張力を抑える万能竿",
     moroko:"小さなアタリを捉える精密竿",shoreReed:"海の大型魚向けの丈夫な竿",
-    tideMaster:"ヌシに挑む最上位の力と粘り",lureRod:"スプーンを操る専用ロッド"};
+    tideMaster:"ヌシに挑む最上位の力と粘り",lureRod:"ルアーを操る専用ロッド"};
   const strengths={bamboo:1,youngBamboo:1.25,clearStream:1.9,starGazer:2.8,moroko:2.3,shoreReed:3.3,tideMaster:4.8,lureRod:2.6};
   const fishStrength={tanago:.45,motsugo:.4,medaka:.25,kamatsuka:.85,nigoi:2.65,raigyo:3,moroko:.7,funa:1,wakasagi:.5,dojo:.65,isaki:1.65,ugui:1.35,oikawa:.65,kawahagi:1.6,ayu:1.1,yamame:1.3,iwana:1.5,amago:1.4,kajika:.8,aji:.9,kasago:1.2,mebaru:1.1,
     shirogisu:.9,bass:2,nijimasu:2.1,namazu:2.3,unagi:1.9,bora:2.1,koi:2.9,
@@ -29,7 +29,16 @@
     {x:24,y:49,facing:-1,pace:.19},
     {x:45,y:23,facing:1,pace:.32}
   ];
-  function newLure(distance=20,residentIds=['funa']){
+  // The cast still determines the local pool. A soft plastic favors ambush fish
+  // along deep or rocky banks, while a spoon keeps its original strike weights.
+  const bottomFish={bass:2.8,kokuchibasu:4,kijihata:4,akahata:3,magochi:3,donko:1.8,kajika:1.6,gigi:1.3,mahaze:1.4};
+  function lureWeight(lureId,id,spotId){
+    if(lureId!=='softWorm')return spoon[id]||.1;
+    if(!bottomFish[id])return .12+(spoon[id]||.1)*.24;
+    const nearCover=/-deep$|^offshore-west-|^coast-reef-|^mountain-highPond-/.test(spotId);
+    return bottomFish[id]*(nearCover?1.4:1);
+  }
+  function newLure(distance=20,residentIds=['funa'],lureId='silverSpoon'){
     const residents=residentIds.slice(0,swimLanes.length).map((id,index)=>{
       const lane=swimLanes[index];
       const phase=(id.length+distance+index)*.8;
@@ -38,7 +47,7 @@
     });
     const focus=residents[0];
     return {
-      distance:clamp(distance,1,100), speed:0, depth:.42, travel:0, ticks:0,
+      lureId,distance:clamp(distance,1,100), speed:0, depth:.42, travel:0, ticks:0,
       x:68,y:41,attraction:0,chase:0,inContact:false,noticing:false,
       residents,fishX:focus.x,fishY:focus.y
     };
@@ -63,7 +72,9 @@
     const active=held||tapped;
     lure.speed=clamp(lure.speed+(active?(tapped?.28:.16):-.24),0,1);
     lure.travel=clamp(lure.travel+lure.speed*.08/lure.distance,0,1);
-    lure.depth=clamp(lure.depth+(active?-.006*lure.speed:.009),.18,.82);
+    const soft=lure.lureId==='softWorm';
+    const depthChange=soft?(tapped?-.065:held?-.008*lure.speed:.022):(active?-.006*lure.speed:.009);
+    lure.depth=clamp(lure.depth+depthChange,.18,.82);
     lure.x=68-lure.travel*46+Math.sin(lure.ticks*.55)*lure.speed*.65;
     lure.y=20+lure.depth*50+Math.sin(lure.ticks*.7)*lure.speed*.45;
     lure.motion=lure.speed>.75?'fast':lure.speed>.05?'slow':'sink';
@@ -73,7 +84,9 @@
     if (!interested) {
       // First the flash interrupts the patrol. The fish turns to watch a few
       // lengths from the spoon before sustained movement persuades it to follow.
-      const interest=lure.speed*.036+(tapped?.082:0)-(lure.speed===0?.003:0);
+      const spoonInterest=lure.speed*.036+(tapped?.082:0)-(lure.speed===0?.003:0);
+      const bottomHop=tapped && lure.depth>=.58 && lure.speed<.65;
+      const interest=soft?(bottomHop?.21:active&&lure.depth>.58?.012:-.003):spoonInterest;
       lure.attraction=clamp(lure.attraction+interest,0,1);
       lure.noticing=lure.attraction>=.24;
       if(lure.noticing){
@@ -120,12 +133,14 @@
   Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4,donko:.45});
   Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
   Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
+  Object.assign(fishStrength,{kijihata:1.95,umazurahagi:1.05,akaza:.65,kokuchibasu:1.9,juzukakehaze:.45});
+  Object.assign(spoon,{kijihata:1.1,umazurahagi:.2,akaza:.18,kokuchibasu:1.45,juzukakehaze:.12});
   Object.assign(fishStrength,{laketrout:2.1,browntrout:2.4,takabe:1.05,kuromejina:2.7,houraihimeji:1.65});
   Object.assign(spoon,{laketrout:3.0,browntrout:3.1,takabe:.25,kuromejina:.18,houraihimeji:.4});
   function normalize(s,rods){
     s.fightMode=modes[s.fightMode]?s.fightMode:"gauge";
     s.fishingMethod=s.fishingMethod==="lure"?"lure":"bait";
-    s.selectedLure="silverSpoon";
+    s.selectedLure=s.selectedLure==="softWorm"&&s.lures?.softWorm>0?"softWorm":"silverSpoon";
     const copies=record(s.rodCopies),levels=record(s.rodLevels);
     s.rodCopies={};s.rodLevels={};
     for(const id of Object.keys(rods)){
@@ -134,7 +149,7 @@
       s.rodLevels[id]=Math.floor(clamp(levels[id],0,id==="starGazer"?5:0));
       if(s.rodCopies[id]>0&&!owned)s.ownedRods.push(id);
     }
-    if(s.fishingMethod==="lure"&&(!s.ownedRods.includes("lureRod")||!(s.lures?.silverSpoon>0)))s.fishingMethod="bait";
+    if(s.fishingMethod==="lure"&&(!s.ownedRods.includes("lureRod")||!(s.lures?.[s.selectedLure]>0)))s.fishingMethod="bait";
     return s;
   }
   function grantRod(s,id){
@@ -181,14 +196,14 @@
   };
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
-    gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    trout:'browntrout laketrout',
+    gentle:'juzukakehaze tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
+    trout:'kokuchibasu browntrout laketrout',
     dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     shoal:'takabe',
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
-    bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
-    bottomAmbush:'donko',
+    bottom:'akaza umazurahagi kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
+    bottomAmbush:'kijihata donko',
     timid:'shiokakure',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi',
     pelagic:'hiramasa shimaaji',reefRunner:'kanpachi ishigakidai akahata kuromejina'
@@ -206,7 +221,7 @@
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.
-  const enduranceOverrides={shiokakure:190,hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
+  const enduranceOverrides={kijihata:215,umazurahagi:160,akaza:145,kokuchibasu:205,juzukakehaze:135,shiokakure:190,hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
@@ -334,6 +349,6 @@
     b.ten=clamp(b.ten,3,b.practice?88:110);b.lineSlack=!running&&!window?.warning&&!b.reeling;
     return {running,weak:ratio>1.5,canLand:b.retrieval>=.999};
   }
-  return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,normalize,grantRod,duplicate,rod,
+  return Object.freeze({modes,roles,strengths,fishStrength,minStrength,spoon,lureWeight,normalize,grantRod,duplicate,rod,
     nushiTiming,rhythm,endurance,fatigue,hookState,escapePace,remainingMeters,beginWindow,acceptPull,releasePull,windowPhase,shiftWindow,step,newLure,stepLure,stepLureBystanders});
 });

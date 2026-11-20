@@ -31,7 +31,7 @@ module.exports=async function fishingSpec(url,mobile=false,options={}){
     await page.evaluate(()=>hideFieldMenu());
    }
    const before=await snapshot();await openTackle();
-   await press('#tackle [data-cast-tackle="method"]');await press('#tackle [data-fishing-method="lure"]');
+   await press('#tackle [data-cast-tackle="method"]');await press('#tackle [data-pick-lure="silverSpoon"]');
    await press('#tackle [data-cast-tackle="fight"]');await press('#tackle [data-fight-mode="'+mode+'"]');await press('#beginCast');
    assert.equal(await value('battle.fightMode'),mode);assert.equal(await value('battle.method'),'lure');
    await page.evaluate(()=>{battle.cast=50;const spot='mountain-'+battle.mountainType+'-mid';window.v242Random=Math.random;
