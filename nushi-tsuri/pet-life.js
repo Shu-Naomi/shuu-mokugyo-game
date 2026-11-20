@@ -12,6 +12,16 @@
   const clamp=(v,lo,hi)=>Math.max(lo,Math.min(hi,num(v,lo)));
   const int=(v,lo=0,hi=1e9)=>Math.floor(clamp(v,lo,hi));
   const record=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
+  const RACE_TREATS=Object.freeze({
+    launch:Object.freeze({name:"飛び出し粒",step:-1,effect:"序盤のスパートが得意になる"}),
+    finish:Object.freeze({name:"ねばり粒",step:1,effect:"終盤のスパートが得意になる"}),
+  });
+  const RACE_TREAT_PRICE=60,RACE_TREAT_PACK=3,RACE_TREAT_MAX=99999;
+  const trainingLevel=f=>int(num(f?.raceTraining,0),-2,2);
+  const raceTrainingLabel=f=>["先行寄り・強","先行寄り・弱","バランス型","追い込み寄り・弱","追い込み寄り・強"][trainingLevel(f)+2];
+  function raceTreatStock(raw){
+    return {launch:int(raw?.launch,0,RACE_TREAT_MAX),finish:int(raw?.finish,0,RACE_TREAT_MAX),sampled:raw?.sampled===true};
+  }
   const courses=[
     {id:"beginner",name:"初級",fee:100,prize:250,rivals:[42,29,18]},
     {id:"intermediate",name:"中級",fee:300,prize:700,rivals:[66,57,45]},
@@ -97,6 +107,7 @@
       const fish={uid:f.uid,species:spec.id,tank:isLegend(spec)?legendTank(spec):old.version>=2?int(f.tank,0,CAPACITY-1):Math.min(index,CAPACITY-1),bornSize,length:int(f.length,bornSize,spec.max),origin:bred?"bred":isLegend(spec)?"legend":"shop",
         acquiredDay:int(f.acquiredDay,0,currentDay),lastDay:boarding?currentDay:int(f.lastDay,0,currentDay),
         fedDay:int(f.fedDay,-1,currentDay),changedDay:int(f.changedDay,-1,currentDay),
+        raceTraining:trainingLevel(f),raceTreatDay:int(f.raceTreatDay??-1,-1,day),
         water:int(f.water,0,100),health:int(f.health,20,100),careDays:int(f.careDays,0,currentDay+1),
         generation,sex:sexOf(f)};
       fish.stars=int(f.stars??starLevel(fish),1,5);
@@ -168,7 +179,7 @@
     state.petLife={version:M.VERSION,mutationSeed:M.validSeed(old.mutationSeed)?old.mutationSeed:null,
       mutationRuleVersion:old.version>=6&&Number.isInteger(old.mutationRuleVersion)&&old.mutationRuleVersion>0&&old.mutationRuleVersion<=0xffffffff?old.mutationRuleVersion:M.RULE_VERSION,
       mutationDiscoveries:old.version>=6?M.normalizeDiscoveries(old.mutationDiscoveries,day):[],
-      fish:placed,boardingVersion:1,boarded,food:int(old.food??10,0,99999),unlockedTanks:tankSlots,breeding,lastBirth,lastGrowth,eggs,legendTanks,legendClaims,
+      fish:placed,boardingVersion:1,boarded,food:int(old.food??10,0,99999),raceTreats:raceTreatStock(old.raceTreats),unlockedTanks:tankSlots,breeding,lastBirth,lastGrowth,eggs,legendTanks,legendClaims,
       nextEggId:Math.max(int(old.nextEggId,1),...eggs.map(e=>Number(e.uid.slice(4))+1)),contest:normalizeContest(old.contest,dogIds,placed,catalog,day),
       nextId:Math.max(int(old.nextId,1,MAX_FISH_ID+1),...[...specimens,...boarded].map(f=>Number(f.uid.slice(4))+1)),
       selected:placed.some(f=>f.uid===old.selected)?old.selected:placed[0]?.uid||null,
@@ -232,7 +243,7 @@
       const spec=catalog.find(s=>s.id===egg.species),uid=`pet-${p.nextId++}`;
       const initial=frySize(spec);
       const child={uid,species:egg.species,tank:egg.tank,bornSize:initial,length:initial,origin:"bred",acquiredDay:day,lastDay:day,
-        fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
+        fedDay:-1,changedDay:group.length?Math.max(...group.map(f=>f.changedDay)):-1,raceTraining:0,raceTreatDay:-1,water:group.length?Math.min(...group.map(f=>f.water)):egg.water,
         health:90,careDays:0,generation:egg.generation,sex:sexOf({uid}),stars:1,xp:0,level:1,mutation:M.normalize(egg.mutation)};
       normalizeGrowth(child,[],day);
       p.eggs=p.eggs.filter(e=>e.uid!==egg.uid);p.fish.push(child);
@@ -327,7 +338,7 @@
     state.money-=spec.price;
     const initial=isLegend(spec)?int(state.sizeRecords?.[species]?.hundredths??spec.start,spec.min||spec.start,spec.max):purchaseSize(spec);
     const f={uid:`pet-${p.nextId++}`,species,tank,bornSize:initial,length:initial,origin:isLegend(spec)?"legend":"shop",acquiredDay:day,lastDay:day,
-      fedDay:-1,changedDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1,mutation:M.normal()};
+      fedDay:-1,changedDay:-1,raceTraining:0,raceTreatDay:-1,water:100,health:90,careDays:0,generation:0,sex:null,stars:1,xp:0,level:1,mutation:M.normal()};
     f.sex=sexOf(f);p.fish.push(f);p.selected=f.uid;p.selectedTank=tank;shareWater(state,tank);
     normalizeGrowth(f,[],day);
     if(!isLegend(spec))N?.grant(state,catalog,day);N?.observe(state,catalog,day);
@@ -391,6 +402,47 @@
     const price=count*100,amount=count*10;
     if(!Number.isFinite(state.money)||state.money<price||state.petLife.food+amount>99999)return false;
     state.money-=price;state.petLife.food+=amount;return true;
+  }
+  // Inventory, the daily slot and money are one save, including on storage failure.
+  function commitTreatChanges(persist,message,changes){
+    const previous=changes.map(([object,key])=>({owned:Object.hasOwn(object,key),value:object[key]}));
+    for(const [object,key,value] of changes)object[key]=value;
+    try{
+      if(persist!==undefined&&(typeof persist!=="function"||persist()!==true))throw Error("Save failed");
+    }catch{
+      changes.forEach(([object,key],i)=>{if(previous[i].owned)object[key]=previous[i].value;else delete object[key];});
+      return {ok:false,message:"保存できなかったよ。もう一度試してね。"};
+    }
+    return {ok:true,message};
+  }
+  function claimRaceSamples(state,persist){
+    const p=state.petLife,stock=raceTreatStock(p.raceTreats);
+    if(stock.sampled)return {ok:false,message:"ダンの試食セットは受け取り済みだよ。"};
+    if(stock.launch>=RACE_TREAT_MAX||stock.finish>=RACE_TREAT_MAX)return {ok:false,message:"おやつ袋に各1粒分の空きを作ろう。"};
+    return commitTreatChanges(persist,"ダンから飛び出し粒とねばり粒を1粒ずつもらった！",[
+      [p,"raceTreats",{launch:stock.launch+1,finish:stock.finish+1,sampled:true}],
+    ]);
+  }
+  function buyRaceTreat(state,type,persist){
+    if(!Object.hasOwn(RACE_TREATS,type))return {ok:false,message:"買いたい育成おやつを選ぼう。"};
+    const p=state.petLife,stock=raceTreatStock(p.raceTreats);
+    if(!Number.isFinite(state.money)||state.money<RACE_TREAT_PRICE)return {ok:false,message:`${RACE_TREAT_PRICE}円が必要だよ。`};
+    if(stock[type]+RACE_TREAT_PACK>RACE_TREAT_MAX)return {ok:false,message:"おやつ袋がいっぱいだよ。"};
+    return commitTreatChanges(persist,`${RACE_TREATS[type].name}を${RACE_TREAT_PACK}粒買った。`,[
+      [p,"raceTreats",{...stock,[type]:stock[type]+RACE_TREAT_PACK}],[state,"money",state.money-RACE_TREAT_PRICE],
+    ]);
+  }
+  function giveRaceTreat(state,uid,type,day,persist){
+    const p=state.petLife,f=p.fish.find(a=>a.uid===uid);
+    if(!f)return {ok:false,message:"水槽でおやつをあげる子を選ぼう。"};
+    if(!Object.hasOwn(RACE_TREATS,type)||!Number.isSafeInteger(day)||day<0)return {ok:false,message:"今日あげるおやつを選ぼう。"};
+    if(f.raceTreatDay>=day)return {ok:false,message:"この子は今日のおやつを食べたよ。"};
+    const treat=RACE_TREATS[type],level=trainingLevel(f)+treat.step,stock=raceTreatStock(p.raceTreats);
+    if(Math.abs(level)>2)return {ok:false,message:"この泳ぎ方はもう十分に身についたよ。"};
+    if(!stock[type])return {ok:false,message:`${treat.name}が手元にないよ。`};
+    return commitTreatChanges(persist,`${treat.name}を食べた！　泳ぎ方は「${raceTrainingLabel({raceTraining:level})}」だよ。`,[
+      [p,"raceTreats",{...stock,[type]:stock[type]-1}],[f,"raceTraining",level],[f,"raceTreatDay",day],
+    ]);
   }
   function dogGauge(value,max=DOG_MAX){
     const points=int(value,0,max),level=Math.floor(points/100);
@@ -501,5 +553,6 @@
   }
   const cm=v=>(v/100).toFixed(2);
   return Object.freeze({DOG_MAX,TRICK_MAX,CAPACITY,TANK_CAPACITY,BREED_DAYS,BOARDING_CAPACITY,allFish,boardFish,withdrawFish,TANK_PRICES,LEGEND_CAPACITY,LEGEND_TANKS,BURI_STAGES,growthStage,displayName,nickname,individualName,renameFish,maturityLength,isLegend,legendTank,tankIds,tankLabel,tankCapacity,totalCapacity,frySize,purchaseSize,lifeStage,courses,kinds,normalize,sync,selected,residents,canHouse,selectTank,moveFish,acquire,rehome,buyTank,buyBack,buyBackQuote,starInterval,dailyGrowth,care,buyFood,
+    RACE_TREATS,RACE_TREAT_PRICE,RACE_TREAT_PACK,RACE_TREAT_MAX,raceTrainingLabel,claimRaceSamples,buyRaceTreat,giveRaceTreat,
     dogGauge,addAffinity,addTricks,dogDay,pet,train,forageCount,trickChance,fishScore,enter,cm,TRICKS,fishLevel,xpForLevel,hatchDays,eggsIn,beginContest,advanceContest,commandTrick});
 });

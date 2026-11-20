@@ -128,8 +128,14 @@
       return Number.isInteger(record.generation) && record.generation > 0 ? '第' + record.generation + '世代' : '世代不明';
     }
 
+    function raceTime(record) {
+      return Number.isSafeInteger(record.timeCs) && record.timeCs > 0 ? (record.timeCs / 100).toFixed(2) + '秒' : '';
+    }
+
     function recordLabel(record) {
-      return record.name + ' ・ ' + recordEntry(record) + ' ・ ' + record.rank + '着 ・ ' + record.day + '日目';
+      const title = record.name + ' ・ ' + recordEntry(record) + ' ・ ' + record.rank + '着 ・ ' + record.day + '日目';
+      const time = raceTime(record);
+      return time ? title + ' ・ ' + record.course + ' ' + time + (record.personalBest === true ? '（自己新）' : '') : title;
     }
 
     function fishCard(species, strength, record, selectable, owned = true, valueLabel = current.id === 'practice' ? '練習値 ' : '海の強さ ') {
@@ -151,6 +157,13 @@
       if (record) card.append(node('small', 'fish-card-imprint', record.course
         ? record.course + ' ・ ' + recordEntry(record) + ' ・ ' + record.rank + '着'
         : record.place || '釣り場不明'));
+      const time = record?.course ? raceTime(record) : '';
+      if (time) {
+        const route = record.route === 'wheel' ? '水車側' : record.route === 'bank' ? '岸側' : '';
+        const timing = node('small', 'fish-card-race-time', (route ? route + ' ・ ' : '') + time);
+        if (record.personalBest === true) timing.append(node('b', 'card-best-stamp', '自己新'));
+        card.append(timing);
+      }
       if (foil) card.append(node('small', 'card-foil-mark', '金箔'));
       return card;
     }

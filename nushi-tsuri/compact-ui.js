@@ -228,7 +228,7 @@
     content.querySelectorAll('.pet-stock').forEach((n,i)=>catalog(n,{selector:':scope > article',key:'pet:'+ctx.tab+':'+(n.dataset.petWaterFilter||i),list:!!filters,summary:!!filters,inlinePager:!!filters,describe:filters?()=>scope.querySelector('.pet-message')?.setAttribute('hidden',''):null,onLayout:ctx.onLayout}));
     // Keep notices inside an existing text area, never over catalogue controls.
     move(scope.querySelector('.pet-message'),filters?content.querySelector('.pet-fish-sales'):host.querySelector(':scope > div'),d);
-    const supplies=content.querySelector('.pet-supplies');if(supplies)catalog(supplies,{selector:'button',key:'pet:supplies',icon:'feed',name:n=>n.dataset.petAction?.startsWith('food-')?'魚のエサ · '+clean(n).split(' · ')[0]:clean(n),stock:n=>n.dataset.petAction?.startsWith('food-')?ctx.food+'食所持':''});
+    const supplies=content.querySelector('.pet-supplies');if(supplies)catalog(supplies,{selector:'button',key:'pet:supplies',icon:'feed',name:n=>n.dataset.petAction?.startsWith('food-')?'魚のエサ · '+clean(n).split(' · ')[0]:clean(n),stock:n=>n.dataset.petTreatStock||(n.dataset.petAction?.startsWith('food-')?ctx.food+'食所持':''),description:n=>n.dataset.petTreatEffect});
     content.querySelectorAll('.pet-buyback-tanks,.pet-buyback-fish').forEach(n=>catalog(n,{selector:':scope > button',key:n.classList.contains('pet-buyback-tanks')?'pet:buyback:tanks':'pet:buyback:fish:'+ctx.buybackTank,stock:n=>clean(n.querySelector(':scope > span')),onLayout:ctx.onLayout}));
     const registration=content.querySelector('.pet-contest-selectors');if(registration){content.querySelectorAll(':scope > p,:scope > .pet-contest-result').forEach(n=>suppress(n,d));}
     restoreFocus(scope);

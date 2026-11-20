@@ -40,7 +40,9 @@ module.exports=async function villageRefresh(url,screen){
  const firstCatch={hundredths:1680,gameMinutes:500,spotId:'lake-shallow',castLocale:'lake',rodId:'bamboo',baitId:'worm',
   hookId:'small',method:'bait',fightMode:'gauge',weatherId:'sunny',dogId:'shuu'};
  const legacyRaw=JSON.stringify({...seed(),x:10,y:79,direction:'right',gameMinutes:600,soundEnabled:false,
-  catchMemories:{funa:{first:firstCatch,best:null}}});
+  catchMemories:{funa:{first:firstCatch,best:null}},
+  petLife:{version:6,unlockedTanks:1,food:10,nextId:2,selectedTank:0,selected:'pet-1',
+   fish:[{uid:'pet-1',species:'funa',nickname:'ほし丸',tank:0,length:1800,bornSize:1500,health:90,water:100,fedDay:-1,changedDay:-1}]}});
  const originalUnchanged=async()=>assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'legacy JSON remains byte-identical');
  const front=(name,id)=>({name,...reference.landmarks[id],direction:reference.landmarks[id].facing,landmark:id});
  let master;
@@ -158,21 +160,58 @@ module.exports=async function villageRefresh(url,screen){
   assert.ok(visible,'button should be visible without scrolling: '+q);
  }
  async function race(){
-  await page.locator('#danEntrantPicker').selectOption('rental-funa');
+  assert.deepEqual(await value('s.petLife.raceTreats'),{launch:0,finish:0,sampled:false});
+  await canPress('#danRaceSamples');await press('#danRaceSamples');
+  assert.deepEqual(await value('s.petLife.raceTreats'),{launch:1,finish:1,sampled:true});
+  await page.locator('#danEntrantPicker').selectOption('pet-1');
+  await canPress('#danCoursePicker');await page.locator('#danCoursePicker').selectOption('mill');
+  await canPress('#danRoutePicker');await page.locator('#danRoutePicker').selectOption('bank');
   await canPress('#danRaceStart');await press('#danRaceStart');
-  await page.clock.runFor(2200);
+  const course=page.locator('[data-dan-course="mill"][data-flow]');
+  await course.waitFor({state:'visible'});
+  const flow=new Set();
+  for(let i=0;i<18;i++){
+   flow.add(await course.getAttribute('data-flow'));await page.clock.runFor(200);
+  }
+  assert.deepEqual([...flow].sort(),['calm','surge','warning'],'the mill telegraphs its current on screen');
+  for(const art of ['.dan-race-wheel','.dan-race-island','.dan-race-flow']){
+   assert.ok(await course.locator(art).isVisible(),'visible course feature '+art);
+  }
+  await shot('race-running');
+  await page.clock.runFor(22000);
+  await page.locator('[data-race-phase="result"]').waitFor();
+  assert.equal(await value('s.villageFishGames.records.length'),0,'finishing never auto-prints');
+  await shot('race-mill-bank-result');
+  const first=await value('s.villageFishGames.raceBests[0]');
+  assert.equal(first.uid,'pet-1');assert.ok(first.timeCs>0);
+  await canPress('#danRaceAgain');await press('#danRaceAgain');
+  assert.equal(await page.locator('#danEntrantPicker').inputValue(),'pet-1');
+  assert.equal(await page.locator('#danCoursePicker').inputValue(),'mill');
+  await page.locator('#danRoutePicker').selectOption('wheel');
+  await press('#danRaceStart');await page.clock.runFor(2200);
   await canPress('#danRaceSpurt');
   if(mobile)await press('#danRaceSpurt');
   else {await page.keyboard.press('z');await page.clock.runFor(50);}
   assert.equal(await page.locator('#danRaceSpurt').isDisabled(),true,'the single signal is spent');
-  await shot('race-running');
   await page.clock.runFor(24000);
   await page.locator('[data-race-phase="result"]').waitFor();
   assert.match(await page.locator('#danRaceRank').innerText(),/[1-3一二三]/);
   await canPress('#danRacePrint');await press('#danRacePrint');
-  assert.equal(await value('s.villageFishGames.records.length'),1);
-  assert.equal(await value('s.villageFishGames.records[0].species'),'funa');
+  const records=await value('s.villageFishGames.records');
+  assert.equal(records.length,1);assert.equal(records[0].uid,'pet-1');
+  assert.equal(records[0].species,'funa');assert.equal(records[0].route,'wheel');
+  assert.ok(records[0].timeCs>0);assert.equal(records[0].personalBest,records[0].timeCs<first.timeCs);
+  await shot('race-mill-result');
   return await value('s.villageFishGames.records[0].id');
+ }
+ function addSamples(economy){
+  economy.pet.raceTreats={launch:1,finish:1,sampled:true};
+ }
+ function buyAndFeed(economy){
+  economy.money-=60;
+  economy.pet.raceTreats.finish+=2;
+  const fish=economy.pet.fish.find(f=>f.uid==='pet-1');
+  fish.raceTraining=1;fish.raceTreatDay=Math.floor(economy.time/1440);
  }
  async function cards(recordId){
   const action=name=>'[data-card-action="'+name+'"]';
@@ -228,11 +267,11 @@ module.exports=async function villageRefresh(url,screen){
   assert.match(await page.locator(usedCard).innerText(),/みなも/);
   assert.equal(await value('s.homeAquariumFishId'),'funa');
  }
- async function visitActivity(front,play){
+ async function visitActivity(front,play,expectedChange=()=>{}){
   await walkTo({name:front.key+'-arrival',x:front.x,y:front.y,direction:'up',landmark:front.id});
   await controlsFit('#action,[data-move]','field controls');const before=await economy();
   await shot(front.key+'-front');await openGame(front);await shot(front.key+'-inside');
-  const result=await play();
+  const result=await play();expectedChange(before);
   await canPress(exitGame);await press(exitGame);await fieldReady();
   const savedAt=await state(),record=await page.evaluate(()=>ShuVillageProductionSession.read(1));
   assert.equal(record.ok,true);assert.ok(record.raw,'modern-slot save exists');
@@ -251,9 +290,9 @@ module.exports=async function villageRefresh(url,screen){
   await fieldReady();assert.deepEqual(await economy(),before);await feetAt(front.key+'-walk-away');
   return result;
  }
- async function openExisting(target,modal,closeSelector,inspect){
+ async function openExisting(target,modal,closeSelector,inspect,expectedChange=()=>{}){
   await walkTo(target);const at=await state(),before=await economy();await shot(target.name+'-front');
-  await press('#action');await page.locator(modal+'.open').waitFor({state:'visible'});await inspect();
+  await press('#action');await page.locator(modal+'.open').waitFor({state:'visible'});await inspect();expectedChange(before);
   await controlsFit(closeSelector,target.name+' exit');await shot(target.name+'-inside');await press(closeSelector);
   await fieldReady();assert.deepEqual(await state(),at);assert.deepEqual(await economy(),before);await feetAt(target.name+'-exit');
  }
@@ -284,14 +323,33 @@ module.exports=async function villageRefresh(url,screen){
   assert.deepEqual(await value('({x:s.x,y:s.y,direction:s.direction})'),reference.exits.home.return,'legacy position migrates to connected source-image road');
   await displayFirstCatch();
   const initial=await economy();
-  const printed=await visitActivity({...front('ダンの魚レース場','west-shrine'),key:'dan',id:'west-shrine',game:'race'},race);
+  const printed=await visitActivity({...front('ダンの魚レース場','west-shrine'),key:'dan',id:'west-shrine',game:'race'},race,addSamples);
+  addSamples(initial);
   await visitActivity({...front('リアオの魚TCGショップ','riao-tcg-shop'),key:'riao',id:'riao-tcg-shop',game:'cards'},()=>cards(printed));
   // Walk the public strip beside the shop rather than passing through it.
   await walkTo({name:'riao-public-forecourt',...reference.anchor(1568,250),direction:'right'});await shot('riao-road-clear');
   await openExisting(front('asuar','watermill'),'#petLifeModal','#petLifeModal [data-pet-action="close"]',async()=>{
    assert.equal(await value('petUi.mode'),'shop');assert.match(await page.locator('#petLifeTitle').textContent(),/アスアル/);
    assert.ok(await page.locator('#petLifeModal [data-pet-buy]').count(),'existing fish shop contents remain available');
-  });
+   await press('[data-pet-tab="supplies"]');
+   const buy='[data-pet-buy-treat="finish"]', product=page.locator(buy);
+   if(!await product.isVisible()){
+    const row=page.locator('.compact-product').filter({has:product});
+    const select=row.locator('[data-compact-select]'),next=page.locator('#petLifeModal [data-compact-page="next"]');
+    while(!await select.isVisible()&&await next.isEnabled())await press('#petLifeModal [data-compact-page="next"]');
+    await select[mobile?'tap':'click']();
+   }
+   await canPress(buy);await press(buy);
+   assert.equal(Number((await page.locator('#money').textContent()).replaceAll(',','')),await value('s.money'),'wallet updates when the pack is bought');
+   assert.deepEqual(await value('s.petLife.raceTreats'),{launch:1,finish:4,sampled:true});
+   await press('[data-pet-action="aquarium"]');await press('[data-pet-action="focus-selected"]');
+   await canPress('[data-pet-action="race-treats"]');await press('[data-pet-action="race-treats"]');
+   await canPress('[data-pet-treat="launch"]');await canPress('[data-pet-treat="finish"]');await shot('aquarium-race-treats');await press('[data-pet-treat="finish"]');
+   assert.equal(await value('s.petLife.fish[0].raceTraining'),1);
+   assert.equal(await page.locator('[data-pet-treat]:disabled').count(),2,'today’s slot is spent for both flavors');
+   await press('.pet-sheet [data-pet-action="panel-close"]');
+  },buyAndFeed);
+  buyAndFeed(initial);
   await openExisting(front('right-shrine','main-shrine'),'#locationInterior','#locationInterior [data-close]',async()=>{
    assert.equal(await value('activeLocationId'),'main-shrine');assert.equal(await value('currentSoundScene().music'),'shrine');
    assert.ok(await page.locator('[data-draw-fortune="starGrapes"]').count(),'existing offering/fortune controls remain available');
@@ -299,7 +357,7 @@ module.exports=async function villageRefresh(url,screen){
   await openExisting(front('request-board','quest-board'),'#questBoard','#questBoard [data-close]',async()=>{
    assert.match(await page.locator('#questBoard').textContent(),/依頼掲示板/);
   });
-  assert.deepEqual(await economy(),initial,'ordinary visits never buy, charge, award or consume anything');
+  assert.deepEqual(await economy(),initial,'only the claimed samples, chosen 60-yen pack and one individual treat change resources');
   const ruralRoute=await page.evaluate(planRuralRoute,'villageGate');for(const direction of ruralRoute)await step(direction);
   assert.equal(await value('ShuRural.atVillageGate(s.x,s.y)'),true);visits.push({name:'rural-gate',steps:ruralRoute.length,...await state()});
   await feetAt('rural-gate');await shot('rural-gate');const beforeRural=await economy();
@@ -314,7 +372,7 @@ module.exports=async function villageRefresh(url,screen){
   assert.ok(pointerTypes.has(mobile?'touch':'mouse'),'real '+(mobile?'touch':'mouse')+' controls were exercised');
   assert.ok(walked>20,'routes must contain real movement');assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);assert.deepEqual(requestErrors,[]);
   await originalUnchanged();
-  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],activityReloads:2,printedAndPlayedRaceCard:true,printedAndPlayedHomeCatch:true,completedThreeRoundRematch:true,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
+  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],activityReloads:2,waterwheelReroute:true,individualRaceTreat:true,printedAndPlayedRaceCard:true,printedAndPlayedHomeCatch:true,completedThreeRoundRematch:true,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
   fs.writeFileSync(path.join(dir,prefix+'-result.json'),JSON.stringify(result,null,2));console.log('VILLAGE_REFRESH_PASS '+JSON.stringify(result));
  }catch(error){
   const failure={status:'failed',screen,message:error.message,at:page?await state().catch(()=>null):null,buttonPresses,walked,visits,errors,httpErrors,requestErrors,aborted};
