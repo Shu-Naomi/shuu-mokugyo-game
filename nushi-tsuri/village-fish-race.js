@@ -148,8 +148,13 @@
   function millLane(index, x, route) {
     const normal = [50, 27, 74][index];
     const branch = route === "wheel" ? [35, 23, 32][index] : [67, 72, 83][index];
-    const blend = Math.max(0, Math.min(1, (x - FORK) / (35 - FORK), (MERGE - x) / (MERGE - 61)));
-    return normal + (branch - normal) * blend;
+    if (x < FORK) return normal;
+    if (x < 35) return normal + (branch - normal) * (x - FORK) / (35 - FORK);
+    if (x < 61) return branch;
+    // The two channels meet at the tip of the island; the field fans out again downstream.
+    const junction = [50, 45, 55][index];
+    if (x < MERGE) return branch + (junction - branch) * (x - 61) / (MERGE - 61);
+    return junction + (normal - junction) * Math.min(1, (x - MERGE) / 12);
   }
   function laneY(index, x) {
     // The player's middle lane is straight. Both rivals visibly funnel through the same opening.
@@ -321,9 +326,9 @@
       root.append(footer);
       previewTip();
       if (ctx.claimSamples && !ctx.getSampleStatus()) {
-        const sample = button("danRaceSamples", "育成おやつの試供品", () => {
+        const sample = button("danRaceSamples", "育成おやつをもらう", () => {
           const claim = ctx.claimSamples();
-          setMessage(claim.message);
+          setMessage(claim.message + (claim.ok ? " 飼育水槽で一匹を選んであげてね。" : ""));
           if (claim.ok) {
             sample.remove();
             cueButton.focus({preventScroll:true});
@@ -396,7 +401,9 @@
           }
           return "白波を抜けた！ 合流点が見えてきた。";
         }
-        return player.spurtAt === null ? "岸側と合流！ 最後の直線、Aでスパート！" : "合流を抜けて最後の直線！";
+        const rank = 1 + race.runners.filter(f => f.x > player.x).length;
+        return "合流を抜けて" + (rank === 1 ? "先頭" : rank + "番手") + "！ " +
+          (player.spurtAt === null ? "最後の直線、Aでスパート！" : "もうすぐゴール！");
       }
       if (player.x === GATE_IN && player.gateOrder === 0) return "ダン「先客が門を通ってるぞ！」";
       if (player.spurtAt !== null && race.elapsed - player.spurtAt < player.spurtDuration)
@@ -428,7 +435,7 @@
       const from = (route === "wheel" ? "水車側" : "岸側") + "から" + mergeRank + "番手で合流。";
       if (rank < mergeRank) return from + "最後の直線で" + (mergeRank - rank) + "匹を追い抜いて" + rank + "着！";
       if (rank > mergeRank) return from + "最後の直線で" + (rank - mergeRank) + "匹にかわされ、" + rank + "着。";
-      return from + (rank === 1 ? "リードを守って1着！" : "そのまま" + rank + "着でゴール。");
+      return from + (rank === 1 ? "ゴールでも先頭、1着！" : "ゴールでも" + rank + "着。");
     }
     function makeResult() {
       const player = race.runners[0];
