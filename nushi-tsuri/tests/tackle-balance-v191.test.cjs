@@ -97,8 +97,8 @@ test('equipment and bait equip separately, persist, and secret bait uses only a 
   finally{legacy.dispose();}
 });
 
-test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibles and the shop',()=>{
-  const ids=['worm','corn','liveMinnow','nushiSecret','grasshopper','river','paste','shrimp','smallShrimp','shell','crab','hookSmall','hookMedium','hookLarge','hookMicro','hookCarp','silverSpoon','starMinnow','expeditionJoint','float'];
+test('21 unique pixel icons appear for all bait, hooks, small tackle, collectibles and the shop',()=>{
+  const ids=['worm','corn','liveMinnow','nushiSecret','grasshopper','river','paste','shrimp','smallShrimp','shell','crab','hookSmall','hookMedium','hookLarge','hookMicro','hookCarp','silverSpoon','softWorm','starMinnow','expeditionJoint','float'];
   assert.deepEqual(Object.keys(Art.sprites).sort(),ids.sort());
   const variants=new Set();
   for(const id of ids){const sprite=Art.sprites[id],markup=Art.icon(id);variants.add(markup);
@@ -115,7 +115,7 @@ test('20 unique pixel icons appear for all bait, hooks, small tackle, collectibl
     assert.equal(w.document.querySelectorAll('#inventoryCategory-parts .compact-row-art .pixel-item-icon').length,2);
     assert.equal(w.document.querySelectorAll('#inventoryCategory-collection .compact-row-art .item-object-pixel-icon').length,2);
     for(const id of ['bait','lures','tackle'])assert.equal(w.document.querySelector('#inventoryCategory-'+id),null,'the old duplicate shelf is gone');
-    w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),11);
+    w.eval('renderSamShop()');assert.equal(originals('#samTackleWindow .shop-item-art svg'),12);
     w.eval('renderFishdexCollection()');assert.equal(w.document.querySelectorAll('#fishdexCollection .item-object-pixel-icon').length,2);
     assert.deepEqual(app.errors,[]);
   }finally{app.dispose();}

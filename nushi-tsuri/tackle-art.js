@@ -231,6 +231,19 @@
       ["#8d6b4e","M7 19h1v2H7zM8 21h2v1H8z"],
       ["#ecd098","M7 18h1v1H7zM9 20h1v1H9z"],
     ],
+    // Ribbed olive grub on a round jig head with a curled chartreuse tail.
+    softWorm: [
+      ["#26383c","M3 6h2V4h4v2h2v2h3v2h3v2h2v3h2v4h-2v2h-6v-2h-2v-4H9v-2H6v-2H3z"],
+      ["#7a994c","M8 7h2v2h3v2h3v2h2v3h-3v-2h-3v-2H9v-2H7z"],
+      ["#4f713e","M7 9h2v2h3v2h3v2h2v2h-3v-2h-3v-2H8v-2H6z"],
+      ["#cfda65","M17 14h2v2h1v2h-2v2h-4v-2h-2v-2h1v1h2v1h2z"],
+      ["#a2bc54","M17 18h2v1h-2zM14 19h3v1h-3z"],
+      ["#c1d0a1","M9 8h1v2H9zM12 10h1v2h-1zM15 12h1v2h-1z"],
+      ["#94adae","M4 7h1V5h3v1h2v3H8v2H5V9H4zM10 9h3V8h1V5h1v4h-1v1h-4z"],
+      ["#eff0d1","M5 6h2v1H5zM13 5h1v2h-1z"],
+      ["#546975","M4 8h1v2H4zM7 9h2v1H7z"],
+      ["#efd77d","M7 7h1v1H7zM16 15h1v1h-1zM15 18h1v1h-1z"],
+    ],
     starMinnow: [
       ["#253b4f","M2 11h4V8h4V6h4v2h4v2h3v5h-4v2h-5v2H9v-3H6v-2H4v3H2z"],
       ["#3b8a9c","M6 10h5V8h5v2h3v4h-4v2H9v-3H6z"],

@@ -8689,13 +8689,18 @@
         lureData = {
           silverSpoon: {
             name: "銀のスプーンルアー", icon: ItemObjectArt.get("silverSpoon"),
-            desc: "ルアーロッドで使う万能スプーン。バスやマス類を誘いやすい。", price: 600,
+            shortName: "銀のスプーン", desc: "素早く巻いて、泳ぎ回るバスやマス類を誘う。", price: 600,
+          },
+          softWorm: {
+            name: "ソフトワーム", shortName: "ソフトワーム", icon: ShuTackleArt.icon("softWorm"),
+            desc: "底まで沈め、短く巻いて止める。岩際や障害物の魚を誘いやすい。", price: 480,
           },
           starMinnow: {
             name: "星色ミノー", icon: ItemObjectArt.get("starMinnow"),
             desc: "将来のルアー釣りで使える、星模様の小魚型ルアー。",
           },
         },
+        usableLureIds = Object.keys(lureData).filter(id => lureData[id].price > 0),
         rodPartData = {
           expeditionJoint: {
             name: "遠征対応ジョイント", icon: ItemObjectArt.get("expeditionJoint"),
@@ -17061,13 +17066,19 @@
             `<strong><em data-sam-price>${hook.price}円</em><small data-sam-stock>${owned ? "✓ 購入済み" : "未購入"}</small></strong></button>`;
         }).join("");
         $("#samHookGoods").querySelectorAll("[data-buy-hook]").forEach(button => button.onclick = () => buySamHook(button.dataset.buyHook));
-        $("#samLureGoods").innerHTML = `<button data-buy-lure="silverSpoon"><span class="shop-item-art">${ShuTackleArt.icon("silverSpoon")}</span><span><b>銀のスプーンルアー</b><small>繰り返し使用 · 所持${s.lures.silverSpoon||0}個</small></span><strong>600円</strong></button>`;
+        $("#samLureGoods").innerHTML = usableLureIds.map(id => {
+          const lure = lureData[id];
+          return `<button data-buy-lure="${id}"><span class="shop-item-art">${ShuTackleArt.icon(id)}</span><span><b>${lure.name}</b><small>${lure.desc} 繰り返し使用</small></span><strong><em data-sam-price>${lure.price}円</em><small data-sam-stock>所持 ${s.lures[id] || 0}個</small></strong></button>`;
+        }).join("");
         $("#samNewTackle").querySelectorAll("[data-buy-rod]").forEach(b=>b.onclick=()=>buySamRod(b.dataset.buyRod));
-        $("#samLureGoods [data-buy-lure]").onclick=()=>{
-          if(s.money<600){setSamShopDialogue("「スプーンは600円じゃ。もう少し貯めておいで」");return;}
-          s.money-=600;s.lures.silverSpoon=(s.lures.silverSpoon||0)+1;renderSamShop();render();save();
-          setSamShopDialogue("「短く巻いて、止めて、また誘う。魚が食いついたらAを押し直して合わせるんじゃ」");
-        };
+        $("#samLureGoods").querySelectorAll("[data-buy-lure]").forEach(button => button.onclick = () => {
+          const id = button.dataset.buyLure, lure = lureData[id];
+          if (s.money < lure.price) { setSamShopDialogue(`「${lure.name}は${lure.price}円じゃ。もう少し貯めておいで」`); return; }
+          s.money -= lure.price;
+          s.lures[id] = (s.lures[id] || 0) + 1;
+          renderSamShop(); render(); save();
+          setSamShopDialogue(`「${lure.name}を1個、${lure.price}円じゃ。魚が食いついたらAを押し直して合わせるんじゃ」`);
+        });
         document.querySelectorAll("#samTackleWindow [data-tackle-icon]").forEach((node) => {
           node.innerHTML = ShuTackleArt.icon(node.dataset.tackleIcon);
         });
@@ -19124,7 +19135,7 @@
       }
       function fishingCandidates(distance, spot, period, baitId, hookId) {
         return Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
-          let weight = base * (battle?.method==="lure"?ShuFishing.spoon[id]||.1:ShuTackle.weight(id, baitId, hookId));
+          let weight = base * (battle?.method==="lure"?ShuFishing.lureWeight(battle.lure,id,spot.id):ShuTackle.weight(id, baitId, hookId));
           if (id === "laketrout") weight *= {morning:1.6,day:.75,evening:1.5,night:.8}[period] || 1;
           if (id === "medaka") weight *= {morning:1.6,day:1.5,evening:.8,night:.12}[period] || 1;
           if (id === "raigyo") weight *= {morning:1.1,day:1.3,evening:1.4,night:.6}[period] || 1;
@@ -19351,7 +19362,7 @@
         return Object.keys(baitData).some(id => (s.baits[id] || 0) > 0);
       }
       function hasUsableLureTackle() {
-        return s.ownedRods.includes("lureRod") && (s.lures.silverSpoon || 0) > 0;
+        return s.ownedRods.includes("lureRod") && usableLureIds.some(id => s.lures[id] > 0);
       }
       function hookPreparationProblem(baitId, hookId) {
         if (!s.ownedHooks.includes(hookId) || !Object.hasOwn(ShuTackle.hooks, hookId))
@@ -19367,7 +19378,7 @@
           return "釣り竿が未装備です。仕掛け変更で所持している竿を選ぼう。";
         if (s.fishingMethod === "lure") {
           if (s.selectedRod !== "lureRod") return "ルアー釣りにはルアーロッドが必要です。仕掛け変更で装備しよう。";
-          if (!hasUsableLureTackle()) return "使えるスプーンルアーがありません。仕掛け変更か、フィールドへ戻れます。";
+          if (!usableLureIds.includes(s.selectedLure) || !(s.lures[s.selectedLure] > 0)) return "選んだルアーを持っていません。仕掛け変更か、フィールドへ戻れます。";
         } else {
           const hookProblem = hookPreparationProblem(s.selectedBait, s.selectedHook);
           if (hookProblem) return hookProblem;
@@ -19397,7 +19408,7 @@
         if (battle?.phase !== "prep" || battle.practice) return;
         const profile = fishingSpotById(battle.spot);
         $("#battleMsg").textContent =
-          fishingPreparationProblem() || `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${s.fishingMethod==="lure"?"銀のスプーンルアー":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0}／${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`}／${(rodData[s.selectedRod]?.name || "竿未装備")}／${ShuFishing.modes[s.fightMode]}`;
+          fishingPreparationProblem() || `${ShuWeather.forecast(sceneGameMinutes()).label}・${profile.role}／${s.fishingMethod==="lure"?lureData[s.selectedLure]?.name || "ルアー未選択":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0}／${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`}／${(rodData[s.selectedRod]?.name || "竿未装備")}／${ShuFishing.modes[s.fightMode]}`;
         syncSurfaceCastRodSprite(0);
         positionCastRodAtHand();
       }
@@ -20307,13 +20318,17 @@
         if(d.buyHand!=null||d.equipHand!=null)return handEquipmentData[d.buyHand||d.equipHand]?.icon||"";
         if(d.pickBait)return ShuTackleArt.icon(d.pickBait);
         if(d.pickHook)return ShuTackleArt.icon("hook"+d.pickHook[0].toUpperCase()+d.pickHook.slice(1));
-        if(d.fishingMethod)return ShuTackleArt.icon(d.fishingMethod==="lure"?"silverSpoon":"worm");
+        if(d.buyLure || d.pickLure)return ShuTackleArt.icon(d.buyLure || d.pickLure);
+        if(d.fishingMethod)return ShuTackleArt.icon("worm");
         if(d.fightMode)return ShuTackleArt.icon("liveMinnow");
         if(d.rodDuplicate)return rodDisplayMarkup("starGazer");
         return "";
       }
       function renderCompactInventory() {
-        ShuCompactUI.inventory($("#inventory"),{money:s.money,art:compactItemArt,methodDescription:`銀のスプーン ×${s.lures.silverSpoon||0} · 繰り返し使えるルアー`});
+        ShuCompactUI.inventory($("#inventory"),{money:s.money,art:compactItemArt,methodDescription:button => {
+          const id = button.dataset.pickLure;
+          return id ? `${lureData[id].shortName} ×${s.lures[id] || 0} · ${lureData[id].desc}` : "所持している餌とハリを選んで投げる。";
+        }});
       }
       function renderEquipment() {
         ShuCompactUI.release($("#inventory"));
@@ -20352,7 +20367,7 @@
         { id: "ingredients", label: "食材", icon: ItemArt.get("wildGreens"), title: "料理の食材", hint: "家・釣り宿・食堂で調理。餌や犬のおやつと共用の材料もここで確認できる。" },
         { id: "dogTreats", label: "犬のおやつ", icon: ItemObjectArt.get("samBiscuit"), title: "ワンコずのおやつ", hint: "犬とのお世話画面であげよう。好感度が上がるのは一匹につき一日一個。" },
         { id: "dogToys", label: "犬のおもちゃ", icon: ItemObjectArt.get("rubberBall"), title: "ワンコずのおもちゃ", hint: "犬とのお世話画面で遊ぼう。買ったおもちゃは何度でも使える。" },
-        { id: "parts", label: "保管釣具", icon: ShuTackleArt.icon("silverSpoon"), title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とスプーンは「タックル」から選べるよ。" },
+        { id: "parts", label: "保管釣具", icon: ShuTackleArt.icon("silverSpoon"), title: "保管用のルアー・竿のパーツ", hint: "星色ミノーや竿の追加パーツを保管。使える餌・ハリ・竿とルアーは「タックル」から選べるよ。" },
         { id: "collection", label: "コレクション", icon: ItemObjectArt.get("tideCoin"), title: "収集品・トロフィー", hint: "星みくじで見つけた品と、大会で獲得したトロフィー。" },
         { id: "offerings", label: "奉納品", icon: ItemArt.get("offeringDaikon"), title: "星みくじの奉納品", hint: "星占い神社で供える品。食べ物とは別に保管している。" },
       ];
@@ -20483,7 +20498,7 @@
             `<strong>所持</strong></div>`)
           .join("") || `<div class="inventory-card inventory-empty"><i>${ItemObjectArt.get("rubberBall")}</i><span><b>犬のおもちゃはまだない</b><br><small>サムの店や星みくじで手に入る。</small></span></div>`;
         const storedLureMarkup = Object.entries(lureData)
-          .filter(([id]) => id !== "silverSpoon")
+          .filter(([id]) => !usableLureIds.includes(id))
           .map(([id, item]) =>
             `<div class="inventory-card" data-stored-lure="${id}"><i>${item.icon}</i>` +
             `<span><b>${item.name}</b><br><small>${item.desc}</small></span>` +
@@ -20522,7 +20537,7 @@
           food: ownedTypes(preparedMealData, s.preparedMeals) + ownedTypes(fieldItemData, s.items, item => item.use === "recovery"),
           ingredients: ownedTypes(cookingIngredientData, s.cookingIngredients) + ownedTypes(fieldItemData, s.items, item => item.use === "ingredient") + sharedIngredients.filter(({storage, id}) => (s[storage][id] || 0) > 0).length,
           dogTreats: ownedTypes(dogCareData, s.dogTreats, item => item.type === "treat"),
-          dogToys: s.ownedDogToys.length, parts: ownedTypes(rodPartData, s.rodParts) + Object.keys(lureData).filter(id => id !== "silverSpoon" && (s.lures[id] || 0) > 0).length,
+          dogToys: s.ownedDogToys.length, parts: ownedTypes(rodPartData, s.rodParts) + Object.keys(lureData).filter(id => !usableLureIds.includes(id) && (s.lures[id] || 0) > 0).length,
           collection: ownedTypes(fishdexCollectibleData, s.fishdexCollectibles) + Object.values(ShuTournament.definitions).filter(d => (s.tournamentRecords[d.id]?.wins || 0) > 0).length,
           offerings: ownedTypes(fieldItemData, s.items, item => item.use === "offering"),
         };
@@ -20572,7 +20587,7 @@
       function renderTackle() {
         ShuCompactUI.release($("#inventory"));
         const focused = $("#tackle").contains(document.activeElement) ? document.activeElement : null;
-        const focusAttribute = ["data-pick-bait","data-pick-hook","data-pick-rod","data-fishing-method","data-fight-mode","data-rod-duplicate"].find(key => focused?.hasAttribute(key));
+        const focusAttribute = ["data-pick-bait","data-pick-hook","data-pick-rod","data-pick-lure","data-fishing-method","data-fight-mode","data-rod-duplicate"].find(key => focused?.hasAttribute(key));
         const focusValue = focusAttribute ? focused.getAttribute(focusAttribute) : null;
         const baitMarkup = Object.entries(baitData).map(([id, b]) =>
           `<button data-pick-bait="${id}" class="bait-option ${s.selectedBait === id ? "selected" : ""}" aria-pressed="${s.selectedBait === id}">` +
@@ -20595,7 +20610,7 @@
         for (const id of ["#rodOptions", "#inventoryRodOptions"])
           $(id).innerHTML = rodMarkup;
         $("#equipmentRod").textContent = (rodData[s.selectedRod]?.name || "竿未装備");
-        const summary = `装備中：${(rodData[s.selectedRod]?.name || "竿未装備")} ＋ ${s.fishingMethod==="lure"?"銀のスプーンルアー":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0} ＋ ${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`} ／ ${ShuFishing.modes[s.fightMode]}`;
+        const summary = `装備中：${(rodData[s.selectedRod]?.name || "竿未装備")} ＋ ${s.fishingMethod==="lure"?lureData[s.selectedLure]?.name || "ルアー未選択":`${(baitData[s.selectedBait]?.name || "餌未選択")} ×${s.baits[s.selectedBait]||0} ＋ ${(ShuTackle.hooks[s.selectedHook]?.name || "ハリ未選択")}`} ／ ${ShuFishing.modes[s.fightMode]}`;
         for (const id of ["#inventoryTackleSummary", "#castTackleSummary"])
           $(id).textContent = summary;
         const preparationProblem = battle?.phase === "prep" ? fishingPreparationProblem() : "";
@@ -20604,20 +20619,28 @@
           let panel=$(id).nextElementSibling;
           if(!panel?.classList.contains("duel-options")){panel=document.createElement("div");panel.className="duel-options";$(id).after(panel);}
           panel.innerHTML=`<div role="group" aria-label="水中ファイト方式"><b>水中ファイト</b>${Object.entries(ShuFishing.modes).map(([key,name])=>`<button data-fight-mode="${key}" aria-pressed="${s.fightMode===key}">${name}</button>`).join("")}</div><p>${s.fightMode==="nushi"?"魚が走る間はAを離して待つ。糸が緩んだら押して引き、顔を振って抵抗する合図で離そう。左の水面へ寄せるには、魚に合う丈夫な竿が必要。":"Aを押して巻く。張力が上がったらAを離して待とう。"} Bを1回押すと糸を出して張力をすぐ逃がせる。魚との距離は少し開くので、張力が高い時に使おう。</p>
-            <div role="group" aria-label="釣り方"><button data-fishing-method="bait" aria-pressed="${s.fishingMethod==="bait"}">エサ釣り</button><button data-fishing-method="lure" aria-pressed="${s.fishingMethod==="lure"}" ${s.ownedRods.includes("lureRod")&&s.lures.silverSpoon>0?"":"disabled"}>スプーンで誘う</button></div><small>スプーンにはルアーロッドが必要。サムの店で購入できるよ。アワセ後は一度Aを離してから引く。</small>
+            <div role="group" aria-label="釣り方"><button data-fishing-method="bait" aria-pressed="${s.fishingMethod==="bait"}">エサ釣り</button>${usableLureIds.map(id => `<button data-pick-lure="${id}" data-fishing-method="lure" aria-pressed="${s.fishingMethod === "lure" && s.selectedLure === id}" ${s.ownedRods.includes("lureRod") && s.lures[id] > 0 ? "" : "disabled"}>${lureData[id].shortName}</button>`).join("")}</div><small>ルアーにはルアーロッドが必要。アワセ後は一度Aを離してから引く。</small>
             ${s.rodCopies.starGazer>1?`<div class="rod-duplicates"><b>星見の竿 ${s.rodCopies.starGazer}本 · 強化＋${s.rodLevels.starGazer}</b><button data-rod-duplicate="sell">余分な一本を売る · 12000円</button><button data-rod-duplicate="upgrade" ${s.rodLevels.starGazer>=5?"disabled":""}>一本を重ねて強化</button><small>選ばなければ保管。最後の一本は残るよ。</small></div>`:""}`;
           panel.querySelectorAll("[data-fight-mode]").forEach(b=>b.onclick=()=>{s.fightMode=b.dataset.fightMode;renderTackle();save();});
-          panel.querySelectorAll("[data-fishing-method]").forEach(b=>b.onclick=()=>{s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save();});
           panel.querySelectorAll("[data-rod-duplicate]").forEach(b=>b.onclick=()=>{const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save();});
         }
         const castDuel = $("#inventoryTackleSummary").nextElementSibling;
         const groups = [...castDuel.querySelectorAll('[role="group"]')];
-        $("#castTackleMethods").innerHTML = `<div class="cast-method-buttons">${groups[1].innerHTML}</div><p>スプーンにはルアーロッドが必要。所持している銀のスプーンは繰り返し使えるよ。</p><p>スプーン：${s.lures.silverSpoon || 0}個 ／ 現在：${s.fishingMethod === "lure" ? "ルアー釣り" : "エサ釣り"}</p>`;
+        $("#castTackleMethods").innerHTML = `<div class="cast-method-buttons">${groups[1].innerHTML}</div><p>${s.fishingMethod === "lure" ? lureData[s.selectedLure].desc : "ルアーはサムの店で購入。ルアーロッドで繰り返し使えるよ。"}</p>`;
         $("#castFightOptions").innerHTML = `<div class="cast-fight-buttons">${groups[0].innerHTML}</div><p>${castDuel.querySelector("p").textContent}</p>`;
         $("#castRodDuplicates").innerHTML = castDuel.querySelector(".rod-duplicates")?.outerHTML || "";
         $("#castBaitHint").textContent = s.fishingMethod === "lure" ? "ルアー釣りでは選んだ餌・ハリは抽選に影響しないよ。エサ釣りへ戻すときの仕掛けも選べる。" : hookPreparationProblem(s.selectedBait, s.selectedHook) || "所持数と得意な魚を見て選ぼう。餌を消費するのは投げた時だよ。";
         $("#tackle").querySelectorAll("[data-fight-mode]").forEach(b => b.onclick = () => { s.fightMode=b.dataset.fightMode;renderTackle();save(); });
-        $("#tackle").querySelectorAll("[data-fishing-method]").forEach(b => b.onclick = () => { s.fishingMethod=b.dataset.fishingMethod;if(s.fishingMethod==="lure")s.selectedRod="lureRod";renderTackle();render();save(); });
+        document.querySelectorAll("[data-fishing-method]").forEach(button => button.onclick = () => {
+          const lureId = button.dataset.pickLure;
+          if (lureId) {
+            if (!s.ownedRods.includes("lureRod") || !(s.lures[lureId] > 0)) return;
+            s.selectedLure = lureId;
+            s.selectedRod = "lureRod";
+          }
+          s.fishingMethod = button.dataset.fishingMethod;
+          renderTackle(); render(); save();
+        });
         $("#tackle").querySelectorAll("[data-rod-duplicate]").forEach(b => b.onclick = () => { const result=ShuFishing.duplicate(s,b.dataset.rodDuplicate);log(result.message);renderTackle();render();save(); });
         setCastTackleCategory(castTackleCategory);
         document.querySelectorAll("[data-pick-bait]").forEach(b => b.onclick = () => {
@@ -20798,7 +20821,7 @@
         if (!battle || battle.practice || battle.baitCommitted) return true;
         const baitId = battle.bait || s.selectedBait;
         if(battle.method==="lure"&&!(s.lures[battle.lure]>0)){
-          const message="スプーンルアーがありません。Bでフィールドへ戻れます。";
+          const message="選んだルアーを持っていません。Bでフィールドへ戻れます。";
           $("#battleMsg").textContent=message;showRescueToast(message);return false;
         }
         if (battle.method!=="lure" && (s.baits[baitId] || 0) < 1) {
@@ -21025,6 +21048,7 @@
         }
         return ids;
       }
+      function currentLureName() {return battle.lure==="softWorm"?"ワーム":"スプーン";}
       function startLurePresentation() {
         beginUnderwaterFromSurface();
         battle.phase = "lure";
@@ -21033,21 +21057,21 @@
         battle.biteAt = Infinity;
         battle.biteShownAt = null;
         battle.sandLifted = true;
-        battle.lureMotion = ShuFishing.newLure(battle.startMeters, lureResidentIds());
+        battle.lureMotion = ShuFishing.newLure(battle.startMeters, lureResidentIds(), battle.lure);
         $("#castSurface").classList.remove("cast-throwing");
         $("#fishScene").classList.add("lure-search");
         showLureWater(battle.lureMotion);
         const lure = $("#lurePreview");
-        lure.innerHTML = ShuTackleArt.icon("silverSpoon");
+        lure.innerHTML = ShuTackleArt.icon(battle.lure);
         lure.hidden = false;
         const sprite = $("#battleFish");
         sprite.className = `battle-fish fish-${battle.f.id}`;
         sprite.style.transition = "none";
-        $("#fishName").textContent = "スプーンで誘う";
+        $("#fishName").textContent = currentLureName()+"で誘う";
         $("#phaseLabel").textContent = " 誘い中";
         $("#distanceLabel").style.display = "block";
         $("#distanceMeter").parentElement.style.display = "block";
-        $("#battleMsg").textContent = "Aで巻いて、離すと沈む。スプーンに振り向く魚を見てみよう。";
+        $("#battleMsg").textContent = battle.lure==="softWorm"?"離して底に沈め、Aを短く押して跳ねさせよう。":"Aで巻いて、離すと沈む。スプーンに振り向く魚を見てみよう。";
         $("#pull").innerHTML = "A<br><small>誘う</small>";
         $("#wait").innerHTML = "B<br><small>回収する</small>";
         updateLurePresentation();
@@ -21062,7 +21086,7 @@
         battle.phase = "interest";
         battle.biteScheduledAt = Date.now();
         $("#fishName").textContent = battle.f.name;
-        $("#battleMsg").textContent = `${battle.f.name}がスプーンを追ってきた！　巻きを緩めてみよう。`;
+        $("#battleMsg").textContent = `${battle.f.name}が${currentLureName()}を追ってきた！　巻きを緩めてみよう。`;
       }
       function renderLureFish(motion, contact) {
         const resident = motion.residents[0];
@@ -21118,12 +21142,12 @@
             }
           }
           if (result.recovered) {
-            log("スプーンを手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");
+            log(currentLureName()+"を手前まで巻き戻した。巻く・止めるを変えて、また探ってみよう。");
             return endBattle();
           }
           if (result.depart) {
             battle.phase = "lure";
-            $("#fishName").textContent = "スプーンで誘う";
+            $("#fishName").textContent = currentLureName()+"で誘う";
             $("#battleMsg").textContent = "魚が追うのをやめた。Aを短く押す・離して沈めるを試そう。";
           } else if (result.reveal) {
             revealLureFish();
@@ -21136,7 +21160,7 @@
         if (battle.phase !== "bite") {
           const label = {fast:"速く巻く", slow:"ゆっくり巻く", sink:"止めて沈める"}[motion.motion];
           $("#phaseLabel").textContent = ` ${battle.phase === "interest" ? "魚が接近・" : ""}${label}`;
-          $("#distanceLabel").textContent = `スプーンまで ${Math.max(0, Math.ceil(motion.distance * (1 - motion.travel)))}m`;
+          $("#distanceLabel").textContent = `${currentLureName()}まで ${Math.max(0, Math.ceil(motion.distance * (1 - motion.travel)))}m`;
           $("#distanceMeter").style.width = `${(1 - motion.travel) * 100}%`;
         }
         const lure = $("#lurePreview");
@@ -22990,14 +23014,18 @@
         };
       }
       function drawFishTackle(anchor) {
-        const bait = battle.method==="lure"?"silverSpoon":battle.bait || s.selectedBait || "worm";
+        const bait = battle.method==="lure"?battle.lure:battle.bait || s.selectedBait || "worm";
         for (const [id, layer] of [
           ["#fishTackleBack", "fish-tackle-back"],
           ["#fishTackleFront", "fish-tackle-front"],
         ]) {
           const tackle = $(id);
           tackle.className = `fish-tackle ${layer} bait-${bait}`;
-          if(!tackle.querySelector(".hook-spoon")){const art=document.createElement("span");art.className="hook-spoon";art.innerHTML=ShuTackleArt.icon("silverSpoon");tackle.append(art);}
+          if(battle.method==="lure" && tackle.dataset.lure!==bait){
+            let art=tackle.querySelector(".hook-spoon");
+            if(!art){art=document.createElement("span");art.className="hook-spoon";tackle.append(art);}
+            art.innerHTML=ShuTackleArt.icon(bait);tackle.dataset.lure=bait;
+          }
           tackle.style.left = `${anchor.rootX / 10}%`;
           tackle.style.top = `calc(${anchor.rootY / 5}% - 7px)`;
           tackle.style.transform =
@@ -23033,7 +23061,7 @@
         if (battle.phase === "bite" && now > shownAt + biteWindow) {
           if (battle.practice)
             queuePracticeBite("サム「今のは遅かったな。大丈夫、ウキを見てもう一度だ」");
-          else lose(battle.method==="lure"?"アワセが間に合わず、魚がスプーンから離れた。":"合わせが遅れた……魚はエサだけ持っていった。");
+          else lose(battle.method==="lure"?`アワセが間に合わず、魚が${currentLureName()}から離れた。`:"合わせが遅れた……魚はエサだけ持っていった。");
           return false;
         }
         if (battle.phase === "wait" && now >= battle.biteAt) {
@@ -23303,7 +23331,7 @@
           : f.id === "hirame" && !battle.sandLifted
             ? "ヒラメが砂底にぺったり張り付いている！まずAで引き剥がし、左上の水面へ寄せよう。"
             : lureFight
-            ? `${f.name}がスプーンに掛かった！糸と魚を見て水面へ寄せよう。${fightProfiles[f.id].intro}`
+            ? `${f.name}が${currentLureName()}に掛かった！糸と魚を見て水面へ寄せよう。${fightProfiles[f.id].intro}`
             : `${f.name}が姿を現した！右の深場から左の水面まで巻き上げよう。${fightProfiles[f.id].intro}`;
         drawBattle();
         log(battle.practice
