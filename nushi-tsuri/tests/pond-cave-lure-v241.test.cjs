@@ -43,7 +43,7 @@ test('gigi is naturally catchable with bait, has distinct art and dex, enters th
     assert.equal(w.document.querySelector('#homeAquariumFish canvas').dataset.artSpecies,'gigi');assert.notEqual(A.species.gigi.asset,A.species.namazu.asset);
     saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
     const cave=new Set(read(w,'fishingSpots.filter(p=>p.id.startsWith("mountain-underground-")).flatMap(p=>Object.keys(p.weights))'));
-    assert.equal(cave.size,9);assert.ok(cave.has('gigi')&&cave.has('kajika')&&cave.has('dojo'));
+    assert.equal(cave.size,10);assert.ok(cave.has("akaza"));assert.ok(cave.has('gigi')&&cave.has('kajika')&&cave.has('dojo'));
     for(const id of read(w,'fish.map(f=>f.id)'))assert.ok(Number.isFinite(F.spoon[id])&&Number.isFinite(F.fishStrength[id]),id+' explicit lure and rod balance');
   }finally{app.dispose();}
   const restored=boot(saved);try{assert.equal(read(restored.window,'s.caught.gigi'),1);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}

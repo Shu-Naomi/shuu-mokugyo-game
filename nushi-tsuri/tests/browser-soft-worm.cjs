@@ -56,7 +56,7 @@ async function run(browser,url,viewport) {
     await fits(purchase);await purchase.tap();await fits(page.locator('[data-sam-confirm-buy]'));
     await shot('worm-price');await tap('[data-sam-confirm-buy]');await tap('#store [data-close]');
     await menu('items');await tap('[data-inventory-tab="tackle"]');
-    await pressProduct(page,'#inventory [data-fishing-method="lure"]',true);
+    await pressProduct(page,'#inventory [data-pick-lure="silverSpoon"]',true);
     const select=await revealProduct(page,'#inventory [data-pick-lure="softWorm"]',true);
     await fits(select);await select.tap();
     assert.deepEqual(await page.evaluate(gear),{money:0,worm:7,soft:1,spoon:1,lure:'softWorm',method:'lure',rod:'lureRod'});
