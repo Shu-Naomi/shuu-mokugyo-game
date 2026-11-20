@@ -4862,6 +4862,12 @@
            could follow the JS cell while a neighbouring mouth was painted. */
         animation: none;
       }
+      /* The fight atlas already animates its turn. Interpolating the outer
+         reflection as well briefly displays a second, opposite-facing pose. */
+      #battleFish.fish-shiokakure {
+        transition-property: left, top, filter;
+        transition-duration: .12s, .12s, .18s;
+      }
       .battle-fish.fish-moroko,
       .battle-fish.fish-aji {
         width: clamp(100px, 14vw, 150px);
