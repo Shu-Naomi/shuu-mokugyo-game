@@ -54,7 +54,7 @@ module.exports=async function motionAndCoast(url,mobile){
     assert.ok(smoothFrames.some(v=>!Number.isInteger(v.frame)),'turn frames are fractional '+JSON.stringify(smoothFrames));
     // Check the full rendered body and hook at intermediate headings for all species.
     const poses=await page.evaluate(async()=>{
-      stopBattleFishArt();await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(id)))].map(src=>fishAtlasImage(src).decode()));
+      stopBattleFishArt();await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(ShuFishArt.fightVariants[id] || id)))].map(src=>fishAtlasImage(src).decode()));
       const results=[];
       for(const id of Object.keys(ShuFishArt.species)){
         battle.f=fish.find(f=>f.id===id);battle.specimen=null;battle.specimenVisualScale=1;
