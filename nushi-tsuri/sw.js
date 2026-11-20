@@ -1,8 +1,8 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-regional-fish-worm-252-82";
+const CACHE_NAME = "nushi-tsuri-v252-riao-duel-252-83";
 
-importScripts("./village-precache-252-82.js");
+importScripts("./village-precache-252-83.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",

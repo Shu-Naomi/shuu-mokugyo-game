@@ -538,3 +538,166 @@
   .dan-race-result li { padding: 3px 1px; }
   .dan-race-result h3 { font-size: 18px; }
 }
+
+/* Riao's shop and the three-card table share the original felt and card stock. */
+[data-card-screen="shop"] .fish-game-options {
+  display: grid;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+}
+[data-card-screen="shop"] .fish-game-choice { grid-column: span 2; }
+[data-card-screen="shop"] :is([data-card-action="duel"], [data-card-action="catch-print"]) {
+  grid-column: span 3;
+  text-align: left;
+  padding-inline: 15px;
+}
+[data-card-screen="shop"] [data-card-action="duel"] {
+  color: #fff3d2;
+  background: #386252;
+  border-color: #e5c884;
+}
+[data-card-screen="shop"] [data-card-action="catch-print"] {
+  color: #ffefd1;
+  background: #674d39;
+  border-color: #c4a477;
+}
+[data-card-screen="shop"] .fish-card-art { height: clamp(38px, 11vh, 78px); }
+
+.duel-roster {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+  min-width: 0;
+  padding: 6px 10px;
+  border-left: 3px solid #9aa983;
+  background: #243e34;
+  color: #ebecd5;
+  font-size: 13px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.duel-rival-card {
+  padding: 1px 5px;
+  border: 1px solid #829b7e;
+  border-radius: 3px;
+  background: #2a4c3e;
+  white-space: nowrap;
+}
+.duel-spent-tools { color: #d6d8c3; }
+.duel-roster .is-spent { color: #bac7b5; text-decoration: line-through; }
+.duel-deck, .duel-hand.card-hand {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: clamp(6px, 1.2vw, 12px);
+  min-width: 0;
+}
+.duel-slot {
+  display: grid;
+  min-width: 0;
+  align-content: start;
+  gap: 4px;
+  padding: 5px 6px;
+  border: 1px solid #66816a;
+  border-radius: 4px;
+  background: #223d34;
+}
+.duel-slot b { color: var(--fish-gold); font-size: 13px; }
+.duel-slot select { min-width: 0; width: 100%; text-overflow: ellipsis; }
+.duel-hand .fish-playing-card[disabled] {
+  opacity: .6;
+  filter: saturate(.3);
+  box-shadow: none;
+}
+.duel-hand .fish-card-imprint {
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.duel-log {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 3px 12px;
+  margin: 0;
+  padding: 5px 9px;
+  border: 1px solid #667e66;
+  border-radius: 4px;
+  color: #e8e7ca;
+  background: #1c362d;
+  font-size: 12px;
+  line-height: 1.4;
+  list-style: none;
+}
+.fish-card-shop:is([data-card-screen^="duel-"], [data-card-screen="catch-print"]) {
+  min-width: 0;
+  justify-content: center;
+}
+
+@media (min-width: 600px) {
+  [data-card-screen="duel-play"], [data-card-screen="duel-setup"],
+  [data-card-screen="duel-result"], [data-card-screen="catch-print"]:has(.fish-playing-card) {
+    display: grid;
+    align-items: center;
+  }
+  [data-card-screen="duel-setup"] {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  [data-card-screen="duel-play"] {
+    grid-template-columns: minmax(0, 3fr) minmax(0, 2fr);
+    grid-template-areas: "score score" "hand rival" "hand tackle" "hand hint" "hand actions";
+  }
+  [data-card-screen="duel-play"] .duel-roster { grid-area: rival; }
+  [data-card-screen="duel-play"] .card-hint { grid-area: hint; }
+  [data-card-screen="duel-play"] .fish-game-actions { grid-area: actions; justify-content: flex-start; }
+  [data-card-screen="duel-result"] {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas: "score score" "pair verdict" "pair history" "pair actions";
+  }
+  [data-card-screen="duel-result"] .card-showdown { grid-area: pair; }
+  [data-card-screen="duel-result"] .card-verdict { grid-area: verdict; }
+  [data-card-screen="duel-result"] .duel-log { grid-area: history; }
+  [data-card-screen="duel-result"] .fish-game-actions { grid-area: actions; justify-content: flex-start; }
+  [data-card-screen="catch-print"]:has(.fish-playing-card) {
+    grid-template-columns: minmax(140px, .7fr) minmax(0, 1.3fr);
+  }
+  [data-card-screen="catch-print"] .fish-playing-card {
+    grid-column: 1;
+    grid-row: 1 / span 4;
+    align-self: center;
+  }
+  [data-card-screen="catch-print"]:has(.fish-playing-card) > :not(.fish-playing-card) { grid-column: 2; }
+  [data-card-screen="catch-print"] .fish-game-actions { justify-content: flex-start; }
+}
+
+@media (max-height: 500px) and (min-width: 600px) {
+  [data-card-screen="duel-setup"] .fish-card-art,
+  [data-card-screen="duel-play"] .fish-card-art,
+  [data-card-screen="duel-result"] .fish-card-art { height: clamp(42px, 14vh, 60px); }
+  [data-card-screen="duel-play"] .card-tackle { gap: 4px; }
+  [data-card-screen="duel-play"] .card-tackle button { padding-inline: 7px; }
+  .duel-roster { padding: 4px 7px; font-size: 12px; }
+}
+@media (max-width: 599px) {
+  [data-card-screen="shop"] .fish-game-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  [data-card-screen="shop"] .fish-game-choice,
+  [data-card-screen="shop"] :is([data-card-action="duel"], [data-card-action="catch-print"]) { grid-column: auto; }
+  [data-card-screen="shop"] [data-card-action="album"] { grid-column: 1 / -1; }
+}
+
+[data-card-screen="catch-print"] input[type="text"] {
+  flex: 1;
+  min-width: 7em;
+  max-width: 100%;
+  min-height: 36px;
+  box-sizing: border-box;
+  padding: 5px 9px;
+  border: 1px solid #9bb397;
+  border-radius: 4px;
+  color: #fff3ce;
+  background: #172e2a;
+  font: inherit;
+  font-size: 16px;
+}
+[data-card-screen="catch-print"] input:focus-visible {
+  outline: 3px solid var(--fish-gold);
+  outline-offset: -3px;
+}

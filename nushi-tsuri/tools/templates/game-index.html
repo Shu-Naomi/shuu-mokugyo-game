@@ -6466,7 +6466,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="village-fish-games.css?v=252-79" />
+    <link rel="stylesheet" href="village-fish-games.css?v=252-83" />
     <link rel="stylesheet" href="pet-life.css?v=252-60" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-82</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-83</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7470,7 +7470,7 @@
     <script src="aquarium-life.js?v=252-82"></script>
     <script src="compact-ui.js?v=252-82"></script>
     <script src="pet-life-ui.js?v=252-79"></script>
-    <script src="village-fish-cards.js?v=252-79"></script>
+    <script src="village-fish-cards.js?v=252-83"></script>
     <script src="village-fish-race.js?v=252-79"></script>
     <script src="tackle-balance.js?v=252-71"></script>
     <script src="fishing-duel.js?v=252-82"></script>
@@ -12204,6 +12204,12 @@
           castLocale: currentBattle.castLocale || currentBattle.waterZone || "",
           period: gameClockAt(sceneGameMinutes(state)).period,
         };
+        if (Number.isSafeInteger(specimen?.hundredths) && fishSizeTierAt(f.id, specimen.hundredths)) {
+          entry.last.hundredths = specimen.hundredths;
+          entry.last.gameMinutes = currentBattle.catchContext?.gameMinutes ?? sceneGameMinutes(state);
+          if (specimen.hundredths > (state.sizeRecords?.[f.id]?.hundredths || 0))
+            entry.bestOrdinal = state.caught[f.id];
+        }
         state.fishCatchRecords[f.id] = entry;
         const crowns = state.fishCrowns[f.id] || { tiny: false, giant: false };
         let newCrown = "";
@@ -13013,7 +13019,15 @@
                 : "",
             }
           : null;
+        if (last && Number.isSafeInteger(record.last.hundredths) && fishSizeTierAt(fishId, record.last.hundredths) &&
+            Number.isSafeInteger(record.last.gameMinutes) && record.last.gameMinutes >= 0) {
+          last.hundredths = record.last.hundredths;
+          last.gameMinutes = record.last.gameMinutes;
+        }
+        const bestOrdinal = record.bestOrdinal;
         s.fishCatchRecords[fishId] = { tackles, last };
+        if (Number.isSafeInteger(bestOrdinal) && bestOrdinal > 0 && bestOrdinal <= s.caught[fishId])
+          s.fishCatchRecords[fishId].bestOrdinal = bestOrdinal;
       }
       for (const [fishId, record] of Object.entries(s.sizeRecords)) {
         if (!s.fishCrowns[fishId]) s.fishCrowns[fishId] = { tiny: false, giant: false };
@@ -13027,6 +13041,13 @@
         spots: Object.fromEntries(fishingSpots.map(spot=>[spot.id,spot])),
       };
       s.catchMemories = ShuCatchMemories.normalize(s.catchMemories,s,catchMemoryCatalog);
+      if (s.homeAquariumFishId) {
+        // Pin an old tank before another landing can replace this species' records.
+        s.homeAquariumSpecimen = displayedAquariumSpecimen();
+        s.homeAquariumSizeHundredths = s.homeAquariumSpecimen.length;
+      } else {
+        delete s.homeAquariumSpecimen;
+      }
       ShuRegional.normalize(s);
       const petCatalog = fish.map(f=>{
         const tiers=fishSizeProfiles[f.id],normal=fishSizeTierById(f.id,"normal"),small=fishSizeTierById(f.id,"small");
@@ -16786,29 +16807,110 @@
         const id=s.homeAquariumFishId,normal=aquariumDefaultLength(id),max=fishSizeProfiles[id]?.at(-1)?.maxHundredths||20000;
         return Math.min(max,Math.max(1,Math.floor(Number(s.homeAquariumSizeHundredths)||s.sizeRecords[id]?.hundredths||normal)));
       }
-      function aquariumAvailableFish() {
-        return fish.filter((f) => normalizeAquariumFishId(f.id));
+      function recordedAquariumSpecimen(species, record, ordinal) {
+        // Older size-record entries have no ordinal. Their maximum was only
+        // replaced by a strictly bigger fish, so its original record identifies it.
+        const uid = ordinal ? `catch-${species}-${ordinal}`
+          : `memory-${species}-${record.gameMinutes}-${record.spotId}-${record.hundredths}`;
+        const place = fishingSpotById(record.spotId, false) ? fishdexCatchLocation(record) : null;
+        return {uid, species, length: record.hundredths, measured: true, place};
+      }
+      function aquariumCatchOptions(species) {
+        const history = s.fishCatchRecords[species];
+        const memories = s.catchMemories?.[species];
+        const first = memories?.first, best = memories?.best;
+        const count = s.caught[species];
+        const options = [];
+        function add(label, catchRecord, ordinal) {
+          if (!Number.isSafeInteger(catchRecord?.hundredths) || !fishSizeTierAt(species, catchRecord.hundredths)) return;
+          const specimen = recordedAquariumSpecimen(species, catchRecord, ordinal);
+          if (!options.some(row => row.fish.uid === specimen.uid)) options.push({label, fish: specimen});
+        }
+        add("直近", history?.last, count);
+        add("最大", best, history?.bestOrdinal || (best && best.hundredths === first?.hundredths ? 1 : null));
+        add("初釣果", first, 1);
+        return options;
+      }
+      function legacyAquariumSpecimen(species, length) {
+        return {uid: `old-${species}-${length}`, species, length,
+          measured: length === s.sizeRecords[species]?.hundredths, place: null};
+      }
+      function displayedAquariumSpecimen() {
+        const species = normalizeAquariumFishId(s.homeAquariumFishId);
+        if (!species) return null;
+        const pinned = s.homeAquariumSpecimen;
+        const length = homeAquariumLength();
+        if (pinned?.species === species && pinned.length === length &&
+            typeof pinned.uid === "string" && pinned.uid.length <= 160 &&
+            ["catch-", "memory-", "old-"].some(prefix => pinned.uid.startsWith(prefix + species + "-"))) {
+          return {uid: pinned.uid, species, length, measured: pinned.measured === true,
+            place: typeof pinned.place === "string" ? pinned.place.slice(0, 80) || null : null,
+            nickname: ShuPetLife.nickname(pinned)};
+        }
+        // Old displays kept the then-record size. A later catch of equal size
+        // can come from a different place, so never infer origin from "last".
+        const memories = s.catchMemories?.[species];
+        if (Number.isSafeInteger(s.homeAquariumSizeHundredths)) {
+          const known = memories?.best?.hundredths === length ? memories.best
+            : memories?.first?.hundredths === length ? memories.first : null;
+          if (known) {
+            const ordinal = known.hundredths === memories.first?.hundredths ? 1 : s.fishCatchRecords[species]?.bestOrdinal;
+            return recordedAquariumSpecimen(species, known, ordinal);
+          }
+        }
+        return legacyAquariumSpecimen(species, length);
+      }
+      function aquariumDisplayChoices() {
+        const current = displayedAquariumSpecimen();
+        const archive = new Map();
+        for (const card of villageFishBook().catchCards) {
+          if (!archive.has(card.species)) archive.set(card.species, []);
+          archive.get(card.species).push(card.specimen);
+        }
+        return fish.filter(f => normalizeAquariumFishId(f.id)).flatMap(f => {
+          const byId = new Map(aquariumCatchOptions(f.id).map(row => [row.fish.uid, row]));
+          if (current?.species === f.id) byId.set(current.uid, {label: "展示中", fish: current});
+          for (const specimen of archive.get(f.id) || []) {
+            const label = byId.get(specimen.uid)?.label || "魚札の記録";
+            byId.set(specimen.uid, {label, fish: specimen});
+          }
+          if (!byId.size) {
+            const specimen = legacyAquariumSpecimen(f.id, s.sizeRecords[f.id]?.hundredths || aquariumDefaultLength(f.id));
+            byId.set(specimen.uid, {label: "", fish: specimen});
+          }
+          return [...byId.values()].map((row, index) => ({...row, value: index ? row.fish.uid : f.id,
+            name: row.fish.nickname ? row.fish.nickname + "（" + f.name + "）" : f.name}));
+        });
       }
       function updateAquariumPlaceButton() {
-        const id = $("#aquariumFishSelect").value;
+        const option = $("#aquariumFishSelect").selectedOptions[0];
+        const same = option?.dataset.uid === displayedAquariumSpecimen()?.uid;
         const button = $("#aquariumPlaceFish");
-        button.disabled = !normalizeAquariumFishId(id) || id === s.homeAquariumFishId;
-        button.textContent = id && id === s.homeAquariumFishId
-          ? "この魚は水槽にいるよ"
+        button.disabled = !option?.value || same;
+        button.textContent = same && option?.value ? "この魚は水槽にいるよ"
           : s.homeAquariumFishId ? "この魚と入れ替える" : "水槽に入れる";
       }
+      function aquariumSpecimenSize(specimen) {
+        return specimen.measured ? ShuPetLife.cm(specimen.length) + "cm" : "体長の記録なし";
+      }
       function renderAquariumControls() {
-        const choices = aquariumAvailableFish();
-        const current = fish.find((f) => f.id === s.homeAquariumFishId);
+        const choices = aquariumDisplayChoices();
+        const current = displayedAquariumSpecimen();
+        const currentName = current?.nickname || fish.find(f => f.id === current?.species)?.name;
         $("#aquariumStatus").textContent = current
-          ? `水槽の魚：${current.name}（1匹・${ShuPetLife.cm(homeAquariumLength())}cm）`
+          ? `水槽の魚：${currentName}（1匹・${aquariumSpecimenSize(current)}）・${current.place || "釣り場不明"}`
           : choices.length ? "まだ魚は入っていない。" : "まずは魚を1匹釣ってみよう。";
         const select = $("#aquariumFishSelect");
-        select.innerHTML = choices.length
-          ? choices.map((f) => `<option value="${f.id}">${f.name}</option>`).join("")
-          : '<option value="">釣った魚がいない</option>';
+        select.replaceChildren();
+        for (const choice of choices) {
+          const specimen = choice.fish;
+          const option = new Option(`${choice.name}　${choice.label} ${aquariumSpecimenSize(specimen)}・${specimen.place || "釣り場不明"}`, choice.value);
+          option.dataset.uid = specimen.uid;
+          select.add(option);
+        }
+        if (!choices.length) select.add(new Option("釣った魚がいない", ""));
         select.disabled = !choices.length;
-        select.value = current?.id || choices[0]?.id || "";
+        select.value = choices.find(row => row.fish.uid === current?.uid)?.value || choices[0]?.value || "";
         updateAquariumPlaceButton();
       }
       function openHomeAquarium() {
@@ -16821,14 +16923,15 @@
         renderHomeAquarium();
         return true;
       }
-      function placeAquariumFish(id) {
+      function placeAquariumFish(value) {
         if (battle || playerHomeState.transitioning ||
             playerHomeState.area !== "interior" ||
-            !$("#aquariumModal").classList.contains("open") ||
-            !normalizeAquariumFishId(id) || s.homeAquariumFishId === id) return false;
-        // History-based display only: never consume a catch or award money.
-        s.homeAquariumFishId = id;
-        s.homeAquariumSizeHundredths = s.sizeRecords[id]?.hundredths || aquariumDefaultLength(id);
+            !$("#aquariumModal").classList.contains("open")) return false;
+        const selected = aquariumDisplayChoices().find(row => row.value === value)?.fish;
+        if (!selected || selected.uid === displayedAquariumSpecimen()?.uid) return false;
+        s.homeAquariumFishId = selected.species;
+        s.homeAquariumSizeHundredths = selected.length;
+        s.homeAquariumSpecimen = {...selected};
         save();
         renderAquariumControls();
         renderHomeAquarium();
@@ -18897,6 +19000,11 @@
           records: Array.isArray(data?.records) ? data.records.filter(r =>
             r && typeof r.id === "string" && fish.some(f => f.id === r.species) &&
             typeof r.name === "string" && [1, 2, 3].includes(r.rank)) : [],
+          catchCards: Array.isArray(data?.catchCards) ? data.catchCards.filter(r =>
+            r && typeof r.uid === "string" && r.id === "card-" + r.uid &&
+            typeof r.species === "string" && r.specimen?.species === r.species && r.specimen.uid === r.uid &&
+            Number.isSafeInteger(r.specimen.length) && fishSizeTierAt(r.species, r.specimen.length) &&
+            typeof r.name === "string") : [],
           cleared: Array.isArray(data?.cleared) ? data.cleared.filter(id => typeof id === "string") : [],
           foils: Array.isArray(data?.foils) ? data.foils.filter(id => typeof id === "string") : [],
         };
@@ -18936,6 +19044,35 @@
         let currentRun = null;
         const context = {
           entrants: () => entrants,
+          fishResistance: species => fish.find(f => f.id === species)?.resistance,
+          getCatchCandidates() {
+            const specimen = displayedAquariumSpecimen();
+            if (!specimen) return [];
+            return [{uid: specimen.uid, species: specimen.species, place: specimen.place,
+              name: specimen.nickname || petCatalog.find(f => f.id === specimen.species).name,
+              specimen}];
+          },
+          getCatchCards: () => villageFishBook().catchCards,
+          printCatchCard(uid, nickname = "") {
+            const specimen = displayedAquariumSpecimen();
+            if (villageSaveSuspended || !specimen || uid !== specimen.uid || typeof nickname !== "string") return null;
+            const book = villageFishBook();
+            const printed = book.catchCards.find(record => record.uid === uid);
+            if (printed) return printed;
+            if (nickname.trim() && !ShuPlayerOptions.validName(nickname)) return null;
+            const named = nickname.trim() ? ShuPlayerOptions.name(nickname) : specimen.nickname || "";
+            const savedSpecimen = {...specimen, nickname: named};
+            const record = {id: "card-" + uid, uid, species: specimen.species,
+              name: named || petCatalog.find(f => f.id === specimen.species).name,
+              nickname: named, place: specimen.place, specimen: savedSpecimen};
+            book.catchCards.push(record);
+            const previous = s.homeAquariumSpecimen;
+            s.homeAquariumSpecimen = savedSpecimen;
+            if (storeVillageFishBook(book)) return record;
+            if (previous === undefined) delete s.homeAquariumSpecimen;
+            else s.homeAquariumSpecimen = previous;
+            return null;
+          },
           fishName: species => petCatalog.find(f => f.id === species)?.name ?? "魚",
           drawFish: (element, species, frame = 0, specimen = null) =>
             drawAquariumSprite(element, species, frame, {spriteMode: "swim", yaw: 0}, specimen),
@@ -24632,8 +24769,12 @@
         if(!lakeIntroIndex)return;lakeIntroIndex--;renderLakeIntro();$("#lakeIntroNext").focus({preventScroll:true});
       };
       $("#villageFishGames").onkeydown = event => {
+        if (event.target.matches?.("input") && (event.isComposing || event.keyCode === 229)) {
+          event.stopPropagation();
+          return;
+        }
         if (event.key !== "Tab") return;
-        const controls = [...event.currentTarget.querySelectorAll("button:enabled, select:enabled")];
+        const controls = [...event.currentTarget.querySelectorAll("button:enabled, select:enabled, input:enabled")];
         const first = controls[0], last = controls[controls.length - 1];
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
@@ -24909,7 +25050,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-82").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-83").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

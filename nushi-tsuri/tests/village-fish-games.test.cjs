@@ -182,3 +182,160 @@ test('a rental ayu can earn its own souvenir, then a spare for gold foil with un
     assert.deepEqual(app.errors, []);
   } finally { app.dispose(); }
 });
+
+test('three-round play commits Riao before the reveal and spends each fish and each tackle once', () => {
+  const { createMatch, playMatchRound, nextMatchRound } = require('../village-fish-cards.js');
+  const options = ['none', 'net', 'chum'];
+  const results = new Set();
+  const run = (order, tackles) => {
+    const match = createMatch(undefined, () => 0.36);
+    let points = [0, 0];
+    const opponentFish = new Set(), opponentTackle = new Set();
+    for (let round = 0; round < 3; round++) {
+      const before = { ...match.rivalMove };
+      if (round) {
+        assert.equal(playMatchRound(match, order[0], 'none'), null, 'a spent card cannot play again');
+        if (tackles[0] !== 'none') {
+          assert.equal(playMatchRound(match, order[round], tackles[0]), null, 'a spent tackle cannot play again');
+        }
+        assert.deepEqual(match.rivalMove, before, 'rejected inputs keep the same rival move');
+      }
+      const played = playMatchRound(match, order[round], tackles[round]);
+      assert.ok(played);
+      assert.equal(played.playerIndex, order[round]);
+      assert.equal(played.rivalIndex, before.index);
+      assert.equal(played.rivalTackle, before.tackle);
+      assert.ok(!opponentFish.has(played.rivalIndex));
+      opponentFish.add(played.rivalIndex);
+      if (played.rivalTackle !== 'none') {
+        assert.ok(!opponentTackle.has(played.rivalTackle));
+        opponentTackle.add(played.rivalTackle);
+      }
+      const comparison = Math.sign(played.playerStrength - played.rivalStrength);
+      points = [points[0] + 1 + comparison, points[1] + 1 - comparison];
+      assert.deepEqual([played.playerScore, played.rivalScore], points);
+      assert.equal(playMatchRound(match, order[round], 'none'), null, 'a second reveal has no effect');
+      assert.equal(match.history.length, round + 1);
+      assert.equal(nextMatchRound(match), round < 2);
+    }
+    results.add(Math.sign(points[0] - points[1]));
+  };
+  // Vary only the player's choices against the same pre-committed rival.
+  for (const first of [0, 1, 2]) {
+    for (const second of [0, 1, 2].filter(i => i !== first)) {
+      for (const a of options) for (const b of options) for (const c of options) {
+        const sequence = [a, b, c], spent = sequence.filter(v => v !== 'none');
+        if (new Set(spent).size === spent.length) run([first, second, 3 - first - second], sequence);
+      }
+    }
+  }
+  assert.deepEqual([...results].sort(), [-1, 0, 1], 'the same visible cards allow a loss, a draw and a win');
+});
+
+function displayCaughtFish(w, species, value = species) {
+  // The browser route walks to this same hotspot from the map.
+  w.eval(`playerHomeState.area='interior';
+    { const tank=playerHomeAreaData.interior.events.find(e=>e.id==='aquarium');
+      playerHomeState.x=tank.x;playerHomeState.y=tank.y; }
+    renderPlayerHome();playerHomeAction()`);
+  assert.ok(w.document.querySelector('#aquariumModal.open'));
+  const select = w.document.querySelector('#aquariumFishSelect');
+  assert.ok([...select.options].some(o=>o.value===value),'the chosen individual is offered');
+  select.value = value;
+  select.dispatchEvent(new w.Event('change'));
+  choose(w, '#aquariumPlaceFish');
+  assert.equal(read(w, 's.homeAquariumFishId'), species);
+  w.close(); w.eval("playerHomeState.area=null");
+}
+
+function landFuna(w, spot, roll) {
+  // Enter the real landing handler with the measured fish and tackle from the cast.
+  w.eval(`battle={phase:'landing',f:fish.find(f=>f.id==='funa'),spot:'${spot}',
+    waterZone:'lake',castLocale:'lake',rod:'bamboo',bait:'worm',hook:'small',method:'bait',fightMode:'gauge'};
+    battle.specimen=rollFishSpecimen(battle.f,()=>${roll});caught();hideCatchCard()`);
+}
+
+test('a named measured catch keeps its own shore and aquarium identity on the table and after reload', () => {
+  const app = boot({ ...seed(), caught:{}, sizeRecords:{}, soundEnabled:false }), w = app.window;
+  const name = 'ほしふるみずうみのみなも';
+  let stored, printed, tank;
+  try {
+    landFuna(w,'river-shallow',0.999); // Keep a different first and largest fish.
+    landFuna(w,'lake-shallow',0.42);
+    displayCaughtFish(w, 'funa');
+    landFuna(w,'river-shallow',0.8);
+    const place = read(w, 'fishingSpotById("lake-shallow").name');
+    assert.notEqual(place, read(w, 'fishingSpotById("river-shallow").name'));
+    const catches = read(w, '[s.caught,s.money,s.homeAquariumSizeHundredths,s.fishCatchRecords]');
+    enter(w,'cards'); choose(w,cardAction('catch-print'));
+    const nickname = '[data-card-nickname]';
+    w.document.querySelector(nickname).value = name;
+    w.eval('saveSuppressed=true');
+    choose(w,cardAction('print-catch'));
+    assert.equal(w.document.querySelector(nickname).value,name,'a failed save keeps the typed name');
+    assert.equal(read(w,'s.villageFishGames?.catchCards?.length || 0'),0);
+    w.eval('saveSuppressed=false');
+    choose(w,cardAction('print-catch'));
+    assert.equal(read(w,'s.villageFishGames.catchCards.length'),1);
+    printed = read(w,'s.villageFishGames.catchCards[0]');
+    assert.equal(printed.name,name);assert.equal(printed.place,place);assert.equal(printed.species,'funa');
+    tank = read(w, 's.homeAquariumSpecimen');
+    assert.equal(tank.uid,printed.uid);
+    assert.deepEqual(read(w,'[s.caught,s.money,s.homeAquariumSizeHundredths,s.fishCatchRecords]'),catches);
+    choose(w,cardAction('duel-with-catch'));
+    const same = [...w.document.querySelectorAll('[data-card-slot]')].find(n=>n.value===printed.id);
+    assert.ok(same);
+    for (const other of w.document.querySelectorAll('[data-card-slot]')) {
+      if (other!==same) assert.ok([...other.options].find(o=>o.value===printed.id).disabled);
+    }
+    choose(w,cardAction('duel-start'));
+    const myCard=()=>w.document.querySelector('[data-record-id="'+printed.id+'"]');
+    assert.equal(myCard().querySelector('.fish-card-imprint').textContent,place);
+    choose(w,'[data-record-id="'+printed.id+'"]');
+    choose(w,cardAction('duel-play'));
+    assert.match(myCard().textContent,new RegExp(name));
+    assert.ok(myCard().textContent.includes(place));
+    stored = JSON.parse(w.localStorage.getItem(saveKey));
+    assert.deepEqual(app.errors,[]);
+  } finally {app.dispose();}
+  const again=boot(stored), rw=again.window;
+  try {
+    assert.deepEqual(read(rw,'s.homeAquariumSpecimen'),tank);
+    assert.equal(read(rw,'s.homeAquariumFishId'),'funa');
+    enter(rw,'cards');choose(rw,cardAction('catch-print'));
+    assert.equal(rw.document.querySelector(cardAction('print-catch')),null,'a printed specimen cannot issue a duplicate');
+    choose(rw,cardAction('duel-with-catch'));
+    choose(rw,cardAction('duel-start'));
+    const selected=rw.document.querySelector('[data-record-id="'+printed.id+'"]');
+    assert.ok(selected.textContent.includes(printed.name)&&selected.textContent.includes(printed.place));
+    assert.deepEqual(read(rw,'s.villageFishGames.catchCards'),[printed]);
+    rw.close();
+    displayCaughtFish(rw,'funa'); // Switch to the later river fish.
+    assert.notEqual(read(rw,'s.homeAquariumSpecimen.uid'),printed.uid);
+    assert.equal(read(rw,'s.homeAquariumSpecimen.place'),read(rw,'fishingSpotById("river-shallow").name'));
+    const afterSwitch=boot(JSON.parse(rw.localStorage.getItem(saveKey)));
+    try {
+      displayCaughtFish(afterSwitch.window,'funa',printed.uid);
+      const redisplayed=read(afterSwitch.window,'s.homeAquariumSpecimen');
+      assert.equal(redisplayed.uid,printed.uid);
+      assert.equal(redisplayed.nickname,name);
+      assert.equal(redisplayed.place,printed.place);
+      assert.deepEqual(read(afterSwitch.window,'s.villageFishGames.catchCards'),[printed]);
+      assert.deepEqual(afterSwitch.errors,[]);
+    } finally {afterSwitch.dispose();}
+    assert.deepEqual(again.errors,[]);
+  } finally {again.dispose();}
+});
+
+test('a legacy tank without a recorded shore never substitutes the current village location', () => {
+  const app=boot({...seed(),homeAquariumFishId:'funa',homeAquariumSizeHundredths:1670,soundEnabled:false}), w=app.window;
+  try {
+    enter(w,'cards');choose(w,cardAction('catch-print'));
+    assert.match(w.document.querySelector('[data-card-screen="catch-print"]').textContent,/釣り場不明/);
+    choose(w,cardAction('print-catch'));
+    const [card]=read(w,'s.villageFishGames.catchCards');
+    assert.equal(card.place,null);
+    assert.equal(read(w,'s.homeAquariumFishId'),'funa');
+    assert.deepEqual(app.errors,[]);
+  } finally {app.dispose();}
+});

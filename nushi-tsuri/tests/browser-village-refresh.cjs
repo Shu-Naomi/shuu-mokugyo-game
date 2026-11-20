@@ -37,7 +37,10 @@ module.exports=async function villageRefresh(url,screen){
  const parsed=new URL(url);
  assert.ok(parsed.protocol==='http:'&&['127.0.0.1','localhost','[::1]'].includes(parsed.hostname),'this draft only exercises a local checkout');
  const {width,height,mobile,dpr}=screen,viewport={width,height};
- const legacyRaw=JSON.stringify({...seed(),x:10,y:79,direction:'right',gameMinutes:600,soundEnabled:false});
+ const firstCatch={hundredths:1680,gameMinutes:500,spotId:'lake-shallow',castLocale:'lake',rodId:'bamboo',baitId:'worm',
+  hookId:'small',method:'bait',fightMode:'gauge',weatherId:'sunny',dogId:'shuu'};
+ const legacyRaw=JSON.stringify({...seed(),x:10,y:79,direction:'right',gameMinutes:600,soundEnabled:false,
+  catchMemories:{funa:{first:firstCatch,best:null}}});
  const originalUnchanged=async()=>assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacyRaw,'legacy JSON remains byte-identical');
  const front=(name,id)=>({name,...reference.landmarks[id],direction:reference.landmarks[id].facing,landmark:id});
  let master;
@@ -106,6 +109,38 @@ module.exports=async function villageRefresh(url,screen){
   if(target.landmark)assert.equal(await value('nearbyWorldLandmark()?.id||null'),target.landmark);
   visits.push({name:target.name,steps:route.length,...at});await feetAt(target.name);
  }
+ // Read the walkable home geometry, then travel using the same physical controls as the village.
+ async function homeEvent(eventId){
+  const directions=await page.evaluate(id=>{
+   const {area,x,y}=playerHomeState, queue=[{x,y,path:[]}], seen=new Set([x+','+y]);
+   for(const point of queue){
+    if(nearbyPlayerHomeEvent(area,point.x,point.y)?.id===id)return point.path;
+    for(const direction of ['up','left','right','down']){
+     const next=playerHomeMoveTarget(area,point.x,point.y,direction),key=next.x+','+next.y;
+     if(!seen.has(key)){seen.add(key);queue.push({...next,path:[...point.path,direction]});}
+    }
+   }
+   throw Error('No home route to '+id);
+  },eventId);
+  for(const d of directions){await press('[data-move="'+d+'"]');buttonPresses++;}
+  assert.equal(await value('nearbyPlayerHomeEvent()?.id'),eventId);
+  await press('#action');
+  await page.clock.runFor(420);
+ }
+ async function displayFirstCatch(){
+  for(let i=0;i<4&&!await value('!!playerHomeState.area');i++){
+   await press('[data-move="left"]');buttonPresses++;
+   await page.clock.runFor(420);
+  }
+  assert.equal(await value('playerHomeState.area'),'exterior');
+  await homeEvent('front-door');await homeEvent('aquarium');
+  await page.locator('#aquariumFishSelect').selectOption('funa');
+  await press('#aquariumPlaceFish');
+  assert.equal(await value('s.homeAquariumFishId'),'funa');
+  await press('#aquariumModal [data-close]');
+  await homeEvent('interior-door');await homeEvent('map-exit');
+  assert.equal(await value('playerHomeState.area'),null);
+ }
  const gameModal='#villageFishGames',exitGame=gameModal+' [data-close]';
  async function openGame(front){
   assert.equal(await value('nearbyWorldLandmark()?.id||null'),front.id);
@@ -154,6 +189,44 @@ module.exports=async function villageRefresh(url,screen){
   await shot('cards-race-keepsake');
   await press('[data-card-tackle="net"]');await canPress(action('play'));await press(action('play'));
   await page.locator('.card-verdict').waitFor();assert.equal(await ownCard.count(),1);
+  await press(action('shop'));
+  await canPress(action('catch-print'));await press(action('catch-print'));
+  const name=page.locator('input[data-card-nickname]');
+  const nickname='ほしふるみずうみのみなも';
+  assert.equal(Array.from(nickname).length,12);await name.fill(nickname);
+  await canPress(action('print-catch'));await press(action('print-catch'));
+  const [card]=await value('s.villageFishGames.catchCards');
+  assert.equal(card.name,nickname);
+  assert.equal(card.place,await value('fishingSpotById("lake-shallow").name'));
+  await canPress(action('duel-with-catch'));await press(action('duel-with-catch'));
+  const slots=page.locator('select[data-card-slot]');
+  assert.equal(await slots.count(),3);
+  const deck=await slots.evaluateAll(nodes=>nodes.map(n=>n.value));
+  const selected=deck.indexOf(card.id);assert.ok(selected>=0);
+  const order=[selected,...[0,1,2].filter(i=>i!==selected)];
+  await canPress(action('duel-start'));await press(action('duel-start'));
+  const usedCard='.fish-playing-card[data-record-id="'+card.id+'"]';
+  assert.match(await page.locator(usedCard).innerText(),/みなも/);
+  await shot('cards-three-round-hands');
+  for(const [round,tackle] of ['net','chum','none'].entries()){
+   const fish='[data-card-duel-fish="'+order[round]+'"]';
+   await canPress(fish);await press(fish);
+   const pickTackle='[data-card-tackle="'+tackle+'"]';
+   await canPress(pickTackle);await press(pickTackle);
+   await canPress(action('duel-play'));await press(action('duel-play'));
+   const result=page.locator('.card-verdict');
+   assert.equal(Number(await result.getAttribute('data-player-score'))+Number(await result.getAttribute('data-rival-score')),2*(round+1));
+   if(!round){
+    await shot('cards-three-round-reveal');
+    assert.match(await page.locator(usedCard).innerText(),/みなも/);
+   }
+   if(round<2){await canPress(action('duel-next'));await press(action('duel-next'));}
+  }
+  await shot('cards-three-round-finish');
+  await canPress(action('duel-rematch'));await press(action('duel-rematch'));
+  assert.equal(await page.locator('[data-card-duel-fish]:enabled').count(),3);
+  assert.match(await page.locator(usedCard).innerText(),/みなも/);
+  assert.equal(await value('s.homeAquariumFishId'),'funa');
  }
  async function visitActivity(front,play){
   await walkTo({name:front.key+'-arrival',x:front.x,y:front.y,direction:'up',landmark:front.id});
@@ -209,6 +282,7 @@ module.exports=async function villageRefresh(url,screen){
   assert.equal(master.bytes,mapBytes.length);assert.ok(resources.has(master.path),'manifest-selected painting was fetched');
   await originalUnchanged();assert.equal(await value('s.villageLayoutVersion'),'reference-11016-v1');
   assert.deepEqual(await value('({x:s.x,y:s.y,direction:s.direction})'),reference.exits.home.return,'legacy position migrates to connected source-image road');
+  await displayFirstCatch();
   const initial=await economy();
   const printed=await visitActivity({...front('ダンの魚レース場','west-shrine'),key:'dan',id:'west-shrine',game:'race'},race);
   await visitActivity({...front('リアオの魚TCGショップ','riao-tcg-shop'),key:'riao',id:'riao-tcg-shop',game:'cards'},()=>cards(printed));
@@ -240,7 +314,7 @@ module.exports=async function villageRefresh(url,screen){
   assert.ok(pointerTypes.has(mobile?'touch':'mouse'),'real '+(mobile?'touch':'mouse')+' controls were exercised');
   assert.ok(walked>20,'routes must contain real movement');assert.deepEqual(errors,[]);assert.deepEqual(httpErrors,[]);assert.deepEqual(requestErrors,[]);
   await originalUnchanged();
-  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],activityReloads:2,printedAndPlayedRaceCard:true,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
+  const result={status:'passed',screen,art:master.path,verifiedArt:master,legacyBytesPreserved:true,saveGeneration:'reference-11016-v1',buttonPresses,walked,visits,feetChecks,pointerTypes:[...pointerTypes],activityReloads:2,printedAndPlayedRaceCard:true,printedAndPlayedHomeCatch:true,completedThreeRoundRematch:true,asuarShop:true,rightShrine:true,requestBoard:true,ruralRoundTrip:true,resourcesPreserved:true,npcFeet,errors,httpErrors,requestErrors,aborted};
   fs.writeFileSync(path.join(dir,prefix+'-result.json'),JSON.stringify(result,null,2));console.log('VILLAGE_REFRESH_PASS '+JSON.stringify(result));
  }catch(error){
   const failure={status:'failed',screen,message:error.message,at:page?await state().catch(()=>null):null,buttonPresses,walked,visits,errors,httpErrors,requestErrors,aborted};
