@@ -4,10 +4,12 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
   const travelClock=(id,t,individual=0)=>typeof Motion.travelClock==='function'?Motion.travelClock(id,t,individual):Math.max(0,Number(t)||0);
-  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo','donko','houraihimeji'].includes(id);
+  const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo','donko','houraihimeji','kijihata','akaza','juzukakehaze'].includes(id);
   // Each fish has its own tank pacing and water column. Gameplay and feeding
   // use the same layout and never change catch records or reel physics.
   const gaits=Object.freeze({
+    kijihata:[.73,.32,.064],umazurahagi:[.89,.48,-.015],akaza:[.57,.24,.077],
+    kokuchibasu:[1.18,.75,.038],juzukakehaze:[.49,.22,.082],
     shiokakure:[.58,.43,.068],
     kawamutsu:[1.31,.82,-.018],herabuna:[.73,.56,.03],himemasu:[1.21,.96,-.035],laketrout:[.93,.68,.045],browntrout:[1.08,.86,-.025],
     mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],

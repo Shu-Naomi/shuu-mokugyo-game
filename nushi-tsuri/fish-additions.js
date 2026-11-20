@@ -196,6 +196,25 @@
  definitions.push({id:'laketrout',name:'レイクトラウト',base:'iwana',number:66,price:960,resistance:150,band:'medium',hook:'medium',scientific:'Salvelinus namaycush',habitats:['lake'],rarity:3,label:'深場の白い星',
   ecology:'冷たい湖の深みに暮らすイワナの仲間。暗い背から体側へクリーム色の斑点が散り、尾びれは深く二叉する。大きく育つと小魚も食べる。',locations:'峠の池（深場）',time:'朝・夕に出やすい',rods:['clearStream','starGazer'],baits:['liveMinnow','worm'],tip:'朝夕の峠の池で、活き小魚とハリ中を深場へ。底へ潜る間は糸を送り、水平に泳ぎ始めたら寄せよう。',intro:'深い水に白い斑点が光る。レイクトラウトだ！',lengths:[15,24,34,46,60,77,98],baitWeights:{liveMinnow:3.8,worm:1.6,river:2.2,smallShrimp:.5,shrimp:.1,paste:.02,corn:.02,shell:.01,crab:.01}});
  art.laketrout={asset:'assets/fish-laketrout.png',boxes:[[16,144,420,149],[470,116,404,203],[973,93,321,249],[1415,67,281,295],[87,538,309,259],[464,554,396,220],[901,585,416,158],[1345,588,417,152]],heads:[[.99,.56],[.99,.53],[.99,.60],[.50,.68],[.01,.60],[.01,.59],[.01,.62],[.99,.60]],continuousBody:true};
+ definitions.push(
+  {id:'kijihata',name:'キジハタ',base:'kasago',number:68,price:920,resistance:136,band:'medium',hook:'medium',scientific:'Epinephelus akaara',habitats:['sea'],rarity:3,label:'磯の橙斑',
+   ecology:'丸い尾と大きな口を持つハタの仲間。岩にまぎれる褐色の体に橙色の斑点が散る。岩間で小魚や甲殻類を待ち伏せる。',locations:'潮風島・西の磯（深場）',time:'朝・夕に狙いやすい',rods:['shoreReed','lureRod'],baits:['liveMinnow','smallShrimp'],tip:'活き小魚＋ハリ中で西の磯の深場へ。ワームは底でゆっくり誘おう。岩へ突っ込んだら糸を送り、止まったところで寄せる。',intro:'岩から橙色の斑点が飛び出した！ キジハタだ。',lengths:[8,15,22,29,37,46,58],baitWeights:{liveMinnow:3.3,smallShrimp:2.8,crab:1.8,shrimp:1.6,worm:.35}},
+  {id:'umazurahagi',name:'ウマヅラハギ',base:'kawahagi',number:69,price:490,resistance:91,band:'small',hook:'small',scientific:'Thamnaconus modestus',habitats:['sea'],rarity:2,label:'潮目の長い顔',
+   ecology:'横から見ると長い顔、正面から見ると薄い体。小さな口先で餌をついばみ、背びれと尻びれを波打たせて泳ぐ。',locations:'潮風島・東の潮目（中層）',time:'昼に狙いやすい',rods:['youngBamboo','clearStream'],baits:['smallShrimp','shell','shrimp'],tip:'昼の東の潮目に小エビ＋ハリ小を中くらいの距離で投げよう。細かく向きを変える間は待ち、横を向いたら寄せよう。',intro:'小さな口の奥に長い顔。ウマヅラハギだ！',lengths:[8,14,19,24,30,36,43],baitWeights:{smallShrimp:3.4,shell:2.6,shrimp:2.1,crab:1.1,worm:.3}},
+  {id:'akaza',name:'アカザ',base:'gigi',number:70,price:315,resistance:66,band:'small',hook:'small',scientific:'Liobagrus reinii',habitats:['river'],rarity:3,label:'夕闇の赤いひげ',
+   ecology:'石の多い川に暮らす赤褐色の小さなナマズの仲間。昼は石の下に隠れ、暗くなると口ひげを使って水生昆虫を探す。',locations:'岩窟の地下湖（浅場）',time:'夕方〜夜に狙いやすい',rods:['bamboo','youngBamboo'],baits:['river','worm'],tip:'夕方から夜、地下湖の流れ込む岩場を短い投げで探ろう。川虫＋ハリ小で、石の隙間を走り抜けた後が寄せどき。',intro:'石の隙間から赤褐色のひげがのぞいた。アカザだ！',lengths:[3,5,7,9,11,13,16],baitWeights:{river:3.6,worm:2.8,smallShrimp:.95,liveMinnow:.15}},
+  {id:'kokuchibasu',name:'コクチバス',base:'bass',number:71,price:790,resistance:131,band:'medium',hook:'medium',scientific:'Micropterus dolomieu',habitats:['lake'],rarity:3,label:'岩棚の銅色の縞',
+   ecology:'銅色の体側に暗い縞が並ぶ。口を閉じたとき上あごの後端が目の後ろまで達しない。岩や沈んだ木の近くで小魚などを捕らえる。',locations:'峠の池（中層〜深場）',time:'朝・夕に狙いやすい',rods:['clearStream','lureRod'],baits:['liveMinnow','smallShrimp','worm'],tip:'岩棚に沿ってワームを沈め、底近くでゆっくり誘おう。活き小魚＋ハリ中でも狙える。横走りを受け流し、向き直る間に寄せよう。',intro:'銅色の縞がひらめく。コクチバスが食いついた！',lengths:[9,17,24,31,39,48,58],baitWeights:{liveMinnow:3.6,smallShrimp:2.7,worm:1.8,river:.7,crab:.8}},
+  {id:'juzukakehaze',name:'ジュズカケハゼ',base:'kawayoshinobori',number:72,price:155,resistance:46,band:'small',hook:'small',scientific:'Gymnogobius castaneus',habitats:['lake'],rarity:2,label:'岸辺の小さな斑点',
+   ecology:'細かな斑点のある小さな淡水のハゼ。池やゆるい流れの底にすみ、水底の小さな生き物をついばむ。',locations:'峠の池（浅場）',time:'朝〜昼に狙いやすい',rods:['bamboo','youngBamboo'],baits:['river','worm'],tip:'岸近くの浅場に川虫＋ハリ小をそっと落とそう。底を少し跳ねたあと、静かになる間に引き寄せよう。',intro:'浅場で斑点の小さな魚が跳ねた。ジュズカケハゼだ！',lengths:[1.8,2.6,3.3,4.1,5,6,7.5],baitWeights:{river:3.2,worm:2.5,smallShrimp:.85,paste:.2}}
+ );
+ Object.assign(art,{
+  kijihata:{asset:'assets/fish-kijihata.png',boxes:[[4,11,387,186],[434,8,317,193],[874,4,227,201],[1264,4,237,201],[84,213,227,201],[434,217,317,193],[794,220,387,186],[1189,220,387,186]],heads:[[0.985,0.575],[0.982,0.55],[0.88,0.6],[0.5,0.62],[0.12,0.6],[0.018,0.55],[0.015,0.575],[0.985,0.575]],continuousBody:true},
+  umazurahagi:{asset:'assets/fish-umazurahagi.png',boxes:[[4,12,345,208],[412,8,234,216],[787,4,191,225],[1153,4,165,225],[81,237,191,225],[412,241,234,216],[710,245,345,208],[1063,245,345,208]],heads:[[0.988,0.658],[0.975,0.73],[0.865,0.655],[0.5,0.665],[0.135,0.655],[0.025,0.73],[0.012,0.658],[0.988,0.658]],continuousBody:true},
+  akaza:{asset:'assets/fish-akaza.png',boxes:[[4,8,389,99],[482,6,227,103],[891,4,202,107],[1313,4,152,107],[97,119,202,107],[482,121,227,103],[798,123,389,99],[1195,123,389,99]],heads:[[0.943,0.615],[0.868,0.72],[0.8,0.714],[0.5,0.73],[0.2,0.714],[0.132,0.72],[0.057,0.615],[0.943,0.615]],continuousBody:true},
+  kokuchibasu:{asset:'assets/fish-kokuchibasu.png',boxes:[[4,11,388,177],[442,7,304,184],[886,4,208,191],[1287,4,197,191],[94,203,208,191],[442,206,304,184],[796,210,388,177],[1192,210,388,177]],heads:[[0.988,0.55],[0.978,0.58],[0.972,0.6],[0.5,0.62],[0.028,0.6],[0.022,0.58],[0.012,0.55],[0.988,0.55]],continuousBody:true},
+  juzukakehaze:{asset:'assets/fish-juzukakehaze.png',boxes:[[4,9,387,134],[466,7,252,139],[867,4,240,145],[1274,4,217,145],[77,157,240,145],[466,160,252,139],[794,162,387,134],[1189,162,387,134]],heads:[[0.99,0.54],[0.97,0.54],[0.87,0.565],[0.5,0.565],[0.13,0.565],[0.03,0.54],[0.01,0.54],[0.99,0.54]],continuousBody:true}
+ });
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -237,6 +256,15 @@
   'offshore-west-shallow':{ishigakidai:.42,akahata:.3},'offshore-west-mid':{ishigakidai:.5,akahata:.24,kuromejina:.48},'offshore-west-deep':{ishigakidai:.55,akahata:.12,kuromejina:.24},
   'offshore-east-shallow':{shimaaji:.18,akahata:.12,takabe:.14},'offshore-east-mid':{shimaaji:.55,takabe:.6},'offshore-east-deep':{shimaaji:.5}
  });
+ // Some mountain spots share their original weight table. Keep the existing
+ // populations intact, then copy only the six spots with new local residents.
+ const localResidents={
+  'offshore-west-deep':{kijihata:.32},'offshore-east-mid':{umazurahagi:.34},
+  'mountain-underground-shallow':{akaza:.22},'mountain-highPond-shallow':{juzukakehaze:.24},
+  'mountain-highPond-mid':{kokuchibasu:.19},'mountain-highPond-deep':{kokuchibasu:.23}
+ };
+ const allPools={...pools};
+ for(const [spot,additions] of Object.entries(localResidents))allPools[spot]={...pools[spot],...additions};
  function install({fish,fishMouthProfiles,fishMotionProfiles,fishLifeProfiles,fightProfiles,fishSizeProfiles,fishEncyclopediaData,fishingSpots,tackle}){
   for(const d of definitions){
    if(fish.some(f=>f.id===d.id))continue;
@@ -307,7 +335,20 @@
     {id:'rest',name:bottom?'ひげを休める':'向き直る',icon:'◎',weight:restWeight,min:850,max:1400,motion:'rest',speedX:.2,speedY:.1,tension:1.4,release:5.3,reel:1.75,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ！Aでやさしく寄せよう。',loose:'今が引きどころ。Aで寄せよう。'}
    ]};
   }
+  for(const [id,run,rest,motion,speed,tension] of [
+   ['kijihata','岩穴へ潜る','岩際で止まる','deep',3.7,6.5],
+   ['umazurahagi','潮に乗って向きを変える','ひれで漂う','steady',1.8,3.6],
+   ['akaza','石の隙間へ走る','ひげを伸ばす','deep',2.1,3.7],
+   ['kokuchibasu','岩棚に沿って横走り','岩陰で向き直る','rush',4.1,6.2],
+   ['juzukakehaze','底をひと跳ね','砂地で静止する','deep',1.45,2.8]
+  ]){
+   fightProfiles[id]={intro:fightProfiles[id].intro,moods:[
+    {id:'run',name:run,icon:'➜',weight:.48,min:900,max:1450,motion,speedX:speed,speedY:motion==='deep'?.8:.35,tension,release:5.5,reel:.64,scale:1,frameEvery:2,danger:true,hold:run+'！ Aを離そう。',loose:run+'間は糸を送ろう。'},
+    {id:'rest',name:rest,icon:'◎',weight:.52,min:1150,max:1650,motion:'rest',speedX:.3,speedY:.12,tension:1.3,release:5.4,reel:1.8,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ。今のうちに寄せよう。',loose:rest+'。Aで寄せよう。'}
+   ]};
+  }
   for(const spot of fishingSpots)if(pools[spot.id])Object.assign(spot.weights,pools[spot.id]);
+  for(const spot of fishingSpots)if(localResidents[spot.id])spot.weights={...spot.weights,...localResidents[spot.id]};
  }
- return {definitions,art,pools,install};
+ return {definitions,art,pools:allPools,install};
 });

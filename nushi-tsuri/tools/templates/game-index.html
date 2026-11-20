@@ -6478,7 +6478,7 @@
     <link rel="stylesheet" href="cast-tackle.css?v=252-59" />
     <link rel="stylesheet" href="event-ceremony.css?v=186-1" />
     <link rel="stylesheet" href="fortune-capsules.css?v=185-1" />
-      <link rel="stylesheet" href="fishing-duel.css?v=252-76" />
+      <link rel="stylesheet" href="fishing-duel.css?v=252-82" />
     <link rel="stylesheet" href="catch-memories.css?v=229-1" />
     <link rel="stylesheet" href="compact-ui.css?v=252-64" />
     <link rel="stylesheet" href="offshore-island.css?v=252-71" />
@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-81</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-82</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7466,14 +7466,14 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-27"></script>
-    <script src="fish-motion.js?v=252-71"></script>
-    <script src="aquarium-life.js?v=252-71"></script>
-    <script src="compact-ui.js?v=252-64"></script>
+    <script src="fish-motion.js?v=252-82"></script>
+    <script src="aquarium-life.js?v=252-82"></script>
+    <script src="compact-ui.js?v=252-82"></script>
     <script src="pet-life-ui.js?v=252-79"></script>
     <script src="village-fish-cards.js?v=252-79"></script>
     <script src="village-fish-race.js?v=252-79"></script>
     <script src="tackle-balance.js?v=252-71"></script>
-    <script src="fishing-duel.js?v=252-76"></script>
+    <script src="fishing-duel.js?v=252-82"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=252-75"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7501,9 +7501,9 @@
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions.js?v=252-71"></script>
+    <script src="fish-additions.js?v=252-82"></script>
     <script src="fish-art.js?v=252-81"></script>
-    <script src="tackle-art.js?v=252-52"></script>
+    <script src="tackle-art.js?v=252-82"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
     <script src="ui-pixel-art.js?v=252-28"></script>
@@ -13033,7 +13033,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["shiokakure","coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["shiokakure","coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji","kijihata","umazurahagi"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       // The title stays read-only. Persist the draw seed on Start, before
@@ -19136,6 +19136,11 @@
       function fishingCandidates(distance, spot, period, baitId, hookId) {
         return Object.entries({...spot.weights,...ShuRegional.candidates(s,spot.id,period,battle?.practice)}).map(([id, base]) => {
           let weight = base * (battle?.method==="lure"?ShuFishing.lureWeight(battle.lure,id,spot.id):ShuTackle.weight(id, baitId, hookId));
+          if (id === "kijihata") weight *= {morning:1.45,day:.8,evening:1.55,night:1}[period] || 1;
+          if (id === "umazurahagi") weight *= {morning:1.1,day:1.45,evening:.95,night:.5}[period] || 1;
+          if (id === "akaza") weight *= {morning:.65,day:.3,evening:1.55,night:1.8}[period] || 1;
+          if (id === "kokuchibasu") weight *= {morning:1.5,day:1,evening:1.45,night:.65}[period] || 1;
+          if (id === "juzukakehaze") weight *= {morning:1.3,day:1.4,evening:.9,night:.55}[period] || 1;
           if (id === "laketrout") weight *= {morning:1.6,day:.75,evening:1.5,night:.8}[period] || 1;
           if (id === "medaka") weight *= {morning:1.6,day:1.5,evening:.8,night:.12}[period] || 1;
           if (id === "raigyo") weight *= {morning:1.1,day:1.3,evening:1.4,night:.6}[period] || 1;
@@ -24904,7 +24909,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-81").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-82").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

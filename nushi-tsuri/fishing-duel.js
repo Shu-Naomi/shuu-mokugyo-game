@@ -31,7 +31,7 @@
   ];
   // The cast still determines the local pool. A soft plastic favors ambush fish
   // along deep or rocky banks, while a spoon keeps its original strike weights.
-  const bottomFish={bass:2.8,akahata:3,magochi:3,donko:1.8,kajika:1.6,gigi:1.3,mahaze:1.4};
+  const bottomFish={bass:2.8,kokuchibasu:4,kijihata:4,akahata:3,magochi:3,donko:1.8,kajika:1.6,gigi:1.3,mahaze:1.4};
   function lureWeight(lureId,id,spotId){
     if(lureId!=='softWorm')return spoon[id]||.1;
     if(!bottomFish[id])return .12+(spoon[id]||.1)*.24;
@@ -133,6 +133,8 @@
   Object.assign(spoon,{kawayoshinobori:.12,utsubo:.5,buri:3.4,donko:.45});
   Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
   Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
+  Object.assign(fishStrength,{kijihata:1.95,umazurahagi:1.05,akaza:.65,kokuchibasu:1.9,juzukakehaze:.45});
+  Object.assign(spoon,{kijihata:1.1,umazurahagi:.2,akaza:.18,kokuchibasu:1.45,juzukakehaze:.12});
   Object.assign(fishStrength,{laketrout:2.1,browntrout:2.4,takabe:1.05,kuromejina:2.7,houraihimeji:1.65});
   Object.assign(spoon,{laketrout:3.0,browntrout:3.1,takabe:.25,kuromejina:.18,houraihimeji:.4});
   function normalize(s,rods){
@@ -194,14 +196,14 @@
   };
   const speciesRhythms={};
   for(const [kind,ids]of Object.entries({
-    gentle:'tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
-    trout:'browntrout laketrout',
+    gentle:'juzukakehaze tanago motsugo medaka moroko funa wakasagi dojo oikawa herabuna',
+    trout:'kokuchibasu browntrout laketrout',
     dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     shoal:'takabe',
     heavy:'koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
-    bottom:'kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
-    bottomAmbush:'donko',
+    bottom:'akaza umazurahagi kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
+    bottomAmbush:'kijihata donko',
     timid:'shiokakure',
     legendary:'nushi streamNushi coastNushi caveNushi starNushi',
     pelagic:'hiramasa shimaaji',reefRunner:'kanpachi ishigakidai akahata kuromejina'
@@ -219,7 +221,7 @@
   // These strong sea fish need a margin below the three-minute safe-play
   // window. Both retain more than three times the old stamina; real water FX
   // are included in their reproducible calibration cases.
-  const enduranceOverrides={shiokakure:190,hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
+  const enduranceOverrides={kijihata:215,umazurahagi:160,akaza:145,kokuchibasu:205,juzukakehaze:135,shiokakure:190,hiramasa:400,kanpachi:380,laketrout:200,browntrout:250};
   const endurance=Object.freeze(Object.fromEntries(Object.keys(fishStrength).map(id=>
     [id,enduranceOverrides[id]??Math.round((enduranceBase[speciesRhythms[id]]||300)+fishStrength[id]*(speciesRhythms[id]==="legendary"?25:40))])));
   const fatigue=b=>clamp(((b.nushiRunTicks||0)/(endurance[b.f.id]||360)-.2)/.8,0,1);
