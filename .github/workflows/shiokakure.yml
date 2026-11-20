@@ -1,7 +1,7 @@
 name: Shiokakure discovery and catch
 on:
   push:
-    branches: [main, feat/shiokakure]
+    branches: [main, feat/shiokakure, qa/shiokakure-fight-v81]
     paths: ['nushi-tsuri/**', '.github/workflows/shiokakure.yml']
   pull_request:
     branches: [main]
