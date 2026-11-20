@@ -52,14 +52,23 @@ async function run(url,screen){
     }
    }else for(let n=0;n<80&&await value('battle.phase')!=='bite';n++)await page.clock.runFor(120);
    assert.equal(await value('battle.phase'),'bite');await press('#pull');await page.clock.runFor(240);assert.equal(await value('battle.phase'),'fight');
-   await page.waitForFunction(()=>{const c=document.querySelector('#battleFish canvas');return c?.dataset.artSpecies===troutSpecies&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>100);});await shot(mode+'-underwater');
+   await page.waitForFunction(()=>{const c=document.querySelector('#battleFish canvas');return c?.dataset.artSpecies===troutSpecies&&c.dataset.artVariant==='shiokakureFight'&&c.dataset.artPaintKey?.startsWith('assets/shiokakure-fight.png|')&&c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((v,i)=>i%4===3&&v>100);});await shot(mode+'-underwater');
    const r=await page.locator('#pull').boundingBox();assert.ok(r&&r.width>=44&&r.height>=44&&r.y+r.height<=screen.height+1);button={x:r.x+r.width/2,y:r.y+r.height/2};
    const specimen=await value('battle.specimen');const queue=[];let previous=null,ticks=0,warnings=0,last=null;
+   const views=new Set();
    for(;ticks<1800;ticks++){
     const ui=await page.evaluate(()=>({phase:battle?.phase,cue:document.querySelector('#fishScene').dataset.nushiPhase,leap:document.querySelector('#fishScene').classList.contains('gill-wash'),tension:parseFloat(document.querySelector('#ten').style.width)||0}));if(ui.phase!=='fight')break;
+    if(screen.width===844&&views.size<2){
+     const pose=await value("({mode:$('#battleFish').dataset.spriteMode,frame:Number($('#battleFish').dataset.spriteFrame),line:$('#linePath').getAttribute('d'),key:$('#battleFish canvas').dataset.artPaintKey})");
+     const view=pose.mode==='turn'&&pose.frame>=2&&pose.frame<=4?'turn':pose.mode==='swim'?'side':null;
+     if(view&&!views.has(view)){
+      assert.ok(pose.key?.startsWith('assets/shiokakure-fight.png|'));assert.ok(pose.line&&!pose.line.includes('NaN'));
+      await shot(mode+'-line-'+view);views.add(view);
+     }
+    }
     const wish=!ui.leap&&(mode==='gauge'?ui.tension<(previous?45:20):['slack','pulling'].includes(ui.cue));if(wish!==previous){queue.push({at:ticks*120+600,on:wish});previous=wish;}if(ui.cue==='warning'&&last!=='warning')warnings++;last=ui.cue;while(queue.length&&queue[0].at<=ticks*120)await hold(queue.shift().on);await page.clock.runFor(120);
    }
-   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.smallShrimp'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');if(screen.width===844&&method==='bait'){
+   assert.equal(await value('battle?.phase'),'landing',mode+' actual landing');if(screen.width===844)assert.deepEqual([...views].sort(),['side','turn']);await hold(false);await page.clock.runFor(1600);assert.equal(await value('s.caught[troutSpecies]'),before.caught+1);assert.equal(await value('s.baits.smallShrimp'),before.bait-(method==='bait'?1:0));assert.equal(await value('s.catchMemories[troutSpecies].first.spotId'),'offshore-west-shallow');if(screen.width===844&&method==='bait'){
     await page.clock.runFor(600);
     assert.equal((await page.locator('#catchBadge').innerText()).trim(),'ぬしを釣り上げた！');
     assert.ok((await page.locator('#catchDetail').innerText()).includes(specimen.cmText+'cm'));

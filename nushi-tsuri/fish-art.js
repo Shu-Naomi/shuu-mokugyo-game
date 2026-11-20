@@ -59,8 +59,16 @@
     buriMojako:{asset:'assets/aquarium-buri-mojako-v249.png',boxes:[[28,212,453,205],[503,205,356,233],[893,196,278,252],[1225,189,282,266],[47,598,261,251],[339,603,347,235],[691,628,421,189],[1129,628,388,203]],heads:[[.99,.615],[.99,.65],[.99,.69],[.5,.67],[.01,.71],[.01,.62],[.01,.54],[.995,.4]],continuousBody:true},
     buriYoung:{asset:'assets/aquarium-buri-young-v249.png',boxes:[[27,211,455,212],[505,203,359,232],[901,197,271,257],[1226,185,286,276],[36,591,298,242],[344,591,366,234],[712,618,407,205],[1130,623,388,199]],heads:[[.99,.63],[.99,.7],[.98,.67],[.5,.69],[.01,.76],[.01,.65],[.01,.54],[.99,.46]],continuousBody:true},
   });
-  Object.assign(native,aquarium);
-  const sprites={...species,...aquarium};
+  const fightVariants={shiokakure:'shiokakureFight'};
+  const fight={shiokakureFight:{
+    asset:'assets/shiokakure-fight.png',
+    // Right profile through face-on to left profile, followed by the open jaw.
+    boxes:[[0,2,198,91],[198,2,192,91],[396,2,137,91],[594,2,182,91],[0,101,137,91],[198,101,192,91],[396,101,198,91],[594,101,198,91]],
+    heads:[[.993,.50],[.988,.538],[.899,.593],[.496,.667],[.101,.593],[.012,.538],[.007,.50],[.994,.52]],
+    continuousBody:true
+  }};
+  Object.assign(native,aquarium,fight);
+  const sprites={...species,...aquarium,...fight};
   const assets=id=>[sprites[id].asset];
   const projection=()=>1;
   // A few authored poses use a larger drawing scale. Normalize both axes
@@ -365,5 +373,5 @@
     paintSwimming(ctx,raster,id,p,phase,motion?.swimEffort);
     return true;
   }
-  return Object.freeze({species,aquarium,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
+  return Object.freeze({species,aquarium,fightVariants,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
 });

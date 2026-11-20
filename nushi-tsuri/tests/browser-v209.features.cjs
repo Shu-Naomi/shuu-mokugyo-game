@@ -159,7 +159,7 @@ module.exports=async function features(url,mobile){
     assert.equal(await page.locator('.companion:visible').count(),1);assert.match(await page.locator('#dog').getAttribute('class'),/riku/);
     // Real images paint 24 fish in swim, seven turn headings and mouth poses.
     const fishResult=await page.evaluate(async()=>{
-      await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(id)))].map(async src=>{
+      await Promise.all([...new Set(Object.keys(ShuFishArt.species).flatMap(id=>ShuFishArt.assets(ShuFishArt.fightVariants[id] || id)))].map(async src=>{
         const image=fishAtlasImage(src);await image.decode();
       }));
       const results=[];

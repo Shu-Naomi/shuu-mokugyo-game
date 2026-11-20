@@ -41,7 +41,7 @@ jobs:
           const tree=execFileSync('git',['-C','../..','ls-tree','-r','HEAD','nushi-tsuri'],{encoding:'utf8'});
           const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
           const digest=createHash('sha256').update(runtime).digest('hex');
-          if(digest!=='f20b9501aebfc5e92c6ca85402e63ad5ec46cf91a964ebc4ca0ffbf0032b1447')throw Error('Pinned runtime blob manifest mismatch: '+digest);
+          if(digest!=='9e251c68a54c3c73781b1cc8c1c59a4edc874fcfa28c2e30ff7f468ddf4eea0d')throw Error('Pinned runtime blob manifest mismatch: '+digest);
           console.log('Verified pinned runtime manifest: '+digest);
           JS
       - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38

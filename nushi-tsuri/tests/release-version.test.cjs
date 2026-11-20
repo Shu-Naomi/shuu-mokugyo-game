@@ -11,7 +11,7 @@ const { JSDOM } = require("jsdom");
 const html = fs.readFileSync(path.join(__dirname, "../index.html"), "utf8");
 const worker = fs.readFileSync(path.join(__dirname, "../sw.js"), "utf8");
 
-const precacheSource = fs.readFileSync(path.join(__dirname, "../village-precache-252-80.js"), "utf8");
+const precacheSource = fs.readFileSync(path.join(__dirname, "../village-precache-252-81.js"), "utf8");
 function precached(source = precacheSource) {
   const context = { self: {} }; vm.runInNewContext(source, context);
   return Array.from(context.self.SHU_VILLAGE_PRECACHE);

@@ -4862,6 +4862,12 @@
            could follow the JS cell while a neighbouring mouth was painted. */
         animation: none;
       }
+      /* The fight atlas already animates its turn. Interpolating the outer
+         reflection as well briefly displays a second, opposite-facing pose. */
+      #battleFish.fish-shiokakure {
+        transition-property: left, top, filter;
+        transition-duration: .12s, .12s, .18s;
+      }
       .battle-fish.fish-moroko,
       .battle-fish.fish-aji {
         width: clamp(100px, 14vw, 150px);
@@ -6535,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-80</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-81</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7496,7 +7502,7 @@
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=252-71"></script>
-    <script src="fish-art.js?v=252-75"></script>
+    <script src="fish-art.js?v=252-81"></script>
     <script src="tackle-art.js?v=252-52"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -11971,7 +11977,9 @@
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
           const swimEffort=element.id==='battleFish'?Number(element.dataset.swimEffort||1):1;
-          const key=`${spriteAsset}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
+          const artId=(element.id==='battleFish'&&ShuFishArt.fightVariants[fishId])||aquariumLook?.artId||fishId;
+          const artAssets=ShuFishArt.assets(artId);
+          const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
           if(canvas.width!==448)canvas.width=448;
@@ -11980,9 +11988,8 @@
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
           const resolveImage=asset=>fishAtlasImage(aquariumLook?.adultIsaki&&asset===ShuFishArt.species.isaki.asset?'assets/aquarium-isaki-adult-v230.png':asset);
-          const artId=aquariumLook?.artId||fishId;
-          const image=resolveImage(ShuFishArt.aquarium[artId]?.asset||spriteAsset);
-          const sources=ShuFishArt.assets(artId).map(resolveImage);
+          const sources=artAssets.map(resolveImage);
+          const image=sources[0];
           canvas.dataset.artVariant=artId;
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
@@ -24869,7 +24876,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-80").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-81").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});
