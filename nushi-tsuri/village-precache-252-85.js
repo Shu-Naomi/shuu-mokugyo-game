@@ -45,7 +45,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb",
   "./coast-voyage.js?v=252-72&sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917",
   "./shiokakure.js?v=252-78&sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93",
-  "./offshore-island.js?v=252-85&sha256=da5bf50ba8141c6f56be50c94da182e61e31ac75756d6d6d60b961588adc3e81",
+  "./offshore-island.js?v=252-85&sha256=955fab2ad39959fa70ad2be6601556e5b8a2cc989021fcaeb9f31c20c2753a08",
   "./world-life.js?v=252-74&sha256=219b70b7ef7ff3d599535bf437e71157492fdbc5dc592068ca715483c060020f",
   "./field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd",
   "./rural-canals.js?v=252-55&sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a",
