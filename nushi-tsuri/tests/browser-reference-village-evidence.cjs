@@ -22,7 +22,7 @@ function legacyFixture(){
  assert.equal(state.petLife.mutationSeed,STORED_MUTATION_SEED);
  return state;
 }
-const ROOT=path.resolve(__dirname,'..'),FROZEN='waterwheel-race-252-84';
+const ROOT=path.resolve(__dirname,'..'),FROZEN='shiokakure-display-252-85';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
 const RUNTIME_TREE_SHA256='2f759b36ba4212e3414718bcaff9a14615f9d17d928e2e07003f7b6ea9aaceb6';
 function runtimeTreeDigest(ref='HEAD'){
