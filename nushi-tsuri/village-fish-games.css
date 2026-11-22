@@ -935,3 +935,13 @@
  .dan-race-foot button { padding-inline: 10px; }
 }
 @media (prefers-reduced-motion: reduce) { [data-race-phase="running"] .dan-race-runner::after { animation: none; } }
+
+/* Detailed static pixel scenery; browser image cache supplies every race frame. */
+.dan-race-course { image-rendering: pixelated; }
+.dan-race-island { background: none; clip-path: none; }
+.dan-race-island::before { inset: 0; clip-path: none; background: url("assets/dan-race-island-v252-86.svg") center / 100% 100% no-repeat; }
+.dan-race-course[data-dan-course="mill"]::after { top: 4%; width: clamp(48px, 8vw, 82px); height: 23%; clip-path: none; background: url("assets/dan-race-mill-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
+.dan-race-wheel { top: 8%; }
+.dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg") center / 100% 100% no-repeat; }
+.dan-race-flow::before { display: none; }
+@media (max-height: 500px) { .dan-race-course[data-dan-course="mill"] .dan-race-wheel { width: clamp(36px, 5.8vw, 46px); } }

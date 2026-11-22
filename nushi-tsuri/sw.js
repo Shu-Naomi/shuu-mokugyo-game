@@ -4,6 +4,9 @@ const CACHE_NAME = "nushi-tsuri-v252-dan-design-252-86";
 
 importScripts("./village-precache-252-86.js");
 const CORE_ASSETS = [
+  "./assets/dan-race-island-v252-86.svg",
+  "./assets/dan-race-mill-v252-86.svg",
+  "./assets/dan-race-flow-v252-86.svg",
   "./assets/dan-race-sign-v252-86.svg",
   "./assets/dan-race-water-v252-86.svg",
   "./assets/dan-race-wheel-v252-86.svg",

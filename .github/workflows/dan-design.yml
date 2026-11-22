@@ -37,7 +37,7 @@ jobs:
         if: always()
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
-          git worktree add --detach /tmp/dan-before 12df756d184120a59d4d6c78d39356d0a0612e73
+          git worktree add --detach /tmp/dan-before d1d5a35bce88ee289b99be7563ce9d9e7ec15604
           DAN_BASELINE=/tmp/dan-before/nushi-tsuri node browser-dan-design.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
