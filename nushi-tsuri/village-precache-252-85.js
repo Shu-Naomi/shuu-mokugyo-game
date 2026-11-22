@@ -71,7 +71,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./tournament.js?v=180-1&sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a",
   "./pixel-world.js?v=165-1&sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55",
   "./pixel-cast.js?v=247-1&sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b",
-  "./scene-layers.js?v=252-55&sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872",
+  "./scene-layers.js?v=252-55&sha256=616f1da1cc520fdc424aaf1857eab5e464f6fd1dd90d504183b1b61d03560697",
   "./layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc",
   "./village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427",
   "./village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381",

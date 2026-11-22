@@ -4,6 +4,7 @@ function planMarshRoute(target){
  const M=ShuMountain,region=s.mapRegion,dirs=['up','right','down','left'];
  const goal=(x,y,d)=>Array.isArray(target)?Math.hypot(x-target[0],y-target[1])<=2:
   target==='northFish'||target==='southFish'?M.onBridge(x,y,region)&&x>=118&&x<=127&&d===(target==='northFish'?'up':'down')&&M.fishingWater(x,y,d,region)?.type==='highMarsh':
+  target==='shoreFish'?!M.onBridge(x,y,region)&&M.fishingWater(x,y,d,region)?.type==='highMarsh':
   target==='house'?ShuWorldLife.nearby({mapRegion:region,x,y,direction:d})?.id==='marsh-house':
   target==='wetland'?M.exitAt(x,y,region)?.region==='wetland':M.atReturnGate(x,y,region);
  const queue=[{x:s.x,y:s.y,direction:s.direction,parent:-1}],seen=new Set();

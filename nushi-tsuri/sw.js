@@ -177,6 +177,8 @@ const CORE_ASSETS = [
   "./assets/valley-hillside-v2.png",
   "./assets/pass-pond-v252-51.png",
   "./assets/pass-marsh-v252-50.webp",
+  "./assets/marsh-bridge-north.webp",
+  "./assets/marsh-bridge-south.webp",
   "./assets/cave-lake-v202.png",
   "./assets/stream-nushi-v202.png",
   "./assets/coast-nushi-v202.png",

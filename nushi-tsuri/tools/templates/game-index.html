@@ -15259,6 +15259,7 @@
         pixelSceneCache.delete(canvas); return true;
       }
       function surfaceSceneryKind() {
+        if (battle?.bridgeView) return battle.bridgeView;
         return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
           ? battle.coastType ? `coast-${battle.coastType}`
             : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
@@ -15348,7 +15349,7 @@
         const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
+        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:battle?.bridgeView ? ShuSceneLayers.marshBridgePoint(kind,battle.playerX,battle.playerY) : ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
         pixelCastKey = key;
         return true;
@@ -17750,6 +17751,16 @@
       function castSurfacePoint(distance = 50) {
         const value = Math.max(0, Math.min(100, Number(distance) || 0));
         const surface = $("#castSurface");
+        if (battle?.bridgeView) {
+          // Follow the clear channel immediately beyond each gap in the railing.
+          const north = battle.bridgeView === "marsh-bridge-north";
+          const x = battle.playerX + (121 - battle.playerX) * value / 100;
+          const y = north ? 54 - value * .085 : 89 + value * .047;
+          const point = ShuSceneLayers.marshBridgePoint(battle.bridgeView,x,y);
+          const box = surface.getBoundingClientRect(), width = box.width || 640, height = box.height || 320;
+          const projected = ShuCast.layout(width,height,point).ground;
+          return {x:projected.x / width * 100,y:projected.y / height * 100};
+        }
         const practicePond = surface.classList.contains("art-sam-pond");
         if (practicePond) {
           // Open center of the oval pond, clear of the entry dock and rocks.
@@ -19510,6 +19521,8 @@
           minimumDepth,
           waterX: spot.waterX,
           waterY: spot.waterY,
+          bridgeView: mountainType === "highMarsh" && ShuMountain.onBridge(s.x,s.y,s.mapRegion)
+            ? (spot.waterY < s.y ? "marsh-bridge-north" : "marsh-bridge-south") : null,
           playerX: s.x,
           playerY: s.y,
           castLocale: zone === "sea"
@@ -20887,6 +20900,7 @@
         close();
         battle = {
           phase: "cast",
+          bridgeView: battle.bridgeView,
           shiokakureObserved,
           fightMode:s.fightMode,
           rod:practice?"bamboo":s.selectedRod,
