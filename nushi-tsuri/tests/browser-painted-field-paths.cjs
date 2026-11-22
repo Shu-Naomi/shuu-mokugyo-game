@@ -12,6 +12,9 @@ const routes = [
   { name: 'north-fork', x:215, y:21, steps:'DD' },
   { name: 'east-bend', x:231, y:63, steps:'DDDDD' },
   { name: 'southwest-bank', x:138, y:107, steps:'RDR' },
+  { name: 'lily-pond-bend', x:79, y:64, steps:'RR' },
+  { name: 'reed-marsh-outer-road', x:234, y:64, steps:'DDD' },
+  { name: 'wetland-shop-approach', x:177, y:37, steps:'LLLLU', shop:true },
   { name: 'sand-deck', x:115, y:77, steps:'LL', dock:'sand' },
   { name: 'reef-deck', x:88, y:92, steps:'RR', dock:'reef' }
 ];
@@ -57,6 +60,17 @@ async function check(browser, url, mobile, route) {
     }
     await page.waitForFunction(() => !playerWalking);
     await page.screenshot({path:path.join(output,viewport.width+'-'+route.name+'.png')});
+    if (route.shop) {
+      assert.equal(await page.evaluate(()=>ShuWorldLife.nearby(s)?.id),'wetland-shop');
+      const shop=await page.locator('[data-world-life="wetland-shop"]').boundingBox();
+      const player=await page.locator('#player').boundingBox();
+      assert.ok(shop.height>player.height*2,'storefront reads taller than the player');
+      const inFront=await page.evaluate(()=>Number(getComputedStyle(document.querySelector('#player')).zIndex)>
+        Number(getComputedStyle(document.querySelector('[data-world-life="wetland-shop"]')).zIndex));
+      assert.ok(inFront,'player on the doorstep stays visible in front of the shop');
+      await press('#action');await page.locator('#store.open').waitFor();
+      await press('#store [data-close]');assert.deepEqual(await position(),expected());
+    }
     for (const key of [...route.steps].reverse()) await walk(directions[key][3]);
     if (route.dock) {
       await press('#action');

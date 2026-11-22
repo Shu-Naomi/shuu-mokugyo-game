@@ -109,6 +109,7 @@ const CORE_ASSETS = [
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
   "./assets/wetland-world-v227.png",
+  "./assets/wetland-trail-edges.webp",
   "./assets/fish-tanago-v227.png",
   "./assets/fish-motsugo-v227.png",
   "./assets/fish-medaka-v227.png",
