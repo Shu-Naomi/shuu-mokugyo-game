@@ -38,7 +38,7 @@ jobs:
         run: |
           git config --global --add safe.directory "$GITHUB_WORKSPACE"
           git worktree add --detach /tmp/dan-before fcdde8627eb7a147387206bd1bf006fb26ce0aae
-          git worktree add --detach /tmp/dan-corner-before e58561fa157a8fe6ce2a1c732d29aa70c79d2036
+          git worktree add --detach /tmp/dan-corner-before 6922c2c9ce59db2a0be09488062e065a6107b70e
           DAN_BASELINE=/tmp/dan-before/nushi-tsuri DAN_CORNER_BASELINE=/tmp/dan-corner-before/nushi-tsuri node browser-dan-design.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()

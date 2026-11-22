@@ -935,7 +935,7 @@
 .dan-race-course { image-rendering: pixelated; }
 .dan-race-island { background: none; clip-path: none; }
 .dan-race-island::before { inset: 0; clip-path: none; background: url("assets/dan-race-island-v252-86.svg?art=087e3aaae794b711") center / 100% 100% no-repeat; }
-.dan-race-course[data-dan-course="mill"]::after { top: 4%; width: clamp(48px, 8vw, 82px); height: 23%; clip-path: none; background: url("assets/dan-race-mill-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
+.dan-race-course[data-dan-course="mill"]::after { top: 4%; width: clamp(48px, 8vw, 82px); height: 23%; clip-path: none; background: url("assets/dan-race-mill-v252-86.svg?art=a76d922687ecf293") center / contain no-repeat; image-rendering: pixelated; }
 .dan-race-wheel { top: 8%; }
 .dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg?art=63d0219bb9f1576e") center / 100% 100% no-repeat; }
 /* Only the narrow foam seam moves. The riverbed and its bank reflections share one cached backdrop. */

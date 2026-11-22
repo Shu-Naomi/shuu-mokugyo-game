@@ -20,6 +20,21 @@ async function captureMillCorner(page, label, viewport) {
       position: paint.backgroundPosition, transform: paint.transform};
   });
   const art = await inspectRaceArt(page);
+  const house = await page.locator('.dan-race-course[data-dan-course="mill"]').evaluate(async course => {
+    const style = getComputedStyle(course, '::after');
+    const screen = course.getBoundingClientRect();
+    const source = new URL(style.backgroundImage.match(/url\("([^"]+)"\)/)[1]);
+    const image = new Image();
+    image.src = source.href;
+    await image.decode();
+    return {
+      box: {x: screen.x + course.clientLeft + parseFloat(style.left),
+        y: screen.y + course.clientTop + parseFloat(style.top),
+        width: parseFloat(style.width), height: parseFloat(style.height)},
+      source: {file: source.pathname.split('/').pop(), width: image.naturalWidth, height: image.naturalHeight},
+      fit: style.backgroundSize, alignment: style.backgroundPosition, sampling: style.imageRendering
+    };
+  });
   const wheel = await readWheel();
   await page.screenshot({path: path.join(out, `${viewport.width}-${label}-race.png`)});
   await page.clock.runFor(320);
@@ -27,7 +42,7 @@ async function captureMillCorner(page, label, viewport) {
   assert.notEqual(wheel.angle, laterWheel.angle, 'the race clock turns the mill');
   assert.ok(wheel.transform !== laterWheel.transform || wheel.position !== laterWheel.position,
     'the wheel paint advances with the clock');
-  return {art, wheel, laterWheel};
+  return {art, house, wheel, laterWheel};
 }
 
 async function inspectRaceArt(page) {
@@ -405,11 +420,14 @@ async function run(root,label,browser,viewport,deviceScaleFactor){
       if (process.env.DAN_CORNER_BASELINE && width < 1000 && dpr === 1) {
         const before = await run(path.resolve(process.env.DAN_CORNER_BASELINE), 'corner-before', browser, {width, height}, dpr);
         const after = await run(path.resolve(__dirname, '..'), 'corner-after', browser, {width, height}, dpr);
-        const boxes = art => art.surfaces.map(({x, y, width, height}) => [x, y, width, height]);
-        assert.deepEqual(boxes(after.art), boxes(before.art), 'mill scenery stays in its original boxes');
+        assert.deepEqual(after.house.box, before.house.box, 'millhouse stays on its original footprint');
+        assert.equal(after.house.fit, before.house.fit);
+        assert.equal(after.house.alignment, before.house.alignment);
+        assert.equal(after.house.sampling, 'pixelated');
+        assert.deepEqual(after.art.surfaces, before.art.surfaces, 'same water, island, flow and wheel artworks and geometry');
         assert.deepEqual(after.art.fish, before.art.fish, 'same fish, positions and animation frames');
-        assert.equal(after.wheel.angle, before.wheel.angle);
-        assert.equal(after.laterWheel.angle, before.laterWheel.angle);
+        assert.deepEqual(after.wheel, before.wheel);
+        assert.deepEqual(after.laterWheel, before.laterWheel);
         fs.writeFileSync(path.join(out, `${width}-corner.json`), JSON.stringify({before, after}, null, 2));
       }
     }
