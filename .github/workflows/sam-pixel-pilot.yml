@@ -1,0 +1,288 @@
+name: Sam original-art rendering study
+on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/**', '.github/workflows/sam-pixel-pilot.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: sam-pixel-pilot-${{ github.event.pull_request.number || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  comparison:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      matrix:
+        screen:
+          - {width: 1280, height: 720, touch: '0', dpr: 1}
+          - {width: 844, height: 390, touch: '1', dpr: 1}
+          - {width: 820, height: 366, touch: '1', dpr: 1.875}
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - name: Check out immutable original runtime and art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 880817ec738f6f9dcc45dc9a3a098e7bd6676823
+          path: baseline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Compare identical original art and test-only rendering variants
+        run: node browser-sam-pixel-pilot-evidence.cjs
+        env:
+          SAM_BASELINE_ROOT: ${{ github.workspace }}/baseline
+          SAM_WIDTH: ${{ matrix.screen.width }}
+          SAM_HEIGHT: ${{ matrix.screen.height }}
+          SAM_TOUCH: ${{ matrix.screen.touch }}
+          SAM_DPR: ${{ matrix.screen.dpr }}
+          SAM_SAMPLE_PERF: '1'
+      - name: Existing route and shop regression
+        if: ${{ !cancelled() }}
+        run: node browser-village-sam-evidence.cjs
+        env:
+          SAM_WIDTH: ${{ matrix.screen.width }}
+          SAM_HEIGHT: ${{ matrix.screen.height }}
+          SAM_TOUCH: ${{ matrix.screen.touch }}
+          SAM_DPR: ${{ matrix.screen.dpr }}
+      - name: Preserve original-art screenshots and rendering diagnostics
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-same-art-rendering-${{ matrix.screen.width }}-dpr${{ matrix.screen.dpr }}
+          path: |
+            current/nushi-tsuri/tests/browser-evidence-sam-pixel-pilot/
+            current/nushi-tsuri/tests/browser-evidence-village-sam/
+          retention-days: 30
+          if-no-files-found: warn
+  alignment:
+    name: Test-only alignment (${{ matrix.screen.width }}, DPR ${{ matrix.screen.dpr }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        screen:
+          - {width: 1280, height: 720, touch: '0', dpr: 1}
+          - {width: 844, height: 390, touch: '1', dpr: 1}
+          - {width: 820, height: 366, touch: '1', dpr: 1.875}
+          - {width: 640, height: 360, touch: '1', dpr: 1}
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - name: Check out immutable original runtime and art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 880817ec738f6f9dcc45dc9a3a098e7bd6676823
+          path: baseline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Check experimental scheduler lifecycle without a browser
+        run: node --test sam-alignment-controller.test.cjs sam-pixel-pilot.test.cjs
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Measure reversible synchronized alignment and integer viewport experiments
+        run: node browser-sam-alignment-experiments.cjs
+        env:
+          SAM_BASELINE_ROOT: ${{ github.workspace }}/baseline
+          SAM_WIDTH: ${{ matrix.screen.width }}
+          SAM_HEIGHT: ${{ matrix.screen.height }}
+          SAM_TOUCH: ${{ matrix.screen.touch }}
+          SAM_DPR: ${{ matrix.screen.dpr }}
+          SAM_SAMPLE_PERF: '1'
+      - name: Preserve original-art alignment evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-original-alignment-${{ matrix.screen.width }}-dpr${{ matrix.screen.dpr }}
+          path: current/nushi-tsuri/tests/browser-evidence-sam-alignment/
+          retention-days: 30
+          if-no-files-found: warn
+  headed-lifecycle:
+    name: Headed lifecycle only (844, DPR 1)
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - name: Check out immutable original runtime and art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 880817ec738f6f9dcc45dc9a3a098e7bd6676823
+          path: baseline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Check experimental scheduler lifecycle without a browser
+        run: node --test sam-alignment-controller.test.cjs sam-pixel-pilot.test.cjs
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Exercise real foreground and background tabs in headed Chromium
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' node browser-sam-alignment-experiments.cjs
+        env:
+          SAM_BASELINE_ROOT: ${{ github.workspace }}/baseline
+          SAM_WIDTH: '844'
+          SAM_HEIGHT: '390'
+          SAM_TOUCH: '1'
+          SAM_DPR: '1'
+          SAM_LIFECYCLE_ONLY: '1'
+          SAM_HEADED: '1'
+          SAM_SAMPLE_PERF: '0'
+      - name: Preserve explicitly scoped headed lifecycle evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-original-headed-lifecycle-844-dpr1
+          path: current/nushi-tsuri/tests/browser-evidence-sam-alignment/
+          retention-days: 30
+          if-no-files-found: warn
+  browser-signal-audit:
+    name: Independent native browser signal audit
+    # Use a supported runner with the ordinary Chromium sandbox intact. Do not
+    # change AppArmor/user-namespace settings or add a sandbox-disabling flag.
+    runs-on: ubuntu-22.04
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Check scheduler and audit contracts without a browser
+        run: node --test sam-alignment-controller.test.cjs sam-pixel-pilot.test.cjs
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - name: Compare native signals with and without Playwright default overrides
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' node browser-sam-signal-audit.cjs
+        env:
+          SAM_HEADED: '1'
+      - name: Preserve capability audit separately from game acceptance
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-native-browser-signal-audit
+          path: current/nushi-tsuri/tests/browser-evidence-sam-alignment/browser-signal-audit-headed/
+          retention-days: 30
+          if-no-files-found: warn
+  game-background:
+    name: Original game background and recovery
+    runs-on: ubuntu-22.04
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - name: Check out immutable original runtime and art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 880817ec738f6f9dcc45dc9a3a098e7bd6676823
+          path: baseline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Check experimental test contracts without a browser
+        run: node --test sam-*.test.cjs
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Exercise the original game with genuine background signals
+        run: xvfb-run --auto-servernum --server-args='-screen 0 1920x1080x24' node browser-sam-game-background.cjs
+        env:
+          SAM_HEADED: '1'
+          SAM_BASELINE_ROOT: ${{ github.workspace }}/baseline
+      - name: Preserve actual-game background evidence
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-original-game-background
+          path: current/nushi-tsuri/tests/browser-evidence-sam-alignment/original-game-background-headed/
+          retention-days: 30
+          if-no-files-found: warn
+  compositor-diagnostic:
+    name: Isolated PC compositor diagnostic
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: current/nushi-tsuri/tests
+    steps:
+      - name: Check out exact PR head
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          path: current
+      - name: Check out immutable original runtime and art
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 880817ec738f6f9dcc45dc9a3a098e7bd6676823
+          path: baseline
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - name: Check experimental test contracts without a browser
+        run: node --test sam-*.test.cjs
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: npx playwright install --with-deps chromium
+      - run: bash install-ci-fonts.sh
+      - name: Retain original PC captures and isolate actor layer promotion
+        run: node browser-sam-pixel-pilot-evidence.cjs
+        env:
+          SAM_BASELINE_ROOT: ${{ github.workspace }}/baseline
+          SAM_WIDTH: '1280'
+          SAM_HEIGHT: '720'
+          SAM_TOUCH: '0'
+          SAM_DPR: '1'
+          SAM_SAMPLE_PERF: '0'
+          SAM_COMPOSITOR_DIAGNOSTIC: '1'
+      - name: Preserve diagnostic frames separately from ordinary comparisons
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-pc-compositor-diagnostic
+          path: current/nushi-tsuri/tests/browser-evidence-sam-compositor/
+          retention-days: 30
+          if-no-files-found: warn
