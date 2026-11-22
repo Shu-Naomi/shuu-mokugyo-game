@@ -6466,7 +6466,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="village-fish-games.css?v=252-84" />
+    <link rel="stylesheet" href="village-fish-games.css?v=252-86" />
     <link rel="stylesheet" href="pet-life.css?v=252-84" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-85</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-86</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7471,7 +7471,7 @@
     <script src="compact-ui.js?v=252-84"></script>
     <script src="pet-life-ui.js?v=252-84"></script>
     <script src="village-fish-cards.js?v=252-84"></script>
-    <script src="village-fish-race.js?v=252-84"></script>
+    <script src="village-fish-race.js?v=252-86"></script>
     <script src="tackle-balance.js?v=252-71"></script>
     <script src="fishing-duel.js?v=252-82"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -7513,7 +7513,7 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-55"></script>
+    <script src="scene-layers.js?v=252-86"></script>
     <script src="layered-scenery.js?v=252-55"></script>
     <script>
       // Abort this same script before create(), save reads, migrations or UI
@@ -25087,7 +25087,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-85").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-86").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

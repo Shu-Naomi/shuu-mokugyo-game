@@ -126,7 +126,8 @@
   const referenceEnabled = env => env?.referenceVillage === undefined ? !!root?.ShuVillageReference?.enabled : !!env.referenceVillage;
   function referenceDefinition() {
     return {...world,source:root?.ShuVillageReference?.source?.asset||'assets/village-reference-pilot.png',underlay:root?.ShuVillageReference?.source?.asset||'assets/village-reference-pilot.png',
-      units:[1672,941],referenceVillage:true,waterColorMasks:[],edits:[],patches:[],
+      units:[1672,941],referenceVillage:true,waterColorMasks:[],
+      edits:[{id:"dan-race-sign",source:"assets/dan-race-sign-v252-86.svg",to:[199,295,90,30],clip:[[199,295],[289,295],[289,325],[199,325]]}],patches:[],
       parts:world.parts.map(p=>{
         const polygon=referencePolygons[p.id] || rect(...referenceBoxes[p.id]);
         const {motion,offset,flipX,...fixed}=p;

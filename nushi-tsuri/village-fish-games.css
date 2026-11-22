@@ -878,3 +878,29 @@
   .dan-race-entry:has(#danCoursePicker) select { width: 100%; }
   .dan-race-entry:has(#danRoutePicker:not([hidden])) #danEntrantPicker { grid-column: span 3; }
 }
+
+/* Dan's timber raceway: quiet pixel water leaves fish, route and rank readable. */
+#villageFishGames[data-game="race"] { border-radius: 3px; border: 3px solid #c0a06a; background: #192f32; box-shadow: inset 0 0 0 2px #354e45, 0 6px #152323; }
+[data-game="race"] .village-fish-header { background: #30483f; border-bottom: 3px solid #96764e; }
+[data-game="race"] .village-fish-body { background: #192f32; }
+[data-game="race"] button, [data-game="race"] select { border-radius: 2px; }
+.dan-race-course, .dan-race-course[data-dan-course="mill"] { background: #234d51 url("assets/dan-race-water-v252-86.svg") center / 100% 100%; border: 3px solid #8b714b; border-radius: 1px; box-shadow: 0 0 0 1px #172b2b; }
+.dan-race-course::before, .dan-race-course[data-dan-course="mill"]::before { border: 0; background: none; clip-path: none; }
+.dan-race-scoreboard { position: absolute; z-index: 5; right: 7px; top: 5px; padding: 3px 7px; color: #f4dfac; background: #172c2e; border: 1px solid #b89b61; font-size: 12px; font-weight: bold; font-variant-numeric: tabular-nums; }
+.dan-race-course-name { top: 5px; background: #172c2e; border: 1px solid #728979; padding: 3px 6px; }
+.dan-race-wheel { width: clamp(32px, 6vw, 58px); top: 11%; }
+.dan-race-wheel::before { border-radius: 0; background: url("assets/dan-race-wheel-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
+.dan-race-wheel::after { display: none; }
+.dan-race-course[data-dan-course="mill"]::after { top: 9%; }
+.dan-race-route-wheel { top: 13%; left: 25%; }
+.dan-race-route-bank { bottom: 10%; left: 25%; }
+.dan-race-flow { top: 29%; height: 12%; }
+.dan-race-island::before { background: repeating-linear-gradient(90deg, transparent 0 12px, #47533b 12px 14px, transparent 14px 26px) center 78% / 100% 18% no-repeat, repeating-linear-gradient(0deg, #768553 0 3px, #80915b 3px 6px, #6c7f50 6px 9px) center 25% / 100% 65% no-repeat, linear-gradient(#a6ad73 0 10%, #738551 10% 58%, #b09a64 58% 66%, #655740 66%); }
+.dan-race-runner[data-racer="player"] .dan-race-fish { filter: drop-shadow(1px 0 #ffe2a3) drop-shadow(-1px 0 #ffe2a3); }
+.dan-race-tag { border-radius: 1px; background: #183c40; border: 1px solid #82998a; color: #f0eed5; }
+.dan-race-runner[data-racer="player"] .dan-race-tag { background: #e6c584; color: #243832; border-color: #fff0bd; }
+.dan-race-foot { padding: 6px 8px; background: #2a423b; border-top: 2px solid #806d4d; }
+.dan-race-foot button { min-height: 40px; border: 2px solid #d5b57b; }
+.dan-race-status { color: #f0e4c5; }
+.dan-race-finish { width: 6px; background-size: 6px 12px; opacity: 1; }
+@media (max-height: 500px) { .dan-race-foot { padding: 3px 5px; gap: 5px; } .dan-race-scoreboard { font-size: 11px; padding: 2px 5px; } .dan-race-foot button { min-height: 36px; } }

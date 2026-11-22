@@ -207,7 +207,7 @@
     }
 
     const timeText = cs => (cs / 100).toFixed(2) + "秒";
-    let status, cueButton, selection, track;
+    let status, cueButton, selection, track, scoreboard;
     function buildCourse(fish) {
       const mill = course === "mill";
       track = el("div", "dan-race-course");
@@ -225,6 +225,9 @@
         track.append(decoration);
       }
       track.append(el("span", "dan-race-course-name", courses[course]));
+      scoreboard = el("div", "dan-race-scoreboard");
+      scoreboard.setAttribute("aria-label", "自分の順位と進行");
+      track.append(scoreboard);
       views = [fish, ...rivals].map((identity, i) => {
         const runner = el("div", "dan-race-runner");
         runner.dataset.racer = i ? identity.role : "player";
@@ -239,6 +242,11 @@
       return track;
     }
     function positionFish() {
+      if (scoreboard) {
+        const player = race?.runners[0];
+        const rank = player ? 1 + race.runners.filter(f => f.x > player.x || (f.finishTime !== null && player.finishTime !== null && f.finishTime < player.finishTime)).length : 1;
+        scoreboard.textContent = player ? `自分 ${rank}位 / 3  ·  ${Math.min(100, Math.floor(player.x))}%` : "魚レース · 出走準備";
+      }
       if (course === "mill") {
         const t = race?.elapsed ?? 0;
         track.dataset.flow = millFlow(t);
