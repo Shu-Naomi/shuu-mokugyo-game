@@ -13,7 +13,7 @@ const CORE_ASSETS = [
   "./assets/dan-race-reeds-v252-86.svg",
   "./assets/dan-race-swimmers-v252-86.png?art=2ce7c1f66831cf85",
   "./assets/dan-race-sign-v252-86.svg",
-  "./assets/dan-race-wheel-v252-86.png?art=765b80266bcec925",
+  "./assets/dan-race-wheel-v252-86.png?art=4a43c21f6228860c",
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",
   "./assets/fish-umazurahagi.png",

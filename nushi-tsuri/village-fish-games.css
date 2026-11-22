@@ -769,7 +769,7 @@
   content: "";
   position: absolute;
   inset: 0;
-  background: url("assets/dan-race-wheel-v252-86.png?art=765b80266bcec925") var(--wheel-frame-x, 0%) center / 2400% 100% no-repeat;
+  background: url("assets/dan-race-wheel-v252-86.png?art=4a43c21f6228860c") var(--wheel-frame-x, 0%) center / 2400% 100% no-repeat;
   image-rendering: pixelated;
 }
 .dan-race-flow {

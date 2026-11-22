@@ -5,7 +5,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./pixel-scenes.css?v=240-1&sha256=9257fc29b5175bdd44965c3703c170a9c7e432093f502dff4c6ad7c1ed5587d6",
   "./field-guide.css?v=248-2&sha256=2d5b1ac4cfb4135b1d6c3e7af278df5efffabd54e3140e24fa16b07a3190664d",
   "./village-guide.css?v=252-5&sha256=f3df710581517063aa87f8e864511c34079691f010f5da987f8a846699b8004a",
-  "./village-fish-games.css?v=252-86&sha256=53bc684c250e50ce5f4af33403f83a4da185905342db6a86b9700ebc18aa7e42",
+  "./village-fish-games.css?v=252-86&sha256=ed210c956e7ab712e0e7974d71c41f29ba035e55b6f8330ac2ef713e5b13ca64",
   "./pet-life.css?v=252-84&sha256=6db35e2ed6159b075c0286dd180897efc175669e0d1d572cb291ee8271595509",
   "./lake-story.css?v=206-1&sha256=ed3a9c43fd215c324217a02ab8ed2ab9b023f28c896b40b00a2938c328f80cd7",
   "./lake-research.css?v=252-6&sha256=6caf9db98b2b29bb174a3873d9b680051e6ff7ebd5ae975a690791e6d36db721",
