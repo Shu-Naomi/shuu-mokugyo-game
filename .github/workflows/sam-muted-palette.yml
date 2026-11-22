@@ -1,0 +1,40 @@
+name: Sam bounded palette review
+on:
+  pull_request:
+    branches: [main]
+    paths: ['nushi-tsuri/tests/*sam-muted-palette*', 'nushi-tsuri/docs/sam-muted-palette-pilot.md', '.github/workflows/sam-muted-palette.yml']
+permissions:
+  contents: read
+concurrency:
+  group: sam-muted-palette-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: chown -R "$(id -u):$(id -g)" "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - run: node --test sam-muted-palette-pilot.test.cjs
+      - run: node browser-sam-muted-palette.cjs
+      - name: Preserve native-resolution comparisons and exact results
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        with:
+          name: sam-muted-palette-review
+          path: nushi-tsuri/tests/browser-evidence-sam-muted-palette/
+          retention-days: 14
+          if-no-files-found: warn
