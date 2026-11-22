@@ -1,4 +1,4 @@
-// Production entry and touch controls with a private legacy save. The five
+// Production entry and touch controls with a private legacy save. The
 // known entries are a portrait fixture; the worm catch is earned in play.
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
@@ -11,7 +11,7 @@ const enter = require('./browser-start-adventure.cjs');
 const {assertRelease} = require('./browser-release.cjs');
 
 const entries = {kijihata:'キジハタ',umazurahagi:'ウマヅラハギ',akaza:'アカザ',
-  kokuchibasu:'コクチバス',juzukakehaze:'ジュズカケハゼ'};
+  kokuchibasu:'コクチバス',juzukakehaze:'ジュズカケハゼ',nishikigoi:'ニシキゴイ',mejina:'メジナ',hoshikagami:'星鏡'};
 const dir = path.resolve(process.env.SOFT_WORM_EVIDENCE_DIR || '/tmp/soft-worm-evidence');
 const gear = () => ({money:s.money,worm:s.baits.worm,soft:s.lures.softWorm,spoon:s.lures.silverSpoon,
   lure:s.selectedLure,method:s.fishingMethod,rod:s.selectedRod});
@@ -128,7 +128,7 @@ async function run(browser,url,viewport) {
       portraits.add(await page.locator('#fishdexArt canvas').evaluate(c=>c.toDataURL()));
       await shot(id);
     }
-    assert.equal(portraits.size,5);assert.deepEqual(errors,[]);
+    assert.equal(portraits.size,8);assert.deepEqual(errors,[]);
     assert.equal(await page.evaluate(key=>localStorage.getItem(key),saveKey),legacy);
     console.log('WORM_TOUCH_PASS',viewport.width,viewport.height);
   } finally {await context.close();}

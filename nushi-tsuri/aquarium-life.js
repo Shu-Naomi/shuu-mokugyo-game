@@ -10,6 +10,7 @@
   const gaits=Object.freeze({
     kijihata:[.73,.32,.064],umazurahagi:[.89,.48,-.015],akaza:[.57,.24,.077],
     kokuchibasu:[1.18,.75,.038],juzukakehaze:[.49,.22,.082],
+    nishikigoi:[.68,.58,.055],mejina:[.98,.62,.012],hoshikagami:[.55,.47,.045],
     shiokakure:[.58,.43,.068],
     kawamutsu:[1.31,.82,-.018],herabuna:[.73,.56,.03],himemasu:[1.21,.96,-.035],laketrout:[.93,.68,.045],browntrout:[1.08,.86,-.025],
     mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],

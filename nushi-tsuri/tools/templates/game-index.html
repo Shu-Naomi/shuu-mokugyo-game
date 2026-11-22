@@ -10336,7 +10336,7 @@
         fishMouthProfiles[id]={...fishMouthProfiles.nushi,x:.4,y:.12};
         fishHookPoseOverrides[id]={mouth:[{xScale:1,yOffset:0},{xScale:1,yOffset:.035},{xScale:1,yOffset:.085}],
           turn:[{xScale:1,yOffset:0},{xScale:.725,yOffset:.06},{xScale:0,yOffset:.09},{xScale:-.725,yOffset:.06},{xScale:-1,yOffset:0}]};
-        const rate={shiokakure:.75,streamNushi:1.2,coastNushi:.95,caveNushi:.8,starNushi:1.1}[id];
+        const rate={hoshikagami:.82,shiokakure:.75,streamNushi:1.2,coastNushi:.95,caveNushi:.8,starNushi:1.1}[id];
         fishMotionProfiles[id]={...fishMotionProfiles.nushi,beat:.4*rate,stretch:0,squeeze:0};
         fightProfiles[id]={intro:`${definition.name}の力を、丈夫な竿で受け止めよう。`,
           moods:fightProfiles.nushi.moods.map(m=>({...m,speedX:(m.speedX||0)*rate,speedY:(m.speedY||0)*(id==="caveNushi"?1.25:1),
@@ -11779,7 +11779,7 @@
           ecology:"砂色の斑点と下向きの口、短い口ひげを持つ川魚。",locations:"水郷の湿地・砂底の小川（浅場〜深場）",time:"いつでも",
           rods:["youngBamboo","clearStream"],baits:["worm","river"],tip:"小川の砂底へミミズ＋ハリ小。中層から深場へ距離を変えて探ろう。"},
         nigoi:{number:38,scientific:"Hemibarbus barbus",habitats:["river","lake"],rarity:2,rarityLabel:"砂底の大物",
-          ecology:"細長い体ととがった鼻先、下向きの口を持つ大きな川魚。",locations:"水郷の湿地・砂底の小川／葦の沼の中層〜深場",time:"いつでも",
+          ecology:"細長い体ととがった鼻先、下向きの口を持つ大きな川魚。",locations:"水郷の湿地・砂底の小川／葦の沼の岸際〜深場",time:"いつでも",
           rods:["clearStream","starGazer"],baits:["worm","river","corn"],tip:"ミミズ＋ハリ中で小川の深場へ。大きな個体は重く粘るので、隙を待とう。"},
         raigyo:{number:39,scientific:"Channa argus（カムルチー）",habitats:["lake"],rarity:3,rarityLabel:"葦の沼の大物",
           ecology:"本作のライギョはカムルチー。細長い体と大きな口、長い背びれを持つ肉食魚。",locations:"峠の沼（中層〜深場）／水郷の湿地・葦の沼（浅場〜深場）",time:"昼〜夕方に多い",
@@ -13054,7 +13054,7 @@
         const max=tiers?.[tiers.length-1]?.maxHundredths || 20000;
         return {id:f.id,name:f.name,legendary:ShuRegional.legendary(f.id),price:ShuRegional.legendary(f.id)?0:Math.max(300,Math.round(f.price*3/50)*50),
           min:tiers?.[0]?.minHundredths||100,start:Math.min(max,f.id==="nushi"?(normal?.minHundredths||10000):(small?.minHundredths||normal?.minHundredths||1000)),max,
-          waterLabel:["shiokakure","coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji","kijihata","umazurahagi"].includes(f.id)?"海水":"淡水"};
+          waterLabel:["mejina","shiokakure","coastNushi","aji","suzuki","kasago","hirame","mebaru","bora","kurodai","shirogisu","ainame","madai","isaki","kawahagi","mahaze","sayori","masaba","magochi","akakamasu","ishidai","utsubo","buri","hiramasa","kanpachi","shimaaji","ishigakidai","akahata","takabe","kuromejina","houraihimeji","kijihata","umazurahagi"].includes(f.id)?"海水":"淡水"};
       });
       ShuFishing.normalize(s,rodData);
       // The title stays read-only. Persist the draw seed on Start, before

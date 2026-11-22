@@ -62,8 +62,8 @@ for(const mode of ['gauge','nushi'])for(const tier of [.5,.999999])test('shy bos
 test('old save, hidden dex, unique 67, crowns and 66 ordinary fish',()=>{
  const app=boot(seed()),w=app.window;
  try{
-  assert.equal(read(w,'fish.length'),72);assert.equal(read(w,'fish.find(f=>fishEncyclopediaData[f.id].number===67).id'),'shiokakure');assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),66);
-  assert.equal(read(w,'new Set(fish.map(f=>fishEncyclopediaData[f.id].number)).size'),72);
+  assert.equal(read(w,'fish.length'),75);assert.equal(read(w,'fish.find(f=>fishEncyclopediaData[f.id].number===67).id'),'shiokakure');assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),68);
+  assert.equal(read(w,'new Set(fish.map(f=>fishEncyclopediaData[f.id].number)).size'),75);
   assert.equal(read(w,'fishEncyclopediaData.shiokakure.number'),67);
   assert.equal(read(w,'fishdexIsKnown(fish.find(f=>f.id==="shiokakure"))'),false);
   assert.equal(read(w,'petCatalog.find(f=>f.id==="shiokakure").waterLabel'),'海水');

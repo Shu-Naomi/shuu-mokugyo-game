@@ -215,6 +215,13 @@
   kokuchibasu:{asset:'assets/fish-kokuchibasu.png',boxes:[[4,11,388,177],[442,7,304,184],[886,4,208,191],[1287,4,197,191],[94,203,208,191],[442,206,304,184],[796,210,388,177],[1192,210,388,177]],heads:[[0.988,0.55],[0.978,0.58],[0.972,0.6],[0.5,0.62],[0.028,0.6],[0.022,0.58],[0.012,0.55],[0.988,0.55]],continuousBody:true},
   juzukakehaze:{asset:'assets/fish-juzukakehaze.png',boxes:[[4,9,387,134],[466,7,252,139],[867,4,240,145],[1274,4,217,145],[77,157,240,145],[466,160,252,139],[794,162,387,134],[1189,162,387,134]],heads:[[0.99,0.54],[0.97,0.54],[0.87,0.565],[0.5,0.565],[0.13,0.565],[0.03,0.54],[0.01,0.54],[0.99,0.54]],continuousBody:true}
  });
+ definitions.push(
+  {id:'nishikigoi',name:'ニシキゴイ',base:'koi',number:73,price:720,resistance:135,band:'medium',hook:'medium',scientific:'Cyprinus carpio（観賞用品種）',habitats:['lake'],rarity:3,label:'紅白の衣',
+   ecology:'観賞用に育てられてきたコイ。この沼では白地に紅の斑がある姿を見られる。',locations:'葦の沼・岸際',time:'いつでも',rods:['clearStream','starGazer'],baits:['paste','worm'],tip:'葦の際へ練りエサとハリ中を短く投げよう。',intro:'紅白の背が水面を割った！',lengths:[18,28,38,48,60,73,90],baitWeights:{paste:3,worm:1.5}},
+  {id:'mejina',name:'メジナ',base:'kurodai',number:74,price:590,resistance:128,band:'medium',hook:'medium',scientific:'Girella punctata',habitats:['sea'],rarity:2,label:'磯のグレ',
+   ecology:'沿岸の岩礁域で海藻や小動物を食べる。青灰色の丸みを帯びた体に、鱗の暗色点が並ぶ。',locations:'潮風島・西の磯（中層）',time:'いつでも',rods:['shoreReed'],baits:['smallShrimp','shrimp'],tip:'西の磯で小エビとハリ中を中層へ。',intro:'丸い魚体が岩のきわで身を返す！',lengths:[9,16,23,30,38,47,60],baitWeights:{smallShrimp:2.8,shrimp:2.5,shell:1.3}}
+ );
+ Object.assign(art,{"nishikigoi":{"asset":"assets/fish-nishikigoi.png","boxes":[[5,11,90,33],[112,11,76,33],[222,11,56,33],[335,11,30,33],[22,67,56,33],[112,67,76,33],[205,67,90,33],[305,67,90,33]],"heads":[[0.989,0.606],[0.987,0.606],[0.982,0.606],[0.5,0.606],[0.0,0.606],[0.0,0.606],[0.0,0.606],[0.989,0.606]],"continuousBody":true},"mejina":{"asset":"assets/fish-mejina.png","boxes":[[5,6,90,38],[112,6,76,38],[222,6,56,38],[335,6,30,38],[22,62,56,38],[112,62,76,38],[205,62,90,38],[305,62,90,38]],"heads":[[0.989,0.658],[0.987,0.658],[0.982,0.658],[0.5,0.658],[0.0,0.658],[0.0,0.658],[0.0,0.658],[0.989,0.658]],"continuousBody":true},"hoshikagami":{"asset":"assets/fish-hoshikagami.png","boxes":[[5,11,90,33],[112,11,76,33],[222,11,56,33],[335,11,30,33],[22,67,56,33],[112,67,76,33],[205,67,90,33],[305,67,90,33]],"heads":[[0.989,0.606],[0.987,0.606],[0.982,0.606],[0.5,0.606],[0.0,0.606],[0.0,0.606],[0.0,0.606],[0.989,0.606]],"continuousBody":true}});
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -259,6 +266,7 @@
  // Some mountain spots share their original weight table. Keep the existing
  // populations intact, then copy only the six spots with new local residents.
  const localResidents={
+  'mountain-marsh-shallow':{nishikigoi:.21,nigoi:.14},'offshore-west-mid':{mejina:.28},
   'offshore-west-deep':{kijihata:.32},'offshore-east-mid':{umazurahagi:.34},
   'mountain-underground-shallow':{akaza:.22},'mountain-highPond-shallow':{juzukakehaze:.24},
   'mountain-highPond-mid':{kokuchibasu:.19},'mountain-highPond-deep':{kokuchibasu:.23}

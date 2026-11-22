@@ -9,7 +9,7 @@ function choose(w,id,selected){const control=value(w,id);control.value=selected;
 test('the notes reuse all 66 ordinary fish and the existing location, time, bait, rod and hook records',()=>{
  const app=boot(),w=app.window;
  try{
-  const data=model(w);assert.equal(data.fish.length,66);assert.equal(data.fish.filter(f=>f.id==='laketrout').length,1);
+  const data=model(w);assert.equal(data.fish.length,68);assert.equal(data.fish.filter(f=>f.id==='laketrout').length,1);
   for(const f of data.fish){
    assert.equal(Regional.legendary(f.id),false);
    const original=read(w,'fishEncyclopediaData['+JSON.stringify(f.id)+']');

@@ -18,9 +18,9 @@
     hover:'umazurahagi mebaru kawahagi oyanirami medaka',
     bottom:'kijihata akaza juzukakehaze shiokakure kasago shirogisu ainame kajika kamatsuka mahaze gigi kawayoshinobori akahata donko houraihimeji',
     long:'unagi dojo utsubo',flat:'hirame magochi',
-    heavy:'kokuchibasu koi namazu bass kurodai ishidai ishigakidai kuromejina raigyo streamNushi coastNushi caveNushi starNushi nushi',
+    heavy:'nishikigoi mejina hoshikagami kokuchibasu koi namazu bass kurodai ishidai ishigakidai kuromejina raigyo streamNushi coastNushi caveNushi starNushi nushi',
   };
-  const variations={kijihata:[.91,.89],umazurahagi:[.63,1.08],akaza:[1.11,1.06],kokuchibasu:[1.04,1.1],juzukakehaze:[.7,1.16],unagi:[1.05,.97],dojo:[.78,1.18],utsubo:[1.08,1],koi:[.84,.9],namazu:[1.12,1.12],
+  const variations={nishikigoi:[.81,.92],mejina:[.94,1.05],hoshikagami:[.72,.84],kijihata:[.91,.89],umazurahagi:[.63,1.08],akaza:[1.11,1.06],kokuchibasu:[1.04,1.1],juzukakehaze:[.7,1.16],unagi:[1.05,.97],dojo:[.78,1.18],utsubo:[1.08,1],koi:[.84,.9],namazu:[1.12,1.12],
     medaka:[.68,1.1],kawahagi:[.65,.85],buri:[1.08,.98],hiramasa:[.88,1.1],kanpachi:[1.12,.92],
     takabe:[.82,1.12],kuromejina:[.92,1.08],houraihimeji:[.86,.92],
     donko:[.78,.86],tanago:[.72,1.04],moroko:[.82,1.08],hirame:[.78,1.15],magochi:[.76,.85]};
