@@ -26,6 +26,7 @@ async function revealProduct(page,selector,mobile=false){
   if(await row.count()){
    if(!await row.isVisible())while(!await previous.isDisabled())await press(previous);
    for(let i=0;i<60&&!await row.isVisible();i++){if(await next.isDisabled())break;await press(next);}
+   if(where.sam==="bait")return row;
    await press(row);
   }
  }

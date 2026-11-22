@@ -22,7 +22,7 @@ test('Sam 20-pack corn purchase charges 5200 once, adds 60, and survives reopeni
  const a=boot({...seed(),money:10000,baits:{corn:92}}),w=a.window;let saved;
  try{
   w.eval('renderSamShop();open("store")');w.setSamBaitPurchaseCount(20);row(w,'corn').querySelector('[data-compact-select]').click();
-  click(w,'[data-sam-more]');assert.match(w.document.querySelector('.compact-detail-actions button').textContent,/60個を購入\s*20セット · 合計5,200円/);
+  click(w,'[data-sam-confirm-cancel]');click(w,'[data-sam-more]');assert.match(w.document.querySelector('.compact-detail-actions button').textContent,/60個を購入\s*20セット · 合計5,200円/);
   click(w,'[data-compact-sheet-close]');assert.equal(read(w,'s.money'),10000);
   click(w,'[data-buy-bait="corn"]');assert.equal(read(w,'s.money'),4800);assert.equal(read(w,'s.baits.corn'),152);
   saved=JSON.parse(w.localStorage.getItem(saveKey));
@@ -62,8 +62,7 @@ test('purchase tab separates choosing, quantity, cancellation and one-time payme
  const a=boot({...seed(),money:20000,baits:{corn:92}}),w=a.window;
  try{
   w.eval('renderSamShop();open("store")');const before=read(w,'({money:s.money,baits:s.baits})');
-  row(w,'corn').querySelector('[data-compact-select]').click();assert.equal(w.ShuCompactUI.hasSheet(),false);
-  assert.equal(w.document.querySelector('.compact-quantity-parking').hidden,true);openConfirm(w,'corn');
+  row(w,'corn').querySelector('[data-compact-select]').click();assert.equal(w.ShuCompactUI.hasSheet(),true);
   assert.match(w.document.querySelector('.sam-purchase-name').textContent,/トウモロコシ/);
   assert.ok(w.document.querySelector('.sam-purchase-layer .bait-quantity-picker'));
   click(w,'[data-bait-count-step="10"]');assert.equal(w.document.querySelector('#samBaitPurchaseCount').textContent,'011セット');
@@ -72,7 +71,7 @@ test('purchase tab separates choosing, quantity, cancellation and one-time payme
   assert.deepEqual(read(w,'({money:s.money,baits:s.baits})'),before);
   click(w,'[data-sam-confirm-cancel]');assert.equal(w.ShuCompactUI.hasSheet(),false);
   assert.equal(w.document.querySelector('.compact-quantity-parking').hidden,true);
-  assert.equal(w.document.activeElement,row(w,'corn').querySelector('[data-sam-confirm-open]'));
+  assert.equal(w.document.activeElement,row(w,'corn').querySelector('[data-compact-select]'));
   openConfirm(w,'corn');const action=w.document.querySelector('[data-sam-confirm-buy]');action.click();action.click();
   assert.equal(read(w,'s.money'),17140);assert.equal(read(w,'s.baits.corn'),125);
   assert.equal(w.ShuCompactUI.hasSheet(),false);assert.equal(w.document.querySelectorAll('.bait-quantity-picker').length,1);
@@ -85,7 +84,7 @@ test('unaffordable, Escape, detail action and category transitions cannot buy ac
   w.eval('renderSamShop();open("store")');openConfirm(w,'corn');
   assert.equal(w.document.querySelector('[data-sam-confirm-buy]').disabled,true);assert.match(w.document.querySelector('.sam-purchase-shortfall').textContent,/160円/);
   w.document.querySelector('.compact-sheet').dispatchEvent(new w.KeyboardEvent('keydown',{key:'Escape',bubbles:true}));assert.equal(w.ShuCompactUI.hasSheet(),false);
-  row(w,'corn').querySelector('[data-compact-select]').click();click(w,'[data-sam-more]');click(w,'.compact-detail-actions button');
+  row(w,'corn').querySelector('[data-compact-select]').click();click(w,'[data-sam-confirm-cancel]');click(w,'[data-sam-more]');click(w,'.compact-detail-actions button');
   assert.ok(w.document.querySelector('.sam-purchase-layer'));assert.equal(read(w,'s.money'),100);assert.equal(read(w,'s.baits.corn'),92);
   w.close();w.eval('renderSamShop();open("store")');assert.equal(w.ShuCompactUI.hasSheet(),false);assert.equal(w.document.querySelectorAll('.bait-quantity-picker').length,1);
   assert.deepEqual(a.errors,[]);

@@ -5,7 +5,7 @@ const {seed,saveKey}=require('./game-harness.cjs');
 const {revealProduct}=require('./compact-ui-helpers.cjs');
 const {planVillageRoute}=require('./browser-reference-village-evidence.cjs');
 const root=path.resolve(__dirname,'..'),directory=path.join(__dirname,'sam-quantity-evidence');
-const screens=[{width:740,height:320,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875},{width:844,height:390,mobile:true,dpr:1},{width:1280,height:720,mobile:false,dpr:1}];
+const screens=[{width:740,height:360,mobile:true,dpr:1},{width:740,height:320,mobile:true,dpr:1},{width:820,height:366,mobile:true,dpr:1.875},{width:844,height:390,mobile:true,dpr:1},{width:1280,height:720,mobile:false,dpr:1}];
 async function run(url,screen){
  const {chromium}=require('playwright');
  const browser=await chromium.launch({headless:true,...(process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE?{executablePath:process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE}:{})});
@@ -72,7 +72,25 @@ async function run(url,screen){
   checks.push({name:'shelf-stock',rows:shelfStock});
   await page.screenshot({path:path.join(directory,`${screen.width}x${screen.height}-shelf.png`)});
   const open=async()=>{const target=await revealProduct(page,'[data-buy-bait="corn"]',screen.mobile);await target[screen.mobile?'tap':'click']();};
-  await open();await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="-1"]');
+  await open();
+  const dialog=await page.locator('.sam-purchase-layer .compact-sheet').boundingBox();
+  const store=await page.locator('.sam-purchase-layer').boundingBox();
+  assert.ok(Math.abs(dialog.x+dialog.width/2-store.x-store.width/2)<2 && Math.abs(dialog.y+dialog.height/2-store.y-store.height/2)<2);
+  assert.ok(dialog.width<screen.width*.8 && dialog.height<screen.height*.9);
+  if(screen.mobile){
+   const touch=await context.newCDPSession(page);
+   const arrow=await page.locator('[data-bait-count-step="1"]').boundingBox();
+   const point=[{x:arrow.x+arrow.width/2,y:arrow.y+arrow.height/2}];
+   for(const end of ['touchEnd','touchCancel']){
+    await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:point});
+    await page.waitForFunction(()=>Number(document.querySelector('#samBaitPurchaseCount').textContent.slice(0,3))>=3);
+    await touch.send('Input.dispatchTouchEvent',{type:end,touchPoints:[]});
+    const count=await page.locator('#samBaitPurchaseCount').textContent();
+    await page.waitForTimeout(250);assert.equal(await page.locator('#samBaitPurchaseCount').textContent(),count);
+    assert.deepEqual(await state(),{money:10000,corn:92});await press('[data-bait-count-step="-100"]');
+   }
+  }
+  await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="10"]');await press('[data-bait-count-step="-1"]');
   const m=await shot('20-sets');assert.equal(m.count,'020セット');assert.equal(m.units,'受け取る数：60個（20セット）');assert.equal(m.total,'合計：5,200円');
   await press('[data-sam-confirm-cancel]');assert.deepEqual(await state(),{money:10000,corn:92});
   await open();await page.locator('[data-sam-confirm-buy]').focus();await page.keyboard.press('Enter');assert.deepEqual(await state(),{money:4800,corn:152});

@@ -17,7 +17,7 @@
   function add(parent,n,d){parent.append(n);d.nodes.push(n);return n;}
   function cloneArt(n){if(!n)return el('span','compact-fallback');const copy=n.cloneNode(true),from=[...(n.tagName==='CANVAS'?[n]:n.querySelectorAll('canvas'))],to=[...(copy.tagName==='CANVAS'?[copy]:copy.querySelectorAll('canvas'))];
     [copy,...copy.querySelectorAll('[id]')].forEach(e=>e.removeAttribute('id'));from.forEach((c,i)=>{try{to[i]?.getContext('2d').drawImage(c,0,0);}catch(_){}});return copy;}
-  function closeSheet(restore=true){if(!sheet)return;const old=sheet;sheet=null;old.moves.reverse().forEach(m=>{if(m.mark.parentNode)m.mark.replaceWith(m.n);});old.inert.forEach(([n,v])=>n.inert=v);old.layer.remove();if(restore&&old.opener?.isConnected)old.opener.focus({preventScroll:true});}
+  function closeSheet(restore=true){if(!sheet)return;const old=sheet;sheet=null;old.stopRepeat?.();old.moves.reverse().forEach(m=>{if(m.mark.parentNode)m.mark.replaceWith(m.n);});old.inert.forEach(([n,v])=>n.inert=v);old.layer.remove();if(restore&&old.opener?.isConnected)old.opener.focus({preventScroll:true});}
   function openSheet(scope,title,opener,fill){closeSheet(false);const layer=el('div','compact-sheet-layer'),shade=button('案内を閉じる');shade.className='compact-sheet-shade';shade.tabIndex=-1;
     const panel=el('section','compact-sheet'),head=el('header','compact-sheet-heading'),heading=el('h3','',title),back=button('戻る'),body=el('div','compact-sheet-body');heading.id='compactSheetTitle';panel.setAttribute('role','dialog');panel.setAttribute('aria-modal','true');panel.setAttribute('aria-labelledby',heading.id);
     back.dataset.compactSheetClose='';head.append(heading,back);panel.append(head,body);layer.append(shade,panel);
@@ -67,7 +67,7 @@
       const confirm=opts.confirm?button('購入内容を確認'):null;
       if(confirm){confirm.dataset.samConfirmOpen=String(i);actions.append(confirm);original.classList.add('compact-confirm-source');confirm.onclick=e=>{e.stopPropagation();opts.confirm(original,confirm);};}
       const item={original,wrap,pick,thumb,art,title,stock,detail,name,status,description,info,controls,picture,artMark,paths,aria,confirm};
-      pick.onclick=e=>{e.stopPropagation();c.choose(i);};
+      pick.onclick=e=>{e.stopPropagation();c.choose(i);if(opts.confirm && original.hasAttribute("data-buy-bait"))opts.confirm(original,pick);};
       pick.onkeydown=e=>{const step={ArrowDown:c.columns||1,ArrowRight:1,ArrowUp:-(c.columns||1),ArrowLeft:-1,PageDown:c.size,PageUp:-c.size}[e.key];let index=e.key==='Home'?0:e.key==='End'?items.length-1:step==null?null:i+step;if(index==null)return;e.preventDefault();index=Math.max(0,Math.min(items.length-1,index));c.choose(index);items[index].pick.focus({preventScroll:true});};
       info.onclick=e=>{e.stopPropagation();openSheet(scope,nameOf(original,opts),opts.infoOpener||info,body=>{
         const hero=el('div','compact-detail-art');hero.append(cloneArt(opts.summary&&picture?picture:art));body.append(hero);
@@ -137,27 +137,36 @@
     const selected=key(b);if(!selected)return;
     const title=nameOf(b,{}).replace(/^[^\p{L}\p{N}]+/u,'').replace(/\s*×\d+$/,'');
     const body=openSheet(scope,'購入確認',opener,(body,state)=>{
-      state.purchase={attribute:selected[0],value:selected[1]};
       state.layer.classList.add('sam-purchase-layer');
       const summary=el('div','sam-purchase-summary'),art=el('div','sam-purchase-art');
       art.append(cloneArt(b.closest('.compact-product')?.querySelector('.compact-art')));
       summary.append(art,el('h4','sam-purchase-name',title));
-      const bundle=clean(b.querySelector('[data-sam-bundle]')).match(/(\d+)セット\s*→\s*(\d+)個/);
-      const price=clean(b.querySelector('[data-sam-total],[data-sam-price],strong')).match(/[\d,]+円/);
-      const total=price?Number(price[0].replace(/[^\d]/g,'')):0;
-      const sets=bundle?Number(bundle[1]):1,units=bundle?Number(bundle[2]):1;
-      summary.append(el('p','sam-purchase-pack',bundle?'1セット '+units/sets+'個入り · '+(total/sets).toLocaleString('ja-JP')+'円':'1点 · '+total.toLocaleString('ja-JP')+'円'));
-      summary.append(el('p','sam-purchase-stock',clean(b.querySelector('[data-sam-stock]'))));
+      const bundle=b.querySelector('[data-sam-bundle]');
+      const pack=el('p','sam-purchase-pack');
+      summary.append(pack,el('p','sam-purchase-stock',clean(b.querySelector('[data-sam-stock]'))));
       body.append(summary);
-      if(bundle){const quantity=scope.querySelector('.bait-quantity-picker'),mark=document.createComment('purchase-quantity');quantity.before(mark);state.moves.push({n:quantity,mark});body.append(quantity);}
-      const receipt=el('div','sam-purchase-receipt');
-      receipt.append(el('p','sam-purchase-units','受け取る数：'+units+(bundle?'個（'+sets+'セット）':'点')),
-        el('p','sam-purchase-total','合計：'+total.toLocaleString('ja-JP')+'円'),
-        el('p','sam-purchase-wallet','所持金：'+Number(money||0).toLocaleString('ja-JP')+'円'));
+      if(bundle){
+        const picker=scope.querySelector('.bait-quantity-picker'),mark=document.createComment('purchase-quantity');
+        picker.before(mark);state.moves.push({n:picker,mark});body.append(picker);
+        state.stopRepeat=bindQuantityRepeat(picker);
+      }
+      const receipt=el('div','sam-purchase-receipt'),unitsLine=el('p','sam-purchase-units'),totalLine=el('p','sam-purchase-total');
+      const shortfall=el('p','sam-purchase-shortfall');
+      receipt.append(unitsLine,totalLine,el('p','sam-purchase-wallet','所持金：'+Number(money||0).toLocaleString('ja-JP')+'円'),shortfall);
       const confirm=button('購入する'),cancel=button('選び直す'),actions=el('div','sam-purchase-actions');
       confirm.dataset.samConfirmBuy='';cancel.dataset.samConfirmCancel='';
-      confirm.disabled=b.disabled||total>money;
-      if(total>money)receipt.append(el('p','sam-purchase-shortfall','あと'+(total-money).toLocaleString('ja-JP')+'円必要です'));
+      state.updateReceipt=()=>{
+        const match=clean(bundle).match(/(\d+)セット\s*→\s*(\d+)個/);
+        const sets=match?Number(match[1]):1,units=match?Number(match[2]):1;
+        const price=clean(b.querySelector('[data-sam-total],[data-sam-price],strong')).match(/[\d,]+円/);
+        const total=price?Number(price[0].replace(/[^\d]/g,'')):0;
+        pack.textContent=bundle?'1セット '+units/sets+'個入り · '+(total/sets).toLocaleString('ja-JP')+'円':'1点 · '+total.toLocaleString('ja-JP')+'円';
+        unitsLine.textContent='受け取る数：'+units+(bundle?'個（'+sets+'セット）':'点');
+        totalLine.textContent='合計：'+total.toLocaleString('ja-JP')+'円';
+        shortfall.hidden=total<=money;shortfall.textContent=shortfall.hidden?'':'あと'+(total-money).toLocaleString('ja-JP')+'円必要です';
+        confirm.disabled=b.disabled||total>money;
+      };
+      state.updateReceipt();
       let committed=false;
       confirm.onclick=e=>{e.stopPropagation();if(committed||confirm.disabled||sheet!==state||!b.isConnected)return;committed=true;confirm.disabled=true;closeSheet(false);b.click();
         // The transaction rebuilds the shelf. Resolve by product identity, not the
@@ -174,11 +183,26 @@
     });
     body.closest('.compact-sheet').querySelector('[data-compact-sheet-close]').textContent='一覧へ戻る';
   }
-  function samPurchaseSelection(){return sheet?.purchase?{...sheet.purchase,step:document.activeElement?.dataset.baitCountStep}:null;}
-  function resumeSamPurchase(selection){if(!selection)return;const scope=document.querySelector('#store.open');if(!scope)return;
-    const b=[...scope.querySelectorAll('button')].find(n=>n.getAttribute(selection.attribute)===selection.value);if(!b)return;
-    const opener=b.closest('.compact-product')?.querySelector('[data-sam-confirm-open]');opener?.click();
-    if(selection.step!=null){const target=sheet?.layer.querySelector('[data-bait-count-step="'+selection.step+'"]');if(target&&!target.disabled)target.focus({preventScroll:true});}
+  function bindQuantityRepeat(picker){
+    let timer,held=null,repeated=false;
+    const stop=()=>{clearTimeout(timer);held=null;};
+    const controller=new AbortController(),options={signal:controller.signal};
+    picker.addEventListener('pointerdown',e=>{
+      const arrow=e.target.closest('[data-bait-count-step]');
+      if(!arrow||arrow.disabled||held||!e.isPrimary||e.button!==0)return;
+      held=arrow;repeated=false;arrow.setPointerCapture(e.pointerId);
+      const repeat=()=>{
+        if(!held||held.disabled){stop();return;}
+        repeated=true;held.click();timer=setTimeout(repeat,100);
+      };
+      timer=setTimeout(repeat,400);
+    },options);
+    picker.addEventListener('click',e=>{
+      if(repeated&&e.detail>0){e.preventDefault();e.stopImmediatePropagation();}
+    },{...options,capture:true});
+    for(const type of ['pointerup','pointercancel','lostpointercapture'])picker.addEventListener(type,stop,options);
+    window.addEventListener('blur',stop,options);
+    return ()=>{stop();controller.abort();};
   }
   function samCategory(scope,tab,id,announce=true){if(!scope.classList.contains('compact-window'))return;scope.querySelectorAll('[data-compact-sam-tab]').forEach(b=>b.setAttribute('aria-pressed',String(b.dataset.compactSamTab===tab&&b.dataset.samCategory===id)));if(announce)[...controllers].find(c=>scope.contains(c.root)&&c.root.dataset.samCategoryPanel===id)?.announce();}
   function location(scope,ctx){release(scope);if(!ctx.enabled)return;scope.classList.add('compact-location-shop');const panel=scope.querySelector('.location-panel'),d=frame(scope,panel,ctx.money,()=>[...scope.querySelectorAll('#locationDialogue,#locationNote,.cooking-kitchen-status,.sam-window-note')]);
@@ -233,11 +257,11 @@
     const registration=content.querySelector('.pet-contest-selectors');if(registration){content.querySelectorAll(':scope > p,:scope > .pet-contest-result').forEach(n=>suppress(n,d));}
     restoreFocus(scope);
   }
-  function refresh(money){document.querySelectorAll('.compact-window.open .compact-wallet').forEach(n=>n.textContent=Number(money||0).toLocaleString('ja-JP')+'円');controllers.forEach(c=>{if(c.root.closest('.compact-window.open'))c.update();});}
+  function refresh(money){sheet?.updateReceipt?.();document.querySelectorAll('.compact-window.open .compact-wallet').forEach(n=>n.textContent=Number(money||0).toLocaleString('ja-JP')+'円');controllers.forEach(c=>{if(c.root.closest('.compact-window.open'))c.update();});}
   function placeInventoryToast(scope){const notice=scope.querySelector('.compact-toast');if(!notice||!scope.classList.contains('compact-inventory'))return;
     const description=[...scope.querySelectorAll('.compact-selected .compact-selection-description')].find(n=>n.getClientRects().length);if(!description)return;
     const r=description.getBoundingClientRect(),box=scope.getBoundingClientRect();notice.style.left=r.left-box.left-scope.clientLeft+'px';notice.style.top=r.top-box.top-scope.clientTop+'px';notice.style.width=r.width+'px';
   }
   function toast(scope,message){if(!scope?.classList.contains('compact-window')||!scope.classList.contains('open'))return;if(scope.querySelector('.compact-scene-dialogue'))return;scope.querySelector('.compact-toast')?.remove();const n=el('p','compact-toast',String(message).replace(/[「」]/g,''));n.setAttribute('role','status');scope.append(n);placeInventoryToast(scope);setTimeout(()=>n.remove(),4500);}
-  root.ShuCompactUI=Object.freeze({catalog,release,closeSheet,hasSheet:()=>!!sheet,samPurchaseSelection,resumeSamPurchase,sam,samCategory,location,vehicle,inventory,pet,refresh,toast});
+  root.ShuCompactUI=Object.freeze({catalog,release,closeSheet,hasSheet:()=>!!sheet,sam,samCategory,location,vehicle,inventory,pet,refresh,toast});
 })(typeof window==='undefined'?globalThis:window);
