@@ -945,3 +945,6 @@
 .dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg") center / 100% 100% no-repeat; }
 .dan-race-flow::before { display: none; }
 @media (max-height: 500px) { .dan-race-course[data-dan-course="mill"] .dan-race-wheel { width: clamp(36px, 5.8vw, 46px); } }
+
+/* The wheel meets its reflection; the foam fan follows the channel bend. */
+.dan-race-flow { left: 40%; top: 23%; width: 14%; height: 19%; }
