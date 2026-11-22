@@ -5,6 +5,9 @@ const CACHE_NAME = "nushi-tsuri-v252-shiokakure-display-252-85";
 importScripts("./village-precache-252-85.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
+  "./assets/fish-nishikigoi.png",
+  "./assets/fish-mejina.png",
+  "./assets/fish-hoshikagami.png",
   "./assets/fish-kijihata.png",
   "./assets/fish-umazurahagi.png",
   "./assets/fish-akaza.png",

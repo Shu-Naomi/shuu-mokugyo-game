@@ -186,6 +186,7 @@
   };
   Object.assign(species,{
     streamNushi:{band:"large",baits:{river:1.6,worm:1.1,liveMinnow:1.4,grasshopper:1.2,star:5}},
+    hoshikagami:{band:"large",recommendedHook:"large",baits:{paste:3,worm:1.7}},
     shiokakure:{band:"large",baits:{shell:2,smallShrimp:1.5,worm:1.2,shrimp:1.5}},
     coastNushi:{band:"large",baits:{shrimp:1.2,smallShrimp:1.2,shell:2.2,crab:2,liveMinnow:1.1,star:5}},
     caveNushi:{band:"large",baits:{worm:1.8,liveMinnow:1.5,smallShrimp:.8,star:5.5}},

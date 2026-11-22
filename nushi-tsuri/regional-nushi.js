@@ -14,6 +14,8 @@
       lengths:[[120,150],[150,185],[185,230],[230,280],[280,340],[340,410]],base:"namazu"},
     starNushi:{name:"星降るヌシ",region:"lake",asset:"assets/star-nushi-v202.png",price:15000,resistance:320,strength:6,minStrength:4,
       lengths:[[260,330],[330,410],[410,510],[510,620],[620,740],[740,900]],base:"nushi"},
+    hoshikagami:{name:"星鏡",region:"stream",asset:"assets/fish-hoshikagami.png",price:3900,resistance:182,strength:2.9,minStrength:2.4,
+      lengths:[[60,74],[74,88],[88,104],[104,123],[123,145],[145,170]],base:"koi"},
   };
   const ordinary={stream:["yamame","nijimasu","ayu","moroko","unagi","namazu","funa","koi","bass"],
     coast:["aji","shirogisu","bora","hirame","suzuki","madai","kasago","mebaru","ainame","kurodai"],
@@ -28,6 +30,8 @@
   descriptions.shiokakure={habitats:["sea"],locations:"潮風島の岩場",ecology:"この世界の架空のぬし。岩そっくりの斑紋と扁平な体を持つ。驚くと岩陰へ戻り、静かになるとまた姿を現す。",tip:"短い投げでそっと落とす。岩へ戻る間は糸を送り、止まった隙に寄せよう。",rods:["shoreReed","tideMaster"],baits:["shell","smallShrimp","worm"]};
   const encyclopedia=Object.fromEntries(Object.entries(descriptions).map(([id,d],i)=>[id,{...d,number:id==="shiokakure"?67:21+i,
     scientific:"架空の魚",rarity:5,rarityLabel:id==="starNushi"?"星降る湖の最後のヌシ":"地域のヌシ",time:id==="starNushi"?"夜":"いつでも"}]));
+  encyclopedia.hoshikagami={number:75,scientific:"架空のコイ",habitats:["lake"],rarity:5,rarityLabel:"葦の沼のぬし",locations:"葦の沼・岸際",time:"夜",
+    ecology:"星鏡（ほしかがみ）。水面の星を銀黒の鱗に映して泳ぐ、この沼の架空のぬし。",tip:"夜、葦の沼の岸際へ練りエサと大きな針をそっと投げよう。",rods:["starGazer","shoreReed"],baits:["paste","worm"]};
   const record=v=>v&&typeof v==="object"&&!Array.isArray(v)?v:{};
   function regionForSpot(spotId=""){
     if(/^mountain-(stream|pond|marsh)-/.test(spotId))return "stream";
@@ -59,6 +63,7 @@
   function finalReady(state){return ["streamNushi","coastNushi","caveNushi"].every(id=>state.caught?.[id]>0);}
   function candidates(state,spotId,period,practice=false){
     if(practice)return {};
+    if(spotId==="mountain-marsh-shallow"&&period==="night")return {hoshikagami:.055};
     if(spotId==="mountain-stream-deep"&&complete(state,"stream"))return {streamNushi:.075};
     if(/^coast-(sand|reef)-deep$/.test(spotId)&&complete(state,"coast"))return {coastNushi:.065};
     if(spotId==="mountain-underground-deep"&&complete(state,"cave"))return {caveNushi:.09};
