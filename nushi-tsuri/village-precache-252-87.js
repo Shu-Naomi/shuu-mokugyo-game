@@ -60,7 +60,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./title-flow.js?v=252-1&sha256=c2f71d4d2bc242c71440d8cf66c6ca4b8f9f4146d4a5617e9a17ff14c40a9496",
   "./nushi-atlas.js?v=202-1&sha256=dab6dc8d7146ccd883604bb0d5ccd9edc5e4c02ebcea24603bf9c5a47376d472",
   "./fish-additions.js?v=252-82&sha256=9e9089a1aa8adc82a026850d4435381c8db8063dc1e1cf604a1f27ed6365ce81",
-  "./fish-art.js?v=252-87&sha256=aa7b8f44fcc14211bbd531dc49c18aa778127bd2c52c17ad00ba69b03669f332",
+  "./fish-art.js?v=252-87&sha256=3e25124ea051adbc5ecd0aaa0442874599f8cc0db6b8989e8dd5956d45312286",
   "./tackle-art.js?v=252-82&sha256=62ab841ba7acdf66cb576d551b581d463f35eb23788d45299999b4675c4d8d82",
   "./item-art.js?v=252-28&sha256=d06708b4d40e705c222fe1d3633dc7fe8696fb60d23ec7052cda39a6b84ee3ac",
   "./item-object-art.js?v=252-28&sha256=d75acd9ffa0c370f00d741b80763371495d361745215bf697ac122e52b8caa10",

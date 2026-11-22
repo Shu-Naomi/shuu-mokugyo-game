@@ -138,11 +138,13 @@ test('the hook follows the displayed CSS pose while the fish is moving between t
   for(const [degrees,facing]of [[0,1],[-25,-1],[32,1]]){
    const rad=degrees*Math.PI/180,cos=Math.cos(rad),sin=Math.sin(rad),a=cos*1.2*facing,b=sin*1.2*facing,c=-sin*.8,d=cos*.8;
    w.DOMMatrix=class{constructor(){Object.assign(this,{a,b,c,d});}};
-   const data=read(w,'({actual:battleMouthAndHook(),target:battleMouthAndHook(false),profile:fishMouthProfiles[battle.f.id]})'),p=data.profile;
-   const x=844*.44+a*p.x*150+c*p.y*75-facing*cos*p.inset-sin*p.drop;
-   const y=326*.5+b*p.x*150+d*p.y*75-facing*sin*p.inset+cos*p.drop;
-   assert.ok(Math.abs(data.actual.rootX*844/1000-x)<1e-6);
-   assert.ok(Math.abs(data.actual.rootY*326/500-y)<1e-6);
+   const data=read(w,'({actual:battleMouthAndHook(),target:battleMouthAndHook(false),lip:ShuFishArt.sideLip(battle.f.id)})');
+   const [u,v]=data.lip,hook=data.actual;
+   const x=844*.44+a*(u-.5)*150+c*(v-.5)*75;
+   const y=326*.5+b*(u-.5)*150+d*(v-.5)*75;
+   const tipX=2.8*facing*hook.profile.tackleScale,tipY=-.2*hook.profile.tackleScale;
+   assert.ok(Math.abs(hook.rootX*844/1000+cos*tipX-sin*tipY-x)<1e-6);
+   assert.ok(Math.abs(hook.rootY*326/500+sin*tipX+cos*tipY-y)<1e-6);
    assert.ok(Math.abs(data.actual.rootX-data.target.rootX)>100,'displayed position differs from the next simulation target');
   }
   assert.deepEqual(app.errors,[]);
