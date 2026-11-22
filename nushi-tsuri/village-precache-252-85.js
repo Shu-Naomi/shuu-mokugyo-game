@@ -19,7 +19,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./fortune-capsules.css?v=185-1&sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3",
   "./fishing-duel.css?v=252-82&sha256=9d0ccf700e49bbbda30aeac9bc8c060a037b553f5049c86e5e40cc9b67702080",
   "./catch-memories.css?v=229-1&sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402",
-  "./compact-ui.css?v=252-64&sha256=b77ad7ad0f2f2eb351b59aa37454d550e1e785141a70a5b9fdfeb78b6a1d96d5",
+  "./compact-ui.css?v=252-64&sha256=7380a23715cf72ef980db8dacac1a91d0b08773f75dd147e1a17a4356b82965e",
   "./offshore-island.css?v=252-71&sha256=0d09c178e93ded1d236e908c1cdad8fb6776b6af25c4e13792ae3d1568548f50",
   "./village-reference.js?v=252-73&sha256=8f18051cf09d6c16fccc18aa5c78d09e28ec20d5582e34c304c066669f5fa34d",
   "./player-options.js?v=251-9&sha256=b88b04471e0a166a665be2aa34850cebd0894ad54e7a7ff91028803aea318203",
