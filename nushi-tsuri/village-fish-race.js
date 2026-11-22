@@ -202,8 +202,29 @@
     function careBonus(fish) {
       return Math.min(.14, Math.max(0, (fish.specimen?.careDays || 0) * .004 + ((fish.specimen?.stars || 1) - 1) * .014));
     }
+    // Sprites composed at race scale; the larger result portrait and unusual
+    // aquarium forms retain their individual aquarium illustrations.
+    const swimmerRows = {funa: 0, ayu: 1, oikawa: 2, ugui: 3};
     function formArt(node, fish, frame) {
-      ctx.drawFish(node, fish.species, frame, fish.specimen || null);
+      const row = swimmerRows[fish.species];
+      if (!node.classList.contains("dan-race-fish") || row === undefined ||
+          fish.appearance?.rare || fish.appearance?.fry) {
+        ctx.drawFish(node, fish.species, frame, fish.specimen || null);
+        return;
+      }
+      let sprite = node.firstElementChild;
+      if (!sprite) {
+        sprite = el("span", "dan-swimmer-sprite");
+        sprite.setAttribute("aria-hidden", "true");
+        sprite.dataset.species = fish.species;
+        sprite.style.backgroundPositionY = (row / 3 * 100) + "%";
+        node.append(sprite);
+      }
+      const column = frame % 8;
+      if (sprite.dataset.frame !== String(column)) {
+        sprite.dataset.frame = String(column);
+        sprite.style.backgroundPositionX = (column / 7 * 100) + "%";
+      }
     }
 
     const timeText = cs => (cs / 100).toFixed(2) + "秒";
@@ -349,8 +370,11 @@
       selection.addEventListener("change", () => {
         selectedUid = selection.value;
         const fish = byUid.get(selectedUid);
+        const art = el("span", "dan-race-fish");
+        views[0].art.replaceWith(art);
+        views[0].art = art;
         views[0].identity = fish;
-        formArt(views[0].art, fish, 0);
+        formArt(art, fish, 0);
         previewTip();
       });
       coursePicker.addEventListener("change", () => {
@@ -426,10 +450,14 @@
       if (!reduced && race.elapsed - lastArt >= .12) {
         lastArt = race.elapsed;
         views.forEach(({art, identity}, i) => {
-          const swimmer = race.runners[i], boosting = swimmer.spurtAt !== null && race.elapsed - swimmer.spurtAt < swimmer.spurtDuration;
+          const swimmer = race.runners[i];
           if (swimmer.finishTime !== null) return;
           const gait = win.ShuAquariumLife.gait(identity.species);
-          const frame = Math.floor(win.ShuFishMotion.phase(identity.species, race.elapsed, gait.speed * (boosting ? 1.35 : 1), false, i));
+          // Accumulate only the extra swim time spent sprinting, so neither
+          // entering nor leaving a spurt skips to a different tail stroke.
+          const boostTime = swimmer.spurtAt === null ? 0 : Math.min(race.elapsed - swimmer.spurtAt, swimmer.spurtDuration);
+          const swimTime = race.elapsed + boostTime * .35;
+          const frame = Math.floor(win.ShuFishMotion.phase(identity.species, swimTime, gait.speed, false, i));
           formArt(art, identity, frame);
         });
       }

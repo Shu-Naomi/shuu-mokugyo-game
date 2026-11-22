@@ -23,3 +23,29 @@ test('race simulation, village collision, saves and rewards are byte-identical t
  assert.equal(digest(after.split('  function open(')[0]),'0d206f1fb6617d994d94d1aeb11ad2521943958980269ff7a3e9c1ca9a0ffa50');
  assert.equal(digest(after.slice(after.indexOf('    function finishCommentary('))),'1026470226459863743dc9f7cc64faf0fa1aed84ea96235103602d62c99ebd4b');
 });
+
+test('switching race entrants keeps the appearance of home fish and restores the rental art', () => {
+  const {boot} = require('./game-harness.cjs');
+  const {fixture} = require('./aquarium-mutation-koi-fixture.cjs');
+  const app = boot(fixture());
+  try {
+    const w = app.window;
+    w.eval('Object.assign(s, {mapRegion:"village", ...ShuVillageReference.landmarks["west-shrine"], direction:"up"}); render(); action();');
+    const picker = w.document.querySelector('#danEntrantPicker');
+    function pick(uid) {
+      picker.value = uid;
+      assert.equal(picker.value, uid);
+      picker.dispatchEvent(new w.Event('change', {bubbles: true}));
+      return w.document.querySelector('[data-racer="player"] .dan-race-fish');
+    }
+    assert.equal(pick('rental-ayu').firstElementChild.dataset.species, 'ayu');
+    const gold = pick('pet-3');
+    assert.match(gold.dataset.specimenAppearance, /黄金/);
+    assert.equal(gold.querySelector('.dan-swimmer-sprite'), null);
+    assert.equal(pick('rental-funa').firstElementChild.dataset.species, 'funa');
+    assert.equal(pick('pet-3').dataset.specimenAppearance, gold.dataset.specimenAppearance);
+    assert.deepEqual(app.errors, []);
+  } finally {
+    app.dispose();
+  }
+});

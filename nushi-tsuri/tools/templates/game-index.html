@@ -19041,6 +19041,7 @@
           const generation = petUi.generationOf(specimen);
           return {
             uid: specimen.uid, species: specimen.species, specimen,
+            appearance: ShuAquariumLife.appearance(specimen, petCatalog),
             name: ShuPetLife.individualName(specimen, petCatalog),
             speciesName: ShuPetLife.displayName(specimen, petCatalog),
             generation, generationLabel: generation === null ? "世代不明" : `第${generation}世代`,

@@ -6,9 +6,11 @@ importScripts("./village-precache-252-86.js");
 const CORE_ASSETS = [
   "./assets/dan-race-island-v252-86.svg",
   "./assets/dan-race-mill-v252-86.svg",
-  "./assets/dan-race-flow-v252-86.svg",
+  "./assets/dan-race-flow-v252-86.svg?art=63d0219bb9f1576e",
+  "./assets/dan-race-reeds-v252-86.svg",
+  "./assets/dan-race-swimmers-v252-86.png",
   "./assets/dan-race-sign-v252-86.svg",
-  "./assets/dan-race-water-v252-86.svg",
+  "./assets/dan-race-water-v252-86.svg?art=84174cc4733758cb",
   "./assets/dan-race-wheel-v252-86.svg",
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",

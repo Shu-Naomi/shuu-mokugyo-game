@@ -152,11 +152,10 @@
   position: absolute;
   inset-inline: 0;
   height: 42%;
-  background: repeating-linear-gradient(72deg, #254a37 0 8px, #52814b 8px 12px, #6d9955 12px 14px, #396b46 14px 21px);
-  clip-path: polygon(0 0, 100% 0, 95% 49%, 88% 73%, 83% 70%, 83% 38%, 72% 68%, 69% 93%, 61% 100%, 58% 80%, 61% 48%, 51% 66%, 44% 91%, 39% 88%, 43% 51%, 33% 72%, 28% 78%, 24% 69%, 29% 38%, 18% 56%, 12% 66%, 9% 59%, 14% 27%, 5% 44%);
+  background: url("assets/dan-race-reeds-v252-86.svg") left center / 200% 100% no-repeat;
 }
-.dan-race-gate::before { top: 0; }
-.dan-race-gate::after { bottom: 0; transform: rotate(180deg); }
+.dan-race-gate::before { top: 0; transform: scaleY(-1); }
+.dan-race-gate::after { bottom: 0; background-position: right center; }
 .dan-race-finish {
   position: absolute;
   left: 94%;
@@ -180,6 +179,16 @@
   width: 100%;
   height: 100%;
   filter: drop-shadow(1px 2px 0 #0c2c31a8);
+}
+.dan-swimmer-sprite {
+  position: absolute;
+  width: 100%;
+  aspect-ratio: 2;
+  top: 50%;
+  transform: translateY(-50%);
+  background: url("assets/dan-race-swimmers-v252-86.png") no-repeat;
+  background-size: 800% 400%;
+  image-rendering: pixelated;
 }
 .dan-race-fish canvas, .dan-race-fish img, .fish-card-art canvas, .fish-card-art img {
   display: block;
@@ -884,7 +893,7 @@
 [data-game="race"] .village-fish-header { background: #30483f; border-bottom: 3px solid #96764e; }
 [data-game="race"] .village-fish-body { background: #192f32; }
 [data-game="race"] button, [data-game="race"] select { border-radius: 2px; }
-.dan-race-course, .dan-race-course[data-dan-course="mill"] { background: #234d51 url("assets/dan-race-water-v252-86.svg") center / 100% 100%; border: 3px solid #8b714b; border-radius: 1px; box-shadow: 0 0 0 1px #172b2b; }
+.dan-race-course, .dan-race-course[data-dan-course="mill"] { background: #234d51 url("assets/dan-race-water-v252-86.svg?art=84174cc4733758cb") center / 100% 100%; border: 3px solid #8b714b; border-radius: 1px; box-shadow: 0 0 0 1px #172b2b; }
 .dan-race-course::before, .dan-race-course[data-dan-course="mill"]::before { border: 0; background: none; clip-path: none; }
 .dan-race-scoreboard { position: absolute; z-index: 5; right: 7px; top: 5px; padding: 3px 7px; color: #f4dfac; background: #172c2e; border: 1px solid #b89b61; font-size: 12px; font-weight: bold; font-variant-numeric: tabular-nums; }
 .dan-race-course-name { top: 5px; background: #172c2e; border: 1px solid #728979; padding: 3px 6px; }
@@ -912,7 +921,7 @@
 /* Carry the same fish-and-finish sign from the facade into every race phase. */
 [data-game="race"] #villageFishTitle { display: flex; align-items: center; gap: 10px; }
 [data-game="race"] #villageFishTitle::before { content: ""; flex: 0 0 90px; width: 90px; height: 30px; background: url("assets/dan-race-sign-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
-.dan-race-portrait::before { background: #234d51 url("assets/dan-race-water-v252-86.svg") center / cover; }
+.dan-race-portrait::before { background: #234d51 url("assets/dan-race-water-v252-86.svg?art=84174cc4733758cb") center / cover; }
 .dan-race-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
 .dan-race-foot .dan-race-status { min-width: 0; margin: 0; grid-column: 1; }
 .dan-race-foot button:last-child { grid-column: 3; }
@@ -942,8 +951,28 @@
 .dan-race-island::before { inset: 0; clip-path: none; background: url("assets/dan-race-island-v252-86.svg") center / 100% 100% no-repeat; }
 .dan-race-course[data-dan-course="mill"]::after { top: 4%; width: clamp(48px, 8vw, 82px); height: 23%; clip-path: none; background: url("assets/dan-race-mill-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
 .dan-race-wheel { top: 8%; }
-.dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg") center / 100% 100% no-repeat; }
-.dan-race-flow::before { display: none; }
+.dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg?art=63d0219bb9f1576e") center / 100% 100% no-repeat; }
+/* Only the narrow foam seam moves. The riverbed and its bank reflections share one cached backdrop. */
+.dan-race-flow::before {
+  background:
+    linear-gradient(#c7d7c0, #c7d7c0) 79% 26% / 3px 1px no-repeat,
+    linear-gradient(#abc9b7, #abc9b7) 70% 34% / 2px 2px no-repeat,
+    linear-gradient(#c1d6c2, #c1d6c2) 61% 44% / 4px 1px no-repeat,
+    linear-gradient(#a2c3b5, #a2c3b5) 50% 55% / 3px 1px no-repeat,
+    linear-gradient(#b9d2c0, #b9d2c0) 37% 62% / 3px 1px no-repeat,
+    linear-gradient(#98b9ac, #98b9ac) 24% 75% / 2px 1px no-repeat;
+  transform: none;
+}
+@media (prefers-reduced-motion: no-preference) {
+  [data-race-phase="running"] .dan-race-flow::before {
+    animation: dan-foam-drift 1.45s steps(3, end) infinite;
+  }
+  @keyframes dan-foam-drift {
+    0% { transform: translate(1px, -1px); opacity: .35; }
+    50% { opacity: .95; }
+    100% { transform: translate(-4px, 1px); opacity: .35; }
+  }
+}
 @media (max-height: 500px) { .dan-race-course[data-dan-course="mill"] .dan-race-wheel { width: clamp(36px, 5.8vw, 46px); } }
 
 /* The wheel meets its reflection; the foam fan follows the channel bend. */
