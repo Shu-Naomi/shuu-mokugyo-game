@@ -878,3 +878,72 @@
   .dan-race-entry:has(#danCoursePicker) select { width: 100%; }
   .dan-race-entry:has(#danRoutePicker:not([hidden])) #danEntrantPicker { grid-column: span 3; }
 }
+
+/* Dan's race needs independently legible fish at landscape phone widths.
+   The source frames are 448x224; shrinking them to 42–50px was discarding
+   fin/scale pixels even though the source canvas is drawn unsmoothed. */
+.dan-race-runner {
+  width: clamp(70px, 9vw, 100px);
+  height: clamp(35px, 4.5vw, 48px);
+  isolation: isolate;
+}
+.dan-race-fish { z-index: 1; }
+.dan-race-fish canvas,
+.dan-race-fish img {
+  position: absolute;
+  left: -9%;
+  top: -9%;
+  width: 118%;
+  height: 118%;
+  image-rendering: pixelated;
+}
+.dan-race-tag { z-index: 2; top: 86%; }
+
+/* Native pixel-stroke overlay, behind the island, wheel, tags and racers. */
+.dan-race-water-detail {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+  opacity: .78;
+  image-rendering: pixelated;
+}
+.dan-race-island,
+.dan-race-flow,
+.dan-race-finish,
+.dan-race-course[data-dan-course="mill"]::after { z-index: 1; }
+
+/* Small staggered tail wakes, distinct from the existing spurt cue. */
+.dan-race-runner::after {
+  content: "";
+  position: absolute;
+  z-index: 0;
+  top: 52%;
+  left: -7%;
+  width: 11%;
+  height: 2px;
+  background: #c0e0cf;
+  opacity: .6;
+  box-shadow: -6px 5px 0 #8ebfb5, -13px -3px 0 #8ebfb5,
+    -18px 7px 0 #6ea6a4, -21px 1px 0 #a1cdbf;
+  animation: dan-race-wake .8s steps(3, end) infinite;
+}
+.dan-race-runner.is-spurting::after {
+  opacity: .88;
+  box-shadow: -8px 5px 0 #cce9d6, -16px -3px 0 #b0e0cf,
+    -24px 7px 0 #85c9bd, -32px 1px 0 #b2ddc8;
+}
+@keyframes dan-race-wake {
+  0% { transform: translateX(2px); opacity: .3; }
+  50% { transform: translateX(-3px); opacity: .65; }
+  100% { transform: translateX(-7px); opacity: .25; }
+}
+@media (max-width: 550px) {
+  .dan-race-runner { width: 62px; height: 32px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .dan-race-runner::after { animation: none; }
+}
