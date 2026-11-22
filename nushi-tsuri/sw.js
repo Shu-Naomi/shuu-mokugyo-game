@@ -1,9 +1,19 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-shiokakure-display-252-85";
+const CACHE_NAME = "nushi-tsuri-v252-dan-design-252-86";
 
-importScripts("./village-precache-252-85.js");
+importScripts("./village-precache-252-86.js");
 const CORE_ASSETS = [
+  "./assets/dan-race-water-v252-86.png?art=0ae7fc69df6133cb",
+  "./assets/dan-race-wake-v252-86.svg?art=e764ecdd21259d67",
+  "./assets/dan-race-ripples-v252-86.png?art=3f1e5e7813c38fb2",
+  "./assets/dan-race-island-v252-86.svg?art=087e3aaae794b711",
+  "./assets/dan-race-mill-v252-86.svg?art=a76d922687ecf293",
+  "./assets/dan-race-flow-v252-86.svg?art=63d0219bb9f1576e",
+  "./assets/dan-race-reeds-v252-86.svg",
+  "./assets/dan-race-swimmers-v252-86.png?art=2ce7c1f66831cf85",
+  "./assets/dan-race-sign-v252-86.svg",
+  "./assets/dan-race-wheel-v252-86.png?art=4a43c21f6228860c",
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",
   "./assets/fish-umazurahagi.png",

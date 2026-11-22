@@ -1775,7 +1775,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign):not(#shiokakureContour) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign):not(#shiokakureContour):not(#danRaceSign) {
         display: none !important;
       }
       .map.v54-map #ruralSign { position:absolute; left:90.8%; top:20.8%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
@@ -6466,7 +6466,7 @@
     <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
-    <link rel="stylesheet" href="village-fish-games.css?v=252-84" />
+    <link rel="stylesheet" href="village-fish-games.css?v=252-86" />
     <link rel="stylesheet" href="pet-life.css?v=252-84" />
     <link rel="stylesheet" href="lake-story.css?v=206-1" />
     <link rel="stylesheet" href="lake-research.css?v=252-6" />
@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-85</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-86</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -6551,6 +6551,7 @@
       <main class="world" id="world">
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
+          <img id="danRaceSign" src="assets/dan-race-sign-v252-86.svg" alt="" aria-hidden="true" hidden style="position:absolute;left:11.6028708134%;top:31.1370882040%;width:5.9808612440%;height:3.6131774708%;z-index:2;pointer-events:none;image-rendering:pixelated" />
           <canvas id="offshorePixels" width="1672" height="941" role="img" aria-label="漁船で渡る潮風島"></canvas>
           <canvas id="offshoreShip" width="540" height="198" aria-hidden="true"></canvas>
           <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
@@ -7471,7 +7472,7 @@
     <script src="compact-ui.js?v=252-84"></script>
     <script src="pet-life-ui.js?v=252-84"></script>
     <script src="village-fish-cards.js?v=252-84"></script>
-    <script src="village-fish-race.js?v=252-84"></script>
+    <script src="village-fish-race.js?v=252-86"></script>
     <script src="tackle-balance.js?v=252-71"></script>
     <script src="fishing-duel.js?v=252-82"></script>
     <script src="underwater-camera.js?v=246-1"></script>
@@ -11967,6 +11968,19 @@
         }
         return canvas;
       }
+      // Dan's reserve entrants use their actual aquarium form. One reusable
+      // full-size surface preserves the painter's coordinate system for fins,
+      // parr marks, growth and mutation details before native-size reduction.
+      let raceFishSource;
+      function raceFishSourceContext() {
+        if (!raceFishSource) {
+          const surface = document.createElement("canvas");
+          surface.width = 448;
+          surface.height = 224;
+          raceFishSource = surface.getContext("2d");
+        }
+        return raceFishSource;
+      }
       function drawFishAtlasFrame(
         element,
         spriteAsset,
@@ -11986,10 +12000,12 @@
           const artAssets=ShuFishArt.assets(artId);
           const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
-          if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
-          if(canvas.width!==448)canvas.width=448;
-          if(canvas.height!==224)canvas.height=224;
-          if(changed)canvas.getContext('2d').clearRect(0,0,448,224);
+          const raceSprite = element.classList.contains('dan-race-fish');
+          const width = raceSprite ? 128 : 448, height = width / 2;
+          if(canvas.dataset.atlasKey!==key||canvas.width!==width||canvas.height!==height)delete canvas.dataset.artPaintKey;
+          if(canvas.width!==width)canvas.width=width;
+          if(canvas.height!==height)canvas.height=height;
+          if(changed)canvas.getContext('2d').clearRect(0,0,width,height);
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
           const resolveImage=asset=>fishAtlasImage(aquariumLook?.adultIsaki&&asset===ShuFishArt.species.isaki.asset?'assets/aquarium-isaki-adult-v230.png':asset);
@@ -11998,9 +12014,19 @@
           canvas.dataset.artVariant=artId;
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
-            const context=canvas.getContext('2d');
+            const output = canvas.getContext('2d');
+            const context = raceSprite ? raceFishSourceContext() : output;
             if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
+            if (raceSprite) {
+              // These transparent atlas margins are common to the 84 side
+              // profiles, including catfish barbels. Average their fine
+              // markings once into the same pixel grid as the race sprites.
+              output.clearRect(0, 0, width, height);
+              output.imageSmoothingEnabled = true;
+              output.imageSmoothingQuality = 'high';
+              output.drawImage(context.canvas, 8, 14, 408, 204, 0, 0, width, height);
+            }
             canvas.dataset.artPaintKey=key;
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){
@@ -15299,6 +15325,7 @@
         ShuShiokakure.paint(canvas,shiokakureEncounter,matchMedia('(prefers-reduced-motion: reduce)').matches);
       }
       function renderPixelScenery() {
+        $("#danRaceSign").hidden = !ShuVillageReference.enabled || s.mapRegion !== "village" || playerHomeIsActive() || !!battle;
         renderShiokakure();
         if (villageSaveSuspended) return false;
         worldLife?.render(performance.now(),true);
@@ -19039,6 +19066,7 @@
           const generation = petUi.generationOf(specimen);
           return {
             uid: specimen.uid, species: specimen.species, specimen,
+            appearance: ShuAquariumLife.appearance(specimen, petCatalog),
             name: ShuPetLife.individualName(specimen, petCatalog),
             speciesName: ShuPetLife.displayName(specimen, petCatalog),
             generation, generationLabel: generation === null ? "世代不明" : `第${generation}世代`,
@@ -25087,7 +25115,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-85").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-86").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="160" height="84" viewBox="0 0 160 84" preserveAspectRatio="none" shape-rendering="crispEdges">
+  <!-- Two bank clumps on a common grid. Long eelgrass blades alternate with
+       branching pondweed. Each clump has its own profile around the gate. -->
+  <defs>
+    <g id="ribbon">
+      <path fill="#233f34" d="M-3 0Q-8-13-5-25Q-1-36-1-42Q-2-50 4-57Q2-50 4-45Q7-35 2-24Q-2-15 2 0Z"/>
+      <path fill="#456b46" d="M-2 0Q-7-15-3-26Q2-37 0-43Q0-48 3-53Q2-48 3-44Q6-36 0-24Q-3-13 0 0Z"/>
+      <path fill="#668352" d="M-4-18Q-5-24-1-33L1-39L2-36L1-31L-2-24Z"/>
+      <path fill="#819660" d="M-3-25L0-33L1-33L-1-26Z"/>
+      <path fill="#33543c" d="M-3-3L-5-13L-4-18L-2-14L0-3Z"/>
+    </g>
+    <g id="blade">
+      <path fill="#263f34" d="M-2 0Q-1-13 5-23Q14-41 11-55Q15-48 14-39Q14-27 8-19Q3-10 2 0Z"/>
+      <path fill="#507448" d="M-1-1Q0-14 7-25Q13-35 12-50Q16-37 8-23Q3-14 0-1Z"/>
+      <path fill="#82925b" d="M6-23L10-31L12-38L12-34L10-28L8-24Z"/>
+      <path fill="#67844d" d="M0-4L2-13L6-20L3-12Z"/>
+    </g>
+    <g id="sprig">
+      <path fill="#294738" d="M-2 0L0-11L-2-20L-1-31L3-42L2-52L4-57L5-52L5-42L1-30L0-21L2-11L0 0Z"/>
+      <path fill="#6b8150" d="M-1-3L1-11L-1-21L0-29L1-30L0-20L2-11L0-3Z"/>
+      <g fill="#365b3f">
+        <path d="M0-8Q-8-12-10-22Q-4-21 1-10Z M1-14Q4-24 12-26Q10-19 1-14Z M-1-21Q-8-25-9-33Q-4-30 0-23Z"/>
+        <path d="M0-28Q3-35 11-36Q9-30 0-28Z M2-36Q-3-39-3-47Q1-44 3-37Z M4-43Q6-48 11-50Q10-45 4-43Z M3-49Q0-53 1-59Q5-55 4-49Z"/>
+      </g>
+      <g fill="#658551">
+        <path d="M-8-20L-4-17L0-10L-5-15Z M2-16L6-22L10-24L7-20Z M-8-31L-4-28L-1-23L-5-27Z M2-30L6-34L10-35L7-32Z"/>
+        <path d="M-2-45L1-42L2-38L0-40Z M5-45L8-48L10-48L7-46Z M2-56L4-53V-51Z"/>
+      </g>
+      <path fill="#8a9660" d="M-7-20L-4-17H-5Z M6-22L9-24L8-22Z M6-34L9-35L8-34Z"/>
+    </g>
+    <g id="roots">
+      <path fill="#263d34" d="M-10 0L-8-5L-5-3L-4-10L-1-7L2-13L3-8L6-11L6-5L11-7L9-1Z"/>
+      <path fill="#596e44" d="M-8-1L-4-5L-6-1Z M-3-1L0-8V-4Z M2-2L5-8V-5Z M5-1L9-5L8-2Z"/>
+    </g>
+  </defs>
+  <g transform="translate(0 84)">
+    <use href="#blade" transform="translate(14) rotate(-29) scale(.87 .95)"/>
+    <use href="#ribbon" transform="translate(33) rotate(-14) scale(1.09 1.20)"/>
+    <use href="#sprig" transform="translate(49) rotate(16) scale(.95 1.07)"/>
+    <use href="#blade" transform="translate(61) rotate(5) scale(.9 .83)"/>
+    <use href="#sprig" transform="translate(12) rotate(4) scale(.78 .72)"/>
+    <use href="#ribbon" transform="translate(24) rotate(13) scale(.86 .89)"/>
+    <use href="#blade" transform="translate(40) rotate(-6) scale(1 1.50)"/>
+    <use href="#ribbon" transform="translate(60) rotate(-9) scale(.89 .97)"/>
+    <use href="#sprig" transform="translate(32) rotate(-21) scale(.82 .80)"/>
+    <use href="#blade" transform="translate(62) rotate(24) scale(.9 .55)"/>
+    <use href="#roots" transform="translate(12)"/><use href="#roots" transform="translate(32)"/>
+    <use href="#roots" transform="translate(49)"/><use href="#roots" transform="translate(63)"/>
+  </g>
+  <g transform="translate(80 84)">
+    <use href="#ribbon" transform="translate(16) rotate(-12) scale(.83 .97)"/>
+    <use href="#blade" transform="translate(22) rotate(1) scale(.95 1.23)"/>
+    <use href="#sprig" transform="translate(48) rotate(-7) scale(1 1.40)"/>
+    <use href="#blade" transform="translate(59) rotate(12) scale(1 .70)"/>
+    <use href="#sprig" transform="translate(15) rotate(-15) scale(.79 .70)"/>
+    <use href="#ribbon" transform="translate(37) rotate(-9) scale(1.07 1.29)"/>
+    <use href="#blade" transform="translate(37) rotate(-27) scale(.86 .86)"/>
+    <use href="#ribbon" transform="translate(50) rotate(19) scale(.95 1.1)"/>
+    <use href="#sprig" transform="translate(55) rotate(19) scale(.86 .78)"/>
+    <use href="#blade" transform="translate(25) rotate(9) scale(.75 .64)"/>
+    <use href="#roots" transform="translate(16)"/><use href="#roots" transform="translate(33)"/>
+    <use href="#roots" transform="translate(47)"/><use href="#roots" transform="translate(61)"/>
+  </g>
+</svg>

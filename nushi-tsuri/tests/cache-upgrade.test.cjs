@@ -4,9 +4,10 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const vm = require('node:vm');
+const { createHash } = require('node:crypto');
 const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
-const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css', 'village-precache-252-85.js'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
+const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css', 'village-precache-252-86.js'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
 // Deliberately synthetic historical CSS-only fixture, never production evidence.
 const historical = {
@@ -23,9 +24,9 @@ const previous = {
 
 test('production inspection requires supplied generated manifest and forbids historical retirement evidence',()=>{
  assert.equal(current.cachePolicy,'preserve-old-tabs');
- const missing={...files};delete missing['village-precache-252-85.js'];
+ const missing={...files};delete missing['village-precache-252-86.js'];
  assert.throws(()=>inspectRelease(missing),/supplied explicitly/);
- assert.throws(()=>inspectRelease({...files,'village-precache-252-85.js':files['village-precache-252-85.js'].replace(current.cssUrl,'./missing.css')}),/actual install list/);
+ assert.throws(()=>inspectRelease({...files,'village-precache-252-86.js':files['village-precache-252-86.js'].replace(current.cssUrl,'./missing.css')}),/actual install list/);
  assert.throws(()=>assertReleaseUpgrade(previous,files),/historical CSS-only retirement runner/);
  assert.throws(()=>assertCacheRetirement({},current),/production preserves old caches/);
 });
@@ -73,6 +74,21 @@ test('every real precache resource exists for the native install test', () => {
   for (const asset of current.coreAssets) {
     const name = asset.split('?')[0];
     assert.ok(fs.existsSync(path.join(root, name)), asset);
+  }
+});
+
+test('race artwork requests use the installed offline keys and the current sprite bytes', () => {
+  const css = fs.readFileSync(path.join(root, 'village-fish-games.css'), 'utf8');
+  const sprites = [...css.matchAll(/url\(["']?(assets\/dan-race-[^\s)'"]+)/g)].map(match => match[1]);
+  assert.ok(sprites.some(sprite => sprite.startsWith('assets/dan-race-swimmers-')));
+  for (const sprite of new Set(sprites)) {
+    assert.ok(current.coreAssets.includes('./' + sprite), 'missing artwork cache key: ' + sprite);
+    const [file, query] = sprite.split('?');
+    const pin = new URLSearchParams(query).get('art');
+    if (file.endsWith('.png') || pin) {
+      const bytes = fs.readFileSync(path.join(root, file));
+      assert.equal(pin, createHash('sha256').update(bytes).digest('hex').slice(0, 16), file);
+    }
   }
 });
 
