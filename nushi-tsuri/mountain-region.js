@@ -144,7 +144,11 @@
         [[145.2,77],[146.5,77],[146.5,87],[145.2,87]],
         // Bench, basket and lantern, all above the unobstructed through route.
         [[99.5,56],[117.5,56],[117.5,62.7],[99.5,62.7]]],
-      landmarks:[{id:"wetland",x:228,y:82,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+      // The east abutment leads down the dry outside edge into a painted fork.
+      // Keep the bridge planks and the fishable inner shore outside the exit.
+      landmarks:[{id:"wetland",x:228,y:82,
+        area:[[221.5,69],[225.4,69],[227.2,76.4],[231,79.6],[239,79.8],[239,85.2],
+          [229,85.4],[225.5,87],[225.5,81],[224.5,79.5],[223.8,78],[221.5,75]],name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
     wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
       // The reed bed separates the bridge spur from the southern bank.
@@ -180,7 +184,7 @@
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
         ?{region:"mountainPond",x:212,y:10,direction:"left"}:region==="cave"
           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
-    const landmark=data.landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6);
+    const landmark=landmarkAt(x,y,region);
     if(landmark?.id==="pass")return {region:"mountainPond",...regions.mountainPond.entry};
     if(landmark?.id==="cave")return {region:"cave",...regions.cave.entry};
     if(landmark?.id==="marsh")return {region:"mountainMarsh",...regions.mountainMarsh.entry};
@@ -262,7 +266,7 @@
     }
     return null;
   }
-  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6)||null; }
+  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>p.area ? inside(x,y,p.area) : Math.hypot(x-p.x,y-p.y)<6)||null; }
   const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖",wetPond:"睡蓮の池",wetCreek:"砂底の小川",wetMarsh:"水郷の葦の沼"};
   const populations={
     stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},

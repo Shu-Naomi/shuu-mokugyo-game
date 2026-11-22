@@ -25,3 +25,14 @@ test('rail sweep rejects tunnelling and every bridge cast is limited to its dire
 test('legacy saves at removed decks and new water recover on land without losing progress',()=>{
  for(const [x,y] of [[50,79],[58,78],[116,21],[173,26],[198,53],[110,107],[154,106],[80,50],[170,90],[160,105]]){const old=fixture({x,y,boatActive:true}),app=boot(old),w=app.window;try{assert.ok(read(w,'isWalkableWorld(s.x,s.y)'));assert.equal(read(w,'s.boatActive'),false);for(const target of [[120,70],'return'])assert.ok(Array.isArray(w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')')),'recovered save has route to '+JSON.stringify(target));for(const key of ['money','hp','gameMinutes','caught','questCompletions','dog'])assert.deepEqual(read(w,'s.'+key),old[key],key+' '+x+','+y);for(const [bait,count]of Object.entries(old.baits))assert.equal(read(w,'s.baits.'+bait),count);assert.equal(read(w,'s.dogAffinity.shuu'),old.dogAffinity.shuu*20,'legacy affection scale migration');assert.deepEqual(app.errors,[]);}finally{app.dispose();}}
 });
+
+test('the wetland hint and A action follow the east approach and the painted outgoing road',()=>{
+ for(const point of [[222,70],[224,74],[226,78],[230,82],[234,82],[238,82]]){
+  assert.ok(M.walkable(...point,region));assert.equal(M.landmarkAt(...point,region)?.id,'wetland');
+  assert.equal(M.exitAt(...point,region)?.region,'wetland');
+ }
+ for(const point of [[212,70],[220,70],[222,84],[232,76],[236,88]]){
+  assert.equal(M.landmarkAt(...point,region),null);assert.equal(M.exitAt(...point,region),null);
+ }
+ assert.ok(M.fishingWater(222,84,'left',region));
+});

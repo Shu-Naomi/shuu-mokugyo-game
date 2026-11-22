@@ -42,7 +42,11 @@ async function run(url,screen){
  }
  const after=await progress();assert.equal(after.baits.worm,before.baits.worm-3);assert.equal(after.gameMinutes,before.gameMinutes+30);assert.equal(after.money,before.money);assert.deepEqual(after.caught,before.caught);
  await page.evaluate(()=>save());const saved=await state();await page.reload({waitUntil:'load'});await start();assert.deepEqual(await state(),saved);assert.deepEqual(await progress(),after);await shot('reload');
- await walk('wetland');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
+ for(const foot of [[224,72],[230,82],[236,82]]){
+  await walk(foot);assert.match(await page.locator('#hint').innerText(),/湿地へ下る道.*Aで先へ進む/);
+  assert.equal(await page.evaluate(()=>ShuMountain.exitAt(s.x,s.y,s.mapRegion)?.region),'wetland');
+ }
+ await shot('wetland-painted-exit');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
  assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify({screen,url,release:require('./browser-release.cjs').expectedRelease,sourceDigests,image,layout,evidence,feetChecks,wholeRing:true,bridgeWestToEast:true,bridgeEastToWest:true,shoreCast:true,house:true,terraceBays:true,reload:true,exits:true,errors,failures},null,2));console.log('MARSH_RETREAT_BROWSER_PASS',width,height,dpr);
  }finally{await context.close();await browser.close();}
 }
