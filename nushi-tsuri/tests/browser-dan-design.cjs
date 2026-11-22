@@ -4,6 +4,32 @@ const raceCrops = new Map();
 const {chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs'),start=require('./browser-start-adventure.cjs');
 const out=path.join(__dirname,'artifacts/dan-design');
 const mime={'.html':'text/html','.js':'text/javascript','.css':'text/css','.svg':'image/svg+xml','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.mp3':'audio/mpeg','.woff2':'font/woff2'};
+async function captureMillCorner(page, label, viewport) {
+  // CSS ripples and foam run on Chromium's compositor, outside Playwright's JS clock.
+  // Seek the same animation phase on both builds before capturing the complete phone screen.
+  await page.evaluate(async () => {
+    const animations = document.getAnimations();
+    animations.forEach(animation => animation.pause());
+    await Promise.all(animations.map(animation => animation.ready));
+    animations.forEach(animation => { animation.currentTime = 2500; });
+    await document.fonts.ready;
+  });
+  const readWheel = () => page.locator('.dan-race-wheel').evaluate(node => {
+    const paint = getComputedStyle(node, '::before');
+    return {angle: getComputedStyle(node).getPropertyValue('--wheel-angle').trim(),
+      position: paint.backgroundPosition, transform: paint.transform};
+  });
+  const art = await inspectRaceArt(page);
+  const wheel = await readWheel();
+  await page.screenshot({path: path.join(out, `${viewport.width}-${label}-race.png`)});
+  await page.clock.runFor(320);
+  const laterWheel = await readWheel();
+  assert.notEqual(wheel.angle, laterWheel.angle, 'the race clock turns the mill');
+  assert.ok(wheel.transform !== laterWheel.transform || wheel.position !== laterWheel.position,
+    'the wheel paint advances with the clock');
+  return {art, wheel, laterWheel};
+}
+
 async function inspectRaceArt(page) {
   return page.evaluate(async () => {
     const surfaces = [];
@@ -14,7 +40,7 @@ async function inspectRaceArt(page) {
       const node = document.querySelector(selector);
       if (!node) continue;
       const style = getComputedStyle(node, pseudo);
-      const {width, height} = node.getBoundingClientRect();
+      const {x, y, width, height} = node.getBoundingClientRect();
       const match = style.backgroundImage.match(/url\("([^"]+)"\)/);
       let source = null;
       if (match) {
@@ -29,7 +55,7 @@ async function inspectRaceArt(page) {
           source.shapeRendering = svg.getAttribute('shape-rendering');
         }
       }
-      surfaces.push({selector, width, height, source, imageRendering: style.imageRendering,
+      surfaces.push({selector, x, y, width, height, source, imageRendering: style.imageRendering,
         backgroundSize: style.backgroundSize, transform: getComputedStyle(node).transform});
     }
     const fish = await Promise.all([...document.querySelectorAll('.dan-race-fish')].map(async art => {
@@ -224,7 +250,8 @@ async function run(root,label,browser,viewport,deviceScaleFactor){
  await page.clock.install({time:new Date('2026-11-22T12:00:00Z')});await page.clock.pauseAt('2026-11-22T12:00:01Z');
  const ready=[], movement={}, edges={};let rendering;
  const press=async q=>{await page.locator(q)[viewport.width<1000?'tap':'click']();const next={'#action':'#danRaceStart','#danRaceStart':'#danRaceSpurt','#danRaceAgain':'#danRaceStart'}[q];if(next){assert.equal(await page.locator(next).isEnabled(),true,'no forced wait after '+q);ready.push({action:q,readyBeforeClockAdvance:true});}await page.clock.runFor(100);};
- const shot=async name=>{await page.screenshot({path:path.join(out,`${viewport.width}-${label}-${name}.png`)});};
+ const cornerOnly = label.startsWith('corner-');
+ const shot=async name=>{if (!cornerOnly) await page.screenshot({path:path.join(out,`${viewport.width}-${label}-${name}.png`)});};
  const fit=async q=>{const a=await page.locator(q).evaluateAll((nodes,minHeight)=>nodes.filter(n=>!n.hidden&&n.getClientRects().length&&!n.disabled).map(n=>{const r=n.getBoundingClientRect(),h=document.elementFromPoint(r.x+r.width/2,r.y+r.height/2);return {id:n.id,ok:r.width>0&&r.height>=minHeight&&r.left>=0&&r.top>=0&&r.right<=innerWidth&&r.bottom<=innerHeight&&(h===n||n.contains(h))};}),label==='after'?44:35);assert.ok(a.length&&a.every(x=>x.ok),JSON.stringify(a));};
  await page.goto(`http://127.0.0.1:${server.address().port}/nushi-tsuri/`);await start(page,viewport.width<1000);await page.clock.runFor(300);
  if(await page.locator('#lakeIntroSkip').isVisible())await press('#lakeIntroSkip');
@@ -236,6 +263,11 @@ async function run(root,label,browser,viewport,deviceScaleFactor){
  edges.start = (await inspectRaceArt(page)).fish;
  if (label === 'after') assertFishFit(edges.start, 'starting grid');
  await press('#danRaceStart');await page.clock.runFor(2400);await fit('#danRaceSpurt,#villageFishGames [data-close]');await shot('race');
+ if (cornerOnly) {
+   const corner = await captureMillCorner(page, label, viewport);
+   assert.deepEqual(errors, []); assert.deepEqual(bad, []);
+   return corner;
+ }
  rendering = await inspectRaceArt(page);
  if (deviceScaleFactor > 1) {
    await captureRacers(page, label, 'mill');
@@ -369,6 +401,16 @@ async function run(root,label,browser,viewport,deviceScaleFactor){
         }
         fs.writeFileSync(path.join(out, `${width}-${label}.json`), JSON.stringify(report, null, 2));
         console.log('DAN_DESIGN_PASS', JSON.stringify(report));
+      }
+      if (process.env.DAN_CORNER_BASELINE && width < 1000 && dpr === 1) {
+        const before = await run(path.resolve(process.env.DAN_CORNER_BASELINE), 'corner-before', browser, {width, height}, dpr);
+        const after = await run(path.resolve(__dirname, '..'), 'corner-after', browser, {width, height}, dpr);
+        const boxes = art => art.surfaces.map(({x, y, width, height}) => [x, y, width, height]);
+        assert.deepEqual(boxes(after.art), boxes(before.art), 'mill scenery stays in its original boxes');
+        assert.deepEqual(after.art.fish, before.art.fish, 'same fish, positions and animation frames');
+        assert.equal(after.wheel.angle, before.wheel.angle);
+        assert.equal(after.laterWheel.angle, before.laterWheel.angle);
+        fs.writeFileSync(path.join(out, `${width}-corner.json`), JSON.stringify({before, after}, null, 2));
       }
     }
   } finally {

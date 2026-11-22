@@ -769,22 +769,8 @@
   content: "";
   position: absolute;
   inset: 0;
-  border-radius: 50%;
-  background:
-    radial-gradient(circle, #d5b87a 0 9%, #644e38 10% 17%, transparent 18% 45%, #453e32 46% 49%, #c49a62 50% 56%, #594533 57% 62%, transparent 63%),
-    repeating-conic-gradient(from 6deg, #4c4031 0 4deg, #d0a169 4deg 12deg, #966c43 12deg 20deg, transparent 20deg 45deg);
-  transform: rotate(var(--wheel-angle, 0deg));
-}
-.dan-race-wheel::after {
-  content: "";
-  position: absolute;
-  left: 43%;
-  top: 43%;
-  width: 14%;
-  height: 14%;
-  background: #ead29a;
-  border: 1px solid #584c35;
-  box-sizing: border-box;
+  background: url("assets/dan-race-wheel-v252-86.png?art=765b80266bcec925") var(--wheel-frame-x, 0%) center / 2400% 100% no-repeat;
+  image-rendering: pixelated;
 }
 .dan-race-flow {
   position: absolute;
@@ -893,8 +879,6 @@
 .dan-race-scoreboard { position: absolute; z-index: 5; right: 7px; top: 5px; padding: 3px 7px; color: #f4dfac; background: #172c2e; border: 1px solid #b89b61; font-size: 12px; font-weight: bold; font-variant-numeric: tabular-nums; }
 .dan-race-course-name { top: 5px; background: #172c2e; border: 1px solid #728979; padding: 3px 6px; }
 .dan-race-wheel { width: clamp(32px, 6vw, 58px); top: 11%; }
-.dan-race-wheel::before { border-radius: 0; background: url("assets/dan-race-wheel-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
-.dan-race-wheel::after { display: none; }
 .dan-race-course[data-dan-course="mill"]::after { top: 9%; }
 .dan-race-route-wheel { top: 13%; left: 25%; }
 .dan-race-route-bank { bottom: 10%; left: 25%; }
@@ -950,7 +934,7 @@
 /* Detailed static pixel scenery; browser image cache supplies every race frame. */
 .dan-race-course { image-rendering: pixelated; }
 .dan-race-island { background: none; clip-path: none; }
-.dan-race-island::before { inset: 0; clip-path: none; background: url("assets/dan-race-island-v252-86.svg") center / 100% 100% no-repeat; }
+.dan-race-island::before { inset: 0; clip-path: none; background: url("assets/dan-race-island-v252-86.svg?art=087e3aaae794b711") center / 100% 100% no-repeat; }
 .dan-race-course[data-dan-course="mill"]::after { top: 4%; width: clamp(48px, 8vw, 82px); height: 23%; clip-path: none; background: url("assets/dan-race-mill-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
 .dan-race-wheel { top: 8%; }
 .dan-race-flow, [data-dan-course="mill"][data-flow="warning"] .dan-race-flow, [data-dan-course="mill"][data-flow="surge"] .dan-race-flow { clip-path: none; background: url("assets/dan-race-flow-v252-86.svg?art=63d0219bb9f1576e") center / 100% 100% no-repeat; }

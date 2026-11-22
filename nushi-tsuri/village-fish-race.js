@@ -315,7 +315,12 @@
         const t = race?.elapsed ?? 0;
         track.dataset.flow = millFlow(t);
         track.dataset.route = route;
-        track.style.setProperty("--wheel-angle", ((t - FIRST_SURGE) / WHEEL_PERIOD * 360).toFixed(1) + "deg");
+        const angle = (t - FIRST_SURGE) / WHEEL_PERIOD * 360;
+        track.style.setProperty("--wheel-angle", angle.toFixed(1) + "deg");
+        // Four identical spokes repeat every quarter turn across the 24 painted views.
+        const quarterTurn = ((angle % 90) + 90) % 90;
+        const frame = Math.floor(quarterTurn * 24 / 90);
+        track.style.setProperty("--wheel-frame-x", frame * 100 / 23 + "%");
       }
       views.forEach((view, i) => {
         const {runner, wake} = view;
