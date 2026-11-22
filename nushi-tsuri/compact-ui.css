@@ -605,8 +605,9 @@
 #store.compact-store .compact-product-actions [data-sam-confirm-open]{flex:1;min-width:0;height:44px;min-height:44px;margin:0;padding:4px 10px;font-size:13px;background:linear-gradient(#bd783f,#94512f);color:#fff5dc;border:1px solid #955e36}
 #store.compact-store #samCategory-bait .compact-product-select{height:44px!important;min-height:44px!important;max-height:44px!important}
 #store.compact-store #samCategory-bait .compact-product-stock{white-space:nowrap;font-size:12px;line-height:15px;max-height:15px}
-#store.compact-store .sam-purchase-layer .compact-sheet{width:min(700px,96%);inset:0 0 0 auto}
-#store.compact-store .sam-purchase-layer .compact-sheet-body{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-rows:auto 1fr;gap:8px 18px;padding:12px;overflow:hidden;line-height:1.3}
+#store.compact-store .sam-purchase-layer{position:fixed;inset:0}
+#store.compact-store .sam-purchase-layer .compact-sheet{display:grid;grid-template-rows:auto auto;width:min(460px,94%);height:max-content;max-height:96%;inset:50% auto auto 50%;transform:translate(-50%,-50%);border:2px solid #ae8b52;border-radius:12px}
+#store.compact-store .sam-purchase-layer .compact-sheet-body{display:grid;grid-template-columns:148px minmax(0,1fr);grid-template-rows:auto auto;gap:8px 18px;padding:12px;overflow:hidden;line-height:1.3}
 #store.compact-store .sam-purchase-summary{grid-column:1/-1;display:grid;grid-template-columns:44px minmax(0,1fr);gap:2px 10px;align-content:start}
 #store.compact-store .sam-purchase-art{grid-row:1/4;align-self:center;height:44px;overflow:hidden}
 #store.compact-store .sam-purchase-art .compact-art{height:44px;max-height:44px;min-height:0;background:none}
@@ -616,7 +617,7 @@
 #store.compact-store .sam-purchase-layer .bait-quantity-label{position:static;display:block;font-size:13px;line-height:18px;color:#59412b;text-align:center}
 #store.compact-store .sam-purchase-layer .bait-digit-picker{display:flex;gap:5px}
 #store.compact-store .sam-purchase-layer .bait-digit-column{display:grid;grid-template-rows:44px 24px 44px;grid-template-columns:46px;text-align:center;font-variant-numeric:tabular-nums;font-size:20px;line-height:24px;font-weight:bold;color:#463422}
-#store.compact-store .sam-purchase-layer .bait-digit-column button{min-width:44px;min-height:44px;height:44px;padding:0;margin:0;font-size:18px;border:1px solid #9c794a;background:linear-gradient(#dfc594,#bea16e);color:#463422;box-shadow:inset 0 -2px #947448}
+#store.compact-store .sam-purchase-layer .bait-digit-column button{touch-action:none;user-select:none;min-width:44px;min-height:44px;height:44px;padding:0;margin:0;font-size:18px;border:1px solid #9c794a;background:linear-gradient(#dfc594,#bea16e);color:#463422;box-shadow:inset 0 -2px #947448}
 #store.compact-store .sam-purchase-layer .bait-purchase-count{position:absolute;clip-path:inset(50%);width:1px;height:1px;overflow:hidden}
 #store.compact-store .sam-purchase-receipt{grid-column:2;display:flex;flex-direction:column;gap:6px;align-self:start;min-width:0}
 #store.compact-store .sam-purchase-total{font-size:19px!important;line-height:24px!important;font-weight:bold;color:#814126}
@@ -624,12 +625,12 @@
 #store.compact-store .sam-purchase-actions button{min-width:90px;min-height:44px;margin:0;flex:1;padding:5px;font-size:14px}
 #store.compact-store [data-sam-confirm-buy]{background:linear-gradient(#bd783f,#94512f);color:#fff5dc;border:1px solid #955e36}
 #store.compact-store .sam-purchase-shortfall{color:#902d26;font-weight:bold}
-@media(max-height:350px){
+@media(max-height:450px){
  #store.compact-store .sam-purchase-layer .compact-sheet-body{padding:6px 12px;gap:4px 18px}
  #store.compact-store .sam-purchase-layer .compact-sheet-heading{flex-basis:44px;min-height:44px;padding:0 10px}
  #store.compact-store .sam-purchase-receipt{gap:2px}
  #store.compact-store .sam-purchase-summary{grid-template-columns:36px minmax(0,1fr)}
- #store.compact-store .sam-purchase-stock{display:none}
+ #store.compact-store .sam-purchase-stock{font-size:12px}
 }
 
 /* Keep owned bait visible on the shelf without adding rows or quantity controls. */

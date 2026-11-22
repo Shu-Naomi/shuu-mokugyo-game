@@ -17185,46 +17185,7 @@
         document.querySelectorAll("#samTackleWindow [data-tackle-icon]").forEach((node) => {
           node.innerHTML = ShuTackleArt.icon(node.dataset.tackleIcon);
         });
-        const purchaseCount = samBaitPurchaseCount;
-        const purchaseCountOutput = $("#samBaitPurchaseCount");
-        if (purchaseCountOutput)
-          purchaseCountOutput.textContent = `${String(purchaseCount).padStart(3,"0")}セット`;
-        document.querySelectorAll("[data-bait-digit]").forEach(n => n.textContent = String(purchaseCount).padStart(3,"0")[Number(n.dataset.baitDigit)]);
-        document.querySelectorAll("[data-bait-count]").forEach((button) =>
-          button.classList.toggle(
-            "active",
-            Number(button.dataset.baitCount) === purchaseCount,
-          ),
-        );
-        document.querySelectorAll("[data-bait-count-step]").forEach((button) => {
-          const step = Number(button.dataset.baitCountStep);
-          button.disabled = step < 0
-            ? purchaseCount <= 1
-            : purchaseCount >= 100;
-          const next = Math.max(1,Math.min(100,purchaseCount+step));
-          button.setAttribute("aria-label",`購入セット数を${Math.abs(next-purchaseCount)}${step<0?"減らす":"増やす"}`);
-          button.textContent = step<0?"▼":"▲";
-        });
-        document.querySelectorAll("[data-buy-bait]").forEach((button) => {
-          const id = button.dataset.buyBait;
-          const item = baitData[id];
-          const stock = button.querySelector("[data-sam-stock]");
-          const total = button.querySelector("[data-sam-total]");
-          const bundle = button.querySelector("[data-sam-bundle]");
-          if (!item || !stock) return;
-          const totalAmount = item.amount * purchaseCount;
-          const totalPrice = item.price * purchaseCount;
-          if (total) total.textContent = `${totalPrice}円`;
-          if (bundle)
-            bundle.textContent = `${purchaseCount}セット → ${totalAmount}個`;
-          stock.textContent = `所持 ×${s.baits[id] || 0}`;
-          button.classList.remove("owned");
-          button.disabled = false;
-          button.setAttribute(
-            "aria-label",
-            `${item.name}${purchaseCount}セット、合計${totalAmount}個、${totalPrice}円、現在${s.baits[id] || 0}個所持`,
-          );
-        });
+        refreshSamBaitQuantity();
         document.querySelectorAll("[data-buy-rod]").forEach((button) => {
           const id = button.dataset.buyRod;
           const item = rodData[id];
@@ -17308,6 +17269,48 @@
         ShuCompactUI.toast($("#store"),message);
         setDialogue($("#shopDialogue"),message,true);
       }
+      function refreshSamBaitQuantity() {
+        const purchaseCount = samBaitPurchaseCount;
+        const purchaseCountOutput = $("#samBaitPurchaseCount");
+        if (purchaseCountOutput)
+          purchaseCountOutput.textContent = `${String(purchaseCount).padStart(3,"0")}セット`;
+        document.querySelectorAll("[data-bait-digit]").forEach(n => n.textContent = String(purchaseCount).padStart(3,"0")[Number(n.dataset.baitDigit)]);
+        document.querySelectorAll("[data-bait-count]").forEach((button) =>
+          button.classList.toggle(
+            "active",
+            Number(button.dataset.baitCount) === purchaseCount,
+          ),
+        );
+        document.querySelectorAll("[data-bait-count-step]").forEach((button) => {
+          const step = Number(button.dataset.baitCountStep);
+          button.disabled = step < 0
+            ? purchaseCount <= 1
+            : purchaseCount >= 100;
+          const next = Math.max(1,Math.min(100,purchaseCount+step));
+          button.setAttribute("aria-label",`購入セット数を${Math.abs(next-purchaseCount)}${step<0?"減らす":"増やす"}`);
+          button.textContent = step<0?"▼":"▲";
+        });
+        document.querySelectorAll("[data-buy-bait]").forEach((button) => {
+          const id = button.dataset.buyBait;
+          const item = baitData[id];
+          const stock = button.querySelector("[data-sam-stock]");
+          const total = button.querySelector("[data-sam-total]");
+          const bundle = button.querySelector("[data-sam-bundle]");
+          if (!item || !stock) return;
+          const totalAmount = item.amount * purchaseCount;
+          const totalPrice = item.price * purchaseCount;
+          if (total) total.textContent = `${totalPrice}円`;
+          if (bundle)
+            bundle.textContent = `${purchaseCount}セット → ${totalAmount}個`;
+          stock.textContent = `所持 ×${s.baits[id] || 0}`;
+          button.classList.remove("owned");
+          button.disabled = false;
+          button.setAttribute(
+            "aria-label",
+            `${item.name}${purchaseCount}セット、合計${totalAmount}個、${totalPrice}円、現在${s.baits[id] || 0}個所持`,
+          );
+        });
+      }
       function setSamBaitPurchaseCount(value) {
         const parsed = Math.trunc(Number(value));
         const next = Number.isFinite(parsed)
@@ -17315,9 +17318,8 @@
           : 1;
         if (next === samBaitPurchaseCount) return false;
         samBaitPurchaseCount = next;
-        const purchase = ShuCompactUI.samPurchaseSelection();
-        renderSamShop();
-        ShuCompactUI.resumeSamPurchase(purchase);
+        refreshSamBaitQuantity();
+        ShuCompactUI.refresh(s.money);
         vibrate(10);
         return true;
       }
