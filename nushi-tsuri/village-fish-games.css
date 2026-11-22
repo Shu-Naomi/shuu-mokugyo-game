@@ -904,3 +904,7 @@
 .dan-race-status { color: #f0e4c5; }
 .dan-race-finish { width: 6px; background-size: 6px 12px; opacity: 1; }
 @media (max-height: 500px) { .dan-race-foot { padding: 3px 5px; gap: 5px; } .dan-race-scoreboard { font-size: 11px; padding: 2px 5px; } .dan-race-foot button { min-height: 36px; } }
+
+/* Label the existing flow phase without changing its timing or race rules. */
+[data-dan-course="mill"][data-flow="warning"] .dan-race-route-wheel::after { content: " · 逆流まえ"; color: #f4dc99; }
+[data-dan-course="mill"][data-flow="surge"] .dan-race-route-wheel::after { content: " · ←逆流"; color: #caeeed; }
