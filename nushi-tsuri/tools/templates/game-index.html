@@ -6541,7 +6541,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-85</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-87</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7467,7 +7467,7 @@
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-84"></script>
     <script src="fish-motion.js?v=252-82"></script>
-    <script src="aquarium-life.js?v=252-82"></script>
+    <script src="aquarium-life.js?v=252-87"></script>
     <script src="compact-ui.js?v=252-84"></script>
     <script src="pet-life-ui.js?v=252-84"></script>
     <script src="village-fish-cards.js?v=252-84"></script>
@@ -7502,7 +7502,7 @@
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
     <script src="fish-additions.js?v=252-82"></script>
-    <script src="fish-art.js?v=252-85"></script>
+    <script src="fish-art.js?v=252-87"></script>
     <script src="tackle-art.js?v=252-82"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -11982,9 +11982,10 @@
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
           const swimEffort=element.id==='battleFish'?Number(element.dataset.swimEffort||1):1;
+          const swimDrive=element.id==='battleFish'?Number(element.dataset.swimDrive||0):(aquariumPose?.swimDrive||0);
           const artId=(element.id==='battleFish'&&ShuFishArt.fightVariants[fishId])||aquariumLook?.artId||fishId;
           const artAssets=ShuFishArt.assets(artId);
-          const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
+          const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${swimDrive}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
           if(canvas.width!==448)canvas.width=448;
@@ -11999,7 +12000,7 @@
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort})===false)return;
+            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort,swimDrive})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
             canvas.dataset.artPaintKey=key;
           };
@@ -17025,7 +17026,9 @@
         const yaw = Math.PI * (direction > 0 ? turnEase : 1 - turnEase);
         const y = (bottomDweller ? 64 : 46) + swim.depth * 30 +
           Math.sin(elapsed * Math.PI / 9) * (bottomDweller ? .8 : 1.25) * Math.min(1, swim.bob);
-        return { x, y, ...ShuAquariumLife.orientation(yaw), width, bottomDweller };
+        const swimDrive = matchMedia("(prefers-reduced-motion: reduce)").matches
+          ? 0 : ShuAquariumLife.lapDrive(progress, turning, swim.speed);
+        return { x, y, ...ShuAquariumLife.orientation(yaw), width, bottomDweller, swimDrive };
       }
       function prepareAquariumFish(id) {
         fishAtlasImage(fishAssets[id]);
@@ -17043,7 +17046,7 @@
           ? Number.isFinite(pose.yaw)?pose.yaw/Math.PI*6:[0,2,3,4,6][pose.turnFrame||0]
           : pose.turnFrame) : swimFrame % cells;
         const asset = turning ? fishTurnAssets[id] : fishAssets[id];
-        const key = `${id}:${turning ? "turn" : "swim"}:${frame}:${swimFrame}${look?`:${look.key}:${pose?.yaw??''}`:''}`;
+        const key = `${id}:${turning ? "turn" : "swim"}:${frame}:${swimFrame}:${pose?.swimDrive||0}${look?`:${look.key}:${pose?.yaw??''}`:''}`;
         if (element.dataset.aquariumFrame !== key) {
           drawFishAtlasFrame(element, asset, cells, frame, id,look,{...pose,swimFrame});
           element.dataset.aquariumFrame = key;
@@ -22940,7 +22943,8 @@
         const element = $("#battleFish");
         element.style.left = battle.x + "%";
         element.style.top = battle.y + "%";
-        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && battle.phase!=="escape" && !nushiResistancePose();
+        const resistance=nushiResistancePose();
+        const sandGrounded = battle.f.id === "hirame" && !battle.sandLifted && battle.phase!=="escape" && !resistance;
         element.classList.toggle("sand-grounded", sandGrounded);
         element.dataset.sandState = sandGrounded ? "grounded" : "lifted";
         const mouthState = battle.mouthState ||
@@ -22953,21 +22957,42 @@
         let spriteCells = fishSwimFrameCounts[battle.f.id] || 8;
         const artNow=battle.pausedAt||Date.now();
         const artFraction=clampBattle((artNow-(battle.artTickAt??artNow))/120,0,1);
+        const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;
         const fightMotion=battle.phase==="fight"&&typeof ShuFishMotion.fight==="function"?ShuFishMotion.fight(battle.f.id,
           ((battle.swimTick||0)+artFraction)*.12,{
-            reduced:matchMedia('(prefers-reduced-motion: reduce)').matches,
+            reduced,
             calm:Boolean(battle.mood?.calm),
-            quiet:Boolean(battle.gillWash||battle.turning||nushiResistancePose()||sandGrounded),
+            quiet:Boolean(battle.gillWash||battle.turning||resistance||sandGrounded),
             age:((battle.moodTick||0)+artFraction)*.12,
             remaining:Math.max(0,((battle.nextMood||artNow)-artNow)/1000),
           }):{extraFrame:0,effort:1};
         element.dataset.swimEffort=String(fightMotion.effort);
-        const artSwimFrame=(battle.frame||0)+(battle.swimPhase||0)%1+(battle.swimAdvance||0)*artFraction+fightMotion.extraFrame;
+        const swimmingAway=battle.phase==="escape";
+        const followStroke=(battle.phase==="fight" || swimmingAway) && !reduced && typeof ShuFishMotion.fight==="function";
+        let drive=0;
+        if(followStroke && !sandGrounded && !battle.gillWash){
+          // Escape speed still measures water passing the fish at the screen edge.
+          const pace=swimmingAway ? battle.fishEscapePose?.speed||0 : Math.max(battle.speed||0,battle.escapeSpeed||0);
+          const speed=clampBattle(pace/5,0,1);
+          const fatigue=battle.fightMode==="nushi"?ShuFishing.fatigue(battle):0;
+          if(swimmingAway) drive=.5+.5*speed;
+          else if(resistance) drive=.65+.22*Math.min(1,Math.abs(resistance.bend));
+          else if(battle.mood?.calm) drive=.12+.18*speed+(battle.reeling ? .13 : 0);
+          else drive=.43+.46*speed+(battle.mood?.danger ? .11 : 0);
+          drive*=1-.42*fatigue;
+        }
+        element.dataset.swimDrive=String(drive);
+        // Interpolate the propulsion tick's own phase. On variable-speed runs
+        // the previous tick ends exactly where this one starts, even at a turn.
+        const advance=battle.swimAdvance||0;
+        const stroke=(battle.swimPhase||0)-advance*(1-artFraction);
+        const artSwimFrame=followStroke
+          ? (stroke%spriteCells+spriteCells)%spriteCells
+          : (battle.frame||0)+(battle.swimPhase||0)%1+advance*artFraction+fightMotion.extraFrame;
         element.dataset.artSwimFrame=String(artSwimFrame);
         let spriteFrame = ShuFishArt.species[battle.f.id]?artSwimFrame%spriteCells:(battle.frame || 0) % spriteCells;
         let spriteMode = "swim";
         let hookPoseFrame = null;
-        const resistance=nushiResistancePose();
         const showingTurn = Boolean((battle.turning||resistance) && !sandGrounded);
         element.dataset.resisting=String(Boolean(resistance));
         element.dataset.resistanceBend=String(resistance?.bend||0);
@@ -25087,7 +25112,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-85").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-87").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

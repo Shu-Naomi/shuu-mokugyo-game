@@ -38,6 +38,46 @@ test('maximum fight effort preserves every fish original, pixel volume, lips and
   }
  }
 });
+test('a running or resisting fish drives its tail through a wider arc while its hooked lip stays put', async () => {
+ const ctx = createCanvas(448, 224).getContext('2d');
+ for (const [id, cells, heading] of [['koi', 8, 0], ['unagi', 8, 0], ['koi', 7, 1.25]]) {
+   const image = await loadImage(path.join(__dirname, '..', A.species[id].asset));
+   const draw = (swimFrame, swimDrive) => A.draw(ctx, image, id, cells, heading, () => image, {
+     swimFrame, swimDrive, swimEffort: 1, resistanceBend: cells === 7 ? .24 : 0
+   });
+   const target = A.pose(id, cells, heading).target;
+   const lipX = Math.round(target[0] * ctx.canvas.width), lipY = Math.round(target[1] * ctx.canvas.height);
+   const lips = () => Buffer.from(ctx.getImageData(lipX - 10, lipY - 10, 21, 21).data);
+   draw(0, 0);
+   const referenceLip = lips(), metrics = A.metrics(), reference = pixels(ctx).bytes;
+   assert.ok(referenceLip.some((value, i) => i % 4 === 3 && value > 64), id + ' mouth is visible');
+   let tailX = lipX;
+   for (let i = 3; i < reference.length; i += 4) {
+     if (reference[i] > 64) tailX = Math.min(tailX, (i >>> 2) % ctx.canvas.width);
+   }
+   // Sample the centre of solid artwork close to the caudal fin, in a fixed column.
+   const x = Math.round(tailX + .14 * (lipX - tailX));
+   function tailArc(drive) {
+     const positions = [];
+     for (let frame = 0; frame < 8; frame += .5) {
+       draw(frame, drive);
+       const {bytes, edge} = pixels(ctx);
+       let count = 0, sum = 0;
+       for (let y = 0; y < ctx.canvas.height; y++) {
+         if (bytes[(y * ctx.canvas.width + x) * 4 + 3] > 64) { count++; sum += y; }
+       }
+       assert.ok(count, id + ' tail stays in the sample column');
+       positions.push(sum / count);
+       assert.equal(edge, 0, id + ' stays within the canvas');
+       assert.deepEqual(lips(), referenceLip, id + ' animation leaves the hooked mouth alone');
+     }
+     return Math.max(...positions) - Math.min(...positions);
+   }
+   assert.ok(tailArc(.9) > tailArc(.17) + 8, id + ' strong strokes span a visibly wider arc');
+   assert.equal(A.metrics().builds, metrics.builds);
+   assert.equal(A.metrics().outputs, metrics.outputs);
+ }
+});
 function fixture(){const app=boot({...seed(),hp:100,fightMode:'nushi',ownedRods:['tideMaster'],selectedRod:'tideMaster'},
  {fishScene:[844,328],battleFish:[286,143]});
  const scene=app.window.document.querySelector('#fishScene'),element=app.window.document.querySelector('#battleFish');

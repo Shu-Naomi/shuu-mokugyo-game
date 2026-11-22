@@ -338,8 +338,9 @@
     }
     return finishRaster(raster);
   }
-  function paintSwimming(ctx,raster,id,p,phase,effort=1){
-    effort=clamp(Number.isFinite(effort)?effort:1,1,2.8);
+  function paintSwimming(ctx,raster,id,p,phase,motion){
+    const effort=clamp(Number.isFinite(motion?.swimEffort)?motion.swimEffort:1,1,2.8);
+    const drive=clamp(Number(motion?.swimDrive)||0,0,1);
     let output=outputs.get(ctx);
     if(!output){const data=ctx.createImageData(448,224);output={data,words:new Uint32Array(data.data.buffer,data.data.byteOffset,448*224)};outputs.set(ctx,output);counters.outputs++;}
     output.words.fill(0);
@@ -349,6 +350,12 @@
     // A side view sees the tail shorten as it swings into depth. Oblique
     // views also see its signed lateral excursion across the image plane.
     const amplitude=Math.min(span*.035,profile.amplitude*effort);
+    // The elevated camera sees a working tail partly in the vertical plane.
+    // Lift the entire rear cross-section, keeping its fin roots and markings
+    // together. A head-on turn progressively hides this projection.
+    const sweep=drive*side*Math.min(span*.115,span*.065+profile.amplitude*1.7);
+    const shoulder=Math.max(profile.shoulder*(1-.48*drive),Math.min(40/span,.65));
+    const brace=clamp(Number(motion?.resistanceBend)||0,-1.6,1.6);
     for(let x=Math.max(0,raster.left-Math.ceil(amplitude));x<=Math.min(447,raster.right+Math.ceil(amplitude));x++){
       const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
       const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
@@ -358,7 +365,16 @@
       if(source<raster.left||source>raster.right)continue;
       const top=raster.top[source],bottom=raster.bottom[source];
       const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
-      const shift=Math.round(clamp(fin,2-top,221-bottom));
+      // The wave reaches the tail at the stroke used to propel the fish.
+      // The shoulder leads, the peduncle follows, and a hooked head shake
+      // casts the tail back against the pull. The lip stays fixed.
+      let bend=0;
+      if(sweep && rear>shoulder){
+        const flex=Math.pow((rear-shoulder)/(1-shoulder),profile.falloff-.2*drive);
+        const kick=Math.sin(phase+(1-rear)*profile.wave);
+        bend=sweep*flex*(kick+.32*brace);
+      }
+      const shift=Math.round(clamp(fin+bend,2-top,221-bottom));
       for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+source];
     }
     ctx.putImageData(output.data,0,0);counters.paints++;
@@ -372,7 +388,7 @@
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
     const raster=p.heading!==undefined?turnRaster(ctx,image,id,p,resolveImage,motion?.resistanceBend||0):bodyRaster(ctx,image,id,p,resolveImage);
     const phase=(motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
-    paintSwimming(ctx,raster,id,p,phase,motion?.swimEffort);
+    paintSwimming(ctx,raster,id,p,phase,motion);
     return true;
   }
   return Object.freeze({species,aquarium,fightVariants,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
