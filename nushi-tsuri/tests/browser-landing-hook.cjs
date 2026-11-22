@@ -173,12 +173,10 @@ async function capture(browser,url,version,fixture){
         for(const sample of [fish.fight,...fish.landing,...fish.result]){
           const info=`${fish.id} ${sample.phase}@${sample.age} ${JSON.stringify({tipJaw:sample.tipJaw,inkGap:sample.inkGap,eyeLine:sample.eyeLine})}`;
           assert.ok(sample.visible,info+' hook must be visible');
-          if(sample.phase==='result'||(sample.phase==='landing'&&sample.age===940)){
-            assert.ok(sample.onScreen,info+' metal tip and eye must be inside the visible scene');
-          }
-          assert.ok(sample.eyeLine<1.6,info+' line must finish at the hook eye');
-          assert.ok(sample.tipJaw<5.5,info+' tip must remain in the measured jaw area');
-          if(sample.inkGap!==null)assert.ok(sample.inkGap<3,info+' metal must touch painted fish');
+          assert.ok(sample.onScreen,info+' metal tip and eye must be inside the visible scene');
+          assert.ok(sample.eyeLine<1,info+' line must finish at the hook eye');
+          assert.ok(sample.tipJaw<1,info+' tip must remain in the measured jaw area');
+          if(sample.inkGap!==null)assert.ok(sample.inkGap<1,info+' metal must touch painted fish');
         }
       }
     }

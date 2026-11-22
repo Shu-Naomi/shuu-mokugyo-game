@@ -4572,6 +4572,16 @@
       .fish-tackle .hook-eye {
         stroke-width: 0.95;
       }
+      .fish-scene.landing .line-svg path {
+        opacity: 0.76;
+      }
+      .fish-scene.landing .hook-shank,
+      .fish-scene.landing .hook-eye {
+        stroke: #bdccc7;
+      }
+      .fish-scene.landing .hook-bend {
+        stroke: #cddad4;
+      }
       .fish-tackle .bait-shape {
         display: none;
       }
@@ -4663,7 +4673,8 @@
         vector-effect: non-scaling-stroke;
         filter: drop-shadow(0 0 1.5px #e3a6ff);
       }
-      .fish-scene.fighting .fish-tackle-front .bait-shape {
+      .fish-scene.fighting .fish-tackle-front .bait-shape,
+      .fish-scene.landing .fish-tackle-front .bait-shape {
         transform-box: fill-box;
         transform-origin: 20% 10%;
         animation: bait-dangle 0.64s steps(2, end) infinite alternate;
@@ -22439,6 +22450,8 @@
           tackle.style.removeProperty("transform");
         }
         fishElement.className = "battle-fish";
+        fishElement.style.removeProperty("translate");
+        if(battle)delete battle.rigViewOffset;
         const fishCanvas = fishElement.querySelector(".fish-frame-canvas");
         if (fishCanvas) {
           fishCanvas.style.display = "none";
@@ -23158,13 +23171,12 @@
             if([matrix.a,matrix.b,matrix.c,matrix.d].every(Number.isFinite)){
               // CSS is still moving/turning the sprite between battle ticks.
               // Attach to that displayed pose, rather than its future target.
-              const projection=mouthProjection/visual.displayFacing;
               const x=mouthX*fishElement.offsetWidth/visual.displayFacing;
               const y=mouthY*fishElement.offsetHeight;
               rotatedMouthX=matrix.a*x+matrix.c*y;rotatedMouthY=matrix.b*x+matrix.d*y;
               const down=Math.hypot(matrix.c,matrix.d)||1;
               cos=matrix.d/down;sin=-matrix.c/down;angle=Math.atan2(sin,cos)*180/Math.PI;
-              mouthProjection=projection*(Math.sign(matrix.a*matrix.d-matrix.b*matrix.c)||visual.displayFacing);
+              mouthProjection*= (Math.sign(matrix.a*matrix.d-matrix.b*matrix.c)||visual.displayFacing)/visual.displayFacing;
               centerX=(box.left+box.width/2-view.left)*sceneWidth/view.width;
               centerY=(box.top+box.height/2-view.top)*sceneHeight/view.height;
             }
@@ -23630,11 +23642,48 @@
         const recovery=phase!=="warning"&&battle.gillRecovery>0?battle.recoveryMessage+" ":"";
         setIconText($("#battleMsg"), battle.ten >= 85 ? UiExtraArt.get("warning") : "", "針："+ShuFishing.hookState(battle)+"。 "+tension+recovery+messages[phase]);
       }
+      function keepLandingRigInView(anchor) {
+        const previous=battle.rigViewOffset;
+        const approach=battle.phase==="landing" ? 1 : clampBattle(((battle.retrieval||0)-.72)/.2,0,1);
+        if(!approach && !previous)return;
+        const scene=$("#fishScene"),width=scene.clientWidth,height=scene.clientHeight;
+        if(!width||!height)return;
+        const oldX=previous?.x||0,oldY=previous?.y||0;
+        // The hook, bait and spoon occupy different parts of the 18×14 tackle layer.
+        // Project their bounds about its pivot (0,7), in the same CSS pixels as the fish.
+        const spoon=battle.method==="lure";
+        const halfWidth=spoon?11.75:4.65,halfHeight=spoon?12.5:5.75;
+        const midX=(spoon?11.25:4)*anchor.facing,midY=spoon?7.5:1;
+        const scale=anchor.profile.tackleScale,rad=anchor.angle*Math.PI/180;
+        const cos=Math.cos(rad)*scale,sin=Math.sin(rad)*scale;
+        const extentX=Math.abs(cos)*halfWidth+Math.abs(sin)*halfHeight+1;
+        const extentY=Math.abs(sin)*halfWidth+Math.abs(cos)*halfHeight+1;
+        const x=anchor.rootX*width/1000-oldX+cos*midX-sin*midY;
+        const y=anchor.rootY*height/500-oldY+sin*midX+cos*midY;
+        const weight=approach*approach*(3-2*approach);
+        const dx=Math.round(64*weight*(clampBattle(x,extentX,width-extentX)-x))/64;
+        const dy=Math.round(64*weight*(clampBattle(y,extentY,height-extentY)-y))/64;
+        if(dx===oldX && dy===oldY)return;
+        // CSS translates in water coordinates before its existing presentation transform.
+        // The measured anchor already contains the previous offset from the last frame.
+        const fishElement=$("#battleFish");
+        if(dx||dy){
+          fishElement.style.translate=`${dx}px ${dy}px`;
+          battle.rigViewOffset={x:dx,y:dy};
+        }else{
+          fishElement.style.removeProperty("translate");
+          delete battle.rigViewOffset;
+        }
+        const deltaX=(dx-oldX)*1000/width,deltaY=(dy-oldY)*500/height;
+        anchor.rootX+=deltaX;anchor.lineX+=deltaX;
+        anchor.rootY+=deltaY;anchor.lineY+=deltaY;
+      }
       function syncBattleFishLine() {
         if(!battle||(battle.phase!=="fight"&&battle.phase!=="landing"))return;
         const landing=battle.phase==="landing";
         const slack=!landing&&(battle.fightMode==="nushi"?battle.lineSlack:battle.calm);
         const anchor = battleMouthAndHook();
+        keepLandingRigInView(anchor);
         const linePath = $("#linePath");
         linePath.setAttribute(
           "d",
