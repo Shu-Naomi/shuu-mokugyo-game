@@ -71,6 +71,7 @@ async function inspectRaceArt(page) {
           const rect = frame.getBoundingClientRect(), course = art.closest('.dan-race-course');
           const edge = course.getBoundingClientRect(), sx = rect.width / w, sy = rect.height / h;
           ink = {width: (x1 - x0) * sx, height: (y1 - y0) * sy, paintedCssArea: solid * sx * sy,
+            left: rect.left + x0*sx, top: rect.top + y0*sy,
             frame: [cellX, cellY], sourceBounds: [x0,y0,x1,y1],
             margins: [rect.left + x0*sx - edge.left - course.clientLeft,
               rect.top + y0*sy - edge.top - course.clientTop,
@@ -193,6 +194,26 @@ function assertFishFit(fish, label) {
   }
 }
 
+async function inspectForkTag(page) {
+  const art = await inspectRaceArt(page);
+  const player = art.fish.find(f => f.role === 'player');
+  const tag = await page.locator('[data-racer="front"] .dan-race-tag').evaluate(node => {
+    const rect = node.getBoundingClientRect(), course = node.closest('.dan-race-course');
+    const boundary = course.getBoundingClientRect();
+    const x = boundary.left + course.clientLeft, y = boundary.top + course.clientTop;
+    return {text: node.textContent.trim(), left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom,
+      visible: node.checkVisibility({opacityProperty:true, visibilityProperty:true}),
+      textFits: node.scrollWidth <= node.clientWidth + 1,
+      insideCourse: rect.left >= x && rect.right <= x + course.clientWidth &&
+        rect.top >= y && rect.bottom <= y + course.clientHeight};
+  });
+  const {left, top, width, height} = player.ink;
+  const overlapWidth = Math.max(0, Math.min(left + width, tag.right) - Math.max(left, tag.left));
+  const overlapHeight = Math.max(0, Math.min(top + height, tag.bottom) - Math.max(top, tag.top));
+  return {tag, playerProgress:player.progress, playerInk:{left, top, width, height},
+    overlapCssArea:overlapWidth * overlapHeight};
+}
+
 async function run(root,label,browser,viewport,deviceScaleFactor){
  const server=http.createServer((req,res)=>{let n=decodeURIComponent(new URL(req.url,'http://localhost').pathname).replace(/^\/nushi-tsuri\//,'')||'index.html';const f=path.resolve(root,n);if(!f.startsWith(root+path.sep)||!fs.existsSync(f)){res.writeHead(404);res.end();return;}res.setHeader('Content-Type',mime[path.extname(f)]||'application/octet-stream');res.setHeader('Cache-Control','no-store');fs.createReadStream(f).pipe(res);});
  await new Promise(r=>server.listen(0,'127.0.0.1',r));
@@ -260,6 +281,14 @@ async function run(root,label,browser,viewport,deviceScaleFactor){
  }
  await page.clock.runFor(4200);
  await shot('mill-fork');
+ if (viewport.width < 1000) {
+   edges.fork = await inspectForkTag(page);
+   if (label === 'after') {
+     const {tag, overlapCssArea} = edges.fork;
+     assert.ok(tag.text && tag.visible && tag.textFits && tag.insideCourse, JSON.stringify(edges.fork));
+     assert.equal(overlapCssArea, 0, 'front rival label obscured by player at mill fork: ' + JSON.stringify(edges.fork));
+   }
+ }
  if (deviceScaleFactor > 1) {
    await captureWaterway(page, label, 'mill');
    movement.ripples = await sampleRipples(page);

@@ -220,6 +220,7 @@
   font-size: 11px;
   line-height: 1.15;
 }
+.dan-tag-above .dan-race-tag { top: auto; bottom: 90%; }
 .dan-race-runner[data-racer="player"] .dan-race-tag {
   border-color: #f0ca6c;
   background: #ffe2a1;

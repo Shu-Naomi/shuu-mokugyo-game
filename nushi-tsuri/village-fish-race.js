@@ -317,7 +317,8 @@
         track.dataset.route = route;
         track.style.setProperty("--wheel-angle", ((t - FIRST_SURGE) / WHEEL_PERIOD * 360).toFixed(1) + "deg");
       }
-      views.forEach(({runner, wake}, i) => {
+      views.forEach((view, i) => {
+        const {runner, wake} = view;
         const swimmer = race?.runners[i];
         const progress = swimmer?.x || 0;
         const boosting = Boolean(swimmer && swimmer.spurtAt !== null &&
@@ -325,12 +326,22 @@
         runner.classList.toggle("is-spurting", boosting);
         const xPercent = (7 + .87 * progress).toFixed(2) + "%";
         const y = course === "mill" ? millLane(i, progress, swimmer?.route ?? route) : laneY(i, progress);
+        view.lane = y;
         const yPercent = y.toFixed(2) + "%";
         runner.style.left = xPercent;
         runner.style.top = yPercent;
         if (wake && !motionPreference?.matches) paintWake(wake, swimmer, xPercent, yPercent, boosting);
         runner.dataset.progress = progress.toFixed(2);
       });
+      if (race) {
+        const front = views[1];
+        // Keep the upper lane's name clear when fish bunch at the fork or gate.
+        // Use course units so painting a frame never needs a DOM layout read.
+        const crowded = race.runners.some((other, i) => i !== 1 &&
+          Math.abs(other.x - race.runners[1].x) < 10 &&
+          views[i].lane >= front.lane && views[i].lane - front.lane < 20);
+        front.runner.classList.toggle("dan-tag-above", crowded);
+      }
     }
     function setMessage(message) {
       if (message !== previousMessage) {
