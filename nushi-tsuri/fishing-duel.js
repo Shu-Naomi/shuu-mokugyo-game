@@ -20,7 +20,8 @@
   const spoon={tanago:.05,motsugo:.10,medaka:.01,kamatsuka:.08,nigoi:1.4,raigyo:3.8,moroko:.2,funa:.35,wakasagi:.12,dojo:.08,isaki:1.15,ugui:1.3,oikawa:.25,kawahagi:.06,koi:.45,ayu:.35,yamame:2.3,iwana:2.4,amago:2.25,kajika:.15,nijimasu:2.5,bass:4.8,
     namazu:1.5,unagi:.55,aji:1.8,mebaru:1.6,kasago:1.4,suzuki:3.1,hirame:2.2,
     kurodai:1.1,bora:.45,shirogisu:.65,ainame:1.7,madai:1.2,nushi:.18,streamNushi:.7,coastNushi:.5,caveNushi:.3,starNushi:.18};
-  spoon.shiokakure=1.2;
+  // Keep the original incidental spoon odds for the marsh carp and reef fish.
+  Object.assign(spoon,{nishikigoi:.1,mejina:.1,hoshikagami:.1,shiokakure:1.2});
   // One step is the shared 120 ms battle tick. No wall-clock catch-up on a
   // suspended phone, and presentation randomness never changes the specimen.
   // Coordinates describe each fish's mouth as a percentage of the underwater view.
@@ -201,7 +202,7 @@
     trout:'kokuchibasu browntrout laketrout',
     dart:'ayu yamame iwana amago nijimasu shirogisu aji ugui kawamutsu himemasu sayori masaba bluegill aburahaya akakamasu buri',
     shoal:'takabe',
-    heavy:'koi nigoi namazu bora kurodai madai ishidai',
+    heavy:'nishikigoi mejina hoshikagami koi nigoi namazu bora kurodai madai ishidai',
     ambush:'raigyo bass suzuki unagi oyanirami utsubo',
     bottom:'akaza umazurahagi kamatsuka kajika kasago mebaru hirame ainame isaki kawahagi mahaze gigi magochi kawayoshinobori houraihimeji',
     bottomAmbush:'kijihata donko',

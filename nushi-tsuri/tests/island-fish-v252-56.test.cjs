@@ -35,8 +35,8 @@ for(const [id]of cases)for(const mode of ['gauge','nushi'])test('a giant island 
  console.log('V252_56_FIGHT '+JSON.stringify(result));assert.deepEqual(result.errors,[]);assert.equal(result.start.id,id);assert.equal(result.phase,'landing');assert.ok(result.seconds<180);assert.ok(result.maxTension<100);
 });
 
-test('island species stay exclusive alongside the 32 freshwater ordinary species',()=>{
- const app=boot(seed());try{const w=app.window;assert.equal(read(w,'fish.length'),75);assert.equal(read(w,'petCatalog.filter(f=>!f.legendary).length'),68);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='淡水').length"),36);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='海水').length"),30);
+test('island species stay exclusive alongside the 37 freshwater ordinary species',()=>{
+ const app=boot(seed());try{const w=app.window;assert.equal(read(w,'fish.length'),75);assert.equal(read(w,'petCatalog.filter(f=>!f.legendary).length'),68);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='淡水').length"),37);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='海水').length"),31);
  for(const [id]of cases){assert.equal(read(w,`fish.filter(f=>f.id==='${id}').length`),1);assert.equal(read(w,`petCatalog.filter(f=>f.id==='${id}').length`),1);for(const [spot,weights]of Object.entries(F.pools))if(weights[id])assert.ok(spot.startsWith('offshore-'),id+' '+spot);}
  assert.deepEqual(app.errors,[]);}finally{app.dispose();}
 });
