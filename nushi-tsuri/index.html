@@ -23008,7 +23008,10 @@
           else if(resistance) drive=.65+.22*Math.min(1,Math.abs(resistance.bend));
           else if(battle.mood?.calm) drive=.12+.18*speed+(battle.reeling ? .13 : 0);
           else drive=.43+.46*speed+(battle.mood?.danger ? .11 : 0);
-          drive*=1-.42*fatigue;
+          // The opening pose is still between the hook reveal and the first
+          // propulsion tick. Ease into that first stroke as it is displayed.
+          const onset=swimmingAway ? 1 : clampBattle((battle.swimTick||0)-1+artFraction,0,1);
+          drive*=onset*(1-.42*fatigue);
         }
         element.dataset.swimDrive=String(drive);
         // Interpolate the propulsion tick's own phase. On variable-speed runs

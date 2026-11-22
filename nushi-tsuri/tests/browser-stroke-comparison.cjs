@@ -56,10 +56,11 @@ async function sample(page,selector) {
     return {x:box.x,y:box.y,width:box.width,height:box.height,pixels:canvas.toDataURL()};
   });
 }
-async function series(page,dir,count,read) {
+async function series(page,dir,count,read,beforeFrame) {
   fs.mkdirSync(dir,{recursive:true});
   const frames=[];
   for(let i=0;i<count;i++){
+    if(beforeFrame) await beforeFrame(i);
     await page.clock.runFor(frameMs);
     const frame=await read(i);
     frame.imageHash=createHash('sha256').update(frame.body.pixels).digest('hex');
@@ -115,9 +116,12 @@ async function aquarium(page,dir) {
   await page.clock.runFor(500);
   const selector='#petTankStage [data-pet-fish] canvas';
   const stock=await page.evaluate(()=>s.petLife.food);
-  const frames=await series(page,dir,72,async i=>{
-    if(i===18) await tap('[data-pet-action="feed"]');
+  const frames=await series(page,dir,72,async ()=>{
     return {body:await sample(page,selector),food:await page.evaluate(()=>s.petLife.food)};
+  },async i=>{
+    // Feeding rebuilds the tank DOM. Let the next normal animation frame paint
+    // the replacement fish canvas before the synchronized capture reads it.
+    if(i===18) await tap('[data-pet-action="feed"]');
   });
   assert.equal(frames[0].food,stock);
   assert.equal(frames.at(-1).food,stock-1,'one feed consumes one pellet for this single fish');
