@@ -46,7 +46,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./coast-voyage.js?v=252-72&sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917",
   "./shiokakure.js?v=252-78&sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93",
   "./offshore-island.js?v=252-85&sha256=955fab2ad39959fa70ad2be6601556e5b8a2cc989021fcaeb9f31c20c2753a08",
-  "./world-life.js?v=252-74&sha256=652879786562d19d9ffa5f7e5b3d73f269bc46304b84d55c00d08dc88e3fb58a",
+  "./world-life.js?v=252-74&sha256=61add7ea099cc86d276994916e1ce91eb5c79ec925cb8c9a627f0f61bf269f9b",
   "./field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd",
   "./rural-canals.js?v=252-55&sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a",
   "./mountain-region.js?v=252-72&sha256=dbe910db53728780326e461bf5057f8208c9b95a1cce06eb4722949a236e9586",

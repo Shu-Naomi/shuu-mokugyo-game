@@ -92,7 +92,15 @@
    if(region!==s.mapRegion){region=s.mapRegion;records.clear();layer.replaceChildren();roads();for(const b of buildings.filter(b=>b.region===region))add(b.id,'building',b);for(const p of residents.filter(p=>p.region===region))add(p.id,'resident',p);}
    const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
    for(const record of records.values()){
-    const d=record.definition;if(d.kind){record.node.style.zIndex=d.y>s.y?'6':'2';const key=env.period;if(record.pose!==key){paintBuilding(record,env);if(images['settlement-buildings']?.complete)record.pose=key;}continue;}
+    const d=record.definition;
+    if(d.kind){
+     // The scaled storefront's bottom step is in front of its solid wall.
+     const frontY=d.id==='wetland-shop'?footprint(d).bottom:d.y;
+     record.node.style.zIndex=frontY>s.y?'6':'2';
+     const key=env.period;
+     if(record.pose!==key){paintBuilding(record,env);if(images['settlement-buildings']?.complete)record.pose=key;}
+     continue;
+    }
     const delta=Math.max(0,Math.min(250,now-record.tick));record.tick=now;record.node.hidden=env.period==='night';if(record.node.hidden)continue;
     let pose=residentPose(d,record.clock+delta,reduced);if(!walkable(pose.x,pose.y)||record.position&&Math.hypot(pose.x-s.x,pose.y-s.y)<4.5)pose={...(record.position||residentPose(d,0,true)),frame:0};else record.clock+=delta;
     record.position=pose;record.node.style.left=pose.x/240*100+'%';record.node.style.top=pose.y/135*100+'%';record.node.style.zIndex=pose.y>s.y?'6':'4';const key=pose.frame+':'+pose.facing;if(record.pose!==key){paintResident(record,pose);if(images['village-residents']?.complete)record.pose=key;}

@@ -65,6 +65,9 @@ async function check(browser, url, mobile, route) {
       const shop=await page.locator('[data-world-life="wetland-shop"]').boundingBox();
       const player=await page.locator('#player').boundingBox();
       assert.ok(shop.height>player.height*2,'storefront reads taller than the player');
+      const inFront=await page.evaluate(()=>Number(getComputedStyle(document.querySelector('#player')).zIndex)>
+        Number(getComputedStyle(document.querySelector('[data-world-life="wetland-shop"]')).zIndex));
+      assert.ok(inFront,'player on the doorstep stays visible in front of the shop');
       await press('#action');await page.locator('#store.open').waitFor();
       await press('#store [data-close]');assert.deepEqual(await position(),expected());
     }
