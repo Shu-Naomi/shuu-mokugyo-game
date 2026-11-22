@@ -1775,7 +1775,7 @@
         background-repeat: no-repeat;
         image-rendering: pixelated;
       }
-      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign):not(#shiokakureContour) {
+      .map.v54-map > :not(#player):not(#dog):not(#petScene):not(#forageLayer):not(#tournamentNpcLayer):not(#rivalLayer):not(#worldPixels):not(#coastPixels):not(#mountainPixels):not(#offshorePixels):not(#offshoreShip):not(#boatVisual):not(#worldLifeLayer):not(#ruralSign):not(#shiokakureContour):not(#danRaceSign) {
         display: none !important;
       }
       .map.v54-map #ruralSign { position:absolute; left:90.8%; top:20.8%; z-index:4; width:5.3%; height:4.2%; pointer-events:none; transform:translate(-50%,-100%); display:block; }
@@ -6551,6 +6551,7 @@
       <main class="world" id="world">
         <div class="map v54-map" id="map">
           <canvas id="worldPixels" class="pixel-scene" width="960" height="540" role="img" aria-label="星降る湖の村と水辺"></canvas>
+          <img id="danRaceSign" src="assets/dan-race-sign-v252-86.svg" alt="" aria-hidden="true" hidden style="position:absolute;left:11.9019138756%;top:31.3496280553%;width:5.3827751196%;height:3.1880977683%;z-index:2;pointer-events:none;image-rendering:pixelated" />
           <canvas id="offshorePixels" width="1672" height="941" role="img" aria-label="漁船で渡る潮風島"></canvas>
           <canvas id="offshoreShip" width="540" height="198" aria-hidden="true"></canvas>
           <canvas id="coastPixels" width="1536" height="864" role="img" aria-label="白砂の小島と岩礁を巡る沿岸"></canvas>
@@ -7513,7 +7514,7 @@
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
     <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-86"></script>
+    <script src="scene-layers.js?v=252-55"></script>
     <script src="layered-scenery.js?v=252-55"></script>
     <script>
       // Abort this same script before create(), save reads, migrations or UI
@@ -15299,6 +15300,7 @@
         ShuShiokakure.paint(canvas,shiokakureEncounter,matchMedia('(prefers-reduced-motion: reduce)').matches);
       }
       function renderPixelScenery() {
+        $("#danRaceSign").hidden = !ShuVillageReference.enabled || s.mapRegion !== "village" || playerHomeIsActive() || !!battle;
         renderShiokakure();
         if (villageSaveSuspended) return false;
         worldLife?.render(performance.now(),true);
