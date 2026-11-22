@@ -11968,6 +11968,19 @@
         }
         return canvas;
       }
+      // Dan's reserve entrants use their actual aquarium form. One reusable
+      // full-size surface preserves the painter's coordinate system for fins,
+      // parr marks, growth and mutation details before native-size reduction.
+      let raceFishSource;
+      function raceFishSourceContext() {
+        if (!raceFishSource) {
+          const surface = document.createElement("canvas");
+          surface.width = 448;
+          surface.height = 224;
+          raceFishSource = surface.getContext("2d");
+        }
+        return raceFishSource;
+      }
       function drawFishAtlasFrame(
         element,
         spriteAsset,
@@ -11987,10 +12000,12 @@
           const artAssets=ShuFishArt.assets(artId);
           const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
-          if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
-          if(canvas.width!==448)canvas.width=448;
-          if(canvas.height!==224)canvas.height=224;
-          if(changed)canvas.getContext('2d').clearRect(0,0,448,224);
+          const raceSprite = element.classList.contains('dan-race-fish');
+          const width = raceSprite ? 128 : 448, height = width / 2;
+          if(canvas.dataset.atlasKey!==key||canvas.width!==width||canvas.height!==height)delete canvas.dataset.artPaintKey;
+          if(canvas.width!==width)canvas.width=width;
+          if(canvas.height!==height)canvas.height=height;
+          if(changed)canvas.getContext('2d').clearRect(0,0,width,height);
           canvas.dataset.artSpecies=fishId;canvas.dataset.atlasKey=key;
           canvas.style.display='block';canvas.style.backgroundImage='none';
           const resolveImage=asset=>fishAtlasImage(aquariumLook?.adultIsaki&&asset===ShuFishArt.species.isaki.asset?'assets/aquarium-isaki-adult-v230.png':asset);
@@ -11999,9 +12014,19 @@
           canvas.dataset.artVariant=artId;
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
-            const context=canvas.getContext('2d');
+            const output = canvas.getContext('2d');
+            const context = raceSprite ? raceFishSourceContext() : output;
             if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
+            if (raceSprite) {
+              // These transparent atlas margins are common to the 84 side
+              // profiles, including catfish barbels. Average their fine
+              // markings once into the same pixel grid as the race sprites.
+              output.clearRect(0, 0, width, height);
+              output.imageSmoothingEnabled = true;
+              output.imageSmoothingQuality = 'high';
+              output.drawImage(context.canvas, 8, 14, 408, 204, 0, 0, width, height);
+            }
             canvas.dataset.artPaintKey=key;
           };
           for(const source of sources)if(!source.complete||!source.naturalWidth){

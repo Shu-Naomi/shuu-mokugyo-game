@@ -105,6 +105,11 @@
   text-overflow: ellipsis;
 }
 .dan-race-course {
+  /* Course width bounds the tail at the start on compact displays. */
+  container-type: inline-size;
+  --dan-nose-offset: clamp(8px, 1.55vw, 19px);
+  --dan-fish-width: min(90px, calc(7cqw + var(--dan-nose-offset)));
+  --dan-tail-offset: calc(var(--dan-fish-width) * .96 - var(--dan-nose-offset));
   position: relative;
   isolation: isolate;
   flex: 1 0 115px;
@@ -167,9 +172,9 @@
 .dan-race-runner {
   position: absolute;
   z-index: 2;
-  width: clamp(45px, 6vw, 77px);
-  height: clamp(23px, 3vw, 39px);
-  transform: translate(-77%, -50%);
+  width: var(--dan-fish-width);
+  aspect-ratio: 2;
+  transform: translate(calc(var(--dan-nose-offset) - var(--dan-fish-width)), -50%);
   pointer-events: none;
 }
 .dan-race-runner[data-racer="player"] { z-index: 3; }
@@ -186,8 +191,8 @@
   aspect-ratio: 2;
   top: 50%;
   transform: translateY(-50%);
-  background: url("assets/dan-race-swimmers-v252-86.png") no-repeat;
-  background-size: 800% 400%;
+  background: url("assets/dan-race-swimmers-v252-86.png?art=2ce7c1f66831cf85") no-repeat;
+  background-size: 1200% 400%;
   image-rendering: pixelated;
 }
 .dan-race-fish canvas, .dan-race-fish img, .fish-card-art canvas, .fish-card-art img {
@@ -377,7 +382,6 @@
   .fish-game-options { gap: 7px; }
   .dan-race-foot { gap: 6px; }
   .dan-race-entry { flex-wrap: wrap; gap: 6px; }
-  .dan-race-runner { width: 42px; height: 22px; }
   .dan-race-tag { max-width: 62px; font-size: 10px; }
 }
 
@@ -532,16 +536,6 @@
   height: 88%;
   object-fit: contain;
   image-rendering: pixelated;
-}
-.dan-race-runner.is-spurting::before {
-  content: "";
-  position: absolute;
-  right: 86%;
-  top: 32%;
-  width: 28%;
-  height: 2px;
-  background: #d8efcb;
-  box-shadow: -4px 6px #b0dad0, 3px 12px #90ccc1;
 }
 @media (max-height: 500px) {
   .dan-race-result { padding: 8px; gap: 4px 12px; }
@@ -893,7 +887,7 @@
 [data-game="race"] .village-fish-header { background: #30483f; border-bottom: 3px solid #96764e; }
 [data-game="race"] .village-fish-body { background: #192f32; }
 [data-game="race"] button, [data-game="race"] select { border-radius: 2px; }
-.dan-race-course, .dan-race-course[data-dan-course="mill"] { background: #234d51 url("assets/dan-race-water-v252-86.svg?art=84174cc4733758cb") center / 100% 100%; border: 3px solid #8b714b; border-radius: 1px; box-shadow: 0 0 0 1px #172b2b; }
+.dan-race-course, .dan-race-course[data-dan-course="mill"] { background: #234d51 url("assets/dan-race-water-v252-86.png?art=0ae7fc69df6133cb") center / 100% 100%; border: 3px solid #8b714b; border-radius: 1px; box-shadow: 0 0 0 1px #172b2b; }
 .dan-race-course::before, .dan-race-course[data-dan-course="mill"]::before { border: 0; background: none; clip-path: none; }
 .dan-race-scoreboard { position: absolute; z-index: 5; right: 7px; top: 5px; padding: 3px 7px; color: #f4dfac; background: #172c2e; border: 1px solid #b89b61; font-size: 12px; font-weight: bold; font-variant-numeric: tabular-nums; }
 .dan-race-course-name { top: 5px; background: #172c2e; border: 1px solid #728979; padding: 3px 6px; }
@@ -905,7 +899,7 @@
 .dan-race-route-bank { bottom: 10%; left: 25%; }
 .dan-race-flow { top: 29%; height: 12%; }
 .dan-race-island::before { background: repeating-linear-gradient(90deg, transparent 0 12px, #47533b 12px 14px, transparent 14px 26px) center 78% / 100% 18% no-repeat, repeating-linear-gradient(0deg, #768553 0 3px, #80915b 3px 6px, #6c7f50 6px 9px) center 25% / 100% 65% no-repeat, linear-gradient(#a6ad73 0 10%, #738551 10% 58%, #b09a64 58% 66%, #655740 66%); }
-.dan-race-runner[data-racer="player"] .dan-race-fish { filter: drop-shadow(1px 0 #ffe2a3) drop-shadow(-1px 0 #ffe2a3); }
+.dan-race-runner[data-racer="player"] .dan-race-fish { filter: drop-shadow(0 1px #122d35cc); }
 .dan-race-tag { border-radius: 1px; background: #183c40; border: 1px solid #82998a; color: #f0eed5; }
 .dan-race-runner[data-racer="player"] .dan-race-tag { background: #e6c584; color: #243832; border-color: #fff0bd; }
 .dan-race-foot { padding: 6px 8px; background: #2a423b; border-top: 2px solid #806d4d; }
@@ -921,21 +915,28 @@
 /* Carry the same fish-and-finish sign from the facade into every race phase. */
 [data-game="race"] #villageFishTitle { display: flex; align-items: center; gap: 10px; }
 [data-game="race"] #villageFishTitle::before { content: ""; flex: 0 0 90px; width: 90px; height: 30px; background: url("assets/dan-race-sign-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
-.dan-race-portrait::before { background: #234d51 url("assets/dan-race-water-v252-86.svg?art=84174cc4733758cb") center / cover; }
+.dan-race-portrait::before { background: #234d51 url("assets/dan-race-water-v252-86.png?art=0ae7fc69df6133cb") center / cover; }
 .dan-race-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
 .dan-race-foot .dan-race-status { min-width: 0; margin: 0; grid-column: 1; }
 .dan-race-foot button:last-child { grid-column: 3; }
 [data-game="race"] button, [data-game="race"] select { min-height: 44px; }
 .dan-race-foot button { min-height: 44px; }
-/* Short pixel wakes follow the tail, keeping the body and its label unobscured. */
-[data-race-phase="running"] .dan-race-runner:not([data-progress="100.00"])::after {
- content: ""; position: absolute; z-index: -1; right: 89%; top: 35%; width: 18px; height: 12px; pointer-events: none;
- background: linear-gradient(#8ebdb9,#8ebdb9) 10px 0 / 6px 2px no-repeat, linear-gradient(#bddad0,#bddad0) 3px 4px / 8px 2px no-repeat, linear-gradient(#689c9b,#689c9b) 8px 9px / 7px 2px no-repeat;
- animation: dan-tail-wake .55s steps(2,end) infinite;
+/* Tail ripples stay in the water where a stroke was made. */
+.dan-race-wakes { position: absolute; inset: 0; pointer-events: none; }
+.dan-race-wake {
+  position: absolute;
+  width: 27px;
+  height: 14px;
+  margin-left: calc(0px - var(--dan-tail-offset));
+  transform: translate(-78%, -50%);
+  background: url("assets/dan-race-wake-v252-86.svg?art=e764ecdd21259d67") 0 50% / 400% 100% no-repeat;
+  image-rendering: pixelated;
+  opacity: .82;
 }
-.dan-race-runner.is-spurting::before { top: 20%; right: 90%; width: 3px; height: 3px; background: #e4ead0; box-shadow: -5px -3px #9dc9c4, -10px 5px #b6dcd5, 1px 11px #d3e6d8, -6px 15px #7ab1b2; }
-.dan-race-runner[data-progress="100.00"]::before { display: none; }
-@keyframes dan-tail-wake { from { transform: translateX(0); opacity: .8; } to { transform: translateX(-3px); opacity: .45; } }
+.dan-race-wake[data-spurt] { width: 33px; height: 17px; }
+.dan-race-wake[data-stage="1"] { background-position-x: 33.3333%; opacity: .76; }
+.dan-race-wake[data-stage="2"] { background-position-x: 66.6667%; opacity: .54; }
+.dan-race-wake[data-stage="3"] { background-position-x: 100%; opacity: .30; }
 @media (max-height: 500px) {
  [data-game="race"] .village-fish-header { padding-top: 3px; padding-bottom: 3px; }
  [data-game="race"] #villageFishTitle { font-size: 17px; gap: 7px; }
@@ -943,7 +944,7 @@
  .dan-race-foot { gap: 5px; }
  .dan-race-foot button { padding-inline: 10px; }
 }
-@media (prefers-reduced-motion: reduce) { [data-race-phase="running"] .dan-race-runner::after { animation: none; } }
+@media (prefers-reduced-motion: reduce) { .dan-race-wake { display: none; } }
 
 /* Detailed static pixel scenery; browser image cache supplies every race frame. */
 .dan-race-course { image-rendering: pixelated; }
@@ -975,5 +976,30 @@
 }
 @media (max-height: 500px) { .dan-race-course[data-dan-course="mill"] .dan-race-wheel { width: clamp(36px, 5.8vw, 46px); } }
 
+/* Each patch aligns with a small section of the 1024×384 water painting. */
+.dan-race-ripple {
+  display: none;
+  position: absolute;
+  pointer-events: none;
+  width: 14.84375%;
+  height: 8.333333%;
+  background: url("assets/dan-race-ripples-v252-86.png?art=3f1e5e7813c38fb2") 0 var(--ripple-row) / 700% 600% no-repeat;
+  image-rendering: pixelated;
+}
+.dan-race-ripple[data-patch="west"] { left: 7.03125%; top: 33.333333%; --ripple-row: 0%; }
+.dan-race-ripple[data-patch="southwest"] { left: 25%; top: 65.104167%; --ripple-row: 20%; }
+.dan-race-ripple[data-patch="north"] { left: 62.304688%; top: 30.208333%; --ripple-row: 40%; }
+.dan-race-ripple[data-patch="east"] { left: 79.101562%; top: 50.520833%; --ripple-row: 60%; }
+.dan-race-ripple[data-patch="south"] { left: 47.65625%; top: 75.78125%; --ripple-row: 80%; }
+.dan-race-ripple[data-patch="far-bank"] { left: 38.769531%; top: 20.052083%; --ripple-row: 100%; }
+@media (prefers-reduced-motion: no-preference) {
+  [data-race-phase="running"] .dan-race-ripple {
+    display: block;
+    animation: dan-current-ripple 1.8s steps(6, end) infinite;
+  }
+  [data-race-phase="running"] .dan-race-ripple[data-patch="southwest"],
+  [data-race-phase="running"] .dan-race-ripple[data-patch="south"] { animation-duration: 2.4s; }
+  @keyframes dan-current-ripple { from { background-position-x: 0%; } to { background-position-x: 100%; } }
+}
 /* The wheel meets its reflection; the foam fan follows the channel bend. */
 .dan-race-flow { left: 40%; top: 23%; width: 14%; height: 19%; }

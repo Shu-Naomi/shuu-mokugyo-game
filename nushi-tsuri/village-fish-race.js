@@ -167,6 +167,7 @@
 
   function open(host, ctx) {
     const doc = host.ownerDocument, win = doc.defaultView;
+    const motionPreference = win.matchMedia?.("(prefers-reduced-motion: reduce)");
     let phase = "entry", race = null, runId = null, current = null, disposed = false;
     let raf = 0, lastFrame = null, lastPaint = -Infinity, lastArt = -Infinity, blurred = false;
     let printed = null, previousMessage = "", views = [];
@@ -209,7 +210,7 @@
       const row = swimmerRows[fish.species];
       if (!node.classList.contains("dan-race-fish") || row === undefined ||
           fish.appearance?.rare || fish.appearance?.fry) {
-        ctx.drawFish(node, fish.species, frame, fish.specimen || null);
+        ctx.drawFish(node, fish.species, Math.floor(frame), fish.specimen || null);
         return;
       }
       let sprite = node.firstElementChild;
@@ -220,23 +221,65 @@
         sprite.style.backgroundPositionY = (row / 3 * 100) + "%";
         node.append(sprite);
       }
-      const column = frame % 8;
+      const column = Math.floor(frame * 12 / 8) % 12;
       if (sprite.dataset.frame !== String(column)) {
         sprite.dataset.frame = String(column);
-        sprite.style.backgroundPositionX = (column / 7 * 100) + "%";
+        sprite.style.backgroundPositionX = (column / 11 * 100) + "%";
       }
     }
 
     const timeText = cs => (cs / 100).toFixed(2) + "秒";
     let status, cueButton, selection, track, scoreboard;
+    function makeWake(layer) {
+      const marks = Array.from({length: 3}, () => {
+        const node = el("span", "dan-race-wake");
+        node.hidden = true;
+        layer.append(node);
+        return {node, born: -Infinity};
+      });
+      return {marks, next: 0, lastX: 0, lastTime: 0};
+    }
+    function paintWake(wake, swimmer, xPercent, yPercent, boosting) {
+      const now = race.elapsed;
+      // Use actual distance along the course. The gate and the mill can
+      // hold a swimmer stationary even while the tail is still beating.
+      if (swimmer.finishTime === null && swimmer.x - wake.lastX >= .8 &&
+          now - wake.lastTime >= (boosting ? .23 : .31)) {
+        const mark = wake.marks[wake.next];
+        wake.next = (wake.next + 1) % wake.marks.length;
+        wake.lastX = swimmer.x;
+        wake.lastTime = mark.born = now;
+        mark.node.style.left = xPercent;
+        mark.node.style.top = yPercent;
+        mark.node.toggleAttribute("data-spurt", boosting);
+        mark.node.hidden = false;
+      }
+      for (const {node, born} of wake.marks) {
+        if (node.hidden) continue;
+        const stage = Math.floor((now - born) / .17);
+        if (stage >= 4) node.hidden = true;
+        else if (node.dataset.stage !== String(stage)) node.dataset.stage = String(stage);
+      }
+    }
     function buildCourse(fish) {
       const mill = course === "mill";
       track = el("div", "dan-race-course");
       track.dataset.danCourse = course;
+      for (const patch of ["west", "southwest", "north", "east", "south", "far-bank"]) {
+        const ripple = el("span", "dan-race-ripple");
+        ripple.dataset.patch = patch;
+        ripple.setAttribute("aria-hidden", "true");
+        track.append(ripple);
+      }
       track.setAttribute("role", "img");
       track.setAttribute("aria-label", mill
         ? "水車の分かれ道。上は逆流する水車側、下は穏やかな岸側。小島の先で合流してゴール。"
         : "水草の門。左からスタート、水草の切れ目、最後の直線、ゴール。");
+      const wakeLayer = race ? el("div", "dan-race-wakes") : null;
+      if (wakeLayer) {
+        wakeLayer.setAttribute("aria-hidden", "true");
+        track.append(wakeLayer);
+      }
       const landmarks = mill
         ? [["island"], ["wheel"], ["flow"], ["route-wheel", "内 · 水車側"], ["route-bank", "外 · 岸側"]]
         : [["gate"]];
@@ -257,7 +300,7 @@
         runner.append(art, tag);
         track.append(runner);
         formArt(art, identity, 0);
-        return {runner, art, identity};
+        return {runner, art, identity, wake: wakeLayer ? makeWake(wakeLayer) : null};
       });
       positionFish();
       return track;
@@ -274,14 +317,18 @@
         track.dataset.route = route;
         track.style.setProperty("--wheel-angle", ((t - FIRST_SURGE) / WHEEL_PERIOD * 360).toFixed(1) + "deg");
       }
-      views.forEach(({runner}, i) => {
+      views.forEach(({runner, wake}, i) => {
         const swimmer = race?.runners[i];
         const progress = swimmer?.x || 0;
-        runner.classList.toggle("is-spurting", Boolean(swimmer && swimmer.spurtAt !== null &&
-          swimmer.finishTime === null && race.elapsed - swimmer.spurtAt < swimmer.spurtDuration));
-        runner.style.left = (7 + .87 * progress).toFixed(2) + "%";
+        const boosting = Boolean(swimmer && swimmer.spurtAt !== null &&
+          swimmer.finishTime === null && race.elapsed - swimmer.spurtAt < swimmer.spurtDuration);
+        runner.classList.toggle("is-spurting", boosting);
+        const xPercent = (7 + .87 * progress).toFixed(2) + "%";
         const y = course === "mill" ? millLane(i, progress, swimmer?.route ?? route) : laneY(i, progress);
-        runner.style.top = y.toFixed(2) + "%";
+        const yPercent = y.toFixed(2) + "%";
+        runner.style.left = xPercent;
+        runner.style.top = yPercent;
+        if (wake && !motionPreference?.matches) paintWake(wake, swimmer, xPercent, yPercent, boosting);
         runner.dataset.progress = progress.toFixed(2);
       });
     }
@@ -446,8 +493,8 @@
     }
     function paint() {
       positionFish();
-      const reduced = win.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
-      if (!reduced && race.elapsed - lastArt >= .12) {
+      const reduced = motionPreference?.matches;
+      if (!reduced && race.elapsed - lastArt >= 1 / 15) {
         lastArt = race.elapsed;
         views.forEach(({art, identity}, i) => {
           const swimmer = race.runners[i];
@@ -457,7 +504,7 @@
           // entering nor leaving a spurt skips to a different tail stroke.
           const boostTime = swimmer.spurtAt === null ? 0 : Math.min(race.elapsed - swimmer.spurtAt, swimmer.spurtDuration);
           const swimTime = race.elapsed + boostTime * .35;
-          const frame = Math.floor(win.ShuFishMotion.phase(identity.species, swimTime, gait.speed, false, i));
+          const frame = win.ShuFishMotion.phase(identity.species, swimTime, gait.speed, false, i);
           formArt(art, identity, frame);
         });
       }
