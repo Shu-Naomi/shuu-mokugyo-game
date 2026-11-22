@@ -13,7 +13,7 @@ test('Dan sign stays inside the existing building and never replaces village art
  assert.match(tag,/pointer-events:none/);assert.match(tag,/aria-hidden="true"/);
  const n=k=>parseFloat(tag.match(new RegExp(k+':([0-9.]+)%'))[1]);
  const rect={x:n('left')*1672/100,y:n('top')*941/100,w:n('width')*1672/100,h:n('height')*941/100};
- assert.ok(Math.abs(rect.x-199)<.01&&Math.abs(rect.y-295)<.01&&Math.abs(rect.w-90)<.01&&Math.abs(rect.h-30)<.01);
+ assert.ok(Math.abs(rect.x-194)<.01&&Math.abs(rect.y-293)<.01&&Math.abs(rect.w-100)<.01&&Math.abs(rect.h-34)<.01);
  assert.deepEqual(Data.get('world',{referenceVillage:true}).edits,[]);
  for(const name of ['assets/village-shop-signs-v252-73.png','scene-layers.js'])assert.equal(digest(fs.readFileSync(path.join(root,name))),baseline[name],name);
 });

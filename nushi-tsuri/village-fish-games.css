@@ -908,3 +908,30 @@
 /* Label the existing flow phase without changing its timing or race rules. */
 [data-dan-course="mill"][data-flow="warning"] .dan-race-route-wheel::after { content: " · 逆流まえ"; color: #f4dc99; }
 [data-dan-course="mill"][data-flow="surge"] .dan-race-route-wheel::after { content: " · ←逆流"; color: #caeeed; }
+
+/* Carry the same fish-and-finish sign from the facade into every race phase. */
+[data-game="race"] #villageFishTitle { display: flex; align-items: center; gap: 10px; }
+[data-game="race"] #villageFishTitle::before { content: ""; flex: 0 0 90px; width: 90px; height: 30px; background: url("assets/dan-race-sign-v252-86.svg") center / contain no-repeat; image-rendering: pixelated; }
+.dan-race-portrait::before { background: #234d51 url("assets/dan-race-water-v252-86.svg") center / cover; }
+.dan-race-foot { display: grid; grid-template-columns: minmax(0, 1fr) auto auto; }
+.dan-race-foot .dan-race-status { min-width: 0; margin: 0; grid-column: 1; }
+.dan-race-foot button:last-child { grid-column: 3; }
+[data-game="race"] button, [data-game="race"] select { min-height: 44px; }
+.dan-race-foot button { min-height: 44px; }
+/* Short pixel wakes follow the tail, keeping the body and its label unobscured. */
+[data-race-phase="running"] .dan-race-runner:not([data-progress="100.00"])::after {
+ content: ""; position: absolute; z-index: -1; right: 89%; top: 35%; width: 18px; height: 12px; pointer-events: none;
+ background: linear-gradient(#8ebdb9,#8ebdb9) 10px 0 / 6px 2px no-repeat, linear-gradient(#bddad0,#bddad0) 3px 4px / 8px 2px no-repeat, linear-gradient(#689c9b,#689c9b) 8px 9px / 7px 2px no-repeat;
+ animation: dan-tail-wake .55s steps(2,end) infinite;
+}
+.dan-race-runner.is-spurting::before { top: 20%; right: 90%; width: 3px; height: 3px; background: #e4ead0; box-shadow: -5px -3px #9dc9c4, -10px 5px #b6dcd5, 1px 11px #d3e6d8, -6px 15px #7ab1b2; }
+.dan-race-runner[data-progress="100.00"]::before { display: none; }
+@keyframes dan-tail-wake { from { transform: translateX(0); opacity: .8; } to { transform: translateX(-3px); opacity: .45; } }
+@media (max-height: 500px) {
+ [data-game="race"] .village-fish-header { padding-top: 3px; padding-bottom: 3px; }
+ [data-game="race"] #villageFishTitle { font-size: 17px; gap: 7px; }
+ [data-game="race"] #villageFishTitle::before { flex-basis: 81px; width: 81px; height: 27px; }
+ .dan-race-foot { gap: 5px; }
+ .dan-race-foot button { padding-inline: 10px; }
+}
+@media (prefers-reduced-motion: reduce) { [data-race-phase="running"] .dan-race-runner::after { animation: none; } }
