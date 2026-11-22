@@ -38,7 +38,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./pet-life-ui.js?v=252-84&sha256=c28248db715b9f7ddc34ac947726d8e936c0043be075252996dc3a068cdac28a",
   "./village-fish-cards.js?v=252-84&sha256=a196f0781c24156e7c9244d6f565c6d3ff38fe9d8668a882bd753d8711d17189",
   "./village-fish-race.js?v=252-84&sha256=1f4d1f701ea1758f1cf51d36fef0f1cbb8459a3fb2cb5f34e4c8881ed1ff1482",
-  "./tackle-balance.js?v=252-71&sha256=b16778b33d08ee03ca758e792e80d28031ac4a68cbafd7936032a14ccf0bcc17",
+  "./tackle-balance.js?v=252-71&sha256=21869c0260e29f4566c4e0d83ca10a2f2a8420819dc31e847ead66708d02dcde",
   "./fishing-duel.js?v=252-82&sha256=2e77847cca72edd120b071e7079fb322047e4fdb24ccdd8b3f9a5421fc6804cf",
   "./underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b",
   "./nushi-presentation.js?v=252-75&sha256=3b4441bbf976ddaa7f2e9bc207c595d20eb5d4dda73f614d8b6be7f4a5cb2f29",

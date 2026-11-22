@@ -199,7 +199,7 @@
   };
   // Regional bosses use the same explicit fallback bait multipliers as the
   // rest of the catalogue, with their preferred foods overriding defaults.
-  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi","shiokakure"])
+  for(const id of ["streamNushi","coastNushi","caveNushi","starNushi","shiokakure","hoshikagami"])
     species[id].baits={...baitDefaults,...species[id].baits};
   function allowed(baitId, hookId) { return baitId !== "nushiSecret" || hookId === "large"; }
   function weight(fishId, baitId, hookId = "medium") {
