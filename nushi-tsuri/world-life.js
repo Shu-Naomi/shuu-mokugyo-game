@@ -12,7 +12,7 @@
   {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:169.5,y:41,w:28,h:23,sprite:0,route:[[194,43],[185,42],[178,43],[169.5,41]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
   {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
-  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
+  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,displayScale:1.75,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
   {id:'wetland-house',region:'wetland',kind:'house',name:'水郷の民家',x:64,y:83,w:14,h:11,sprite:2,route:[[80,70],[80,83],[64,83]],line:'洗濯物を干してから、睡蓮の池をひと回りしてきたところさ。'}
  ];
  const residents=[
@@ -32,7 +32,7 @@
  ];
  if(reference)for(const resident of residents){const route=reference.npc.residentRoutes[resident.id];if(route)resident.route=route.map(p=>[...p]);}
  const rect=(x,y,b)=>x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
- function centerX(b){return b.x+(.5-(art.doorX?.[b.sprite]??.5))*b.w;}
+ function centerX(b,width=b.w){return b.x+(.5-(art.doorX?.[b.sprite]??.5))*width;}
  function footprint(b){return {left:centerX(b)-b.w*.36,right:centerX(b)+b.w*.36,top:b.y-b.h*.64,bottom:b.y-1.5};}
  const solid=(x,y,region)=>buildings.some(b=>b.region===region&&rect(x,y,footprint(b)));
  function distance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/length)):0;return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
@@ -69,7 +69,18 @@
   const document=map.ownerDocument,layer=document.createElement('div');layer.id='worldLifeLayer';layer.className='world-life-layer';map.append(layer);const images={},records=new Map();let region='',last=-Infinity;
   function image(name){if(!images[name]){const img=new Image();images[name]=img;img.onload=()=>render(performance.now(),true);img.src=name==='settlement-buildings'?'assets/settlement-buildings-sam-signs.png':'assets/'+name+'-v238.png';}return images[name];}
   function add(id,kind,definition){const node=document.createElement('div');node.className='world-life-'+kind;node.dataset.worldLife=id;node.setAttribute('role','img');node.setAttribute('aria-label',definition.name);const canvas=document.createElement('canvas');canvas.width=kind==='building'?512:96;canvas.height=kind==='building'?Math.round(512*definition.h/definition.w):128;node.append(canvas);layer.append(node);const record={node,canvas,definition,pose:null,position:null,clock:0,tick:performance.now()};records.set(id,record);return record;}
-  function paintBuilding(record,env){const b=record.definition,im=image('settlement-buildings');if(!im.complete||!im.naturalWidth)return;drawBuilding(record.canvas,im,b.sprite);record.node.style.width=b.w/240*100+'%';record.node.style.height=b.h/135*100+'%';record.node.style.left=centerX(b)/240*100+'%';record.node.style.top=b.y/135*100+'%';record.node.style.filter=env.period==='night'?'brightness(.64) saturate(.85)':env.period==='evening'?'sepia(.12) brightness(.9)':'';}
+  function paintBuilding(record,env){
+   const b=record.definition,im=image('settlement-buildings');
+   if(!im.complete||!im.naturalWidth)return;
+   drawBuilding(record.canvas,im,b.sprite);
+   // Scale the storefront about its painted door, keeping the map entrance and footing.
+   const scale=b.displayScale||1,w=b.w*scale;
+   record.node.style.width=w/240*100+'%';
+   record.node.style.height=b.h*scale/135*100+'%';
+   record.node.style.left=centerX(b,w)/240*100+'%';
+   record.node.style.top=b.y/135*100+'%';
+   record.node.style.filter=env.period==='night'?'brightness(.64) saturate(.85)':env.period==='evening'?'sepia(.12) brightness(.9)':'';
+  }
   function paintResident(record,pose){const im=image('village-residents');if(im.complete&&im.naturalWidth)drawResident(record.canvas,im,record.definition.sprite,pose);}
   function roads(){
    const canvas=document.createElement('canvas');canvas.className='world-life-roads';canvas.width=1536;canvas.height=864;layer.prepend(canvas);const ctx=canvas.getContext('2d');ctx.scale(6.4,6.4);ctx.lineJoin='round';ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;

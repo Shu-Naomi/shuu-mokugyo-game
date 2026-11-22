@@ -145,7 +145,7 @@
         // Bench, basket and lantern, all above the unobstructed through route.
         [[99.5,56],[117.5,56],[117.5,62.7],[99.5,62.7]]],
       landmarks:[{id:"wetland",x:228,y:82,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
-    wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
+    wetland:{asset:"assets/wetland-world-v227.png",overlay:{asset:"assets/wetland-trail-edges.webp"},name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
       // The reed bed separates the bridge spur from the southern bank.
       walls:[[[129,73],[136,74],[142,86],[143,94],[140,99],[139,102],[136,103],[131,94],[126,86]]],
@@ -163,7 +163,12 @@
         [[100,58],[96,60],[89,66],[74,70],[57,71],[39,67],[24,62],[16,52],[15,36],[23,21],[37,13],[52,11],[70,12],[83,19],[92,31],[96,45],[96,60]],
         [[145,99],[144,102],[139,106],[143,111],[159,115],[175,119],[189,119],[205,122],[215,117],[218,110],[222,101],[223,95],[230,89],[231,82],[230,72],[231,62],[236,54],[237,48],[233,43],[225,37],[217,32]],
         [[125,57],[133,57],[139,60],[146,64],[153,67]],
-      ],landmarks:[]},
+        // Additional dirt at the lily-pond bend, shop frontage and eastern shore.
+        // Old paths and all three water boundaries keep their original positions.
+        [[59,69.5],[68,68.2],[76,67.3],[80,66],[84,64.6],[88,61.7],[92,58.3]],
+        [[148,40.3],[152,39],[156,37.2],[160,35],[164,35],[168,35],[180,33.8],[188,33.9],[197,32.3]],
+        [[231,64],[231,68],[230.5,72],[231.5,76],[231.5,80],[231.2,84],[229.7,88]],
+      ],trailRadii:[3.2,3.2,3.2,3.2,3.3,3.3,3.8],landmarks:[]},
     cave:{asset:"assets/cave-lake-v202.png",name:"岩窟の地下湖",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       waters:{underground:[[90,18],[112,17],[136,19],[157,23],[176,27],[192,33],[207,42],[217,55],[219,71],[210,86],[192,98],[169,102],[146,105],[126,106],[104,103],[88,99],[69,94],[53,88],[37,77],[28,63],[31,47],[42,37],[58,29],[74,24]]},
@@ -328,7 +333,9 @@
     if(image?.complete && image.naturalWidth>0)ctx.drawImage(image,0,0,canvas.width,canvas.height);
     else {ctx.fillStyle="#183b31";ctx.fillRect(0,0,canvas.width,canvas.height);}
     const patch=overlay && images[overlay.asset];
-    if(patch?.complete && patch.naturalWidth>0){
+    if(patch?.complete && patch.naturalWidth>0 && !overlay.clip){
+      ctx.drawImage(patch,0,0,canvas.width,canvas.height);
+    }else if(patch?.complete && patch.naturalWidth>0){
       ctx.save();ctx.beginPath();overlay.clip.forEach(([x,y],i)=>i?ctx.lineTo(x/width*canvas.width,y/height*canvas.height):ctx.moveTo(x/width*canvas.width,y/height*canvas.height));ctx.closePath();ctx.clip();
       ctx.drawImage(hillsideLayer(patch,overlay),0,0,canvas.width,canvas.height);ctx.restore();
     }
