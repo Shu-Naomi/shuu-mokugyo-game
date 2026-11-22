@@ -165,11 +165,56 @@
     return lane + (50 - lane) * converge;
   }
 
+
+  // Fine 1–2 px ripple marks are authored in a native-sized pixel layer, not
+  // enlarged from the soft underwater photograph. The course geometry stays CSS.
+  const WATER_WIDTH = 720, WATER_HEIGHT = 192;
+  function paintWaterDetail(canvas, time = 0, mill = false) {
+    if (!canvas) return;
+    let brush;
+    try { brush = canvas.getContext("2d"); } catch (_) { return; }
+    if (!brush || typeof brush.fillRect !== "function") return;
+    const w = canvas.width, h = canvas.height;
+    brush.clearRect(0, 0, w, h);
+    brush.imageSmoothingEnabled = false;
+    const drift = Math.floor(Math.max(0, time) * 5);
+    const colors = ["#d1e1c9", "#93bdb2", "#a9d0bd", "#3d8385", "#b7d4bf"];
+    // Short staggered wavelets: avoid long horizontal bands or tiled repeats.
+    for (let row = 0; row < 15; row++) {
+      const y = 9 + row * 12;
+      for (let col = 0; col < 22; col++) {
+        const seed = (row * 197 + col * 67 + row * col * 11) % 503;
+        const x = (col * 35 + (seed % 21) - (drift * (1 + row % 3))) % (w + 32) - 12;
+        if (mill && x > w * .27 && x < w * .71 && y > h * .42 && y < h * .65) continue;
+        const width = 5 + seed % 15;
+        brush.globalAlpha = .20 + (seed % 5) * .055;
+        brush.fillStyle = colors[(seed + row) % colors.length];
+        brush.fillRect(x, y + seed % 3, width, row % 5 === 0 ? 2 : 1);
+        if (seed % 4 === 0) {
+          brush.globalAlpha = .17;
+          brush.fillRect(x + 3, y + 4, Math.max(3, width - 6), 1);
+        }
+      }
+    }
+    if (mill) {
+      // Concentrate small foam crests below the wheel. The existing current
+      // state still controls gameplay, so this is only a decorative layer.
+      for (let i = 0; i < 13; i++) {
+        const x = Math.round(w * (.46 + (i % 5) * .012));
+        const y = 27 + i * 6;
+        brush.globalAlpha = .30 + (i % 3) * .1;
+        brush.fillStyle = i % 3 === 0 ? "#dce6ce" : "#a1d3c5";
+        brush.fillRect(x - (drift + i * 3) % 20, y, 3 + i % 6, 1);
+      }
+    }
+    brush.globalAlpha = 1;
+  }
+
   function open(host, ctx) {
     const doc = host.ownerDocument, win = doc.defaultView;
     let phase = "entry", race = null, runId = null, current = null, disposed = false;
     let raf = 0, lastFrame = null, lastPaint = -Infinity, lastArt = -Infinity, blurred = false;
-    let printed = null, previousMessage = "", views = [];
+    let printed = null, previousMessage = "", views = [], waterCanvas = null, lastWater = -Infinity;
     const entrants = [...ctx.entrants(), ...rentals];
     const byUid = new Map(entrants.map(f => [f.uid, f]));
     let selectedUid = entrants[0].uid, course = "gate", route = "wheel";
@@ -212,6 +257,13 @@
       const mill = course === "mill";
       track = el("div", "dan-race-course");
       track.dataset.danCourse = course;
+      waterCanvas = el("canvas", "dan-race-water-detail");
+      waterCanvas.width = WATER_WIDTH;
+      waterCanvas.height = WATER_HEIGHT;
+      waterCanvas.setAttribute("aria-hidden", "true");
+      track.append(waterCanvas);
+      paintWaterDetail(waterCanvas, race?.elapsed ?? 0, mill);
+      lastWater = race?.elapsed ?? 0;
       track.setAttribute("role", "img");
       track.setAttribute("aria-label", mill
         ? "水車の分かれ道。上は逆流する水車側、下は穏やかな岸側。小島の先で合流してゴール。"
@@ -415,6 +467,10 @@
     function paint() {
       positionFish();
       const reduced = win.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+      if (!reduced && race.elapsed - lastWater >= .22) {
+        lastWater = race.elapsed;
+        paintWaterDetail(waterCanvas, race.elapsed, course === "mill");
+      }
       if (!reduced && race.elapsed - lastArt >= .12) {
         lastArt = race.elapsed;
         views.forEach(({art, identity}, i) => {

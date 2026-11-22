@@ -63,6 +63,30 @@ test('the net protects a points lead; winning the tied challenge needs a differe
   } finally { app.dispose(); }
 });
 
+
+test('the race adds pixel-water detail without changing course interactions', () => {
+  const app = boot({...seed(), soundEnabled:false}), w = app.window;
+  try {
+    const advance = clock(w);
+    enter(w, 'race');
+    let surface = w.document.querySelector('.dan-race-water-detail');
+    assert.ok(surface, 'a separate water pixel layer exists');
+    assert.equal(surface.width, 720);
+    assert.equal(surface.height, 192);
+    assert.equal(surface.getAttribute('aria-hidden'), 'true');
+    const picker = w.document.querySelector('#danCoursePicker');
+    picker.value = 'mill';
+    picker.dispatchEvent(new w.Event('change', {bubbles:true}));
+    surface = w.document.querySelector('[data-dan-course="mill"] .dan-race-water-detail');
+    assert.ok(surface, 'the water layer is rebuilt when the course changes');
+    choose(w, '#danRaceStart');
+    assert.ok(w.document.querySelector('[data-race-phase="running"] .dan-race-water-detail'));
+    advance(1200);
+    assert.equal(w.document.querySelectorAll('.dan-race-runner').length, 3);
+    assert.deepEqual(app.errors, []);
+  } finally { app.dispose(); }
+});
+
 test('racing a named aquarium fish prints a chosen finish once and the same card can be played after reload', () => {
   const saved = fixture();
   const pet = saved.petLife.fish.find(f => f.uid === 'pet-33');
