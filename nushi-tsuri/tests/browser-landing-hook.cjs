@@ -5,6 +5,7 @@ const fs = require('node:fs');
 const http = require('node:http');
 const path = require('node:path');
 const { chromium } = require('playwright');
+const {createCanvas,loadImage} = require('@napi-rs/canvas');
 const {seed, saveKey} = require('./game-harness.cjs');
 const enterGame = require('./browser-start-adventure.cjs');
 
@@ -34,7 +35,7 @@ function serve(root) {
 // Sample the painted jaw and the visible metal in SCREEN coordinates.
 // An unpainted zero-sized witness inherits all transforms (camera, translation,
 // swing, mirror and specimen size). No production anchor helper is called.
-function measure({card,fixture}) {
+function measure({card,fixture,seated=false}) {
   const fish=document.querySelector(card?'#catchFish':'#battleFish');
   const canvas=fish.querySelector('canvas');
   const visible=node=>Boolean(node&&node.checkVisibility({visibilityProperty:true,opacityProperty:true}));
@@ -48,10 +49,13 @@ function measure({card,fixture}) {
   const svgPoint=(node,x,y)=>new DOMPoint(x,y).matrixTransform(node.getScreenCTM());
   const bend=document.querySelector(card?'.catch-hook':'#fishTackleFront svg');
   const shank=card?bend:document.querySelector('#fishTackleBack svg');
-  let tip=null,eye=null,end=null;
+  let tip=null,entry=null,eye=null,end=null;
   if(visible(bend)){
     if(!card){tip=svgPoint(bend,2.8,6.8);eye=svgPoint(shank,8,3);}
-    else if(bend instanceof SVGSVGElement){tip=svgPoint(bend,9,6);eye=svgPoint(bend,2,2);}
+    else if(bend instanceof SVGSVGElement){
+      tip=seated?svgPoint(bend,3.5,9.5):svgPoint(bend,9,6);
+      entry=seated?svgPoint(bend,3.5,7):tip;eye=svgPoint(bend,2,2);
+    }
     else {tip=point(bend,'1px','8px');eye=point(bend,'8px','0px');}
   }
   if(card) end=point(document.querySelector('.catch-line'),'50%','100%');
@@ -88,9 +92,69 @@ function measure({card,fixture}) {
     &&p.y>=Math.max(0,clip.top)&&p.y<=Math.min(innerHeight,clip.bottom);
   const xy=p=>p&&[p.x,p.y];
   return {phase:card?'result':battle.phase,pose,frame,lip:xy(lip),tip:xy(tip),lineEnd:xy(end),eye:xy(eye),
-    visible:visible(bend),onScreen:Boolean(onScreen(tip)&&onScreen(eye)),inkGap,tipJaw:dist(tip,lip),eyeLine:dist(eye,end),lineJaw:dist(end,lip),
+    visible:visible(bend),onScreen:Boolean(onScreen(tip)&&onScreen(eye)),inkGap,tipJaw:dist(tip,lip),entryJaw:dist(entry||tip,lip),eyeLine:dist(eye,end),lineJaw:dist(end,lip),
     specimen:fish.dataset.specimenScale,fishBox:fish.getBoundingClientRect().toJSON()};
 }
+// Two stroke colours expose only the metal in the browser's actual composite.
+// Repeat with the fish hidden to recover the complete hook silhouette. A pixel
+// that reacts only with the fish hidden belongs to metal covered by the fish.
+async function measureHookCoverage(page, sample) {
+  const points = [sample.eye, sample.tip, sample.lip];
+  const left = Math.floor(Math.min(...points.map(p => p[0])) - 13);
+  const top = Math.floor(Math.min(...points.map(p => p[1])) - 13);
+  const endX = Math.ceil(Math.max(...points.map(p => p[0])) + 13);
+  const endY = Math.ceil(Math.max(...points.map(p => p[1])) + 13);
+  const clip = {x:left, y:top, width:endX-left, height:endY-top};
+  const style = await page.addStyleTag({content:
+    '.catch-hook,.catch-hook *{stroke:var(--probe-metal)!important}' +
+    'html.hide-probe-fish #catchFish{visibility:hidden!important}'
+  });
+  const images = [];
+  try {
+    for (const hidden of [false,true]) {
+      for (const colour of ['#ff00ff','#00ff00']) {
+        await page.evaluate(({hidden,colour}) => {
+          document.documentElement.classList.toggle('hide-probe-fish',hidden);
+          document.documentElement.style.setProperty('--probe-metal',colour);
+        },{hidden,colour});
+        const png = await page.screenshot({clip,scale:'device'});
+        const bitmap = await loadImage(png);
+        const ctx = createCanvas(bitmap.width,bitmap.height).getContext('2d');
+        ctx.drawImage(bitmap,0,0);
+        images.push(ctx.getImageData(0,0,bitmap.width,bitmap.height));
+      }
+    }
+  } finally {
+    await page.evaluate(() => {
+      document.documentElement.classList.remove('hide-probe-fish');
+      document.documentElement.style.removeProperty('--probe-metal');
+    });
+    await style.evaluate(node => node.remove());
+  }
+  const [visibleA,visibleB,bareA,bareB] = images;
+  const coverage = {metal:0,covered:0,exposed:0,barbCovered:0,eyeExposed:0};
+  // Chromium rasterizes the clip at the emulated physical pixel density.
+  const dpr = await page.evaluate(() => devicePixelRatio);
+  const contrast = (a,b,i) => Math.abs(a.data[i]-b.data[i]);
+  for (let y=0; y<bareA.height; ++y) for (let x=0; x<bareA.width; ++x) {
+    const i=(y*bareA.width+x)*4;
+    const full=contrast(bareA,bareB,i);
+    if (full<80) continue;
+    coverage.metal++;
+    const shown=contrast(visibleA,visibleB,i);
+    const sx=left+(x+.5)/dpr, sy=top+(y+.5)/dpr;
+    if (shown<=.10*full) {
+      coverage.covered++;
+      if (Math.hypot(sx-sample.tip[0],sy-sample.tip[1])<2) coverage.barbCovered++;
+    }
+    if (shown>=.55*full) {
+      coverage.exposed++;
+      if (Math.hypot(sx-sample.eye[0],sy-sample.eye[1])<2.3) coverage.eyeExposed++;
+    }
+  }
+  return coverage;
+}
+
 async function stage(page,card,age,delta) {
   // Native CSS animations have a compositor clock separate from Playwright's
   // JS clock. Seek only the presentation animations on both builds. The
@@ -147,8 +211,9 @@ async function capture(browser,url,version,fixture){
     prev=0;
     for(const age of [64,392,734,1032]){
       await stage(page,true,age,age-prev);prev=age;
-      const sample=await page.evaluate(measure,{card:true,fixture});sample.age=age;result.result.push(sample);
+      const sample=await page.evaluate(measure,{card:true,fixture,seated:version==='after'});sample.age=age;result.result.push(sample);
       if([64,392,734].includes(age))await page.screenshot({path:path.join(dest,'result-'+age+'.png'),scale:'css'});
+      if(version==='prior-card'||version==='after')sample.coverage=await measureHookCoverage(page,sample);
     }
     result.caught=await page.evaluate(id=>s.caught[id],fixture.id);
     assert.equal(result.caught,result.count+1);assert.deepEqual(errors,[]);
@@ -159,15 +224,19 @@ async function capture(browser,url,version,fixture){
 (async()=>{
   const browser=await chromium.launch({headless:true});
   try{
-    for(const [version,dir] of [['before',process.env.LANDING_BEFORE],['after',path.resolve(__dirname,'..')]]){
+    const sources=[['before',process.env.LANDING_BEFORE],['prior-card',process.env.CATCH_BEFORE],['after',path.resolve(__dirname,'..')]];
+    for(const [version,dir] of sources){
       const server=serve(path.resolve(dir));await new Promise((r,j)=>server.once('error',j).listen(0,'127.0.0.1',r));
       const entries=[];
       try{
-        for(const f of cases){
+        for(const f of (version==='prior-card'?cases.filter(f=>f.id==='kasago'):cases)){
           const rec=await capture(browser,'http://127.0.0.1:'+server.address().port+'/nushi-tsuri/',version,f);
           entries.push(rec);fs.writeFileSync(path.join(out,version,'measured.json'),JSON.stringify(entries,null,2));
         }
       }finally{await new Promise(r=>server.close(r));}
+      if(version==='prior-card')for(const sample of entries[0].result){
+        assert.ok(sample.coverage.covered<2,'baseline hook should be entirely in front of the fish');
+      }
       if(version==='after')for(const fish of entries){
         assert.equal(fish.fight.pose,'swim',fish.id+' must reach the lift with its side visible');
         for(const sample of [fish.fight,...fish.landing,...fish.result]){
@@ -175,7 +244,12 @@ async function capture(browser,url,version,fixture){
           assert.ok(sample.visible,info+' hook must be visible');
           assert.ok(sample.onScreen,info+' metal tip and eye must be inside the visible scene');
           assert.ok(sample.eyeLine<1,info+' line must finish at the hook eye');
-          assert.ok(sample.tipJaw<1,info+' tip must remain in the measured jaw area');
+          assert.ok(sample.entryJaw<1,info+' metal must enter at the measured lip');
+          if(sample.phase==='result'){
+            const c=sample.coverage;
+            assert.ok(c.covered>=.10*c.metal && c.barbCovered>=2,info+' the jaw must hide the barb: '+JSON.stringify(c));
+            assert.ok(c.exposed>=.10*c.metal && c.eyeExposed>=2,info+' the eye and shaft must remain visible: '+JSON.stringify(c));
+          }
           if(sample.inkGap!==null)assert.ok(sample.inkGap<1,info+' metal must touch painted fish');
         }
       }

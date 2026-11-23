@@ -110,7 +110,9 @@ jobs:
         run: |
           git fetch --depth=1 origin 011fc9cd62b6e420add592e192790db906e4e1f5
           git worktree add --detach /tmp/landing-before 011fc9cd62b6e420add592e192790db906e4e1f5
-          LANDING_BEFORE=/tmp/landing-before/nushi-tsuri node browser-landing-hook.cjs
+          git fetch --depth=1 origin 51e6091da19d7a3286b98cce0933f4b97282aced
+          git worktree add --detach /tmp/catch-before 51e6091da19d7a3286b98cce0933f4b97282aced
+          LANDING_BEFORE=/tmp/landing-before/nushi-tsuri CATCH_BEFORE=/tmp/catch-before/nushi-tsuri node browser-landing-hook.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
