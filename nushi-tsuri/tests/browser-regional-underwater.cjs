@@ -1,0 +1,93 @@
+const assert=require('node:assert/strict');
+const path=require('node:path');
+const {chromium}=require('playwright');
+const {seed,saveKey}=require('./game-harness.cjs');
+const enter=require('./browser-start-adventure.cjs');
+const {layout}=require('../village-save-migration.js');
+
+// Same family of water, two different places: test actual rendered pixels,
+// not just a data attribute. The quiet cast stays idle while waves continue.
+module.exports=async function regionalWater(url,executablePath) {
+  const browser=await chromium.launch({headless:true,executablePath,args:['--no-sandbox']});
+  const banks=[
+    {region:'harbor',mapRegion:'village',x:134,y:102,direction:'right',expected:'sea-shallow',mode:'gauge'},
+    {region:'reef',mapRegion:'coast',x:95,y:84,direction:'up',expected:'coast-reef-shallow',mode:'nushi',boatActive:true},
+  ];
+  const paintedHashes=[];
+  try {
+    for(const bank of banks) {
+      const context=await browser.newContext({viewport:{width:844,height:390},deviceScaleFactor:1.875,
+        isMobile:true,hasTouch:true,locale:'ja-JP',serviceWorkers:'block'});
+      const saved={...seed(),...bank,villageLayoutVersion:layout,hp:100,maxHp:100,gameMinutes:720,soundEnabled:false,
+        ownedVehicles:['canoe'],equipment:{vehicle:'canoe'},selectedBait:'worm',baits:{worm:20},fightMode:bank.mode};
+      await context.addInitScript(({saved,key})=>{
+        if(!localStorage.getItem(key))localStorage.setItem(key,JSON.stringify(saved));
+        localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));
+      },{saved,key:saveKey});
+      const page=await context.newPage(),errors=[];
+      page.on('pageerror',error=>errors.push(error.message));
+      try {
+        await page.goto(url);await enter(page,true,{slot:1,isNew:false});
+        if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').tap();
+        assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.id),bank.expected);
+        await page.locator('#action').tap();
+        await page.waitForFunction(()=>Number(document.querySelector('.scenery-motion[data-for=castBackdrop]')?.dataset.waterSamples)>0);
+        const wave=()=>page.evaluate(()=>{
+          const canvas=document.querySelector('.scenery-motion[data-for=castBackdrop]');
+          const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+          let bright=0,hash=5381;
+          for(let i=3;i<pixels.length;i+=4) {if(pixels[i])bright++;hash=Math.imul(hash^pixels[i],33);}
+          return {bright,hash,frame:canvas.dataset.waterFrame,phase:battle.phase,money:s.money,bait:s.baits.worm};
+        });
+        const a=await wave(); assert.ok(a.bright>0);assert.equal(a.phase,'prep');
+        await page.waitForFunction(old=>document.querySelector('.scenery-motion[data-for=castBackdrop]').dataset.waterFrame!==old,a.frame);
+        const b=await wave();assert.notEqual(b.hash,a.hash);assert.equal(b.phase,'prep');
+        assert.equal(b.money,a.money);assert.equal(b.bait,a.bait);
+        await page.emulateMedia({reducedMotion:'reduce'});
+        await page.waitForFunction(()=>{
+          const c=document.querySelector('.scenery-motion[data-for=castBackdrop]');
+          return !c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((n,i)=>i%4===3&&n);
+        });
+        await page.emulateMedia({reducedMotion:'no-preference'});
+        await page.waitForFunction(()=>{
+          const c=document.querySelector('.scenery-motion[data-for=castBackdrop]');
+          return c.getContext('2d').getImageData(0,0,c.width,c.height).data.some((n,i)=>i%4===3&&n);
+        });
+        // Enter real cast via touch, with deterministic fish choice and bite
+        // timing; never set the scene class or call the background renderer.
+        await page.locator('#wait').tap();await page.locator('#beginCast').tap();
+        await page.waitForFunction(()=>battle?.phase==='casting'||!!battle?.cast);
+        await page.locator('#pull').tap();
+        await page.waitForFunction(()=>battle?.f&&battle.phase!=='cast-flight');
+        await page.evaluate(()=>{battle.biteAt=Date.now();battle.biteShownAt=null;syncBitePhase();});
+        await page.locator('#pull').tap();
+        await page.waitForFunction(region=>{
+          const c=document.querySelector('#underwaterPixels');
+          const phase=battle?.phase;
+          return phase==='fight'&&c.dataset.locale===region&&c.dataset.travelReady==='true'&&
+            document.querySelector('.scenery-motion[data-for=underwaterPixels]')?.dataset.scene.endsWith('-'+region);
+        },bank.region);
+        assert.equal(await page.locator('#fishScene').evaluate(el=>el.classList.contains('nushi-water')),false);
+        paintedHashes.push(await page.locator('#underwaterPixels').evaluate(canvas=>{
+          const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
+          let hash=5381;
+          for(let i=0;i<pixels.length;i+=4) {if(pixels[i+3]!==255)throw Error('unpainted background');hash=Math.imul(hash^pixels[i]^pixels[i+1],33);}
+          return hash;
+        }));
+        if(process.env.REGIONAL_WATER_EVIDENCE)
+          await page.screenshot({path:path.join(process.env.REGIONAL_WATER_EVIDENCE,bank.region+'.png'),scale:'css'});
+        assert.deepEqual(errors,[]);
+      } finally {await context.close();}
+    }
+    assert.notEqual(paintedHashes[0],paintedHashes[1]);
+    console.log('Regional underwater phone: harbor and reef pixels differ; idle wave motion/reduce/resume and both fight modes passed.');
+  } finally { await browser.close(); }
+};
+if(require.main===module)(async()=>{
+  if(process.argv[2])return module.exports(process.argv[2],process.env.CHROMIUM);
+  const host=require('./browser-reference-village-evidence.cjs').server();
+  await new Promise((resolve,reject)=>host.once('error',reject).listen(0,'127.0.0.1',resolve));
+  try {
+    await module.exports('http://127.0.0.1:'+host.address().port+'/nushi-tsuri/',process.env.CHROMIUM);
+  } finally {await new Promise(resolve=>host.close(resolve));}
+})().catch(error=>{console.error(error);process.exitCode=1;});

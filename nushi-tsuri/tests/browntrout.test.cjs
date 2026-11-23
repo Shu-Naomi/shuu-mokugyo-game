@@ -1,9 +1,10 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),F=require('../fish-additions.js'),A=require('../fish-art.js');
 const {findRoute}=require('./water-routes-v220.cjs'),{runFight}=require('./nushi-playability-v228.cjs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 test('brown trout is a new, unique regional fish, not another island duplicate',()=>{
- const a=boot();try{assert.equal(read(a.window,'fish.length'),75);assert.equal(read(a.window,"fish.filter(f=>f.id==='browntrout').length"),1);assert.equal(read(a.window,'fishEncyclopediaData.browntrout.number'),65);assert.equal(read(a.window,"petCatalog.find(f=>f.id==='browntrout').waterLabel"),'淡水');assert.deepEqual(Object.entries(F.pools).filter(([,p])=>p.browntrout).map(([id])=>id),['mountain-highPond-mid','mountain-highPond-deep']);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
+ const a=boot();try{assert.equal(read(a.window,'fish.length'),roster.total);assert.equal(read(a.window,"fish.filter(f=>f.id==='browntrout').length"),1);assert.equal(read(a.window,'fishEncyclopediaData.browntrout.number'),65);assert.equal(read(a.window,"petCatalog.find(f=>f.id==='browntrout').waterLabel"),'淡水');assert.deepEqual(Object.entries(F.pools).filter(([,p])=>p.browntrout).map(([id])=>id),['mountain-highPond-mid','mountain-highPond-deep']);assert.deepEqual(a.errors,[]);}finally{a.dispose();}
 });
 for(const mode of ['gauge','nushi'])test('walk to the pond, ordinary encounter, single catch, boarding and legacy save reload: '+mode,()=>{
  const a=boot({...seed(),mapRegion:'mountainPond',...M.regions.mountainPond.entry,hp:100,selectedRod:'starGazer',ownedRods:['starGazer'],selectedHook:'medium',selectedBait:'liveMinnow',baits:{liveMinnow:20},fightMode:mode}),w=a.window;let saved,uid;

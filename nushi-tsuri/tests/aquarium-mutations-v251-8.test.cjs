@@ -1,3 +1,4 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto'),fs=require('node:fs'),vm=require('node:vm');
 const M=require('../aquarium-mutations.js'),P=require('../pet-life.js'),A=require('../aquarium-life.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
@@ -117,7 +118,7 @@ test('the title is read-only and Start saves a seed before catching up an eligib
  try{
   assert.equal(w.localStorage.getItem(saveKey),JSON.stringify(initial));assert.equal(read(w,'s.petLife.eggs.length'),0);
   w.crypto.getRandomValues=bytes=>{bytes.fill(1);return bytes;};require('./title-test-flow.cjs')(w);
-  const saved=JSON.parse(w.localStorage.getItem(saveKey));assert.equal(saved.petLife.version,6);assert.equal(saved.petLife.mutationSeed,'01'.repeat(16));assert.equal(saved.petLife.eggs.length,1);assert.equal(saved.petLife.eggs[0].mutation.checked,true);assert.equal(read(w,'fish.length'),75);assert.deepEqual(a.errors,[]);
+  const saved=JSON.parse(w.localStorage.getItem(saveKey));assert.equal(saved.petLife.version,6);assert.equal(saved.petLife.mutationSeed,'01'.repeat(16));assert.equal(saved.petLife.eggs.length,1);assert.equal(saved.petLife.eggs[0].mutation.checked,true);assert.equal(read(w,'fish.length'),roster.total);assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}
 });
 test('a failed first seed save blocks entry and spawning, preserves the stored adventure and retries with the same seed',()=>{

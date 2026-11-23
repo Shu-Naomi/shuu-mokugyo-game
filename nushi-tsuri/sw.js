@@ -1,10 +1,17 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-shiokakure-display-252-85";
+const CACHE_NAME = "nushi-tsuri-v252-canal-crustaceans-water-252-90";
 
-importScripts("./village-precache-252-85.js");
+importScripts("./village-precache-252-90.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
+  "./assets/fish-tenagaebi.png",
+  "./assets/fish-zarigani.png",
+  "./assets/fish-aouo.png",
+  "./assets/fish-sougyo.png",
+  "./assets/fish-maanago.png",
+  "./assets/fish-gonzui.png",
+  "./assets/fish-itou.png",
   "./assets/fish-nishikigoi.png",
   "./assets/fish-mejina.png",
   "./assets/fish-hoshikagami.png",
@@ -96,7 +103,7 @@ const CORE_ASSETS = [
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
   "./world-life.js?v=252-74",
-  "./fish-additions.js?v=252-82",
+  "./fish-additions.js?v=252-90",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
   "./assets/fish-himemasu-v238.png",
@@ -149,7 +156,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-fresh-v252-25.webp",
   "./assets/aquarium-salt-v252-25.webp",
   "./tackle-balance.js?v=252-71",
-  "./fishing-duel.js?v=252-82",
+  "./fishing-duel.js?v=252-90",
   "./fishing-duel.css?v=252-82",
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=252-75",
@@ -202,8 +209,8 @@ const CORE_ASSETS = [
   "./assets/ui-lantern-v252-28.svg",
   "./assets/ui-paw-v252-28.svg",
   "./assets/ui-heart-v252-28.svg",
-  "./aquarium-life.js?v=252-82",
-  "./fish-motion.js?v=252-82",
+  "./aquarium-life.js?v=252-90",
+  "./fish-motion.js?v=252-90",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-84",
   "./rival-anglers.js?v=252-55",
@@ -282,6 +289,17 @@ const CORE_ASSETS = [
   "./assets/cast-sam-pond-day-soft-v78.jpg",
   "./assets/cast-sam-pond-evening-v78.jpg",
   "./assets/cast-sam-pond-night-v78.jpg",
+  "./assets/underwater-region-backwater.webp",
+  "./assets/underwater-region-canal.webp",
+  "./assets/underwater-region-cave.webp",
+  "./assets/underwater-region-cove.webp",
+  "./assets/underwater-region-current.webp",
+  "./assets/underwater-region-harbor.webp",
+  "./assets/underwater-region-marsh.webp",
+  "./assets/underwater-region-pool.webp",
+  "./assets/underwater-region-reef.webp",
+  "./assets/underwater-region-stream.webp",
+  "./assets/underwater-region-wetland.webp",
   "./assets/underwater-lake-shallow-v64.jpg",
   "./assets/underwater-lake-mid-v64.jpg",
   "./assets/underwater-lake-deep-v64.jpg",

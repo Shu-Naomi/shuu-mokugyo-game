@@ -116,7 +116,7 @@
         target:[.5+headOffset*lerp(turn[from].xScale,turn[to].xScale,mix),
           .62+lerp(turn[from].yOffset,turn[to].yOffset,mix)],beat:0,from,to,mix};
     }
-    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?(native[id]?.dense?25:7):0,flip:!!(jaw&&native[id]?.mouthFlip),jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
+    if(cells===3){const jaw=Math.min(2,index);return {cell:jaw&&id!=="zarigani"?(native[id]?.dense?25:7):0,flip:!!(jaw&&native[id]?.mouthFlip),jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
     return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:clock%8/8*Math.PI*2};
   }
   function hookPose(id,cells,frame){
@@ -365,7 +365,8 @@
   }
   function draw(ctx,image,id,cells=8,frame=0,resolveImage,motion){
     if(!sprites[id])return false;
-    const p=pose(id,cells,frame);
+    const poseData=pose(id,cells,frame);
+    const p=id==="zarigani"&&motion?.tailCurl&&poseData.heading===undefined?{...poseData,cell:7}:poseData;
     // Wait for the requested original rather than cropping the wrong image.
     if(native[id]&&(!resolveImage||!resolveImage(cellAsset(id,p.cell))||
       p.heading!==undefined&&(!resolveImage(cellAsset(id,pose(id,7,p.from).cell))||!resolveImage(cellAsset(id,pose(id,7,p.to).cell)))))return false;
