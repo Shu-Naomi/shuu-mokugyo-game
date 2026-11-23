@@ -52,7 +52,7 @@
   const data={name,asset,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
     trails:rawTrails.map(polygon),trailRadii:[4.5,4.1,2.1,4.1,3.0,3.2,2.8,2.8],
     bridges,bankRadius:0,walls:[mill,...paddies,...bridgeRails],landmarks:[],
-    notes:{canalCurrent:'水車の流れ。岸際のフナ、底を探るドジョウ、深場のナマズを狙おう。',canalBackwater:'草陰のよどみ。浅場はドジョウとフナ、深場はナマズが多い。'}};
+    notes:{canalCurrent:'水車の流れ。岸際のフナ、底を探るドジョウ、深場のナマズを狙おう。',canalBackwater:'草陰のよどみ。浅場はドジョウとフナ。草陰のザリガニはミミズとハリ小で。深場はナマズが多い。'}};
   const names={canalCurrent:'水車下の流れ',canalBackwater:'草陰のよどみ'};
   const populations={
     canalCurrent:[{funa:.65,dojo:.30,namazu:.05},{funa:.55,dojo:.25,namazu:.20},{funa:.25,dojo:.20,namazu:.55}],

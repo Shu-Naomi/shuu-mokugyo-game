@@ -85,6 +85,12 @@
       g=(g*saturation+gray*(1-saturation))*brightness;
       b=(b*saturation+gray*(1-saturation))*Math.min(1,brightness+.05);
     }
+    // Regional plates share a bottom layout across depth bands: light falls off,
+    // but landmarks stay in place rather than jumping when changing depth.
+    if(definition.region) {
+      const scale=definition.depth==='deep'?.8:definition.depth==='mid'?.91:1;
+      r*=scale;g*=scale;b*=.3+.7*scale;
+    }
     graded[0]=r;graded[1]=g;graded[2]=b;return graded;
   }
   const makeCanvas=(w,h)=>{const c=document.createElement('canvas');c.width=w;c.height=h;return c;};
@@ -101,7 +107,7 @@
       }
     }
     const budget=Math.min(80,anchors.length);
-    const alpha=(quiet?.065:.09)*(env.weather==='rain'?.7:env.weather==='cloudy'?.85:1);
+    const alpha=(quiet?.065:style==='sea'?.096:style==='river'?.096:.09)*(env.weather==='rain'?.7:env.weather==='cloudy'?.85:1);
     const color=grade(192,222,236,'water',env,definition).slice();
     for(let n=0;n<budget;n++) {
       const {x,y,row}=anchors[Math.floor(n*anchors.length/budget)],depth=(y-part.top)/(part.bottom-part.top);
@@ -110,7 +116,7 @@
         const step=(index+row*2)%8,phase=index*Math.PI/4+row*.55,flow=style==='river'||style==='sea';
         // Flowing crests fade fully before looping back. Still-water crests
         // move by only one dot and keep a fixed, straight silhouette.
-        const dx=flow?Math.round(step*.65):Math.round(Math.sin(phase));
+        const dx=flow?Math.round(step*(style==='sea'?1.3:.95)):Math.round(Math.sin(phase));
         const dy=style==='sea'?Math.round(step*.35):0;
         const opacity=flow?Math.sin(step*Math.PI/7)**2:.55+.45*(1+Math.cos(phase))/2;
         frame.push({rect:[x+dx*pixel,y+dy*pixel,wide*pixel,pixel],opacity});
@@ -355,7 +361,7 @@
     const active=()=>[...sessions.values()].filter(s=>s.scene&&visible(s.canvas)&&animationVisible(s.canvas));
     function stop() {if(frame!==null)cancelFrame(frame);frame=null;}
     function wake() {
-      if(disposed||isHidden()||frame!==null||reducedMotion()||!active().some(s=>s.scene.parts.some(p=>p.motion||p.effect)))return;
+      if(disposed||isHidden()||frame!==null||reducedMotion()||!active().some(s=>s.scene.parts.some(p=>p.motion||p.effect||p.waves)))return;
       frame=requestFrame(tick);
     }
     function tick() {

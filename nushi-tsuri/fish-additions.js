@@ -271,6 +271,28 @@
    tip:'朝夕の星見渓流で、活き小魚とハリ大を淵まで投げよう。スプーンにも反応する。流心への長い走りが緩んだら寄せよう。',
    intro:'淵の底で大きな口が開いた。イトウだ！',lengths:[19,31,45,61,77,96,120],baitWeights:{liveMinnow:4.1,river:1.5,worm:1.1,shrimp:.35}}
  );
+ Object.assign(art,{
+  tenagaebi:{asset:'assets/fish-tenagaebi.png',
+   boxes:[[6,11,91,33],[113,11,77,33],[222,11,58,33],[310,7,81,42],[21,67,58,34],[111,67,77,34],[204,67,91,34],[311,67,86,33]],
+   heads:[[.6484,.4545],[.6494,.4545],[.6552,.4545],[.4938,.6429],[.3276,.4412],[.3377,.4412],[.3407,.4412],[.6279,.4545]],scales:{1:1.16,2:1.4,4:1.4,5:1.16},continuousBody:true},
+  zarigani:{asset:'assets/fish-zarigani.png',
+   boxes:[[7,11,90,33],[114,11,76,33],[222,11,58,33],[310,7,81,42],[21,67,58,34],[111,67,76,34],[204,67,90,34],[312,67,85,33]],
+   heads:[[.6444,.4545],[.6447,.4545],[.6552,.4545],[.4938,.6429],[.3276,.4412],[.3421,.4412],[.3444,.4412],[.6235,.4545]],scales:{2:1.12,4:1.12},continuousBody:true},
+ });
+ definitions.push(
+  {id:'tenagaebi',name:'テナガエビ',base:'dojo',number:81,price:112,resistance:47,band:'small',hook:'small',
+   scientific:'Macrobrachium nipponense',habitats:['river'],rarity:2,label:'石際の長いハサミ',
+   ecology:'細長いハサミ脚と触角を持つエビの仲間。',
+   locations:'村の川・岸際',time:'いつでも',rods:['youngBamboo'],baits:['worm','river'],
+   tip:'ハリ小で川の岸際へ。ウキが小さく揺れても待ち、横に走った瞬間に合わせよう。',
+   intro:'長いハサミを広げたテナガエビだ！',lengths:[2,4,6,8,10,13,17],baitWeights:{worm:2.6,river:2.1}},
+  {id:'zarigani',name:'ザリガニ',base:'dojo',number:82,price:138,resistance:52,band:'small',hook:'small',
+   scientific:'Procambarus clarkii',habitats:['river','lake'],rarity:2,label:'草陰の赤いハサミ',
+   ecology:'太いハサミと扇形の尾を持つ。尾を腹側へ曲げ、後ろ向きに跳ねる。',
+   locations:'田園の用水路・草陰のよどみ（浅場）',time:'いつでも',rods:['youngBamboo'],baits:['worm'],
+   tip:'草陰のよどみでミミズとハリ小を岸際へ。前アタリは待ち、後ろへ跳ねたら糸を送り、止まったら巻こう。',
+   intro:'赤いハサミを上げるザリガニだ！',lengths:[2,4,6,8,10,12,15],baitWeights:{worm:3.0,river:1.25}}
+ );
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -315,6 +337,7 @@
  // Some mountain spots share their original weight table. Keep the existing
  // populations intact, then copy only spots with new local residents.
  const localResidents={
+  'river-shallow':{tenagaebi:.19},'mountain-canalBackwater-shallow':{zarigani:.27},
   'lake-deep':{aouo:.05},'mountain-marsh-mid':{sougyo:.008},'sea-deep':{maanago:.16},
   'coast-reef-mid':{gonzui:.15},'mountain-stream-deep':{itou:.025},
   'mountain-marsh-shallow':{nishikigoi:.21,nigoi:.14},'offshore-west-mid':{mejina:.28},
@@ -409,6 +432,13 @@
    fightProfiles[id]={intro:fightProfiles[id].intro,moods:[
     {id:'run',name:run,icon:'➜',weight:.48,min:900,max:1450,motion,speedX:speed,speedY:motion==='deep'?.8:.35,tension,release:5.5,reel:.64,scale:1,frameEvery:2,danger:true,hold:run+'！ Aを離そう。',loose:run+'間は糸を送ろう。'},
     {id:'rest',name:rest,icon:'◎',weight:.52,min:1150,max:1650,motion:'rest',speedX:.3,speedY:.12,tension:1.3,release:5.4,reel:1.8,scale:1,frameEvery:3,calm:true,hold:'糸が緩んだ。今のうちに寄せよう。',loose:rest+'。Aで寄せよう。'}
+   ]};
+  }
+  for(const id of ['tenagaebi','zarigani']){
+   const cray=id==='zarigani', run=cray?'尾を曲げて後ろへ跳ねる':'横へすっと走る';
+   fightProfiles[id]={intro:fightProfiles[id].intro,moods:[
+    {id:'crustacean-dart',name:run,icon:'➜',weight:.36,min:430,max:650,motion:cray?'tailflip':'steady',speedX:cray?3.25:1.8,speedY:.25,tension:cray?6:4.25,release:6.1,reel:.54,scale:1,frameEvery:2,danger:true,hold:run+'！ Aを離そう。',loose:'動きが止まるまで待とう。'},
+    {id:'rest',name:'底で静止する',icon:'◎',weight:.64,min:1000,max:1490,motion:'rest',speedX:.18,speedY:.10,tension:1.1,release:5.4,reel:1.7,scale:1,frameEvery:3,calm:true,hold:'止まった！ 今のうちに寄せよう。',loose:'糸が緩んだ。Aでそっと寄せよう。'}
    ]};
   }
   for(const spot of fishingSpots)if(pools[spot.id])Object.assign(spot.weights,pools[spot.id]);

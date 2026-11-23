@@ -6,7 +6,7 @@ const path = require('node:path');
 const vm = require('node:vm');
 const { requireGitHubCI, inspectRelease, assertReleaseUpgrade, resourceFor, candidateOutcome, cacheUpgradeStorageFixture, namedCacheInventory, assertCacheRetirement, releaseReady, controlledBy } = require('./browser-cache-upgrade-evidence.cjs');
 const root = path.resolve(__dirname, '..');
-const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css', 'village-precache-252-88.js'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
+const files = Object.fromEntries(['index.html', 'sw.js', 'compact-ui.css', 'village-precache-252-90.js'].map(name => [name, fs.readFileSync(path.join(root, name), 'utf8')]));
 const current = inspectRelease(files);
 // Deliberately synthetic historical CSS-only fixture, never production evidence.
 const historical = {
@@ -23,9 +23,9 @@ const previous = {
 
 test('production inspection requires supplied generated manifest and forbids historical retirement evidence',()=>{
  assert.equal(current.cachePolicy,'preserve-old-tabs');
- const missing={...files};delete missing['village-precache-252-88.js'];
+ const missing={...files};delete missing['village-precache-252-90.js'];
  assert.throws(()=>inspectRelease(missing),/supplied explicitly/);
- assert.throws(()=>inspectRelease({...files,'village-precache-252-88.js':files['village-precache-252-88.js'].replace(current.cssUrl,'./missing.css')}),/actual install list/);
+ assert.throws(()=>inspectRelease({...files,'village-precache-252-90.js':files['village-precache-252-90.js'].replace(current.cssUrl,'./missing.css')}),/actual install list/);
  assert.throws(()=>assertReleaseUpgrade(previous,files),/historical CSS-only retirement runner/);
  assert.throws(()=>assertCacheRetirement({},current),/production preserves old caches/);
 });

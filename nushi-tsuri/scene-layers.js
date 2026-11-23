@@ -238,12 +238,27 @@
     );
     return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,objectPosition:harbor?'center 20%':'center bottom',parts};
   }
-  function underwater(zone,depth,flatfish) {
+  const underwaterRegions = Object.freeze({
+    harbor:'harbor', pond:'pool', 'coast-sand':'cove', 'coast-reef':'reef',
+    'offshore-cove':'cove', 'offshore-west':'reef', 'offshore-east':'current',
+    'mountain-stream':'stream', 'mountain-pond':'pool', 'mountain-highPond':'pool',
+    'mountain-marsh':'marsh', 'mountain-highMarsh':'marsh', 'mountain-underground':'cave',
+    'mountain-wetPond':'wetland', 'mountain-wetCreek':'stream', 'mountain-wetMarsh':'wetland',
+    'mountain-canalCurrent':'canal', 'mountain-canalBackwater':'backwater',
+  });
+  function underwaterRegion(battle) {
+    const { practice, offshoreType, mountainType, coastType, castLocale } = battle || {};
+    const candidates = [practice && 'pond', offshoreType && 'offshore-'+offshoreType,
+      mountainType && 'mountain-'+mountainType, coastType && 'coast-'+coastType, castLocale];
+    return candidates.map(key=>Object.hasOwn(underwaterRegions,key)?underwaterRegions[key]:null).find(Boolean)||'';
+  }
+  function underwater(zone,depth,flatfish,region) {
     zone=['lake','river','sea'].includes(zone)?zone:'lake';
     depth=['shallow','mid','deep'].includes(depth)?depth:'shallow';
     return {
-      id:`underwater-${zone}-${depth}-${!!flatfish}`,
-      source:flatfish?'assets/underwater-sea-sand-flatfish-v97.jpg':`assets/underwater-${zone}-${depth}-v${zone==='sea'?65:64}.jpg`,
+      id:`underwater-${zone}-${depth}-${!!flatfish}${region?'-'+region:''}`,
+      region, depth,
+      source:region?`assets/underwater-region-${region}.webp`:flatfish?'assets/underwater-sea-sand-flatfish-v97.jpg':`assets/underwater-${zone}-${depth}-v${zone==='sea'?65:64}.jpg`,
       units:[100,100],underwater:true,
       parts:[
         box('water-column','water',0,0,100,75,{effect:'shafts'}),
@@ -267,7 +282,8 @@
     if(id==='home-interior'||id==='room-player-home') return room;
     if(id.startsWith('surface-')) return surface(id.slice(8),env.period);
     if(id.startsWith('underwater-')) {
-      const [,zone,depth,flatfish]=id.split('-'); return underwater(zone,depth,flatfish==='true');
+      const [,zone,depth,flatfish,region]=id.split('-');
+      return underwater(zone,depth,flatfish==='true',Object.values(underwaterRegions).includes(region)?region:'');
     }
     const name=rooms[id.replace(/^room-/,'')] || 'fishing-inn';
     return {id,source:name==='fishing-inn'?'assets/layered-v163/fishing-inn-master.png':`assets/interior-${name}-v55.png`,units:[100,100],indoor:true,
@@ -280,7 +296,7 @@
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
     'underwater-sea-deep-true'];
   function assets() {
-    const urls=new Set();
+    const urls=new Set(Object.values(underwaterRegions).map(region=>`assets/underwater-region-${region}.webp`));
     for(const id of ids) for(const period of ['dawn','morning','day','evening','night']) {
       const d=get(id,{period}); urls.add(d.source); if(d.underlay)urls.add(d.underlay);
       for(const edit of d.edits||[])urls.add(edit.source);
@@ -294,5 +310,5 @@
   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
   const propSolid=(x,y,env)=>!referenceEnabled(env)&&(trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
     shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom));
-  return {get,ids,assets,propSolid,referenceDefinition};
+  return {underwaterRegion,get,ids,assets,propSolid,referenceDefinition};
 });
