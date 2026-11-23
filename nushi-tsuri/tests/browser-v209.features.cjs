@@ -1,4 +1,5 @@
 // Exercise the new artwork and care/recipe controls in the real browser.
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const {pressProduct}=require('./compact-ui-helpers.cjs');
@@ -194,7 +195,7 @@ module.exports=async function features(url,mobile){
       }return results;
     });
     const fishCount=await page.evaluate(()=>fish.length);
-    assert.equal(fishCount,75);
+    assert.equal(fishCount,roster.total);
     assert.equal(fishResult.length,fishCount*9*2);
     for(const r of fishResult){assert.equal(r.art,r.id);assert.ok(r.opaque>3500,r.id+' painted '+r.heading);assert.ok(r.hook.every(Number.isFinite));
       if(r.tallFins!==null)assert.equal(r.tallFins,r.id==='shirogisu'?2:1,r.id+' actual dorsal silhouette');}

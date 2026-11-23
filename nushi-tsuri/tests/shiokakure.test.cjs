@@ -1,3 +1,4 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const H=require('../shiokakure.js'),I=require('../offshore-island.js'),R=require('../regional-nushi.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
@@ -59,11 +60,11 @@ for(const mode of ['gauge','nushi'])for(const tier of [.5,.999999])test('shy bos
  const r=runFight({id:'shiokakure',mode,tier,rod:'shoreReed',delayMs:600,waterFxSeed:301,gaugeThreshold:45,gaugeResumeThreshold:20});
  assert.deepEqual(r.errors,[]);assert.equal(r.phase,'landing',JSON.stringify(r));assert.ok(r.seconds<180&&r.maxTension<100,JSON.stringify(r));
 });
-test('old save, hidden dex, unique 67, crowns and 66 ordinary fish',()=>{
+test('old save, hidden dex, unique 67, crowns and the complete ordinary fish roster',()=>{
  const app=boot(seed()),w=app.window;
  try{
-  assert.equal(read(w,'fish.length'),75);assert.equal(read(w,'fish.find(f=>fishEncyclopediaData[f.id].number===67).id'),'shiokakure');assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),68);
-  assert.equal(read(w,'new Set(fish.map(f=>fishEncyclopediaData[f.id].number)).size'),75);
+  assert.equal(read(w,'fish.length'),roster.total);assert.equal(read(w,'fish.find(f=>fishEncyclopediaData[f.id].number===67).id'),'shiokakure');assert.equal(read(w,'fish.filter(f=>!ShuRegional.legendary(f.id)).length'),roster.ordinary);
+  assert.equal(read(w,'new Set(fish.map(f=>fishEncyclopediaData[f.id].number)).size'),roster.total);
   assert.equal(read(w,'fishEncyclopediaData.shiokakure.number'),67);
   assert.equal(read(w,'fishdexIsKnown(fish.find(f=>f.id==="shiokakure"))'),false);
   assert.equal(read(w,'petCatalog.find(f=>f.id==="shiokakure").waterLabel'),'海水');

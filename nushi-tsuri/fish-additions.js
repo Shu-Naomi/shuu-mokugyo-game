@@ -222,6 +222,55 @@
    ecology:'沿岸の岩礁域で海藻や小動物を食べる。青灰色の丸みを帯びた体に、鱗の暗色点が並ぶ。',locations:'潮風島・西の磯（中層）',time:'いつでも',rods:['shoreReed'],baits:['smallShrimp','shrimp'],tip:'西の磯で小エビとハリ中を中層へ。',intro:'丸い魚体が岩のきわで身を返す！',lengths:[9,16,23,30,38,47,60],baitWeights:{smallShrimp:2.8,shrimp:2.5,shell:1.3}}
  );
  Object.assign(art,{"nishikigoi":{"asset":"assets/fish-nishikigoi.png","boxes":[[5,11,90,33],[112,11,76,33],[222,11,56,33],[335,11,30,33],[22,67,56,33],[112,67,76,33],[205,67,90,33],[305,67,90,33]],"heads":[[0.989,0.606],[0.987,0.606],[0.982,0.606],[0.5,0.606],[0.0,0.606],[0.0,0.606],[0.0,0.606],[0.989,0.606]],"continuousBody":true},"mejina":{"asset":"assets/fish-mejina.png","boxes":[[5,6,90,38],[112,6,76,38],[222,6,56,38],[335,6,30,38],[22,62,56,38],[112,62,76,38],[205,62,90,38],[305,62,90,38]],"heads":[[0.989,0.658],[0.987,0.658],[0.982,0.658],[0.5,0.658],[0.0,0.658],[0.0,0.658],[0.0,0.658],[0.989,0.658]],"continuousBody":true},"hoshikagami":{"asset":"assets/fish-hoshikagami.png","boxes":[[5,11,90,33],[112,11,76,33],[222,11,56,33],[335,11,30,33],[22,67,56,33],[112,67,76,33],[205,67,90,33],[305,67,90,33]],"heads":[[0.989,0.606],[0.987,0.606],[0.982,0.606],[0.5,0.606],[0.0,0.606],[0.0,0.606],[0.0,0.606],[0.989,0.606]],"continuousBody":true}});
+ Object.assign(art,{
+  aouo:{asset:'assets/fish-aouo.png',
+   boxes:[[3,8,260,108],[284,3,229,118],[579,12,172,100],[874,4,113,115],[47,136,172,100],[284,127,229,118],[535,132,260,108],[801,132,260,108]],
+   heads:[[0.98654,0.60648],[0.98472,0.63983],[0.96802,0.675],[0.5,0.72609],[0.03198,0.675],[0.01528,0.63983],[0.01346,0.60648],[0.98269,0.66204]],continuousBody:true},
+  sougyo:{asset:'assets/fish-sougyo.png',
+   boxes:[[3,7,260,95],[286,3,226,104],[580,4,169,101],[885,8,91,93],[48,114,169,101],[286,113,226,104],[535,117,260,95],[801,118,260,93]],
+   heads:[[0.98654,0.62632],[0.98451,0.65865],[0.96746,0.72772],[0.5,0.67204],[0.03254,0.72772],[0.01549,0.65865],[0.01346,0.62632],[0.98269,0.71505]],continuousBody:true},
+  maanago:{asset:'assets/fish-maanago.png',
+   boxes:[[3,21,260,40],[286,19,226,44],[588,12,153,57],[894,3,74,76],[56,94,153,57],[286,101,226,44],[535,103,260,40],[801,102,260,42]],
+   heads:[[0.99038,0.5875],[0.98894,0.625],[0.97712,0.86842],[0.47973,0.88816],[0.02288,0.86842],[0.01106,0.625],[0.00962,0.5875],[0.99038,0.86905]],continuousBody:true},
+  gonzui:{asset:'assets/fish-gonzui.png',
+   boxes:[[3,7,260,96],[286,3,226,105],[583,3,164,105],[882,8,98,95],[51,114,164,105],[286,114,226,105],[535,118,260,96],[801,116,260,101]],
+   heads:[[0.95577,0.63021],[0.94912,0.6619],[0.8628,0.64286],[0.4949,0.72105],[0.1372,0.64286],[0.05088,0.6619],[0.04423,0.63021],[0.94808,0.64851]],continuousBody:true},
+  itou:{asset:'assets/fish-itou.png',
+   boxes:[[3,10,260,86],[286,6,226,94],[580,3,169,101],[886,11,90,84],[48,110,169,101],[286,113,226,94],[535,117,260,86],[801,116,260,88]],
+   heads:[[0.98654,0.62209],[0.98451,0.65426],[0.97337,0.69802],[0.50556,0.75595],[0.02663,0.69802],[0.01549,0.65426],[0.01346,0.62209],[0.98654,0.73295]],continuousBody:true},
+ });
+ definitions.push(
+  {id:'aouo',name:'アオウオ',base:'koi',number:76,price:1160,resistance:168,band:'large',hook:'large',
+   scientific:'Mylopharyngodon piceus',habitats:['lake'],rarity:3,label:'湖底の青黒い影',
+   ecology:'青黒い背を持つ大型の淡水魚。のどの奥にある臼のような歯で、巻貝などの硬い殻を砕く。',
+   locations:'星降る湖・ヌシの深み',time:'いつでも',rods:['starGazer','shoreReed'],baits:['shell','worm'],
+   tip:'湖の深場に貝とハリ大を投げよう。底へ潜ったら糸を送り、頭を上げた瞬間に寄せよう。',
+   intro:'底を離れた青黒い大魚が、重い尾を打つ！',lengths:[19,32,48,65,83,103,128],baitWeights:{shell:4,worm:1.4,smallShrimp:.6,corn:.12,paste:.15}},
+  {id:'sougyo',name:'ソウギョ',base:'koi',number:77,price:940,resistance:154,band:'large',hook:'large',
+   scientific:'Ctenopharyngodon idella',habitats:['lake'],rarity:3,label:'葦際の草食魚',
+   ecology:'背は緑褐色で、体側に大きな鱗が並ぶ。成長するとおもに水草を食べる。',
+   locations:'星見渓流・葦の沼（中層）',time:'昼に狙いやすい',activity:{morning:1.1,day:1.5,evening:1,night:.65},rods:['starGazer','shoreReed'],baits:['paste','corn'],
+   tip:'昼の葦の沼で練りエサとハリ大を中層へ。葦に沿って走る間は糸を送り、向き直ったら巻こう。',
+   intro:'葦際から大きな鱗のソウギョが飛び出した！',lengths:[16,28,41,56,73,92,115],baitWeights:{paste:3.6,corn:3.0,worm:.12}},
+  {id:'maanago',name:'マアナゴ',base:'unagi',number:78,price:620,resistance:108,band:'medium',hook:'medium',
+   scientific:'Conger myriaster',habitats:['sea'],rarity:2,label:'砂底の白い点列',
+   ecology:'砂泥底に暮らす海のアナゴ。体側に白い点が一列に続く。夜に隠れ場を出て、小魚や甲殻類を探す。',
+   locations:'潮見浜・沖',time:'夕方〜夜に狙いやすい',activity:{morning:.7,day:.4,evening:1.45,night:1.85},rods:['clearStream','shoreReed'],baits:['liveMinnow','shrimp'],
+   tip:'暗くなった潮見浜で活き小魚とハリ中を沖へ。身をくねらせて潜ったあと、体を伸ばす間に寄せよう。',
+   intro:'白い点列が砂の上をくねる。マアナゴだ！',lengths:[12,20,30,40,52,66,85],baitWeights:{liveMinnow:3.2,shrimp:2.6,smallShrimp:2.1,worm:.45}},
+  {id:'gonzui',name:'ゴンズイ',base:'gigi',number:79,price:230,resistance:62,band:'small',hook:'small',
+   scientific:'Plotosus japonicus',habitats:['sea'],rarity:2,label:'磯の黄縞',
+   ecology:'海にすむナマズの仲間。濃い体色に黄色い線が二本走り、口のまわりには四対のひげがある。幼魚の群れはゴンズイ玉と呼ばれる。',
+   locations:'岩礁の小島・沿岸',time:'夕方〜夜に狙いやすい',activity:{morning:.8,day:.55,evening:1.5,night:1.65},rods:['youngBamboo','clearStream'],baits:['smallShrimp','shrimp'],
+   tip:'夕方からの岩礁の小島で、小エビとハリ小を中層へ。岩沿いに走る魚が止まったら、竿をそっと引こう。',
+   intro:'暗い岩際から黄色い線が走った。ゴンズイだ！',lengths:[3,6,10,15,20,25,32],baitWeights:{smallShrimp:3.6,shrimp:2.5,worm:1.6,crab:.6}},
+  {id:'itou',name:'イトウ',base:'nijimasu',number:80,price:1880,resistance:176,band:'large',hook:'large',
+   scientific:'Parahucho perryi',habitats:['river'],rarity:4,label:'渓流の大魚',
+   ecology:'北海道などの冷たい川にすむ大型のサケの仲間。平たい頭に大きな口が開き、背から体側にかけて細かな黒点が散る。',
+   locations:'星見渓流・淵（深場）',time:'朝・夕に狙いやすい',activity:{morning:1.65,day:.7,evening:1.55,night:.85},rods:['starGazer','lureRod'],baits:['liveMinnow'],
+   tip:'朝夕の星見渓流で、活き小魚とハリ大を淵まで投げよう。スプーンにも反応する。流心への長い走りが緩んだら寄せよう。',
+   intro:'淵の底で大きな口が開いた。イトウだ！',lengths:[19,31,45,61,77,96,120],baitWeights:{liveMinnow:4.1,river:1.5,worm:1.1,shrimp:.35}}
+ );
  const pools={
   'mountain-underground-shallow':{dojo:.22,kajika:.18,kamatsuka:.15,ugui:.10,gigi:.18},
   'mountain-underground-mid':{gigi:.34,kamatsuka:.12,ugui:.10,kajika:.08,dojo:.08},
@@ -264,8 +313,10 @@
   'offshore-east-shallow':{shimaaji:.18,akahata:.12,takabe:.14},'offshore-east-mid':{shimaaji:.55,takabe:.6},'offshore-east-deep':{shimaaji:.5}
  });
  // Some mountain spots share their original weight table. Keep the existing
- // populations intact, then copy only the six spots with new local residents.
+ // populations intact, then copy only spots with new local residents.
  const localResidents={
+  'lake-deep':{aouo:.05},'mountain-marsh-mid':{sougyo:.008},'sea-deep':{maanago:.16},
+  'coast-reef-mid':{gonzui:.15},'mountain-stream-deep':{itou:.025},
   'mountain-marsh-shallow':{nishikigoi:.21,nigoi:.14},'offshore-west-mid':{mejina:.28},
   'offshore-west-deep':{kijihata:.32},'offshore-east-mid':{umazurahagi:.34},
   'mountain-underground-shallow':{akaza:.22},'mountain-highPond-shallow':{juzukakehaze:.24},
@@ -277,7 +328,7 @@
   for(const d of definitions){
    if(fish.some(f=>f.id===d.id))continue;
    const rename=value=>typeof value==='string'?fish.reduce((text,f)=>text.replaceAll(f.name,d.name),value):value;
-   fish.push({id:d.id,name:d.name,price:d.price,resistance:d.resistance,w:0,icon:'🐟',shadowRow:d.band==='small'?1:3});
+   fish.push({id:d.id,name:d.name,price:d.price,resistance:d.resistance,activity:d.activity,w:0,icon:'🐟',shadowRow:d.band==='small'?1:3});
    fishMouthProfiles[d.id]={...fishMouthProfiles[d.base]};fishMotionProfiles[d.id]={...fishMotionProfiles[d.base],turnFrames:14};fishLifeProfiles[d.id]={...fishLifeProfiles[d.base]};
    fightProfiles[d.id]={...fightProfiles[d.base],intro:d.intro,moods:fightProfiles[d.base].moods.map(m=>({...m,hold:rename(m.hold),loose:rename(m.loose)}))};
    fishSizeProfiles[d.id]=fishSizeProfiles.funa.map((tier,i)=>({...tier,minHundredths:Math.round(d.lengths[i]*100),maxHundredths:Math.round(d.lengths[i+1]*100)-1}));
@@ -348,7 +399,12 @@
    ['umazurahagi','潮に乗って向きを変える','ひれで漂う','steady',1.8,3.6],
    ['akaza','石の隙間へ走る','ひげを伸ばす','deep',2.1,3.7],
    ['kokuchibasu','岩棚に沿って横走り','岩陰で向き直る','rush',4.1,6.2],
-   ['juzukakehaze','底をひと跳ね','砂地で静止する','deep',1.45,2.8]
+   ['juzukakehaze','底をひと跳ね','砂地で静止する','deep',1.45,2.8],
+   ['aouo','尾を打って底へ潜る','頭を上げる','deep',3.35,7.3],
+   ['sougyo','葦に沿って横走り','草の際で向き直る','rush',4.15,6.8],
+   ['maanago','くねって潜る','砂の上で体を伸ばす','deep',2.65,5.35],
+   ['gonzui','岩沿いに群れを追う','底でひげを広げる','steady',2.0,3.1],
+   ['itou','流心へ一気に走る','淵で向き直る','rush',5.3,8.25]
   ]){
    fightProfiles[id]={intro:fightProfiles[id].intro,moods:[
     {id:'run',name:run,icon:'➜',weight:.48,min:900,max:1450,motion,speedX:speed,speedY:motion==='deep'?.8:.35,tension,release:5.5,reel:.64,scale:1,frameEvery:2,danger:true,hold:run+'！ Aを離そう。',loose:run+'間は糸を送ろう。'},
