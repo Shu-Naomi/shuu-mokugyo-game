@@ -47,14 +47,15 @@ function measure({card,fixture,seated=false}) {
   }
   const dist=(a,b)=>a&&b?Math.hypot(a.x-b.x,a.y-b.y):null;
   const svgPoint=(node,x,y)=>new DOMPoint(x,y).matrixTransform(node.getScreenCTM());
-  const bend=document.querySelector(card?'.catch-hook':'#fishTackleFront svg');
-  const shank=card?bend:document.querySelector('#fishTackleBack svg');
-  let tip=null,entry=null,eye=null,end=null;
+  const bend=document.querySelector(card?(seated?'.catch-hook-bend':'.catch-hook'):'#fishTackleFront svg');
+  const shank=card?(seated?document.querySelector('.catch-hook-shank'):bend):document.querySelector('#fishTackleBack svg');
+  let tip=null,entry=null,eye=null,shaft=null,end=null;
   if(visible(bend)){
     if(!card){tip=svgPoint(bend,2.8,6.8);eye=svgPoint(shank,8,3);}
     else if(bend instanceof SVGSVGElement){
-      tip=seated?svgPoint(bend,3.5,9.5):svgPoint(bend,9,6);
-      entry=seated?svgPoint(bend,3.5,7):tip;eye=svgPoint(bend,2,2);
+      tip=seated?svgPoint(bend,5,10.25):svgPoint(bend,9,6);
+      entry=seated?svgPoint(shank,5,8):tip;eye=svgPoint(shank,2,2);
+      shaft=seated?svgPoint(shank,2.4375,6.92):svgPoint(shank,2,5.8);
     }
     else {tip=point(bend,'1px','8px');eye=point(bend,'8px','0px');}
   }
@@ -91,7 +92,7 @@ function measure({card,fixture,seated=false}) {
   const onScreen=p=>p&&p.x>=Math.max(0,clip.left)&&p.x<=Math.min(innerWidth,clip.right)
     &&p.y>=Math.max(0,clip.top)&&p.y<=Math.min(innerHeight,clip.bottom);
   const xy=p=>p&&[p.x,p.y];
-  return {phase:card?'result':battle.phase,pose,frame,lip:xy(lip),tip:xy(tip),lineEnd:xy(end),eye:xy(eye),
+  return {phase:card?'result':battle.phase,pose,frame,lip:xy(lip),tip:xy(tip),lineEnd:xy(end),eye:xy(eye),shaft:xy(shaft),
     visible:visible(bend),onScreen:Boolean(onScreen(tip)&&onScreen(eye)),inkGap,tipJaw:dist(tip,lip),entryJaw:dist(entry||tip,lip),eyeLine:dist(eye,end),lineJaw:dist(end,lip),
     specimen:fish.dataset.specimenScale,fishBox:fish.getBoundingClientRect().toJSON()};
 }
@@ -132,24 +133,30 @@ async function measureHookCoverage(page, sample) {
     await style.evaluate(node => node.remove());
   }
   const [visibleA,visibleB,bareA,bareB] = images;
-  const coverage = {metal:0,covered:0,exposed:0,barbCovered:0,eyeExposed:0};
+  const coverage = {peak:0,metal:0,covered:0,exposed:0,barbCovered:0,eyeExposed:0,shaftExposed:0};
   // Chromium rasterizes the clip at the emulated physical pixel density.
   const dpr = await page.evaluate(() => devicePixelRatio);
   const contrast = (a,b,i) => Math.abs(a.data[i]-b.data[i]);
+  // During the card's entrance both opacity and brightness are below one.
+  // Normalize to the unobscured metal in this exact frame, keeping the actual
+  // fade and shadows intact. Require a usable reference even on the old build.
+  for (let i=0; i<bareA.data.length; i+=4) coverage.peak=Math.max(coverage.peak,contrast(bareA,bareB,i));
+  const metalThreshold=Math.max(4,coverage.peak*.32);
   for (let y=0; y<bareA.height; ++y) for (let x=0; x<bareA.width; ++x) {
     const i=(y*bareA.width+x)*4;
     const full=contrast(bareA,bareB,i);
-    if (full<80) continue;
+    if (full<metalThreshold) continue;
     coverage.metal++;
     const shown=contrast(visibleA,visibleB,i);
     const sx=left+(x+.5)/dpr, sy=top+(y+.5)/dpr;
-    if (shown<=.10*full) {
+    if (shown<=.10*full+1) {
       coverage.covered++;
       if (Math.hypot(sx-sample.tip[0],sy-sample.tip[1])<2) coverage.barbCovered++;
     }
     if (shown>=.55*full) {
       coverage.exposed++;
       if (Math.hypot(sx-sample.eye[0],sy-sample.eye[1])<2.3) coverage.eyeExposed++;
+      if (Math.hypot(sx-sample.shaft[0],sy-sample.shaft[1])<1.2) coverage.shaftExposed++;
     }
   }
   return coverage;
@@ -235,6 +242,7 @@ async function capture(browser,url,version,fixture){
         }
       }finally{await new Promise(r=>server.close(r));}
       if(version==='prior-card')for(const sample of entries[0].result){
+        assert.ok(sample.coverage.peak>=8 && sample.coverage.metal>=24,'missing unobscured baseline hook');
         assert.ok(sample.coverage.covered<2,'baseline hook should be entirely in front of the fish');
       }
       if(version==='after')for(const fish of entries){
@@ -247,8 +255,9 @@ async function capture(browser,url,version,fixture){
           assert.ok(sample.entryJaw<1,info+' metal must enter at the measured lip');
           if(sample.phase==='result'){
             const c=sample.coverage;
+            assert.ok(c.peak>=8 && c.metal>=24,info+' missing unobscured hook pixels: '+JSON.stringify(c));
             assert.ok(c.covered>=.10*c.metal && c.barbCovered>=2,info+' the jaw must hide the barb: '+JSON.stringify(c));
-            assert.ok(c.exposed>=.10*c.metal && c.eyeExposed>=2,info+' the eye and shaft must remain visible: '+JSON.stringify(c));
+            assert.ok(c.exposed>=.10*c.metal && c.eyeExposed>=2 && c.shaftExposed>=2,info+' the eye and shaft must remain visible: '+JSON.stringify(c));
           }
           if(sample.inkGap!==null)assert.ok(sample.inkGap<1,info+' metal must touch painted fish');
         }

@@ -24,7 +24,7 @@ function legacyFixture(){
 }
 const ROOT=path.resolve(__dirname,'..'),FROZEN='classic-fish-motion-252-87';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='5aeb6c2c77babd36ef77eff70a4f6092d7a05049e09470dca55ec6ed913f7d12';
+const RUNTIME_TREE_SHA256='735875118a0a0d81a1dac1377c820428ffa8c34856cff18d06560406f2445095';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';

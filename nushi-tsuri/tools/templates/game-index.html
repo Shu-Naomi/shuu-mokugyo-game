@@ -5762,22 +5762,23 @@
         transform-origin: 0 0;
         animation: catch-hook-twitch .72s ease-in-out infinite alternate;
       }
-      /* The line ends at the eye (2,2). The shank enters the lip at (3.5,7)
-         and the fish's own opaque pixels cover the bend and returning point. */
+      /* The two pieces meet tangentially at the lip (5,8) in the same SVG
+         coordinates. The eye and shank are on this side, the bend on the far side. */
       .catch-hook {
         position: absolute;
-        z-index: 2;
         left: -2px;
         top: -2px;
         width: 12px;
         height: 14px;
         overflow: visible;
       }
+      .catch-hook-bend { z-index: 2; }
+      .catch-hook-shank { z-index: 4; }
       .catch-fish-turn {
         position: absolute;
         z-index: 3;
-        left: 1.5px;
-        top: 5px;
+        left: 3px;
+        top: 6px;
         width: 0;
         height: 0;
         transform: rotate(-90deg);
@@ -6890,9 +6891,12 @@
                     <canvas class="fish-frame-canvas" aria-hidden="true"></canvas>
                   </div>
                 </div>
-                <svg class="catch-hook" viewBox="0 0 12 14" fill="none" stroke="#c4d5d7" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-                  <circle cx="2" cy="2" r="1.1" stroke-width="1.1"/>
-                  <path d="M2 3.1 L2.4 5.15 Q2.7 6.4 3.5 7 C4.5 7.8 6.5 9.4 6.2 11 C6 12.1 4.8 12.7 4 12 C3.4 11.5 3.35 10.4 3.5 9.5 L4.35 10.55" stroke-width="1.45"/>
+                <svg class="catch-hook catch-hook-bend" viewBox="0 0 12 14" fill="none" stroke="#c4d5d7" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M5 8 C6.25 8.27 7.7 9.3 7.7 10.7 C7.7 12.05 6.8 13.05 5.8 12.75 C5.05 12.5 4.85 11.3 5 10.25 L5.85 11.35" stroke-width="1.45"/>
+                </svg>
+                <svg class="catch-hook catch-hook-shank" viewBox="0 0 12 14" fill="none" stroke="#c4d5d7" stroke-linejoin="round" aria-hidden="true">
+                  <circle cx="2" cy="2" r="1.25" fill="#37515a" stroke-width="1.05"/>
+                  <path d="M2 3.25 V5.25 Q2 7.35 3.75 7.73 L5 8" stroke-width="1.45"/>
                 </svg>
               </div>
             </div>
