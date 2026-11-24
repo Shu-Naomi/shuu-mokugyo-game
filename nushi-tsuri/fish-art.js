@@ -396,30 +396,33 @@
     // A side view sees the tail shorten as it swings into depth. Oblique
     // views also see its signed lateral excursion across the image plane.
     const amplitude=Math.min(span*.035,profile.amplitude*effort);
-    // The elevated camera sees a working tail partly in the vertical plane.
-    // Lift the entire rear cross-section, keeping its fin roots and markings
-    // together. A head-on turn progressively hides this projection.
+    // From this camera a side-on tail swings mostly into and out of depth.
+    // Turning toward the camera exposes more of the lateral sweep.
     const sweep=drive*side*Math.min(span*.115,span*.065+profile.amplitude*1.7);
+    const across=Math.sin(heading);
+    const margin=Math.ceil(amplitude+sweep*across);
     const shoulder=Math.max(profile.shoulder*(1-.48*drive),Math.min(40/span,.65));
     const brace=clamp(Number(motion?.resistanceBend)||0,-1.6,1.6);
-    for(let x=Math.max(0,raster.left-Math.ceil(amplitude));x<=Math.min(447,raster.right+Math.ceil(amplitude));x++){
+    for(let x=Math.max(0,raster.left-margin);x<=Math.min(447,raster.right+margin);x++){
       const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
       const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
       const wave=Math.sin(phase-rear*profile.wave);
-      const offset=amplitude*weight*(facing*(.67*wave*wave+.33*wave)+Math.sin(heading)*wave);
-      const source=Math.round(x-offset);
-      if(source<raster.left||source>raster.right)continue;
-      const top=raster.top[source],bottom=raster.bottom[source];
-      const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
-      // The wave reaches the tail at the stroke used to propel the fish.
-      // The shoulder leads, the peduncle follows, and a hooked head shake
-      // casts the tail back against the pull. The lip stays fixed.
+      let offset=amplitude*weight*(facing*(.67*wave*wave+.33*wave)+across*wave);
       let bend=0;
       if(sweep && rear>shoulder){
         const flex=Math.pow((rear-shoulder)/(1-shoulder),profile.falloff-.2*drive);
         const kick=Math.sin(phase+(1-rear)*profile.wave);
-        bend=sweep*flex*(kick+.32*brace);
+        const travel=sweep*flex;
+        // Both halves of a side-on stroke shorten the projected tail.
+        // An oblique view also sees it sweep across the picture. Only the
+        // small elevated-camera component lifts the tail; the lip stays fixed.
+        offset+=travel*(.78*facing*kick*kick+across*kick);
+        bend=travel*(.24*kick+.32*brace);
       }
+      const source=Math.round(x-offset);
+      if(source<raster.left||source>raster.right)continue;
+      const top=raster.top[source],bottom=raster.bottom[source];
+      const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
       const shift=Math.round(clamp(fin+bend,2-top,221-bottom));
       for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+source];
     }
