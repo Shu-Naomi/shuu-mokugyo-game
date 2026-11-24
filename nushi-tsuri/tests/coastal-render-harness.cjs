@@ -18,6 +18,7 @@ async function renderer() {
     }
   }
   const context = { Image: LocalImage };
+  vm.runInNewContext(fs.readFileSync(path.join(root, 'outdoor-light.js'), 'utf8'), context);
   vm.runInNewContext(fs.readFileSync(path.join(root, 'coast-voyage.js'), 'utf8'), context);
   await Promise.all(pending);
   return context.ShuCoast;
