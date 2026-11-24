@@ -18,6 +18,8 @@ const CORE_ASSETS = [
   "./assets/fish-takabe-v252-56.png",
   "./assets/fish-kuromejina-v252-56.png",
   "./assets/fish-houraihimeji-v252-56.png",
+  "./outdoor-light.js?v=252-85",
+  "./assets/rural-bridge-shadow-repair.png",
   "./rural-canals.js?v=252-55",
   "./assets/rural-canals-v252-48.webp",
   "./assets/rural-canal-cast-v252-48.webp",

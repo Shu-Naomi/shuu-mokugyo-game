@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural);
+  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural, typeof module === "object" && module.exports ? require("./outdoor-light.js") : root.ShuOutdoorLight);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.ShuMountain = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural) {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural, OutdoorLight) {
   "use strict";
   // Geometry is opt-in and captured after village-reference.js loads.
   const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
@@ -323,6 +323,11 @@
       const img=new Image();images[overlay.asset]=img;img.decoding="async";
       img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=overlay.asset;
     }
+    const repair=regionData(region).shadowRepair;
+    if(repair && !images[repair.asset] && typeof Image!=="undefined"){
+      const img=new Image();images[repair.asset]=img;img.decoding="async";
+      img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=repair.asset;
+    }
     const image=images[region];
     const ctx=canvas.getContext("2d");ctx.save();ctx.imageSmoothingEnabled=false;
     if(image?.complete && image.naturalWidth>0)ctx.drawImage(image,0,0,canvas.width,canvas.height);
@@ -332,9 +337,16 @@
       ctx.save();ctx.beginPath();overlay.clip.forEach(([x,y],i)=>i?ctx.lineTo(x/width*canvas.width,y/height*canvas.height):ctx.moveTo(x/width*canvas.width,y/height*canvas.height));ctx.closePath();ctx.clip();
       ctx.drawImage(hillsideLayer(patch,overlay),0,0,canvas.width,canvas.height);ctx.restore();
     }
-    const tint=region==="cave"?null:{night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[environment.period||environment.time];
-    if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
-    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0));
+    const repaired=repair && images[repair.asset];
+    if(image?.complete && image.naturalWidth>0 && repaired?.complete && repaired.naturalWidth>0){
+      // Retouch only the baked rail shadow on dirt. The bridge, terrain and
+      // collision geometry stay unchanged; lighting is applied afterwards.
+      const [x,y,w,h]=repair.bounds,[sw,sh]=Rural.size;
+      ctx.drawImage(repaired,x/sw*canvas.width,y/sh*canvas.height,w/sw*canvas.width,h/sh*canvas.height);
+    }
+    if(region!=="cave")OutdoorLight.paint(ctx,canvas,environment);
+    ctx.restore();
+    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0) && (!repair || repaired?.complete && repaired.naturalWidth>0));
   }
   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
     landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};

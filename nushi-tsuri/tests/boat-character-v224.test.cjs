@@ -29,6 +29,7 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
     finish(){this.complete=true;this.naturalWidth=1254;this.onload();}
   }
   const context={Image:DelayedImage};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
   const calls=[],ctx=new Proxy({drawImage(...args){calls.push(args)}},{get:(o,k)=>k in o?o[k]:()=>{}});
   const canvas={width:192,height:144,getContext:()=>ctx},coast=context.ShuCoast;
