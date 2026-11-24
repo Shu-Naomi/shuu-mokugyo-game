@@ -70,5 +70,8 @@ test('delayed art and repair use the latest period and cannot repaint a departed
  const sandbox={Image:DelayedImage};for(const name of ['outdoor-light','rural-canals','mountain-region'])vm.runInNewContext(fs.readFileSync(path.join(root,name+'.js'),'utf8'),sandbox);
  sandbox.ShuMountain.paint(canvas,{period:'day'},'ruralCanals');sandbox.ShuMountain.paint(canvas,{period:'night'},'ruralCanals');
  for(const image of images)image.finish();assert.equal(ctx.fillStyle,'rgb(97,125,184)');
+ // A failed optional retouch must not make a decoded, playable base map repaint forever.
+ images.find(i=>i.source.includes('shadow-repair')).naturalWidth=0;
+ assert.equal(sandbox.ShuMountain.paint(canvas,{period:'night'},'ruralCanals'),true);
  calls.length=0;canvas.dataset.region='stream';for(const image of images)image.finish();assert.equal(calls.length,0,'stale repair does not overwrite destination');
 });

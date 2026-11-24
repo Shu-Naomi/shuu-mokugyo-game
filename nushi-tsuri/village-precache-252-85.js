@@ -50,7 +50,7 @@ self.SHU_VILLAGE_PRECACHE = [
   "./world-life.js?v=252-74&sha256=219b70b7ef7ff3d599535bf437e71157492fdbc5dc592068ca715483c060020f",
   "./field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd",
   "./rural-canals.js?v=252-55&sha256=400953d2aac573e3bcd51a978855cc9f23f2a658fccfff89e6f4336454e90c83",
-  "./mountain-region.js?v=252-72&sha256=8e02ac51a03b855bba9c32f8ceffb7d311bba8d7744024aefae05c1b1a83b55f",
+  "./mountain-region.js?v=252-72&sha256=b1b94a4717b13eb9e6b80a2f5ae9fffe2288ff832c3aa2858d5470bf87cd7c9d",
   "./regional-nushi.js?v=252-71&sha256=6bd642cfc929a4d581eaec67c6746858afdf75846d9a389bb618eaac0cb42a1e",
   "./lake-intro.js?v=252-55&sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df",
   "./timed-rest.js?v=252-32&sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f",

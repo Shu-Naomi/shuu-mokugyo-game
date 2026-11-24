@@ -346,7 +346,7 @@
     }
     if(region!=="cave")OutdoorLight.paint(ctx,canvas,environment);
     ctx.restore();
-    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0) && (!repair || repaired?.complete && repaired.naturalWidth>0));
+    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0) && (!repair || repaired?.complete));
   }
   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
     landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};

@@ -21,7 +21,7 @@ const digest=b=>createHash('sha256').update(b).digest('hex');
     assert.equal(await page.evaluate(()=>s.mapRegion),place.id);
     const stats=()=>page.evaluate(id=>{const c=document.getElementById(id),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,sums=[0,0,0],colors=new Set();for(let i=0;i<d.length;i+=4){for(let k=0;k<3;k++)sums[k]+=d[i+k];if(i%188===0)colors.add(d[i]+','+d[i+1]+','+d[i+2]);}return {mean:sums.map(n=>n/(d.length/4)),colors:colors.size,period:gameSceneryEnvironment().period,clock:document.querySelector('#time').textContent};},place.canvas);
     await page.waitForFunction(id=>{const c=document.getElementById(id),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<d.length;i+=188)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>300;},place.canvas);
-    if(place.canvas==='mountainPixels')await page.waitForFunction(id=>pixelSceneCache.get(document.getElementById('mountainPixels'))?.startsWith(id+':'),place.id);
+    if(place.canvas==='mountainPixels')await page.waitForFunction(id=>{renderPixelScenery();return pixelSceneCache.get(document.getElementById('mountainPixels'))?.startsWith(id+':');},place.id);
     if(place.id===R.id){
      // Native move buttons from a valid saved bridge approach into the visible path.
      await page.evaluate(()=>{s.x=171;s.y=72;s.direction='left';render();});
