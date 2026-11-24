@@ -14,7 +14,7 @@ const digest=b=>createHash('sha256').update(b).digest('hex');
   for(const place of places){
    const context=await browser.newContext({viewport:{width:844,height:390},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage(),errors=[];
    page.on('pageerror',e=>errors.push(e.message));
-   await context.addInitScript(({key,saved})=>{localStorage.setItem(key,JSON.stringify(saved));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,saved:{...seed(),mapRegion:place.id,x:place.x,y:place.y,direction:'up',hp:100,gameMinutes:720,soundEnabled:false}});
+   await context.addInitScript(({key,saved})=>{localStorage.setItem(key,JSON.stringify(saved));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,saved:{...seed(),mapRegion:place.id,x:place.x,y:place.y,direction:'up',hp:100,gameMinutes:720,soundEnabled:false,...(place.id==='coast'?{ownedVehicles:['canoe'],equipment:{hands:null,vehicle:'canoe'},boatActive:false}:{})}});
    try{
     await page.goto(url);await require('./browser-start-adventure.cjs')(page,true);if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').tap();
     await require('./browser-release.cjs').assertRelease(page);
