@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-coast-boat-art-252-90";
+const CACHE_NAME = "nushi-tsuri-v252-boat-maps-integration-252-90";
 
 importScripts("./village-precache-252-90.js");
 const CORE_ASSETS = [
@@ -28,7 +28,9 @@ const CORE_ASSETS = [
   "./assets/fish-takabe-v252-56.png",
   "./assets/fish-kuromejina-v252-56.png",
   "./assets/fish-houraihimeji-v252-56.png",
-  "./rural-canals.js?v=252-55",
+  "./outdoor-light.js?v=252-90-maps",
+  "./assets/rural-bridge-shadow-repair.png",
+  "./rural-canals.js?v=252-90-maps",
   "./assets/rural-canals-v252-48.webp",
   "./assets/rural-canal-cast-v252-48.webp",
   "./assets/rural-backwater-cast-v252-48.webp",
@@ -76,7 +78,7 @@ const CORE_ASSETS = [
   "./assets/aquarium-tanago-gold-v252-24.png",
   "./assets/village-sam-v251-3.png",
   "./assets/village-inn-v251-4.png",
-  "./offshore-island.js?v=252-85",
+  "./offshore-island.js?v=252-90-maps",
   "./offshore-island.css?v=252-71",
   "./assets/offshore-world-v252-18.png",
   "./assets/offshore-ferry-v251.png",
@@ -102,7 +104,7 @@ const CORE_ASSETS = [
   "./assets/fish-magochi-v246.png",
   "./field-guide.js?v=252-55",
   "./field-guide.css?v=248-2",
-  "./world-life.js?v=252-74",
+  "./world-life.js?v=252-90-maps",
   "./fish-additions.js?v=252-90",
   "./assets/fish-kawamutsu-v238.png",
   "./assets/fish-herabuna-v238.png",
@@ -119,6 +121,7 @@ const CORE_ASSETS = [
   "./catch-memories.css?v=229-1",
   "./assets/wetland-cast-v227.png",
   "./assets/wetland-world-v227.png",
+  "./assets/wetland-trail-edges.webp",
   "./assets/fish-tanago-v227.png",
   "./assets/fish-motsugo-v227.png",
   "./assets/fish-medaka-v227.png",
@@ -161,8 +164,8 @@ const CORE_ASSETS = [
   "./underwater-camera.js?v=246-1",
   "./nushi-presentation.js?v=252-75",
   "./assets/nushi-open-water-v245.webp",
-  "./coast-voyage.js?v=252-72",
-  "./mountain-region.js?v=252-72",
+  "./coast-voyage.js?v=252-90-maps",
+  "./mountain-region.js?v=252-90-maps",
   "./regional-nushi.js?v=252-71",
   "./lake-story.js?v=252-51",
   "./lake-intro.js?v=252-55",
@@ -187,6 +190,8 @@ const CORE_ASSETS = [
   "./assets/valley-hillside-v2.png",
   "./assets/pass-pond-v252-51.png",
   "./assets/pass-marsh-v252-50.webp",
+  "./assets/marsh-bridge-north.webp",
+  "./assets/marsh-bridge-south.webp",
   "./assets/cave-lake-v202.png",
   "./assets/stream-nushi-v202.png",
   "./assets/coast-nushi-v202.png",
@@ -246,7 +251,7 @@ const CORE_ASSETS = [
   "./pixel-world.js?v=165-1",
   "./pixel-cast.js?v=252-90-boat",
   "./pixel-scenes.css?v=252-90-boat",
-  "./scene-layers.js?v=252-90-boat",
+  "./scene-layers.js?v=252-90-maps",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
   "./layered-scenery.js?v=252-90-boat",

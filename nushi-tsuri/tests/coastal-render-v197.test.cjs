@@ -52,6 +52,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
     finish(){this.complete=true;this.naturalWidth=1434;this.onload();}
   }
   const context={Image:DelayedImage};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
   const coast=context.ShuCoast,calls=[],tints=[];
   const ctx=new Proxy({drawImage(...args){calls.push(args)},fillRect(){tints.push(this.fillStyle)}},{get:(obj,key)=>key in obj?obj[key]:()=>{}});
@@ -65,7 +66,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
   assert.equal(calls[1][2],560,'load must keep the selected girl torso');
   assert.equal(calls[1][0],atlas,'latest boat and oars are taken from the modular atlas');
   images.find(i=>i.url.includes('coast-world')).finish();
-  assert.equal(tints.at(-1),'rgba(9,20,48,.49)','late map load keeps the latest night palette');
+  assert.equal(tints.at(-1),'rgb(97,125,184)','late map load keeps the latest night palette');
 });
 
 test('each blade sweeps visibly through a complete rowing cycle while the hull and head stay fixed',async()=>{

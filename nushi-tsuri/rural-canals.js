@@ -49,7 +49,8 @@
     [[1368,534],[1514,483],[1672,465],[1672,733],[1467,761],[1374,714],[1335,651]]
   ].map(polygon);
   const mill=polygon([[275,367],[370,260],[501,238],[630,300],[703,344],[704,425],[618,472],[423,475],[281,451]]);
-  const data={name,asset,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
+  const shadowRepair={asset:'assets/rural-bridge-shadow-repair.png',bounds:[1138,465,140,130]};
+  const data={name,asset,shadowRepair,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
     trails:rawTrails.map(polygon),trailRadii:[4.5,4.1,2.1,4.1,3.0,3.2,2.8,2.8],
     bridges,bankRadius:0,walls:[mill,...paddies,...bridgeRails],landmarks:[],
     notes:{canalCurrent:'水車の流れ。岸際のフナ、底を探るドジョウ、深場のナマズを狙おう。',canalBackwater:'草陰のよどみ。浅場はドジョウとフナ。草陰のザリガニはミミズとハリ小で。深場はナマズが多い。'}};

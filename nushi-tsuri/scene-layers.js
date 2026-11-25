@@ -295,12 +295,24 @@
       ],
     };
   }
+  // Lossless 672 × 192 windows from the 1671 × 941 marsh map. A cast keeps
+  // the map feet in these same art coordinates, including on narrow screens.
+  const bridgeTop={'marsh-bridge-north':276,'marsh-bridge-south':500};
+  function marshBridgePoint(kind,x,y){
+    return {kind,x:(x*1671/240-520)/672,y:(y*941/135-bridgeTop[kind])/192,
+      aspect:672/192,alignY:1,facing:kind==='marsh-bridge-south'?'down':'up'};
+  }
   const mountainSurfaces={canalCurrent:[0,0,1,1],canalBackwater:[0,0,1,1],stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5],wetPond:[0,0,.5,.5],wetCreek:[.5,0,.5,.5],wetMarsh:[0,.5,.5,.5]};
   function mountainSurface(kind){
     return {id:'surface-mountain-'+kind,source:kind==='canalCurrent'?'assets/rural-canal-cast-v252-48.webp':kind==='canalBackwater'?'assets/rural-backwater-cast-v252-48.webp':kind.startsWith('wet')?'assets/wetland-cast-v227.png':'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',objectPosition:'center bottom',
       parts:[box('far-bank','trees',0,0,640,kind.startsWith('canal')?67:95),box('open-water','water',0,kind.startsWith('canal')?67:95,640,kind.startsWith('canal')?198:167,surfaceWater(['stream','wetCreek','canalCurrent'].includes(kind)?'river':kind==='underground'?'cave':['marsh','highMarsh','wetMarsh','canalBackwater'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
   }
   function get(id,env={period:'day'}) {
+    const bridge=id.slice(8);
+    if(id.startsWith('surface-')&&Object.hasOwn(bridgeTop,bridge)){
+      return {id,source:'assets/'+bridge+'.webp',units:[100,100],objectPosition:'center bottom',
+        parts:[box('open-water','water',0,0,100,100,surfaceWater('marsh'))]};
+    }
     if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));
     if(id==='world') return referenceEnabled(env)?referenceDefinition():world;
     if(id==='home-exterior') return garden;
@@ -316,7 +328,7 @@
         box('left-furnishings','furniture',0,24,30,68),box('right-furnishings','furniture',72,25,28,68),
         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
   }
-  const ids=['world','home-exterior','home-interior',...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
+  const ids=['world','home-exterior','home-interior',...Object.keys(bridgeTop).map(id=>'surface-'+id),...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
     ...['lake','river','beach','harbor','pond',coastBoat,...Object.keys(islandSeaBeds)].map(id=>'surface-'+id),
     ...[coastBoat,...Object.keys(islandSeaBeds)].map(id=>'underwater-sea-shallow-false-'+id),
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
@@ -336,5 +348,5 @@
   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
   const propSolid=(x,y,env)=>!referenceEnabled(env)&&(trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
     shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom));
-  return {fishingLocale,underwaterRegion,get,ids,assets,propSolid,referenceDefinition};
+  return {fishingLocale,underwaterRegion,get,ids,assets,marshBridgePoint,propSolid,referenceDefinition};
 });

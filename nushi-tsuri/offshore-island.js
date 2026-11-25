@@ -1,6 +1,6 @@
 (function(root,factory){
-  const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOffshore=api;
-})(typeof globalThis!=='undefined'?globalThis:this,function(){
+  const api=factory(typeof module==='object'&&module.exports?require('./outdoor-light.js'):root.ShuOutdoorLight);if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOffshore=api;
+})(typeof globalThis!=='undefined'?globalThis:this,function(OutdoorLight){
   'use strict';
   // Geometry is opt-in and captured after village-reference.js loads.
   const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
@@ -104,7 +104,7 @@
     if(!canvas?.getContext)return;pending.world=[canvas,{...env}];const ctx=canvas.getContext('2d'),im=imageFor('world');ctx.save();ctx.imageSmoothingEnabled=false;
     if(im?.complete&&im.naturalWidth>0)ctx.drawImage(im,0,0,canvas.width,canvas.height);else{ctx.fillStyle='#145c7c';ctx.fillRect(0,0,canvas.width,canvas.height);}
     paintBridges(ctx,canvas.width,canvas.height);
-    const tint={night:'rgba(9,20,48,.49)',evening:'rgba(115,46,23,.19)',morning:'rgba(255,220,159,.06)'}[env.period||env.time];if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
+    OutdoorLight.paint(ctx,canvas,env);ctx.restore();
   }
   function paintBridges(ctx,width,height){
     ctx.save();ctx.scale(width/240,height/135);

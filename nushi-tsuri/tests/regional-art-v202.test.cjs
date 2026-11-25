@@ -36,6 +36,7 @@ test('decoded mountain backgrounds are opaque and detailed; underground navigati
     const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;
   }));super.src=path.join(__dirname,'..',source);}}
   const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
   for(const region of ['mountainPond','mountainMarsh','cave']){
     const canvas=createCanvas(960,540);context.ShuMountain.paint(canvas,{period:'day'},region);await Promise.all(pending);

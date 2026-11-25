@@ -29,6 +29,7 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
     finish(){this.complete=true;this.naturalWidth=1254;this.onload();}
   }
   const context={Image:DelayedImage};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
   const calls=[],ctx=new Proxy({drawImage(...args){calls.push(args)}},{get:(o,k)=>k in o?o[k]:()=>{}});
   const canvas={width:192,height:144,getContext:()=>ctx},coast=context.ShuCoast;
@@ -45,6 +46,9 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
 test('the detailed tub is supplied by the released renderer and its offline cache',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
   assert.ok(sw.includes('./assets/coast-tarai-v224.png'));
-  assert.ok(sw.includes('./coast-voyage.js?v=252-72'));
+  const source=fs.readFileSync(path.join(root,'tools/templates/game-index.html'),'utf8');
+  const asset=source.match(/<script src="(coast-voyage\.js\?v=[^"]+)"/)?.[1];
+  assert.ok(asset,'the active game loads the coastal renderer');
+  assert.ok(sw.includes('"./'+asset+'"'),'the offline cache uses the active coastal renderer version');
   assert.ok(fs.existsSync(path.join(root,'assets/coast-tarai-v224.png')));
 });
