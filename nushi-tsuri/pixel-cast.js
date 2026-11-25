@@ -105,10 +105,19 @@
       butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},
       leftFoot:point([f.feet[0],f.floor]),rightFoot:point([f.feet[1],f.floor])};
   }
+  const isIslandScene=kind=>kind.startsWith('coast-')||kind.startsWith('offshore-');
+  function islandFrame(width,height){
+    const imageHeight=Math.max(height,width*9/16),imageWidth=imageHeight*16/9;
+    const crop=imageHeight-height;
+    // Reveal more of the horizon, but keep the foreground shore in short views.
+    const shift=Math.min(crop*.32,imageHeight*.08);
+    return {width:imageWidth,height:imageHeight,left:(width-imageWidth)/2,top:shift-crop,
+      alignY:crop?1-shift/crop:1,footY:height-imageHeight*.035};
+  }
   function groundFor(kind='lake'){
     if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:.2,facing:'down'};
     if(kind.startsWith('mountain-'))return {kind,x:.42,y:.967,aspect:kind.startsWith('mountain-wet')?1.5:2,alignY:1};
-    if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
+    if(isIslandScene(kind))return {kind,x:kind==='offshore-cove'?.30:.42,y:.965,aspect:16/9,alignY:1};
     return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
   }
   function frontPose(progress=0,avatar='boy'){
@@ -122,8 +131,11 @@
   function layout(width,height,ground){
     const resolution=width/640,scale=Math.max(1,Math.floor(Math.min(height/resolution/240,640/175)))*resolution;
     if(ground){
-      const cover=Math.max(width/ground.aspect,height),imageWidth=cover*ground.aspect;
-      const footX=width/2+(ground.x-.5)*imageWidth,footY=(height-cover)*ground.alignY+ground.y*cover;
+      const frame=ground.kind&&isIslandScene(ground.kind)?islandFrame(width,height):null;
+      const cover=Math.max(width/ground.aspect,height);
+      // On narrow screens keep both feet inside the visible strip of shore.
+      const footX=frame?Math.max(width*.22,frame.left+ground.x*frame.width):width/2+(ground.x-.5)*cover*ground.aspect;
+      const footY=frame?frame.footY-(ground.kind==='coast-boat'?Math.min(frame.height*.043,height*.085):0):(height-cover)*ground.alignY+ground.y*cover;
       const fitted=Math.max(resolution*.35,Math.min(scale,(footY-resolution*7)/136));
       return {scale:fitted,x:Math.round(footX-62*fitted),y:Math.round(footY-102*fitted),ground:{x:footX,y:footY}};
     }
@@ -175,12 +187,48 @@
     ctx.beginPath();ctx.ellipse(reel.x,reel.y,2.5,3.1,0,0,Math.PI*2);ctx.fillStyle=c.ink;ctx.fill();ctx.strokeStyle=c.stone2;ctx.lineWidth=.7;ctx.stroke();
     line(reel,{x:reel.x+3,y:reel.y+2},c.stone2,.7);
   }
-  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,frontSprite,frontCastSprite,ground}={}){
+  // Painted in the angler's pixel coordinates so the hull and shoes share
+  // one anchor on any viewport. Paint the near rim over the shoes only.
+  function castHull(ctx,vehicle,front=false) {
+    const tub=vehicle==='tarai';
+    const shape=(color,points)=>{
+      ctx.fillStyle=color;ctx.beginPath();ctx.moveTo(...points[0]);
+      for(const point of points.slice(1))ctx.lineTo(...point);
+      ctx.closePath();ctx.fill();
+    };
+    if(front){
+      if(tub){
+        shape('#392c27',[[24,103],[100,103],[98,114],[88,121],[37,121],[27,115]]);
+        shape('#916745',[[26,104],[98,104],[96,112],[86,117],[38,117],[29,112]]);
+        ctx.fillStyle='#574033';for(const x of [35,47,59,71,83,93])ctx.fillRect(x,107,1.5,9);
+        ctx.fillStyle='#64736f';ctx.fillRect(28,111,68,2);
+        ctx.fillStyle='#cfa472';ctx.fillRect(28,103,69,2);
+      }else{
+        shape('#292e2d',[[7,107],[91,107],[114,102],[130,94],[122,108],[101,118],[22,120]]);
+        shape('#78583d',[[10,107],[92,106],[113,101],[127,96],[120,106],[101,115],[24,117]]);
+        ctx.fillStyle='#b98856';ctx.fillRect(13,108,78,2);
+        ctx.fillStyle='#493e32';ctx.fillRect(24,114,74,2);
+      }
+      return;
+    }
+    const outline=tub?[[24,106],[24,97],[30,90],[43,86],[83,86],[96,90],[102,97],[102,106],[92,115],[34,115]]
+      :[[6,106],[19,97],[41,91],[86,86],[115,86],[132,93],[118,104],[99,112],[25,115]];
+    shape('#302e2b',outline);
+    shape('#cfa472',tub?[[26,105],[26,97],[33,91],[44,88],[82,88],[93,91],[100,97],[100,105],[91,111],[35,111]]
+      :[[9,105],[21,97],[42,93],[86,88],[115,88],[128,93],[117,102],[97,110],[26,113]]);
+    shape('#684c36',tub?[[30,104],[30,98],[37,94],[46,91],[81,91],[90,94],[96,98],[96,104],[89,108],[37,108]]
+      :[[15,104],[25,99],[43,95],[87,91],[113,91],[121,94],[114,100],[95,107],[29,109]]);
+    ctx.fillStyle='#9d7650';
+    for(const [x,y,w] of tub?[[38,96,46],[34,100,56],[35,104,57]]:[[44,96,66],[32,100,75],[25,104,66]])ctx.fillRect(x,y,w,2);
+    ctx.fillStyle='#d8ae78';ctx.fillRect(tub?41:48,99,tub?42:34,2);
+  }
+  function draw(canvas,{avatar="boy",rod="bamboo",progress=0,target,flying=false,env=Pixel.calendar(),sprite,frontSprite,frontCastSprite,ground,vehicle}={}){
     avatar=avatar==="girl"?"girl":"boy";
     const ctx=canvas.getContext("2d"),w=canvas.width,h=canvas.height,c=Pixel.palette(env);
     const img=sprite||sprites[avatar],m=model(w,h,progress,target,flying,avatar,!img&&!!fallbacks[avatar],ground),p=m.pose,art=artwork[avatar],f=art.frames[p.frame];
     ctx.clearRect(0,0,w,h);ctx.imageSmoothingEnabled=false;
     ctx.save();ctx.translate(m.box.x,m.box.y);ctx.scale(m.box.scale,m.box.scale);ctx.lineCap="round";
+    if(vehicle) castHull(ctx,vehicle);
     ctx.fillStyle="rgba(20,28,19,.25)";ctx.beginPath();ctx.ellipse(62,103,21,2.5,0,0,Math.PI*2);ctx.fill();
     const front=frontCastSprite||frontSprites[avatar];
     if(ground?.facing==='down'&&front){
@@ -210,6 +258,7 @@
       ctx.drawImage(fallbacks[avatar],62-a.center*size,102-a.floor*size,a.width*size,a.height*size);
       m.detailed=false;
     }
+    if(vehicle) castHull(ctx,vehicle,true);
     ctx.restore();
     if(flying){const r=w/640;ctx.fillStyle=c.ink;ctx.fillRect(m.bobber.x-r,m.bobber.y-2*r,3*r,6*r);
       ctx.fillStyle=c.red;ctx.fillRect(m.bobber.x,m.bobber.y-r,r,2*r);ctx.fillStyle=c.cream;ctx.fillRect(m.bobber.x,m.bobber.y+r,r,2*r);}
@@ -217,5 +266,5 @@
     if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,frontPose,groundFor,layout,model,draw,preload,artwork,frontArtwork,prepareAtlas});
+  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,frontPose,isIslandScene,islandFrame,groundFor,layout,model,draw,preload,artwork,frontArtwork,prepareAtlas});
 });

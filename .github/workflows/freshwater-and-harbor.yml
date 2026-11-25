@@ -1,7 +1,7 @@
 name: Freshwater and harbor fish
 on:
   pull_request:
-    branches: [main, fish/hoshikagami-marsh-review]
+    branches: [main, fish/hoshikagami-marsh-review, draft/canal-crustaceans-regional-water]
     paths: ['nushi-tsuri/**', '.github/workflows/freshwater-and-harbor.yml']
   workflow_dispatch:
 permissions:
@@ -29,10 +29,12 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
       - name: Check actual catches in both fishing modes and old records
-        run: node --test freshwater-and-harbor.test.cjs canal-crustaceans.test.cjs regional-underwater.test.cjs cast-water-v222.test.cjs
+        run: node --test freshwater-and-harbor.test.cjs canal-crustaceans.test.cjs regional-underwater.test.cjs cast-water-v222.test.cjs coast-fishing-v195.test.cjs
       - name: Play and photograph five new fish on a landscape phone
         run: node browser-freshwater-and-harbor.cjs
       - name: Check regional water and idle surf on landscape phone
+        env:
+          REGIONAL_WATER_EVIDENCE: freshwater-and-harbor-evidence/regional-water
         run: node browser-regional-underwater.cjs
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()

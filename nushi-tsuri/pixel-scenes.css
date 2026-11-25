@@ -42,6 +42,7 @@
 #underwaterPixels, .scenery-motion[data-for="underwaterPixels"],
 .scenery-foreground[data-for="castBackdrop"], .scenery-foreground[data-for="underwaterPixels"] { object-fit: cover; }
 #castBackdrop, .scenery-motion[data-for="castBackdrop"], .scenery-foreground[data-for="castBackdrop"] { object-position:center bottom; }
+.cast-surface:is([data-locale^="coast-"], [data-locale^="offshore-"]) :is(#castBackdrop, .scenery-motion, .scenery-foreground) { object-position: center var(--island-cast-align-y, 100%); }
 .cast-surface[data-locale="harbor"] #castBackdrop,
 .cast-surface[data-locale="harbor"] .scenery-motion,
 .cast-surface[data-locale="harbor"] .scenery-foreground { object-position:center 20%; }
