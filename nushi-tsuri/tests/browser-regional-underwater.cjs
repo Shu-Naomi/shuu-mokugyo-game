@@ -116,7 +116,12 @@ module.exports=async function regionalWater(url,executablePath) {
         await page.waitForFunction(region=>{
           const c=document.querySelector('#underwaterPixels');
           const phase=battle?.phase;
-          return phase==='fight'&&c.dataset.locale===region&&c.dataset.travelReady==='true'&&
+          const cast = document.querySelector('#castSurface');
+          const hooked = document.querySelector('#fishScene').classList.contains('hook-reveal');
+          // A decoded seabed can still sit behind the outgoing dive overlay.
+          // Wait until the player can actually see the underwater fight.
+          return phase==='fight'&&getComputedStyle(cast).display==='none'&&!hooked&&
+            getComputedStyle(c).visibility==='visible'&&c.dataset.locale===region&&c.dataset.travelReady==='true'&&
             document.querySelector('.scenery-motion[data-for=underwaterPixels]')?.dataset.scene.endsWith('-'+region);
         },bank.region);
         assert.equal(await page.locator('#fishScene').evaluate(el=>el.classList.contains('nushi-water')),false);
