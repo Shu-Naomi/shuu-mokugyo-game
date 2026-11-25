@@ -6473,7 +6473,7 @@
         .tournament-choices button { min-height: 44px; padding: 7px 10px; }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=252-90-coast" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=252-90-boat" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
     <link rel="stylesheet" href="village-fish-games.css?v=252-84" />
@@ -7522,9 +7522,9 @@
     <script src="tournament-npcs.js?v=252-55"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
-    <script src="pixel-cast.js?v=252-90-coast"></script>
-    <script src="scene-layers.js?v=252-90-coast"></script>
-    <script src="layered-scenery.js?v=252-90-coast"></script>
+    <script src="pixel-cast.js?v=252-90-boat"></script>
+    <script src="scene-layers.js?v=252-90-boat"></script>
+    <script src="layered-scenery.js?v=252-90-boat"></script>
     <script>
       // Abort this same script before create(), save reads, migrations or UI
       // handlers. A previous worker can otherwise serve the old save module.
@@ -15271,6 +15271,7 @@
         pixelSceneCache.delete(canvas); return true;
       }
       function surfaceSceneryKind() {
+        if (battle?.coastVehicle) return "coast-boat";
         return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
           ? ShuSceneLayers.fishingLocale(battle) || battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
           : battle?.waterZone || "lake";
@@ -15367,10 +15368,10 @@
         const flying = battle?.phase === "cast-flight";
         const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
         const env = gameSceneryEnvironment(), rod = activeSurfaceCastRodKey();
-        const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
+        const key = `${kind}:${battle?.coastVehicle || ""}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
+        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), vehicle:battle?.coastVehicle, frontSprite:playerImages?.[s.avatar],
           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
         pixelCastKey = key;
         return true;
@@ -19551,6 +19552,8 @@
             ? offshoreType ? ShuOffshore.localeFor(offshoreType) : coastType ? `coast-${coastType}` : seaCastLocaleAtWorld(s.x,s.y)
             : zone,
           coastType,
+          // Snapshot presentation only; catch tables, distance and tackle still use the original spot.
+          coastVehicle: s.mapRegion === "coast" && s.boatActive ? (s.equipment.vehicle === "canoe" ? "canoe" : "tarai") : null,
           mountainType,
           offshoreType,
         };
@@ -20940,6 +20943,7 @@
           playerY,
           castLocale,
           coastType,
+          coastVehicle: battle?.coastVehicle || null,
           mountainType,
           offshoreType,
           bait: practice ? practiceBait : s.selectedBait,

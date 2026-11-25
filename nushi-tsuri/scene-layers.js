@@ -199,7 +199,16 @@
     'coast-sand':'cove', 'coast-reef':'reef',
     'offshore-cove':'cove', 'offshore-west':'reef', 'offshore-east':'current',
   });
+  const coastBoat = 'coast-boat';
   function surface(kind,period) {
+    if (kind === coastBoat) return {
+      id:'surface-'+kind,source:'assets/spot-coast-boat-cast.webp',
+      fallbackSource:'assets/cast-coast-reef-v198.webp',units:[100,100],
+      objectPosition:'center var(--island-cast-align-y, 100%)',parts:[
+        box('distant-islands','trees',0,12,100,13,vegetation),
+        box('open-water','water',0,25,100,75,surfaceWater('sea')),
+      ],
+    };
     if (Object.hasOwn(islandSeaBeds,kind)) {
       const shore = islandSeaBeds[kind] === 'cove' ? 'sand' : 'reef';
       return {id:'surface-'+kind,source:`assets/spot-${kind}-cast.webp`,
@@ -258,21 +267,23 @@
     return candidates.find(key=>Object.hasOwn(underwaterRegions,key)) || '';
   }
   function underwaterRegion(battle) {
+    if (battle?.coastVehicle) return coastBoat;
     const locale = fishingLocale(battle);
     return Object.hasOwn(islandSeaBeds,locale) ? locale : underwaterRegions[locale] || '';
   }
   function underwater(zone,depth,flatfish,region) {
     zone=['lake','river','sea'].includes(zone)?zone:'lake';
     depth=['shallow','mid','deep'].includes(depth)?depth:'shallow';
+    const boat = region === coastBoat;
     const island = Object.hasOwn(islandSeaBeds,region);
-    const seabed = island ? islandSeaBeds[region] : region;
+    const seabed = island ? islandSeaBeds[region] : boat ? '' : region;
     const source = seabed ? `assets/underwater-region-${seabed}.webp` : flatfish
       ? 'assets/underwater-sea-sand-flatfish-v97.jpg' : `assets/underwater-${zone}-${depth}-v${zone==='sea'?65:64}.jpg`;
     return {
       id:`underwater-${zone}-${depth}-${!!flatfish}${region?'-'+region:''}`,
       region, depth,
-      source:island ? `assets/spot-${region}-fight.webp` : source,
-      ...(island && {fallbackSource:source}),
+      source:island || boat ? `assets/spot-${region}-fight.webp` : source,
+      ...((island || boat) && {fallbackSource:source}),
       units:[100,100],underwater:true,
       parts:[
         box('water-column','water',0,0,100,75,{effect:'shafts'}),
@@ -297,7 +308,7 @@
     if(id.startsWith('surface-')) return surface(id.slice(8),env.period);
     if(id.startsWith('underwater-')) {
       const [,zone,depth,flatfish,...parts]=id.split('-'), region=parts.join('-');
-      return underwater(zone,depth,flatfish==='true',Object.hasOwn(islandSeaBeds,region)||Object.values(underwaterRegions).includes(region)?region:'');
+      return underwater(zone,depth,flatfish==='true',region===coastBoat||Object.hasOwn(islandSeaBeds,region)||Object.values(underwaterRegions).includes(region)?region:'');
     }
     const name=rooms[id.replace(/^room-/,'')] || 'fishing-inn';
     return {id,source:name==='fishing-inn'?'assets/layered-v163/fishing-inn-master.png':`assets/interior-${name}-v55.png`,units:[100,100],indoor:true,
@@ -306,8 +317,8 @@
         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
   }
   const ids=['world','home-exterior','home-interior',...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
-    ...['lake','river','beach','harbor','pond',...Object.keys(islandSeaBeds)].map(id=>'surface-'+id),
-    ...Object.keys(islandSeaBeds).map(id=>'underwater-sea-shallow-false-'+id),
+    ...['lake','river','beach','harbor','pond',coastBoat,...Object.keys(islandSeaBeds)].map(id=>'surface-'+id),
+    ...[coastBoat,...Object.keys(islandSeaBeds)].map(id=>'underwater-sea-shallow-false-'+id),
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
     'underwater-sea-deep-true'];
   function assets() {

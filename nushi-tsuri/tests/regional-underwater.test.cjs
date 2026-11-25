@@ -49,7 +49,7 @@ test('underwater locales take precedence over water class, depth changes preserv
 test('casting from the harbor and reef selects different backdrops without changing the active spot',()=>{
   const {boot,seed,read}=require('./game-harness.cjs');
   for(const [mapRegion,x,y,direction,locale,boatActive] of [
-    ['village',134,102,'right','harbor',false],['coast',95,84,'up','coast-reef',true],
+    ['village',134,102,'right','harbor',false],['coast',62,73,'up','coast-reef',false],
   ]) {
     const app=boot({...seed(),mapRegion,x,y,direction,boatActive,referenceVillageLayout:'source-11016-1',baits:{worm:8},ownedVehicles:['canoe'],equipment:{vehicle:'canoe'}},{},
       mapRegion==='village'?{url:'http://localhost/nushi-tsuri/?villageReference=1'}:{});
@@ -74,8 +74,8 @@ test('casting from the harbor and reef selects different backdrops without chang
 
 const Offshore = require('../offshore-island.js');
 const coastalBanks = [
-  {id:'coast-sand', mapRegion:'coast', x:145, y:110, direction:'down'},
-  {id:'coast-reef', mapRegion:'coast', x:95, y:84, direction:'up'},
+  {id:'coast-sand', mapRegion:'coast', x:145, y:102, direction:'down'},
+  {id:'coast-reef', mapRegion:'coast', x:62, y:73, direction:'up'},
   ...Offshore.fishingPoints.map(point => ({...point, mapRegion:Offshore.id, id:'offshore-'+point.id})),
 ];
 
@@ -136,7 +136,7 @@ for (const mode of ['gauge','nushi']) test('starting a fight at each island bank
   const {boot, seed, read} = require('./game-harness.cjs');
   for (const {id, mapRegion, x, y, direction} of coastalBanks) {
     const app = boot({...seed(), mapRegion, x, y, direction, fightMode:mode, hp:100,
-      boatActive:mapRegion==='coast', ownedVehicles:['canoe'], equipment:{vehicle:'canoe'},
+      boatActive:false, ownedVehicles:['canoe'], equipment:{vehicle:'canoe'},
       selectedBait:'shrimp', selectedHook:'medium', baits:{shrimp:8}});
     try {
       const w = app.window, scene = w.document.getElementById('fishScene');
@@ -170,7 +170,7 @@ test('the float lands in painted open water at every distance after the phone cr
   const lane = [[55,67],[57,62],[59,55],[56,49]];
   for (const {id, mapRegion, x, y, direction} of coastalBanks) {
     const sizes = {};
-    const app = boot({...seed(), mapRegion, x, y, direction, boatActive:mapRegion==='coast',
+    const app = boot({...seed(), mapRegion, x, y, direction, boatActive:false,
       ownedVehicles:['canoe'], equipment:{vehicle:'canoe'}}, sizes);
     try {
       app.window.action();
@@ -203,5 +203,58 @@ test('the float lands in painted open water at every distance after the phone cr
       }
       assert.deepEqual(app.errors, []);
     } finally {app.dispose();}
+  }
+});
+
+
+test('coastal boat uses its own artwork without moving the catch to another fishing spot', () => {
+  const {boot,seed,read}=require('./game-harness.cjs');
+  for (const [vehicle,x,y,direction,coastType] of [['canoe',95,84,'up','reef'],['tarai',145,110,'down','sand']]) {
+    for (const mode of ['gauge','nushi']) {
+      const app=boot({...seed(),mapRegion:'coast',x,y,direction,boatActive:true,
+        hp:100,ownedVehicles:[vehicle],equipment:{vehicle},fightMode:mode,
+        selectedBait:'shrimp',selectedHook:'medium',baits:{shrimp:8}});
+      try {
+        const w=app.window,requests=new Map();
+        w.ShuScenery.paint=(canvas,id)=>{requests.set(canvas.id,Layers.get(id).source);return Promise.resolve(true);};
+        assert.equal(read(w,'nearbyFishingSpot().id'), 'coast-'+coastType+'-shallow');
+        w.action();
+        assert.equal(read(w,'battle.coastVehicle'),vehicle);
+        assert.equal(read(w,'battle.castLocale'),'coast-'+coastType);
+        assert.equal(requests.get('castBackdrop'),'assets/spot-coast-boat-cast.webp');
+        w.eval('beginFishing();clearInterval(timer);commitCastResources();resolveSurfaceCast(50);startFight();clearInterval(timer);finishHookReveal();renderUnderwaterTravel()');
+        assert.equal(read(w,'battle.phase'),'fight');
+        assert.equal(read(w,'battle.spot'),'coast-'+coastType+'-mid');
+        assert.equal(read(w,'battle.fightMode'),mode);
+        assert.equal(read(w,'s.baits.shrimp'),7);
+        assert.equal(requests.get('underwaterPixels'),'assets/spot-coast-boat-fight.webp');
+        assert.deepEqual(app.errors,[]);
+      } finally {app.dispose();}
+    }
+  }
+});
+
+test('boat backgrounds are opaque, cached, and the two hull types stay under the shoes',async()=>{
+  const Cast=require('../pixel-cast.js');
+  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
+  for(const id of ['surface-coast-boat','underwater-sea-mid-false-coast-boat']){
+    const scene=Layers.get(id);
+    assert.ok(scene.fallbackSource && fs.existsSync(path.join(root,scene.fallbackSource)));
+    assert.ok(Layers.assets().includes(scene.source) && sw.includes('./'+scene.source));
+    const im=await loadImage(path.join(root,scene.source)), c=cs(96,54).getContext('2d');
+    assert.equal(im.width/im.height,16/9);
+    c.drawImage(im,0,0,96,54);
+    assert.ok(c.getImageData(0,0,96,54).data.every((n,i)=>i%4!==3||n===255));
+  }
+  for(const [width,height] of [[844,352],[820,244],[940,240]]){
+    const canvas=cs(width,height),ctx=canvas.getContext('2d'),hashes=new Set();
+    for (const vehicle of ['canoe','tarai']){
+      const {box}=Cast.draw(canvas,{ground:Cast.groundFor('coast-boat'),vehicle});
+      const at=(x,y)=>ctx.getImageData(Math.round(box.x+x*box.scale),Math.round(box.y+y*box.scale),1,1).data;
+      assert.equal(at(62,102)[3],255);
+      assert.equal(at(62,111)[3],255);
+      hashes.add(createHash('sha256').update(ctx.getImageData(0,0,width,height).data).digest('hex'));
+    }
+    assert.equal(hashes.size,2);
   }
 });

@@ -22,12 +22,14 @@ module.exports=async function regionalWater(url,executablePath) {
   const browser=await chromium.launch({headless:true,executablePath,args:['--no-sandbox']});
   const banks=[
     {region:'harbor',mapRegion:'village',x:134,y:102,direction:'right',expected:'sea-shallow',mode:'gauge'},
-    {region:'coast-reef',mapRegion:'coast',x:95,y:84,direction:'up',expected:'coast-reef-shallow',mode:'nushi',boatActive:true},
-    {region:'coast-sand',mapRegion:'coast',x:145,y:110,direction:'down',expected:'coast-sand-shallow',mode:'gauge',boatActive:true},
+    {region:'coast-reef',mapRegion:'coast',x:62,y:73,direction:'up',expected:'coast-reef-shallow',mode:'nushi'},
+    {region:'coast-sand',mapRegion:'coast',x:145,y:102,direction:'down',expected:'coast-sand-shallow',mode:'gauge'},
+    {region:'coast-boat',mapRegion:'coast',x:95,y:84,direction:'up',expected:'coast-reef-shallow',mode:'nushi',boatActive:true},
     ...Offshore.fishingPoints.map(point=>({...point,region:'offshore-'+point.id,mapRegion:Offshore.id,
       expected:'offshore-'+point.id+'-shallow',mode:point.id==='west'?'gauge':'nushi'})),
   ];
   const paintedHashes=[],surfaceHashes=[];
+  if(process.env.REGIONAL_WATER_EVIDENCE) require('node:fs').mkdirSync(process.env.REGIONAL_WATER_EVIDENCE,{recursive:true});
   try {
     for(const bank of banks) {
       const context=await browser.newContext({viewport:{width:844,height:390},deviceScaleFactor:1.875,
@@ -67,6 +69,17 @@ module.exports=async function regionalWater(url,executablePath) {
         }
         surfaceHashes.push(await page.locator('#castBackdrop').evaluate(paintedHash));
         if(bank.mapRegion!=='village') assert.ok(images.has('spot-'+bank.region+'-cast.webp'), bank.region+' loaded surface');
+        if(bank.boatActive) {
+          const hull = await page.evaluate(()=>{
+            const model=pixelCastModel, canvas=document.querySelector('#castActor');
+            const {x,y,scale}=model.box;
+            return {vehicle:battle.coastVehicle, alpha:canvas.getContext('2d')
+              .getImageData(Math.round(x+62*scale),Math.round(y+112*scale),1,1).data[3]};
+          });
+          assert.deepEqual(hull,{vehicle:'canoe',alpha:255});
+        }
+        if(process.env.REGIONAL_WATER_EVIDENCE)
+          await page.screenshot({path:path.join(process.env.REGIONAL_WATER_EVIDENCE,bank.region+'-cast.png'),scale:'css'});
         const wave=()=>page.evaluate(()=>{
           const canvas=document.querySelector('.scenery-motion[data-for=castBackdrop]');
           const pixels=canvas.getContext('2d').getImageData(0,0,canvas.width,canvas.height).data;
@@ -117,7 +130,7 @@ module.exports=async function regionalWater(url,executablePath) {
     }
     assert.equal(new Set(surfaceHashes).size,banks.length,'all rendered shores are distinct');
     assert.equal(new Set(paintedHashes).size,banks.length,'all rendered seabeds are distinct');
-    console.log('Regional underwater phone: harbor and five island banks passed cast, waves, surface and underwater rendering.');
+    console.log('Regional underwater phone: harbor, five island banks and the coastal boat passed cast, waves, surface and underwater rendering.');
   } finally { await browser.close(); }
 };
 if(require.main===module)(async()=>{

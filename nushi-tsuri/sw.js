@@ -1,6 +1,6 @@
 const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-coast-island-art-252-90";
+const CACHE_NAME = "nushi-tsuri-v252-coast-boat-art-252-90";
 
 importScripts("./village-precache-252-90.js");
 const CORE_ASSETS = [
@@ -244,13 +244,13 @@ const CORE_ASSETS = [
   "./assets/audio/music-v170/lake-birds.mp3",
   "./weather.js?v=169-1",
   "./pixel-world.js?v=165-1",
-  "./pixel-cast.js?v=252-90-coast",
-  "./pixel-scenes.css?v=252-90-coast",
-  "./scene-layers.js?v=252-90-coast",
+  "./pixel-cast.js?v=252-90-boat",
+  "./pixel-scenes.css?v=252-90-boat",
+  "./scene-layers.js?v=252-90-boat",
   "./assets/cast-coast-sand-v198.webp",
   "./assets/cast-coast-reef-v198.webp",
-  "./layered-scenery.js?v=252-90-coast",
-  "./scenery-worker.js?v=252-90-coast",
+  "./layered-scenery.js?v=252-90-boat",
+  "./scenery-worker.js?v=252-90-boat",
   "./assets/village-world-v252-55.png",
   "./assets/village-world-v252-55-facilities.png",
   "./assets/village-world-v252-55-riao.png",
@@ -289,6 +289,8 @@ const CORE_ASSETS = [
   "./assets/cast-sam-pond-day-soft-v78.jpg",
   "./assets/cast-sam-pond-evening-v78.jpg",
   "./assets/cast-sam-pond-night-v78.jpg",
+  "./assets/spot-coast-boat-cast.webp",
+  "./assets/spot-coast-boat-fight.webp",
   "./assets/spot-coast-sand-cast.webp",
   "./assets/spot-coast-sand-fight.webp",
   "./assets/spot-coast-reef-cast.webp",

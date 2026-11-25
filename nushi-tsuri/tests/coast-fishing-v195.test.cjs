@@ -37,7 +37,8 @@ test('coast scene and fish spot survive the preparation-to-cast transition on bo
       const w=app.window;
       w.eval('action();beginFishing()');
       assert.equal(read(w,'battle.coastType'),type);
-      assert.equal(read(w,'surfaceSceneryKind()'),`coast-${type}`);
+      assert.equal(read(w,'surfaceSceneryKind()'),'coast-boat');
+      assert.equal(read(w,'battle.castLocale'),`coast-${type}`);
       assert.ok(w.document.querySelector('#castSurface').classList.contains(`art-sea-coast-${type}`));
       assert.equal(read(w,'battle.spot'),`coast-${type}-shallow`);
       w.eval('resolveSurfaceCast(85)');
