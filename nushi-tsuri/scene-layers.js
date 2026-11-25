@@ -195,10 +195,15 @@
     'sam-shop':'sam-shop',farmhouse:'fishing-inn',yaoya:'yaoya',diner:'minato-diner',
     'main-shrine':'star-shrine','fish-market':'fish-market',
   };
+  const islandSeaBeds = Object.freeze({
+    'coast-sand':'cove', 'coast-reef':'reef',
+    'offshore-cove':'cove', 'offshore-west':'reef', 'offshore-east':'current',
+  });
   function surface(kind,period) {
-    if (kind === 'coast-sand' || kind === 'coast-reef') {
-      const source = `assets/cast-${kind}-v198.webp`;
-      return {id:'surface-'+kind,source,units:[100,100],objectPosition:'center bottom',parts:[
+    if (Object.hasOwn(islandSeaBeds,kind)) {
+      const shore = islandSeaBeds[kind] === 'cove' ? 'sand' : 'reef';
+      return {id:'surface-'+kind,source:`assets/spot-${kind}-cast.webp`,
+        fallbackSource:`assets/cast-coast-${shore}-v198.webp`,units:[100,100],objectPosition:'center var(--island-cast-align-y, 100%)',parts:[
         box('island-base','ground',0,0,100,100),
         box('sky','sky',0,0,100,24),
         box('distant-islands','trees',0,16,100,16,vegetation),
@@ -239,26 +244,35 @@
     return {id:'surface-'+kind,source:`assets/${prefix}-${time}-v${version}.jpg`,units:[100,100],photographedTime:true,objectPosition:harbor?'center 20%':'center bottom',parts};
   }
   const underwaterRegions = Object.freeze({
-    harbor:'harbor', pond:'pool', 'coast-sand':'cove', 'coast-reef':'reef',
-    'offshore-cove':'cove', 'offshore-west':'reef', 'offshore-east':'current',
+    harbor:'harbor', pond:'pool', ...islandSeaBeds,
     'mountain-stream':'stream', 'mountain-pond':'pool', 'mountain-highPond':'pool',
     'mountain-marsh':'marsh', 'mountain-highMarsh':'marsh', 'mountain-underground':'cave',
     'mountain-wetPond':'wetland', 'mountain-wetCreek':'stream', 'mountain-wetMarsh':'wetland',
     'mountain-canalCurrent':'canal', 'mountain-canalBackwater':'backwater',
   });
-  function underwaterRegion(battle) {
-    const { practice, offshoreType, mountainType, coastType, castLocale } = battle || {};
+  function fishingLocale(battle) {
+    const { practice, offshoreType, mountainType, coastType, spot, castLocale } = battle || {};
+    const spotLocale = typeof spot === 'string' && spot.replace(/-(shallow|mid|deep)$/, '');
     const candidates = [practice && 'pond', offshoreType && 'offshore-'+offshoreType,
-      mountainType && 'mountain-'+mountainType, coastType && 'coast-'+coastType, castLocale];
-    return candidates.map(key=>Object.hasOwn(underwaterRegions,key)?underwaterRegions[key]:null).find(Boolean)||'';
+      mountainType && 'mountain-'+mountainType, coastType && 'coast-'+coastType, spotLocale, castLocale];
+    return candidates.find(key=>Object.hasOwn(underwaterRegions,key)) || '';
+  }
+  function underwaterRegion(battle) {
+    const locale = fishingLocale(battle);
+    return Object.hasOwn(islandSeaBeds,locale) ? locale : underwaterRegions[locale] || '';
   }
   function underwater(zone,depth,flatfish,region) {
     zone=['lake','river','sea'].includes(zone)?zone:'lake';
     depth=['shallow','mid','deep'].includes(depth)?depth:'shallow';
+    const island = Object.hasOwn(islandSeaBeds,region);
+    const seabed = island ? islandSeaBeds[region] : region;
+    const source = seabed ? `assets/underwater-region-${seabed}.webp` : flatfish
+      ? 'assets/underwater-sea-sand-flatfish-v97.jpg' : `assets/underwater-${zone}-${depth}-v${zone==='sea'?65:64}.jpg`;
     return {
       id:`underwater-${zone}-${depth}-${!!flatfish}${region?'-'+region:''}`,
       region, depth,
-      source:region?`assets/underwater-region-${region}.webp`:flatfish?'assets/underwater-sea-sand-flatfish-v97.jpg':`assets/underwater-${zone}-${depth}-v${zone==='sea'?65:64}.jpg`,
+      source:island ? `assets/spot-${region}-fight.webp` : source,
+      ...(island && {fallbackSource:source}),
       units:[100,100],underwater:true,
       parts:[
         box('water-column','water',0,0,100,75,{effect:'shafts'}),
@@ -282,8 +296,8 @@
     if(id==='home-interior'||id==='room-player-home') return room;
     if(id.startsWith('surface-')) return surface(id.slice(8),env.period);
     if(id.startsWith('underwater-')) {
-      const [,zone,depth,flatfish,region]=id.split('-');
-      return underwater(zone,depth,flatfish==='true',Object.values(underwaterRegions).includes(region)?region:'');
+      const [,zone,depth,flatfish,...parts]=id.split('-'), region=parts.join('-');
+      return underwater(zone,depth,flatfish==='true',Object.hasOwn(islandSeaBeds,region)||Object.values(underwaterRegions).includes(region)?region:'');
     }
     const name=rooms[id.replace(/^room-/,'')] || 'fishing-inn';
     return {id,source:name==='fishing-inn'?'assets/layered-v163/fishing-inn-master.png':`assets/interior-${name}-v55.png`,units:[100,100],indoor:true,
@@ -292,13 +306,14 @@
         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
   }
   const ids=['world','home-exterior','home-interior',...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
-    ...['lake','river','beach','harbor','pond','coast-sand','coast-reef'].map(id=>'surface-'+id),
+    ...['lake','river','beach','harbor','pond',...Object.keys(islandSeaBeds)].map(id=>'surface-'+id),
+    ...Object.keys(islandSeaBeds).map(id=>'underwater-sea-shallow-false-'+id),
     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
     'underwater-sea-deep-true'];
   function assets() {
     const urls=new Set(Object.values(underwaterRegions).map(region=>`assets/underwater-region-${region}.webp`));
     for(const id of ids) for(const period of ['dawn','morning','day','evening','night']) {
-      const d=get(id,{period}); urls.add(d.source); if(d.underlay)urls.add(d.underlay);
+      const d=get(id,{period}); urls.add(d.source); if(d.fallbackSource)urls.add(d.fallbackSource); if(d.underlay)urls.add(d.underlay);
       for(const edit of d.edits||[])urls.add(edit.source);
     }
     return [...urls];
@@ -310,5 +325,5 @@
   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
   const propSolid=(x,y,env)=>!referenceEnabled(env)&&(trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
     shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom));
-  return {underwaterRegion,get,ids,assets,propSolid,referenceDefinition};
+  return {fishingLocale,underwaterRegion,get,ids,assets,propSolid,referenceDefinition};
 });

@@ -6473,7 +6473,7 @@
         .tournament-choices button { min-height: 44px; padding: 7px 10px; }
       }
     </style>
-    <link rel="stylesheet" href="pixel-scenes.css?v=240-1" />
+    <link rel="stylesheet" href="pixel-scenes.css?v=252-90-coast" />
     <link rel="stylesheet" href="field-guide.css?v=248-2" />
     <link rel="stylesheet" href="village-guide.css?v=252-5" />
     <link rel="stylesheet" href="village-fish-games.css?v=252-84" />
@@ -7522,9 +7522,9 @@
     <script src="tournament-npcs.js?v=252-55"></script>
     <script src="tournament.js?v=180-1"></script>
     <script src="pixel-world.js?v=165-1"></script>
-    <script src="pixel-cast.js?v=247-1"></script>
-    <script src="scene-layers.js?v=252-55"></script>
-    <script src="layered-scenery.js?v=252-55"></script>
+    <script src="pixel-cast.js?v=252-90-coast"></script>
+    <script src="scene-layers.js?v=252-90-coast"></script>
+    <script src="layered-scenery.js?v=252-90-coast"></script>
     <script>
       // Abort this same script before create(), save reads, migrations or UI
       // handlers. A previous worker can otherwise serve the old save module.
@@ -15258,11 +15258,12 @@
           isOnLakeDock, isOnHarborWalkway, seaWaterY, isBlockedStructure, structureBounds,
           mainShrineApproachBounds, samShopApproachBounds, harborCornerPassageBounds };
       }
-      function pixelFishingSize() {
+      function pixelFishingSize(fullAspect = false) {
         const box = $("#fishScene").getBoundingClientRect();
         const width = box.width || $("#world").clientWidth || innerWidth;
         const height = box.height || $("#world").clientHeight || innerHeight;
-        return { width: 640, height: Math.round(640 * Math.max(.3, Math.min(2, height / Math.max(1, width)))) };
+        const ratio = height / Math.max(1, width);
+        return { width: 640, height: Math.max(1, Math.round(640 * (fullAspect ? ratio : Math.max(.3, Math.min(2, ratio))))) };
       }
       function resizePixelCanvas(canvas, size) {
         if (canvas.width === size.width && canvas.height === size.height) return false;
@@ -15271,15 +15272,22 @@
       }
       function surfaceSceneryKind() {
         return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
-          ? battle.coastType ? `coast-${battle.coastType}`
-            : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
+          ? ShuSceneLayers.fishingLocale(battle) || battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
           : battle?.waterZone || "lake";
       }
       function paintSurfaceScenery() {
         if (!battle) return;
         const canvas = $("#castBackdrop"), env = gameSceneryEnvironment(), kind = surfaceSceneryKind();
         canvas.dataset.locale = kind;
-        $("#castSurface").dataset.locale = kind;
+        const surface = $("#castSurface");
+        surface.dataset.locale = kind;
+        if (ShuCast.isIslandScene(kind)) {
+          const {width, height} = surface.getBoundingClientRect();
+          const frame = ShuCast.islandFrame(width || 640, height || 320);
+          const position = `${frame.alignY * 100}%`;
+          if (surface.style.getPropertyValue("--island-cast-align-y") !== position)
+            surface.style.setProperty("--island-cast-align-y", position);
+        }
         paintPixelScene(canvas, `${kind}:${env.key}`,
           c => ShuScenery.paint(c, `surface-${kind}`, env));
       }
@@ -15353,12 +15361,12 @@
       function renderPixelCast(now = Date.now()) {
         const canvas = $("#castActor");
         if (!canvas || document.hidden) return false;
-        const size = pixelFishingSize();
+        const kind = surfaceSceneryKind();
+        const size = pixelFishingSize(ShuCast.isIslandScene(kind));
         const resized = resizePixelCanvas(canvas, { width: size.width * 2, height: size.height * 2 });
         const flying = battle?.phase === "cast-flight";
         const progress = flying ? Math.max(0, Math.min(1, (now - surfaceCastMotionStartedAt) / SURFACE_CAST_MOTION_MS)) : 0;
         const env = gameSceneryEnvironment(), rod = activeSurfaceCastRodKey();
-        const kind = surfaceSceneryKind();
         const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
         if (!resized && pixelCastKey === key) return false;
         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
@@ -17788,6 +17796,18 @@
           // Follow the curved channel itself; the old straight diagonal put
           // deep casts on the right bank once the river narrowed upstream.
           return castLanePoint([[58, 67], [58, 55], [55, 43], [52, 34]], value);
+        }
+        const locale = surface.dataset.locale || "";
+        if (ShuCast.isIslandScene(locale)) {
+          // These positions are on open water in each of the five paintings.
+          const point = castLanePoint([[55, 67], [57, 62], [59, 55], [56, 49]], value);
+          const rect = surface.getBoundingClientRect();
+          const width = rect.width || 640, height = rect.height || 320;
+          const frame = ShuCast.islandFrame(width, height);
+          return {
+            x: Math.max(6, Math.min(94, (frame.left * 100 + point.x * frame.width) / width)),
+            y: Math.max(2, (frame.top * 100 + point.y * frame.height) / height),
+          };
         }
         if (surface.classList.contains("art-sea-harbor")) {
           // Cast away from the upper quay into the clear basin below it.
@@ -25059,6 +25079,10 @@
           requestAnimationFrame(() => {
             render();
             syncSurfaceCastRig();
+            if (battle && ShuCast.isIslandScene(surfaceSceneryKind()) && $("#fishScene").classList.contains("surface-casting")) {
+              updateSurfaceCastAim(battle.castDistance ?? battle.cast);
+              positionCastDepthLabels(battle.waterZone, rodCastProfile(s.selectedRod, battle.practice), battle.minimumDepth);
+            }
             if (battle?.phase === "fight") {
               renderBattleFish();
               drawBattle();

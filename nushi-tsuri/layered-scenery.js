@@ -402,7 +402,9 @@
         try {
           let pending=prepared.get(key);
           if(!pending) {
-            pending=Promise.all([image(definition.source),definition.underlay?image(definition.underlay):null,
+            let sourceImage=image(definition.source);
+            if(definition.fallbackSource)sourceImage=sourceImage.catch(()=>image(definition.fallbackSource));
+            pending=Promise.all([sourceImage,definition.underlay?image(definition.underlay):null,
               ...((definition.edits||[]).map(edit=>image(edit.source)))])
               .then(([source,underlay,...edits])=>buildScene(assembleSource(source,definition,edits,canvasFactory),underlay,definition,env,canvasFactory));
             prepared.set(key,pending);trim(prepared,3);
@@ -465,7 +467,7 @@
         let sourceCopy,underlayCopy;
         try {
           if(!worker) {
-            worker=new Worker('scenery-worker.js?v=252-55');
+            worker=new Worker('scenery-worker.js?v=252-90-coast');
             worker.onmessage=event=>{const job=jobs.get(event.data.id);if(!job)return;jobs.delete(event.data.id);event.data.error?job.reject(new Error(event.data.error)):job.resolve(event.data.scene);};
             worker.onerror=()=>disable(new Error('Scenery worker unavailable'));
           }

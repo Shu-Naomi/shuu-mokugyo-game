@@ -105,10 +105,19 @@
       butt:{x:hand.x-unit.x*15,y:hand.y-unit.y*15},
       leftFoot:point([f.feet[0],f.floor]),rightFoot:point([f.feet[1],f.floor])};
   }
+  const isIslandScene=kind=>kind.startsWith('coast-')||kind.startsWith('offshore-');
+  function islandFrame(width,height){
+    const imageHeight=Math.max(height,width*9/16),imageWidth=imageHeight*16/9;
+    const crop=imageHeight-height;
+    // Reveal more of the horizon, but keep the foreground shore in short views.
+    const shift=Math.min(crop*.32,imageHeight*.08);
+    return {width:imageWidth,height:imageHeight,left:(width-imageWidth)/2,top:shift-crop,
+      alignY:crop?1-shift/crop:1,footY:height-imageHeight*.035};
+  }
   function groundFor(kind='lake'){
     if(kind==='harbor')return {kind,x:.48,y:.275,aspect:16/9,alignY:.2,facing:'down'};
     if(kind.startsWith('mountain-'))return {kind,x:.42,y:.967,aspect:kind.startsWith('mountain-wet')?1.5:2,alignY:1};
-    if(kind.startsWith('coast-'))return {kind,x:.42,y:.965,aspect:1672/941,alignY:1};
+    if(isIslandScene(kind))return {kind,x:kind==='offshore-cove'?.30:.42,y:.965,aspect:16/9,alignY:1};
     return {kind,x:.39,y:.965,aspect:16/9,alignY:1};
   }
   function frontPose(progress=0,avatar='boy'){
@@ -122,8 +131,11 @@
   function layout(width,height,ground){
     const resolution=width/640,scale=Math.max(1,Math.floor(Math.min(height/resolution/240,640/175)))*resolution;
     if(ground){
-      const cover=Math.max(width/ground.aspect,height),imageWidth=cover*ground.aspect;
-      const footX=width/2+(ground.x-.5)*imageWidth,footY=(height-cover)*ground.alignY+ground.y*cover;
+      const frame=ground.kind&&isIslandScene(ground.kind)?islandFrame(width,height):null;
+      const cover=Math.max(width/ground.aspect,height);
+      // On narrow screens keep both feet inside the visible strip of shore.
+      const footX=frame?Math.max(width*.22,frame.left+ground.x*frame.width):width/2+(ground.x-.5)*cover*ground.aspect;
+      const footY=frame?frame.footY:(height-cover)*ground.alignY+ground.y*cover;
       const fitted=Math.max(resolution*.35,Math.min(scale,(footY-resolution*7)/136));
       return {scale:fitted,x:Math.round(footX-62*fitted),y:Math.round(footY-102*fitted),ground:{x:footX,y:footY}};
     }
@@ -217,5 +229,5 @@
     if(tint){ctx.save();ctx.globalCompositeOperation="source-atop";ctx.fillStyle=tint;ctx.fillRect(0,0,w,h);ctx.restore();}
     return m;
   }
-  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,frontPose,groundFor,layout,model,draw,preload,artwork,frontArtwork,prepareAtlas});
+  return Object.freeze({DURATION,RELEASE,timeline,frameAt,pose,frontPose,isIslandScene,islandFrame,groundFor,layout,model,draw,preload,artwork,frontArtwork,prepareAtlas});
 });

@@ -91,7 +91,8 @@ test('both island fishing scenes are distinct opaque pictures and included in of
   const assets=Layers.assets();
   for(const type of ['sand','reef']) {
     const scene=Layers.get(`surface-coast-${type}`,{period:'day'});
-    assert.equal(scene.source,`assets/cast-coast-${type}-v198.webp`);
+    assert.equal(scene.source,`assets/spot-coast-${type}-cast.webp`);
+    assert.equal(scene.fallbackSource,`assets/cast-coast-${type}-v198.webp`);
     assert.ok(assets.includes(scene.source));
     const image=await loadImage(path.join(__dirname,'../',scene.source));
     const canvas=createCanvas(320,180);
