@@ -44,10 +44,22 @@ test('feeding turns smoothly from the current heading and rejoins the swim witho
   assert.ok(biting>0);
   const resumed=poseAt(started+3.8);
   assert.ok(Math.abs(previous.x-resumed.x)<1e-8&&Math.abs(previous.y-resumed.y)<1e-8,'smooth position on release');
-  // Continuous phases expose sub-ulp differences between 380*.01 and 3.8.
+  // Continuous animation values expose sub-ulp differences between 380*.01 and 3.8.
   assert.ok(Math.abs(previous.swimFrame-resumed.swimFrame)<1e-9,'feeding preserves continuous tail phase');
-  assert.deepEqual({...previous,x:resumed.x,y:resumed.y,swimFrame:resumed.swimFrame},resumed,'feeding leaves no animation state behind');
+  assert.ok(Math.abs(previous.swimDrive-resumed.swimDrive)<1e-9,'feeding returns to ordinary stroke strength');
+  assert.deepEqual({...previous,x:resumed.x,y:resumed.y,swimFrame:resumed.swimFrame,swimDrive:resumed.swimDrive},resumed,'feeding leaves no animation state behind');
  }
+});
+
+test('a cross-tank approach calls for stronger strokes than a short feed or waiting at the pellet',()=>{
+ const feedFrom=x=>({ids:['fish1'],at:0,origins:{fish1:{x,y:205*.23,yaw:0}}});
+ const near=feedFrom(70),far=feedFrom(280);
+ assert.ok(poseAt(.4,far).swimDrive>poseAt(.4,near).swimDrive+.5);
+ assert.equal(poseAt(1,far).swimDrive,0);
+ assert.ok(poseAt(3.1,far).swimDrive>0);
+ assert.equal(poseAt(.4,far,true).swimDrive,0);
+ const resting=A.layout([{...specimen,species:'donko'}],catalog,360,205,1,()=>2).poses[0];
+ assert.equal(resting.swimDrive,0,'Donko settles between bursts');
 });
 
 test('all species remain visibly thick in all seven painted headings with offline assets',async()=>{

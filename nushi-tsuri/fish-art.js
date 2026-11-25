@@ -119,6 +119,52 @@
     if(cells===3){const jaw=Math.min(2,index);return {cell:jaw?(native[id]?.dense?25:7):0,flip:!!(jaw&&native[id]?.mouthFlip),jaw,target:[.5+headOffset,.62+mouth[jaw].yOffset],beat:0};}
     return {cell:0,jaw:0,target:[.5+headOffset,.62],beat:clock%8/8*Math.PI*2};
   }
+  // Hook contact in the painted 448 × 224 side view: closed lip, then
+  // fully open lip. The mesh head is a pivot and can lie outside the fish.
+  // Each landmark is on the jaw itself, including fish with long barbels.
+  const sideLipPixels={
+    aburahaya:[367,135,368,157], ainame:[368,131,368,151], aji:[368,131,368,140],
+    akahata:[365,135,365,164], akakamasu:[367,137,367,162], akaza:[371,138,373,148],
+    amago:[365,126,366,138], ayu:[365,127,362,158], bass:[368,131,368,144],
+    bluegill:[365,132,366,156], bora:[367,136,368,137], browntrout:[366,136,364,159],
+    buri:[367,134,366,167], caveNushi:[369,141,368,160], coastNushi:[369,129,368,140],
+    dojo:[369,136,360,164], donko:[367,133,367,146], funa:[369,133,367,140],
+    gigi:[372,135,372,142], herabuna:[367,117,366,147], himemasu:[366,129,366,148],
+    hiramasa:[367,139,367,163], hirame:[368,135,368,128], houraihimeji:[366,139,367,153],
+    isaki:[366,135,366,148], ishidai:[366,136,366,158], ishigakidai:[366,133,366,158],
+    iwana:[365,119,364,146], juzukakehaze:[366,136,368,150], kajika:[366,130,365,137],
+    kamatsuka:[363,131,362,156], kanpachi:[368,137,368,168], kasago:[370,139,370,142],
+    kawahagi:[364,138,364,145], kawamutsu:[367,124,366,147], kawayoshinobori:[367,136,364,156],
+    kijihata:[367,137,368,152], koi:[370,137,365,140], kokuchibasu:[368,135,368,149],
+    kurodai:[366,131,365,146], kuromejina:[367,138,368,156], laketrout:[367,136,367,150],
+    madai:[369,141,368,144], magochi:[368,139,366,163], mahaze:[367,130,367,154],
+    masaba:[366,125,366,149], mebaru:[369,128,368,136], medaka:[366,111,363,146],
+    moroko:[364,130,364,151], motsugo:[366,126,366,144], namazu:[368,137,364,152],
+    nigoi:[367,138,364,160], nijimasu:[369,132,368,130], nushi:[372,142,368,158],
+    oikawa:[364,134,364,145], oyanirami:[365,140,364,160], raigyo:[366,125,366,148],
+    sayori:[366,143,367,152], shimaaji:[368,131,366,150], shiokakure:[365,139,365,148],
+    shirogisu:[370,134,368,155], starNushi:[368,129,366,140], streamNushi:[368,130,368,138],
+    suzuki:[364,126,364,145], takabe:[366,136,366,161], tanago:[366,123,365,148],
+    ugui:[363,137,364,152], umazurahagi:[368,137,368,148], unagi:[369,135,368,146],
+    utsubo:[366,138,360,168], wakasagi:[365,136,361,159], yamame:[368,129,367,142],
+  };
+  function sideLip(id,cells=8,frame=0){
+    const p=pose(id,cells,frame);
+    const pixels=sideLipPixels[id==='shiokakureFight'?'shiokakure':id];
+    if(!Array.isArray(pixels))return p.target;
+    if(p.heading!==undefined){
+      // The ends of a turn use the actual cruising drawing, mirrored on the
+      // left. Ease its lip offset into the authored oblique head projection.
+      const nearSide=Math.max(0,1-Math.min(p.heading,6-p.heading));
+      const weight=nearSide*nearSide*(3-2*nearSide);
+      const dx=(pixels[0]+.5)/448-(.5+headOffset),dy=(pixels[1]+.5)/224-.62;
+      return [p.target[0]+(p.heading>3?-dx:dx)*weight,p.target[1]+dy*weight];
+    }
+    // Both open phases paint the same atlas cell. The middle phase moves it
+    // up by exactly the same amount as the underlying bitmap.
+    if(p.jaw)return [(pixels[2]+.5)/448,(pixels[3]+.5)/224+mouth[p.jaw].yOffset-mouth[2].yOffset];
+    return [(pixels[0]+.5)/448,(pixels[1]+.5)/224];
+  }
   function hookPose(id,cells,frame){
     const p=pose(id,cells,frame);
     return {xScale:(p.target[0]-.5)/headOffset,yOffset:p.target[1]-.62};
@@ -338,8 +384,9 @@
     }
     return finishRaster(raster);
   }
-  function paintSwimming(ctx,raster,id,p,phase,effort=1){
-    effort=clamp(Number.isFinite(effort)?effort:1,1,2.8);
+  function paintSwimming(ctx,raster,id,p,phase,motion){
+    const effort=clamp(Number.isFinite(motion?.swimEffort)?motion.swimEffort:1,1,2.8);
+    const drive=clamp(Number(motion?.swimDrive)||0,0,1);
     let output=outputs.get(ctx);
     if(!output){const data=ctx.createImageData(448,224);output={data,words:new Uint32Array(data.data.buffer,data.data.byteOffset,448*224)};outputs.set(ctx,output);counters.outputs++;}
     output.words.fill(0);
@@ -349,16 +396,34 @@
     // A side view sees the tail shorten as it swings into depth. Oblique
     // views also see its signed lateral excursion across the image plane.
     const amplitude=Math.min(span*.035,profile.amplitude*effort);
-    for(let x=Math.max(0,raster.left-Math.ceil(amplitude));x<=Math.min(447,raster.right+Math.ceil(amplitude));x++){
+    // From this camera a side-on tail swings mostly into and out of depth.
+    // Turning toward the camera exposes more of the lateral sweep.
+    const sweep=drive*side*Math.min(span*.115,span*.065+profile.amplitude*1.7);
+    const across=Math.sin(heading);
+    const margin=Math.ceil(amplitude+sweep*across);
+    const shoulder=Math.max(profile.shoulder*(1-.48*drive),Math.min(40/span,.65));
+    const brace=clamp(Number(motion?.resistanceBend)||0,-1.6,1.6);
+    for(let x=Math.max(0,raster.left-margin);x<=Math.min(447,raster.right+margin);x++){
       const rear=clamp((facing>=0?head-x-.5:x+.5-head)/span,0,1);
       const weight=Math.pow(clamp((rear-profile.shoulder)/(1-profile.shoulder),0,1),profile.falloff);
       const wave=Math.sin(phase-rear*profile.wave);
-      const offset=amplitude*weight*(facing*(.67*wave*wave+.33*wave)+Math.sin(heading)*wave);
+      let offset=amplitude*weight*(facing*(.67*wave*wave+.33*wave)+across*wave);
+      let bend=0;
+      if(sweep && rear>shoulder){
+        const flex=Math.pow((rear-shoulder)/(1-shoulder),profile.falloff-.2*drive);
+        const kick=Math.sin(phase+(1-rear)*profile.wave);
+        const travel=sweep*flex;
+        // Both halves of a side-on stroke shorten the projected tail.
+        // An oblique view also sees it sweep across the picture. Only the
+        // small elevated-camera component lifts the tail; the lip stays fixed.
+        offset+=travel*(.78*facing*kick*kick+across*kick);
+        bend=travel*(.24*kick+.32*brace);
+      }
       const source=Math.round(x-offset);
       if(source<raster.left||source>raster.right)continue;
       const top=raster.top[source],bottom=raster.bottom[source];
       const fin=clamp((Math.abs(x+.5-head)-36)/24,0,1)*front*profile.fin*Math.sin(phase+(x<head?0:Math.PI));
-      const shift=Math.round(clamp(fin,2-top,221-bottom));
+      const shift=Math.round(clamp(fin+bend,2-top,221-bottom));
       for(let y=top;y<=bottom;y++)output.words[(y+shift)*448+x]=raster.words[y*448+source];
     }
     ctx.putImageData(output.data,0,0);counters.paints++;
@@ -372,8 +437,8 @@
     ctx.clearRect(0,0,448,224);ctx.imageSmoothingEnabled=false;
     const raster=p.heading!==undefined?turnRaster(ctx,image,id,p,resolveImage,motion?.resistanceBend||0):bodyRaster(ctx,image,id,p,resolveImage);
     const phase=(motion?.swimFrame!==undefined?motion.swimFrame/8*Math.PI*2:p.beat||0);
-    paintSwimming(ctx,raster,id,p,phase,motion?.swimEffort);
+    paintSwimming(ctx,raster,id,p,phase,motion);
     return true;
   }
-  return Object.freeze({species,aquarium,fightVariants,groups,turn,mouth,headOffset,pose,hookPose,sourceHead,scaleFor,draw,assets,metrics});
+  return Object.freeze({species,aquarium,fightVariants,groups,turn,mouth,headOffset,pose,sideLip,hookPose,sourceHead,scaleFor,draw,assets,metrics});
 });

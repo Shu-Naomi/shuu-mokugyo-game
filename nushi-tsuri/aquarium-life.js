@@ -4,6 +4,20 @@
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
   const travelClock=(id,t,individual=0)=>typeof Motion.travelClock==='function'?Motion.travelClock(id,t,individual):Math.max(0,Number(t)||0);
+  // Relative speed along a smoothstep leg. Both the departure and arrival
+  // have zero speed, while the middle of the pass has full propulsion.
+  function legSpeed(progress){
+    const p=clamp(progress,0,1);
+    return 4*p*(1-p);
+  }
+  function lapDrive(progress,turnProgress,pace){
+    return clamp(.78*pace*legSpeed(progress)+.54*legSpeed(turnProgress),0,1);
+  }
+  function clockRate(id,time,individual=0){
+    if(id!=='donko')return 1;
+    // Follow the existing stop-and-dart path, including its stationary part.
+    return (travelClock(id,time+.016,individual)-travelClock(id,time,individual))/.016;
+  }
   const bottom=id=>['hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo','donko','houraihimeji','kijihata','akaza','juzukakehaze'].includes(id);
   // Each fish has its own tank pacing and water column. Gameplay and feeding
   // use the same layout and never change catch records or reel physics.
@@ -56,13 +70,15 @@
     const swim=gait(id),travel=4.2/swim.speed,turn=1.8,leg=travel+turn;
     const cycle=seconds%(leg*2),right=cycle<leg,local=cycle%leg;
     const travelTime=id==='donko'?travel*travelClock(id,Math.min(local,travel))/travelClock(id,travel):local;
-    const progress=smooth(travelTime/travel),turnProgress=smooth((local-travel)/turn);
+    const along=clamp(travelTime/travel,0,1),throughTurn=clamp((local-travel)/turn,0,1);
+    const progress=smooth(along),turnProgress=smooth(throughTurn);
     // Spend most of the time swimming sideways so the tail-beat atlas plays.
     // A short arc at each end joins the painted headings; no perpetual spin.
     const yaw=reduced?0:Math.PI*(right?turnProgress:1-turnProgress);
     return {...orientation(yaw),x:reduced?50:44+12*(right?progress:1-progress),
       y:reduced?43:43+Math.sin(seconds*.8)*1.4*swim.bob,
-      swimFrame:reduced?0:Motion.phase(id,seconds,swim.speed,bottom(id))};
+      swimDrive:reduced?0:lapDrive(along,throughTurn,swim.speed*clockRate(id,local)),
+      swimFrame:reduced?0:Motion.phase(id,seconds,swim.speed,bottom(id))+3*(Math.floor(seconds/leg)+progress)};
   }
   // A common reference for a species, rather than fitting every specimen to
   // the same box. Small fish retain a readable minimum; the whole tank keeps
@@ -116,7 +132,9 @@
       // Every fish gets at least 1.8 seconds through the turn, including fast
       // swimmers in a crowded tank. Keep authored frontal thickness.
       const turnArc=Math.max(.24,speed*.9);
-      let yaw=reduced?0:Math.PI*smooth(.5-Math.cos(phase)/(2*Math.sin(turnArc)));
+      const cosine=Math.cos(phase);
+      let yaw=reduced?0:Math.PI*smooth(.5-cosine/(2*Math.sin(turnArc)));
+      let drive=clamp(clockRate(f.species,seconds,i)*(.78*swim.speed*Math.abs(cosine)+.54*Math.sin(yaw)),0,1);
       let x=minX+(maxX-minX)*(.5+.5*sin);
       const band=(bottom(f.species)?.68+.018*(i%3):.25+(i%5)*.08)+swim.depth;
       let y=height*(band+Math.sin(seconds*.45+i)*.015*swim.bob);
@@ -129,6 +147,14 @@
         const origin=feeding.origins?.[f.uid]||{x,y,yaw};
         const approach=smooth(age/Math.max(.6,at-.1)),leave=smooth((age-2.5)/1.2);
         const px=origin.x+(tx-origin.x)*approach,py=origin.y+(ty-origin.y)*approach;
+        // Distance and easing are taken from the very same pellet approach
+        // and return. A nearby pellet needs a smaller kick than a cross-tank
+        // dash; once the fish reaches it the body settles until departure.
+        const approachDistance=Math.hypot(tx-origin.x,ty-origin.y);
+        const returnDistance=Math.hypot(x-px,y-py);
+        const tankSpan=Math.max(1,width);
+        drive=clamp(4*approachDistance/tankSpan*legSpeed(age/(at-.1))/(at-.1)
+          +4*returnDistance/tankSpan*legSpeed((age-2.5)/1.2)/1.2+leave*drive,0,1);
         x=px+(x-px)*leave;y=py+(y-py)*leave;
         const targetYaw=tx>=origin.x?0:Math.PI;
         const originYaw=origin.yaw??(origin.facing<0?Math.PI:0);
@@ -138,8 +164,13 @@
         if(age<at)food={x:tx+Math.cos(targetYaw)*w*.39,y:height*.075+(ty-height*.075)*clamp(age/at,0,1)};
       }
       x=clamp(x,minX,maxX);y=clamp(y,h/2+height*.08,floor-h/2);
+      // Unwrap distance around the tank; adding it to the tail clock speeds
+      // up strokes on the crossing and eases them at the ends without a reset.
+      const lap=Math.floor((phase+Math.PI/2)/Math.PI);
+      const travelDistance=lap+.5+(lap%2===0?sin:-sin)*.5;
       return {uid:f.uid,species:f.species,x,y,width:w,height:h,...orientation(yaw),depth,bite,food,bottomDweller:bottom(f.species),
-        swimFrame:reduced?0:Motion.phase(f.species,seconds,swim.speed,bottom(f.species),i*1.618)};
+        swimDrive:reduced?0:drive,
+        swimFrame:reduced?0:Motion.phase(f.species,seconds,swim.speed,bottom(f.species),i*1.618)+4*travelDistance};
     });
     // A small vertical separation gives passing fish room without teleporting x.
     for(let i=0;i<poses.length;i++)for(let j=0;j<i;j++){
@@ -150,5 +181,5 @@
     }
     return {...scale,poses};
   }
-  return Object.freeze({dimensions,layout,orientation,gait,inspection,specimenDimensions,appearance,decorate});
+  return Object.freeze({dimensions,layout,orientation,gait,lapDrive,inspection,specimenDimensions,appearance,decorate});
 });

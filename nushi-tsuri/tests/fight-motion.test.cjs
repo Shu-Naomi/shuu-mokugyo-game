@@ -38,6 +38,51 @@ test('maximum fight effort preserves every fish original, pixel volume, lips and
   }
  }
 });
+test('a forceful tail beat swings into depth while its hooked lip stays put', async () => {
+ const ctx = createCanvas(448, 224).getContext('2d');
+ for (const [id, cells, heading] of [['namazu', 8, 0], ['koi', 8, 0], ['unagi', 8, 0], ['koi', 7, 1.25], ['koi', 7, 4.75], ['namazu', 7, 6]]) {
+   const image = await loadImage(path.join(__dirname, '..', A.species[id].asset));
+   const draw = (swimFrame, swimDrive) => A.draw(ctx, image, id, cells, heading, () => image, {
+     swimFrame, swimDrive, swimEffort: 1, resistanceBend: cells === 7 ? .24 : 0
+   });
+   const target = A.pose(id, cells, heading).target;
+   const lipX = Math.round(target[0] * ctx.canvas.width), lipY = Math.round(target[1] * ctx.canvas.height);
+   const lips = () => Buffer.from(ctx.getImageData(lipX - 10, lipY - 10, 21, 21).data);
+   draw(0, 0);
+   const referenceLip = lips(), metrics = A.metrics();
+   assert.ok(referenceLip.some((value, i) => i % 4 === 3 && value > 64), id + ' mouth is visible');
+   function tailArc(drive) {
+     const tips = [], heights = [];
+     for (let frame = 0; frame < 8; frame += .5) {
+       draw(frame, drive);
+       const {bytes, edge} = pixels(ctx);
+       let tip = lipX;
+       for (let i = 3; i < bytes.length; i += 4) {
+         if (bytes[i] <= 64) continue;
+         const column = (i >>> 2) % ctx.canvas.width;
+         tip = heading > 3 ? Math.max(tip, column) : Math.min(tip, column);
+       }
+       // Follow the same part of the fin as its projected length changes.
+       const x = Math.round(tip + .12 * (lipX - tip));
+       let count = 0, sum = 0;
+       for (let y = 0; y < ctx.canvas.height; y++) {
+         if (bytes[(y * ctx.canvas.width + x) * 4 + 3] > 64) { count++; sum += y; }
+       }
+       assert.ok(count, id + ' tail stays in the sample column');
+       tips.push(tip);
+       heights.push(sum / count);
+       assert.equal(edge, 0, id + ' stays within the canvas');
+       assert.deepEqual(lips(), referenceLip, id + ' animation leaves the hooked mouth alone');
+     }
+     return {reach: Math.max(...tips) - Math.min(...tips), lift: Math.max(...heights) - Math.min(...heights)};
+   }
+   const cruise = tailArc(.17), run = tailArc(.9);
+   assert.ok(run.reach > cruise.reach + 8, id + ' kicks further into depth when running');
+   assert.ok(run.reach > 1.5 * run.lift, id + ' tail no longer beats mainly up and down');
+   assert.equal(A.metrics().builds, metrics.builds);
+   assert.equal(A.metrics().outputs, metrics.outputs);
+ }
+});
 function fixture(){const app=boot({...seed(),hp:100,fightMode:'nushi',ownedRods:['tideMaster'],selectedRod:'tideMaster'},
  {fishScene:[844,328],battleFish:[286,143]});
  const scene=app.window.document.querySelector('#fishScene'),element=app.window.document.querySelector('#battleFish');

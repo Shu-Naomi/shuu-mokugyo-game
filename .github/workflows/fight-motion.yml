@@ -2,10 +2,10 @@ name: Underwater fight motion
 on:
   push:
     branches: [main]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', '.github/workflows/fight-motion.yml']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', 'nushi-tsuri/tests/browser-landing-hook.cjs', 'nushi-tsuri/tests/landing-lip.test.cjs', '.github/workflows/fight-motion.yml']
   pull_request:
     branches: [main]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', '.github/workflows/fight-motion.yml']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*fight-motion*', 'nushi-tsuri/tests/browser-landing-hook.cjs', 'nushi-tsuri/tests/landing-lip.test.cjs', '.github/workflows/fight-motion.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -33,7 +33,7 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
       - name: Preserve balance, original anatomy, pause and bounded painter allocations
-        run: node --test --test-concurrency=2 fight-motion.test.cjs fish-resistance-v244.test.cjs fish-motion-v213.test.cjs fish-render-transitions.test.cjs fishing-spec-v242.test.cjs render-efficiency.test.cjs
+        run: node --test --test-concurrency=2 fight-motion.test.cjs landing-lip.test.cjs fish-resistance-v244.test.cjs fish-motion-v213.test.cjs fish-render-transitions.test.cjs fishing-spec-v242.test.cjs render-efficiency.test.cjs
       - name: Capture the exact unchanged comparison runtime
         run: |
           git fetch --depth=1 origin 3398d176ca00678221aea0297baa94184e0e3976
@@ -52,4 +52,70 @@ jobs:
         with:
           name: fight-motion-evidence
           path: nushi-tsuri/tests/fight-motion-evidence/
+          retention-days: 14
+
+  stroke-comparison:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Capture matched real-time strokes during a classic fight and tank feeding
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+        run: |
+          git fetch --depth=1 origin "$BASE_SHA"
+          git worktree add --detach /tmp/stroke-before "$BASE_SHA"
+          STROKE_BEFORE=/tmp/stroke-before/nushi-tsuri node browser-stroke-comparison.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: fish-stroke-synchronized
+          path: nushi-tsuri/tests/stroke-comparison/
+          retention-days: 14
+
+  landing-hook:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 12
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - run: git config --global --add safe.directory "$GITHUB_WORKSPACE"
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Measure the visible hook at the lip through landing and catch display
+        run: |
+          git fetch --depth=1 origin 011fc9cd62b6e420add592e192790db906e4e1f5
+          git worktree add --detach /tmp/landing-before 011fc9cd62b6e420add592e192790db906e4e1f5
+          git fetch --depth=1 origin 51e6091da19d7a3286b98cce0933f4b97282aced
+          git worktree add --detach /tmp/catch-before 51e6091da19d7a3286b98cce0933f4b97282aced
+          LANDING_BEFORE=/tmp/landing-before/nushi-tsuri CATCH_BEFORE=/tmp/catch-before/nushi-tsuri node browser-landing-hook.cjs
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: landing-hook-before-after
+          path: nushi-tsuri/tests/landing-hook-evidence/
           retention-days: 14

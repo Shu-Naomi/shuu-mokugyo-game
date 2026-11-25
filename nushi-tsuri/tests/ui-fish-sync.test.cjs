@@ -143,23 +143,26 @@ test("the hook anchor matches the rendered transform for every fish, facing, pos
         const transform = sprite.style.transform.match(/translate\(calc\(-50% \+ ([-\d.]+)px\), calc\(-50% \+ ([-\d.]+)px\)\) rotate\(([-\d.]+)deg\) scaleX\(([-\d.]+)\) scaleY\(([-\d.]+)\) scale\(([-\d.]+)\)/);
         assert.ok(transform, "the rendered transform is inspectable");
         const [dx, dy, angle, scaleX, scaleY, scale] = transform.slice(1).map(Number);
-        const data = read(window, `(() => {
-          const el=$("#battleFish"), mode=el.dataset.spriteMode, frame=Number(el.dataset.hookPoseFrame ?? el.dataset.spriteFrame);
-          return { profile:fishMouthProfiles[battle.f.id], pose:fishHookPoseOverrides[battle.f.id]?.[mode]?.[frame] || fishHookPoseFrames[mode]?.[frame], mode };
+        const lip = read(window, `(() => {
+          const el=$("#battleFish"), mode=el.dataset.spriteMode;
+          const cells=mode==="turn"?7:mode==="mouth"?3:8;
+          const art=ShuFishArt.fightVariants[battle.f.id]||battle.f.id;
+          return ShuFishArt.sideLip(art,cells,Number(el.dataset.spriteFrame));
         })()`);
-        const { profile, pose } = data;
-        const projection = data.mode === "turn" ? pose.xScale : facing * (pose?.xScale || 1);
-        const px = profile.x * 180 * scale * Math.abs(scaleX) * projection;
-        const py = (profile.y + (pose?.yOffset || 0)) * 100 * scale * scaleY;
+        const px = (lip[0]-.5) * 180 * scale * scaleX;
+        const py = (lip[1]-.5) * 100 * scale * scaleY;
         const rad = angle * Math.PI / 180, cos = Math.cos(rad), sin = Math.sin(rad);
         const lipX = width * .5 + dx + px * cos - py * sin;
         const lipY = height * .54 + dy + px * sin + py * cos;
-        const expectedX = lipX - projection * cos * profile.inset - sin * profile.drop;
-        const expectedY = lipY - projection * sin * profile.inset + cos * profile.drop;
+        // Transform the point of the actual SVG bend, relative to its (0,7) origin.
         const anchor = read(window, "battleMouthAndHook()");
+        const tipX = 2.8 * anchor.profile.tackleScale * anchor.facing;
+        const tipY = -.2 * anchor.profile.tackleScale;
+        const actualX = anchor.rootX * width / 1000 + cos * tipX - sin * tipY;
+        const actualY = anchor.rootY * height / 500 + sin * tipX + cos * tipY;
         const label = `${id} ${facing} ${mode} ${width}x${height}`;
-        assert.ok(Math.abs(anchor.rootX * width / 1000 - expectedX) < .0001, `${label} hook x`);
-        assert.ok(Math.abs(anchor.rootY * height / 500 - expectedY) < .0001, `${label} hook y`);
+        assert.ok(Math.abs(actualX - lipX) < .0001, `${label} hook x`);
+        assert.ok(Math.abs(actualY - lipY) < .0001, `${label} hook y`);
         assert.equal(anchor.angle, angle, `${label} hook rotation`);
       }
     }
