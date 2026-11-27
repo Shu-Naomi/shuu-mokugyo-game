@@ -1,0 +1,69 @@
+name: Map-only offline update rehearsal
+on:
+  pull_request:
+    branches: [main]
+    paths: ['.github/workflows/map-offline-rehearsal.yml', 'qa/map-offline-rehearsal/**']
+permissions:
+  contents: read
+concurrency:
+  group: map-offline-rehearsal-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+jobs:
+  chromium:
+    if: github.head_ref == 'qa/map-offline-rehearsal-20261127' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    strategy:
+      fail-fast: false
+      matrix:
+        scenario: [success]
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 12df756d184120a59d4d6c78d39356d0a0612e73
+          path: rehearsal/repo
+          persist-credentials: false
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - name: Reconstruct and verify exact map candidate
+        run: |
+          set -euo pipefail
+          cp -r qa/map-offline-rehearsal rehearsal/stage-tools
+          cd rehearsal
+          mkdir baseline
+          cp -a repo/nushi-tsuri baseline/
+          cd repo
+          git apply --index ../stage-tools/map-source.patch
+          origin=https://github.com/Shu-Naomi/shuu-mokugyo-game.git
+          git fetch --no-tags --depth=1 "$origin" 674ba91643f36a102c0f698df7c152c495a209c9 7ec6b77db0f2f3a744d8e5e444ec0ebd3ddfceec 185b75156bb856177f40967f93e0789f191394b1
+          git restore --source=674ba91643f36a102c0f698df7c152c495a209c9 --staged --worktree nushi-tsuri/assets/marsh-bridge-north.webp nushi-tsuri/assets/marsh-bridge-south.webp
+          git restore --source=7ec6b77db0f2f3a744d8e5e444ec0ebd3ddfceec --staged --worktree nushi-tsuri/assets/wetland-trail-edges.webp
+          git restore --source=185b75156bb856177f40967f93e0789f191394b1 --staged --worktree nushi-tsuri/assets/rural-bridge-shadow-repair.png
+          test "$(git rev-parse "$(git write-tree):nushi-tsuri")" = 22a22f3a73f6107b272c875e9821f240747084ab
+          cd ..
+          node stage-tools/build.cjs | tee staged-build.log
+      - name: Install locked browser dependency
+        working-directory: rehearsal/stage-tools
+        run: |
+          npm ci --no-audit --no-fund
+          npx playwright install --with-deps chromium
+      - name: Install baseline fixture dependencies
+        working-directory: rehearsal/baseline/nushi-tsuri/tests
+        run: npm install --no-audit --no-fund
+      - name: Reopen two disposable slots offline
+        env:
+          SCENARIO: ${{ matrix.scenario }}
+        run: node rehearsal/stage-tools/browser.cjs "$SCENARIO"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: map-offline-${{ matrix.scenario }}
+          path: |
+            rehearsal/browser-*.json
+            rehearsal/staged-build.log
+          if-no-files-found: ignore

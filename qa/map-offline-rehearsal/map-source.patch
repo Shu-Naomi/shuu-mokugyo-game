@@ -1,0 +1,954 @@
+diff --git a/nushi-tsuri/coast-voyage.js b/nushi-tsuri/coast-voyage.js
+index a16b61dfc527ae36f76bd6d52880f3f96e8d64f5..20e7275fbd5ea5f64b0a5cc5adf615553fb40973 100644
+--- a/nushi-tsuri/coast-voyage.js
++++ b/nushi-tsuri/coast-voyage.js
+@@ -1,8 +1,8 @@
+ (function (root, factory) {
+-  const api = factory();
++  const api = factory(typeof module === "object" && module.exports ? require("./outdoor-light.js") : root.ShuOutdoorLight);
+   if (typeof module === "object" && module.exports) module.exports = api;
+   root.ShuCoast = api;
+-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
++})(typeof globalThis !== "undefined" ? globalThis : this, function (OutdoorLight) {
+   "use strict";
+   const width = 240, height = 135;
+   const islands = {
+@@ -65,14 +65,13 @@
+   function paintFallback(canvas,environment={}) {
+     if (!canvas?.getContext) return;
+     const ctx=canvas.getContext("2d");
+-    const night=environment.period==="night" || environment.time==="night";
+     const scaleX=canvas.width/width, scaleY=canvas.height/height;
+     ctx.save();ctx.scale(scaleX,scaleY);ctx.imageSmoothingEnabled=false;
+-    ctx.fillStyle=night?"#12344a":"#236888";ctx.fillRect(0,0,width,height);
++    ctx.fillStyle="#236888";ctx.fillRect(0,0,width,height);
+     for(let y=0;y<height;y+=4) for(let x=0;x<width;x+=8) {
+       const noise=(x*7+y*13)%31;
+-      if(noise<9) { ctx.fillStyle=night?"#23536a":"#388a9f";ctx.fillRect(x+(y%3),y,4,1); }
+-      else if(noise>27) {ctx.fillStyle=night?"#568391":"#92c7c1";ctx.fillRect(x+2,y,2,1);}
++      if(noise<9) { ctx.fillStyle="#388a9f";ctx.fillRect(x+(y%3),y,4,1); }
++      else if(noise>27) {ctx.fillStyle="#92c7c1";ctx.fillRect(x+2,y,2,1);}
+     }
+     for(const [id,poly] of Object.entries(islands)) {
+       ctx.fillStyle="#e8f2cf";ctx.beginPath();poly.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();
+@@ -100,6 +99,7 @@
+     ctx.fillStyle="#705e51";ctx.fillRect(148,119,9,10);ctx.fillStyle="#d6bb84";ctx.fillRect(149,119,8,4);
+     ctx.fillStyle="#f3ebc4";ctx.fillRect(145,115,2,3);
+     ctx.restore();
++    OutdoorLight.paint(ctx,canvas,environment);
+   }
+   const artSources = {
+     coast: "assets/coast-world-v197.webp",
+@@ -132,10 +132,7 @@
+     ctx.save();
+     ctx.imageSmoothingEnabled=false;
+     ctx.drawImage(image,0,0,canvas.width,canvas.height);
+-    const period=environment.period || environment.time;
+-    // Tint the finished painting, retaining its shoreline and water detail.
+-    const tint={night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[period];
+-    if(tint) {ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}
++    OutdoorLight.paint(ctx,canvas,environment);
+     ctx.restore();
+   }
+   // Eight static hull/torso bases and one reusable oar. The measured source
+diff --git a/nushi-tsuri/docs/outdoor-night-bridge-fix.md b/nushi-tsuri/docs/outdoor-night-bridge-fix.md
+new file mode 100644
+index 0000000000000000000000000000000000000000..0f74d14fd77efae14f011f560cfd07e5196a802a
+--- /dev/null
++++ b/nushi-tsuri/docs/outdoor-night-bridge-fix.md
+@@ -0,0 +1,24 @@
++# Outdoor night and rural bridge correction (draft, based on 12df756)
++
++## Cause and scope
++
++The 01:10 screenshot contains a baked railing shadow in `assets/rural-canals-v252-48.webp`, not a dynamic shadow. Regional maps already receive the shared game clock, but used a separate translucent navy overlay. It retains warm highlights and has no dawn treatment. Village outdoor scenes use channel multiplication instead.
++
++- Coast, offshore island, stream, mountain pond, mountain marsh, wetland and rural canals now use the village's night (.38/.49/.72) and dawn (.73/.77/.91) multipliers, rounded to 8-bit Canvas multiply. Day, morning and evening appearance is preserved.
++- Lighting is restricted to each map canvas, after scenery composition. No filter on the world container, no HUD, character, boat, interiors, cast screen or controls changes. Cave intentionally stays unchanged.
++- `assets/rural-bridge-shadow-repair.png` is a 140×130 transparent overlay at source (1138,465) on the 1672×941 rural map. Alpha is restricted to the elongated railing shadow on dirt. The original full map bytes, short bridge contact shadow, bridge/rail geometry and collision data are unchanged. It is applied before grading in all periods, avoiding a shadow popping at dusk.
++- Tradeoff: source art remains a baked daytime painting, not dynamic relighting. A faint local dirt texture seam is visible at daytime zoom. The bridge fix is deliberately not a whole-map regeneration.
++
++## Art provenance
++
++Replacement dirt generated using built-in ImageGen from a crop of the existing project asset, then a bounded feathered alpha mask keeps the rest of the original untouched. Final overlay SHA-256: `8f7496f100810560ac1e2d8079d99194b76e4b51ec941e714e743fe276f0ceed`.
++
++Prompt: Precisely retouch the supplied landscape crop in place, maintaining its 3:2 framing and exact pixel-art composition. The only removal is the long, dark ladder-shaped railing shadow cast diagonally southeast below the wooden bridge across the tan dirt path. Preserve the short, soft contact shadow immediately beside the bridge foot. Restore matching uninterrupted granular tan dirt underneath the rest of that long shadow; continue the path's existing grain and subtle tonal variation. Leave the bridge geometry, posts, rails, planks, water, foliage, grass borders, flowers, and stones in exactly the same positions and proportions; do not redraw, move, crop or restyle them. Retain the existing golden daytime lighting, palette, resolution feel and pixel texture. No other alteration.
++
++## Verification
++
++`tests/outdoor-night.test.cjs` covers decoded native Canvas pixels across every region, cave exemption, all shared-clock boundaries, repaint without accumulated tint, bounded repair alpha, delayed-load latest time, stale destination, actual A-entry/return and save/reload. Existing rural regression tests cover delayed image completion under menus/background visibility. Standalone VM fixtures load the new explicit lighting dependency.
++
++`tests/browser-outdoor-night.cjs` runs the generated production entry in Chromium at 844×390 / DPR 2, captures day/night for all regional maps and rural dawn, checks actual clock/Canvas values, night save/reload, A-button region transitions, movement and absence of ancestor/UI filters. It runs in the existing Rural canals CI; no local Chromium launch is required. These are emulator screenshots, not a claim of physical-device validation.
++
++Draft only: no release version bump, merge, cache deletion or deployment. Rebuild generated index/precache with `node tools/build-village-production.cjs` before any commit.
+diff --git a/nushi-tsuri/index.html b/nushi-tsuri/index.html
+index 866fc9afec440be5b4a68e10dca63662a0a60b3e..d089dc2b8c671d8e641d5da574fe5321da30fb96 100644
+--- a/nushi-tsuri/index.html
++++ b/nushi-tsuri/index.html
+@@ -4,7 +4,7 @@
+ <meta charset="utf-8">
+ <script id="villageCandidateBootstrap">
+ (function(){
+-  const config = {"expectedUrls":["item-categories.css?v=217-1&sha256=11df933b17adb72198f12fa6ff27f68b3cfaba9c2909e8c35584cb43f2f6b89c","pixel-scenes.css?v=240-1&sha256=9257fc29b5175bdd44965c3703c170a9c7e432093f502dff4c6ad7c1ed5587d6","field-guide.css?v=248-2&sha256=2d5b1ac4cfb4135b1d6c3e7af278df5efffabd54e3140e24fa16b07a3190664d","village-guide.css?v=252-5&sha256=f3df710581517063aa87f8e864511c34079691f010f5da987f8a846699b8004a","village-fish-games.css?v=252-84&sha256=6960dc1350873ec02df53b4e4d7a3dc492cba12c9aa84684aff26e0755d4ddfe","pet-life.css?v=252-84&sha256=6db35e2ed6159b075c0286dd180897efc175669e0d1d572cb291ee8271595509","lake-story.css?v=206-1&sha256=ed3a9c43fd215c324217a02ab8ed2ab9b023f28c896b40b00a2938c328f80cd7","lake-research.css?v=252-6&sha256=6caf9db98b2b29bb174a3873d9b680051e6ff7ebd5ae975a690791e6d36db721","lake-intro.css?v=252-44&sha256=252a77358f99c76ae42911a0f866a7f2fecb94d1534b0aa9e0b8cf5d49fb8793","timed-rest.css?v=252-43&sha256=64717536adbf3acdc145f86ab2af9b8207471a6696eefbc0fb352696fb810727","save-slots.css?v=207-1&sha256=25440817ba851e0124c2ecfd7b789a65185d7f8f8a8e0f4eaa3d5abf68af498b","title-flow.css?v=252-1&sha256=61049f640f42a76a9084c02608ba1cf5258cbe204e2199da087450fb941a74e4","player-options.css?v=251-9&sha256=6ecb69d629c2a43aaa455da1f66731881837f36aac5f5eeae230a6446cac4f15","cast-tackle.css?v=252-59&sha256=ada4cb9c77c38c7a6bc26ac3b35b41e0225416a6d1e2094cd434e11fcf0708e7","event-ceremony.css?v=186-1&sha256=c1a491665203e2f75c356e7bbb83f87ec87c89affe055271c98f334aabd2efe7","fortune-capsules.css?v=185-1&sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3","fishing-duel.css?v=252-82&sha256=9d0ccf700e49bbbda30aeac9bc8c060a037b553f5049c86e5e40cc9b67702080","catch-memories.css?v=229-1&sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402","compact-ui.css?v=252-64&sha256=beed293a6fc27bebea769f128707696f79a2848b5e8dec15f0a7fe9f046253cb","offshore-island.css?v=252-71&sha256=0d09c178e93ded1d236e908c1cdad8fb6776b6af25c4e13792ae3d1568548f50","village-reference.js?v=252-73&sha256=8f18051cf09d6c16fccc18aa5c78d09e28ec20d5582e34c304c066669f5fa34d","player-options.js?v=251-9&sha256=b88b04471e0a166a665be2aa34850cebd0894ad54e7a7ff91028803aea318203","fortune-capsules.js?v=187-1&sha256=0ac23b2005199992a72ec77087540f3216d32622dd202bfef2afaf95f52d6f20","music-tracks.js?v=205-1&sha256=495fa1eb5ce93cf156175f24a8d0af982a3676fa883d1c9aff16ca17ee699b0e","soundscape.js?v=186-1&sha256=a04b52b377b5acee46a8907f28c0e5ef2c5dc038e07b548a1a40f9b009aaf8aa","ui-feedback.js?v=187-1&sha256=66e8c7618e1d7ec97a84a9968038cd32d501995c9dd9576805c17199fe648708","weather.js?v=169-1&sha256=f89b96f02b5a9665644722f523f762bb20898f2aff3cf04c14f11f320dd8dbd6","event-ceremony.js?v=186-1&sha256=e8b3720b874e6e0bed689acfa0a27c7065ef7a53e3713acbb8667d79e2a9a581","aquarium-mutations.js?v=252-24&sha256=540a4ee7667d6d25ff286720c21baf9221964e91f7d7e0765984c7803e90627d","pet-notebook.js?v=252-27&sha256=4a946a6c41640aeefd84a348831f3c4f4cb89f000b216a2a8301384192219738","pet-life.js?v=252-84&sha256=02d01cd4d5ecd81441f267d7297120494dd6cad2fed8d5ae5158f02da2a53180","fish-motion.js?v=252-82&sha256=4cc8e2b73a04255977b247af0985d2b8bda7016185cca572e490be06cda13bd5","aquarium-life.js?v=252-82&sha256=47858931b211d37e3423429b7c664a6affcf74124d2d3669b3a77404038a2a72","compact-ui.js?v=252-84&sha256=e953e7ebfc0970a17e26faa91d87f2552cee9c7fb1f84eb8198d8faa65398c26","pet-life-ui.js?v=252-84&sha256=c28248db715b9f7ddc34ac947726d8e936c0043be075252996dc3a068cdac28a","village-fish-cards.js?v=252-84&sha256=a196f0781c24156e7c9244d6f565c6d3ff38fe9d8668a882bd753d8711d17189","village-fish-race.js?v=252-84&sha256=1f4d1f701ea1758f1cf51d36fef0f1cbb8459a3fb2cb5f34e4c8881ed1ff1482","tackle-balance.js?v=252-71&sha256=2edfcf364c32da0a574f540bd5005717aaeafbdd06d525bfa7fb7313cdd2349b","fishing-duel.js?v=252-82&sha256=8512d12e89dbbeb928b2bd4ffa82aefbcfc4f1398713f6b4112ff6d60a3d61ff","underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b","nushi-presentation.js?v=252-75&sha256=3b4441bbf976ddaa7f2e9bc207c595d20eb5d4dda73f614d8b6be7f4a5cb2f29","catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb","coast-voyage.js?v=252-72&sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917","shiokakure.js?v=252-78&sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93","offshore-island.js?v=252-85&sha256=955fab2ad39959fa70ad2be6601556e5b8a2cc989021fcaeb9f31c20c2753a08","world-life.js?v=252-74&sha256=219b70b7ef7ff3d599535bf437e71157492fdbc5dc592068ca715483c060020f","field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd","rural-canals.js?v=252-55&sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a","mountain-region.js?v=252-72&sha256=22f9a44aaf4c519d6b040fdca8c26987363f7b305ac878be382d99f5c43445c7","regional-nushi.js?v=252-71&sha256=6bd642cfc929a4d581eaec67c6746858afdf75846d9a389bb618eaac0cb42a1e","lake-intro.js?v=252-55&sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df","timed-rest.js?v=252-32&sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f","village-guide.js?v=252-5&sha256=2c0ee2cc394727eb1730a7fb01845de929de9c0e77141c2ca807499361968301","lake-story.js?v=252-51&sha256=618f94ff3609be734b30315d3c0e5fc32af5849acdbae65609bd10526c916cad","lake-research.js?v=252-71&sha256=86246533dbe19fe910feab96890e263883b872f1434dfdaa862fda7a613a22d2","save-slots.js?v=252-1&sha256=3c3d1b9e847b90c7f9c39470e8b3a35ab43df8b6b15c204a977369f55848aa00","title-flow.js?v=252-1&sha256=c2f71d4d2bc242c71440d8cf66c6ca4b8f9f4146d4a5617e9a17ff14c40a9496","nushi-atlas.js?v=202-1&sha256=dab6dc8d7146ccd883604bb0d5ccd9edc5e4c02ebcea24603bf9c5a47376d472","fish-additions.js?v=252-82&sha256=9e9089a1aa8adc82a026850d4435381c8db8063dc1e1cf604a1f27ed6365ce81","fish-art.js?v=252-85&sha256=9d584f4b9bf0a9ecf782244005e8e8215bce662ece943ecc83c26a0850ffd9af","tackle-art.js?v=252-82&sha256=62ab841ba7acdf66cb576d551b581d463f35eb23788d45299999b4675c4d8d82","item-art.js?v=252-28&sha256=d06708b4d40e705c222fe1d3633dc7fe8696fb60d23ec7052cda39a6b84ee3ac","item-object-art.js?v=252-28&sha256=d75acd9ffa0c370f00d741b80763371495d361745215bf697ac122e52b8caa10","ui-pixel-art.js?v=252-28&sha256=c2f12bcc6215b4a56cfec7caa44239ea083168c66f19475a855a564c3371f00f","ui-extra-art.js?v=252-28&sha256=9ac00eee6580bd681b18b5ad58d7f0900ab055588c2a921a1129136a83fbfbaf","rival-anglers.js?v=252-55&sha256=e3927cf9c78c007f07b22a66aa44eb989c1e5023d95ad6a8feb3c97405e2c5ba","tournament-npcs.js?v=252-55&sha256=fa1e09fe4945904ced961f4d655e8dc77b6b6c65684b89b8c532d00de6e520ed","tournament.js?v=180-1&sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a","pixel-world.js?v=165-1&sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55","pixel-cast.js?v=247-1&sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b","scene-layers.js?v=252-55&sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872","layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc","village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427","village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381","village-save-adapter.js?sha256=f8173a08cedea16defc391e054e2cd4fe1c6417e832bd5fb658827d7551c19fe","village-release-verifier.js?sha256=e1139706b34da1036826c6eaeee54a94991136ed228b0fa5014130e4d4a96b70","village-release-gate.js?sha256=38abaf87f02d1624134b56b0dd9ee3fe7e026ae76070562fcc73bbd16c29e1f9"],"mapURL":"assets/village-reference-254a6ea78adbef4f.png","mapSHA256":"254a6ea78adbef4f3936c980e797f368cbabf6c7ea5342e5a40cb870e9117a87","workerURL":"./sw.js?v=252-85"};
++  const config = {"expectedUrls":["item-categories.css?v=217-1&sha256=11df933b17adb72198f12fa6ff27f68b3cfaba9c2909e8c35584cb43f2f6b89c","pixel-scenes.css?v=240-1&sha256=9257fc29b5175bdd44965c3703c170a9c7e432093f502dff4c6ad7c1ed5587d6","field-guide.css?v=248-2&sha256=2d5b1ac4cfb4135b1d6c3e7af278df5efffabd54e3140e24fa16b07a3190664d","village-guide.css?v=252-5&sha256=f3df710581517063aa87f8e864511c34079691f010f5da987f8a846699b8004a","village-fish-games.css?v=252-84&sha256=6960dc1350873ec02df53b4e4d7a3dc492cba12c9aa84684aff26e0755d4ddfe","pet-life.css?v=252-84&sha256=6db35e2ed6159b075c0286dd180897efc175669e0d1d572cb291ee8271595509","lake-story.css?v=206-1&sha256=ed3a9c43fd215c324217a02ab8ed2ab9b023f28c896b40b00a2938c328f80cd7","lake-research.css?v=252-6&sha256=6caf9db98b2b29bb174a3873d9b680051e6ff7ebd5ae975a690791e6d36db721","lake-intro.css?v=252-44&sha256=252a77358f99c76ae42911a0f866a7f2fecb94d1534b0aa9e0b8cf5d49fb8793","timed-rest.css?v=252-43&sha256=64717536adbf3acdc145f86ab2af9b8207471a6696eefbc0fb352696fb810727","save-slots.css?v=207-1&sha256=25440817ba851e0124c2ecfd7b789a65185d7f8f8a8e0f4eaa3d5abf68af498b","title-flow.css?v=252-1&sha256=61049f640f42a76a9084c02608ba1cf5258cbe204e2199da087450fb941a74e4","player-options.css?v=251-9&sha256=6ecb69d629c2a43aaa455da1f66731881837f36aac5f5eeae230a6446cac4f15","cast-tackle.css?v=252-59&sha256=ada4cb9c77c38c7a6bc26ac3b35b41e0225416a6d1e2094cd434e11fcf0708e7","event-ceremony.css?v=186-1&sha256=c1a491665203e2f75c356e7bbb83f87ec87c89affe055271c98f334aabd2efe7","fortune-capsules.css?v=185-1&sha256=6fcb79ce41c82c6c471aef30eb07b18ff07f38a54783c8df055c09cec2b26ca3","fishing-duel.css?v=252-82&sha256=9d0ccf700e49bbbda30aeac9bc8c060a037b553f5049c86e5e40cc9b67702080","catch-memories.css?v=229-1&sha256=be0e1fd7a7638904923c41431ad5914370d44c7ba08d131a9b0ed40c4ba05402","compact-ui.css?v=252-64&sha256=beed293a6fc27bebea769f128707696f79a2848b5e8dec15f0a7fe9f046253cb","offshore-island.css?v=252-71&sha256=0d09c178e93ded1d236e908c1cdad8fb6776b6af25c4e13792ae3d1568548f50","village-reference.js?v=252-73&sha256=8f18051cf09d6c16fccc18aa5c78d09e28ec20d5582e34c304c066669f5fa34d","player-options.js?v=251-9&sha256=b88b04471e0a166a665be2aa34850cebd0894ad54e7a7ff91028803aea318203","fortune-capsules.js?v=187-1&sha256=0ac23b2005199992a72ec77087540f3216d32622dd202bfef2afaf95f52d6f20","music-tracks.js?v=205-1&sha256=495fa1eb5ce93cf156175f24a8d0af982a3676fa883d1c9aff16ca17ee699b0e","soundscape.js?v=186-1&sha256=a04b52b377b5acee46a8907f28c0e5ef2c5dc038e07b548a1a40f9b009aaf8aa","ui-feedback.js?v=187-1&sha256=66e8c7618e1d7ec97a84a9968038cd32d501995c9dd9576805c17199fe648708","weather.js?v=169-1&sha256=f89b96f02b5a9665644722f523f762bb20898f2aff3cf04c14f11f320dd8dbd6","event-ceremony.js?v=186-1&sha256=e8b3720b874e6e0bed689acfa0a27c7065ef7a53e3713acbb8667d79e2a9a581","aquarium-mutations.js?v=252-24&sha256=540a4ee7667d6d25ff286720c21baf9221964e91f7d7e0765984c7803e90627d","pet-notebook.js?v=252-27&sha256=4a946a6c41640aeefd84a348831f3c4f4cb89f000b216a2a8301384192219738","pet-life.js?v=252-84&sha256=02d01cd4d5ecd81441f267d7297120494dd6cad2fed8d5ae5158f02da2a53180","fish-motion.js?v=252-82&sha256=4cc8e2b73a04255977b247af0985d2b8bda7016185cca572e490be06cda13bd5","aquarium-life.js?v=252-82&sha256=47858931b211d37e3423429b7c664a6affcf74124d2d3669b3a77404038a2a72","compact-ui.js?v=252-84&sha256=e953e7ebfc0970a17e26faa91d87f2552cee9c7fb1f84eb8198d8faa65398c26","pet-life-ui.js?v=252-84&sha256=c28248db715b9f7ddc34ac947726d8e936c0043be075252996dc3a068cdac28a","village-fish-cards.js?v=252-84&sha256=a196f0781c24156e7c9244d6f565c6d3ff38fe9d8668a882bd753d8711d17189","village-fish-race.js?v=252-84&sha256=1f4d1f701ea1758f1cf51d36fef0f1cbb8459a3fb2cb5f34e4c8881ed1ff1482","tackle-balance.js?v=252-71&sha256=2edfcf364c32da0a574f540bd5005717aaeafbdd06d525bfa7fb7313cdd2349b","fishing-duel.js?v=252-82&sha256=8512d12e89dbbeb928b2bd4ffa82aefbcfc4f1398713f6b4112ff6d60a3d61ff","underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b","nushi-presentation.js?v=252-75&sha256=3b4441bbf976ddaa7f2e9bc207c595d20eb5d4dda73f614d8b6be7f4a5cb2f29","catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb","outdoor-light.js?v=252-85&sha256=2511b83fde615f445031a3a7e260ced6edbfd9184ccf8a5eb9a77798ed37ebde","coast-voyage.js?v=252-72&sha256=1d1919998a65df34065ce139621f4b7519652c3f52eeb07dad594ca9002fb847","shiokakure.js?v=252-78&sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93","offshore-island.js?v=252-85&sha256=97ed72aed36538849ebd63ba43fcf43cd67f31c006d8bfeca3a8516533ec18ca","world-life.js?v=252-74&sha256=61add7ea099cc86d276994916e1ce91eb5c79ec925cb8c9a627f0f61bf269f9b","field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd","rural-canals.js?v=252-55&sha256=400953d2aac573e3bcd51a978855cc9f23f2a658fccfff89e6f4336454e90c83","mountain-region.js?v=252-72&sha256=8a966f28fa9ed96522bdc60f28de2f3b9ddce044e7ff7a31a8d2849ed8e97dea","regional-nushi.js?v=252-71&sha256=6bd642cfc929a4d581eaec67c6746858afdf75846d9a389bb618eaac0cb42a1e","lake-intro.js?v=252-55&sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df","timed-rest.js?v=252-32&sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f","village-guide.js?v=252-5&sha256=2c0ee2cc394727eb1730a7fb01845de929de9c0e77141c2ca807499361968301","lake-story.js?v=252-51&sha256=618f94ff3609be734b30315d3c0e5fc32af5849acdbae65609bd10526c916cad","lake-research.js?v=252-71&sha256=86246533dbe19fe910feab96890e263883b872f1434dfdaa862fda7a613a22d2","save-slots.js?v=252-1&sha256=3c3d1b9e847b90c7f9c39470e8b3a35ab43df8b6b15c204a977369f55848aa00","title-flow.js?v=252-1&sha256=c2f71d4d2bc242c71440d8cf66c6ca4b8f9f4146d4a5617e9a17ff14c40a9496","nushi-atlas.js?v=202-1&sha256=dab6dc8d7146ccd883604bb0d5ccd9edc5e4c02ebcea24603bf9c5a47376d472","fish-additions.js?v=252-82&sha256=9e9089a1aa8adc82a026850d4435381c8db8063dc1e1cf604a1f27ed6365ce81","fish-art.js?v=252-85&sha256=9d584f4b9bf0a9ecf782244005e8e8215bce662ece943ecc83c26a0850ffd9af","tackle-art.js?v=252-82&sha256=62ab841ba7acdf66cb576d551b581d463f35eb23788d45299999b4675c4d8d82","item-art.js?v=252-28&sha256=d06708b4d40e705c222fe1d3633dc7fe8696fb60d23ec7052cda39a6b84ee3ac","item-object-art.js?v=252-28&sha256=d75acd9ffa0c370f00d741b80763371495d361745215bf697ac122e52b8caa10","ui-pixel-art.js?v=252-28&sha256=c2f12bcc6215b4a56cfec7caa44239ea083168c66f19475a855a564c3371f00f","ui-extra-art.js?v=252-28&sha256=9ac00eee6580bd681b18b5ad58d7f0900ab055588c2a921a1129136a83fbfbaf","rival-anglers.js?v=252-55&sha256=e3927cf9c78c007f07b22a66aa44eb989c1e5023d95ad6a8feb3c97405e2c5ba","tournament-npcs.js?v=252-55&sha256=fa1e09fe4945904ced961f4d655e8dc77b6b6c65684b89b8c532d00de6e520ed","tournament.js?v=180-1&sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a","pixel-world.js?v=165-1&sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55","pixel-cast.js?v=247-1&sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b","scene-layers.js?v=252-55&sha256=616f1da1cc520fdc424aaf1857eab5e464f6fd1dd90d504183b1b61d03560697","layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc","village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427","village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381","village-save-adapter.js?sha256=f8173a08cedea16defc391e054e2cd4fe1c6417e832bd5fb658827d7551c19fe","village-release-verifier.js?sha256=e1139706b34da1036826c6eaeee54a94991136ed228b0fa5014130e4d4a96b70","village-release-gate.js?sha256=38abaf87f02d1624134b56b0dd9ee3fe7e026ae76070562fcc73bbd16c29e1f9"],"mapURL":"assets/village-reference-254a6ea78adbef4f.png","mapSHA256":"254a6ea78adbef4f3936c980e797f368cbabf6c7ea5342e5a40cb870e9117a87","workerURL":"./sw.js?v=252-85"};
+   config.expectedUrls = config.expectedUrls.map(url => new URL(url, location.href).href);
+   config.mapURL = new URL(config.mapURL, location.href).href;
+   config.loaded = new Set(); config.failed = [];
+@@ -7514,13 +7514,14 @@
+           </div></div>
+       </div>
+     </section>
+-    <script src="coast-voyage.js?v=252-72&amp;sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917" integrity="sha256-35NowYasrErCP8FQ3atnvcqSKUrlLWnw/Q1hmcFZ6Rc=" crossorigin="anonymous"></script>
++    <script src="outdoor-light.js?v=252-85&amp;sha256=2511b83fde615f445031a3a7e260ced6edbfd9184ccf8a5eb9a77798ed37ebde" integrity="sha256-JRG4P95hX0RQMaOn4mDO1u2/2RhMz4peuad3mO03694=" crossorigin="anonymous"></script>
++    <script src="coast-voyage.js?v=252-72&amp;sha256=1d1919998a65df34065ce139621f4b7519652c3f52eeb07dad594ca9002fb847" integrity="sha256-HRkZmYpl3zQGXOE5Yh9LdRllLD9S7rB9rVlMqQAvuEc=" crossorigin="anonymous"></script>
+     <script src="shiokakure.js?v=252-78&amp;sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93" integrity="sha256-ED0Jw4PnfDR6S1Wg/fRoAFmaFCr/L3JncdftQuZmepM=" crossorigin="anonymous"></script>
+-    <script src="offshore-island.js?v=252-85&amp;sha256=955fab2ad39959fa70ad2be6601556e5b8a2cc989021fcaeb9f31c20c2753a08" integrity="sha256-lV+rKtOZWfpwrSvmYBVW5biizJiQIfyuufMcIMJ1Ogg=" crossorigin="anonymous"></script>
+-    <script src="world-life.js?v=252-74&amp;sha256=219b70b7ef7ff3d599535bf437e71157492fdbc5dc592068ca715483c060020f" integrity="sha256-IZtwt+9/89WZU1v0N+cRV0kv28XcWSBoynFUg8BgAg8=" crossorigin="anonymous"></script>
++    <script src="offshore-island.js?v=252-85&amp;sha256=97ed72aed36538849ebd63ba43fcf43cd67f31c006d8bfeca3a8516533ec18ca" integrity="sha256-l+1yrtNlOISevWO6Q/z0PNZ/McAG2L/so6hRZTPsGMo=" crossorigin="anonymous"></script>
++    <script src="world-life.js?v=252-74&amp;sha256=61add7ea099cc86d276994916e1ce91eb5c79ec925cb8c9a627f0f61bf269f9b" integrity="sha256-Ya3X6gmcyG0naZSRbhzpHrXHnskly4yaYn8PYb8mn5s=" crossorigin="anonymous"></script>
+     <script src="field-guide.js?v=252-55&amp;sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd" integrity="sha256-CQ0WrWAHOFgLz1FE2XDdQulk5Jl7f+Pyo8YIXQ7gmr0=" crossorigin="anonymous"></script>
+-    <script src="rural-canals.js?v=252-55&amp;sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a" integrity="sha256-vvra+fxfg2iZKhIGH3vnPWDi9S3LcdO9EGCliuyLqgo=" crossorigin="anonymous"></script>
+-    <script src="mountain-region.js?v=252-72&amp;sha256=22f9a44aaf4c519d6b040fdca8c26987363f7b305ac878be382d99f5c43445c7" integrity="sha256-IvmkSq9MUZ1rBA/cqMJphzY/ezBayHi+OC2Z9cQ0Rcc=" crossorigin="anonymous"></script>
++    <script src="rural-canals.js?v=252-55&amp;sha256=400953d2aac573e3bcd51a978855cc9f23f2a658fccfff89e6f4336454e90c83" integrity="sha256-QAlT0qrFc+O81RqXiFXMnyPyplj8z/+J5vQzZFTpDIM=" crossorigin="anonymous"></script>
++    <script src="mountain-region.js?v=252-72&amp;sha256=8a966f28fa9ed96522bdc60f28de2f3b9ddce044e7ff7a31a8d2849ed8e97dea" integrity="sha256-ipZvKPqe2WUivcYPKN4vO53c4ETn/3oxqNKEntjpfeo=" crossorigin="anonymous"></script>
+     <script src="regional-nushi.js?v=252-71&amp;sha256=6bd642cfc929a4d581eaec67c6746858afdf75846d9a389bb618eaac0cb42a1e" integrity="sha256-a9ZCz8kppNWB6uxnxnRoWK/fdYRtmjibthjqrAy0Kh4=" crossorigin="anonymous"></script>
+     <script src="lake-intro.js?v=252-55&amp;sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df" integrity="sha256-CJgjBXeLhdDghe01gAbzMiNpjzwssPQ053xV5VSe098=" crossorigin="anonymous"></script>
+     <script src="timed-rest.js?v=252-32&amp;sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f" integrity="sha256-Wz2I7ZFEvSg0GecRcRIngQJwz/6/UwWsE931y11Xil8=" crossorigin="anonymous"></script>
+@@ -7542,7 +7543,7 @@
+     <script src="tournament.js?v=180-1&amp;sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a" integrity="sha256-Vm2NnSbIWT4K5dpG0Ty1bdvF+2irSMMl8P2fE5paTCo=" crossorigin="anonymous"></script>
+     <script src="pixel-world.js?v=165-1&amp;sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55" integrity="sha256-d6yPKJ4kW4i/zOYxCzDiUdGXsr5fhGbRSsp/EvyvalU=" crossorigin="anonymous"></script>
+     <script src="pixel-cast.js?v=247-1&amp;sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b" integrity="sha256-QddzwsheiiDJX3PhMnOHNeppI7acHW2jTOYEoM/Ij0s=" crossorigin="anonymous"></script>
+-    <script src="scene-layers.js?v=252-55&amp;sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872" integrity="sha256-RQgYy40V/iNVY5K9U3g4qKahjkeL9EYRJqlLBd4vqHI=" crossorigin="anonymous"></script>
++    <script src="scene-layers.js?v=252-55&amp;sha256=616f1da1cc520fdc424aaf1857eab5e464f6fd1dd90d504183b1b61d03560697" integrity="sha256-YW8docxSD9xCSq8YV+q15GT2/R3ZDVBBg7G2HQNWBpc=" crossorigin="anonymous"></script>
+     <script src="layered-scenery.js?v=252-55&amp;sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc" integrity="sha256-TElG3uRCfL6NOCuKd98lWj874PRgHLCgZVQuCYIXysw=" crossorigin="anonymous"></script>
+ <script type="text/plain" id="villageDeferredRuntime">
+       // Abort this same script before create(), save reads, migrations or UI
+@@ -15288,6 +15289,7 @@
+         pixelSceneCache.delete(canvas); return true;
+       }
+       function surfaceSceneryKind() {
++        if (battle?.bridgeView) return battle.bridgeView;
+         return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
+           ? battle.coastType ? `coast-${battle.coastType}`
+             : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
+@@ -15377,7 +15379,7 @@
+         const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
+         if (!resized && pixelCastKey === key) return false;
+         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
+-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
++        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:battle?.bridgeView ? ShuSceneLayers.marshBridgePoint(kind,battle.playerX,battle.playerY) : ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
+           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
+         pixelCastKey = key;
+         return true;
+@@ -17779,6 +17781,16 @@
+       function castSurfacePoint(distance = 50) {
+         const value = Math.max(0, Math.min(100, Number(distance) || 0));
+         const surface = $("#castSurface");
++        if (battle?.bridgeView) {
++          // Follow the clear channel immediately beyond each gap in the railing.
++          const north = battle.bridgeView === "marsh-bridge-north";
++          const x = battle.playerX + (121 - battle.playerX) * value / 100;
++          const y = north ? 54 - value * .085 : 89 + value * .047;
++          const point = ShuSceneLayers.marshBridgePoint(battle.bridgeView,x,y);
++          const box = surface.getBoundingClientRect(), width = box.width || 640, height = box.height || 320;
++          const projected = ShuCast.layout(width,height,point).ground;
++          return {x:projected.x / width * 100,y:projected.y / height * 100};
++        }
+         const practicePond = surface.classList.contains("art-sam-pond");
+         if (practicePond) {
+           // Open center of the oval pond, clear of the entry dock and rocks.
+@@ -19539,6 +19551,8 @@
+           minimumDepth,
+           waterX: spot.waterX,
+           waterY: spot.waterY,
++          bridgeView: mountainType === "highMarsh" && ShuMountain.onBridge(s.x,s.y,s.mapRegion)
++            ? (spot.waterY < s.y ? "marsh-bridge-north" : "marsh-bridge-south") : null,
+           playerX: s.x,
+           playerY: s.y,
+           castLocale: zone === "sea"
+@@ -20916,6 +20930,7 @@
+         close();
+         battle = {
+           phase: "cast",
++          bridgeView: battle.bridgeView,
+           shiokakureObserved,
+           fightMode:s.fightMode,
+           rod:practice?"bamboo":s.selectedRod,
+diff --git a/nushi-tsuri/mountain-region.js b/nushi-tsuri/mountain-region.js
+index 413c69c1a80fd1ad3798e5a0b0683c8cd1f8e885..e1daa7f1e61b07d4c4d2aaeb785e6408af7b8cf5 100644
+--- a/nushi-tsuri/mountain-region.js
++++ b/nushi-tsuri/mountain-region.js
+@@ -1,8 +1,8 @@
+ (function (root, factory) {
+-  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural);
++  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural, typeof module === "object" && module.exports ? require("./outdoor-light.js") : root.ShuOutdoorLight);
+   if (typeof module === "object" && module.exports) module.exports = api;
+   root.ShuMountain = api;
+-})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural) {
++})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural, OutdoorLight) {
+   "use strict";
+   // Geometry is opt-in and captured after village-reference.js loads.
+   const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
+@@ -144,8 +144,12 @@
+         [[145.2,77],[146.5,77],[146.5,87],[145.2,87]],
+         // Bench, basket and lantern, all above the unobstructed through route.
+         [[99.5,56],[117.5,56],[117.5,62.7],[99.5,62.7]]],
+-      landmarks:[{id:"wetland",x:228,y:82,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+-    wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
++      // The east abutment leads down the dry outside edge into a painted fork.
++      // Keep the bridge planks and the fishable inner shore outside the exit.
++      landmarks:[{id:"wetland",x:228,y:82,
++        area:[[221.5,69],[225.4,69],[227.2,76.4],[231,79.6],[239,79.8],[239,85.2],
++          [229,85.4],[225.5,87],[225.5,81],[224.5,79.5],[223.8,78],[221.5,75]],name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
++    wetland:{asset:"assets/wetland-world-v227.png",overlay:{asset:"assets/wetland-trail-edges.webp"},name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
+       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
+       // The reed bed separates the bridge spur from the southern bank.
+       walls:[[[129,73],[136,74],[142,86],[143,94],[140,99],[139,102],[136,103],[131,94],[126,86]]],
+@@ -163,7 +167,12 @@
+         [[100,58],[96,60],[89,66],[74,70],[57,71],[39,67],[24,62],[16,52],[15,36],[23,21],[37,13],[52,11],[70,12],[83,19],[92,31],[96,45],[96,60]],
+         [[145,99],[144,102],[139,106],[143,111],[159,115],[175,119],[189,119],[205,122],[215,117],[218,110],[222,101],[223,95],[230,89],[231,82],[230,72],[231,62],[236,54],[237,48],[233,43],[225,37],[217,32]],
+         [[125,57],[133,57],[139,60],[146,64],[153,67]],
+-      ],landmarks:[]},
++        // Additional dirt at the lily-pond bend, shop frontage and eastern shore.
++        // Old paths and all three water boundaries keep their original positions.
++        [[59,69.5],[68,68.2],[76,67.3],[80,66],[84,64.6],[88,61.7],[92,58.3]],
++        [[148,40.3],[152,39],[156,37.2],[160,35],[164,35],[168,35],[180,33.8],[188,33.9],[197,32.3]],
++        [[231,64],[231,68],[230.5,72],[231.5,76],[231.5,80],[231.2,84],[229.7,88]],
++      ],trailRadii:[3.2,3.2,3.2,3.2,3.3,3.3,3.8],landmarks:[]},
+     cave:{asset:"assets/cave-lake-v202.png",name:"岩窟の地下湖",entry:{x:120,y:128,direction:"up"},
+       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
+       waters:{underground:[[90,18],[112,17],[136,19],[157,23],[176,27],[192,33],[207,42],[217,55],[219,71],[210,86],[192,98],[169,102],[146,105],[126,106],[104,103],[88,99],[69,94],[53,88],[37,77],[28,63],[31,47],[42,37],[58,29],[74,24]]},
+@@ -180,7 +189,7 @@
+       ?{region:"village",...villageReturn}:region==="mountainMarsh"
+         ?{region:"mountainPond",x:212,y:10,direction:"left"}:region==="cave"
+           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
+-    const landmark=data.landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6);
++    const landmark=landmarkAt(x,y,region);
+     if(landmark?.id==="pass")return {region:"mountainPond",...regions.mountainPond.entry};
+     if(landmark?.id==="cave")return {region:"cave",...regions.cave.entry};
+     if(landmark?.id==="marsh")return {region:"mountainMarsh",...regions.mountainMarsh.entry};
+@@ -262,7 +271,7 @@
+     }
+     return null;
+   }
+-  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6)||null; }
++  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>p.area ? inside(x,y,p.area) : Math.hypot(x-p.x,y-p.y)<6)||null; }
+   const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖",wetPond:"睡蓮の池",wetCreek:"砂底の小川",wetMarsh:"水郷の葦の沼"};
+   const populations={
+     stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
+@@ -323,18 +332,32 @@
+       const img=new Image();images[overlay.asset]=img;img.decoding="async";
+       img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=overlay.asset;
+     }
++    const repair=regionData(region).shadowRepair;
++    if(repair && !images[repair.asset] && typeof Image!=="undefined"){
++      const img=new Image();images[repair.asset]=img;img.decoding="async";
++      img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=repair.asset;
++    }
+     const image=images[region];
+     const ctx=canvas.getContext("2d");ctx.save();ctx.imageSmoothingEnabled=false;
+     if(image?.complete && image.naturalWidth>0)ctx.drawImage(image,0,0,canvas.width,canvas.height);
+     else {ctx.fillStyle="#183b31";ctx.fillRect(0,0,canvas.width,canvas.height);}
+     const patch=overlay && images[overlay.asset];
+-    if(patch?.complete && patch.naturalWidth>0){
++    if(patch?.complete && patch.naturalWidth>0 && !overlay.clip){
++      ctx.drawImage(patch,0,0,canvas.width,canvas.height);
++    }else if(patch?.complete && patch.naturalWidth>0){
+       ctx.save();ctx.beginPath();overlay.clip.forEach(([x,y],i)=>i?ctx.lineTo(x/width*canvas.width,y/height*canvas.height):ctx.moveTo(x/width*canvas.width,y/height*canvas.height));ctx.closePath();ctx.clip();
+       ctx.drawImage(hillsideLayer(patch,overlay),0,0,canvas.width,canvas.height);ctx.restore();
+     }
+-    const tint=region==="cave"?null:{night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[environment.period||environment.time];
+-    if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
+-    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0));
++    const repaired=repair && images[repair.asset];
++    if(image?.complete && image.naturalWidth>0 && repaired?.complete && repaired.naturalWidth>0){
++      // Retouch only the baked rail shadow on dirt. The bridge, terrain and
++      // collision geometry stay unchanged; lighting is applied afterwards.
++      const [x,y,w,h]=repair.bounds,[sw,sh]=Rural.size;
++      ctx.drawImage(repaired,x/sw*canvas.width,y/sh*canvas.height,w/sw*canvas.width,h/sh*canvas.height);
++    }
++    if(region!=="cave")OutdoorLight.paint(ctx,canvas,environment);
++    ctx.restore();
++    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0) && (!repair || repaired?.complete));
+   }
+   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
+     landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};
+diff --git a/nushi-tsuri/offshore-island.js b/nushi-tsuri/offshore-island.js
+index 347e691eb7209df8c0b2d95a4eee1aa5a15553d2..f014fca8c8a9cf0d7568335a7a9b2f7f4f3f8ee1 100644
+--- a/nushi-tsuri/offshore-island.js
++++ b/nushi-tsuri/offshore-island.js
+@@ -1,6 +1,6 @@
+ (function(root,factory){
+-  const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOffshore=api;
+-})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  const api=factory(typeof module==='object'&&module.exports?require('./outdoor-light.js'):root.ShuOutdoorLight);if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOffshore=api;
++})(typeof globalThis!=='undefined'?globalThis:this,function(OutdoorLight){
+   'use strict';
+   // Geometry is opt-in and captured after village-reference.js loads.
+   const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
+@@ -104,7 +104,7 @@
+     if(!canvas?.getContext)return;pending.world=[canvas,{...env}];const ctx=canvas.getContext('2d'),im=imageFor('world');ctx.save();ctx.imageSmoothingEnabled=false;
+     if(im?.complete&&im.naturalWidth>0)ctx.drawImage(im,0,0,canvas.width,canvas.height);else{ctx.fillStyle='#145c7c';ctx.fillRect(0,0,canvas.width,canvas.height);}
+     paintBridges(ctx,canvas.width,canvas.height);
+-    const tint={night:'rgba(9,20,48,.49)',evening:'rgba(115,46,23,.19)',morning:'rgba(255,220,159,.06)'}[env.period||env.time];if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
++    OutdoorLight.paint(ctx,canvas,env);ctx.restore();
+   }
+   function paintBridges(ctx,width,height){
+     ctx.save();ctx.scale(width/240,height/135);
+diff --git a/nushi-tsuri/outdoor-light.js b/nushi-tsuri/outdoor-light.js
+new file mode 100644
+index 0000000000000000000000000000000000000000..a2e7d1e377b9186ede625debd768264f632ece8a
+--- /dev/null
++++ b/nushi-tsuri/outdoor-light.js
+@@ -0,0 +1,25 @@
++/* Map-only lighting. Never apply this to a DOM ancestor, HUD, boats or cast screens. */
++(function(root,factory){
++  const api=factory();if(typeof module==='object'&&module.exports)module.exports=api;else root.ShuOutdoorLight=api;
++})(typeof globalThis!=='undefined'?globalThis:this,function(){
++  'use strict';
++  // Match layered-scenery's village night/dawn channel multipliers (rounded to
++  // 8-bit Canvas multiply). Multiplication removes baked sunny highlights rather
++  // than laying a translucent blue veil over them. No pixel readback per frame.
++  const light={night:[.38,.49,.72],dawn:[.73,.77,.91]};
++  function paint(ctx,canvas,environment={}){
++    const period=environment.period||environment.time,channels=light[period];
++    ctx.save();
++    if(channels){
++      ctx.globalCompositeOperation='multiply';
++      ctx.fillStyle=`rgb(${channels.map(v=>Math.round(v*255)).join(',')})`;
++      ctx.fillRect(0,0,canvas.width,canvas.height);
++    }else{
++      // Preserve the established daytime, morning and evening appearance.
++      const tint={evening:'rgba(115,46,23,.19)',morning:'rgba(255,220,159,.06)'}[period];
++      if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}
++    }
++    ctx.restore();
++  }
++  return {paint,light};
++});
+diff --git a/nushi-tsuri/rural-canals.js b/nushi-tsuri/rural-canals.js
+index becbfa79e8065930f4fd6a7df60e4048c0459edf..7b4a248636a2bf1e20ee349f4ed9e25c8e5cacbd 100644
+--- a/nushi-tsuri/rural-canals.js
++++ b/nushi-tsuri/rural-canals.js
+@@ -49,7 +49,8 @@
+     [[1368,534],[1514,483],[1672,465],[1672,733],[1467,761],[1374,714],[1335,651]]
+   ].map(polygon);
+   const mill=polygon([[275,367],[370,260],[501,238],[630,300],[703,344],[704,425],[618,472],[423,475],[281,451]]);
+-  const data={name,asset,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
++  const shadowRepair={asset:'assets/rural-bridge-shadow-repair.png',bounds:[1138,465,140,130]};
++  const data={name,asset,shadowRepair,entry,returnGate,returnTarget:{region:'village',...villageReturn},waters,
+     trails:rawTrails.map(polygon),trailRadii:[4.5,4.1,2.1,4.1,3.0,3.2,2.8,2.8],
+     bridges,bankRadius:0,walls:[mill,...paddies,...bridgeRails],landmarks:[],
+     notes:{canalCurrent:'水車の流れ。岸際のフナ、底を探るドジョウ、深場のナマズを狙おう。',canalBackwater:'草陰のよどみ。浅場はドジョウとフナ、深場はナマズが多い。'}};
+diff --git a/nushi-tsuri/scene-layers.js b/nushi-tsuri/scene-layers.js
+index 20f95cad5ef2ae98f05a9cef0cabcec3bbdaec31..4cbeb1243d74451532caf5cb78423276e7a85e14 100644
+--- a/nushi-tsuri/scene-layers.js
++++ b/nushi-tsuri/scene-layers.js
+@@ -255,12 +255,24 @@
+       ],
+     };
+   }
++  // Lossless 672 × 192 windows from the 1671 × 941 marsh map. A cast keeps
++  // the map feet in these same art coordinates, including on narrow screens.
++  const bridgeTop={'marsh-bridge-north':276,'marsh-bridge-south':500};
++  function marshBridgePoint(kind,x,y){
++    return {kind,x:(x*1671/240-520)/672,y:(y*941/135-bridgeTop[kind])/192,
++      aspect:672/192,alignY:1,facing:kind==='marsh-bridge-south'?'down':'up'};
++  }
+   const mountainSurfaces={canalCurrent:[0,0,1,1],canalBackwater:[0,0,1,1],stream:[0,0,.5,.5],pond:[.5,0,.5,.5],highPond:[.5,0,.5,.5],marsh:[0,.5,.5,.5],highMarsh:[0,.5,.5,.5],underground:[.5,.5,.5,.5],wetPond:[0,0,.5,.5],wetCreek:[.5,0,.5,.5],wetMarsh:[0,.5,.5,.5]};
+   function mountainSurface(kind){
+     return {id:'surface-mountain-'+kind,source:kind==='canalCurrent'?'assets/rural-canal-cast-v252-48.webp':kind==='canalBackwater'?'assets/rural-backwater-cast-v252-48.webp':kind.startsWith('wet')?'assets/wetland-cast-v227.png':'assets/mountain-cast-v219.png',sourceRect:mountainSurfaces[kind],units:[640,320],indoor:kind==='underground',objectPosition:'center bottom',
+       parts:[box('far-bank','trees',0,0,640,kind.startsWith('canal')?67:95),box('open-water','water',0,kind.startsWith('canal')?67:95,640,kind.startsWith('canal')?198:167,surfaceWater(['stream','wetCreek','canalCurrent'].includes(kind)?'river':kind==='underground'?'cave':['marsh','highMarsh','wetMarsh','canalBackwater'].includes(kind)?'marsh':'lake')),box('near-bank','ground',0,262,640,58)]};
+   }
+   function get(id,env={period:'day'}) {
++    const bridge=id.slice(8);
++    if(id.startsWith('surface-')&&Object.hasOwn(bridgeTop,bridge)){
++      return {id,source:'assets/'+bridge+'.webp',units:[100,100],objectPosition:'center bottom',
++        parts:[box('open-water','water',0,0,100,100,surfaceWater('marsh'))]};
++    }
+     if(id.startsWith('surface-mountain-')&&mountainSurfaces[id.slice(17)])return mountainSurface(id.slice(17));
+     if(id==='world') return referenceEnabled(env)?referenceDefinition():world;
+     if(id==='home-exterior') return garden;
+@@ -275,7 +287,7 @@
+         box('left-furnishings','furniture',0,24,30,68),box('right-furnishings','furniture',72,25,28,68),
+         box('back-counter','furniture',29,40,44,26),box('front-props','foreground',0,88,100,12)]};
+   }
+-  const ids=['world','home-exterior','home-interior',...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
++  const ids=['world','home-exterior','home-interior',...Object.keys(bridgeTop).map(id=>'surface-'+id),...Object.keys(mountainSurfaces).map(id=>'surface-mountain-'+id),...Object.keys(rooms).map(id=>'room-'+id),
+     ...['lake','river','beach','harbor','pond','coast-sand','coast-reef'].map(id=>'surface-'+id),
+     ...['lake','river','sea'].flatMap(z=>['shallow','mid','deep'].map(d=>`underwater-${z}-${d}-false`)),
+     'underwater-sea-deep-true'];
+@@ -294,5 +306,5 @@
+   const shopProps=[[187.5,190.8,90,92],[191.3,193.4,90.6,92.5]];
+   const propSolid=(x,y,env)=>!referenceEnabled(env)&&(trunks.some(([px,py])=>Math.abs(x-px/villageArtSize[0]*240)<.85&&Math.abs(y-py/villageArtSize[1]*135)<.55)||
+     shopProps.some(([left,right,top,bottom])=>x>=left&&x<=right&&y>=top&&y<=bottom));
+-  return {get,ids,assets,propSolid,referenceDefinition};
++  return {get,ids,assets,marshBridgePoint,propSolid,referenceDefinition};
+ });
+diff --git a/nushi-tsuri/sw.js b/nushi-tsuri/sw.js
+index 9efd05956882efaf4baf715eef3869bbe4d47445..d915c737fe2b86f66ef519a010befcad13577f5b 100644
+--- a/nushi-tsuri/sw.js
++++ b/nushi-tsuri/sw.js
+@@ -18,6 +18,8 @@ const CORE_ASSETS = [
+   "./assets/fish-takabe-v252-56.png",
+   "./assets/fish-kuromejina-v252-56.png",
+   "./assets/fish-houraihimeji-v252-56.png",
++  "./outdoor-light.js?v=252-85",
++  "./assets/rural-bridge-shadow-repair.png",
+   "./rural-canals.js?v=252-55",
+   "./assets/rural-canals-v252-48.webp",
+   "./assets/rural-canal-cast-v252-48.webp",
+@@ -109,6 +111,7 @@ const CORE_ASSETS = [
+   "./catch-memories.css?v=229-1",
+   "./assets/wetland-cast-v227.png",
+   "./assets/wetland-world-v227.png",
++  "./assets/wetland-trail-edges.webp",
+   "./assets/fish-tanago-v227.png",
+   "./assets/fish-motsugo-v227.png",
+   "./assets/fish-medaka-v227.png",
+@@ -177,6 +180,8 @@ const CORE_ASSETS = [
+   "./assets/valley-hillside-v2.png",
+   "./assets/pass-pond-v252-51.png",
+   "./assets/pass-marsh-v252-50.webp",
++  "./assets/marsh-bridge-north.webp",
++  "./assets/marsh-bridge-south.webp",
+   "./assets/cave-lake-v202.png",
+   "./assets/stream-nushi-v202.png",
+   "./assets/coast-nushi-v202.png",
+diff --git a/nushi-tsuri/tests/boat-character-v224.test.cjs b/nushi-tsuri/tests/boat-character-v224.test.cjs
+index dbbe545eb44b607d0958f62b2c30c3e5ced2e2d7..c2a4c4a73d1817418057827a2c14b10ea2bc7956 100644
+--- a/nushi-tsuri/tests/boat-character-v224.test.cjs
++++ b/nushi-tsuri/tests/boat-character-v224.test.cjs
+@@ -29,6 +29,7 @@ test('changing boat and hero before image decoding keeps the latest pose when ei
+     finish(){this.complete=true;this.naturalWidth=1254;this.onload();}
+   }
+   const context={Image:DelayedImage};
++  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
+   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
+   const calls=[],ctx=new Proxy({drawImage(...args){calls.push(args)}},{get:(o,k)=>k in o?o[k]:()=>{}});
+   const canvas={width:192,height:144,getContext:()=>ctx},coast=context.ShuCoast;
+diff --git a/nushi-tsuri/tests/browser-marsh-retreat.cjs b/nushi-tsuri/tests/browser-marsh-retreat.cjs
+index 0daede6e6d2d8442be3beacf1cfb543f89026f20..f93fb371c83ffbd7a80eed25a3b96ed054d4dea3 100644
+--- a/nushi-tsuri/tests/browser-marsh-retreat.cjs
++++ b/nushi-tsuri/tests/browser-marsh-retreat.cjs
+@@ -21,13 +21,33 @@ async function run(url,screen){
+  const layout=await page.evaluate(()=>Object.fromEntries(['world','map','player','action'].map(id=>{const e=document.getElementById(id),r=e.getBoundingClientRect();return [id,{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom,display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility}];})));
+  for(const id of ['world','action']){const r=layout[id];assert.ok(r.width>0&&r.height>0&&r.x>=-1&&r.right<=width+1&&r.y>=-1&&r.bottom<=height+1,'visible '+id);}assert.ok(layout.map.width>=layout.world.width);assert.ok(layout.player.width>=12&&layout.player.height>=18);assert.notEqual(layout.player.display,'none');assert.equal(layout.player.visibility,'visible');
+  for(const [name,p] of [['west-bank',[38,70]],['west-bridge',[52,70]],['terrace',[120,70]],['east-bridge',[208,70]],['east-bank',[221,70]]]){const steps=await walk(p);if(name==='east-bank')assert.ok(steps<=8,'direct bridge-to-bank crossing');await shot(name);}
++ for(const p of [[208,70],[120,70],[52,70],[38,70]])await walk(p);await shot('west-bank-return');
+  for(const p of marshRing)await walk(p);await shot('ring-complete');
+  await walk('house');await press('#action');assert.equal(await page.locator('#worldHouse.open').count(),1);await shot('house');await press('#worldHouse [data-close]');
+- for(const bay of ['northFish','southFish']){await walk(bay);assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),'highMarsh');await shot(bay+'-bank');await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');await page.evaluate(()=>{beginFishing();clearInterval(timer);timer=0;});await page.waitForFunction(()=>document.querySelector('#castBackdrop').dataset.locale==='mountain-highMarsh');await shot(bay+'-cast');await page.evaluate(()=>{battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer);timer=0;});assert.equal(await page.evaluate(()=>battle.spot),'mountain-highMarsh-mid');evidence.push({bay,fish:await page.evaluate(()=>battle.f.id)});await page.evaluate(()=>endBattle());}
+- const after=await progress();assert.equal(after.baits.worm,before.baits.worm-2);assert.equal(after.gameMinutes,before.gameMinutes+20);assert.equal(after.money,before.money);assert.deepEqual(after.caught,before.caught);
++ for(const [bay,locale] of [['northFish','marsh-bridge-north'],['southFish','marsh-bridge-south'],['shoreFish','mountain-highMarsh']]){
++  await walk(bay);assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),'highMarsh');
++  await shot(bay+'-bank');await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');
++  await press('#pull');
++  await page.waitForFunction(id=>document.querySelector('.scenery-motion[data-for="castBackdrop"]').dataset.scene==='surface-'+id,locale);
++  assert.equal(await page.locator('#castBackdrop').getAttribute('data-locale'),locale);
++  const aim=await page.evaluate(()=>({near:castSurfacePoint(0),far:castSurfacePoint(100),feet:pixelCastModel.box.ground,origin:[battle.playerX,battle.playerY]}));
++  for(const p of [aim.near,aim.far])assert.ok(p.x>0&&p.x<100&&p.y>0&&p.y<100,'cast aim in viewport');
++  assert.equal(aim.far.y>aim.near.y,bay==='southFish','outward casting direction');
++  await shot(bay+'-cast');
++  // Freeze only the distance meter for the existing middle-depth regression.
++  await page.evaluate(()=>{clearInterval(timer);timer=0;battle.cast=50;});
++  await press('#pull');await page.waitForFunction(()=>battle.phase==='wait');
++  assert.equal(await page.evaluate(()=>battle.spot),'mountain-highMarsh-mid');await shot(bay+'-landed');
++  evidence.push({bay,locale,aim,fish:await page.evaluate(()=>battle.f.id)});await press('#wait');
++ }
++ const after=await progress();assert.equal(after.baits.worm,before.baits.worm-3);assert.equal(after.gameMinutes,before.gameMinutes+30);assert.equal(after.money,before.money);assert.deepEqual(after.caught,before.caught);
+  await page.evaluate(()=>save());const saved=await state();await page.reload({waitUntil:'load'});await start();assert.deepEqual(await state(),saved);assert.deepEqual(await progress(),after);await shot('reload');
+- await walk('wetland');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
+- assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify({screen,url,release:require('./browser-release.cjs').expectedRelease,sourceDigests,image,layout,evidence,feetChecks,wholeRing:true,bridgeWestToEast:true,house:true,terraceBays:true,reload:true,exits:true,errors,failures},null,2));console.log('MARSH_RETREAT_BROWSER_PASS',width,height,dpr);
++ for(const foot of [[224,72],[230,82],[236,82]]){
++  await walk(foot);assert.match(await page.locator('#hint').innerText(),/湿地へ下る道.*Aで先へ進む/);
++  assert.equal(await page.evaluate(()=>ShuMountain.exitAt(s.x,s.y,s.mapRegion)?.region),'wetland');
++ }
++ await shot('wetland-painted-exit');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
++ assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify({screen,url,release:require('./browser-release.cjs').expectedRelease,sourceDigests,image,layout,evidence,feetChecks,wholeRing:true,bridgeWestToEast:true,bridgeEastToWest:true,shoreCast:true,house:true,terraceBays:true,reload:true,exits:true,errors,failures},null,2));console.log('MARSH_RETREAT_BROWSER_PASS',width,height,dpr);
+  }finally{await context.close();await browser.close();}
+ }
+ const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
+diff --git a/nushi-tsuri/tests/browser-outdoor-night.cjs b/nushi-tsuri/tests/browser-outdoor-night.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..4b1d90d6674862287948d1dc6f3e8e46b43eb436
+--- /dev/null
++++ b/nushi-tsuri/tests/browser-outdoor-night.cjs
+@@ -0,0 +1,53 @@
++// Real generated production page + native Canvas, not a composited mock viewport.
++const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
++const {createHash}=require('node:crypto'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
++const M=require('../mountain-region.js'),R=require('../rural-canals.js'),O=require('../offshore-island.js');
++const root=path.resolve(__dirname,'..'),dir=path.resolve(process.env.RURAL_EVIDENCE_DIR||'/tmp/rural-canals-evidence','outdoor-night');
++const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};
++const server=http.createServer((req,res)=>{try{const name=new URL(req.url,'http://localhost').pathname.replace(/^\/nushi-tsuri\//,'')||'index.html',file=path.resolve(root,name);if(!file.startsWith(root+path.sep)||!fs.statSync(file).isFile())throw Error('path');res.writeHead(200,{'Content-Type':types[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});fs.createReadStream(file).pipe(res);}catch{res.writeHead(404);res.end();}});
++const digest=b=>createHash('sha256').update(b).digest('hex');
++(async()=>{
++ fs.mkdirSync(dir,{recursive:true});await new Promise(r=>server.listen(0,'127.0.0.1',r));
++ const url=`http://127.0.0.1:${server.address().port}/nushi-tsuri/`,browser=await chromium.launch({headless:true}),results=[];
++ try{
++  const places=[...Object.entries(M.regions).map(([id,data])=>({id,...data.entry,canvas:'mountainPixels'})),{id:'coast',x:146,y:70,canvas:'coastPixels'},{id:'offshore',...O.entry,canvas:'offshorePixels'}];
++  for(const place of places){
++   const context=await browser.newContext({viewport:{width:844,height:390},deviceScaleFactor:2,isMobile:true,hasTouch:true,locale:'ja-JP',serviceWorkers:'block'}),page=await context.newPage(),errors=[];
++   page.on('pageerror',e=>errors.push(e.message));
++   await context.addInitScript(({key,saved})=>{localStorage.setItem(key,JSON.stringify(saved));localStorage.setItem('nushi-inugoya-options-v1',JSON.stringify({textSpeed:'instant'}));},{key:saveKey,saved:{...seed(),mapRegion:place.id,x:place.x,y:place.y,direction:'up',hp:100,gameMinutes:720,soundEnabled:false,...(place.id==='coast'?{ownedVehicles:['canoe'],equipment:{hands:null,vehicle:'canoe'},boatActive:false}:{})}});
++   try{
++    await page.goto(url);await require('./browser-start-adventure.cjs')(page,true);if(await page.locator('#lakeIntroSkip').isVisible())await page.locator('#lakeIntroSkip').tap();
++    await require('./browser-release.cjs').assertRelease(page);
++    assert.equal(await page.evaluate(()=>s.mapRegion),place.id);
++    const stats=()=>page.evaluate(id=>{const c=document.getElementById(id),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,sums=[0,0,0],colors=new Set();for(let i=0;i<d.length;i+=4){for(let k=0;k<3;k++)sums[k]+=d[i+k];if(i%188===0)colors.add(d[i]+','+d[i+1]+','+d[i+2]);}return {mean:sums.map(n=>n/(d.length/4)),colors:colors.size,period:gameSceneryEnvironment().period,clock:document.querySelector('#time').textContent};},place.canvas);
++    await page.waitForFunction(id=>{const c=document.getElementById(id),d=c.getContext('2d').getImageData(0,0,c.width,c.height).data,colors=new Set();for(let i=0;i<d.length;i+=188)colors.add(d[i]+','+d[i+1]+','+d[i+2]);return colors.size>300;},place.canvas);
++    if(place.canvas==='mountainPixels')await page.waitForFunction(id=>{renderPixelScenery();return pixelSceneCache.get(document.getElementById('mountainPixels'))?.startsWith(id+':');},place.id);
++    if(place.id===R.id){
++     // Native move buttons from a valid saved bridge approach into the visible path.
++     await page.evaluate(()=>{s.x=171;s.y=72;s.direction='left';render();});
++     assert.ok(await page.evaluate(()=>isWalkableWorld(s.x,s.y)));
++    }
++    const settle=()=>page.evaluate(async()=>{await Promise.all(document.getElementById('map').getAnimations().filter(a=>a.effect.getComputedTiming().iterations!==Infinity).map(a=>a.finished.catch(()=>{})));await new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r)));});
++    await settle();const day=await stats();assert.equal(day.period,'day');await page.screenshot({path:path.join(dir,place.id+'-day.png')});
++    // Actual game clock advancement and render entry point, not painter-only injection.
++    await page.evaluate(()=>{advanceGameTime(s,790);render();});await settle();const night=await stats();assert.equal(night.period,'night');assert.ok(night.clock.includes('01:10'));
++    if(place.id==='cave')assert.deepEqual(night.mean,day.mean);else for(let k=0;k<3;k++)assert.ok(Math.abs(night.mean[k]/day.mean[k]-[.38,.49,.72][k])<.025,place.id+' channel '+k);
++    await page.screenshot({path:path.join(dir,place.id+'-night.png')});
++    const untouched=await page.evaluate(()=>['world','map','action','castBackdrop','time'].map(id=>({id,filter:getComputedStyle(document.getElementById(id)).filter})));
++    for(const item of untouched)assert.equal(item.filter,'none','map-only grade, no DOM ancestor tint '+item.id);
++    if(place.id===R.id){
++     const before=await page.evaluate(()=>({x:s.x,y:s.y}));await page.locator('[data-move="right"]').tap();assert.notDeepEqual(await page.evaluate(()=>({x:s.x,y:s.y})),before,'movement still works at night');
++     await page.evaluate(()=>{save();});await page.reload();await require('./browser-start-adventure.cjs')(page,true);assert.equal(await page.evaluate(()=>s.mapRegion),R.id);assert.equal(await page.evaluate(()=>gameSceneryEnvironment().period),'night');
++     // Transition uses the same real A handler as the player, without advancing time.
++     await page.evaluate(()=>{s.x=ShuRural.returnGate.left+1;s.y=ShuRural.returnGate.top+1;render();});await page.locator('#action').tap();assert.equal(await page.evaluate(()=>s.mapRegion),'village');assert.equal(await page.evaluate(()=>gameSceneryEnvironment().period),'night');
++     await page.evaluate(()=>{s.x=ShuRural.villageGate.left+1;s.y=(ShuRural.villageGate.top+ShuRural.villageGate.bottom)/2;render();});await page.locator('#action').tap();assert.equal(await page.evaluate(()=>s.mapRegion),R.id);assert.equal(await page.evaluate(()=>gameSceneryEnvironment().period),'night');
++     await page.evaluate(()=>{advanceGameTime(s,170);render();});await settle();assert.equal((await stats()).period,'dawn');await page.screenshot({path:path.join(dir,'ruralCanals-dawn.png')});
++    }
++    assert.deepEqual(errors,[]);results.push({place:place.id,day,night,untouched,errors});
++   }finally{await context.close();}
++  }
++  const sourceFiles=['index.html','outdoor-light.js','mountain-region.js','coast-voyage.js','offshore-island.js','rural-canals.js',R.data.shadowRepair.asset];
++  const sourceDigests=Object.fromEntries(sourceFiles.map(name=>[name,digest(fs.readFileSync(path.join(root,name)))]));
++  fs.writeFileSync(path.join(dir,'results.json'),JSON.stringify({sourceDigests,viewport:{width:844,height:390,dpr:2},results},null,2));console.log('OUTDOOR_NIGHT_BROWSER_PASS',results.length,'maps');
++ }finally{await browser.close();await new Promise(r=>server.close(r));}
++})().catch(e=>{console.error(e);process.exitCode=1;server.close();});
+diff --git a/nushi-tsuri/tests/browser-painted-field-paths.cjs b/nushi-tsuri/tests/browser-painted-field-paths.cjs
+index 6270a334d70e5274cc559d719fd6319d6c887ce2..f3e452e4581766ad2a1fc61c35a25fc5b49023d6 100644
+--- a/nushi-tsuri/tests/browser-painted-field-paths.cjs
++++ b/nushi-tsuri/tests/browser-painted-field-paths.cjs
+@@ -12,6 +12,9 @@ const routes = [
+   { name: 'north-fork', x:215, y:21, steps:'DD' },
+   { name: 'east-bend', x:231, y:63, steps:'DDDDD' },
+   { name: 'southwest-bank', x:138, y:107, steps:'RDR' },
++  { name: 'lily-pond-bend', x:79, y:64, steps:'RR' },
++  { name: 'reed-marsh-outer-road', x:234, y:64, steps:'DDD' },
++  { name: 'wetland-shop-approach', x:177, y:37, steps:'LLLLU', shop:true },
+   { name: 'sand-deck', x:115, y:77, steps:'LL', dock:'sand' },
+   { name: 'reef-deck', x:88, y:92, steps:'RR', dock:'reef' }
+ ];
+@@ -57,6 +60,17 @@ async function check(browser, url, mobile, route) {
+     }
+     await page.waitForFunction(() => !playerWalking);
+     await page.screenshot({path:path.join(output,viewport.width+'-'+route.name+'.png')});
++    if (route.shop) {
++      assert.equal(await page.evaluate(()=>ShuWorldLife.nearby(s)?.id),'wetland-shop');
++      const shop=await page.locator('[data-world-life="wetland-shop"]').boundingBox();
++      const player=await page.locator('#player').boundingBox();
++      assert.ok(shop.height>player.height*2,'storefront reads taller than the player');
++      const inFront=await page.evaluate(()=>Number(getComputedStyle(document.querySelector('#player')).zIndex)>
++        Number(getComputedStyle(document.querySelector('[data-world-life="wetland-shop"]')).zIndex));
++      assert.ok(inFront,'player on the doorstep stays visible in front of the shop');
++      await press('#action');await page.locator('#store.open').waitFor();
++      await press('#store [data-close]');assert.deepEqual(await position(),expected());
++    }
+     for (const key of [...route.steps].reverse()) await walk(directions[key][3]);
+     if (route.dock) {
+       await press('#action');
+diff --git a/nushi-tsuri/tests/building-scale-v252-35.test.cjs b/nushi-tsuri/tests/building-scale-v252-35.test.cjs
+index f1ac60b8d9e523e42864d135e61b5a64deaaaa9a..015db29ef98330e3b5d8c7aadd4b893c957db1c6 100644
+--- a/nushi-tsuri/tests/building-scale-v252-35.test.cjs
++++ b/nushi-tsuri/tests/building-scale-v252-35.test.cjs
+@@ -101,6 +101,7 @@ test('runtime hillside compositing preserves every pixel outside the clip and us
+  }
+  const context={Image:LocalImage,OffscreenCanvas:function(width,height){return createCanvas(width,height);}};
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
++ vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
+  const mountain=context.ShuMountain,overlay=mountain.regions.stream.overlay;
+  // This exact terrain-only image was visually reviewed with both terraces empty.
+diff --git a/nushi-tsuri/tests/coastal-render-harness.cjs b/nushi-tsuri/tests/coastal-render-harness.cjs
+index cc54d4b99a9ffc026aae5a2016770fcaa3fe666d..f327e2c13f1a62ba602fb704a53f297512452fff 100644
+--- a/nushi-tsuri/tests/coastal-render-harness.cjs
++++ b/nushi-tsuri/tests/coastal-render-harness.cjs
+@@ -18,6 +18,7 @@ async function renderer() {
+     }
+   }
+   const context = { Image: LocalImage };
++  vm.runInNewContext(fs.readFileSync(path.join(root, 'outdoor-light.js'), 'utf8'), context);
+   vm.runInNewContext(fs.readFileSync(path.join(root, 'coast-voyage.js'), 'utf8'), context);
+   await Promise.all(pending);
+   return context.ShuCoast;
+diff --git a/nushi-tsuri/tests/coastal-render-v197.test.cjs b/nushi-tsuri/tests/coastal-render-v197.test.cjs
+index 7c62f203fd0a74da318862f0107004b978618686..988d983ff530d1a82f4bbe530f78fbf64b9ccd0b 100644
+--- a/nushi-tsuri/tests/coastal-render-v197.test.cjs
++++ b/nushi-tsuri/tests/coastal-render-v197.test.cjs
+@@ -52,6 +52,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
+     finish(){this.complete=true;this.naturalWidth=1434;this.onload();}
+   }
+   const context={Image:DelayedImage};
++  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
+   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../coast-voyage.js'),'utf8'),context);
+   const coast=context.ShuCoast,calls=[],tints=[];
+   const ctx=new Proxy({drawImage(...args){calls.push(args)},fillRect(){tints.push(this.fillStyle)}},{get:(obj,key)=>key in obj?obj[key]:()=>{}});
+@@ -65,7 +66,7 @@ test('late image loads repaint the latest heading, avatar and environment withou
+   assert.equal(calls[1][2],560,'load must keep the selected girl torso');
+   assert.equal(calls[1][0],atlas,'latest boat and oars are taken from the modular atlas');
+   images.find(i=>i.url.includes('coast-world')).finish();
+-  assert.equal(tints.at(-1),'rgba(9,20,48,.49)','late map load keeps the latest night palette');
++  assert.equal(tints.at(-1),'rgb(97,125,184)','late map load keeps the latest night palette');
+ });
+ 
+ test('each blade sweeps visibly through a complete rowing cycle while the hull and head stay fixed',async()=>{
+diff --git a/nushi-tsuri/tests/game-harness.cjs b/nushi-tsuri/tests/game-harness.cjs
+index a383b8e9584f1835598870eded5db40737325679..661f912f3494035a8311fad58af86d36f17f81e9 100644
+--- a/nushi-tsuri/tests/game-harness.cjs
++++ b/nushi-tsuri/tests/game-harness.cjs
+@@ -4,7 +4,7 @@ const path = require("node:path");
+ const { JSDOM, VirtualConsole } = require("jsdom");
+ // Load the same local scene modules/styles the browser loads, without HTTP.
+ const html = fs.readFileSync(path.join(__dirname, "../tools/templates/game-index.html"), "utf8")
+-  .replace(/<script src="((?:village-fish-(?:cards|race)|shiokakure|village-reference|timed-rest|field-guide|village-guide|world-life|fish-additions|item-art|item-object-art|ui-pixel-art|ui-extra-art|compact-ui|catch-memories|player-options|title-flow|fish-art|fish-motion|save-slots|lake-(?:story|intro|research)|regional-nushi|nushi-atlas|fishing-duel|underwater-camera|nushi-presentation|ui-feedback|event-ceremony|fortune-capsules|aquarium-(?:life|mutations)|pet-notebook|pet-life(?:-ui)?|tackle-(?:balance|art)|coast-voyage|offshore-island|mountain-region|rural-canals|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
++  .replace(/<script src="((?:village-fish-(?:cards|race)|shiokakure|village-reference|timed-rest|field-guide|village-guide|world-life|fish-additions|item-art|item-object-art|ui-pixel-art|ui-extra-art|compact-ui|catch-memories|player-options|title-flow|fish-art|fish-motion|save-slots|lake-(?:story|intro|research)|regional-nushi|nushi-atlas|fishing-duel|underwater-camera|nushi-presentation|ui-feedback|event-ceremony|fortune-capsules|aquarium-(?:life|mutations)|pet-notebook|pet-life(?:-ui)?|tackle-(?:balance|art)|outdoor-light|coast-voyage|offshore-island|mountain-region|rural-canals|pixel-(?:world|cast)|weather|rival-anglers|tournament(?:-npcs)?|music-tracks|soundscape|scene-layers|layered-scenery)\.js)\?[^\"]+"><\/script>/g,
+     (_, name) => `<script>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</script>`)
+   .replace(/<link rel="stylesheet" href="((?:village-fish-games|timed-rest|field-guide|village-guide|offshore-island|compact-ui|catch-memories|cast-tackle|player-options|title-flow|item-categories|save-slots|lake-(?:story|intro|research)|fishing-duel|event-ceremony|fortune-capsules|pixel-scenes|pet-life)\.css)\?[^\"]+" \/>/g,
+     (_, name) => `<style>${fs.readFileSync(path.join(__dirname, "..", name), "utf8")}</style>`);
+diff --git a/nushi-tsuri/tests/marsh-retreat-route.cjs b/nushi-tsuri/tests/marsh-retreat-route.cjs
+index 6267b07c82c9f2a80be6fd6dc7e0ff9b1c66080d..56b11b3584006055c29496a2a00c4f4737b4b2af 100644
+--- a/nushi-tsuri/tests/marsh-retreat-route.cjs
++++ b/nushi-tsuri/tests/marsh-retreat-route.cjs
+@@ -4,6 +4,7 @@ function planMarshRoute(target){
+  const M=ShuMountain,region=s.mapRegion,dirs=['up','right','down','left'];
+  const goal=(x,y,d)=>Array.isArray(target)?Math.hypot(x-target[0],y-target[1])<=2:
+   target==='northFish'||target==='southFish'?M.onBridge(x,y,region)&&x>=118&&x<=127&&d===(target==='northFish'?'up':'down')&&M.fishingWater(x,y,d,region)?.type==='highMarsh':
++  target==='shoreFish'?!M.onBridge(x,y,region)&&M.fishingWater(x,y,d,region)?.type==='highMarsh':
+   target==='house'?ShuWorldLife.nearby({mapRegion:region,x,y,direction:d})?.id==='marsh-house':
+   target==='wetland'?M.exitAt(x,y,region)?.region==='wetland':M.atReturnGate(x,y,region);
+  const queue=[{x:s.x,y:s.y,direction:s.direction,parent:-1}],seen=new Set();
+diff --git a/nushi-tsuri/tests/marsh-retreat.test.cjs b/nushi-tsuri/tests/marsh-retreat.test.cjs
+index 43de251cc6e48c08e52a8113feb4ff999c97be20..6ef5ff6a908c24d5d90cee921512bd4f2ecc10d5 100644
+--- a/nushi-tsuri/tests/marsh-retreat.test.cjs
++++ b/nushi-tsuri/tests/marsh-retreat.test.cjs
+@@ -8,8 +8,8 @@ test('native controls cross the bridge west to east, walk the whole ring, open t
+  const app=boot(fixture()),w=app.window;let saved,before;
+  try{before=progress(w);for(const p of [[38,70],[52,70],[120,70],[208,70],[221,70]]){const steps=walk(w,p);if(p[0]===221)assert.ok(steps<=8,'east bridge meets bank directly, no ring detour');}for(const p of marshRing)walk(w,p);
+   walk(w,'house');w.document.querySelector('#action').click();assert.ok(w.document.querySelector('#worldHouse.open'));w.document.querySelector('#worldHouse [data-close]').click();
+-  for(const bay of ['northFish','southFish']){walk(w,bay);assert.equal(read(w,'nearbyFishingSpot().mountainType'),'highMarsh');w.document.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');w.eval('beginFishing();clearInterval(timer);battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');assert.equal(read(w,'battle.spot'),'mountain-highMarsh-mid');w.eval('endBattle()');}
+-  assert.equal(read(w,'s.baits.worm'),before.baits.worm-2);assert.equal(read(w,'s.gameMinutes'),before.time+20);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));before=progress(w);assert.deepEqual(app.errors,[]);
++  for(const [bay,locale] of [['northFish','marsh-bridge-north'],['southFish','marsh-bridge-south'],['shoreFish','mountain-highMarsh']]){walk(w,bay);assert.equal(read(w,'nearbyFishingSpot().mountainType'),'highMarsh');w.document.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');assert.equal(read(w,'surfaceSceneryKind()'),locale);w.eval('beginFishing();clearInterval(timer)');assert.equal(read(w,'surfaceSceneryKind()'),locale);w.eval('battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');assert.equal(read(w,'battle.spot'),'mountain-highMarsh-mid');w.eval('endBattle()');}
++  assert.equal(read(w,'s.baits.worm'),before.baits.worm-3);assert.equal(read(w,'s.gameMinutes'),before.time+30);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));before=progress(w);assert.deepEqual(app.errors,[]);
+  }finally{app.dispose();}
+  const restored=boot(saved),r=restored.window;try{assert.deepEqual(progress(r),before);assert.equal(read(r,'s.x'),saved.x);assert.equal(read(r,'s.y'),saved.y);walk(r,'wetland');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'wetland');walk(r,'return');r.document.querySelector('#action').click();assert.deepEqual(read(r,'({region:s.mapRegion,x:s.x,y:s.y})'),{region,x:227,y:78});walk(r,'return');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'mountainPond');assert.deepEqual(progress(r),before);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
+ });
+@@ -25,3 +25,14 @@ test('rail sweep rejects tunnelling and every bridge cast is limited to its dire
+ test('legacy saves at removed decks and new water recover on land without losing progress',()=>{
+  for(const [x,y] of [[50,79],[58,78],[116,21],[173,26],[198,53],[110,107],[154,106],[80,50],[170,90],[160,105]]){const old=fixture({x,y,boatActive:true}),app=boot(old),w=app.window;try{assert.ok(read(w,'isWalkableWorld(s.x,s.y)'));assert.equal(read(w,'s.boatActive'),false);for(const target of [[120,70],'return'])assert.ok(Array.isArray(w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')')),'recovered save has route to '+JSON.stringify(target));for(const key of ['money','hp','gameMinutes','caught','questCompletions','dog'])assert.deepEqual(read(w,'s.'+key),old[key],key+' '+x+','+y);for(const [bait,count]of Object.entries(old.baits))assert.equal(read(w,'s.baits.'+bait),count);assert.equal(read(w,'s.dogAffinity.shuu'),old.dogAffinity.shuu*20,'legacy affection scale migration');assert.deepEqual(app.errors,[]);}finally{app.dispose();}}
+ });
++
++test('the wetland hint and A action follow the east approach and the painted outgoing road',()=>{
++ for(const point of [[222,70],[224,74],[226,78],[230,82],[234,82],[238,82]]){
++  assert.ok(M.walkable(...point,region));assert.equal(M.landmarkAt(...point,region)?.id,'wetland');
++  assert.equal(M.exitAt(...point,region)?.region,'wetland');
++ }
++ for(const point of [[212,70],[220,70],[222,84],[232,76],[236,88]]){
++  assert.equal(M.landmarkAt(...point,region),null);assert.equal(M.exitAt(...point,region),null);
++ }
++ assert.ok(M.fishingWater(222,84,'left',region));
++});
+diff --git a/nushi-tsuri/tests/mountain-coast-v201.test.cjs b/nushi-tsuri/tests/mountain-coast-v201.test.cjs
+index 9d2c51a11fd527dd2b7fc07564a628ad12bc4c11..750c8ef2844eefc9786aefb47ff8ac638b242fec 100644
+--- a/nushi-tsuri/tests/mountain-coast-v201.test.cjs
++++ b/nushi-tsuri/tests/mountain-coast-v201.test.cjs
+@@ -142,6 +142,7 @@ test('decoded mountain landscape is opaque and preserves detail under night tint
+     set src(source){pending.push(new Promise((resolve,reject)=>{const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;}));super.src=path.join(__dirname,'..',source);}
+   }
+   const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
++  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
+   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
+   const day=createCanvas(960,540),night=createCanvas(960,540);
+   context.ShuMountain.paint(day,{period:'day'});await Promise.all(pending);
+diff --git a/nushi-tsuri/tests/outdoor-night.test.cjs b/nushi-tsuri/tests/outdoor-night.test.cjs
+new file mode 100644
+index 0000000000000000000000000000000000000000..a223edc3fd199e9ac261c7ef9a2cef10a4a931f5
+--- /dev/null
++++ b/nushi-tsuri/tests/outdoor-night.test.cjs
+@@ -0,0 +1,77 @@
++const {test}=require('node:test'),assert=require('node:assert/strict');
++const fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
++const {createCanvas,Image,loadImage}=require('@napi-rs/canvas');
++const Light=require('../outdoor-light.js'),Pixel=require('../pixel-world.js');
++const {boot,seed,read}=require('./game-harness.cjs');
++const root=path.join(__dirname,'..');
++function fixture(){
++ const pending=[];
++ class LocalImage extends Image{set src(source){pending.push(new Promise((resolve,reject)=>{const done=this.onload;this.onload=()=>{done?.();resolve();};this.onerror=reject;}));super.src=path.join(root,source);}}
++ const context={Image:LocalImage,OffscreenCanvas:function(w,h){return createCanvas(w,h);}};
++ for(const name of ['outdoor-light','rural-canals','mountain-region','coast-voyage','offshore-island'])vm.runInNewContext(fs.readFileSync(path.join(root,name+'.js'),'utf8'),context);
++ return {context,async settle(){for(let n=0;n!==pending.length;){n=pending.length;await Promise.all(pending);}}};
++}
++const pixels=c=>c.getContext('2d').getImageData(0,0,c.width,c.height).data;
++const mean=p=>{const sums=[0,0,0];for(let i=0;i<p.length;i+=4)for(let k=0;k<3;k++)sums[k]+=p[i+k];return sums.map(v=>v/(p.length/4));};
++test('night/dawn match village light and cannot leak Canvas state into another layer',()=>{
++ const village=fs.readFileSync(path.join(root,'layered-scenery.js'),'utf8');
++ for(const period of ['night','dawn'])assert.ok(village.includes(period+':['+Light.light[period].map(n=>String(n).replace(/^0/,'' )).join(',')+']'),'same village coefficients '+period);
++ for(const [minutes,period]of [[70,'night'],[239,'night'],[240,'dawn'],[360,'morning'],[600,'day'],[1020,'evening'],[1140,'night']]){
++  const c=createCanvas(4,4),g=c.getContext('2d');g.fillStyle='#c8b496';g.fillRect(0,0,4,4);g.fillStyle='#123456';g.globalCompositeOperation='source-over';
++  const env=Pixel.calendar(minutes);assert.equal(env.period,period);Light.paint(g,c,env);
++  assert.equal(g.globalCompositeOperation,'source-over');
++  if(Light.light[period])for(let k=0;k<3;k++)assert.ok(Math.abs(pixels(c)[k]-[200,180,150][k]*Light.light[period][k])<=1.5);
++  // napi's fillStyle getter retains the last assignment after restore, so inspect pixels.
++  g.fillRect(0,0,1,1);assert.deepEqual([...pixels(c).subarray(0,4)],[18,52,86,255]);
++ }
++});
++test('every decoded outdoor map darkens uniformly at 01:10, dawn recovers, day repaint has no accumulation; cave unchanged',async()=>{
++ const f=fixture(),w=f.context;
++ const painters=Object.keys(w.ShuMountain.regions).map(id=>[id,(c,e)=>w.ShuMountain.paint(c,e,id)]).concat([['coast',(c,e)=>w.ShuCoast.paint(c,e)],['offshore',(c,e)=>w.ShuOffshore.paint(c,e)]]);
++ for(const [id,paint]of painters){
++  const c=createCanvas(480,270);paint(c,Pixel.calendar(720));await f.settle();paint(c,Pixel.calendar(720));const day=pixels(c),d=mean(day);
++  paint(c,Pixel.calendar(70));const night=pixels(c),n=mean(night);
++  if(id==='cave')assert.deepEqual(night,day);else for(let k=0;k<3;k++)assert.ok(Math.abs(n[k]/d[k]-Light.light.night[k])<.02,`${id} channel ${k}: ${n[k]/d[k]}`);
++  paint(c,Pixel.calendar(270));const dawn=mean(pixels(c));if(id!=='cave')assert.ok(dawn[0]>n[0]&&dawn[0]<d[0],id+' dawn');
++  paint(c,Pixel.calendar(720));assert.deepEqual(pixels(c),day,id+' no accumulated lighting');
++ }
++});
++test('bridge retouch changes only alpha-marked dirt in its 140x130 bounds, never bridge or rest of map',async()=>{
++ const f=fixture(),w=f.context,r=w.ShuRural,repair=r.data.shadowRepair;
++ const base=createCanvas(...r.size),after=createCanvas(...r.size),mask=createCanvas(...r.size);
++ base.getContext('2d').drawImage(await loadImage(path.join(root,r.asset)),0,0);
++ w.ShuMountain.paint(after,{period:'day'},r.id);await f.settle();w.ShuMountain.paint(after,{period:'day'},r.id);
++ mask.getContext('2d').drawImage(await loadImage(path.join(root,repair.asset)),...repair.bounds);
++ const a=pixels(after),b=pixels(base),m=pixels(mask);let changed=0;
++ for(let i=0;i<a.length;i+=4){if(m[i+3]===0)assert.deepEqual(a.subarray(i,i+4),b.subarray(i,i+4),'outside patch pixel '+i/4);else if(a[i]!==b[i]||a[i+1]!==b[i+1]||a[i+2]!==b[i+2])changed++;}
++ assert.ok(changed>5000&&changed<18200,'small bounded dirt repair: '+changed);
++ // The deck and post polygons finish above/left of the repaired path.
++ assert.deepEqual(a.subarray((450*r.size[0]+1120)*4,(450*r.size[0]+1120)*4+4),b.subarray((450*r.size[0]+1120)*4,(450*r.size[0]+1120)*4+4));
++});
++test('native clock, map-entry action, return and save/reload supply night without changing HUD/cast/control styles',()=>{
++ const first=boot({...seed(),gameMinutes:70,mapRegion:'village'}),w=first.window;let saved;
++ try{
++  const initial=read(w,'({money:s.money,hp:s.hp,caught:s.caught,baits:s.baits})');
++  w.eval(`window.__lighting=[];const before=ShuOutdoorLight.paint;ShuOutdoorLight.paint=(ctx,c,e)=>{window.__lighting.push({id:c.id,period:e.period});return before(ctx,c,e)};s.x=ShuRural.villageGate.left+1;s.y=(ShuRural.villageGate.top+ShuRural.villageGate.bottom)/2;render();action()`);
++  assert.equal(read(w,'s.mapRegion'),'ruralCanals');assert.ok(read(w,'window.__lighting').some(e=>e.id==='mountainPixels'&&e.period==='night'));
++  for(const [minutes,period]of [[170,'dawn'],[120,'morning'],[240,'day'],[420,'evening'],[120,'night']]){
++   w.eval(`advanceGameTime(s,${minutes});render()`);assert.equal(read(w,'gameSceneryEnvironment().period'),period);assert.equal(read(w,'window.__lighting.at(-1).period'),period);
++  }
++  w.eval('save()');saved=JSON.parse(w.localStorage.getItem('nushi-inugoya-v2'));
++  assert.deepEqual(read(w,'({money:s.money,hp:s.hp,caught:s.caught,baits:s.baits})'),initial);
++  for(const id of ['world','map','action','castBackdrop'])assert.equal(w.document.getElementById(id).style.filter,'');
++  assert.deepEqual(first.errors,[]);
++ }finally{first.dispose();}
++ const restored=boot(saved),v=restored.window;try{assert.equal(read(v,'s.mapRegion'),'ruralCanals');assert.equal(read(v,'gameSceneryEnvironment().period'),'night');v.eval('s.x=ShuRural.returnGate.left+1;s.y=ShuRural.returnGate.top+1;action()');assert.equal(read(v,'s.mapRegion'),'village');assert.equal(read(v,'gameSceneryEnvironment().period'),'night');assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
++});
++test('delayed art and repair use the latest period and cannot repaint a departed regional map',()=>{
++ const images=[];class DelayedImage{constructor(){this.complete=false;this.naturalWidth=0;images.push(this);}set src(v){this.source=v;}finish(){this.complete=true;this.naturalWidth=1672;this.onload?.();}}
++ const calls=[],ctx=new Proxy({},{get:(t,k)=>t[k]||((...a)=>{calls.push([k,...a]);}),set:(t,k,v)=>(t[k]=v,true)}),canvas={width:1672,height:941,dataset:{region:'ruralCanals'},getContext:()=>ctx};
++ const sandbox={Image:DelayedImage};for(const name of ['outdoor-light','rural-canals','mountain-region'])vm.runInNewContext(fs.readFileSync(path.join(root,name+'.js'),'utf8'),sandbox);
++ sandbox.ShuMountain.paint(canvas,{period:'day'},'ruralCanals');sandbox.ShuMountain.paint(canvas,{period:'night'},'ruralCanals');
++ for(const image of images)image.finish();assert.equal(ctx.fillStyle,'rgb(97,125,184)');
++ // A failed optional retouch must not make a decoded, playable base map repaint forever.
++ images.find(i=>i.source.includes('shadow-repair')).naturalWidth=0;
++ assert.equal(sandbox.ShuMountain.paint(canvas,{period:'night'},'ruralCanals'),true);
++ calls.length=0;canvas.dataset.region='stream';for(const image of images)image.finish();assert.equal(calls.length,0,'stale repair does not overwrite destination');
++});
+diff --git a/nushi-tsuri/tests/painted-field-paths.test.cjs b/nushi-tsuri/tests/painted-field-paths.test.cjs
+index a93e1f2310e777d6e2d2817c10b3c89b0ce25b40..4609a51d8635ca84e8d841d5001451314e56c7eb 100644
+--- a/nushi-tsuri/tests/painted-field-paths.test.cjs
++++ b/nushi-tsuri/tests/painted-field-paths.test.cjs
+@@ -58,3 +58,12 @@ for (const [id, bank, tip, y, beyond] of [['sand',115,107,77,104], ['reef',88,96
+     }
+   });
+ }
++
++test('wetland widened bends, shop approach and doorway keep a return route',()=>{
++  for(const line of [[[79,64],[87,64]],[[234,64],[234,76]],[[177,37],[161,37],[161,33]]]){
++    walkBothWays(line,wetlandMove);
++  }
++  assert.equal(Life.nearby({mapRegion:'wetland',x:161,y:33,direction:'up'}).id,'wetland-shop');
++  assert.equal(Mountain.walkable(161,32,'wetland'),false);
++  for(const [x,y] of [[69,58],[222,70],[110,80]])assert.equal(Mountain.walkable(x,y,'wetland'),false);
++});
+diff --git a/nushi-tsuri/tests/regional-art-v202.test.cjs b/nushi-tsuri/tests/regional-art-v202.test.cjs
+index bda9cafc9d3c89b9c584cfab1ba0dbc451190512..235c45c7ccaf980ab0013df1c9000f293a73987c 100644
+--- a/nushi-tsuri/tests/regional-art-v202.test.cjs
++++ b/nushi-tsuri/tests/regional-art-v202.test.cjs
+@@ -36,6 +36,7 @@ test('decoded mountain backgrounds are opaque and detailed; underground navigati
+     const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;
+   }));super.src=path.join(__dirname,'..',source);}}
+   const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
++  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
+   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
+   for(const region of ['mountainPond','mountainMarsh','cave']){
+     const canvas=createCanvas(960,540);context.ShuMountain.paint(canvas,{period:'day'},region);await Promise.all(pending);
+diff --git a/nushi-tsuri/tests/rural-canals.test.cjs b/nushi-tsuri/tests/rural-canals.test.cjs
+index d8aa94f48e76ddb4c612f14e89fa135d5afd5f63..40e0a51f4acdb265bd520893ef13d78e71f5cc73 100644
+--- a/nushi-tsuri/tests/rural-canals.test.cjs
++++ b/nushi-tsuri/tests/rural-canals.test.cjs
+@@ -75,7 +75,7 @@ for(const cover of ['options','modal'])for(const hidden of [false,true])test(`co
+   const OriginalImage=w.Image;
+   w.Image=function(){
+    const image=w.document.createElement('img');
+-   Object.defineProperties(image,{complete:{get:()=>ready},naturalWidth:{get:()=>ready?320:0},naturalHeight:{get:()=>ready?160:0},src:{get(){return this._src;},set(value){this._src=value;pending=this;}}});
++   Object.defineProperties(image,{complete:{get:()=>ready},naturalWidth:{get:()=>ready?320:0},naturalHeight:{get:()=>ready?160:0},src:{get(){return this._src;},set(value){this._src=value;if(value===R.asset)pending=this;}}});
+    image.decode=()=>Promise.resolve();return image;
+   };
+   walk(w,'villageGate');w.document.querySelector('#action').click();assert.equal(read(w,'s.mapRegion'),R.id);assert.ok(pending?.src.includes(R.asset));w.Image=OriginalImage;
+diff --git a/nushi-tsuri/tools/templates/game-index.html b/nushi-tsuri/tools/templates/game-index.html
+index d7da440787ceab627c811a6c2eff7274f7f5d73e..83d85f8f32007f5163d5e9d1ab98b77e159eb7e9 100644
+--- a/nushi-tsuri/tools/templates/game-index.html
++++ b/nushi-tsuri/tools/templates/game-index.html
+@@ -7485,6 +7485,7 @@
+           </div></div>
+       </div>
+     </section>
++    <script src="outdoor-light.js?v=252-85"></script>
+     <script src="coast-voyage.js?v=252-72"></script>
+     <script src="shiokakure.js?v=252-78"></script>
+     <script src="offshore-island.js?v=252-85"></script>
+@@ -15259,6 +15260,7 @@
+         pixelSceneCache.delete(canvas); return true;
+       }
+       function surfaceSceneryKind() {
++        if (battle?.bridgeView) return battle.bridgeView;
+         return battle?.practice ? "pond" : battle?.mountainType ? `mountain-${battle.mountainType}` : battle?.waterZone === "sea"
+           ? battle.coastType ? `coast-${battle.coastType}`
+             : battle.castLocale || seaCastLocaleAtWorld(battle.playerX, battle.playerY)
+@@ -15348,7 +15350,7 @@
+         const key = `${kind}:${s.avatar}:${rod}:${env.key}:${flying}:${progress}:${canvas.width}:${canvas.height}`;
+         if (!resized && pixelCastKey === key) return false;
+         const target = castSurfacePoint(battle?.castDistance ?? battle?.cast ?? 0);
+-        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
++        pixelCastModel = ShuCast.draw(canvas, { avatar: s.avatar, rod, progress, flying, env,ground:battle?.bridgeView ? ShuSceneLayers.marshBridgePoint(kind,battle.playerX,battle.playerY) : ShuCast.groundFor(kind), frontSprite:playerImages?.[s.avatar],
+           target: { x: target.x * canvas.width / 100, y: target.y * canvas.height / 100 } });
+         pixelCastKey = key;
+         return true;
+@@ -17750,6 +17752,16 @@
+       function castSurfacePoint(distance = 50) {
+         const value = Math.max(0, Math.min(100, Number(distance) || 0));
+         const surface = $("#castSurface");
++        if (battle?.bridgeView) {
++          // Follow the clear channel immediately beyond each gap in the railing.
++          const north = battle.bridgeView === "marsh-bridge-north";
++          const x = battle.playerX + (121 - battle.playerX) * value / 100;
++          const y = north ? 54 - value * .085 : 89 + value * .047;
++          const point = ShuSceneLayers.marshBridgePoint(battle.bridgeView,x,y);
++          const box = surface.getBoundingClientRect(), width = box.width || 640, height = box.height || 320;
++          const projected = ShuCast.layout(width,height,point).ground;
++          return {x:projected.x / width * 100,y:projected.y / height * 100};
++        }
+         const practicePond = surface.classList.contains("art-sam-pond");
+         if (practicePond) {
+           // Open center of the oval pond, clear of the entry dock and rocks.
+@@ -19510,6 +19522,8 @@
+           minimumDepth,
+           waterX: spot.waterX,
+           waterY: spot.waterY,
++          bridgeView: mountainType === "highMarsh" && ShuMountain.onBridge(s.x,s.y,s.mapRegion)
++            ? (spot.waterY < s.y ? "marsh-bridge-north" : "marsh-bridge-south") : null,
+           playerX: s.x,
+           playerY: s.y,
+           castLocale: zone === "sea"
+@@ -20887,6 +20901,7 @@
+         close();
+         battle = {
+           phase: "cast",
++          bridgeView: battle.bridgeView,
+           shiokakureObserved,
+           fightMode:s.fightMode,
+           rod:practice?"bamboo":s.selectedRod,
+diff --git a/nushi-tsuri/village-precache-252-85.js b/nushi-tsuri/village-precache-252-85.js
+index bea9c8e79cc60e57c77adf082d34d29b90b7b9ad..9c56ed3945231c815b5020215e972f99507cc3de 100644
+--- a/nushi-tsuri/village-precache-252-85.js
++++ b/nushi-tsuri/village-precache-252-85.js
+@@ -43,13 +43,14 @@ self.SHU_VILLAGE_PRECACHE = [
+   "./underwater-camera.js?v=246-1&sha256=db4d96f49394cc1b2a5ab03b07589db3b894726837e6cc46aead45e457f9a81b",
+   "./nushi-presentation.js?v=252-75&sha256=3b4441bbf976ddaa7f2e9bc207c595d20eb5d4dda73f614d8b6be7f4a5cb2f29",
+   "./catch-memories.js?v=229-1&sha256=9bfd07bdcab9aa076962763c76d15baa12dc083195a27da3eec99a58f2151dcb",
+-  "./coast-voyage.js?v=252-72&sha256=df9368c186acac4ac23fc150ddab67bdca92294ae52d69f0fd0d6199c159e917",
++  "./outdoor-light.js?v=252-85&sha256=2511b83fde615f445031a3a7e260ced6edbfd9184ccf8a5eb9a77798ed37ebde",
++  "./coast-voyage.js?v=252-72&sha256=1d1919998a65df34065ce139621f4b7519652c3f52eeb07dad594ca9002fb847",
+   "./shiokakure.js?v=252-78&sha256=103d09c383e77c347a4b55a0fdf46800599a142aff2f726771d7ed42e6667a93",
+-  "./offshore-island.js?v=252-85&sha256=955fab2ad39959fa70ad2be6601556e5b8a2cc989021fcaeb9f31c20c2753a08",
+-  "./world-life.js?v=252-74&sha256=219b70b7ef7ff3d599535bf437e71157492fdbc5dc592068ca715483c060020f",
++  "./offshore-island.js?v=252-85&sha256=97ed72aed36538849ebd63ba43fcf43cd67f31c006d8bfeca3a8516533ec18ca",
++  "./world-life.js?v=252-74&sha256=61add7ea099cc86d276994916e1ce91eb5c79ec925cb8c9a627f0f61bf269f9b",
+   "./field-guide.js?v=252-55&sha256=090d16ad600738580bcf5144d970dd42e964e4997b7fe3f2a3c6085d0ee09abd",
+-  "./rural-canals.js?v=252-55&sha256=befadaf9fc5f8368992a12061f7be73d60e2f52dcb71d3bd1060a58aec8baa0a",
+-  "./mountain-region.js?v=252-72&sha256=22f9a44aaf4c519d6b040fdca8c26987363f7b305ac878be382d99f5c43445c7",
++  "./rural-canals.js?v=252-55&sha256=400953d2aac573e3bcd51a978855cc9f23f2a658fccfff89e6f4336454e90c83",
++  "./mountain-region.js?v=252-72&sha256=8a966f28fa9ed96522bdc60f28de2f3b9ddce044e7ff7a31a8d2849ed8e97dea",
+   "./regional-nushi.js?v=252-71&sha256=6bd642cfc929a4d581eaec67c6746858afdf75846d9a389bb618eaac0cb42a1e",
+   "./lake-intro.js?v=252-55&sha256=08982305778b85d0e085ed358006f33223698f3c2cb0f434e77c55e5549ed3df",
+   "./timed-rest.js?v=252-32&sha256=5b3d88ed9144bd283419e711711227810270cffebf5305ac13ddf5cb5d578a5f",
+@@ -71,7 +72,7 @@ self.SHU_VILLAGE_PRECACHE = [
+   "./tournament.js?v=180-1&sha256=566d8d9d26c8593e0ae5da46d13cb56ddbc5fb68ab48c325f0fd9f139a5a4c2a",
+   "./pixel-world.js?v=165-1&sha256=77ac8f289e245b88bfcce6310b30e251d197b2be5f8466d14aca7f12fcaf6a55",
+   "./pixel-cast.js?v=247-1&sha256=41d773c2c85e8a20c95f73e132738735ea6923b69c1d6da34ce604a0cfc88f4b",
+-  "./scene-layers.js?v=252-55&sha256=450818cb8d15fe23556392bd537838a8a6a18e478bf4461126a94b05de2fa872",
++  "./scene-layers.js?v=252-55&sha256=616f1da1cc520fdc424aaf1857eab5e464f6fd1dd90d504183b1b61d03560697",
+   "./layered-scenery.js?v=252-55&sha256=4c4946dee4427cbe8d382b8a77df255a3f3be0f4601cb0a065542e098217cacc",
+   "./village-save-migration.js?sha256=0d66a07269c48c19e2653688559ef2db61fd9cdbd1237e28298c897b33325427",
+   "./village-save-store.js?sha256=aec3c5ed9a34830d656ecf09db0833ba65790513ea09499ece429c1b6b0d8381",
+diff --git a/nushi-tsuri/world-life.js b/nushi-tsuri/world-life.js
+index 56476eb39dbd21f397e01895d7a63b43c0dbaa99..689105b7fcb18c3a4947cd419194e4e4341a794c 100644
+--- a/nushi-tsuri/world-life.js
++++ b/nushi-tsuri/world-life.js
+@@ -12,7 +12,7 @@
+   {id:'stream-house',region:'stream',kind:'house',name:'尾根の民家',x:169.5,y:41,w:28,h:23,sprite:0,route:[[194,43],[185,42],[178,43],[169.5,41]],line:'川虫にハリ小なら、この辺りのカワムツも相手をしてくれるよ。'},
+   {id:'pond-house',region:'mountainPond',kind:'house',name:'峠の釣り人の小屋',x:227,y:75,w:20,h:18,sprite:3,route:[[213,75],[217,75],[227,75]],line:'この池のヒメマスは中層から深場だ。川虫とハリ中を試してみな。'},
+   {id:'marsh-house',region:'mountainMarsh',kind:'house',name:'葦守りの家',x:68,y:18,w:13,h:10,sprite:2,route:[[68,25],[68,18]],line:'葦が鳴る音を聞きながら暮らしているんだ。小魚の群れも、毎日少しずつ違うよ。'},
+-  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
++  {id:'wetland-shop',region:'wetland',kind:'shop',name:'サムの水郷売店',x:162,y:34,w:15,h:12,displayScale:1.75,sprite:1,route:[[162,37],[162,34]],line:'水郷の散策も、エサの用意からじゃな。ゆっくり選んでいけ。'},
+   {id:'wetland-house',region:'wetland',kind:'house',name:'水郷の民家',x:64,y:83,w:14,h:11,sprite:2,route:[[80,70],[80,83],[64,83]],line:'洗濯物を干してから、睡蓮の池をひと回りしてきたところさ。'}
+  ];
+  const residents=[
+@@ -32,7 +32,7 @@
+  ];
+  if(reference)for(const resident of residents){const route=reference.npc.residentRoutes[resident.id];if(route)resident.route=route.map(p=>[...p]);}
+  const rect=(x,y,b)=>x>=b.left&&x<=b.right&&y>=b.top&&y<=b.bottom;
+- function centerX(b){return b.x+(.5-(art.doorX?.[b.sprite]??.5))*b.w;}
++ function centerX(b,width=b.w){return b.x+(.5-(art.doorX?.[b.sprite]??.5))*width;}
+  function footprint(b){return {left:centerX(b)-b.w*.36,right:centerX(b)+b.w*.36,top:b.y-b.h*.64,bottom:b.y-1.5};}
+  const solid=(x,y,region)=>buildings.some(b=>b.region===region&&rect(x,y,footprint(b)));
+  function distance(x,y,a,b){const dx=b[0]-a[0],dy=b[1]-a[1],length=dx*dx+dy*dy,t=length?Math.max(0,Math.min(1,((x-a[0])*dx+(y-a[1])*dy)/length)):0;return Math.hypot(x-a[0]-dx*t,y-a[1]-dy*t);}
+@@ -69,7 +69,18 @@
+   const document=map.ownerDocument,layer=document.createElement('div');layer.id='worldLifeLayer';layer.className='world-life-layer';map.append(layer);const images={},records=new Map();let region='',last=-Infinity;
+   function image(name){if(!images[name]){const img=new Image();images[name]=img;img.onload=()=>render(performance.now(),true);img.src=name==='settlement-buildings'?'assets/settlement-buildings-sam-signs.png':'assets/'+name+'-v238.png';}return images[name];}
+   function add(id,kind,definition){const node=document.createElement('div');node.className='world-life-'+kind;node.dataset.worldLife=id;node.setAttribute('role','img');node.setAttribute('aria-label',definition.name);const canvas=document.createElement('canvas');canvas.width=kind==='building'?512:96;canvas.height=kind==='building'?Math.round(512*definition.h/definition.w):128;node.append(canvas);layer.append(node);const record={node,canvas,definition,pose:null,position:null,clock:0,tick:performance.now()};records.set(id,record);return record;}
+-  function paintBuilding(record,env){const b=record.definition,im=image('settlement-buildings');if(!im.complete||!im.naturalWidth)return;drawBuilding(record.canvas,im,b.sprite);record.node.style.width=b.w/240*100+'%';record.node.style.height=b.h/135*100+'%';record.node.style.left=centerX(b)/240*100+'%';record.node.style.top=b.y/135*100+'%';record.node.style.filter=env.period==='night'?'brightness(.64) saturate(.85)':env.period==='evening'?'sepia(.12) brightness(.9)':'';}
++  function paintBuilding(record,env){
++   const b=record.definition,im=image('settlement-buildings');
++   if(!im.complete||!im.naturalWidth)return;
++   drawBuilding(record.canvas,im,b.sprite);
++   // Scale the storefront about its painted door, keeping the map entrance and footing.
++   const scale=b.displayScale||1,w=b.w*scale;
++   record.node.style.width=w/240*100+'%';
++   record.node.style.height=b.h*scale/135*100+'%';
++   record.node.style.left=centerX(b,w)/240*100+'%';
++   record.node.style.top=b.y/135*100+'%';
++   record.node.style.filter=env.period==='night'?'brightness(.64) saturate(.85)':env.period==='evening'?'sepia(.12) brightness(.9)':'';
++  }
+   function paintResident(record,pose){const im=image('village-residents');if(im.complete&&im.naturalWidth)drawResident(record.canvas,im,record.definition.sprite,pose);}
+   function roads(){
+    const canvas=document.createElement('canvas');canvas.className='world-life-roads';canvas.width=1536;canvas.height=864;layer.prepend(canvas);const ctx=canvas.getContext('2d');ctx.scale(6.4,6.4);ctx.lineJoin='round';ctx.strokeStyle='#685c3b55';ctx.lineWidth=2.8;
+@@ -81,7 +92,15 @@
+    if(region!==s.mapRegion){region=s.mapRegion;records.clear();layer.replaceChildren();roads();for(const b of buildings.filter(b=>b.region===region))add(b.id,'building',b);for(const p of residents.filter(p=>p.region===region))add(p.id,'resident',p);}
+    const reduced=globalThis.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    for(const record of records.values()){
+-    const d=record.definition;if(d.kind){record.node.style.zIndex=d.y>s.y?'6':'2';const key=env.period;if(record.pose!==key){paintBuilding(record,env);if(images['settlement-buildings']?.complete)record.pose=key;}continue;}
++    const d=record.definition;
++    if(d.kind){
++     // The scaled storefront's bottom step is in front of its solid wall.
++     const frontY=d.id==='wetland-shop'?footprint(d).bottom:d.y;
++     record.node.style.zIndex=frontY>s.y?'6':'2';
++     const key=env.period;
++     if(record.pose!==key){paintBuilding(record,env);if(images['settlement-buildings']?.complete)record.pose=key;}
++     continue;
++    }
+     const delta=Math.max(0,Math.min(250,now-record.tick));record.tick=now;record.node.hidden=env.period==='night';if(record.node.hidden)continue;
+     let pose=residentPose(d,record.clock+delta,reduced);if(!walkable(pose.x,pose.y)||record.position&&Math.hypot(pose.x-s.x,pose.y-s.y)<4.5)pose={...(record.position||residentPose(d,0,true)),frame:0};else record.clock+=delta;
+     record.position=pose;record.node.style.left=pose.x/240*100+'%';record.node.style.top=pose.y/135*100+'%';record.node.style.zIndex=pose.y>s.y?'6':'4';const key=pose.frame+':'+pose.facing;if(record.pose!==key){paintResident(record,pose);if(images['village-residents']?.complete)record.pose=key;}
