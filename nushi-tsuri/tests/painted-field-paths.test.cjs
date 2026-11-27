@@ -58,3 +58,12 @@ for (const [id, bank, tip, y, beyond] of [['sand',115,107,77,104], ['reef',88,96
     }
   });
 }
+
+test('wetland widened bends, shop approach and doorway keep a return route',()=>{
+  for(const line of [[[79,64],[87,64]],[[234,64],[234,76]],[[177,37],[161,37],[161,33]]]){
+    walkBothWays(line,wetlandMove);
+  }
+  assert.equal(Life.nearby({mapRegion:'wetland',x:161,y:33,direction:'up'}).id,'wetland-shop');
+  assert.equal(Mountain.walkable(161,32,'wetland'),false);
+  for(const [x,y] of [[69,58],[222,70],[110,80]])assert.equal(Mountain.walkable(x,y,'wetland'),false);
+});

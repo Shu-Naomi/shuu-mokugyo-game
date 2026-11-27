@@ -21,13 +21,33 @@ async function run(url,screen){
  const layout=await page.evaluate(()=>Object.fromEntries(['world','map','player','action'].map(id=>{const e=document.getElementById(id),r=e.getBoundingClientRect();return [id,{x:r.x,y:r.y,width:r.width,height:r.height,right:r.right,bottom:r.bottom,display:getComputedStyle(e).display,visibility:getComputedStyle(e).visibility}];})));
  for(const id of ['world','action']){const r=layout[id];assert.ok(r.width>0&&r.height>0&&r.x>=-1&&r.right<=width+1&&r.y>=-1&&r.bottom<=height+1,'visible '+id);}assert.ok(layout.map.width>=layout.world.width);assert.ok(layout.player.width>=12&&layout.player.height>=18);assert.notEqual(layout.player.display,'none');assert.equal(layout.player.visibility,'visible');
  for(const [name,p] of [['west-bank',[38,70]],['west-bridge',[52,70]],['terrace',[120,70]],['east-bridge',[208,70]],['east-bank',[221,70]]]){const steps=await walk(p);if(name==='east-bank')assert.ok(steps<=8,'direct bridge-to-bank crossing');await shot(name);}
+ for(const p of [[208,70],[120,70],[52,70],[38,70]])await walk(p);await shot('west-bank-return');
  for(const p of marshRing)await walk(p);await shot('ring-complete');
  await walk('house');await press('#action');assert.equal(await page.locator('#worldHouse.open').count(),1);await shot('house');await press('#worldHouse [data-close]');
- for(const bay of ['northFish','southFish']){await walk(bay);assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),'highMarsh');await shot(bay+'-bank');await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');await page.evaluate(()=>{beginFishing();clearInterval(timer);timer=0;});await page.waitForFunction(()=>document.querySelector('#castBackdrop').dataset.locale==='mountain-highMarsh');await shot(bay+'-cast');await page.evaluate(()=>{battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer);timer=0;});assert.equal(await page.evaluate(()=>battle.spot),'mountain-highMarsh-mid');evidence.push({bay,fish:await page.evaluate(()=>battle.f.id)});await page.evaluate(()=>endBattle());}
- const after=await progress();assert.equal(after.baits.worm,before.baits.worm-2);assert.equal(after.gameMinutes,before.gameMinutes+20);assert.equal(after.money,before.money);assert.deepEqual(after.caught,before.caught);
+ for(const [bay,locale] of [['northFish','marsh-bridge-north'],['southFish','marsh-bridge-south'],['shoreFish','mountain-highMarsh']]){
+  await walk(bay);assert.equal(await page.evaluate(()=>nearbyFishingSpot()?.mountainType),'highMarsh');
+  await shot(bay+'-bank');await press('#action');assert.equal(await page.evaluate(()=>battle.phase),'prep');
+  await press('#pull');
+  await page.waitForFunction(id=>document.querySelector('.scenery-motion[data-for="castBackdrop"]').dataset.scene==='surface-'+id,locale);
+  assert.equal(await page.locator('#castBackdrop').getAttribute('data-locale'),locale);
+  const aim=await page.evaluate(()=>({near:castSurfacePoint(0),far:castSurfacePoint(100),feet:pixelCastModel.box.ground,origin:[battle.playerX,battle.playerY]}));
+  for(const p of [aim.near,aim.far])assert.ok(p.x>0&&p.x<100&&p.y>0&&p.y<100,'cast aim in viewport');
+  assert.equal(aim.far.y>aim.near.y,bay==='southFish','outward casting direction');
+  await shot(bay+'-cast');
+  // Freeze only the distance meter for the existing middle-depth regression.
+  await page.evaluate(()=>{clearInterval(timer);timer=0;battle.cast=50;});
+  await press('#pull');await page.waitForFunction(()=>battle.phase==='wait');
+  assert.equal(await page.evaluate(()=>battle.spot),'mountain-highMarsh-mid');await shot(bay+'-landed');
+  evidence.push({bay,locale,aim,fish:await page.evaluate(()=>battle.f.id)});await press('#wait');
+ }
+ const after=await progress();assert.equal(after.baits.worm,before.baits.worm-3);assert.equal(after.gameMinutes,before.gameMinutes+30);assert.equal(after.money,before.money);assert.deepEqual(after.caught,before.caught);
  await page.evaluate(()=>save());const saved=await state();await page.reload({waitUntil:'load'});await start();assert.deepEqual(await state(),saved);assert.deepEqual(await progress(),after);await shot('reload');
- await walk('wetland');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
- assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify({screen,url,release:require('./browser-release.cjs').expectedRelease,sourceDigests,image,layout,evidence,feetChecks,wholeRing:true,bridgeWestToEast:true,house:true,terraceBays:true,reload:true,exits:true,errors,failures},null,2));console.log('MARSH_RETREAT_BROWSER_PASS',width,height,dpr);
+ for(const foot of [[224,72],[230,82],[236,82]]){
+  await walk(foot);assert.match(await page.locator('#hint').innerText(),/湿地へ下る道.*Aで先へ進む/);
+  assert.equal(await page.evaluate(()=>ShuMountain.exitAt(s.x,s.y,s.mapRegion)?.region),'wetland');
+ }
+ await shot('wetland-painted-exit');await press('#action');assert.equal((await state()).region,'wetland');await shot('wetland');await walk('return');await press('#action');assert.deepEqual(await state(),{region:'mountainMarsh',x:227,y:78,direction:'up'});await shot('wetland-return');await walk('return');await press('#action');assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);await shot('pond-return');await page.evaluate(()=>save());await page.reload({waitUntil:'load'});await start();assert.equal((await state()).region,'mountainPond');assert.deepEqual(await progress(),after);
+ assert.deepEqual(errors,[]);assert.deepEqual(failures,[]);fs.writeFileSync(path.join(directory,`${width}x${height}-result.json`),JSON.stringify({screen,url,release:require('./browser-release.cjs').expectedRelease,sourceDigests,image,layout,evidence,feetChecks,wholeRing:true,bridgeWestToEast:true,bridgeEastToWest:true,shoreCast:true,house:true,terraceBays:true,reload:true,exits:true,errors,failures},null,2));console.log('MARSH_RETREAT_BROWSER_PASS',width,height,dpr);
  }finally{await context.close();await browser.close();}
 }
 const types={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css; charset=utf-8','.png':'image/png','.webp':'image/webp','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav'};

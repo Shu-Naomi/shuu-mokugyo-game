@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural);
+  const api = factory(typeof module === "object" && module.exports ? require("./world-life.js") : root.ShuWorldLife, typeof module === "object" && module.exports ? require("./rural-canals.js") : root.ShuRural, typeof module === "object" && module.exports ? require("./outdoor-light.js") : root.ShuOutdoorLight);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.ShuMountain = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural) {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (Life, Rural, OutdoorLight) {
   "use strict";
   // Geometry is opt-in and captured after village-reference.js loads.
   const reference = globalThis.ShuVillageReference?.enabled ? globalThis.ShuVillageReference : null;
@@ -144,8 +144,12 @@
         [[145.2,77],[146.5,77],[146.5,87],[145.2,87]],
         // Bench, basket and lantern, all above the unobstructed through route.
         [[99.5,56],[117.5,56],[117.5,62.7],[99.5,62.7]]],
-      landmarks:[{id:"wetland",x:228,y:82,name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
-    wetland:{asset:"assets/wetland-world-v227.png",name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
+      // The east abutment leads down the dry outside edge into a painted fork.
+      // Keep the bridge planks and the fishable inner shore outside the exit.
+      landmarks:[{id:"wetland",x:228,y:82,
+        area:[[221.5,69],[225.4,69],[227.2,76.4],[231,79.6],[239,79.8],[239,85.2],
+          [229,85.4],[225.5,87],[225.5,81],[224.5,79.5],[223.8,78],[221.5,75]],name:"湿地へ下る道",message:"山道の先に、睡蓮の池と葦の広がる水郷が見える。"}]},
+    wetland:{asset:"assets/wetland-world-v227.png",overlay:{asset:"assets/wetland-trail-edges.webp"},name:"水郷の湿地",entry:{x:220,y:6,direction:"down"},
       returnGate:{left:216,right:231,top:2,bottom:10},returnDirection:"up",trailRadius:3.2,
       // The reed bed separates the bridge spur from the southern bank.
       walls:[[[129,73],[136,74],[142,86],[143,94],[140,99],[139,102],[136,103],[131,94],[126,86]]],
@@ -163,7 +167,12 @@
         [[100,58],[96,60],[89,66],[74,70],[57,71],[39,67],[24,62],[16,52],[15,36],[23,21],[37,13],[52,11],[70,12],[83,19],[92,31],[96,45],[96,60]],
         [[145,99],[144,102],[139,106],[143,111],[159,115],[175,119],[189,119],[205,122],[215,117],[218,110],[222,101],[223,95],[230,89],[231,82],[230,72],[231,62],[236,54],[237,48],[233,43],[225,37],[217,32]],
         [[125,57],[133,57],[139,60],[146,64],[153,67]],
-      ],landmarks:[]},
+        // Additional dirt at the lily-pond bend, shop frontage and eastern shore.
+        // Old paths and all three water boundaries keep their original positions.
+        [[59,69.5],[68,68.2],[76,67.3],[80,66],[84,64.6],[88,61.7],[92,58.3]],
+        [[148,40.3],[152,39],[156,37.2],[160,35],[164,35],[168,35],[180,33.8],[188,33.9],[197,32.3]],
+        [[231,64],[231,68],[230.5,72],[231.5,76],[231.5,80],[231.2,84],[229.7,88]],
+      ],trailRadii:[3.2,3.2,3.2,3.2,3.3,3.3,3.8],landmarks:[]},
     cave:{asset:"assets/cave-lake-v202.png",name:"岩窟の地下湖",entry:{x:120,y:128,direction:"up"},
       returnGate:{left:112,right:128,top:122,bottom:133},bridges:[],
       waters:{underground:[[90,18],[112,17],[136,19],[157,23],[176,27],[192,33],[207,42],[217,55],[219,71],[210,86],[192,98],[169,102],[146,105],[126,106],[104,103],[88,99],[69,94],[53,88],[37,77],[28,63],[31,47],[42,37],[58,29],[74,24]]},
@@ -180,7 +189,7 @@
       ?{region:"village",...villageReturn}:region==="mountainMarsh"
         ?{region:"mountainPond",x:212,y:10,direction:"left"}:region==="cave"
           ?{region:"stream",x:215,y:34,direction:"down"}:{region:"stream",x:73,y:12,direction:"down"};
-    const landmark=data.landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6);
+    const landmark=landmarkAt(x,y,region);
     if(landmark?.id==="pass")return {region:"mountainPond",...regions.mountainPond.entry};
     if(landmark?.id==="cave")return {region:"cave",...regions.cave.entry};
     if(landmark?.id==="marsh")return {region:"mountainMarsh",...regions.mountainMarsh.entry};
@@ -262,7 +271,7 @@
     }
     return null;
   }
-  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>Math.hypot(x-p.x,y-p.y)<6)||null; }
+  function landmarkAt(x,y,region="stream") { return regionData(region).landmarks.find(p=>p.area ? inside(x,y,p.area) : Math.hypot(x-p.x,y-p.y)<6)||null; }
   const names={stream:"星見渓流",pond:"木漏れ日の池",marsh:"葦の沼",highPond:"峠の池",highMarsh:"峠の沼",underground:"岩窟の地下湖",wetPond:"睡蓮の池",wetCreek:"砂底の小川",wetMarsh:"水郷の葦の沼"};
   const populations={
     stream:[{ugui:.13,iwana:.24,amago:.18,kajika:.22,yamame:.16,ayu:.12,moroko:.08},
@@ -323,18 +332,32 @@
       const img=new Image();images[overlay.asset]=img;img.decoding="async";
       img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=overlay.asset;
     }
+    const repair=regionData(region).shadowRepair;
+    if(repair && !images[repair.asset] && typeof Image!=="undefined"){
+      const img=new Image();images[repair.asset]=img;img.decoding="async";
+      img.onload=()=>{if(canPaintPending(region))paint(...pendingScene);};img.src=repair.asset;
+    }
     const image=images[region];
     const ctx=canvas.getContext("2d");ctx.save();ctx.imageSmoothingEnabled=false;
     if(image?.complete && image.naturalWidth>0)ctx.drawImage(image,0,0,canvas.width,canvas.height);
     else {ctx.fillStyle="#183b31";ctx.fillRect(0,0,canvas.width,canvas.height);}
     const patch=overlay && images[overlay.asset];
-    if(patch?.complete && patch.naturalWidth>0){
+    if(patch?.complete && patch.naturalWidth>0 && !overlay.clip){
+      ctx.drawImage(patch,0,0,canvas.width,canvas.height);
+    }else if(patch?.complete && patch.naturalWidth>0){
       ctx.save();ctx.beginPath();overlay.clip.forEach(([x,y],i)=>i?ctx.lineTo(x/width*canvas.width,y/height*canvas.height):ctx.moveTo(x/width*canvas.width,y/height*canvas.height));ctx.closePath();ctx.clip();
       ctx.drawImage(hillsideLayer(patch,overlay),0,0,canvas.width,canvas.height);ctx.restore();
     }
-    const tint=region==="cave"?null:{night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[environment.period||environment.time];
-    if(tint){ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}ctx.restore();
-    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0));
+    const repaired=repair && images[repair.asset];
+    if(image?.complete && image.naturalWidth>0 && repaired?.complete && repaired.naturalWidth>0){
+      // Retouch only the baked rail shadow on dirt. The bridge, terrain and
+      // collision geometry stay unchanged; lighting is applied afterwards.
+      const [x,y,w,h]=repair.bounds,[sw,sh]=Rural.size;
+      ctx.drawImage(repaired,x/sw*canvas.width,y/sh*canvas.height,w/sw*canvas.width,h/sh*canvas.height);
+    }
+    if(region!=="cave")OutdoorLight.paint(ctx,canvas,environment);
+    ctx.restore();
+    return Boolean(image?.complete && image.naturalWidth>0 && (!overlay || patch?.complete && patch.naturalWidth>0) && (!repair || repaired?.complete));
   }
   return {width,height,asset,villageGate,returnGate,entry,villageReturn,bridge,waters,trails,
     landmarks,names,spots,regions,isRegion,regionData,exitAt,inRect,onBridge,waterType,walkable,moveTarget,atVillageGate,atReturnGate,fishingWater,landmarkAt,paint};

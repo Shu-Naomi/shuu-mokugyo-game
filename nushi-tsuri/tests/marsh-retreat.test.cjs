@@ -8,8 +8,8 @@ test('native controls cross the bridge west to east, walk the whole ring, open t
  const app=boot(fixture()),w=app.window;let saved,before;
  try{before=progress(w);for(const p of [[38,70],[52,70],[120,70],[208,70],[221,70]]){const steps=walk(w,p);if(p[0]===221)assert.ok(steps<=8,'east bridge meets bank directly, no ring detour');}for(const p of marshRing)walk(w,p);
   walk(w,'house');w.document.querySelector('#action').click();assert.ok(w.document.querySelector('#worldHouse.open'));w.document.querySelector('#worldHouse [data-close]').click();
-  for(const bay of ['northFish','southFish']){walk(w,bay);assert.equal(read(w,'nearbyFishingSpot().mountainType'),'highMarsh');w.document.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');w.eval('beginFishing();clearInterval(timer);battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');assert.equal(read(w,'battle.spot'),'mountain-highMarsh-mid');w.eval('endBattle()');}
-  assert.equal(read(w,'s.baits.worm'),before.baits.worm-2);assert.equal(read(w,'s.gameMinutes'),before.time+20);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));before=progress(w);assert.deepEqual(app.errors,[]);
+  for(const [bay,locale] of [['northFish','marsh-bridge-north'],['southFish','marsh-bridge-south'],['shoreFish','mountain-highMarsh']]){walk(w,bay);assert.equal(read(w,'nearbyFishingSpot().mountainType'),'highMarsh');w.document.querySelector('#action').click();assert.equal(read(w,'battle.phase'),'prep');assert.equal(read(w,'surfaceSceneryKind()'),locale);w.eval('beginFishing();clearInterval(timer)');assert.equal(read(w,'surfaceSceneryKind()'),locale);w.eval('battle.cast=50;launchSurfaceCast();settleSurfaceCast();clearInterval(timer)');assert.equal(read(w,'battle.spot'),'mountain-highMarsh-mid');w.eval('endBattle()');}
+  assert.equal(read(w,'s.baits.worm'),before.baits.worm-3);assert.equal(read(w,'s.gameMinutes'),before.time+30);w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));before=progress(w);assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const restored=boot(saved),r=restored.window;try{assert.deepEqual(progress(r),before);assert.equal(read(r,'s.x'),saved.x);assert.equal(read(r,'s.y'),saved.y);walk(r,'wetland');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'wetland');walk(r,'return');r.document.querySelector('#action').click();assert.deepEqual(read(r,'({region:s.mapRegion,x:s.x,y:s.y})'),{region,x:227,y:78});walk(r,'return');r.document.querySelector('#action').click();assert.equal(read(r,'s.mapRegion'),'mountainPond');assert.deepEqual(progress(r),before);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
 });
@@ -24,4 +24,15 @@ test('rail sweep rejects tunnelling and every bridge cast is limited to its dire
 });
 test('legacy saves at removed decks and new water recover on land without losing progress',()=>{
  for(const [x,y] of [[50,79],[58,78],[116,21],[173,26],[198,53],[110,107],[154,106],[80,50],[170,90],[160,105]]){const old=fixture({x,y,boatActive:true}),app=boot(old),w=app.window;try{assert.ok(read(w,'isWalkableWorld(s.x,s.y)'));assert.equal(read(w,'s.boatActive'),false);for(const target of [[120,70],'return'])assert.ok(Array.isArray(w.eval('('+planMarshRoute.toString()+')('+JSON.stringify(target)+')')),'recovered save has route to '+JSON.stringify(target));for(const key of ['money','hp','gameMinutes','caught','questCompletions','dog'])assert.deepEqual(read(w,'s.'+key),old[key],key+' '+x+','+y);for(const [bait,count]of Object.entries(old.baits))assert.equal(read(w,'s.baits.'+bait),count);assert.equal(read(w,'s.dogAffinity.shuu'),old.dogAffinity.shuu*20,'legacy affection scale migration');assert.deepEqual(app.errors,[]);}finally{app.dispose();}}
+});
+
+test('the wetland hint and A action follow the east approach and the painted outgoing road',()=>{
+ for(const point of [[222,70],[224,74],[226,78],[230,82],[234,82],[238,82]]){
+  assert.ok(M.walkable(...point,region));assert.equal(M.landmarkAt(...point,region)?.id,'wetland');
+  assert.equal(M.exitAt(...point,region)?.region,'wetland');
+ }
+ for(const point of [[212,70],[220,70],[222,84],[232,76],[236,88]]){
+  assert.equal(M.landmarkAt(...point,region),null);assert.equal(M.exitAt(...point,region),null);
+ }
+ assert.ok(M.fishingWater(222,84,'left',region));
 });

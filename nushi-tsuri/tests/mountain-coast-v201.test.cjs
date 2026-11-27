@@ -142,6 +142,7 @@ test('decoded mountain landscape is opaque and preserves detail under night tint
     set src(source){pending.push(new Promise((resolve,reject)=>{const paint=this.onload;this.onload=()=>{paint?.();resolve();};this.onerror=reject;}));super.src=path.join(__dirname,'..',source);}
   }
   const context={Image:LocalImage};vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../rural-canals.js'),'utf8'),context);
+  vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../outdoor-light.js'),'utf8'),context);
   vm.runInNewContext(fs.readFileSync(path.join(__dirname,'../mountain-region.js'),'utf8'),context);
   const day=createCanvas(960,540),night=createCanvas(960,540);
   context.ShuMountain.paint(day,{period:'day'});await Promise.all(pending);

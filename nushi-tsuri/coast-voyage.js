@@ -1,8 +1,8 @@
 (function (root, factory) {
-  const api = factory();
+  const api = factory(typeof module === "object" && module.exports ? require("./outdoor-light.js") : root.ShuOutdoorLight);
   if (typeof module === "object" && module.exports) module.exports = api;
   root.ShuCoast = api;
-})(typeof globalThis !== "undefined" ? globalThis : this, function () {
+})(typeof globalThis !== "undefined" ? globalThis : this, function (OutdoorLight) {
   "use strict";
   const width = 240, height = 135;
   const islands = {
@@ -65,14 +65,13 @@
   function paintFallback(canvas,environment={}) {
     if (!canvas?.getContext) return;
     const ctx=canvas.getContext("2d");
-    const night=environment.period==="night" || environment.time==="night";
     const scaleX=canvas.width/width, scaleY=canvas.height/height;
     ctx.save();ctx.scale(scaleX,scaleY);ctx.imageSmoothingEnabled=false;
-    ctx.fillStyle=night?"#12344a":"#236888";ctx.fillRect(0,0,width,height);
+    ctx.fillStyle="#236888";ctx.fillRect(0,0,width,height);
     for(let y=0;y<height;y+=4) for(let x=0;x<width;x+=8) {
       const noise=(x*7+y*13)%31;
-      if(noise<9) { ctx.fillStyle=night?"#23536a":"#388a9f";ctx.fillRect(x+(y%3),y,4,1); }
-      else if(noise>27) {ctx.fillStyle=night?"#568391":"#92c7c1";ctx.fillRect(x+2,y,2,1);}
+      if(noise<9) { ctx.fillStyle="#388a9f";ctx.fillRect(x+(y%3),y,4,1); }
+      else if(noise>27) {ctx.fillStyle="#92c7c1";ctx.fillRect(x+2,y,2,1);}
     }
     for(const [id,poly] of Object.entries(islands)) {
       ctx.fillStyle="#e8f2cf";ctx.beginPath();poly.forEach(([x,y],i)=>i?ctx.lineTo(x,y):ctx.moveTo(x,y));ctx.closePath();ctx.fill();
@@ -100,6 +99,7 @@
     ctx.fillStyle="#705e51";ctx.fillRect(148,119,9,10);ctx.fillStyle="#d6bb84";ctx.fillRect(149,119,8,4);
     ctx.fillStyle="#f3ebc4";ctx.fillRect(145,115,2,3);
     ctx.restore();
+    OutdoorLight.paint(ctx,canvas,environment);
   }
   const artSources = {
     coast: "assets/coast-world-v197.webp",
@@ -132,10 +132,7 @@
     ctx.save();
     ctx.imageSmoothingEnabled=false;
     ctx.drawImage(image,0,0,canvas.width,canvas.height);
-    const period=environment.period || environment.time;
-    // Tint the finished painting, retaining its shoreline and water detail.
-    const tint={night:"rgba(9,20,48,.49)",evening:"rgba(115,46,23,.19)",morning:"rgba(255,220,159,.06)"}[period];
-    if(tint) {ctx.fillStyle=tint;ctx.fillRect(0,0,canvas.width,canvas.height);}
+    OutdoorLight.paint(ctx,canvas,environment);
     ctx.restore();
   }
   // Eight static hull/torso bases and one reusable oar. The measured source
