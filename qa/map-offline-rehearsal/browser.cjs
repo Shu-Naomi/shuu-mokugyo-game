@@ -10,7 +10,7 @@ const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=u
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 const mode=process.argv[2]||'success';
 assert.ok(['success','baseline','corrupt','quota'].includes(mode));
-const report={mode,physicalAndroid:false,milestones:[],failure:null};
+const report={mode,physicalAndroid:false,milestones:[],storage:{},stagedResponses:{count:0,bodyBytes:0},failure:null};
 let phase='baseline',touchedCorrupt=false,workerRequests=0;
 const newImage=stageManifest.items.find(i=>!i.old && /shadow-repair\.png$/.test(i.url));
 assert.ok(newImage);
@@ -25,6 +25,10 @@ const server=http.createServer((req,res)=>{
   if(staged&&mode==='corrupt'&&name===newImage.stage.slice(2)){touchedCorrupt=true;return respond('image/png','intentionally broken rehearsal image');}
   const dir=staged?stageRoot:legacyRoot, file=path.resolve(dir,name);
   if(!file.startsWith(dir+path.sep)||!fs.existsSync(file)||!fs.statSync(file).isFile()){res.writeHead(404);return res.end();}
+  if(staged){
+    const size=fs.statSync(file).size;
+    res.once('finish',()=>{report.stagedResponses.count++;report.stagedResponses.bodyBytes+=size;});
+  }
   res.writeHead(200,{'Content-Type':mime[path.extname(file)]||'application/octet-stream','Cache-Control':'no-store'});
   fs.createReadStream(file).pipe(res);
 });
@@ -55,6 +59,8 @@ async function run(){
     assert.ok(Object.keys(before).some(k=>k.endsWith('-slot1')));
     assert.ok(Object.keys(before).some(k=>k.endsWith('-slot2')));
     report.milestones.push({oldHash,slots:2});
+    const estimate=page=>page.evaluate(()=>navigator.storage.estimate());
+    if(mode==='success')report.storage.before=await estimate(old);
     if(mode==='quota'){
       const usage=await old.evaluate(async()=>(await navigator.storage.estimate()).usage);
       const client=await ctx.newCDPSession(old);
@@ -80,6 +86,7 @@ async function run(){
     if(mode==='corrupt') assert.equal(touchedCorrupt,true);
     report.milestones.push({workerRequests,outcome:success?'waiting':'rejected'});
     if(success){
+      report.storage.waiting=await estimate(old);
       await old.close();
       await poll(async()=>{
         for(const w of ctx.serviceWorkers()){
@@ -128,6 +135,13 @@ async function run(){
       await p.locator('#titleResume').click();
       await p.waitForFunction(({slot,money})=>document.querySelector('#activeSaveSlot').textContent==='セーブ'+slot&&Number(document.querySelector('#money').textContent.replaceAll(',',''))===money,{slot,money});
       report.milestones.push({offlineHash:want,resumedSlot:slot,money});
+      if(success&&slot===2){
+        report.storage.after=await estimate(p);
+        for(const label of ['before','waiting','after']) assert.ok(Number.isSafeInteger(report.storage[label].usage)&&report.storage[label].usage>0);
+        report.storage.addedWhenWaiting=report.storage.waiting.usage-report.storage.before.usage;
+        report.storage.addedAfterOfflineResume=report.storage.after.usage-report.storage.before.usage;
+        assert.ok(report.stagedResponses.count>0&&report.stagedResponses.bodyBytes>0);
+      }
       await p.close();
     }
     await ctx.close();
