@@ -9,7 +9,7 @@ const stageManifest=vm.runInNewContext(fs.readFileSync(path.join(stageRoot,'rele
 const mime={'.html':'text/html; charset=utf-8','.js':'text/javascript; charset=utf-8','.css':'text/css','.json':'application/json','.png':'image/png','.webp':'image/webp','.jpg':'image/jpeg','.jpeg':'image/jpeg','.svg':'image/svg+xml','.mp3':'audio/mpeg','.wav':'audio/wav','.ogg':'audio/ogg'};
 const digest=bytes=>createHash('sha256').update(bytes).digest('hex');
 const mode=process.argv[2]||'success';
-assert.ok(['success','corrupt','quota'].includes(mode));
+assert.ok(['success','baseline','corrupt','quota'].includes(mode));
 const report={mode,physicalAndroid:false,milestones:[],failure:null};
 let phase='baseline',touchedCorrupt=false,workerRequests=0;
 const newImage=stageManifest.items.find(i=>!i.old && /shadow-repair\.png$/.test(i.url));
@@ -61,6 +61,8 @@ async function run(){
       await client.send('Storage.overrideQuotaForOrigin',{origin,quotaSize:usage+524288});
       report.milestones.push({quota:usage+524288,usage});
     }
+    const success=mode==='success';
+    if(mode!=='baseline'){
     await old.evaluate(async()=>{
       const reg=await navigator.serviceWorker.getRegistration();
       globalThis.__installStates=[];
@@ -68,7 +70,6 @@ async function run(){
     });
     phase='candidate';
     await old.evaluate(async()=>{try{await (await navigator.serviceWorker.getRegistration()).update();}catch(e){globalThis.__updateError=String(e);}});
-    const success=mode==='success';
     await poll(()=>old.evaluate(async({success})=>{
       const r=await navigator.serviceWorker.getRegistration();
       return success?r.waiting?.state==='installed':__installStates.includes('redundant');
@@ -89,12 +90,38 @@ async function run(){
         return false;
       },'candidate activation with all old tabs closed',45000);
     }
+    }
+    if(!success){
+      const oldState=await old.evaluate(async()=>{
+        const r=await navigator.serviceWorker.getRegistration();
+        return {active:r?.active?.state,controller:navigator.serviceWorker.controller?.scriptURL,waiting:r?.waiting?.state};
+      });
+      assert.equal(oldState.active,'activated');
+      assert.ok(oldState.controller?.endsWith('/sw.js?v=252-85'));
+      assert.equal(oldState.waiting,undefined);
+      report.milestones.push({control:mode==='baseline',oldState});
+      // Both versions enforce single-tab save ownership. To test a real
+      // offline restart, release the old gameplay tab's lock first.
+      await old.close();
+      assert.equal(ctx.pages().length,0);
+    }
     await ctx.setOffline(true);
     const want=success?stageManifest.items[0].digest:oldHash;
     for(const [slot,money] of [[1,4321],[2,6789]]){
       const p=await ctx.newPage(), response=await p.goto(canonical);
       assert.equal(digest(await response.body()),want);
-      await p.waitForFunction(()=>Boolean(navigator.serviceWorker.controller&&globalThis.ShuVillageReleaseGate?.started),null,{timeout:45000});
+      try{
+        await p.waitForFunction(()=>Boolean(navigator.serviceWorker.controller&&globalThis.ShuVillageReleaseGate?.started),null,{timeout:45000});
+      }catch(error){
+        report.bootDiagnostic=await p.evaluate(async()=>({
+          gate:document.querySelector('#villageSaveGate')?.textContent,
+          controller:navigator.serviceWorker.controller?.scriptURL,
+          locks:await navigator.locks.query(),
+          missing:globalThis.ShuVillageReleaseCandidate?.failed
+        })).catch(e=>({failure:String(e)}));
+        console.error(JSON.stringify(report.bootDiagnostic));
+        throw error;
+      }
       if(slot===1)assert.deepEqual(await p.evaluate(snapshot),before);
       await p.locator('#titleContinue').click();
       await p.locator('[data-save-slot="'+slot+'"]').click();
@@ -105,6 +132,6 @@ async function run(){
     }
     await ctx.close();
   } catch(e){report.failure=String(e);throw e;}
-  finally{fs.writeFileSync(path.join(root,'browser-'+mode+'.json'),JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>server.close(r));}
+  finally{console.log(JSON.stringify(report));fs.writeFileSync(path.join(root,'browser-'+mode+'.json'),JSON.stringify(report,null,2));await browser?.close();await new Promise(r=>server.close(r));}
 }
 run().catch(e=>{console.error(e);process.exitCode=1;});
