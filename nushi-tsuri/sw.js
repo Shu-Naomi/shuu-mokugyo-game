@@ -1,8 +1,7 @@
-const CACHE_PREFIX = "nushi-tsuri-";
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-shiokakure-display-252-85";
+const CACHE_NAME = "nushi-tsuri-v252-map-offline-252-92";
 
-importScripts("./village-precache-252-85.js");
+importScripts("./village-precache-252-92.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",
@@ -448,62 +447,137 @@ const CORE_ASSETS = [
   "./assets/terrain-stone-v45.svg",
   "./assets/terrain-field-v45.svg",
 ];
-self.addEventListener("install", (event) => {
-  // Atomic addAll: a partial download does not activate this release.
-  event.waitUntil(caches.open(CACHE_NAME).then(cache => cache.addAll([...new Set(CORE_ASSETS)])));
-});
-self.addEventListener("activate", (event) => {
-  // Do not claim old tabs or delete their caches. They still use legacy saves.
-  event.waitUntil(Promise.resolve());
-});
-async function matchGameCache(request) {
-  try {
-    const cache = await caches.open(CACHE_NAME);
-    return await cache.match(request);
-  } catch (_) {
-    return undefined;
+
+// The index records the exact CacheStorage location of each verified file.
+// Directory and query aliases can share bytes without copying the old cache.
+const INDEX_KEY = './__offline_release_index__';
+const assetsByPath = new Map();
+const aliasPaths = new Map();
+const absolute = resource => new URL(resource, self.registration.scope).href;
+for (const resource of new Set(CORE_ASSETS)) {
+  const file = resource.slice(2).split('?')[0] || 'index.html';
+  if (!assetsByPath.has(file)) assetsByPath.set(file, resource);
+  aliasPaths.set(absolute(resource), file);
+}
+aliasPaths.set(absolute(self.SHU_VILLAGE_ENTRY), 'index.html');
+
+async function verified(response, digest) {
+  if (!response || response.status !== 200) return false;
+  const bytes = await response.clone().arrayBuffer();
+  const hashed = await crypto.subtle.digest('SHA-256', bytes);
+  const hex = Array.from(new Uint8Array(hashed), b => b.toString(16).padStart(2, '0')).join('');
+  return hex === digest;
+}
+
+async function previousFiles() {
+  const inventory = new Map();
+  for (const name of (await caches.keys()).reverse()) {
+    if (name === CACHE_NAME || !/^nushi-tsuri-v\d/.test(name)) continue;
+    const cache = await caches.open(name);
+    for (const request of await cache.keys()) {
+      const url = new URL(request.url);
+      if (!url.href.startsWith(self.registration.scope)) continue;
+      if (!inventory.has(url.pathname)) inventory.set(url.pathname, []);
+      inventory.get(url.pathname).push({ name, key: url.href, cache });
+    }
   }
+  return inventory;
 }
-function storeGameResponse(event, request, response) {
-  // Error pages and partial media responses must not replace a good copy.
-  if (response.status !== 200) return;
-  const copy = response.clone();
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => cache.put(request, copy))
-      .catch(() => {}),
-  );
+
+async function stageFile(file, resource, previous, cache) {
+  const digest = self.SHU_VILLAGE_DIGESTS[file];
+  if (!digest) throw Error('Unpinned offline file: ' + file);
+  const address = absolute(file === 'index.html' ? self.SHU_VILLAGE_ENTRY : resource);
+  // The v252-85 worker can rewrite its index.html at any moment. Our entry
+  // always comes from the dedicated release URL and lives in this cache.
+  if (file !== 'index.html') {
+    for (const old of previous.get(new URL(address).pathname) || []) {
+      const existing = await old.cache.match(old.key);
+      if (await verified(existing, digest)) return [old.name, old.key];
+    }
+  }
+  const response = await fetch(new Request(address, {cache:'no-store'}));
+  if (!await verified(response, digest)) throw Error('Invalid offline file: ' + file);
+  await cache.put(address, response);
+  return [CACHE_NAME, address];
 }
-self.addEventListener("fetch", (event) => {
-  const request = event.request;
-  const url = new URL(request.url);
-  if (request.method !== "GET" || url.origin !== self.location.origin) return;
-  const scopePath=new URL(self.registration.scope).pathname;
-  const canonical=url.pathname===scopePath||url.pathname===scopePath+'index.html';
-  if (request.mode === "navigate" && canonical) {
-    event.respondWith(
-      fetch(request, { cache: "no-store" })
-        .then(async (response) => {
-          if (response.status >= 500)
-            return await matchGameCache("./index.html") || response;
-          storeGameResponse(event, "./index.html", response);
-          return response;
-        })
-        .catch(async () => await matchGameCache("./index.html") || Response.error()),
-    );
+
+let currentIndex;
+async function readIndex(cache) {
+  const marker = await cache.match(absolute(INDEX_KEY));
+  return marker ? marker.json() : null;
+}
+async function installRelease() {
+  const cache = await caches.open(CACHE_NAME);
+  const ready = await readIndex(cache);
+  // Registering the same worker via an older script URL can trigger a second
+  // install. Never remove files belonging to an already committed release.
+  if (ready) {
+    if (ready.build !== self.SHU_VILLAGE_BUILD) throw Error('Release version is already in use');
+    currentIndex = ready;
     return;
   }
-  event.respondWith(
-    matchGameCache(request)
-      .then((cached) => {
-        if (cached) return cached;
-        return fetch(request)
-          .then((response) => {
-            storeGameResponse(event, request, response);
-            return response;
-          })
-          // A missing PNG/MP3 must fail as that resource, never receive HTML.
-          .catch(() => Response.error());
-      }),
-  );
+  try {
+    const previous = await previousFiles();
+    const files = Object.create(null);
+    for (const [file, resource] of assetsByPath) files[file] = await stageFile(file, resource, previous, cache);
+    const index = {build:self.SHU_VILLAGE_BUILD, files};
+    await cache.put(absolute(INDEX_KEY), new Response(JSON.stringify(index)));
+    currentIndex = index;
+  } catch (error) {
+    // No other release references a candidate which has not committed its index.
+    await caches.delete(CACHE_NAME);
+    throw error;
+  }
+}
+self.addEventListener('install', event => event.waitUntil(installRelease()));
+// Natural activation keeps open pages on their own working release.
+self.addEventListener('activate', event => event.waitUntil(Promise.resolve()));
+
+async function getPinned(file) {
+  const cache = await caches.open(CACHE_NAME);
+  const index = currentIndex || await readIndex(cache);
+  if (!index || index.build !== self.SHU_VILLAGE_BUILD) return;
+  currentIndex = index;
+  const pointer = index.files[file];
+  if (!pointer) return;
+  const source = pointer[0] === CACHE_NAME ? cache : await caches.open(pointer[0]);
+  return source.match(pointer[1]);
+}
+
+async function respond(event, file) {
+  const request = event.request;
+  if (file) {
+    try {
+      const cached = await getPinned(file);
+      if (cached) return cached;
+    } catch (_) { /* Online recovery still checks the release digest. */ }
+    const resource = file === 'index.html' ? self.SHU_VILLAGE_ENTRY : assetsByPath.get(file);
+    const fetched = await fetch(new Request(absolute(resource), {cache:'no-store'}));
+    return await verified(fetched, self.SHU_VILLAGE_DIGESTS[file]) ? fetched : Response.error();
+  }
+  // Optional assets retain ordinary cache-first behavior, outside the
+  // verified index. A failed cache write cannot prevent successful playback.
+  let cache;
+  try {
+    cache = await caches.open(CACHE_NAME);
+    const cached = await cache.match(request);
+    if (cached) return cached;
+  } catch (_) { /* CacheStorage may be unavailable. */ }
+  const response = await fetch(request);
+  if (cache && response.status === 200) {
+    const copy = response.clone();
+    event.waitUntil(cache.put(request, copy).catch(() => {}));
+  }
+  return response;
+}
+self.addEventListener('fetch', event => {
+  const request = event.request;
+  if (request.method !== 'GET' || !request.url.startsWith(self.registration.scope)) return;
+  const url = new URL(request.url);
+  const scope = new URL(self.registration.scope);
+  const canonical = url.pathname === scope.pathname || url.pathname === scope.pathname + 'index.html';
+  const file = request.mode === 'navigate' && (canonical || url.pathname === new URL(absolute(self.SHU_VILLAGE_ENTRY)).pathname)
+    ? 'index.html' : aliasPaths.get(url.href);
+  event.respondWith(respond(event, file).catch(() => Response.error()));
 });
