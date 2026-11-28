@@ -1,4 +1,5 @@
 'use strict';
+const { expectedWorkerURL } = require('./browser-release.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),os=require('node:os'),vm=require('node:vm');
 const build=require('../tools/build-village-production-candidate.cjs');
@@ -27,13 +28,13 @@ test('production requires explicit template and preserves it across reproducible
  assert.equal(first.html,second.html);assert.deepEqual(first.manifest,second.manifest);
  assert.equal(fs.readFileSync(path.join(root,options.sourcePath),'utf8'),source);
  assert.equal(fs.readFileSync(path.join(root,'index.html'),'utf8'),first.html);
- assert.equal(first.manifest.workerURL,'./sw.js?v=252-95');assert.equal(first.manifest.expectedUrls.length,5);
+ assert.equal(first.manifest.workerURL,expectedWorkerURL);assert.equal(first.manifest.expectedUrls.length,5);
  assert.match(first.manifest.mapURL,/^assets\/village-reference-[a-f0-9]{16}\.png$/);
  assert.ok(Buffer.byteLength(first.html.slice(0,first.html.indexOf('<meta charset="utf-8">'))) < 1024);
  assert.ok(first.html.indexOf('<meta charset="utf-8">') < first.html.indexOf('villageCandidateBootstrap'));
  const ctx={URL,Set,location:{href:'https://example.test/nushi-tsuri/index.html'},document:{addEventListener(){}}};
  vm.runInNewContext(first.html.match(/<script id="villageCandidateBootstrap">([\s\S]*?)<\/script>/)[1],ctx);
- assert.equal(ctx.ShuVillageReleaseCandidate.workerURL,'./sw.js?v=252-95');
+ assert.equal(ctx.ShuVillageReleaseCandidate.workerURL,expectedWorkerURL);
  assert.equal(ctx.ShuVillageReleaseCandidate.expectedUrls[0].startsWith('https://example.test/nushi-tsuri/'),true);
  assert.throws(()=>build({root,sourcePath:'index.html'}),/Generated HTML/);
 });

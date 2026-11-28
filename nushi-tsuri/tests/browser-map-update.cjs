@@ -28,8 +28,9 @@ const oldReleaseEntry = 'release-' + oldRelease.slice(1) + '.html';
 const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, oldReleaseEntry));
 const oldEntry = hasPublishedMapRelease ? oldReleaseEntry : 'index.html';
 const newRelease = documentVersion(candidateRoot);
-assert.equal(newRelease, 'v252-95');
-const damagedFile = 'assets/fish-tenagaebi.png';
+const candidateEntry = 'release-' + newRelease.slice(1) + '.html';
+// The candidate always fetches its own entry, even when every image is reused.
+const damagedFile = candidateEntry;
 const media = [
   {file:'assets/player-boy.png', width:540, height:430},
   {file:'assets/player-boy-walk-v35-final.png', width:540, height:860},
@@ -44,7 +45,7 @@ const media = [
   {file:'assets/fish-tenagaebi.png', width:400, height:112},
   {file:'assets/fish-zarigani.png', width:400, height:112}
 ];
-const priorMediaCount = {'v252-85':3, 'v252-92':3, 'v252-93':5, 'v252-94':10};
+const priorMediaCount = {'v252-85':3, 'v252-92':3, 'v252-93':5, 'v252-94':10, 'v252-95':12};
 assert.ok(priorMediaCount[oldRelease], 'Unrecognized baseline ' + oldRelease);
 const priorMedia = media.slice(0, priorMediaCount[oldRelease]);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
@@ -81,8 +82,8 @@ function createHost() {
     }
     if (candidate && scenario === 'corrupt' && relative === damagedFile) {
       host.injectedCorruption = true;
-      res.writeHead(200, {'Content-Type':'image/png', 'Cache-Control':'no-store'});
-      return res.end('intentionally corrupt map image');
+      res.writeHead(200, {'Content-Type':mime.html, 'Cache-Control':'no-store'});
+      return res.end('intentionally corrupt candidate entry');
     }
     res.writeHead(200, {'Content-Type':mime[path.extname(file).slice(1)] || 'application/octet-stream', 'Cache-Control':'no-store'});
     if (candidate) res.once('finish', () => { report.networkBytes += stat.size; });
@@ -172,7 +173,7 @@ async function resumeOffline(context, url, expected, before, completedUpdate) {
 
 async function run() {
   const baselineHash = fileHash(baselineRoot, oldEntry);
-  const candidateHash = fileHash(candidateRoot, 'release-' + newRelease.slice(1) + '.html');
+  const candidateHash = fileHash(candidateRoot, candidateEntry);
   const guardedEntryHash = fileHash(candidateRoot, 'index.html');
   assert.notEqual(fileHash(candidateRoot, 'sw.js'), fileHash(baselineRoot, 'sw.js'), 'expected a different candidate worker');
   const host = createHost();

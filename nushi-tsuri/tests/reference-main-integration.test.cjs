@@ -1,4 +1,5 @@
 'use strict';
+const { expectedWorkerURL } = require('./browser-release.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm'),{JSDOM,VirtualConsole}=require('jsdom');
 const read=name=>fs.readFileSync(path.join(__dirname,'..',name),'utf8');
 const html=read('index.html');
@@ -14,7 +15,7 @@ test('production session suppresses legacy runtime registration for every query 
  assert.deepEqual(register('',false),[]);
 });
 test('legacy fallback uses the current worker only outside reference mode',()=>{
- for(const search of ['', '?villageReference=0','?villageReference=false'])assert.deepEqual(register(search),['./sw.js?v=252-95']);
+ for(const search of ['', '?villageReference=0','?villageReference=false'])assert.deepEqual(register(search),[expectedWorkerURL]);
 });
 test('unmigrated reference rehearsal never registers production worker',()=>{
  for(const search of ['?villageReference=1','?v=252-59&villageReference=1'])assert.deepEqual(register(search),[]);
@@ -36,7 +37,7 @@ async function boot({verified=true,acquired=true,supported=true,production=true,
 test('production registers the configured current worker only after verified save-safe runtime startup',async()=>{
  const app=await boot();try{
   assert.deepEqual(app.order,['verify','acquire','register']);
-  assert.deepEqual(app.calls,[{url:'./sw.js?v=252-95',options:{updateViaCache:'none'},gameRan:true}]);
+  assert.deepEqual(app.calls,[{url:expectedWorkerURL,options:{updateViaCache:'none'},gameRan:true}]);
   assert.equal(app.w.ShuVillageReleaseGate.started,true);
  }finally{app.dom.window.close();}
 });
