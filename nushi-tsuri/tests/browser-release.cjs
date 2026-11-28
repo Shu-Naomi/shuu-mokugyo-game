@@ -11,6 +11,8 @@ assert.equal(badges.length, 1, 'checkout must have exactly one release badge');
 const expectedRelease = badges[0].textContent.trim();
 assert.match(expectedRelease, /^v\d+-\d+$/, 'checkout must declare its full release');
 dom.window.close();
+const expectedWorkerURL = './sw.js?v=' + expectedRelease.slice(1);
+const expectedPrecache = 'village-precache-' + expectedRelease.slice(1) + '.js';
 const digest = (html) => createHash('sha256').update(html).digest('hex');
 const expectedSourceDigest = digest(source);
 async function assertRelease(page) {
@@ -23,4 +25,4 @@ async function assertRelease(page) {
 function matchesSourceHtml(html) {
   return digest(html) === expectedSourceDigest;
 }
-module.exports = { assertRelease, expectedRelease, matchesSourceHtml };
+module.exports = { assertRelease, expectedRelease, expectedWorkerURL, expectedPrecache, matchesSourceHtml };

@@ -2,10 +2,10 @@ name: Natural fish swimming
 on:
   push:
     branches: [main, codex/fish-motion-v252-30]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/fish-art-*.js', 'nushi-tsuri/tests/browser-field-guide-framing.cjs', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
   pull_request:
     branches: [main]
-    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
+    paths: ['nushi-tsuri/fish-motion.js', 'nushi-tsuri/fish-art.js', 'nushi-tsuri/fish-art-*.js', 'nushi-tsuri/tests/browser-field-guide-framing.cjs', 'nushi-tsuri/aquarium-life.js', 'nushi-tsuri/index.html', 'nushi-tsuri/sw.js', 'nushi-tsuri/tests/*swimming*', '.github/workflows/fish-swimming.yml', '.github/scripts/wait-for-pages*']
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,6 +39,8 @@ jobs:
         run: node --test ../../.github/scripts/wait-for-pages.test.cjs
       - name: Verify volume, motion, fixed lips, variants, cache and retained behavior
         run: node --test --test-concurrency=2 fish-swimming-v252-30.test.cjs fish-motion-v213.test.cjs fish-raster-v214.test.cjs fish-turn-v216.test.cjs fight-moray-v250.test.cjs fish-render-transitions.test.cjs render-efficiency.test.cjs aquarium-growth-v230.test.cjs aquarium-inspection-v190.test.cjs
+      - name: Check creature portraits in the landscape field guide
+        run: node browser-field-guide-framing.cjs
       - name: Fetch the exact read-only comparison baseline
         run: git cat-file -e a67f76b6e7072478a098d25ba3200fff9b39f4d4 || git fetch --depth=1 origin a67f76b6e7072478a098d25ba3200fff9b39f4d4
       - name: Render temporal before/after contact sheets and allocation trace
