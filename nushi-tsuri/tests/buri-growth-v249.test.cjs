@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const P=require('../pet-life.js'),A=require('../fish-art.js'),L=require('../aquarium-life.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
+const P=require('../pet-life.js'),A=require('./fixtures/current-fish-art.cjs'),L=require('../aquarium-life-252-94.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
 const catalog=[{id:'buri',name:'ブリ',min:1200,start:2400,max:12499,price:3600,waterLabel:'海水'},{id:'aji',name:'マアジ',min:500,start:1000,max:4999,price:500,waterLabel:'海水'}];
 function state(){const s={money:30000,caught:{buri:1},dogAffinity:{shuu:0}};P.normalize(s,catalog,['shuu'],0,{legacy:false});s.petLife.food=1000;return s;}
 function pair(length=2400){const s=state();for(let i=0;i<2;i++){const f=P.acquire(s,'buri',catalog,0,0).fish;f.length=length;delete f.growthHistory;}P.normalize(s,catalog,['shuu'],0);return s;}
@@ -116,7 +117,7 @@ test('the actual shop, aquarium records and reload use stage names but the wild 
   w.document.querySelector('[data-pet-action="records"]').click();const record=w.document.querySelector('[data-pet-growth="inada"]');
   assert.ok(record);assert.match(record.textContent,/ハマチ/);assert.match(record.textContent,/モジャコ.*ワカシ.*イナダ/s);assert.match(record.textContent,/80.00cm/);
   assert.match(w.document.querySelector('#rescueToast').textContent,/イナダに育った/);
-  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),72);assert.equal(Object.keys(A.species).length,72);assert.equal(read(w,"s.caught.buri"),1);
+  assert.equal(read(w,"fish.find(f=>f.id==='buri').name"),'ブリ');assert.equal(read(w,'fish.length'),roster.total);assert.equal(Object.keys(A.species).length,roster.total);assert.equal(read(w,"s.caught.buri"),1);
   w.eval('save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
  }finally{app.dispose();}
  const restored=boot(saved);try{restored.window.eval("petUi.open('aquarium')");assert.match(restored.window.document.querySelector('.pet-tank-info h3').textContent,/イナダ/);assert.equal(read(restored.window,'s.petLife.fish[0].growthHistory.length'),3);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}

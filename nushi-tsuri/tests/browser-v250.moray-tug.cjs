@@ -1,3 +1,4 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs'),{pressProduct}=require('./compact-ui-helpers.cjs');
 module.exports=async function morayTug(url,mobile=false,options={}){
@@ -51,7 +52,7 @@ module.exports=async function morayTug(url,mobile=false,options={}){
   for(const id of ['utsubo','hiramasa','kanpachi'])await pressProduct(page,'[data-pet-buy="'+id+'"]',mobile);
   await press('[data-pet-action="aquarium"]');assert.equal(await page.locator('.pet-fish-roster [data-pet-inspect]').count(),3);await shot('three-sea-fish-aquarium');
   const saved=await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits})));await press('#petLifeModal [data-pet-action="close"]');await page.reload({waitUntil:'domcontentloaded'});await start();
-  assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits}))),saved);assert.equal(await page.evaluate(()=>fish.length),72);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
+  assert.deepEqual(await page.evaluate(()=>JSON.parse(JSON.stringify({caught:s.caught,fish:s.petLife.fish,money:s.money,baits:s.baits}))),saved);assert.equal(await page.evaluate(()=>fish.length),roster.total);assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);
   console.log('V250_GAMEPLAY_PASS '+JSON.stringify({public:!!options.public,viewport,mobile,dpr:options.dpr||1,results,threeSeaFishHoused:true,saveReload:true,errors:errors.length,httpErrors:failed.length}));
  }finally{if(held)await hold(false).catch(()=>{});await context.close();await browser.close();}
 };

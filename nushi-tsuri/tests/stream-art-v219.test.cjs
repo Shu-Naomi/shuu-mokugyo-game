@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const Art=require('../fish-art.js'),Scenery=require('../layered-scenery.js'),Layers=require('../scene-layers.js');
+const Art=require('./fixtures/current-fish-art.cjs'),Scenery=require('../layered-scenery.js'),Layers=require('../scene-layers.js');
 
 test('new stream fish keep complete volume and a continuous body position throughout all 97 turning steps',async()=>{
  for(const id of ['iwana','amago','kajika']){

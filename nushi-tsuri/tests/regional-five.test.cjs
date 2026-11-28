@@ -4,8 +4,8 @@ const { read, boot, saveKey } = require('./game-harness.cjs');
 const { runFight } = require('./nushi-playability-v228.cjs');
 const mountain = require('../mountain-region.js');
 const island = require('../offshore-island.js');
-const additions = require('../fish-additions.js');
-const art = require('../fish-art.js');
+const additions = require('../fish-additions-252-94.js');
+const art = require('./fixtures/current-fish-art.cjs');
 
 function islandBank(area) {
   return { mapRegion: island.id, ...island.fishingPoints.find(point => point.id === area) };

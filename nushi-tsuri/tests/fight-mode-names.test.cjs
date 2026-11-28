@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
-const Fishing=require('../fishing-duel.js');
+const Fishing=require('../fishing-duel-252-94.js');
 const names={gauge:'テンション方式',nushi:'クラシック方式'};
 test('fight labels change without changing persisted mode identifiers',()=>{
  assert.deepEqual(Fishing.modes,names);

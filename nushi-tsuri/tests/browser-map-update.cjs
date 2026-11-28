@@ -17,19 +17,32 @@ assert.ok(['success', 'corrupt', 'quota', 'fresh'].includes(scenario));
 const scope = '/nushi-tsuri/';
 const quotaLimit = 450_000_000;
 const timeout = 150_000;
-const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, 'release-252-92.html'));
-const oldRelease = hasPublishedMapRelease ? 'v252-92' : 'v252-85';
-const oldEntry = hasPublishedMapRelease ? 'release-252-92.html' : 'index.html';
-const newRelease = 'v252-93';
-const damagedFile = hasPublishedMapRelease ? 'rural-canals-252-93.js' : 'assets/rural-bridge-shadow-repair.png';
+function documentVersion(root) {
+  const html = fs.readFileSync(path.join(root, 'index.html'), 'utf8');
+  const badge = /id="gameRelease"[^>]*>(v\d+-\d+)</.exec(html);
+  assert.ok(badge, 'Missing release badge in ' + root);
+  return badge[1];
+}
+const oldRelease = documentVersion(baselineRoot);
+const oldReleaseEntry = 'release-' + oldRelease.slice(1) + '.html';
+const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, oldReleaseEntry));
+const oldEntry = hasPublishedMapRelease ? oldReleaseEntry : 'index.html';
+const newRelease = documentVersion(candidateRoot);
+assert.equal(newRelease, 'v252-94');
+const damagedFile = 'assets/fish-sougyo.png';
 const media = [
   {file:'assets/player-boy.png', width:540, height:430},
   {file:'assets/player-boy-walk-v35-final.png', width:540, height:860},
   {file:'assets/pet-scenes-v19.svg', width:1200, height:160},
   {file:'assets/player-girl.png', width:500, height:430},
-  {file:'assets/player-girl-walk-v35-final.png', width:500, height:860}
+  {file:'assets/player-girl-walk-v35-final.png', width:500, height:860},
+  {file:'assets/fish-aouo.png', width:1064, height:248},
+  {file:'assets/fish-sougyo.png', width:1064, height:220},
+  {file:'assets/fish-maanago.png', width:1064, height:164},
+  {file:'assets/fish-gonzui.png', width:1064, height:222},
+  {file:'assets/fish-itou.png', width:1064, height:214}
 ];
-const priorMedia = media.slice(0, 3);
+const priorMedia = media.slice(0, oldRelease === 'v252-93' ? 5 : 3);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (directory, file) => sha256(fs.readFileSync(path.join(directory, file)));
 const mime = {html:'text/html; charset=utf-8', js:'text/javascript', css:'text/css', json:'application/json', png:'image/png', jpg:'image/jpeg', webp:'image/webp', svg:'image/svg+xml', mp3:'audio/mpeg', wav:'audio/wav'};
@@ -155,7 +168,7 @@ async function resumeOffline(context, url, expected, before, completedUpdate) {
 
 async function run() {
   const baselineHash = fileHash(baselineRoot, oldEntry);
-  const candidateHash = fileHash(candidateRoot, 'release-252-93.html');
+  const candidateHash = fileHash(candidateRoot, 'release-' + newRelease.slice(1) + '.html');
   const guardedEntryHash = fileHash(candidateRoot, 'index.html');
   assert.notEqual(fileHash(candidateRoot, 'sw.js'), fileHash(baselineRoot, 'sw.js'), 'expected a different candidate worker');
   const host = createHost();

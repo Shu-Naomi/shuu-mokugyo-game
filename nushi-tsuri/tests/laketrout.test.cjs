@@ -1,8 +1,9 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
-const {definitions,pools}=require('../fish-additions.js');
+const {definitions,pools}=require('../fish-additions-252-94.js');
 test('lake trout is number 66 and lives in the high pond deep pool',()=>{
  const fish=definitions.find(f=>f.id==='laketrout');
  assert.equal(fish.number,66);
@@ -22,7 +23,7 @@ test('a legacy slot can board, reload and withdraw its first lake trout',()=>{
  let saved;
  try{
   const w=a.window;
-  assert.equal(read(w,'fish.length'),72);
+  assert.equal(read(w,'fish.length'),roster.total);
   assert.equal(read(w,"petCatalog.find(f=>f.id==='laketrout').waterLabel"),'淡水');
   w.eval("var trout=ShuPetLife.acquire(s,'laketrout',petCatalog,0);trout.fish.nickname='白星';var boarded=ShuPetLife.boardFish(s,trout.fish.uid,petCatalog,0);save()");
   assert.equal(read(w,'boarded.ok'),true);

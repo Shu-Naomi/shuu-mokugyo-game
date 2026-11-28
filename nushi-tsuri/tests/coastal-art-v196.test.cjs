@@ -1,9 +1,10 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { createCanvas, loadImage } = require("@napi-rs/canvas");
 const { boot, seed, read } = require("./game-harness.cjs");
-const Aquarium = require("../aquarium-life.js");
+const Aquarium = require("../aquarium-life-252-94.js");
 
 const assets = path.join(__dirname, "..", "assets");
 
@@ -98,7 +99,7 @@ test("all fish retain their own swimming cadence in the aquariums", () => {
   const app = boot();
   try {
     const ids = read(app.window, "fish.map(f=>f.id)");
-    assert.equal(ids.length, 72);
+    assert.equal(ids.length,roster.total);
     const gaits = ids.map(id => Aquarium.gait(id));
     assert.equal(new Set(gaits.map(g => JSON.stringify(g))).size, ids.length);
     const residents = Aquarium.layout(['mahaze','sayori','herabuna'].map(species=>({uid:species,species,length:1200})),[],480,280,0,()=>3,null,true).poses;

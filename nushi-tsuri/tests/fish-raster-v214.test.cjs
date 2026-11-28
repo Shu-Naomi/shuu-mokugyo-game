@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const {createCanvas}=require('@napi-rs/canvas'),Art=require('../fish-art.js');
+const {createCanvas}=require('@napi-rs/canvas'),Art=require('./fixtures/current-fish-art.cjs');
 const boxes=Art.groups.swimmers.boxes.slice(0,8);
 function original(shift=0){
  const atlas=createCanvas(1280,1280),ctx=atlas.getContext('2d');

@@ -2,7 +2,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {renderer,ids}=require('./coastal-fish-render-harness.cjs');
 const {boot,seed,read}=require('./game-harness.cjs');
-const Life=require('../aquarium-life.js');
+const Life=require('../aquarium-life-252-94.js');
 
 test('all 48 coastal fish poses paint complete silhouettes; swimming changes tails without shaking heads',async()=>{
   const app=await renderer();

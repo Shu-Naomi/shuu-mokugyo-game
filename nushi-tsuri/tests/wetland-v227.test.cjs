@@ -1,7 +1,8 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-routes-v220.cjs');
-const {cases,routeTo}=require('./wetland-v227.cjs'),M=require('../mountain-region.js'),Art=require('../fish-art.js'),Layers=require('../scene-layers.js');
+const {cases,routeTo}=require('./wetland-v227.cjs'),M=require('../mountain-region.js'),Art=require('./fixtures/current-fish-art.cjs'),Layers=require('../scene-layers.js');
 const root=path.join(__dirname,'..');
 test('wetland is reachable on foot from the marsh; all three banks and the return remain usable after reload',()=>{
  const app=boot({...seed(),hp:100,soundEnabled:false,mapRegion:'mountainMarsh',...M.regions.mountainMarsh.entry}),w=app.window;let snapshot;
@@ -69,7 +70,7 @@ test('six native atlases preserve a visible continuous silhouette through 97 tur
 test('39 stable catalogue entries, distinct wetland surfaces and offline art work with an existing save',()=>{
  const app=boot(),w=app.window;
  try{
-  assert.equal(read(w,'fish.length'),72);assert.equal(read(w,'fishEncyclopediaData.ugui.number'),31);
+  assert.equal(read(w,'fish.length'),roster.total);assert.equal(read(w,'fishEncyclopediaData.ugui.number'),31);
   assert.deepEqual(read(w,'[fishEncyclopediaData.tanago.number,fishEncyclopediaData.motsugo.number,fishEncyclopediaData.medaka.number,fishEncyclopediaData.kamatsuka.number,fishEncyclopediaData.nigoi.number,fishEncyclopediaData.raigyo.number]'),[34,35,36,37,38,39]);
    for(const spot of read(w,'fishingSpots'))for(const [id]of cases)if(spot.weights[id])assert.match(spot.id,['tanago','motsugo','medaka','raigyo'].includes(id)?/^mountain-(wet|highMarsh-)/:/^mountain-(wet|underground-)/);
   const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');for(const f of ['wetland-world','wetland-cast',...cases.map(([id])=>'fish-'+id)])assert.ok(sw.includes('assets/'+f+'-v227.png'));

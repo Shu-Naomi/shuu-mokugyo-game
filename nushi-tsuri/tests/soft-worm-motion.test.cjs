@@ -1,6 +1,6 @@
 const test = require('node:test');
 const assert = require('node:assert/strict');
-const fishing = require('../fishing-duel.js');
+const fishing = require('../fishing-duel-252-94.js');
 
 test('short hops near the bottom attract a fish; the same worm wound straight in does not', () => {
   const worm = fishing.newLure(24, ['bass'], 'softWorm');

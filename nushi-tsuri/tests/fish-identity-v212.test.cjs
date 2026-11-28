@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const Art=require('../fish-art.js');
+const Art=require('./fixtures/current-fish-art.cjs');
 
 test('Honmoroko and Ayu keep one tall dorsal fin and their own colors instead of whiting anatomy',async()=>{
   for(const id of ['moroko','ayu','shirogisu']){

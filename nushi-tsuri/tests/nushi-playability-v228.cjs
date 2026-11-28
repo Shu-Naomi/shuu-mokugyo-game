@@ -10,7 +10,7 @@ function runFight({id='namazu',delayMs=600,tier=.5,rngSeed=301,mode='nushi',hold
  const app=boot({...seed(),hp:100,maxHp:100,soundEnabled:false,gameMinutes:regionalTrip?.minutes??(wet?600:1320),
   ...(regionalTrip?regionalTrip.bank:upland?{mapRegion:'mountainPond',...M.regions.mountainPond.entry}:island?{mapRegion:I.id,...(id==='shiokakure'?{x:45,y:33,direction:'down'}:I.fishingPoints.find(p=>p.id===island.area))}:wet?{mapRegion:'wetland',...M.regions.wetland.entry}:sea?{mapRegion:'village',x:210,y:104,direction:'down'}:{}),
   ownedRods:[rod],selectedRod:rod,fightMode:mode,selectedHook:regionalTrip?.hook||(upland?'medium':island?.hook||(island?.area==='cove'?'medium':'large')),selectedBait:bait,
-  baits:{river:20,worm:20,nushiSecret:20,liveMinnow:20,shrimp:20,shell:20,smallShrimp:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
+  baits:{river:20,worm:20,nushiSecret:20,liveMinnow:20,shrimp:20,shell:20,smallShrimp:20,[bait]:20},caught:id==='starNushi'?{streamNushi:1,coastNushi:1,caveNushi:1}:{}}),w=app.window;
  try{
   if(id==='shiokakure')w.eval('for(let i=0;i<30;i++)ShuShiokakure.step(shiokakureEncounter,s)');
   if(regionalTrip?.route)for(const direction of findRoute(w,regionalTrip.route).path)w.move(direction);

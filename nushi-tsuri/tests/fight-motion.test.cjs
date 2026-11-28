@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
-const M=require('../fish-motion.js'),A=require('../fish-art.js');
+const M=require('../fish-motion-252-94.js'),A=require('./fixtures/current-fish-art.cjs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read}=require('./game-harness.cjs');
 test('fight strokes are species-specific, bounded and monotonic at all presentation rates',()=>{

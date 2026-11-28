@@ -6,7 +6,7 @@ const { writeOfflineRelease } = require('./build-offline-release.cjs');
 
 function build() {
   const root = path.resolve(__dirname, '..');
-  const version = '252-93';
+  const version = '252-94';
   const candidate = withMetadata({
     root,
     sourcePath:'tools/templates/game-index.html',

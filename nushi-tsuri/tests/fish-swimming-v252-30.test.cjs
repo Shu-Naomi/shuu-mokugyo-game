@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const A=require('../fish-art.js'),M=require('../fish-motion.js'),L=require('../aquarium-life.js');
+const A=require('./fixtures/current-fish-art.cjs'),M=require('../fish-motion-252-94.js'),L=require('../aquarium-life-252-94.js');
 const all={...A.species,...A.aquarium};
 const {projectedSilhouette,reference}=require('./projected-fish-silhouette.cjs');
 function shape(ctx){
@@ -9,7 +10,7 @@ function shape(ctx){
  return {count,width:right-left+1,edge,bytes:Buffer.from(px)};
 }
 test('all catalogued species and twelve variants use explicit cosmetic profiles; variant aliases preserve the parent style',()=>{
- assert.equal(Object.keys(A.species).length,72);assert.equal(Object.keys(A.aquarium).length,12);
+ assert.equal(Object.keys(A.species).length,roster.total);assert.equal(Object.keys(A.aquarium).length,12);
  for(const id of Object.keys(A.species))assert.ok(M.profiles[id],id);
  for(const id of Object.keys(all))for(const key of ['amplitude','shoulder','falloff','wave','fin','pulse'])assert.ok(Number.isFinite(M.profile(id)[key]),id+' '+key);
  for(const [variant,id]of [['dojoAlbino','dojo'],['unagiAlbino','unagi'],['medakaGold','medaka'],['buriMojako','buri'],['tanagoGold','tanago']])assert.equal(M.profile(variant),M.profile(id));

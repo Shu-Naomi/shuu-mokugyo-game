@@ -1,3 +1,4 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-routes-v220.cjs'),{cases,routeTo}=require('./wetland-v227.cjs');
 module.exports=async function wetland(url,mobile=false){
@@ -48,7 +49,7 @@ module.exports=async function wetland(url,mobile=false){
    assert.equal(await page.evaluate(id=>s.fishCatchRecords[id].last.spotId,id),'mountain-'+type+'-mid');
   }
   await page.reload({waitUntil:'load'});await require('./browser-start-adventure.cjs')(page,mobile);assert.deepEqual(await page.evaluate(()=>['tanago','motsugo','medaka','kamatsuka','nigoi','raigyo'].map(id=>s.caught[id])),[1,1,1,1,1,1]);
-  assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>fish.length),72);await screenshot('saved');
+  assert.equal(await page.evaluate(()=>s.mapRegion),'wetland');assert.equal(await page.evaluate(()=>fish.length),roster.total);await screenshot('saved');
   const back=await page.evaluate(fn=>(0,eval)('('+fn+')')(window,'wetland',(x,y)=>ShuMountain.atReturnGate(x,y,'wetland')),routeTo.toString());await walk(back);await press('#action');assert.equal(await page.evaluate(()=>s.mapRegion),'mountainMarsh');
   assert.deepEqual(errors,[]);assert.deepEqual(failed,[]);console.log('V227_WETLAND_PASS '+JSON.stringify({mobile,enteredOnFoot:true,routeSteps:entryRoute.length,newFish:6,totalFish:await page.evaluate(()=>fish.length),twoFightModes:true,saved:true,returned:true,errors,failed}));
  }finally{await context.close();await browser.close();}

@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
-const {createCanvas,loadImage}=require('@napi-rs/canvas'),Art=require('../fish-art.js'),R=require('../regional-nushi.js');
+const {createCanvas,loadImage}=require('@napi-rs/canvas'),Art=require('./fixtures/current-fish-art.cjs'),R=require('../regional-nushi.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const {findRoute}=require('./water-routes-v220.cjs');
 const newFish=['wakasagi','dojo','isaki'];
