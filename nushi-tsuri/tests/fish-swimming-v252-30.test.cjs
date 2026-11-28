@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const A=require('./fixtures/current-fish-art.cjs'),M=require('../fish-motion-252-94.js'),L=require('../aquarium-life-252-94.js');
+const A=require('./fixtures/current-fish-art.cjs'),M=currentScripts.load('fish-motion'),L=currentScripts.load('aquarium-life');
 const all={...A.species,...A.aquarium};
 const {projectedSilhouette,reference}=require('./projected-fish-silhouette.cjs');
 function shape(ctx){

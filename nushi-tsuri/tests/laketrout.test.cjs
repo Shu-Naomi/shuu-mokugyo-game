@@ -1,9 +1,10 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
-const {definitions,pools}=require('../fish-additions-252-94.js');
+const {definitions,pools}=currentScripts.load('fish-additions');
 test('lake trout is number 66 and lives in the high pond deep pool',()=>{
  const fish=definitions.find(f=>f.id==='laketrout');
  assert.equal(fish.number,66);

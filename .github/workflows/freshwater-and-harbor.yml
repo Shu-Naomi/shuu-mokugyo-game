@@ -4,13 +4,18 @@ on:
     branches: [main]
     paths:
       - 'nushi-tsuri/*-252-94.js'
+      - 'nushi-tsuri/*-252-95.js'
       - 'nushi-tsuri/assets/fish-aouo.png'
       - 'nushi-tsuri/assets/fish-sougyo.png'
       - 'nushi-tsuri/assets/fish-maanago.png'
       - 'nushi-tsuri/assets/fish-gonzui.png'
       - 'nushi-tsuri/assets/fish-itou.png'
+      - 'nushi-tsuri/assets/fish-tenagaebi.png'
+      - 'nushi-tsuri/assets/fish-zarigani.png'
       - 'nushi-tsuri/tests/*freshwater-and-harbor*'
       - 'nushi-tsuri/tests/fixtures/freshwater-and-harbor.cjs'
+      - 'nushi-tsuri/tests/canal-crustaceans.test.cjs'
+      - 'nushi-tsuri/tests/fixtures/canal-crustaceans.cjs'
       - '.github/workflows/freshwater-and-harbor.yml'
   workflow_dispatch:
 permissions:
@@ -19,7 +24,7 @@ concurrency:
   group: freshwater-and-harbor-${{ github.event.pull_request.head.ref || github.ref_name }}
   cancel-in-progress: true
 jobs:
-  five-species:
+  fishing-trips:
     runs-on: ubuntu-24.04
     timeout-minutes: 20
     container:
@@ -38,25 +43,31 @@ jobs:
       - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
       - run: bash install-ci-fonts.sh
       - name: Check actual catches in both fishing modes and old records
-        run: node --test freshwater-and-harbor.test.cjs
-      - name: Play and photograph five new fish on a landscape phone
+        run: node --test freshwater-and-harbor.test.cjs canal-crustaceans.test.cjs
+      - name: Play the five freshwater and harbor fish on a landscape phone
         run: node browser-freshwater-and-harbor.cjs
+      - name: Catch and keep both canal and river crustaceans on a landscape phone
+        env:
+          FISH_EVIDENCE_DIR: canal-crustaceans-evidence
+        run: node browser-freshwater-and-harbor.cjs crustaceans
       - name: Check out the previous public release
-        if: github.head_ref == 'feature/freshwater-harbor-v252-94'
+        if: github.head_ref == 'feature/canal-crustaceans-v252-95'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: 2ddd11610133d7903f840ee6f86ad0f6e23798e1
+          ref: 976a673605f54ce361892d3e8327ad40a1ee6689
           path: .previous-fish-release
           sparse-checkout: nushi-tsuri
           persist-credentials: false
-      - name: Reopen both v252-93 saves offline after updating
-        if: github.head_ref == 'feature/freshwater-harbor-v252-94'
+      - name: Reopen both v252-94 saves offline after updating
+        if: github.head_ref == 'feature/canal-crustaceans-v252-95'
         env:
-          MAP_UPDATE_REPORT: freshwater-and-harbor-evidence/update-from-v252-93.json
+          MAP_UPDATE_REPORT: canal-crustaceans-evidence/update-from-v252-94.json
         run: node browser-map-update.cjs "$GITHUB_WORKSPACE/.previous-fish-release/nushi-tsuri" success
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
         if: always()
         with:
           name: freshwater-and-harbor-fish
-          path: nushi-tsuri/tests/freshwater-and-harbor-evidence/
+          path: |
+            nushi-tsuri/tests/freshwater-and-harbor-evidence/
+            nushi-tsuri/tests/canal-crustaceans-evidence/
           retention-days: 14

@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read}=require('./game-harness.cjs');
-const R=require('../rural-canals-252-93.js'), M=require('../mountain-region.js');
+const R=currentScripts.load('rural-canals'), M=require('../mountain-region.js');
 test('the painted dirt branch beside the rural bridge is walkable, but the sluice and paddies stay closed',()=>{
   const app=boot({...seed(),mapRegion:R.id,x:174,y:74,direction:'right',soundEnabled:false});
   const w=app.window;

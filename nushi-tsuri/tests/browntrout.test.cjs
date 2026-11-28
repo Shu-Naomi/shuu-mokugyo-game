@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),F=require('../fish-additions-252-94.js'),A=require('./fixtures/current-fish-art.cjs');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),F=currentScripts.load('fish-additions'),A=require('./fixtures/current-fish-art.cjs');
 const {findRoute}=require('./water-routes-v220.cjs'),{runFight}=require('./nushi-playability-v228.cjs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 test('brown trout is a new, unique regional fish, not another island duplicate',()=>{

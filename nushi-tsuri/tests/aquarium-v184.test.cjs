@@ -1,3 +1,4 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
@@ -5,7 +6,7 @@ const path=require('node:path');
 const fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read}=require('./game-harness.cjs');
-const A=require('../aquarium-life-252-94.js');
+const A=currentScripts.load('aquarium-life');
 const Art=require('./fixtures/current-fish-art.cjs');
 const specimen={uid:'fish1',species:'moroko',length:1800};
 const catalog=[{id:'moroko',max:2500}];

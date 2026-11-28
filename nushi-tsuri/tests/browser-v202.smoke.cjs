@@ -1,3 +1,4 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Run separately from the deterministic unit suite: real Chromium, painted maps and UI inputs.
 const assert=require('node:assert/strict'),http=require('node:http'),fs=require('node:fs'),path=require('node:path');
 const {createHash}=require('node:crypto'),{chromium}=require('playwright');
@@ -12,7 +13,7 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['catch-memories.js','catch-memories.css','sw.js','compact-ui.js','compact-ui.css','cast-tackle.css','fishing-duel.css','scene-layers.js','layered-scenery.js','scenery-worker.js','assets/mountain-cast-v219.png','player-options.js','player-options.css','tackle-balance.js','item-categories.css','fish-art.js','fishing-duel-252-94.js','pet-life.js','pet-life-ui.js','pet-life.css','assets/aquarium-isaki-adult-v230.png','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','coast-voyage.js','regional-nushi.js','nushi-atlas.js','aquarium-life-252-94.js',
+        for(const file of ['catch-memories.js','catch-memories.css','sw.js','compact-ui.js','compact-ui.css','cast-tackle.css','fishing-duel.css','scene-layers.js','layered-scenery.js','scenery-worker.js','assets/mountain-cast-v219.png','player-options.js','player-options.css','tackle-balance.js','item-categories.css',currentScripts.file('fish-art'),currentScripts.file('fishing-duel'),'pet-life.js','pet-life-ui.js','pet-life.css','assets/aquarium-isaki-adult-v230.png','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','coast-voyage.js','regional-nushi.js','nushi-atlas.js',currentScripts.file('aquarium-life'),
           'assets/coast-tarai-v224.png','assets/coast-rowboat-v226.png',
           'assets/wetland-world-v227.png','assets/wetland-cast-v227.png','assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
@@ -50,7 +51,7 @@ async function smoke(url,screenshots=true){
   const page=await context.newPage(),errors=[],failedAssets=[];
   page.on('pageerror',error=>errors.push(error.message));
   page.on('response',response=>{
-    if(response.status()>=400&&/v202\.png|(?:regional-nushi|nushi-atlas|mountain-region|aquarium-life-252-94)\.js/.test(response.url()))
+    if(response.status()>=400&&(/v202\.png|(?:regional-nushi|nushi-atlas|mountain-region)\.js/.test(response.url()) || new URL(response.url()).pathname.endsWith('/' + currentScripts.file('aquarium-life'))))
       failedAssets.push(response.status()+' '+response.url());
   });
   // Route from game coordinates: CSS percentages round on serialization,

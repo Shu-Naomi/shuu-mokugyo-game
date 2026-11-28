@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),{createHash}=require('node:crypto');
-const F=require('../fishing-duel-252-94.js'),A=require('./fixtures/current-fish-art.cjs'),{boot,seed,read}=require('./game-harness.cjs');
+const F=currentScripts.load('fishing-duel'),A=require('./fixtures/current-fish-art.cjs'),{boot,seed,read}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
 const gear={power:38,strength:4.8,control:1.95};
 function running(id='bass'){return {fightMode:'nushi',f:{id},mood:{id:'run',calm:false,speedX:3.5},moodTick:0,startMeters:20,retrieval:.4,ten:18,reeling:false,nushiYielded:true};}

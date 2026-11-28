@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const P=require('../pet-life.js'),A=require('./fixtures/current-fish-art.cjs'),L=require('../aquarium-life-252-94.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
+const P=require('../pet-life.js'),A=require('./fixtures/current-fish-art.cjs'),L=currentScripts.load('aquarium-life'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
 const catalog=[{id:'buri',name:'ブリ',min:1200,start:2400,max:12499,price:3600,waterLabel:'海水'},{id:'aji',name:'マアジ',min:500,start:1000,max:4999,price:500,waterLabel:'海水'}];
 function state(){const s={money:30000,caught:{buri:1},dogAffinity:{shuu:0}};P.normalize(s,catalog,['shuu'],0,{legacy:false});s.petLife.food=1000;return s;}
 function pair(length=2400){const s=state();for(let i=0;i<2;i++){const f=P.acquire(s,'buri',catalog,0,0).fish;f.length=length;delete f.growthHistory;}P.normalize(s,catalog,['shuu'],0);return s;}

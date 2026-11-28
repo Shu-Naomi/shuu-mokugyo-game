@@ -1,10 +1,11 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const test = require('node:test');
 const assert = require('node:assert/strict');
 const { read, boot, saveKey } = require('./game-harness.cjs');
 const { runFight } = require('./nushi-playability-v228.cjs');
 const mountain = require('../mountain-region.js');
 const island = require('../offshore-island.js');
-const additions = require('../fish-additions-252-94.js');
+const additions = currentScripts.load('fish-additions');
 const art = require('./fixtures/current-fish-art.cjs');
 
 function islandBank(area) {

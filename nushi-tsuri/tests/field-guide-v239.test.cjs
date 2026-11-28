@@ -1,5 +1,6 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),Life=require('../world-life.js'),F=require('../fish-additions-252-94.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),M=require('../mountain-region.js'),Life=require('../world-life.js'),F=currentScripts.load('fish-additions');
 const regions=['village',...Object.keys(M.regions),'coast'];
 const snapshot=w=>read(w,'({hp:s.hp,money:s.money,time:s.gameMinutes,baits:s.baits,caught:s.caught,equipment:s.equipment,rod:s.selectedRod,bait:s.selectedBait,hook:s.selectedHook,region:s.mapRegion,x:s.x,y:s.y,direction:s.direction})');
 test('growing fish notes page three at a time, wrap, and reset for another place without changing the save',()=>{

@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('./fixtures/current-fish-art.cjs'),F=currentScripts.load('fish-additions');
 const cases=[['takabe','east','shrimp','small',50,62],['kuromejina','west','shrimp','medium',50,63],['houraihimeji','cove','smallShrimp','medium',80,64]];
 const copy=x=>JSON.parse(JSON.stringify(x));
 const {runFight}=require('./nushi-playability-v228.cjs');
@@ -56,10 +57,10 @@ for(const [id,rod]of [['takabe','youngBamboo'],['kuromejina','shoreReed'],['hour
  const result=runFight({id,mode,rod,tier:.5,delayMs:600,rngSeed:301,gaugeThreshold:45,gaugeResumeThreshold:20});console.log('ISLAND_RECOMMENDED_ROD '+JSON.stringify(result));assert.deepEqual(result.errors,[]);assert.equal(result.start.id,id);assert.equal(result.phase,'landing');assert.ok(result.seconds<180);assert.ok(result.maxTension<100);
 });
 test('new island profiles have distinct strength, motion and bottom habitat',()=>{
- const D=require('../fishing-duel-252-94.js'),L=require('../aquarium-life-252-94.js');for(const [id]of cases){assert.ok(D.fishStrength[id]>0,id);assert.ok(D.endurance[id]>0,id);const pose=L.layout([{uid:id,species:id,length:1000}],[{id,max:4000}],720,350,1,()=>2).poses[0];assert.equal(pose.bottomDweller,id==='houraihimeji',id+' swimming layer');}assert.ok(D.fishStrength.kuromejina>D.fishStrength.takabe);
+ const D=currentScripts.load('fishing-duel'),L=currentScripts.load('aquarium-life');for(const [id]of cases){assert.ok(D.fishStrength[id]>0,id);assert.ok(D.endurance[id]>0,id);const pose=L.layout([{uid:id,species:id,length:1000}],[{id,max:4000}],720,350,1,()=>2).poses[0];assert.equal(pose.bottomDweller,id==='houraihimeji',id+' swimming layer');}assert.ok(D.fishStrength.kuromejina>D.fishStrength.takabe);
 });
 test('new island release caches current runtime modules and every original atlas',()=>{
- const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of ['fish-additions-252-94.js','fish-art.js','fishing-duel-252-94.js','fish-motion-252-94.js','aquarium-life-252-94.js','offshore-island.js']){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}for(const [id]of cases)assert.ok(sw.includes(A.species[id].asset));
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of [currentScripts.file('fish-additions'),currentScripts.file('fish-art'),currentScripts.file('fishing-duel'),currentScripts.file('fish-motion'),currentScripts.file('aquarium-life'),'offshore-island.js']){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}for(const [id]of cases)assert.ok(sw.includes(A.species[id].asset));
 });
 
 test('home aquarium keeps the goatfish on the bottom and both other newcomers in midwater',()=>{

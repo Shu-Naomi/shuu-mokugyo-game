@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),path=require('node:path'),fs=require('node:fs');
-const P=require('../pet-life.js'),A=require('../aquarium-life-252-94.js'),Art=require('./fixtures/current-fish-art.cjs');
+const P=require('../pet-life.js'),A=currentScripts.load('aquarium-life'),Art=require('./fixtures/current-fish-art.cjs');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const copy=x=>JSON.parse(JSON.stringify(x));
 const catalog=[{id:'moroko',name:'モロコ',start:750,min:100,max:1799,price:300,waterLabel:'淡水'},

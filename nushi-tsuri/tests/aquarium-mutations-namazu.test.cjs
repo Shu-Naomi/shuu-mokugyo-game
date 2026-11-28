@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm'),path=require('node:path'),crypto=require('node:crypto');
-const M=require('../aquarium-mutations.js'),P=require('../pet-life.js'),A=require('../aquarium-life-252-94.js'),Art=require('./fixtures/current-fish-art.cjs');
+const M=require('../aquarium-mutations.js'),P=require('../pet-life.js'),A=currentScripts.load('aquarium-life'),Art=require('./fixtures/current-fish-art.cjs');
 const {boot,read}=require('./game-harness.cjs'),variant=require('./aquarium-mutation-namazu-fixture.cjs');
 const copy=v=>JSON.parse(JSON.stringify(v)),dogs=['shuu','riku','grey'],seed='0000000000000000000000000000045c';
 const catalog=[{id:'namazu',name:'ナマズ',min:1000,start:2000,max:10000,price:420,waterLabel:'淡水'}];

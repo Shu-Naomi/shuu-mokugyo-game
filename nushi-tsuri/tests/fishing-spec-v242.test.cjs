@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read}=require('./game-harness.cjs');
-const F=require('../fishing-duel-252-94.js');
+const F=currentScripts.load('fishing-duel');
 
 function fishing(mode='nushi',method='bait'){
  const app=boot({...seed(),hp:100,soundEnabled:false,fightMode:mode,

@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const Art=require('./fixtures/current-fish-art.cjs'),Aquarium=require('../aquarium-life-252-94.js');
+const Art=require('./fixtures/current-fish-art.cjs'),Aquarium=currentScripts.load('aquarium-life');
 
 function silhouette(ctx){
   const data=ctx.getImageData(0,0,448,224).data;let count=0,left=448,right=0,top=224,bottom=0,edge=0;

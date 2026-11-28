@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Real decoded artwork, deterministic before/after temporal evidence. No saves or network writes.
 const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process'),{compileFunction}=require('node:vm');
-const {createCanvas,loadImage}=require('@napi-rs/canvas'),A=require('./fixtures/current-fish-art.cjs'),M=require('../fish-motion-252-94.js'),L=require('../aquarium-life-252-94.js');
+const {createCanvas,loadImage}=require('@napi-rs/canvas'),A=require('./fixtures/current-fish-art.cjs'),M=currentScripts.load('fish-motion'),L=currentScripts.load('aquarium-life');
 const root=path.resolve(__dirname,'..'),directory=path.resolve(process.env.FISH_SWIM_EVIDENCE_DIR||path.join(__dirname,'fish-swimming-evidence'));
 const baselineRef=process.env.FISH_SWIM_BASE_REF||'a67f76b6e7072478a098d25ba3200fff9b39f4d4';
 // Recreate the original browser load order so the older renderer uses the

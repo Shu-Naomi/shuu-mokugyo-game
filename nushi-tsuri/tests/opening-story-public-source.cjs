@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Run after merging: compare the deployed runtime with this exact checkout.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
-const files=['index.html','lake-intro.js','lake-intro.css','lake-story.js','title-flow.js','title-flow.css','player-options.js','player-options.css','save-slots.js','pet-life.js','aquarium-mutations.js','cast-tackle.css','tackle-balance.js','fishing-duel-252-94.js','sw.js','village-guide.js','village-guide.css','field-guide.js','lake-research.js','lake-research.css'];
+const files=['index.html','lake-intro.js','lake-intro.css','lake-story.js','title-flow.js','title-flow.css','player-options.js','player-options.css','save-slots.js','pet-life.js','aquarium-mutations.js','cast-tackle.css','tackle-balance.js',currentScripts.file('fishing-duel'),'sw.js','village-guide.js','village-guide.css','field-guide.js','lake-research.js','lake-research.css'];
 const sha=data=>crypto.createHash('sha256').update(data).digest('hex');
 (async()=>{
  const expected=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),pending=new Set(files),matched=[];

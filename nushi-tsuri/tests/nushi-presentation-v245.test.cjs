@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const P=require('../nushi-presentation.js'),F=require('../fishing-duel-252-94.js'),Art=require('./fixtures/current-fish-art.cjs'),Camera=require('../underwater-camera.js');
+const P=require('../nushi-presentation.js'),F=currentScripts.load('fishing-duel'),Art=require('./fixtures/current-fish-art.cjs'),Camera=require('../underwater-camera.js');
 const {boot,seed,read}=require('./game-harness.cjs');
 
 test('open water covers both phone and desktop screens and scrolls in both directions without holes',async()=>{

@@ -1,5 +1,6 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const F=require('../fishing-duel-252-94.js'),{boot,seed,read}=require('./game-harness.cjs');
+const F=currentScripts.load('fishing-duel'),{boot,seed,read}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
 
 test('a late correct pull gets its species budget once, then a readable head-shake warning',()=>{

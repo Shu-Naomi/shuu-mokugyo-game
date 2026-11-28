@@ -1,8 +1,9 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Wait for GitHub Pages to serve this exact release, not just a matching badge.
 const fs=require('node:fs'),path=require('node:path'),{createHash}=require('node:crypto');
 const {expectedRelease}=require('./browser-release.cjs');
 const base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/',root=path.resolve(__dirname,'..');
-const files=['index.html','rural-canals-252-93.js','mountain-region.js','field-guide.js','scene-layers.js','scenery-worker.js','layered-scenery.js','sw.js','assets/rural-canals-v252-48.webp','assets/rural-canal-cast-v252-48.webp','assets/rural-backwater-cast-v252-48.webp'];
+const files=['index.html',currentScripts.file('rural-canals'),'mountain-region.js','field-guide.js','scene-layers.js','scenery-worker.js','layered-scenery.js','sw.js','assets/rural-canals-v252-48.webp','assets/rural-canal-cast-v252-48.webp','assets/rural-backwater-cast-v252-48.webp'];
 const sha=data=>createHash('sha256').update(data).digest('hex');
 (async()=>{
  const pending=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),deadline=Date.now()+8*60*1000;

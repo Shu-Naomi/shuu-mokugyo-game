@@ -1,10 +1,11 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const path = require("node:path");
 const { createCanvas, loadImage } = require("@napi-rs/canvas");
 const { boot, seed, read } = require("./game-harness.cjs");
-const Aquarium = require("../aquarium-life-252-94.js");
+const Aquarium = currentScripts.load('aquarium-life');
 
 const assets = path.join(__dirname, "..", "assets");
 

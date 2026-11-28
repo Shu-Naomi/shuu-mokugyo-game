@@ -1,5 +1,6 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const F=require('../fishing-duel-252-94.js'),{boot,seed,read}=require('./game-harness.cjs');
+const F=currentScripts.load('fishing-duel'),{boot,seed,read}=require('./game-harness.cjs');
 const gear={power:38,strength:4.8,control:1.95};
 function fish(id='namazu',calm=true){return {fightMode:'nushi',mood:{id:calm?'rest':'rush',calm,danger:!calm},f:{id},ten:18,retrieval:.2,reeling:false};}
 

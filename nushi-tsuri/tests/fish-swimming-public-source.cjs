@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Run after merging: compare the deployed runtime with this exact checkout.
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto'),assert=require('node:assert/strict');
 const root=path.resolve(__dirname,'..'),base='https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
-const files=['index.html','sw.js','fish-motion-252-94.js','fish-art.js','aquarium-life-252-94.js'];
+const files=['index.html','sw.js',currentScripts.file('fish-motion'),currentScripts.file('fish-art'),currentScripts.file('aquarium-life')];
 const sha=data=>crypto.createHash('sha256').update(data).digest('hex');
 (async()=>{
  const expected=new Map(files.map(file=>[file,sha(fs.readFileSync(path.join(root,file)))])),pending=new Set(files),matched=[];

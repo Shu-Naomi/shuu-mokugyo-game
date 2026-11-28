@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js'),D=require('../fishing-duel-252-94.js'),L=require('../aquarium-life-252-94.js'),R=require('../regional-nushi.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('./fixtures/current-fish-art.cjs'),F=currentScripts.load('fish-additions'),D=currentScripts.load('fishing-duel'),L=currentScripts.load('aquarium-life'),R=require('../regional-nushi.js');
 const base=()=>({...seed(),soundEnabled:false,hp:100,money:50000,gameMinutes:1200,mapRegion:'village',x:123,y:92,ownedRods:['bamboo','clearStream','tideMaster'],selectedRod:'clearStream',selectedBait:'worm',selectedHook:'small',baits:{worm:20,river:20,smallShrimp:20}});
 function rollFor(w,id,distance,spot){for(let n=0;n<10000;n++){w.eval('Math.random=()=>'+(n+.5)/10000);if(read(w,`pick(${distance},'${spot}')?.id`)===id)return (n+.5)/10000;}throw Error('no ordinary encounter for '+id+' at '+spot);}
 for(const mode of ['gauge','nushi'])test('Donko real encounter, single award, record, aquarium care, boarding and saved restoration: '+mode,()=>{
@@ -39,5 +40,5 @@ test('old saves retain regional and final boss availability without catching Don
  const before=['mountain-stream-deep','coast-reef-deep','mountain-underground-deep','lake-deep'].map(id=>R.candidates(s,id,'night'));const app=boot(s);try{assert.equal(read(app.window,'s.caught.donko||0'),0);assert.deepEqual(read(app.window,"['mountain-stream-deep','coast-reef-deep','mountain-underground-deep','lake-deep'].map(id=>ShuRegional.candidates(s,id,'night'))"),before);assert.ok(before.every(x=>Object.keys(x).length===1));assert.deepEqual(app.errors,[]);}finally{app.dispose();}
 });
 test('Donko release ships the atlas and current runtime cache URLs',()=>{
- const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of ['fish-additions-252-94.js','fishing-duel-252-94.js','fish-motion-252-94.js','aquarium-life-252-94.js']){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}assert.ok(sw.includes(A.species.donko.asset));
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of [currentScripts.file('fish-additions'),currentScripts.file('fishing-duel'),currentScripts.file('fish-motion'),currentScripts.file('aquarium-life')]){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}assert.ok(sw.includes(A.species.donko.asset));
 });

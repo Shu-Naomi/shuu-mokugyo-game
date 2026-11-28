@@ -1,0 +1,156 @@
+/* Shared physical scale and deterministic swim/feeding poses; no save mutations. */
+(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations,node?require('./fish-motion-252-95.js'):root.ShuFishMotion);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M,Motion){
+  'use strict';
+  const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
+  const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
+  const travelClock=(id,t,individual=0)=>typeof Motion.travelClock==='function'?Motion.travelClock(id,t,individual):Math.max(0,Number(t)||0);
+  const bottom=id=>['tenagaebi','zarigani','aouo','maanago','gonzui','hirame','kasago','namazu','unagi','shirogisu','ainame','kajika','dojo','kawahagi','kamatsuka','nigoi','mahaze','gigi','magochi','kawayoshinobori','utsubo','donko','houraihimeji','kijihata','akaza','juzukakehaze'].includes(id);
+  // Each fish has its own tank pacing and water column. Gameplay and feeding
+  // use the same layout and never change catch records or reel physics.
+  const gaits=Object.freeze({
+    kijihata:[.73,.32,.064],umazurahagi:[.89,.48,-.015],akaza:[.57,.24,.077],
+    kokuchibasu:[1.18,.75,.038],juzukakehaze:[.49,.22,.082],
+    tenagaebi:[.42,.34,.065],zarigani:[.35,.29,.08],
+    aouo:[.60,.40,.065],sougyo:[.86,.61,-.02],maanago:[.79,.33,.074],gonzui:[1.05,.45,.062],itou:[1.21,.67,.012],
+    shiokakure:[.58,.43,.068],
+    kawamutsu:[1.31,.82,-.018],herabuna:[.73,.56,.03],himemasu:[1.21,.96,-.035],laketrout:[.93,.68,.045],browntrout:[1.08,.86,-.025],
+    mahaze:[.59,.25,.07],sayori:[1.32,.35,-.11],masaba:[1.48,.88,-.045],gigi:[.68,.37,.06],
+    bluegill:[.98,.65,-.015],aburahaya:[1.36,.7,-.025],magochi:[.63,.26,.075],
+    oyanirami:[.79,.49,.015],akakamasu:[1.58,.91,-.055],ishidai:[.92,.68,.035],
+    donko:[.46,.12,.085],kawayoshinobori:[.54,.23,.08],utsubo:[.70,.25,.085],buri:[1.67,.84,-.065],
+    hiramasa:[1.83,.68,-.05],kanpachi:[1.52,.72,-.015],
+    takabe:[1.36,.58,-.045],kuromejina:[1.03,.63,.015],houraihimeji:[.64,.26,.07],
+    shimaaji:[1.43,.67,-.03],ishigakidai:[.83,.48,.03],akahata:[.68,.39,.065],
+    tanago:[.78,.65,-.01],motsugo:[1.23,.72,-.02],medaka:[.86,.38,-.09],
+    kamatsuka:[.62,.27,.065],nigoi:[.89,.58,.04],raigyo:[.71,.42,.02],
+    moroko:[1,1,0], funa:[.84,.65,.02], koi:[.64,.6,.08],
+    aji:[1.28,.95,-.03], ayu:[1.18,1.05,-.04],
+    yamame:[1.11,1.15,-.03], nijimasu:[1.16,1.2,-.04], iwana:[1.13,1.09,-.025], amago:[1.15,1.04,-.025], kajika:[.62,.30,.065],
+    namazu:[.74,.48,.02], unagi:[1.17,1.12,.035],
+    bass:[1.08,.85,0], kurodai:[.83,.65,.05],
+    kasago:[.77,.4,.04], suzuki:[1.22,.82,-.02],
+    hirame:[.66,.28,.055], nushi:[.52,.4,.08],
+    bora:[1.07,.73,.02], mebaru:[.86,.63,.04],
+    shirogisu:[1.36,.42,.025], ainame:[.69,.35,.06],
+    madai:[.89,.68,.035],
+    wakasagi:[1.25,.78,-.02], dojo:[.57,.32,.055], isaki:[1.03,.74,.015], ugui:[1.19,.63,-.015], oikawa:[1.42,.86,-.025], kawahagi:[.81,.41,.043],
+    streamNushi:[.71,.78,-.01], coastNushi:[.62,.54,.055],
+    caveNushi:[.46,.36,.07], starNushi:[.38,.26,.10],
+  });
+  const gait=id=>{
+    const [speed,bob,depth]=gaits[id]||gaits.moroko;
+    return {speed,bob,depth};
+  };
+  function orientation(yaw){
+    yaw=clamp(yaw,0,Math.PI);
+    const turning=yaw>0&&yaw<Math.PI;
+    // The painter supplies perspective; never flatten a side sprite to zero.
+    return {yaw,facing:Math.cos(yaw),flip:turning||yaw===0?1:-1,
+      spriteMode:turning?'turn':'swim',turnFrame:Math.round(yaw/Math.PI*4)};
+  }
+  function dimensions(fish,catalog){
+    // Keep scale stable as a specimen grows. Larger species use a larger tank.
+    const max=Math.max(30,...fish.map(f=>(catalog.find(s=>s.id===f.species)?.max||f.length)/100));
+    const widthCm=[120,180,240,360,600,900,1200].find(n=>n>=max*2.8)||Math.ceil(max*2.8/100)*100;
+    return {widthCm,rulerCm:widthCm<=240?20:widthCm<=600?50:100};
+  }
+  function inspection(id,seconds,reduced=false){
+    const swim=gait(id),travel=4.2/swim.speed,turn=1.8,leg=travel+turn;
+    const cycle=seconds%(leg*2),right=cycle<leg,local=cycle%leg;
+    const travelTime=id==='donko'?travel*travelClock(id,Math.min(local,travel))/travelClock(id,travel):local;
+    const progress=smooth(travelTime/travel),turnProgress=smooth((local-travel)/turn);
+    // Spend most of the time swimming sideways so the tail-beat atlas plays.
+    // A short arc at each end joins the painted headings; no perpetual spin.
+    const yaw=reduced?0:Math.PI*(right?turnProgress:1-turnProgress);
+    return {...orientation(yaw),x:reduced?50:44+12*(right?progress:1-progress),
+      y:reduced?43:43+Math.sin(seconds*.8)*1.4*swim.bob,
+      swimFrame:reduced?0:Motion.phase(id,seconds,swim.speed,bottom(id))};
+  }
+  // A common reference for a species, rather than fitting every specimen to
+  // the same box. Small fish retain a readable minimum; the whole tank keeps
+  // its physical centimetre scale.
+  function specimenDimensions(fish,spec,width,height,ratio=2){
+    ratio=Math.max(.6,Number(ratio)||2);
+    const bound=Math.max(1,Math.min(width*.76,height*.60*ratio,420));
+    const fraction=clamp(fish.length/Math.max(1,spec.max),0,1);
+    const w=Math.min(bound,Math.max(Math.min(14,bound*.3),bound*Math.sqrt(fraction)));
+    return {width:w,height:w/ratio,referenceCm:spec.max/100};
+  }
+  function appearance(fish,catalog){
+    const spec=catalog.find(s=>s.id===fish?.species);
+    const fry=!!spec&&fish.origin==='bred'&&fish.generation>0&&fish.length<spec.min;
+    const stage=PetLife?.growthStage(fish);
+    const form=M.mutationForm(fish);
+    if(form)return {kind:'base',strength:0,fry,rare:true,gold:form.kind==='gold',adultIsaki:false,artId:form.artId,label:`${form.appearance}${fry?'の稚魚':''}`,key:`${fish.species}:${form.kind}:${fry?1:0}`};
+    if(stage)return {kind:'buri',strength:0,fry,adultIsaki:false,artId:stage.art,label:`${stage.name}の姿 · ${stage.alias}`,key:`buri:${stage.id}:${stage.art}`};
+    const kind=fish?.species==='nijimasu'?'parr':fish?.species==='isaki'?'stripes':'base';
+    // Qualitative growth changes follow aquarium observations. These fade
+    // intervals are an art choice for the game's accelerated growth.
+    const adultIsaki=kind==='stripes'&&fish.length>=2400;
+    const strength=kind==='parr'?clamp((2200-fish.length)/1000,0,1)*clamp(fish.length/200,0,1):kind==='stripes'?(adultIsaki?0:1):0;
+    const label=kind==='parr'?(strength>.1?'パーマークの残る幼魚の姿':'幼魚斑が薄れた赤い帯の姿'):kind==='stripes'?(strength>.1?'三本の縞が目立つ幼魚の姿':'縞が目立たなくなった姿'):fry?'水槽で生まれた稚魚の姿':fish?.length<spec?.start?'育ち途中の幼魚の姿':'育った魚の姿';
+    return {kind,strength,fry,adultIsaki,label,key:`${kind}:${strength.toFixed(3)}:${fry?1:0}`};
+  }
+  function decorate(context,look,pose=null){
+    if(!look)return;
+    const w=context.canvas.width,h=context.canvas.height;
+    context.save();context.globalCompositeOperation='source-atop';
+    if(look.fry&&!look.rare){context.globalAlpha=.13;context.fillStyle='#d2f0df';context.fillRect(0,0,w,h);}
+    const sideways=pose?.yaw===undefined?1:Math.abs(Math.cos(pose.yaw));
+    context.globalAlpha=look.strength*.64*sideways;context.fillStyle='#283943';
+    if(look.kind==='parr')for(let i=0;i<8;i++){
+      const x=Math.round(w*(.25+i*.058)),y=Math.round(h*.43),bw=Math.max(2,Math.round(w*.025)),bh=Math.round(h*.19);
+      context.fillRect(x,y+bh*.15,bw,bh*.7);context.fillRect(x+bw*.2,y,bw*.6,bh);
+    }
+    // Isaki stripes are painted in its juvenile atlas; the adult atlas
+    // removes them. Do not add stripes on top of the existing artwork.
+    context.restore();
+  }
+  function layout(fish,catalog,width,height,seconds,ratioFor,feeding=null,reduced=false){
+    const scale=dimensions(fish,catalog),floor=height*.78;
+    const poses=fish.map((f,i)=>{
+      const swim=gait(f.species);
+      const ratio=Math.max(.6,ratioFor(f.species)||2),depth=.84+(i%3)*.08;
+      const w=Math.min(Math.max(8,width*f.length/100/scale.widthCm*depth),width*.37,height*.20*ratio),h=w/ratio;
+      const minX=w/2+width*.045,maxX=width-minX;
+      const speed=(bottom(f.species)?.12:.20)*(1+i*.075)*swim.speed,phase=travelClock(f.species,seconds,i)*speed+i*2.399;
+      const sin=Math.sin(phase);
+      // Every fish gets at least 1.8 seconds through the turn, including fast
+      // swimmers in a crowded tank. Keep authored frontal thickness.
+      const turnArc=Math.max(.24,speed*.9);
+      let yaw=reduced?0:Math.PI*smooth(.5-Math.cos(phase)/(2*Math.sin(turnArc)));
+      let x=minX+(maxX-minX)*(.5+.5*sin);
+      const band=(bottom(f.species)?.68+.018*(i%3):.25+(i%5)*.08)+swim.depth;
+      let y=height*(band+Math.sin(seconds*.45+i)*.015*swim.bob);
+      if(reduced){x=width*(.18+i*.16);y=height*band;}
+      let bite=false,food=null;
+      const feedIndex=feeding?.ids.indexOf(f.uid)??-1;
+      if(feedIndex>=0){
+        const age=seconds-feeding.at,at=.95+feedIndex*.28;
+        const tx=width*(.18+feedIndex*.155),ty=height*(.23+(feedIndex%2)*.13);
+        const origin=feeding.origins?.[f.uid]||{x,y,yaw};
+        const approach=smooth(age/Math.max(.6,at-.1)),leave=smooth((age-2.5)/1.2);
+        const px=origin.x+(tx-origin.x)*approach,py=origin.y+(ty-origin.y)*approach;
+        x=px+(x-px)*leave;y=py+(y-py)*leave;
+        const targetYaw=tx>=origin.x?0:Math.PI;
+        const originYaw=origin.yaw??(origin.facing<0?Math.PI:0);
+        const approachYaw=originYaw+(targetYaw-originYaw)*smooth(age/.45);
+        yaw=approachYaw+(yaw-approachYaw)*leave;
+        bite=age>=at&&age<at+.24;
+        if(age<at)food={x:tx+Math.cos(targetYaw)*w*.39,y:height*.075+(ty-height*.075)*clamp(age/at,0,1)};
+      }
+      x=clamp(x,minX,maxX);y=clamp(y,h/2+height*.08,floor-h/2);
+      return {uid:f.uid,species:f.species,x,y,width:w,height:h,...orientation(yaw),depth,bite,food,bottomDweller:bottom(f.species),
+        swimFrame:reduced?0:Motion.phase(f.species,seconds,swim.speed,bottom(f.species),i*1.618)};
+    });
+    // A small vertical separation gives passing fish room without teleporting x.
+    for(let i=0;i<poses.length;i++)for(let j=0;j<i;j++){
+      const a=poses[i],b=poses[j],dx=Math.abs(a.x-b.x),gap=(a.height+b.height)*.43+3;
+      const approach=smooth(1-dx/((a.width+b.width)*.65));
+      const overlap=smooth(1-Math.abs(a.y-b.y)/gap);
+      a.y=clamp(a.y+gap*approach*overlap,a.height/2+height*.09,floor-a.height/2);
+    }
+    return {...scale,poses};
+  }
+  return Object.freeze({dimensions,layout,orientation,gait,inspection,specimenDimensions,appearance,decorate});
+});

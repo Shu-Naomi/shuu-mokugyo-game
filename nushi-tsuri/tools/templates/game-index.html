@@ -4345,6 +4345,16 @@
       .cast-surface.bite .cast-float {
         animation: cast-float-bite .36s steps(5, end) forwards;
       }
+      .cast-surface.bite.shrimp-side-bite .cast-float {
+        animation: cast-float-side-bite .54s steps(6,end) both;
+      }
+      @keyframes cast-float-side-bite {
+        from {transform: translate(-50%,-48%) rotate(0)}
+        to {transform: translate(calc(-50% + 24px),-50%) rotate(22deg)}
+      }
+      @media (prefers-reduced-motion: reduce) {
+        .cast-surface.bite.shrimp-side-bite .cast-float {animation:none;transform:translate(calc(-50% + 24px),-50%) rotate(22deg)}
+      }
       .cast-splash {
         position: absolute;
         z-index: 6;
@@ -6541,7 +6551,7 @@
     </section>
     <section id="game" class="screen game">
       <header class="hud">
-        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-94</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
+        <b>星降る湖</b><span id="gameRelease" aria-label="ゲームのバージョン">v252-95</span><span id="activeSaveSlot">セーブ1</span><span id="saveStatus" role="status" title="セーブを保存できなかった。今の進行はこの画面にだけ残っているよ。" hidden><span class="ui-inline-art" data-ui-art="extra:warning" aria-hidden="true"></span> 未保存</span><span id="time" class="hud-clock">1日目 06:00 朝</span
         ><span id="weather" class="hud-weather" role="status" aria-label="今日の天気：晴れ">晴れ</span><span><span class="ui-inline-art" data-ui-art="ui:coin" aria-hidden="true"></span> <b id="money">300</b>円</span
         ><span><i id="hudBaitArt" aria-hidden="true"></i><b id="bait">5</b></span
         ><span id="boatHud" hidden></span><span class="grow"><span class="ui-inline-art" data-ui-art="extra:fishingRod" aria-hidden="true"></span> <b id="rod">竹の竿</b></span
@@ -7466,14 +7476,14 @@
     <script src="aquarium-mutations.js?v=252-24"></script>
     <script src="pet-notebook.js?v=252-27"></script>
     <script src="pet-life.js?v=252-84"></script>
-    <script src="fish-motion-252-94.js?v=252-94"></script>
-    <script src="aquarium-life-252-94.js?v=252-94"></script>
+    <script src="fish-motion-252-95.js?v=252-95"></script>
+    <script src="aquarium-life-252-95.js?v=252-95"></script>
     <script src="compact-ui.js?v=252-84"></script>
     <script src="pet-life-ui.js?v=252-84"></script>
     <script src="village-fish-cards.js?v=252-84"></script>
     <script src="village-fish-race.js?v=252-84"></script>
     <script src="tackle-balance.js?v=252-71"></script>
-    <script src="fishing-duel-252-94.js?v=252-94"></script>
+    <script src="fishing-duel-252-95.js?v=252-95"></script>
     <script src="underwater-camera.js?v=246-1"></script>
     <script src="nushi-presentation.js?v=252-75"></script>
     <script src="catch-memories.js?v=229-1"></script>
@@ -7491,7 +7501,7 @@
     <script src="offshore-island.js?v=252-85"></script>
     <script src="world-life.js?v=252-74"></script>
     <script src="field-guide.js?v=252-55"></script>
-    <script src="rural-canals-252-93.js?v=252-93"></script>
+    <script src="rural-canals-252-95.js?v=252-95"></script>
     <script src="mountain-region.js?v=252-72"></script>
     <script src="regional-nushi.js?v=252-71"></script>
     <script src="lake-intro.js?v=252-55"></script>
@@ -7502,8 +7512,8 @@
     <script src="save-slots.js?v=252-1"></script>
     <script src="title-flow.js?v=252-1"></script>
     <script src="nushi-atlas.js?v=202-1"></script>
-    <script src="fish-additions-252-94.js?v=252-94"></script>
-    <script src="fish-art.js?v=252-85"></script>
+    <script src="fish-additions-252-95.js?v=252-95"></script>
+    <script src="fish-art-252-95.js?v=252-95"></script>
     <script src="tackle-art.js?v=252-82"></script>
     <script src="item-art.js?v=252-28"></script>
     <script src="item-object-art.js?v=252-28"></script>
@@ -11983,9 +11993,10 @@
           const swimFrame=element.id==='battleFish'?Number(element.dataset.artSwimFrame||0):aquariumPose?.swimFrame;
           const resistanceBend=element.id==='battleFish'?Number(element.dataset.resistanceBend||0):0;
           const swimEffort=element.id==='battleFish'?Number(element.dataset.swimEffort||1):1;
+          const tailCurl=element.id==='battleFish'&&element.dataset.tailCurl==='true';
           const artId=(element.id==='battleFish'&&ShuFishArt.fightVariants[fishId])||aquariumLook?.artId||fishId;
           const artAssets=ShuFishArt.assets(artId);
-          const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
+          const key=`${artAssets[0]}|${spriteCells}|${spriteFrame}|${swimFrame??''}|${resistanceBend}|${swimEffort}|${tailCurl}|${fishId}${aquariumLook?`|${aquariumLook.key}|${aquariumPose?.yaw??''}`:''}`;
           const changed=canvas.dataset.artSpecies!==fishId;
           if(canvas.dataset.atlasKey!==key||canvas.width!==448||canvas.height!==224)delete canvas.dataset.artPaintKey;
           if(canvas.width!==448)canvas.width=448;
@@ -12000,7 +12011,7 @@
           const paint=()=>{
             if(canvas.dataset.atlasKey!==key||canvas.dataset.artPaintKey===key||sources.some(source=>!source.complete||!source.naturalWidth))return;
             const context=canvas.getContext('2d');
-            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort})===false)return;
+            if(ShuFishArt.draw(context,image,artId,spriteCells,spriteFrame,resolveImage,{swimFrame,resistanceBend,swimEffort,tailCurl})===false)return;
             ShuAquariumLife.decorate(context,aquariumLook,aquariumPose);
             canvas.dataset.artPaintKey=key;
           };
@@ -21157,9 +21168,10 @@
         stopSurfaceCastAnimation();
         clearTimeout(castLandingTimer);
         castLandingTimer = 0;
+        const crustacean = ["tenagaebi", "zarigani"].includes(battle.f?.id);
         const delay = battle.practice
           ? 850 + Math.random() * 650
-          : (1500 + Math.random() * 2600) /
+          : (1500 + (crustacean ? 550 : 0) + Math.random() * 2600) /
             baitData[battle.bait || s.selectedBait].bite;
         if(battle.method==="lure")return startLurePresentation();
         battle.phase = "wait";
@@ -21170,6 +21182,7 @@
         const surface = $("#castSurface");
         surface.classList.remove("cast-throwing", "nibbling", "bite");
         surface.classList.add("cast-landed");
+        surface.classList.toggle("shrimp-side-bite", battle.f?.id === "tenagaebi");
         playGameAudioSample("lureSplash", { restart: true });
         surfaceCastMotionStartedAt = 0;
         setSurfaceCastMotionFrame(0, true);
@@ -21451,6 +21464,9 @@
         } else if (mood.motion === "rest") {
           battle.targetVx = tangentX * 0.16;
           battle.targetVy = tangentY * 0.16;
+        } else if (mood.motion === "tailflip") {
+          battle.targetVx = -(battle.facing || 1) * speedX;
+          battle.targetVy = Math.abs(speedY) * .42;
         } else if (mood.motion === "reverse") {
           battle.targetVx = (battle.motionX || -(battle.facing || 1)) * speedX;
           battle.targetVy = (battle.motionY || 1) * speedY * 0.34;
@@ -21707,6 +21723,9 @@
         battle.motionY = ["deep", "heavy", "root"].includes(selected.motion)
           ? 1
           : Math.random() < 0.5 ? -1 : 1;
+        if(selected.motion==="tailflip"&&battle.fightMode==="nushi"){
+          battle.facing=-1;battle.turning=null;battle.turnIntent=-1;battle.turnHold=0;
+        }
         setFishCourse(selected);
         if(battle.fightMode==="nushi"&&!selected.calm)battle.targetVx=Math.abs(battle.targetVx);
         const stageLabel = ShuRegional.legendary(battle.f.id)
@@ -22054,7 +22073,12 @@
       function moveBattleFish(mood) {
         battle.moodTick++;
         battle.swimTick++;
-        if (mood.motion === "reverse") {
+        if (mood.motion === "tailflip") {
+          setFishCourse(mood);
+          const kick = Math.max(0, 1 - (battle.moodTick - 1) * .22);
+          battle.targetVx *= kick;
+          battle.targetVy *= kick;
+        } else if (mood.motion === "reverse") {
           if (battle.moodTick === 1) {
             battle.vx = battle.motionX * Math.max(2.6, mood.speedX * 0.72);
             battle.vy += battle.motionY * (mood.speedY || 1) * 0.3;
@@ -22127,6 +22151,7 @@
           rush: 0.38,
           reverse: 0.72,
           thrash: 0.48,
+          tailflip: 0.57,
           flutter: 0.58,
           heavy: 0.13,
           root: 0.34,
@@ -22135,7 +22160,7 @@
         const rhythm=ShuFishing.rhythm(battle.f.id);
         if(escape){
           battle.escapeSpeed=ShuFishing.escapePace(battle,mood);
-          battle.targetVx=battle.escapeSpeed;battle.motionX=1;
+          battle.targetVx=mood.motion==="tailflip"?Math.max(0,battle.targetVx):battle.escapeSpeed;battle.motionX=1;
           battle.targetVy+=Math.sin(battle.moodTick*1.05*rhythm.tempo)*rhythm.shake*.85;
         }else battle.escapeSpeed=0;
         battle.vx += (battle.targetVx - battle.vx) * acceleration;
@@ -22146,7 +22171,7 @@
           : motionProfile.movingDrag;
         battle.vx *= drag;
         battle.vy *= drag;
-        const desiredFacing = battle.vx > 0.32 ? 1 : battle.vx < -0.32 ? -1 : 0;
+        const desiredFacing = mood.motion === "tailflip" ? battle.facing : battle.vx > 0.32 ? 1 : battle.vx < -0.32 ? -1 : 0;
         updateFishTurn(desiredFacing, motionProfile);
         const bodyMotion = animateFishBody(
           mood,
@@ -22249,6 +22274,8 @@
         const fishX = battle.x * 10;
         const fishY = battle.y * 5;
         const tailDistance = {
+          tenagaebi: 32,
+          zarigani: 32,
           moroko: 52,
           aji: 52,
           ayu: 60,
@@ -22978,6 +23005,8 @@
             remaining:Math.max(0,((battle.nextMood||artNow)-artNow)/1000),
           }):{extraFrame:0,effort:1};
         element.dataset.swimEffort=String(fightMotion.effort);
+        element.dataset.tailCurl=String(battle.phase==="fight" && battle.mood?.motion==="tailflip" &&
+          (battle.moodTick||0)<4 && !matchMedia("(prefers-reduced-motion: reduce)").matches);
         const artSwimFrame=(battle.frame||0)+(battle.swimPhase||0)%1+(battle.swimAdvance||0)*artFraction+fightMotion.extraFrame;
         element.dataset.artSwimFrame=String(artSwimFrame);
         let spriteFrame = ShuFishArt.species[battle.f.id]?artSwimFrame%spriteCells:(battle.frame || 0) % spriteCells;
@@ -23268,14 +23297,18 @@
           $("#phaseLabel").textContent = battle.practice ? " ③ 合わせる！" : battle.method==="lure"?" 食いつき・Aでアワセ":" アタリ！";
           $("#battleMsg").textContent = battle.practice
             ? "サム「ウキが消えた！今だ、Aで合わせる！」"
-            : battle.method==="lure"?"食いついた！Aを離して押し直し、一度引いて合わせる！":"消し込んだ！！今だ、Aで合わせる！";
+            : battle.method==="lure"?"食いついた！Aを離して押し直し、一度引いて合わせる！"
+            : battle.f?.id==="tenagaebi"?"ウキが横へ走った！今だ、Aで合わせる！"
+            : battle.f?.id==="zarigani"?"ウキが沈んだ！しっかり掴んだ今、Aで合わせる！":"消し込んだ！！今だ、Aで合わせる！";
           $("#pull").innerHTML = battle.method==="lure"?"A<br><small>アワセ！</small>":"A<br><small>合わせる！</small>";
         } else if (battle.phase === "wait" && !battle.nibbleShown && now >= battle.nibbleAt) {
           battle.nibbleShown = true;
           $("#castSurface").classList.add("nibbling");
           $("#battleMsg").textContent = battle.practice
             ? "サム「ウキが揺れたが、まだだ。沈み切るまで待て」"
-            : "ウキが小さく揺れた……まだ前アタリだ。";
+            : ["tenagaebi", "zarigani"].includes(battle.f?.id)
+              ? "ウキがちょんちょん揺れた。しっかり掴むまで待とう。"
+              : "ウキが小さく揺れた……まだ前アタリだ。";
         }
         return true;
       }
@@ -25103,7 +25136,7 @@
       setInterval(advancePetSceneFrame, 60);
       setInterval(advanceDogCareScene, 60);
       if (new URLSearchParams(location.search).get("villageReference") !== "1" && "serviceWorker" in navigator)
-        navigator.serviceWorker.register("./sw.js?v=252-94").catch(() => {});
+        navigator.serviceWorker.register("./sw.js?v=252-95").catch(() => {});
 
       worldLife=ShuWorldLife.create({map:$('#map'),state:()=>s,environment:gameSceneryEnvironment,
         visible:()=>!villageSaveSuspended&&!document.hidden&&!playerHomeIsActive()&&!battle&&!document.querySelector('.modal.open')&&$('#game').classList.contains('active'),walkable:isWalkableWorld});

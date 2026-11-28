@@ -1,3 +1,4 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path'),crypto=require('node:crypto');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
@@ -26,7 +27,7 @@ test('the selected cohesive master and clean underlay remain the reviewed native
   const url=file+'?v='+(file==='mountain-region.js'?'252-72':'252-55');
   assert.ok(html.includes(url),url);assert.ok(sw.includes(url),url);
  }
- const ruralUrl='rural-canals-252-93.js?v=252-93';
+ const ruralUrl=currentScripts.url('rural-canals');
  assert.ok(html.includes(ruralUrl),ruralUrl);assert.ok(sw.includes(ruralUrl),ruralUrl);
  assert.ok(fs.readFileSync(path.join(root,'field-guide.js'),'utf8').includes(d.source),'guide uses the same village artwork');
  assert.equal(require('../lake-intro.js').art.village,d.source,'the opening village scene uses the same reviewed map');

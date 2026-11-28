@@ -1,5 +1,6 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const R=require('../regional-nushi.js'),F=require('../fishing-duel-252-94.js');
+const R=require('../regional-nushi.js'),F=currentScripts.load('fishing-duel');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const ready=rod=>({...seed(),hp:100,soundEnabled:false,mapRegion:'coast',boatActive:true,x:95,y:84,direction:'up',
   ownedVehicles:['canoe'],equipment:{hands:null,vehicle:'canoe'},ownedRods:[rod],selectedRod:rod,

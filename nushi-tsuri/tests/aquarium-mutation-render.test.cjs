@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),{createCanvas,loadImage}=require('@napi-rs/canvas'),fs=require('fs'),path=require('path'),crypto=require('crypto');
-const Art=require('./fixtures/current-fish-art.cjs'),Life=require('../aquarium-life-252-94.js'),M=require('../aquarium-mutations.js');
+const Art=require('./fixtures/current-fish-art.cjs'),Life=currentScripts.load('aquarium-life'),M=require('../aquarium-mutations.js');
 const root=path.resolve(__dirname,'..');
 test('gold uses one additional aquarium-only atlas with eight isolated poses, preserving catalogue and source artwork',async()=>{
  assert.equal(crypto.createHash('sha256').update(fs.readFileSync(path.join(root,'assets/fish-lake-v208.png'))).digest('hex'),'d15babca220116e0d0c04bf4fed6b667d373b237f7c3f9cd64c4ebe9c87dd119');
