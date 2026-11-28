@@ -8,6 +8,12 @@ const path = require("node:path");
 const vm = require("node:vm");
 const source = fs.readFileSync(path.join(__dirname, "../sw.js"), "utf8");
 const scope = "https://game.test/nushi-tsuri/";
+const spriteFiles = [
+  "assets/player-boy.png", "assets/player-girl.png",
+  "assets/player-boy-walk-v35-final.png", "assets/player-girl-walk-v35-final.png",
+  "assets/pet-scenes-v19.svg",
+];
+const spriteBytes = new Map(spriteFiles.map(file => [file, fs.readFileSync(path.join(__dirname, "..", file))]));
 
 // Keep the real worker, URL inventory and WebCrypto verification. Give each
 // physical file a small, unique body so the cache double need not hold all art.
@@ -16,7 +22,13 @@ function assetPath(resource) {
   return !pathname || /^release-[0-9-]+\.html$/.test(pathname) ? "index.html" : pathname;
 }
 const bodyFor = resource => "fixture bytes for " + assetPath(resource);
-const assetResponse = resource => new Response(bodyFor(resource));
+function assetResponse(resource) {
+  const file = assetPath(resource);
+  if (!spriteBytes.has(file)) return new Response(bodyFor(resource));
+  return new Response(spriteBytes.get(file), {
+    headers: {"Content-Type": file.endsWith(".svg") ? "image/svg+xml" : "image/png"},
+  });
+}
 
 function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const location = new URL("https://game.test/nushi-tsuri/sw.js");
@@ -78,7 +90,9 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const coreAssets = Array.from(vm.runInContext("CORE_ASSETS", context));
   return {
     state, stores, requests, writes, deletions, name, coreAssets,
-    seed: (cache, resource, body) => entries(cache).set(key(resource), new Response(body)),
+    build: context.self.SHU_VILLAGE_BUILD, entry: context.self.SHU_VILLAGE_ENTRY,
+    spriteCache: vm.runInContext("typeof SPRITE_CACHE === 'string' && SPRITE_CACHE", context),
+    seed: (cache, resource, body) => entries(cache).set(key(resource), body instanceof Response ? body.clone() : new Response(body)),
     cached: (resource) => entries(name).get(key(resource))?.clone(),
     install: async () => {
       const pending = [];
@@ -127,7 +141,7 @@ test("installation precaches all assets without taking over old tabs or deleting
   releaseCss();
   await installing;
   const fetchedFiles = app.requests.map(({request}) => assetPath(request));
-  assert.deepEqual(new Set(fetchedFiles), new Set(app.coreAssets.map(assetPath)));
+  assert.deepEqual(new Set(fetchedFiles), new Set([...app.coreAssets.map(assetPath), ...spriteFiles]));
   assert.equal(fetchedFiles.length, new Set(fetchedFiles).size, "aliases share one network download");
   assert.equal(app.state.skippedWaiting, false);
   assert.equal(app.state.claimed, false);
@@ -136,10 +150,13 @@ test("installation precaches all assets without taking over old tabs or deleting
   assert.equal(app.stores.has(previous), true);
   assert.equal(app.stores.has("another-game-v1"), true);
   assert.equal(app.state.claimed, false);
-  assert.ok(app.deletions.every(name => name === app.name));
+  assert.ok(app.deletions.every(name => name === app.name || name === app.spriteCache));
   app.state.network = async () => { throw new TypeError("Offline"); };
   const requests = app.requests.length;
   assert.equal(await (await app.fetch(css)).text(), bodyFor(css));
+  for (const file of spriteFiles) {
+    assert.deepEqual(Buffer.from(await (await app.fetch(file)).arrayBuffer()), spriteBytes.get(file));
+  }
   assert.equal(app.requests.length, requests, "corrected stylesheet is available offline");
 });
 
@@ -165,7 +182,7 @@ test("failed precache cannot skip waiting or delete the previous working release
     assert.equal(app.stores.has(previous), true, failure);
     assert.equal(app.stores.has("another-game-v1"), true, failure);
     assert.ok(!app.stores.get(app.name)?.size, failure + ": no partially installed release survives");
-    assert.ok(app.deletions.every(name => name === app.name), failure + ": only candidate data may be discarded");
+    assert.ok(app.deletions.every(name => name === app.name || name === app.spriteCache), failure + ": only candidate data may be discarded");
     assert.equal(await [...app.stores.get(previous).values()][0].clone().text(), "stale but working CSS");
   }
 });
@@ -180,6 +197,8 @@ test("a restarted worker serves unchanged earlier bytes offline once and repairs
   app.seed(baseline, "./compact-ui.css?v=older", bodyFor(css));
   app.seed(baseline, map, "stale map at the same URL");
   app.seed(baseline, "./index.html", "v252-85 game");
+  app.seed(baseline, spriteFiles[0] + "?previous", assetResponse(spriteFiles[0]));
+  app.seed(baseline, spriteFiles[1], new Response("outdated picture", {headers: {"Content-Type": "image/png"}}));
   app.seed("another-game-v1", unrelatedOnly, bodyFor(unrelatedOnly));
   app.state.network = async request => assetResponse(request);
   await app.install();
@@ -188,6 +207,8 @@ test("a restarted worker serves unchanged earlier bytes offline once and repairs
   assert.equal(requested.has(assetPath(css)), false, "identical CSS can reuse its old query key");
   assert.ok(requested.has(assetPath(map)), "same URL with stale bytes must be replaced");
   assert.ok(requested.has(assetPath(unrelatedOnly)), "never depend on an unrelated app's cache");
+  assert.ok(!requested.has(spriteFiles[0]), "reuse verified player art that v85 loaded while playing");
+  assert.ok(requested.has(spriteFiles[1]), "a mismatched old image requires the current bytes");
   assert.equal(app.cached(fish), undefined, "unchanged art is not duplicated in the new release");
   const restarted = bootWorker({ stores });
   await restarted.install();
@@ -197,6 +218,9 @@ test("a restarted worker serves unchanged earlier bytes offline once and repairs
     assert.equal(await (await restarted.fetch(url)).text(), bodyFor(url));
   }
   assert.equal(await (await restarted.fetch("./?offline", { mode: "navigate" })).text(), bodyFor("./index.html"));
+  for (const file of spriteFiles) {
+    assert.deepEqual(Buffer.from(await (await restarted.fetch(file)).arrayBuffer()), spriteBytes.get(file));
+  }
   assert.equal(restarted.requests.length, 0, "offline lookups use the committed cache mapping");
   const previousCache = stores.get(baseline);
   assert.equal(await previousCache.get(new URL(map, scope).href).clone().text(), "stale map at the same URL");
@@ -218,6 +242,108 @@ test("retry after a partial update retains the old release and commits only veri
   retry.state.network = async () => { throw new TypeError("Offline"); };
   assert.equal(await (await retry.fetch(changed)).text(), bodyFor(changed));
   assert.equal(await stores.get(baseline).get(new URL("./index.html", scope).href).clone().text(), "playable old release");
+});
+
+// The first published v252-92 worker committed just this core index. Simulate
+// an installation upgraded from v85: some pointers still refer to the v85 cache.
+function seedPublishedCore(app) {
+  const previous = "nushi-tsuri-v252-shiokakure-display-252-85";
+  const files = {};
+  for (const resource of app.coreAssets) {
+    const file = assetPath(resource);
+    if (files[file]) continue;
+    const owner = file.startsWith("assets/") ? previous : app.name;
+    const url = new URL(file === "index.html" ? app.entry : resource, scope).href;
+    app.seed(owner, url, bodyFor(resource));
+    files[file] = [owner, url];
+  }
+  const index = JSON.stringify({build: app.build, files});
+  app.seed(app.name, "./__offline_release_index__", index);
+  return index;
+}
+
+test("an existing v252-92 installs only missing sprite bytes and keeps its core index", async () => {
+  const stores = new Map(), app = bootWorker({stores});
+  const index = seedPublishedCore(app);
+  app.seed(app.name, spriteFiles[0], assetResponse(spriteFiles[0]));
+  const originalKeys = [...stores.get(app.name).keys()];
+  app.state.network = async request => assetResponse(request);
+  await app.install();
+  assert.deepEqual(new Set(app.requests.map(({request}) => assetPath(request))), new Set(spriteFiles.slice(1)));
+  assert.deepEqual([...stores.get(app.name).keys()], originalKeys);
+  assert.equal(await app.cached("./__offline_release_index__").text(), index);
+  const restarted = bootWorker({stores});
+  await restarted.install();
+  await restarted.activate();
+  for (const file of spriteFiles) {
+    assert.deepEqual(Buffer.from(await (await restarted.fetch(file)).arrayBuffer()), spriteBytes.get(file));
+  }
+  assert.equal(await (await restarted.fetch("./", {mode: "navigate"})).text(), bodyFor("./index.html"));
+  assert.equal(restarted.requests.length, 0);
+  assert.equal(restarted.writes.length, 0);
+});
+
+test("a failed sprite-only update preserves a committed v252-92 and can be retried", async () => {
+  for (const failure of ["network", "corrupt", "quota"]) {
+    const stores = new Map(), app = bootWorker({stores});
+    const index = seedPublishedCore(app);
+    const last = spriteFiles.at(-1);
+    if (failure === "quota") app.state.failWrite = last;
+    app.state.network = async request => {
+      if (assetPath(request) === last) {
+        if (failure === "network") throw new TypeError("Offline");
+        if (failure === "corrupt") return new Response("wrong sprite", {headers: {"Content-Type": "image/svg+xml"}});
+      }
+      return assetResponse(request);
+    };
+    await assert.rejects(app.install(), undefined, failure);
+    assert.ok(!stores.get(app.spriteCache)?.size, failure + ": incomplete sprite cache removed");
+    assert.equal(await app.cached("./__offline_release_index__").text(), index);
+    assert.equal(app.state.claimed, false);
+    assert.equal(app.state.skippedWaiting, false);
+    const retry = bootWorker({stores});
+    assert.equal(await (await retry.fetch("./", {mode: "navigate"})).text(), bodyFor("./index.html"));
+    assert.equal(await (await retry.fetch("./assets/fish-aji-v68.png")).text(), bodyFor("./assets/fish-aji-v68.png"));
+    retry.state.network = async request => assetResponse(request);
+    await retry.install();
+    assert.ok(retry.requests.every(({request}) => spriteFiles.includes(assetPath(request))), "retry fetches only sprites");
+    assert.deepEqual(Buffer.from(await (await retry.fetch(last)).arrayBuffer()), spriteBytes.get(last));
+  }
+});
+
+test("a missing sprite during a v85 upgrade rolls back both new caches and leaves v85 playable", async () => {
+  const app = bootWorker(), previous = "nushi-tsuri-v252-shiokakure-display-252-85";
+  app.seed(previous, "./index.html", "original page");
+  app.seed(previous, spriteFiles[0], assetResponse(spriteFiles[0]));
+  app.state.network = async request => {
+    if (assetPath(request) === spriteFiles.at(-1)) throw new TypeError("Offline");
+    return assetResponse(request);
+  };
+  await assert.rejects(app.install());
+  assert.ok(!app.stores.get(app.name)?.size);
+  assert.ok(!app.stores.get(app.spriteCache)?.size);
+  const old = app.stores.get(previous);
+  assert.equal(await old.get(new URL("./index.html", scope).href).clone().text(), "original page");
+  assert.deepEqual(Buffer.from(await old.get(new URL(spriteFiles[0], scope).href).clone().arrayBuffer()), spriteBytes.get(spriteFiles[0]));
+});
+
+test("optional artwork is available offline only at its exact old asset URL with the right media type", async () => {
+  const app = bootWorker();
+  const old = "nushi-tsuri-v252-shiokakure-display-252-85";
+  const url = "./assets/earlier-optional.png?v=old";
+  app.seed(old, url, new Response("old art", {headers: {"Content-Type": "image/png"}}));
+  app.seed(old, "./assets/incorrect.png", new Response("<html>", {headers: {"Content-Type": "text/html"}}));
+  app.seed(old, "./assets/partial.png", new Response("partial", {status: 206, headers: {"Content-Type": "image/png"}}));
+  app.seed(old, "./obsolete.js", new Response("old script", {headers: {"Content-Type": "application/javascript"}}));
+  app.seed("another-game-v1", "./assets/unrelated.png", new Response("unrelated", {headers: {"Content-Type": "image/png"}}));
+  assert.equal(await (await app.fetch(url)).text(), "old art");
+  for (const missing of ["./assets/earlier-optional.png?v=new", "./assets/incorrect.png", "./assets/partial.png", "./obsolete.js", "./assets/unrelated.png"]) {
+    assert.equal((await app.fetch(missing)).type, "error", missing);
+  }
+  const unversioned = "./assets/unversioned.png";
+  app.seed(old, unversioned, new Response("old", {headers: {"Content-Type": "image/png"}}));
+  app.state.network = async () => new Response("updated online image", {headers: {"Content-Type": "image/png"}});
+  assert.equal(await (await app.fetch(unversioned)).text(), "updated online image");
 });
 
 test("activation preserves all old caches while resource lookup stays isolated", async () => {
@@ -255,7 +381,7 @@ test("a late old-worker response stays isolated while its original cache remains
   const inFlight = previous.fetch("./late-request.png");
   await networkStarted;
   await current.activate();
-  assert.ok(current.deletions.every(name => name === current.name), "other caches survive activation");
+  assert.ok(current.deletions.every(name => name === current.name || name === current.spriteCache), "other caches survive activation");
   assert.equal(current.state.claimed, false);
   assert.equal(stores.has(previous.name), true);
   finish();
@@ -285,8 +411,8 @@ test("navigation keeps the installed release while the server changes or goes of
 test("offline assets never receive HTML; cached assets work and partial/error responses stay uncached", async () => {
   const app = bootWorker();
   app.seed(app.name, "./index.html", "<!doctype html>game");
-  app.seed(app.name, "./assets/known.png", "cached fish");
-  assert.equal(await (await app.fetch("./assets/known.png")).text(), "cached fish");
+  app.seed(app.name, "./assets/known.png?v=1", new Response("cached fish", {headers: {"Content-Type": "image/png"}}));
+  assert.equal(await (await app.fetch("./assets/known.png?v=1")).text(), "cached fish");
   assert.equal(app.requests.length, 0);
   for (const file of ["fish.png", "water.mp3"])
     assert.equal((await app.fetch(`./assets/${file}`)).type, "error");
@@ -295,7 +421,7 @@ test("offline assets never receive HTML; cached assets work and partial/error re
     assert.equal((await app.fetch("./assets/water.mp3")).status, status);
     assert.equal(app.cached("./assets/water.mp3"), undefined);
   }
-  app.state.network = async () => new Response("complete audio");
+  app.state.network = async () => new Response("complete audio", {headers: {"Content-Type": "audio/mpeg"}});
   assert.equal(await (await app.fetch("./assets/water.mp3")).text(), "complete audio");
   app.state.network = async () => { throw new TypeError("Offline"); };
   assert.equal(await (await app.fetch("./assets/water.mp3")).text(), "complete audio");

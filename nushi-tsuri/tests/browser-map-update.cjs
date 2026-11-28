@@ -17,13 +17,23 @@ assert.ok(['success', 'corrupt', 'quota', 'fresh'].includes(scenario));
 const scope = '/nushi-tsuri/';
 const quotaLimit = 450_000_000;
 const timeout = 150_000;
-const oldRelease = 'v252-85';
+const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, 'release-252-92.html'));
+const oldRelease = hasPublishedMapRelease ? 'v252-92' : 'v252-85';
+const oldEntry = hasPublishedMapRelease ? 'release-252-92.html' : 'index.html';
 const newRelease = 'v252-92';
-const repair = 'assets/rural-bridge-shadow-repair.png';
+const damagedFile = hasPublishedMapRelease ? 'assets/player-girl-walk-v35-final.png' : 'assets/rural-bridge-shadow-repair.png';
+const media = [
+  {file:'assets/player-boy.png', width:540, height:430},
+  {file:'assets/player-boy-walk-v35-final.png', width:540, height:860},
+  {file:'assets/pet-scenes-v19.svg', width:1200, height:160},
+  {file:'assets/player-girl.png', width:500, height:430},
+  {file:'assets/player-girl-walk-v35-final.png', width:500, height:860}
+];
+const priorMedia = media.slice(0, 3);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (directory, file) => sha256(fs.readFileSync(path.join(directory, file)));
 const mime = {html:'text/html; charset=utf-8', js:'text/javascript', css:'text/css', json:'application/json', png:'image/png', jpg:'image/jpeg', webp:'image/webp', svg:'image/svg+xml', mp3:'audio/mpeg', wav:'audio/wav'};
-const report = {scenario, quotaLimit, storage:{}, offlineSlots:[], networkBytes:0};
+const report = {scenario, oldRelease, quotaLimit, storage:{}, offlineSlots:[], networkBytes:0};
 const slots = [{id:1, money:4321}, {id:2, money:6789}];
 
 function deferred() {
@@ -52,7 +62,7 @@ function createHost() {
       host.workerRequest.resolve();
       await host.releaseWorker.promise;
     }
-    if (candidate && scenario === 'corrupt' && relative === repair) {
+    if (candidate && scenario === 'corrupt' && relative === damagedFile) {
       host.injectedCorruption = true;
       res.writeHead(200, {'Content-Type':'image/png', 'Cache-Control':'no-store'});
       return res.end('intentionally corrupt map image');
@@ -82,18 +92,38 @@ async function gameReady(page, controlled = true) {
   }
 }
 
-async function cachedEntry(page, name) {
-  const hash = await page.evaluate(async cacheName => {
-    const cache = await caches.open(cacheName);
-    const cached = await cache.match('/nushi-tsuri/');
+async function cachedEntry(page, name, file) {
+  const hash = await page.evaluate(async ({name, file}) => {
+    const cache = await caches.open(name);
+    const cached = await cache.match('/nushi-tsuri/' + file);
     if (!cached) return null;
     const digest = await crypto.subtle.digest('SHA-256', await cached.arrayBuffer());
     return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
-  }, name);
+  }, {name, file});
   return hash;
 }
 
-async function resumeOffline(context, url, expected, before) {
+async function checkMedia(page, files, root) {
+  const results = [];
+  for (const {file, width, height} of files) {
+    const measured = await page.evaluate(async file => {
+      const response = await fetch(file, {cache:'no-store'});
+      if (!response.ok) throw Error('Could not read ' + file + ' (' + response.status + ')');
+      const bytes = await response.arrayBuffer();
+      const rawHash = await crypto.subtle.digest('SHA-256', bytes);
+      const hash = Array.from(new Uint8Array(rawHash), byte => byte.toString(16).padStart(2, '0')).join('');
+      const image = new Image();
+      image.src = file;
+      await image.decode();
+      return {hash, width:image.naturalWidth, height:image.naturalHeight};
+    }, file);
+    assert.deepEqual(measured, {hash:fileHash(root, file), width, height}, file);
+    results.push({file, ...measured});
+  }
+  return results;
+}
+
+async function resumeOffline(context, url, expected, before, completedUpdate) {
   for (const slot of slots) {
     const page = await context.newPage();
     // Both normal entry URLs must resolve when every network request is denied.
@@ -104,7 +134,10 @@ async function resumeOffline(context, url, expected, before) {
     assert.ok(expected.hashes.includes(responseHash), 'Unexpected offline navigation response: ' + responseHash);
     await gameReady(page);
     assert.equal(await page.locator('#gameRelease').textContent(), expected.version);
-    if (slot.id === 1) assert.deepEqual(await page.evaluate(saveSnapshot), before);
+    if (slot.id === 1) {
+      assert.deepEqual(await page.evaluate(saveSnapshot), before);
+      report.offlineMedia = await checkMedia(page, completedUpdate ? media : priorMedia, completedUpdate ? candidateRoot : baselineRoot);
+    }
     await page.locator('#titleContinue').click();
     await page.locator('[data-save-slot="' + slot.id + '"]').click();
     await page.locator('#titleResume').click();
@@ -121,10 +154,10 @@ async function resumeOffline(context, url, expected, before) {
 }
 
 async function run() {
-  const baselineHash = fileHash(baselineRoot, 'index.html');
+  const baselineHash = fileHash(baselineRoot, oldEntry);
   const candidateHash = fileHash(candidateRoot, 'release-252-92.html');
   const guardedEntryHash = fileHash(candidateRoot, 'index.html');
-  assert.notEqual(candidateHash, baselineHash);
+  assert.notEqual(fileHash(candidateRoot, 'sw.js'), fileHash(baselineRoot, 'sw.js'), 'expected a different candidate worker');
   const host = createHost();
   await new Promise(resolve => host.server.listen(0, '127.0.0.1', resolve));
   const origin = 'http://127.0.0.1:' + host.server.address().port;
@@ -164,15 +197,15 @@ async function run() {
       await first.close();
       host.phase = 'offline';
       await context.setOffline(true);
-      await resumeOffline(context, gameURL, {hashes:[candidateHash], version:newRelease}, saved);
+      await resumeOffline(context, gameURL, {hashes:[candidateHash], version:newRelease}, saved, true);
       report.storage.afterResume = await usage();
       assert.ok(report.storage.afterResume > 0 && report.storage.afterResume <= quotaLimit);
       await context.close();
       return;
     }
-    await probe.evaluate(async () => {
-      window.registration = await navigator.serviceWorker.register('/nushi-tsuri/sw.js?v=252-85');
-    });
+    await probe.evaluate(async version => {
+      window.registration = await navigator.serviceWorker.register('/nushi-tsuri/sw.js?v=' + version);
+    }, oldRelease.slice(1));
     await probe.waitForFunction(() => registration.active?.state === 'activated', null, {timeout});
     const old = await context.newPage();
     const oldResponse = await old.goto(gameURL + 'index.html');
@@ -181,10 +214,14 @@ async function run() {
     assert.equal(await old.locator('#gameRelease').textContent(), oldRelease);
     const before = await old.evaluate(saveSnapshot);
     for (const slot of slots) assert.ok(Object.keys(before).some(key => key.endsWith('-slot' + slot.id)));
+    // The existing player visited one avatar, while the other avatar has never
+    // been requested. Cover both borrowing a cached image and installing a new one.
+    await checkMedia(old, priorMedia, baselineRoot);
     const cacheNames = await probe.evaluate(() => caches.keys());
-    const oldCache = cacheNames.find(name => name.endsWith('252-85'));
+    const oldCache = cacheNames.find(name => name.endsWith(oldRelease.slice(1)));
     assert.ok(oldCache);
-    assert.equal(await cachedEntry(probe, oldCache), baselineHash);
+    const cachedFile = hasPublishedMapRelease ? oldEntry : '';
+    assert.equal(await cachedEntry(probe, oldCache, cachedFile), baselineHash);
     report.storage.before = await usage();
     assert.ok(report.storage.before > 0 && report.storage.before < quotaLimit);
     if (scenario === 'quota') {
@@ -204,8 +241,8 @@ async function run() {
         timer = setTimeout(() => reject(Error('Old registration never requested the candidate worker')), 30_000);
       })]);
     } finally { clearTimeout(timer); }
-    // Exercise the published loader while v252-85 still controls navigation.
-    // Its network-first handler writes the network response into the old cache.
+    // Reopen under the previous worker during installation. The v252-85 worker
+    // writes online navigation responses back into its old cache.
     await old.close(); // release the single-tab save lock while the old worker is still active
     const secondTab = await context.newPage();
     await secondTab.goto(gameURL);
@@ -219,13 +256,12 @@ async function run() {
       success ? 'installed' : 'redundant', {timeout});
     report.storage.afterInstall = await usage();
     assert.deepEqual(await secondTab.evaluate(saveSnapshot), before);
-    assert.equal(await cachedEntry(probe, oldCache), baselineHash, 'the old worker must retain a usable offline entry');
+    assert.equal(await cachedEntry(probe, oldCache, cachedFile), baselineHash, 'the old worker must retain a usable offline entry');
     if (success) {
       assert.ok(await probe.evaluate(() => registration.waiting === window.installingCandidate));
       assert.ok(report.storage.afterInstall <= quotaLimit);
-    } else {
-      assert.deepEqual(await probe.evaluate(() => caches.keys()), cacheNames, 'failed update must remove only its partial cache');
-      if (scenario === 'corrupt') assert.ok(host.injectedCorruption, 'candidate requested the deliberately damaged file');
+    } else if (scenario === 'corrupt') {
+      assert.ok(host.injectedCorruption, 'candidate requested the deliberately damaged file');
     }
     await secondTab.close();
     if (success) {
@@ -234,7 +270,13 @@ async function run() {
     host.phase = 'offline';
     await context.setOffline(true);
     await resumeOffline(context, gameURL, success
-      ? {hashes:[candidateHash], version:newRelease} : {hashes:[baselineHash, guardedEntryHash], version:oldRelease}, before);
+      ? {hashes:[candidateHash], version:newRelease} : {hashes:[baselineHash, guardedEntryHash], version:oldRelease}, before, success);
+    if (!success) {
+      // An online navigation can trigger another real install immediately after
+      // the first rejection. Check cleanup after the offline restart has settled.
+      await probe.waitForFunction(() => !registration.installing && !registration.waiting, null, {timeout});
+      assert.deepEqual(await probe.evaluate(() => caches.keys()), cacheNames, 'failed update must remove only its partial cache');
+    }
     report.storage.afterResume = await usage();
     report.storage.added = report.storage.afterInstall - report.storage.before;
     await context.close();

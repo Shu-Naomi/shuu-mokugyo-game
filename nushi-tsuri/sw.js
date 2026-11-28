@@ -451,6 +451,16 @@ const CORE_ASSETS = [
 // The index records the exact CacheStorage location of each verified file.
 // Directory and query aliases can share bytes without copying the old cache.
 const INDEX_KEY = './__offline_release_index__';
+// These sprites are required to draw both saved avatars and their pets. Keep
+// this addition independent of the already installed v252-92 game index.
+const SPRITE_CACHE = CACHE_NAME + '-sprites-1';
+const SPRITE_DIGESTS = {
+  'assets/player-boy.png':'c436f30a96e216f3e355636617b0eef7c738653f1fa605f3ed429c64a365bc18',
+  'assets/player-girl.png':'450fc7433a5c8e908789375e02b93cf080e342d65767388045eca29604838762',
+  'assets/player-boy-walk-v35-final.png':'37ec5441ccaeea447c259913fd1969cffea20a744e9b83cc666916c77dc2648f',
+  'assets/player-girl-walk-v35-final.png':'d3c8110c79ee3800bfcbc545f2e81a7d6a40ba592709e745f0950bed23913aef',
+  'assets/pet-scenes-v19.svg':'65cd8c5c76d97a4c1fd6e186cb5a9418166df9c38fdf250757f2acd7cf579341',
+};
 const assetsByPath = new Map();
 const aliasPaths = new Map();
 const absolute = resource => new URL(resource, self.registration.scope).href;
@@ -460,6 +470,7 @@ for (const resource of new Set(CORE_ASSETS)) {
   aliasPaths.set(absolute(resource), file);
 }
 aliasPaths.set(absolute(self.SHU_VILLAGE_ENTRY), 'index.html');
+for (const file of Object.keys(SPRITE_DIGESTS)) aliasPaths.set(absolute(file), file);
 
 async function verified(response, digest) {
   if (!response || response.status !== 200) return false;
@@ -469,10 +480,10 @@ async function verified(response, digest) {
   return hex === digest;
 }
 
-async function previousFiles() {
+async function previousFiles(excludedCache) {
   const inventory = new Map();
   for (const name of (await caches.keys()).reverse()) {
-    if (name === CACHE_NAME || !/^nushi-tsuri-v\d/.test(name)) continue;
+    if (name === excludedCache || !/^nushi-tsuri-v\d/.test(name)) continue;
     const cache = await caches.open(name);
     for (const request of await cache.keys()) {
       const url = new URL(request.url);
@@ -484,8 +495,7 @@ async function previousFiles() {
   return inventory;
 }
 
-async function stageFile(file, resource, previous, cache) {
-  const digest = self.SHU_VILLAGE_DIGESTS[file];
+async function stageFile(file, resource, previous, cache, cacheName, digest) {
   if (!digest) throw Error('Unpinned offline file: ' + file);
   const address = absolute(file === 'index.html' ? self.SHU_VILLAGE_ENTRY : resource);
   // The v252-85 worker can rewrite its index.html at any moment. Our entry
@@ -499,34 +509,44 @@ async function stageFile(file, resource, previous, cache) {
   const response = await fetch(new Request(address, {cache:'no-store'}));
   if (!await verified(response, digest)) throw Error('Invalid offline file: ' + file);
   await cache.put(address, response);
-  return [CACHE_NAME, address];
+  return [cacheName, address];
 }
 
-let currentIndex;
+let currentIndex, spriteIndex;
 async function readIndex(cache) {
   const marker = await cache.match(absolute(INDEX_KEY));
   return marker ? marker.json() : null;
 }
+async function makeIndex(cache, name, resources, digests, build) {
+  const previous = await previousFiles(name);
+  const files = Object.create(null);
+  for (const [file, resource] of resources) {
+    files[file] = await stageFile(file, resource, previous, cache, name, digests[file]);
+  }
+  return {build, files};
+}
 async function installRelease() {
   const cache = await caches.open(CACHE_NAME);
   const ready = await readIndex(cache);
-  // Registering the same worker via an older script URL can trigger a second
-  // install. Never remove files belonging to an already committed release.
-  if (ready) {
-    if (ready.build !== self.SHU_VILLAGE_BUILD) throw Error('Release version is already in use');
-    currentIndex = ready;
-    return;
-  }
+  if (ready && ready.build !== self.SHU_VILLAGE_BUILD) throw Error('Release version is already in use');
+  let stagedSprites = false;
   try {
-    const previous = await previousFiles();
-    const files = Object.create(null);
-    for (const [file, resource] of assetsByPath) files[file] = await stageFile(file, resource, previous, cache);
-    const index = {build:self.SHU_VILLAGE_BUILD, files};
-    await cache.put(absolute(INDEX_KEY), new Response(JSON.stringify(index)));
-    currentIndex = index;
+    const core = ready || await makeIndex(cache, CACHE_NAME, assetsByPath, self.SHU_VILLAGE_DIGESTS, self.SHU_VILLAGE_BUILD);
+    const sprites = await caches.open(SPRITE_CACHE);
+    let supplement = await readIndex(sprites);
+    if (!supplement) {
+      stagedSprites = true;
+      const resources = Object.keys(SPRITE_DIGESTS).map(file => [file, './' + file]);
+      supplement = await makeIndex(sprites, SPRITE_CACHE, resources, SPRITE_DIGESTS, SPRITE_CACHE);
+      await sprites.put(absolute(INDEX_KEY), new Response(JSON.stringify(supplement)));
+    }
+    if (supplement.build !== SPRITE_CACHE) throw Error('Sprite cache version is already in use');
+    if (!ready) await cache.put(absolute(INDEX_KEY), new Response(JSON.stringify(core)));
+    currentIndex = core;
+    spriteIndex = supplement;
   } catch (error) {
-    // No other release references a candidate which has not committed its index.
-    await caches.delete(CACHE_NAME);
+    if (stagedSprites) await caches.delete(SPRITE_CACHE);
+    if (!ready) await caches.delete(CACHE_NAME);
     throw error;
   }
 }
@@ -535,16 +555,38 @@ self.addEventListener('install', event => event.waitUntil(installRelease()));
 self.addEventListener('activate', event => event.waitUntil(Promise.resolve()));
 
 async function getPinned(file) {
-  const cache = await caches.open(CACHE_NAME);
-  const index = currentIndex || await readIndex(cache);
-  if (!index || index.build !== self.SHU_VILLAGE_BUILD) return;
-  currentIndex = index;
+  const sprite = Object.hasOwn(SPRITE_DIGESTS, file);
+  const name = sprite ? SPRITE_CACHE : CACHE_NAME;
+  const cache = await caches.open(name);
+  const index = (sprite ? spriteIndex : currentIndex) || await readIndex(cache);
+  if (!index || index.build !== (sprite ? SPRITE_CACHE : self.SHU_VILLAGE_BUILD)) return;
+  if (sprite) spriteIndex = index;
+  else currentIndex = index;
   const pointer = index.files[file];
   if (!pointer) return;
-  const source = pointer[0] === CACHE_NAME ? cache : await caches.open(pointer[0]);
+  const source = pointer[0] === name ? cache : await caches.open(pointer[0]);
   return source.match(pointer[1]);
 }
 
+// Only same-scope game art and sounds may inherit an exact old request.
+// Never recover executable code, documents, partial media or error pages.
+function mediaType(request, url) {
+  if (request.mode === 'navigate' || !url.href.startsWith(absolute('assets/'))) return;
+  if (request.destination && !['image','audio','video'].includes(request.destination)) return;
+  if (/\.(png|jpe?g|webp|gif|svg|avif)$/i.test(url.pathname)) return 'image/';
+  if (/\.(mp3|ogg|wav|m4a)$/i.test(url.pathname)) return 'audio/';
+  if (/\.(mp4|webm)$/i.test(url.pathname)) return 'video/';
+}
+function usableMedia(response, type) {
+  return response?.status === 200 && response.headers.get('Content-Type')?.toLowerCase().startsWith(type);
+}
+async function offlineMedia(request, type) {
+  for (const name of (await caches.keys()).reverse()) {
+    if (!/^nushi-tsuri-v\d/.test(name)) continue;
+    const cached = await (await caches.open(name)).match(request);
+    if (usableMedia(cached, type)) return cached;
+  }
+}
 async function respond(event, file) {
   const request = event.request;
   if (file) {
@@ -552,20 +594,29 @@ async function respond(event, file) {
       const cached = await getPinned(file);
       if (cached) return cached;
     } catch (_) { /* Online recovery still checks the release digest. */ }
-    const resource = file === 'index.html' ? self.SHU_VILLAGE_ENTRY : assetsByPath.get(file);
+    const resource = file === 'index.html' ? self.SHU_VILLAGE_ENTRY : (assetsByPath.get(file) || './' + file);
     const fetched = await fetch(new Request(absolute(resource), {cache:'no-store'}));
-    return await verified(fetched, self.SHU_VILLAGE_DIGESTS[file]) ? fetched : Response.error();
+    return await verified(fetched, SPRITE_DIGESTS[file] || self.SHU_VILLAGE_DIGESTS[file]) ? fetched : Response.error();
   }
-  // Optional assets retain ordinary cache-first behavior, outside the
-  // verified index. A failed cache write cannot prevent successful playback.
+  const url = new URL(request.url);
+  const type = mediaType(request, url);
+  const versioned = /-v\d/i.test(url.pathname) || url.searchParams.has('v') || url.searchParams.has('sha256');
   let cache;
   try {
     cache = await caches.open(CACHE_NAME);
-    const cached = await cache.match(request);
-    if (cached) return cached;
+    if (!type || versioned) {
+      const cached = await cache.match(request);
+      if (cached && (!type || usableMedia(cached, type))) return cached;
+    }
   } catch (_) { /* CacheStorage may be unavailable. */ }
-  const response = await fetch(request);
-  if (cache && response.status === 200) {
+  let response;
+  try {
+    response = await fetch(request);
+  } catch (error) {
+    if (type) return await offlineMedia(request, type) || Response.error();
+    throw error;
+  }
+  if (cache && (type ? usableMedia(response, type) : response.status === 200)) {
     const copy = response.clone();
     event.waitUntil(cache.put(request, copy).catch(() => {}));
   }
