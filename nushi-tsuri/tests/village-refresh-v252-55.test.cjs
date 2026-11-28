@@ -22,10 +22,12 @@ test('the selected cohesive master and clean underlay remain the reviewed native
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
  // Current HUD/registration/cache coherence is guarded by release-version.test.cjs.
  // Keep the original village artwork modules pinned alongside the revised wetland geometry.
- for(const file of ['scene-layers.js','layered-scenery.js','field-guide.js','rural-canals-252-93.js','mountain-region.js','lake-intro.js']){
+ for(const file of ['scene-layers.js','layered-scenery.js','field-guide.js','mountain-region.js','lake-intro.js']){
   const url=file+'?v='+(file==='mountain-region.js'?'252-72':'252-55');
   assert.ok(html.includes(url),url);assert.ok(sw.includes(url),url);
  }
+ const ruralUrl='rural-canals-252-93.js?v=252-93';
+ assert.ok(html.includes(ruralUrl),ruralUrl);assert.ok(sw.includes(ruralUrl),ruralUrl);
  assert.ok(fs.readFileSync(path.join(root,'field-guide.js'),'utf8').includes(d.source),'guide uses the same village artwork');
  assert.equal(require('../lake-intro.js').art.village,d.source,'the opening village scene uses the same reviewed map');
 });
