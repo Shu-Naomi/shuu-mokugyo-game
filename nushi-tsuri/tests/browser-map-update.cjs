@@ -108,10 +108,13 @@ async function resumeOffline(context, url, expected, before) {
     await page.locator('#titleContinue').click();
     await page.locator('[data-save-slot="' + slot.id + '"]').click();
     await page.locator('#titleResume').click();
-    await page.waitForFunction(({id, money}) =>
-      document.getElementById('activeSaveSlot').textContent === 'セーブ' + id &&
-      Number(document.getElementById('money').textContent.replaceAll(',', '')) === money,
-      slot);
+    // Switching slots can reload the game before its HUD has been attached.
+    await page.waitForFunction(({id, money}) => {
+      const active = document.getElementById('activeSaveSlot');
+      const balance = document.getElementById('money');
+      return active?.textContent === 'セーブ' + id && balance &&
+        Number(balance.textContent.replaceAll(',', '')) === money;
+    }, slot);
     report.offlineSlots.push({...slot, release:expected.version, sha256:responseHash});
     await page.close();
   }
