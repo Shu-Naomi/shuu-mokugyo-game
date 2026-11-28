@@ -30,5 +30,10 @@ test('soft plastic favors bottom fish locally and the spoon retains its original
   assert.ok(weight('softWorm','bass','lake-deep') > weight('softWorm','bass','lake-shallow'));
   assert.ok(weight('softWorm','akahata','offshore-west-deep') > weight('softWorm','takabe','offshore-west-deep'));
   for (const [id, value] of Object.entries(fishing.spoon))
-    assert.equal(weight('silverSpoon',id,'lake-deep'),value || .1);
+    assert.equal(weight('silverSpoon',id,'lake-deep'),value);
+  assert.equal(weight('silverSpoon','unlisted-species','lake-deep'),.1);
+  for (const id of ['tenagaebi','zarigani']) {
+    assert.equal(weight('silverSpoon',id,'river-shallow'),0);
+    assert.equal(weight('softWorm',id,'river-shallow'),0);
+  }
 });
