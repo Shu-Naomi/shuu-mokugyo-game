@@ -33,7 +33,7 @@
   // along deep or rocky banks, while a spoon keeps its original strike weights.
   const bottomFish={bass:2.8,kokuchibasu:4,kijihata:4,akahata:3,magochi:3,donko:1.8,kajika:1.6,gigi:1.3,mahaze:1.4};
   function lureWeight(lureId,id,spotId){
-    if(id==='tenagaebi'||id==='zarigani')return 0;
+    if(spoon[id]===0)return 0;
     if(lureId!=='softWorm')return spoon[id]||.1;
     if(!bottomFish[id])return .12+(spoon[id]||.1)*.24;
     const nearCover=/-deep$|^offshore-west-|^coast-reef-|^mountain-highPond-/.test(spotId);
@@ -135,7 +135,7 @@
   Object.assign(fishStrength,{hiramasa:4,kanpachi:4.15,shimaaji:3.5,ishigakidai:3.8,akahata:2.25});
   Object.assign(spoon,{hiramasa:3.8,kanpachi:3.6,shimaaji:3.2,ishigakidai:.15,akahata:2.4});
   Object.assign(fishStrength,{tenagaebi:.55,zarigani:.68,aouo:3.15,sougyo:2.8,maanago:1.75,gonzui:.8,itou:3.25});
-  Object.assign(spoon,{aouo:.045,sougyo:.035,maanago:.45,gonzui:.25,itou:3.2});
+  Object.assign(spoon,{tenagaebi:0,zarigani:0,aouo:.045,sougyo:.035,maanago:.45,gonzui:.25,itou:3.2});
   Object.assign(fishStrength,{kijihata:1.95,umazurahagi:1.05,akaza:.65,kokuchibasu:1.9,juzukakehaze:.45});
   Object.assign(spoon,{kijihata:1.1,umazurahagi:.2,akaza:.18,kokuchibasu:1.45,juzukakehaze:.12});
   Object.assign(fishStrength,{laketrout:2.1,browntrout:2.4,takabe:1.05,kuromejina:2.7,houraihimeji:1.65});

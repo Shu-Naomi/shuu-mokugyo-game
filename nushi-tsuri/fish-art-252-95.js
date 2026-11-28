@@ -1,6 +1,6 @@
 (function(root,factory){
   const node=typeof module==='object'&&module.exports;
-  const api=factory(node?require('./fish-additions-252-95.js'):root.ShuFishAdditions,node?require('./fish-motion-252-94.js'):root.ShuFishMotion);
+  const api=factory(node?require('./fish-additions-252-95.js'):root.ShuFishAdditions,node?require('./fish-motion-252-95.js'):root.ShuFishMotion);
   if(typeof module==='object'&&module.exports)module.exports=api;
   else root.ShuFishArt=api;
 })(typeof globalThis!=='undefined'?globalThis:this,function(Additions,Motion){

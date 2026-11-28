@@ -211,7 +211,7 @@ const CORE_ASSETS = [
   "./assets/ui-paw-v252-28.svg",
   "./assets/ui-heart-v252-28.svg",
   "./aquarium-life-252-95.js?v=252-95",
-  "./fish-motion-252-94.js?v=252-94",
+  "./fish-motion-252-95.js?v=252-95",
   "./assets/audio/fish-feed-v183.wav",
   "./pet-life.css?v=252-84",
   "./rival-anglers.js?v=252-55",

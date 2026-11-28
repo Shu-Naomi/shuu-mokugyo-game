@@ -1,5 +1,5 @@
 /* Shared physical scale and deterministic swim/feeding poses; no save mutations. */
-(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations,node?require('./fish-motion-252-94.js'):root.ShuFishMotion);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M,Motion){
+(function(root,factory){const node=typeof module==='object'&&module.exports,api=factory(node?require('./pet-life.js'):root.ShuPetLife,node?require('./aquarium-mutations.js'):root.ShuAquariumMutations,node?require('./fish-motion-252-95.js'):root.ShuFishMotion);if(node)module.exports=api;else root.ShuAquariumLife=api;})(typeof globalThis!=='undefined'?globalThis:this,function(PetLife,M,Motion){
   'use strict';
   const clamp=(n,a,b)=>Math.max(a,Math.min(b,n));
   const smooth=p=>{p=clamp(p,0,1);return p*p*(3-2*p);};
