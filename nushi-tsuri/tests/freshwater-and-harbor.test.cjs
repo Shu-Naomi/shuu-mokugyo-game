@@ -15,7 +15,7 @@ test('each newcomer has one distinct local encounter, and Kamuruchi keeps its or
         water:petCatalog.find(f=>f.id===${key}).waterLabel, legendary:ShuRegional.legendary(${key}),
         spots:fishingSpots.filter(s=>s.weights[${key}]>0).map(s=>s.id), asset:ShuFishArt.species[${key}].asset})`);
       assert.equal(info.number,number);
-      assert.ok(info.name.includes(name));
+      assert.equal(info.name, name);
       assert.equal(info.water,water);
       assert.equal(info.legendary,false);
       assert.deepEqual(info.spots,[spot]);
