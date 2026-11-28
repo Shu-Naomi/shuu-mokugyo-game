@@ -1,9 +1,10 @@
-const path=require('node:path'),M=require('../fish-motion-252-94.js');
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
+const path=require('node:path'),M=currentScripts.load('fish-motion');
 const {runInNewContext}=require('node:vm'),fs=require('node:fs');
-const reference={ShuFishAdditions:require('../fish-additions-252-94.js'),ShuFishMotion:{
+const reference={ShuFishAdditions:currentScripts.load('fish-additions'),ShuFishMotion:{
  profile:id=>({...M.profile(id),amplitude:0,fin:0})
 }};
-runInNewContext(fs.readFileSync(path.join(__dirname,'../fish-art.js'),'utf8'),reference);
+runInNewContext(fs.readFileSync(path.join(__dirname,'..',currentScripts.file('fish-art')),'utf8'),reference);
 
 function projectedSilhouette(ctx,image,id,cells,frame,resolve){
  const A=reference.ShuFishArt,p=A.pose(id,cells,frame),target=p.target,heading=p.heading??0;

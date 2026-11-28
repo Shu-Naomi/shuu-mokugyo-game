@@ -1,3 +1,4 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 // Real generated production page + native Canvas, not a composited mock viewport.
 const fs=require('node:fs'),path=require('node:path'),http=require('node:http'),assert=require('node:assert/strict');
 const {createHash}=require('node:crypto'),{chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
@@ -46,7 +47,7 @@ const digest=b=>createHash('sha256').update(b).digest('hex');
     assert.deepEqual(errors,[]);results.push({place:place.id,day,night,untouched,errors});
    }finally{await context.close();}
   }
-  const sourceFiles=['index.html','outdoor-light.js','mountain-region.js','coast-voyage.js','offshore-island.js','rural-canals-252-93.js',R.data.shadowRepair.asset];
+  const sourceFiles=['index.html','outdoor-light.js','mountain-region.js','coast-voyage.js','offshore-island.js',currentScripts.file('rural-canals'),R.data.shadowRepair.asset];
   const sourceDigests=Object.fromEntries(sourceFiles.map(name=>[name,digest(fs.readFileSync(path.join(root,name)))]));
   fs.writeFileSync(path.join(dir,'results.json'),JSON.stringify({sourceDigests,viewport:{width:844,height:390,dpr:2},results},null,2));console.log('OUTDOOR_NIGHT_BROWSER_PASS',results.length,'maps');
  }finally{await browser.close();await new Promise(r=>server.close(r));}

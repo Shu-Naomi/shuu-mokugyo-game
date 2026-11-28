@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
-const M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fishing-duel-252-94.js'),A=require('./fixtures/current-fish-art.cjs');
+const M=require('../mountain-region.js'),L=require('../world-life.js'),F=currentScripts.load('fishing-duel'),A=require('./fixtures/current-fish-art.cjs');
 const {routeTo}=require('./wetland-v227.cjs');
 
 test('pond movement follows independently sampled dirt pixels on both shores and rejects the former outer forest ring',()=>{

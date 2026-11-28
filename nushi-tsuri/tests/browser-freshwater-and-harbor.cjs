@@ -8,12 +8,18 @@ const {server} = require('./browser-reference-village-evidence.cjs');
 const enter = require('./browser-start-adventure.cjs');
 const {assertRelease, matchesSourceHtml} = require('./browser-release.cjs');
 const {seed,saveKey} = require('./game-harness.cjs');
-const trips = require('./fixtures/freshwater-and-harbor.cjs');
-const out = path.resolve(process.env.FISH_EVIDENCE_DIR || 'freshwater-and-harbor-evidence');
+const suite = process.argv[2] || 'freshwater-and-harbor';
+assert.ok(['freshwater-and-harbor','crustaceans'].includes(suite), 'unknown browser suite');
+const crustaceans = suite === 'crustaceans';
+const trips = crustaceans ? require('./fixtures/canal-crustaceans.cjs') : require('./fixtures/freshwater-and-harbor.cjs');
+const out = path.resolve(process.env.FISH_EVIDENCE_DIR || (crustaceans ? 'canal-crustaceans-evidence' : 'freshwater-and-harbor-evidence'));
 const viewport = {width:844,height:390};
 const {layout} = require('../village-save-migration.js');
 // The published village uses the reference painting's shore geometry.
-const villageBanks = {aouo:{x:70,y:48,direction:'up'}, maanago:{x:134,y:102,direction:'right'}};
+const villageBanks = {
+  aouo:{x:70,y:48,direction:'up'}, maanago:{x:134,y:102,direction:'right'},
+  tenagaebi:{x:96,y:90,direction:'right'}
+};
 
 async function painted(page, selector, id) {
   await page.waitForFunction(({selector,id}) => {
@@ -117,6 +123,10 @@ async function capture(browser,url,trip,mode) {
     },trip);
     await tap('#pull'); await page.evaluate(()=>battleTick());
     for (let i=0;i<60 && await page.evaluate(()=>battle.phase)==='cast-flight';i++) await page.clock.runFor(40);
+    if (crustaceans) {
+      await page.evaluate(() => syncBitePhase(battle.nibbleAt));
+      assert.match(await page.locator('#battleMsg').innerText(),/ちょんちょん/u);
+    }
     const hooked=await page.evaluate(()=>{
       let rng=301;Math.random=()=>((rng=Math.imul(rng,1664525)+1013904223>>>0)/4294967296);
       battle.specimen=rollFishSpecimen(battle.f,()=>.5);battle.specimenVisualScale=fishVisualScale(battle.specimen);
@@ -124,6 +134,11 @@ async function capture(browser,url,trip,mode) {
       return [battle.f.id,battle.spot];
     });
     assert.deepEqual(hooked,[trip.id,trip.spot]);
+    if (crustaceans) {
+      assert.match(await page.locator('#battleMsg').innerText(), trip.id === 'tenagaebi' ? /横へ走った/u : /しっかり掴んだ/u);
+      assert.equal(await page.locator('#castSurface').evaluate(el => el.classList.contains('shrimp-side-bite')), trip.id === 'tenagaebi');
+      await shot('bite');
+    }
     await tap('#pull'); await page.clock.runFor(240);
     await painted(page,'#battleFish canvas',trip.id); await shot('fight');
     const seconds=await reel(page,context,mode);

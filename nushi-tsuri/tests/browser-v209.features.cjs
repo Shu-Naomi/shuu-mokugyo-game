@@ -1,5 +1,6 @@
 // Exercise the new artwork and care/recipe controls in the real browser.
 const roster = require('./fixtures/fish-roster-counts.cjs');
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const assert=require('node:assert/strict'),{chromium}=require('playwright');
 const {seed,saveKey}=require('./game-harness.cjs');
 const {pressProduct}=require('./compact-ui-helpers.cjs');
@@ -13,7 +14,10 @@ module.exports=async function features(url,mobile){
     cookingIngredients:{shirogisuFillet:1,ayuFillet:1,madaiFillet:1},items:{wildGreens:2},baits:{shell:1},
     dogTreats:{samBiscuit:3},ownedDogToys:['rubberBall']}});
   const page=await context.newPage();page.on('pageerror',e=>errors.push(e.message));
-  page.on('response',r=>{if(r.status()>=400&&/\/assets\/fish-.*\.(png|webp)|fish-art\.js/.test(r.url()))failedAssets.push(r.url());});
+  page.on('response',r=>{
+    const path = new URL(r.url()).pathname;
+    if(r.status()>=400 && (/\/assets\/fish-.*\.(png|webp)/.test(path) || path.endsWith('/'+currentScripts.file('fish-art'))))failedAssets.push(r.url());
+  });
   const press=selector=>pressProduct(page,selector,mobile);
   const settle=()=>page.waitForFunction(()=>!playerHomeState.transitioning);
   const careIdle=()=>page.waitForFunction(()=>!dogCareIsBusy());

@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('./fixtures/current-fish-art.cjs'),F=currentScripts.load('fish-additions');
 const cases=[['shimaaji','east','shrimp','large',50,58],['ishigakidai','west','shell','large',50,59],['akahata','cove','smallShrimp','medium',20,60]];
 const copy=x=>JSON.parse(JSON.stringify(x));
 const {runFight}=require('./nushi-playability-v228.cjs');

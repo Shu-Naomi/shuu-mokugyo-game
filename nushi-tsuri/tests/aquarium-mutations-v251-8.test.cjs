@@ -1,6 +1,7 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),crypto=require('node:crypto'),fs=require('node:fs'),vm=require('node:vm');
-const M=require('../aquarium-mutations.js'),P=require('../pet-life.js'),A=require('../aquarium-life-252-94.js');
+const M=require('../aquarium-mutations.js'),P=require('../pet-life.js'),A=currentScripts.load('aquarium-life');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const copy=v=>JSON.parse(JSON.stringify(v)),dogs=['shuu','riku','grey'];
 const catalog=[{id:'funa',name:'フナ',min:600,start:1200,max:6000,price:300,waterLabel:'淡水'},{id:'koi',name:'コイ',min:800,start:1600,max:10000,price:500,waterLabel:'淡水'}];

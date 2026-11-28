@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js'),D=require('../fishing-duel-252-94.js'),L=require('../aquarium-life-252-94.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('./fixtures/current-fish-art.cjs'),F=currentScripts.load('fish-additions'),D=currentScripts.load('fishing-duel'),L=currentScripts.load('aquarium-life');
 const cases=[['bluegill','lake','worm','small',20,47],['aburahaya','river','river','small',20,48],['magochi','sea','liveMinnow','large',80,49]];
 for(const mode of ['gauge','nushi'])test('three new species encounter, hook and land once with real tackle, record, tank, growth and saved restoration: '+mode,()=>{
  for(const [id,zone,bait,hook,distance,number]of cases){

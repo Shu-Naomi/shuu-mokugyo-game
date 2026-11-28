@@ -1,3 +1,4 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
@@ -121,7 +122,7 @@ test('contest reception offers three courses and all kinds; actual entry, prizes
 test('the offline cache includes every new pet module and matches the versions used by the page and scene worker',()=>{
   const root=path.join(__dirname,'..'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');
   const offline=require('./release-assets.cjs').releaseAssets();
-  for(const file of ['pet-life.js','pet-life-ui.js','compact-ui.js','compact-ui.css','aquarium-life-252-94.js','pet-life.css','scene-layers.js','layered-scenery.js']){
+  for(const file of ['pet-life.js','pet-life-ui.js','compact-ui.js','compact-ui.css',currentScripts.file('aquarium-life'),'pet-life.css','scene-layers.js','layered-scenery.js']){
     assert.ok(fs.existsSync(path.join(root,file)));
     const asset=offline.assertPageAsset(file);
     const version=new URL(asset,'https://game.test/').searchParams.get('v');

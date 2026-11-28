@@ -1,7 +1,8 @@
+const currentScripts = require('./fixtures/current-game-scripts.cjs');
 const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),{boot,seed,read,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-routes-v220.cjs'),{routeTo}=require('./wetland-v227.cjs');
-const I=require('../offshore-island.js'),M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fish-additions-252-94.js'),A=require('./fixtures/current-fish-art.cjs'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
+const I=require('../offshore-island.js'),M=require('../mountain-region.js'),L=require('../world-life.js'),F=currentScripts.load('fish-additions'),A=require('./fixtures/current-fish-art.cjs'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
 const {fishCases,pondLoop}=require('./living-waters-v238.cjs'),root=path.resolve(__dirname,'..');
 const progress=w=>read(w,'({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,time:s.gameMinutes,equipment:s.equipment})');
 function touch(w,d){const b=w.document.querySelector('[data-move="'+d+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();}

@@ -28,8 +28,8 @@ const oldReleaseEntry = 'release-' + oldRelease.slice(1) + '.html';
 const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, oldReleaseEntry));
 const oldEntry = hasPublishedMapRelease ? oldReleaseEntry : 'index.html';
 const newRelease = documentVersion(candidateRoot);
-assert.equal(newRelease, 'v252-94');
-const damagedFile = 'assets/fish-sougyo.png';
+assert.equal(newRelease, 'v252-95');
+const damagedFile = 'assets/fish-tenagaebi.png';
 const media = [
   {file:'assets/player-boy.png', width:540, height:430},
   {file:'assets/player-boy-walk-v35-final.png', width:540, height:860},
@@ -40,9 +40,13 @@ const media = [
   {file:'assets/fish-sougyo.png', width:1064, height:220},
   {file:'assets/fish-maanago.png', width:1064, height:164},
   {file:'assets/fish-gonzui.png', width:1064, height:222},
-  {file:'assets/fish-itou.png', width:1064, height:214}
+  {file:'assets/fish-itou.png', width:1064, height:214},
+  {file:'assets/fish-tenagaebi.png', width:400, height:112},
+  {file:'assets/fish-zarigani.png', width:400, height:112}
 ];
-const priorMedia = media.slice(0, oldRelease === 'v252-93' ? 5 : 3);
+const priorMediaCount = {'v252-85':3, 'v252-92':3, 'v252-93':5, 'v252-94':10};
+assert.ok(priorMediaCount[oldRelease], 'Unrecognized baseline ' + oldRelease);
+const priorMedia = media.slice(0, priorMediaCount[oldRelease]);
 const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
 const fileHash = (directory, file) => sha256(fs.readFileSync(path.join(directory, file)));
 const mime = {html:'text/html; charset=utf-8', js:'text/javascript', css:'text/css', json:'application/json', png:'image/png', jpg:'image/jpeg', webp:'image/webp', svg:'image/svg+xml', mp3:'audio/mpeg', wav:'audio/wav'};
