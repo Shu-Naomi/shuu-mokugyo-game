@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {createCanvas}=require('@napi-rs/canvas');
-const F=require('../fishing-duel.js'),Camera=require('../underwater-camera.js');
+const F=require('../fishing-duel-252-94.js'),Camera=require('../underwater-camera.js');
 const {boot,seed,read}=require('./game-harness.cjs');
 
 test('short and long species budgets both retrieve a meaningful distance without press-to-refill',()=>{

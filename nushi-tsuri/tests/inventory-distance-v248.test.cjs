@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const F=require('../fishing-duel.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
+const F=require('../fishing-duel-252-94.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
 const gear={power:38,strength:4.8,control:1.95};
 for(const id of ['moroko','bass','buri','starNushi'])test('a rightward run takes real line past the cast point, including after a timely release: '+id,()=>{
  for(const released of [false,true]){

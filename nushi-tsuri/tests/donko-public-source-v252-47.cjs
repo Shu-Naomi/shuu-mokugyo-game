@@ -3,7 +3,7 @@
 const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), assert = require('node:assert/strict');
 const root = path.resolve(__dirname, '..');
 const base = process.env.DONKO_PUBLIC_BASE || 'https://shu-naomi.github.io/shuu-mokugyo-game/nushi-tsuri/';
-const files = ['index.html','fish-additions.js','fish-art.js','fish-motion.js','fishing-duel.js','aquarium-life.js','sw.js',require('../fish-art.js').species.donko.asset];
+const files = ['index.html','fish-additions-252-94.js','fish-art.js','fish-motion-252-94.js','fishing-duel-252-94.js','aquarium-life-252-94.js','sw.js',require('./fixtures/current-fish-art.cjs').species.donko.asset];
 const sha = bytes => crypto.createHash('sha256').update(bytes).digest('hex');
 async function main() {
   const expected = new Map(files.map(file => [file, sha(fs.readFileSync(path.join(root, file)))]));

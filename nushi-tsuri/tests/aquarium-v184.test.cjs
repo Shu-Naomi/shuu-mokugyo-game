@@ -1,11 +1,12 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const path=require('node:path');
 const fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
 const {boot,seed,read}=require('./game-harness.cjs');
-const A=require('../aquarium-life.js');
-const Art=require('../fish-art.js');
+const A=require('../aquarium-life-252-94.js');
+const Art=require('./fixtures/current-fish-art.cjs');
 const specimen={uid:'fish1',species:'moroko',length:1800};
 const catalog=[{id:'moroko',max:2500}];
 const poseAt=(t,feed=null,reduced=false)=>A.layout([specimen],catalog,360,205,t,()=>256/110,feed,reduced).poses[0];
@@ -54,7 +55,7 @@ test('all species remain visibly thick in all seven painted headings with offlin
  const app=boot();let records;
  try{records=read(app.window,`fish.map(f=>({id:f.id,asset:fishTurnAssets[f.id]}))`);}
  finally{app.dispose();}
- assert.equal(records.length,72);
+ assert.equal(records.length,roster.total);
  const sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8'),images=new Map();
  for(const fish of records){
   assert.ok(sw.includes('./'+fish.asset),fish.id+' cached turn asset');

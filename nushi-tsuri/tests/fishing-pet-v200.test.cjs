@@ -1,6 +1,6 @@
 const {test}=require('node:test');
 const assert=require('node:assert/strict');
-const F=require('../fishing-duel.js'),P=require('../pet-life.js');
+const F=require('../fishing-duel-252-94.js'),P=require('../pet-life.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const catalog=[{id:'moroko',name:'ホンモロコ',min:300,start:750,max:1200,price:300,waterLabel:'淡水'},
   {id:'aji',name:'アジ',min:500,start:1200,max:4000,price:300,waterLabel:'海水'}];

@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path'),fs=require('node:fs');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),{boot,seed,read,saveKey}=require('./game-harness.cjs'),{findRoute}=require('./water-routes-v220.cjs'),{routeTo}=require('./wetland-v227.cjs');
-const I=require('../offshore-island.js'),M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fish-additions.js'),A=require('../fish-art.js'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
+const I=require('../offshore-island.js'),M=require('../mountain-region.js'),L=require('../world-life.js'),F=require('../fish-additions-252-94.js'),A=require('./fixtures/current-fish-art.cjs'),Scenery=require('../layered-scenery.js'),Cast=require('../pixel-cast.js');
 const {fishCases,pondLoop}=require('./living-waters-v238.cjs'),root=path.resolve(__dirname,'..');
 const progress=w=>read(w,'({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,time:s.gameMinutes,equipment:s.equipment})');
 function touch(w,d){const b=w.document.querySelector('[data-move="'+d+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();}
@@ -15,7 +16,7 @@ test('six ordinary additions have normal tackle odds, one bait per cast, art, re
    assert.ok(roll>=0,id+' natural odds');const fillet=read(w,'s.cookingIngredients.fishFillet');
    w.eval('Math.random=()=>'+roll+';commitCastResources();resolveSurfaceCast('+distance+');clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish()');
    assert.equal(read(w,'battle.f.id'),id);assert.equal(read(w,'battle.spot'),spot);assert.equal(read(w,'s.baits.'+bait),19);assert.equal(w.document.querySelector('#battleFish canvas').dataset.artSpecies,id);
-   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),72);
+   w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'fish.length'),roster.total);
    assert.equal(read(w,"petCatalog.find(f=>f.id==='"+id+"').waterLabel"),['mahaze','sayori','masaba'].includes(id)?'海水':'淡水');assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),40+i);assert.equal(read(w,'fishSizeProfiles.'+id+'.length'),6);
    w.eval("hideCatchCard();drawAquariumSprite($('#homeAquariumFish'),'"+id+"',4,{spriteMode:'turn',yaw:Math.PI/2,turnFrame:2});save()");assert.equal(w.document.querySelector('#homeAquariumFish canvas').dataset.artSpecies,id);
    saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);

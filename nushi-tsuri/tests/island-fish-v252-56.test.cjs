@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('../fish-art.js'),F=require('../fish-additions.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),I=require('../offshore-island.js'),Life=require('../world-life.js'),Slots=require('../save-slots.js'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js');
 const cases=[['takabe','east','shrimp','small',50,62],['kuromejina','west','shrimp','medium',50,63],['houraihimeji','cove','smallShrimp','medium',80,64]];
 const copy=x=>JSON.parse(JSON.stringify(x));
 const {runFight}=require('./nushi-playability-v228.cjs');
@@ -12,7 +13,7 @@ for(const mode of ['gauge','nushi'])test('island fish use their real shore, norm
    for(let n=0;n<1000;n++){w.eval(`Math.random=()=>${n/1000}`);if(read(w,`pick(${distance},'${spot}')?.id`)===id){roll=n/1000;break;}}
    assert.notEqual(roll,undefined,id+' ordinary odds');const fillets=read(w,'s.cookingIngredients.fishFillet');w.eval(`Math.random=()=>${roll};commitCastResources();resolveSurfaceCast(${distance});clearInterval(timer);startFight();clearInterval(timer);finishHookReveal();renderBattleFish()`);
    assert.equal(read(w,'battle.spot'),spot);assert.equal(read(w,'battle.f.id'),id);assert.equal(read(w,'battle.fightMode'),mode);assert.equal(read(w,`s.baits.${bait}`),9);assert.equal(w.document.querySelector('#battleFish canvas').dataset.artSpecies,id);
-   w.eval('caught();caught()');assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillets+1);assert.equal(read(w,`s.caught.${id}`),1);assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);assert.equal(read(w,`s.catchMemories.${id}.first.fightMode`),mode);assert.equal(read(w,`fishEncyclopediaData.${id}.number`),number);assert.equal(read(w,'fish.length'),72);
+   w.eval('caught();caught()');assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillets+1);assert.equal(read(w,`s.caught.${id}`),1);assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);assert.equal(read(w,`s.catchMemories.${id}.first.fightMode`),mode);assert.equal(read(w,`fishEncyclopediaData.${id}.number`),number);assert.equal(read(w,'fish.length'),roster.total);
    w.eval(`hideCatchCard();var acquired251=ShuPetLife.acquire(s,'${id}',petCatalog,0);`);assert.equal(read(w,'acquired251.ok'),true);assert.equal(read(w,`petCatalog.find(f=>f.id==='${id}').waterLabel`),'海水');const length=read(w,'acquired251.fish.length');w.eval('ShuPetLife.care(s,acquired251.fish.uid,"feed",0,petCatalog);ShuPetLife.sync(s,petCatalog,1);save()');assert.ok(read(w,'acquired251.fish.length')>length);saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(a.errors,[]);
   }finally{a.dispose();}
   const b=boot(saved);try{assert.equal(read(b.window,`s.caught.${id}`),1);assert.ok(read(b.window,`s.petLife.fish.some(f=>f.species==='${id}')`));assert.equal(read(b.window,'s.mapRegion'),I.id);assert.deepEqual(b.errors,[]);}finally{b.dispose();}
@@ -35,8 +36,8 @@ for(const [id]of cases)for(const mode of ['gauge','nushi'])test('a giant island 
  console.log('V252_56_FIGHT '+JSON.stringify(result));assert.deepEqual(result.errors,[]);assert.equal(result.start.id,id);assert.equal(result.phase,'landing');assert.ok(result.seconds<180);assert.ok(result.maxTension<100);
 });
 
-test('island species stay exclusive alongside the 32 freshwater ordinary species',()=>{
- const app=boot(seed());try{const w=app.window;assert.equal(read(w,'fish.length'),72);assert.equal(read(w,'petCatalog.filter(f=>!f.legendary).length'),66);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='淡水').length"),36);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='海水').length"),30);
+test('island species stay exclusive alongside the freshwater ordinary species',()=>{
+ const app=boot(seed());try{const w=app.window;assert.equal(read(w,'fish.length'),roster.total);assert.equal(read(w,'petCatalog.filter(f=>!f.legendary).length'),roster.ordinary);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='淡水').length"),roster.ordinaryFresh);assert.equal(read(w,"petCatalog.filter(f=>!f.legendary&&f.waterLabel==='海水').length"),roster.ordinarySea);
  for(const [id]of cases){assert.equal(read(w,`fish.filter(f=>f.id==='${id}').length`),1);assert.equal(read(w,`petCatalog.filter(f=>f.id==='${id}').length`),1);for(const [spot,weights]of Object.entries(F.pools))if(weights[id])assert.ok(spot.startsWith('offshore-'),id+' '+spot);}
  assert.deepEqual(app.errors,[]);}finally{app.dispose();}
 });
@@ -55,10 +56,10 @@ for(const [id,rod]of [['takabe','youngBamboo'],['kuromejina','shoreReed'],['hour
  const result=runFight({id,mode,rod,tier:.5,delayMs:600,rngSeed:301,gaugeThreshold:45,gaugeResumeThreshold:20});console.log('ISLAND_RECOMMENDED_ROD '+JSON.stringify(result));assert.deepEqual(result.errors,[]);assert.equal(result.start.id,id);assert.equal(result.phase,'landing');assert.ok(result.seconds<180);assert.ok(result.maxTension<100);
 });
 test('new island profiles have distinct strength, motion and bottom habitat',()=>{
- const D=require('../fishing-duel.js'),L=require('../aquarium-life.js');for(const [id]of cases){assert.ok(D.fishStrength[id]>0,id);assert.ok(D.endurance[id]>0,id);const pose=L.layout([{uid:id,species:id,length:1000}],[{id,max:4000}],720,350,1,()=>2).poses[0];assert.equal(pose.bottomDweller,id==='houraihimeji',id+' swimming layer');}assert.ok(D.fishStrength.kuromejina>D.fishStrength.takabe);
+ const D=require('../fishing-duel-252-94.js'),L=require('../aquarium-life-252-94.js');for(const [id]of cases){assert.ok(D.fishStrength[id]>0,id);assert.ok(D.endurance[id]>0,id);const pose=L.layout([{uid:id,species:id,length:1000}],[{id,max:4000}],720,350,1,()=>2).poses[0];assert.equal(pose.bottomDweller,id==='houraihimeji',id+' swimming layer');}assert.ok(D.fishStrength.kuromejina>D.fishStrength.takabe);
 });
 test('new island release caches current runtime modules and every original atlas',()=>{
- const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of ['fish-additions.js','fish-art.js','fishing-duel.js','fish-motion.js','aquarium-life.js','offshore-island.js']){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}for(const [id]of cases)assert.ok(sw.includes(A.species[id].asset));
+ const html=fs.readFileSync(path.join(__dirname,'../index.html'),'utf8'),sw=fs.readFileSync(path.join(__dirname,'../sw.js'),'utf8');for(const file of ['fish-additions-252-94.js','fish-art.js','fishing-duel-252-94.js','fish-motion-252-94.js','aquarium-life-252-94.js','offshore-island.js']){const url=html.match(new RegExp(file.replaceAll('.','\\.')+'\\?v=[0-9-]+'))?.[0];assert.ok(url,file);assert.ok(sw.includes(url),url);}for(const [id]of cases)assert.ok(sw.includes(A.species[id].asset));
 });
 
 test('home aquarium keeps the goatfish on the bottom and both other newcomers in midwater',()=>{

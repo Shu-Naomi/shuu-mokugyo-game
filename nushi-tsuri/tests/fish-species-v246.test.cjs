@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('../fish-art.js'),F=require('../fish-additions.js'),D=require('../fishing-duel.js'),L=require('../aquarium-life.js');
+const {boot,seed,read,saveKey}=require('./game-harness.cjs'),A=require('./fixtures/current-fish-art.cjs'),F=require('../fish-additions-252-94.js'),D=require('../fishing-duel-252-94.js'),L=require('../aquarium-life-252-94.js');
 const cases=[['bluegill','lake','worm','small',20,47],['aburahaya','river','river','small',20,48],['magochi','sea','liveMinnow','large',80,49]];
 for(const mode of ['gauge','nushi'])test('three new species encounter, hook and land once with real tackle, record, tank, growth and saved restoration: '+mode,()=>{
  for(const [id,zone,bait,hook,distance,number]of cases){
@@ -17,7 +18,7 @@ for(const mode of ['gauge','nushi'])test('three new species encounter, hook and 
    w.eval('caught();caught()');assert.equal(read(w,'s.caught.'+id),1);assert.equal(read(w,'s.cookingIngredients.fishFillet'),fillet+1);
    assert.equal(read(w,'s.fishCatchRecords.'+id+'.last.spotId'),spot);assert.equal(read(w,'s.catchMemories.'+id+'.first.fightMode'),mode);
    assert.equal(read(w,'s.catchMemories.'+id+'.first.hundredths'),specimen.hundredths);
-   assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),number);assert.equal(read(w,'fish.length'),72);
+   assert.equal(read(w,'fishEncyclopediaData.'+id+'.number'),number);assert.equal(read(w,'fish.length'),roster.total);
    assert.equal(read(w,`petCatalog.find(f=>f.id==='${id}').waterLabel`),zone==='sea'?'海水':'淡水');
    w.eval(`hideCatchCard();var newFish246=ShuPetLife.acquire(s,'${id}',petCatalog,0);`);assert.equal(read(w,'newFish246.ok'),true);
    const length=read(w,'newFish246.fish.length');w.eval('ShuPetLife.buyFood(s,1);var fed246=ShuPetLife.care(s,newFish246.fish.uid,"feed",0,petCatalog);ShuPetLife.sync(s,petCatalog,1);save()');assert.equal(read(w,'fed246.ok'),true);assert.ok(read(w,'newFish246.fish.length')>length);assert.equal(read(w,'s.caught.'+id),1);

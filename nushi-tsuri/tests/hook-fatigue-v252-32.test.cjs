@@ -1,5 +1,5 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
-const F=require('../fishing-duel.js'),{boot,seed,read}=require('./game-harness.cjs');
+const F=require('../fishing-duel-252-94.js'),{boot,seed,read}=require('./game-harness.cjs');
 const rod={power:38,strength:4.8,control:1.95};
 const rest={id:'rest',calm:true},run={id:'rush',calm:false,speedX:.6};
 const fish=(id='bass')=>({fightMode:'nushi',f:{id},mood:rest,ten:18,retrieval:.3,reeling:true});

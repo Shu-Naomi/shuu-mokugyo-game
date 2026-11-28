@@ -1,0 +1,62 @@
+name: Freshwater and harbor fish
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - 'nushi-tsuri/*-252-94.js'
+      - 'nushi-tsuri/assets/fish-aouo.png'
+      - 'nushi-tsuri/assets/fish-sougyo.png'
+      - 'nushi-tsuri/assets/fish-maanago.png'
+      - 'nushi-tsuri/assets/fish-gonzui.png'
+      - 'nushi-tsuri/assets/fish-itou.png'
+      - 'nushi-tsuri/tests/*freshwater-and-harbor*'
+      - 'nushi-tsuri/tests/fixtures/freshwater-and-harbor.cjs'
+      - '.github/workflows/freshwater-and-harbor.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: freshwater-and-harbor-${{ github.event.pull_request.head.ref || github.ref_name }}
+  cancel-in-progress: true
+jobs:
+  five-species:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    container:
+      image: mcr.microsoft.com/playwright:v1.63.0-noble
+      options: --shm-size=1gb
+    defaults:
+      run:
+        working-directory: nushi-tsuri/tests
+        shell: bash
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+      - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm install --no-save --no-package-lock --no-audit --no-fund playwright@1.63.0
+      - run: bash install-ci-fonts.sh
+      - name: Check actual catches in both fishing modes and old records
+        run: node --test freshwater-and-harbor.test.cjs
+      - name: Play and photograph five new fish on a landscape phone
+        run: node browser-freshwater-and-harbor.cjs
+      - name: Check out the previous public release
+        if: github.head_ref == 'feature/freshwater-harbor-v252-94'
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 2ddd11610133d7903f840ee6f86ad0f6e23798e1
+          path: .previous-fish-release
+          sparse-checkout: nushi-tsuri
+          persist-credentials: false
+      - name: Reopen both v252-93 saves offline after updating
+        if: github.head_ref == 'feature/freshwater-harbor-v252-94'
+        env:
+          MAP_UPDATE_REPORT: freshwater-and-harbor-evidence/update-from-v252-93.json
+        run: node browser-map-update.cjs "$GITHUB_WORKSPACE/.previous-fish-release/nushi-tsuri" success
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9
+        if: always()
+        with:
+          name: freshwater-and-harbor-fish
+          path: nushi-tsuri/tests/freshwater-and-harbor-evidence/
+          retention-days: 14

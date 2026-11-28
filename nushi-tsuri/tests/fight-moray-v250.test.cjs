@@ -1,6 +1,7 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),{createHash}=require('node:crypto');
-const F=require('../fishing-duel.js'),A=require('../fish-art.js'),{boot,seed,read}=require('./game-harness.cjs');
+const F=require('../fishing-duel-252-94.js'),A=require('./fixtures/current-fish-art.cjs'),{boot,seed,read}=require('./game-harness.cjs');
 const {runFight}=require('./nushi-playability-v228.cjs');
 const gear={power:38,strength:4.8,control:1.95};
 function running(id='bass'){return {fightMode:'nushi',f:{id},mood:{id:'run',calm:false,speedX:3.5},moodTick:0,startMeters:20,retrieval:.4,ten:18,reeling:false,nushiYielded:true};}
@@ -66,7 +67,7 @@ test('moray waves travel along the body while the face stays fixed and each proj
 test('the new pelagic fish retain separate species, encounter rhythms and drawings from Buri growth',()=>{
  const a=boot(seed()),w=a.window;
  try{
-  assert.equal(read(w,'fish.length'),72);assert.deepEqual(read(w,"fish.filter(f=>['buri','hiramasa','kanpachi'].includes(f.id)).map(f=>f.name)"),['ブリ','ヒラマサ','カンパチ']);
+  assert.equal(read(w,'fish.length'),roster.total);assert.deepEqual(read(w,"fish.filter(f=>['buri','hiramasa','kanpachi'].includes(f.id)).map(f=>f.name)"),['ブリ','ヒラマサ','カンパチ']);
   for(const id of ['hiramasa','kanpachi']){assert.equal(read(w,`petCatalog.find(f=>f.id==='${id}').waterLabel`),'海水');assert.equal(read(w,`ShuPetLife.growthStage({species:'${id}',length:9000})`),null);assert.notEqual(A.species[id].asset,A.species.buri.asset);}
   assert.notDeepEqual(F.rhythm('hiramasa'),F.rhythm('kanpachi'));assert.deepEqual(a.errors,[]);
  }finally{a.dispose();}

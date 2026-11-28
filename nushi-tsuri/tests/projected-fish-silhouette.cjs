@@ -1,6 +1,6 @@
-const path=require('node:path'),M=require('../fish-motion.js');
+const path=require('node:path'),M=require('../fish-motion-252-94.js');
 const {runInNewContext}=require('node:vm'),fs=require('node:fs');
-const reference={ShuFishAdditions:require('../fish-additions.js'),ShuFishMotion:{
+const reference={ShuFishAdditions:require('../fish-additions-252-94.js'),ShuFishMotion:{
  profile:id=>({...M.profile(id),amplitude:0,fin:0})
 }};
 runInNewContext(fs.readFileSync(path.join(__dirname,'../fish-art.js'),'utf8'),reference);

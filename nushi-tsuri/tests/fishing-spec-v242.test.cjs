@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const {boot,seed,read}=require('./game-harness.cjs');
-const F=require('../fishing-duel.js');
+const F=require('../fishing-duel-252-94.js');
 
 function fishing(mode='nushi',method='bait'){
  const app=boot({...seed(),hp:100,soundEnabled:false,fightMode:mode,

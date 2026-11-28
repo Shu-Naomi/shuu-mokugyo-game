@@ -1,6 +1,6 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),path=require('node:path');
 const {createCanvas,loadImage}=require('@napi-rs/canvas');
-const Art=require('../fish-art.js'),{boot,read}=require('./game-harness.cjs');
+const Art=require('./fixtures/current-fish-art.cjs'),{boot,read}=require('./game-harness.cjs');
 
 test('every fish has distinct complete intermediate turn silhouettes, including the front and reversed side',async()=>{
   const images=new Map(),canvas=createCanvas(448,224),ctx=canvas.getContext('2d');

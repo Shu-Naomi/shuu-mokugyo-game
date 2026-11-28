@@ -12,11 +12,11 @@ async function waitForPublication(){
     try{
       const response=await fetch(publicUrl+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(15000)});
       if(response.ok&&digest(Buffer.from(await response.arrayBuffer()))===expected){
-        for(const file of ['catch-memories.js','catch-memories.css','sw.js','compact-ui.js','compact-ui.css','cast-tackle.css','fishing-duel.css','scene-layers.js','layered-scenery.js','scenery-worker.js','assets/mountain-cast-v219.png','player-options.js','player-options.css','tackle-balance.js','item-categories.css','fish-art.js','fishing-duel.js','pet-life.js','pet-life-ui.js','pet-life.css','assets/aquarium-isaki-adult-v230.png','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','coast-voyage.js','regional-nushi.js','nushi-atlas.js','aquarium-life.js',
+        for(const file of ['catch-memories.js','catch-memories.css','sw.js','compact-ui.js','compact-ui.css','cast-tackle.css','fishing-duel.css','scene-layers.js','layered-scenery.js','scenery-worker.js','assets/mountain-cast-v219.png','player-options.js','player-options.css','tackle-balance.js','item-categories.css','fish-art.js','fishing-duel-252-94.js','pet-life.js','pet-life-ui.js','pet-life.css','assets/aquarium-isaki-adult-v230.png','assets/aquarium-interior-v214.webp','save-slots.js','save-slots.css','lake-story.js','lake-story.css','lake-intro.js','lake-intro.css','music-tracks.js','mountain-region.js','coast-voyage.js','regional-nushi.js','nushi-atlas.js','aquarium-life-252-94.js',
           'assets/coast-tarai-v224.png','assets/coast-rowboat-v226.png',
           'assets/wetland-world-v227.png','assets/wetland-cast-v227.png','assets/pass-pond-v202.png','assets/pass-marsh-v202.png','assets/cave-lake-v202.png',
           'assets/stream-nushi-v202.png','assets/coast-nushi-v202.png','assets/cave-nushi-v202.png','assets/star-nushi-v202.png',
-          ...new Set(Object.keys(require('../fish-art.js').species).flatMap(id=>require('../fish-art.js').assets(id))),
+          ...new Set(Object.keys(require('./fixtures/current-fish-art.cjs').species).flatMap(id=>require('./fixtures/current-fish-art.cjs').assets(id))),
           ...Object.values(require('../music-tracks.js')).map(track=>track.src)]){
           const asset=await fetch(publicUrl+file+'?release='+process.env.GITHUB_SHA,{cache:'no-store',signal:AbortSignal.timeout(20000)});
           assert.equal(asset.status,200,file);
@@ -50,7 +50,7 @@ async function smoke(url,screenshots=true){
   const page=await context.newPage(),errors=[],failedAssets=[];
   page.on('pageerror',error=>errors.push(error.message));
   page.on('response',response=>{
-    if(response.status()>=400&&/v202\.png|(?:regional-nushi|nushi-atlas|mountain-region|aquarium-life)\.js/.test(response.url()))
+    if(response.status()>=400&&/v202\.png|(?:regional-nushi|nushi-atlas|mountain-region|aquarium-life-252-94)\.js/.test(response.url()))
       failedAssets.push(response.status()+' '+response.url());
   });
   // Route from game coordinates: CSS percentages round on serialization,

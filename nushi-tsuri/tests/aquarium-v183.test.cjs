@@ -23,7 +23,7 @@ const {test}=require('node:test');
 const assert=require('node:assert/strict');
 const fs=require('node:fs'),path=require('node:path');
 const {execFileSync}=require('node:child_process');
-const P=require('../pet-life.js'),A=require('../aquarium-life.js'),Music=require('../music-tracks.js');
+const P=require('../pet-life.js'),A=require('../aquarium-life-252-94.js'),Music=require('../music-tracks.js');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const catalog=[{id:'moroko',name:'モロコ',start:750,min:100,max:1799,price:300,waterLabel:'淡水'},
  {id:'koi',name:'コイ',start:2500,min:500,max:9999,price:800,waterLabel:'淡水'},
@@ -164,6 +164,6 @@ test('four new seasonal loops and pet sounds decode, avoid clipping and ship wit
   assert.ok(peak>5000&&peak<24000);assert.equal(data.readInt16LE(44),0);assert.equal(data.readInt16LE(data.length-2),0);
   assert.ok(assets.includes('./'+file));assert.ok(html.includes(file));
  }
- pinnedPageAsset(html,assets,'aquarium-life.js');
+ pinnedPageAsset(html,assets,'aquarium-life-252-94.js');
  assert.ok(html.includes('sample.preservesPitch = true'));
 });

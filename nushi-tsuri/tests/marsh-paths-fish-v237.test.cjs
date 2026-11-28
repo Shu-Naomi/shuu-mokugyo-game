@@ -1,3 +1,4 @@
+const roster = require('./fixtures/fish-roster-counts.cjs');
 const {test}=require('node:test'),assert=require('node:assert/strict');
 const M=require('../mountain-region.js'),{boot,seed,read,saveKey}=require('./game-harness.cjs');
 const {routeTo}=require('./wetland-v227.cjs'),{findRoute}=require('./water-routes-v220.cjs');
@@ -51,7 +52,7 @@ test('five marsh species have normal tackle odds and catch records that survive 
       w.eval('caught();caught()');assert.equal(read(w,`s.caught.${id}`),1);
       assert.equal(read(w,`s.fishCatchRecords.${id}.last.spotId`),spot);
       if(id!=='dojo')assert.match(read(w,`fishEncyclopediaData.${id}.locations`),/峠の沼/);
-      assert.equal(read(w,'fish.length'),72);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
+      assert.equal(read(w,'fish.length'),roster.total);w.eval('hideCatchCard();save()');saved=JSON.parse(w.localStorage.getItem(saveKey));assert.deepEqual(app.errors,[]);
     }finally{app.dispose();}
     const restored=boot(saved);try{assert.equal(read(restored.window,`s.caught.${id}`),1);assert.match(read(restored.window,`s.fishCatchRecords.${id}.last.spotId`),/^mountain-highMarsh-/);assert.deepEqual(restored.errors,[]);}finally{restored.dispose();}
   }
