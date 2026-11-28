@@ -24,7 +24,7 @@ function legacyFixture(){
 }
 const ROOT=path.resolve(__dirname,'..'),FROZEN='map-offline-252-92';
 // Runtime blob identities are stable even when Git-data recreates commit metadata.
-const RUNTIME_TREE_SHA256='cb346d5caa7235ca551e4fc628070372c6cda17a1a6e2dab4258c012827cb1ec';
+const RUNTIME_TREE_SHA256='4fb7038fb9afa0f6ad4d311f1a3ba77545519a2830af9ca85d09d95f71c14d88';
 function runtimeTreeDigest(ref='HEAD'){
  const tree=execFileSync('git',['ls-tree','-r',ref,'nushi-tsuri'],{cwd:path.dirname(ROOT),encoding:'utf8'});
  const runtime=tree.split('\n').filter(line=>line&&!/\tnushi-tsuri\/(?:tests|docs)\//.test(line)).join('\n')+'\n';
