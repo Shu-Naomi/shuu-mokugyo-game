@@ -24,28 +24,28 @@ jobs:
       - run: npm install --no-save --no-package-lock playwright@1.63.0
       - run: npx playwright install --with-deps chromium
       - run: bash install-ci-fonts.sh
-      - run: node --test rural-canals.test.cjs mountain-coast-v201.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
+      - run: node --test rural-canals.test.cjs rural-bridge-junction.test.cjs mountain-coast-v201.test.cjs mountain-paths-v236.test.cjs release-version.test.cjs
       - run: node browser-rural-canals.cjs
         env:
           RURAL_EVIDENCE_DIR: rural-evidence
       - name: Check out the shipped v252-85 browser client
-        if: github.event.pull_request.number == 374 || github.head_ref == 'fix/offline-map-media'
+        if: github.event.pull_request.number == 374 || github.head_ref == 'fix/rural-bridge-junction-v252-93'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
           ref: 12df756d184120a59d4d6c78d39356d0a0612e73
           path: .previous-map-release
           sparse-checkout: nushi-tsuri
           persist-credentials: false
-      - name: Check out the first shipped v252-92 worker
-        if: github.head_ref == 'fix/offline-map-media'
+      - name: Check out the shipped v252-92 worker
+        if: github.head_ref == 'fix/rural-bridge-junction-v252-93'
         uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
         with:
-          ref: d7698aba144e9cae4953bb4fdf1b02f88e3ac4a8
+          ref: 12cf8855c00da8859ffc2399214545f0a7b1cee5
           path: .first-map-release
           sparse-checkout: nushi-tsuri
           persist-credentials: false
-      - name: Verify v252-92 installation, upgrade, and failure recovery
-        if: github.event.pull_request.number == 374 || github.head_ref == 'fix/offline-map-media'
+      - name: Verify v252-93 installation, upgrade, and failure recovery
+        if: github.event.pull_request.number == 374 || github.head_ref == 'fix/rural-bridge-junction-v252-93'
         run: |
           mkdir -p rural-evidence
           failed=0
