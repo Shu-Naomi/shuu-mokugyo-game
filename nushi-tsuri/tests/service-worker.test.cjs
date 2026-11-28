@@ -3,9 +3,20 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
+const { webcrypto, createHash } = require("node:crypto");
 const path = require("node:path");
 const vm = require("node:vm");
 const source = fs.readFileSync(path.join(__dirname, "../sw.js"), "utf8");
+const scope = "https://game.test/nushi-tsuri/";
+
+// Keep the real worker, URL inventory and WebCrypto verification. Give each
+// physical file a small, unique body so the cache double need not hold all art.
+function assetPath(resource) {
+  const pathname = new URL(resource.url ?? resource, scope).pathname.slice("/nushi-tsuri/".length);
+  return !pathname || /^release-[0-9-]+\.html$/.test(pathname) ? "index.html" : pathname;
+}
+const bodyFor = resource => "fixture bytes for " + assetPath(resource);
+const assetResponse = resource => new Response(bodyFor(resource));
 
 function bootWorker({ workerSource = source, stores = new Map() } = {}) {
   const location = new URL("https://game.test/nushi-tsuri/sw.js");
@@ -14,49 +25,37 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
     network: async () => { throw new TypeError("Offline"); },
     failOpen: false, failWrite: false, claimed: false, skippedWaiting: false,
   };
-  const key = (request) => new URL(typeof request === "string" ? request : request.url, location).href;
+  const key = (request) => new URL(request.url ?? request, location).href;
   function entries(name) {
     if (!stores.has(name)) stores.set(name, new Map());
     return stores.get(name);
   }
   const context = vm.createContext({
-    URL, Response,
+    URL, Request, Response, Headers, crypto: webcrypto,
     self: {
-      location, registration: { scope: "https://game.test/nushi-tsuri/" }, addEventListener: (name, handler) => { listeners[name] = handler; },
+      location, crypto: webcrypto, registration: { scope: "https://game.test/nushi-tsuri/" }, addEventListener: (name, handler) => { listeners[name] = handler; },
       skipWaiting: async () => { state.skippedWaiting = true; }, clients: { claim: async () => { state.claimed = true; } },
     },
     caches: {
+      has: async name => stores.has(name),
       keys: async () => [...stores.keys()], delete: async (name) => { deletions.push(name); return stores.delete(name); },
       open: async (name) => {
         if (state.failOpen) throw new Error("Cache storage unavailable");
         entries(name);
         return {
-          addAll: async (resources) => {
-            // Cache.addAll rejects failed responses and commits the batch only
-            // after every fetch succeeds. This is a double, not browser proof.
-            const batch = await Promise.all(resources.map(async (resource) => {
-              const request = { url: key(resource), method: "GET" };
-              requests.push({ request, install: true });
-              const response = await state.network(request);
-              if (!response.ok || response.status === 206) throw new TypeError("Precache request failed");
-              return [key(resource), response.clone()];
-            }));
-            if (state.failWrite) throw new Error("Cache quota exceeded");
-            for (const [url, response] of batch) {
-              writes.push(url);
-              entries(name).set(url, response);
-            }
-          },
           match: async (request) => entries(name).get(key(request))?.clone(),
+          keys: async () => [...entries(name).keys()].map(url => new Request(url)),
+          delete: async request => entries(name).delete(key(request)),
           put: async (request, response) => {
-            if (state.failWrite) throw new Error("Cache quota exceeded");
+            if (state.failWrite === true || state.failWrite === assetPath(request)) throw new Error("Cache quota exceeded");
             writes.push(key(request));
             entries(name).set(key(request), response.clone());
           },
         };
       },
     },
-    fetch: async (request, options) => {
+    fetch: async (resource, options) => {
+      const request = resource.url ? resource : new Request(key(resource), options);
       requests.push({ request, options });
       return state.network(request, options);
     },
@@ -65,6 +64,13 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
     for (const url of urls) {
       assert.match(url, /^\.\/village-precache-[0-9-]+\.js$/);
       vm.runInContext(fs.readFileSync(path.join(__dirname, "..", url), "utf8"), context);
+      if (context.self.SHU_VILLAGE_DIGESTS) {
+        context.self.SHU_VILLAGE_DIGESTS = Object.fromEntries(
+          Object.keys(context.self.SHU_VILLAGE_DIGESTS).map(file => [
+            file, createHash("sha256").update(bodyFor(file)).digest("hex"),
+          ]),
+        );
+      }
     }
   };
   vm.runInContext(workerSource, context);
@@ -81,7 +87,7 @@ function bootWorker({ workerSource = source, stores = new Map() } = {}) {
     },
     activate: async () => {
       const pending = [];
-      listeners.activate({ waitUntil: (promise) => pending.push(promise) });
+      listeners.activate?.({ waitUntil: (promise) => pending.push(promise) });
       await Promise.all(pending);
     },
     fetch: async (resource, overrides = {}) => {
@@ -111,53 +117,107 @@ test("installation precaches all assets without taking over old tabs or deleting
   const started = new Promise(resolve => { startedCss = resolve; });
   const pendingCss = new Promise(resolve => { releaseCss = resolve; });
   app.state.network = async request => {
-    if (request.url.endsWith(css.slice(2))) { startedCss(); await pendingCss; }
-    return new Response(request.url.endsWith(css.slice(2)) ? "corrected CSS" : "core asset");
+    if (assetPath(request) === "compact-ui.css") { startedCss(); await pendingCss; }
+    return assetResponse(request);
   };
   const installing = app.install();
-  await started;
+  await Promise.race([started, installing.then(() => { throw new Error("installer never requested its stylesheet"); })]);
   assert.equal(app.state.skippedWaiting, false, "cannot activate an incomplete precache");
   assert.equal(app.stores.has(previous), true, "previous release survives while installing");
   releaseCss();
   await installing;
-  assert.equal(app.requests.length, new Set(app.coreAssets).size);
-  assert.equal(new Set(app.requests.map(({request}) => request.url)).size, new Set(app.coreAssets).size);
+  const fetchedFiles = app.requests.map(({request}) => assetPath(request));
+  assert.deepEqual(new Set(fetchedFiles), new Set(app.coreAssets.map(assetPath)));
+  assert.equal(fetchedFiles.length, new Set(fetchedFiles).size, "aliases share one network download");
   assert.equal(app.state.skippedWaiting, false);
   assert.equal(app.state.claimed, false);
-  assert.equal(await app.cached(css).text(), "corrected CSS");
   assert.equal(app.cached("./compact-ui.css?v=251-5"), undefined);
   await app.activate();
   assert.equal(app.stores.has(previous), true);
   assert.equal(app.stores.has("another-game-v1"), true);
   assert.equal(app.state.claimed, false);
-  assert.deepEqual(app.deletions, []);
+  assert.ok(app.deletions.every(name => name === app.name));
   app.state.network = async () => { throw new TypeError("Offline"); };
   const requests = app.requests.length;
-  assert.equal(await (await app.fetch(css)).text(), "corrected CSS");
+  assert.equal(await (await app.fetch(css)).text(), bodyFor(css));
   assert.equal(app.requests.length, requests, "corrected stylesheet is available offline");
 });
 
 test("failed precache cannot skip waiting or delete the previous working release", async () => {
-  for (const failure of ["network", "http", "failOpen", "failWrite"]) {
+  for (const failure of ["network", "http", "corrupt", "partial", "failOpen", "failWrite"]) {
     const app = bootWorker(), previous = "nushi-tsuri-v252-island-fish-252-56";
     app.seed(previous, "./compact-ui.css?v=251-5", "stale but working CSS");
     app.seed("another-game-v1", "./keep", "unrelated cache");
-    app.state[failure] = true;
+    if (failure === "failOpen") app.state.failOpen = true;
+    if (failure === "failWrite") app.state.failWrite = "compact-ui.css";
     app.state.network = async request => {
-      if (request.url.includes("/compact-ui.css?")) {
+      if (assetPath(request) === "compact-ui.css") {
         if (failure === "network") throw new TypeError("Offline");
         if (failure === "http") return new Response("unavailable", { status: 503 });
+        if (failure === "partial") return new Response("partial", { status: 206 });
+        if (failure === "corrupt") return new Response("wrong bytes");
       }
-      return new Response("core asset");
+      return assetResponse(request);
     };
     await assert.rejects(app.install(), undefined, failure);
     assert.equal(app.state.skippedWaiting, false, failure);
     assert.equal(app.state.claimed, false, failure);
     assert.equal(app.stores.has(previous), true, failure);
     assert.equal(app.stores.has("another-game-v1"), true, failure);
-    assert.equal(app.writes.length, 0, failure + ": no partial precache batch");
-    assert.deepEqual(app.deletions, [], failure + ": no cache deletion attempts");
+    assert.ok(!app.stores.get(app.name)?.size, failure + ": no partially installed release survives");
+    assert.ok(app.deletions.every(name => name === app.name), failure + ": only candidate data may be discarded");
+    assert.equal(await [...app.stores.get(previous).values()][0].clone().text(), "stale but working CSS");
   }
+});
+
+test("a restarted worker serves unchanged earlier bytes offline once and repairs stale files on update", async () => {
+  const stores = new Map(), app = bootWorker({ stores });
+  const baseline = "nushi-tsuri-v252-shiokakure-display-252-85";
+  const fish = "./assets/fish-aji-v68.png", map = "./assets/marsh-bridge-north.webp";
+  const css = app.coreAssets.find(url => url.startsWith("./compact-ui.css?"));
+  const unrelatedOnly = "./assets/fish-buri-v248.png";
+  app.seed(baseline, fish, bodyFor(fish));
+  app.seed(baseline, "./compact-ui.css?v=older", bodyFor(css));
+  app.seed(baseline, map, "stale map at the same URL");
+  app.seed(baseline, "./index.html", "v252-85 game");
+  app.seed("another-game-v1", unrelatedOnly, bodyFor(unrelatedOnly));
+  app.state.network = async request => assetResponse(request);
+  await app.install();
+  const requested = new Set(app.requests.map(({request}) => assetPath(request)));
+  assert.equal(requested.has(assetPath(fish)), false, "identical sprite needs no download");
+  assert.equal(requested.has(assetPath(css)), false, "identical CSS can reuse its old query key");
+  assert.ok(requested.has(assetPath(map)), "same URL with stale bytes must be replaced");
+  assert.ok(requested.has(assetPath(unrelatedOnly)), "never depend on an unrelated app's cache");
+  assert.equal(app.cached(fish), undefined, "unchanged art is not duplicated in the new release");
+  const restarted = bootWorker({ stores });
+  await restarted.install();
+  assert.equal(restarted.writes.length, 0, "reinstalling a committed release does not rewrite it");
+  await restarted.activate();
+  for (const url of [fish, css, map, unrelatedOnly]) {
+    assert.equal(await (await restarted.fetch(url)).text(), bodyFor(url));
+  }
+  assert.equal(await (await restarted.fetch("./?offline", { mode: "navigate" })).text(), bodyFor("./index.html"));
+  assert.equal(restarted.requests.length, 0, "offline lookups use the committed cache mapping");
+  const previousCache = stores.get(baseline);
+  assert.equal(await previousCache.get(new URL(map, scope).href).clone().text(), "stale map at the same URL");
+  assert.equal(await previousCache.get(new URL("./index.html", scope).href).clone().text(), "v252-85 game");
+});
+
+test("retry after a partial update retains the old release and commits only verified files", async () => {
+  const stores = new Map(), app = bootWorker({ stores });
+  const baseline = "nushi-tsuri-v252-shiokakure-display-252-85";
+  const changed = "./assets/marsh-bridge-north.webp";
+  app.seed(baseline, "./index.html", "playable old release");
+  app.state.network = async request => assetPath(request) === assetPath(changed)
+    ? new Response("wrong image", { status: 200 }) : assetResponse(request);
+  await assert.rejects(app.install());
+  assert.ok(!stores.get(app.name)?.size);
+  const retry = bootWorker({ stores });
+  retry.state.network = async request => assetResponse(request);
+  await retry.install();
+  retry.state.network = async () => { throw new TypeError("Offline"); };
+  assert.equal(await (await retry.fetch(changed)).text(), bodyFor(changed));
+  assert.equal(await stores.get(baseline).get(new URL("./index.html", scope).href).clone().text(), "playable old release");
 });
 
 test("activation preserves all old caches while resource lookup stays isolated", async () => {
@@ -177,12 +237,17 @@ test("activation preserves all old caches while resource lookup stays isolated",
 
 test("a late old-worker response stays isolated while its original cache remains intact", async () => {
   const stores = new Map(), current = bootWorker({ stores });
-  const previousName = "nushi-tsuri-v252-island-fish-252-56", oldCss = "./compact-ui.css?v=251-5";
+  const oldCss = "./compact-ui.css?v=251-5";
   const newCss = current.coreAssets.find(url => url.startsWith("./compact-ui.css?"));
-  const previous = bootWorker({ stores, workerSource: source.replace(current.name, previousName) });
+  const previous = bootWorker({
+    stores,
+    workerSource: fs.readFileSync(path.join(__dirname, "fixtures/prior-sw-252-65.js"), "utf8"),
+  });
   previous.seed(previous.name, oldCss, "old CSS");
   previous.seed(previous.name, "./retirement-sentinel", "must survive");
-  current.seed(current.name, newCss, "new CSS");
+  current.state.network = async request => assetResponse(request);
+  await current.install();
+  current.state.network = async () => { throw new TypeError("Offline"); };
   let started, finish;
   const networkStarted = new Promise(resolve => { started = resolve; });
   const responseReady = new Promise(resolve => { finish = resolve; });
@@ -190,32 +255,30 @@ test("a late old-worker response stays isolated while its original cache remains
   const inFlight = previous.fetch("./late-request.png");
   await networkStarted;
   await current.activate();
-  assert.deepEqual(current.deletions, [], "activation never deletes any cache");
+  assert.ok(current.deletions.every(name => name === current.name), "other caches survive activation");
   assert.equal(current.state.claimed, false);
   assert.equal(stores.has(previous.name), true);
   finish();
   assert.equal(await (await inFlight).text(), "late old-worker response");
   assert.equal(await previous.cached(oldCss).text(), "old CSS");
   assert.equal(await previous.cached("./retirement-sentinel").text(), "must survive");
-  assert.equal(await (await current.fetch(newCss)).text(), "new CSS");
+  assert.equal(await (await current.fetch(newCss)).text(), bodyFor(newCss));
   assert.equal((await current.fetch("./late-request.png")).type, "error", "new worker never reads old-worker writes");
   assert.equal((await current.fetch(oldCss)).type, "error", "new worker never reads preserved old CSS");
 });
 
-test("navigation stores a good page and recovers it offline or on server failure", async () => {
+test("navigation keeps the installed release while the server changes or goes offline", async () => {
   const app = bootWorker();
-  app.state.network = async () => new Response("game page");
-  assert.equal(await (await app.fetch("./", { mode: "navigate" })).text(), "game page");
-  assert.equal(app.requests[0].options.cache, "no-store");
-  assert.equal(await app.cached("./index.html").text(), "game page");
-  app.state.network = async () => new Response("server error", { status: 503 });
-  assert.equal(await (await app.fetch("./", { mode: "navigate" })).text(), "game page");
+  app.state.network = async request => assetResponse(request);
+  await app.install();
+  const writes = app.writes.length;
+  for (const status of [200, 404, 503]) {
+    app.state.network = async () => new Response("different page", { status });
+    assert.equal(await (await app.fetch("./", {mode: "navigate"})).text(), bodyFor("./index.html"));
+  }
   app.state.network = async () => { throw new TypeError("Offline"); };
-  assert.equal(await (await app.fetch("./index.html", { mode: "navigate" })).text(), "game page");
-  app.state.network = async () => new Response("not found", { status: 404 });
-  assert.equal((await app.fetch("./index.html", { mode: "navigate" })).status, 404);
-  assert.equal(await app.cached("./index.html").text(), "game page");
-  assert.equal(app.writes.length, 1, "errors never replace the saved page");
+  assert.equal(await (await app.fetch("./index.html", {mode: "navigate"})).text(), bodyFor("./index.html"));
+  assert.equal(app.writes.length, writes, "server or error pages never replace the installed page");
   assert.equal((await bootWorker().fetch("./", { mode: "navigate" })).type, "error");
 });
 
@@ -239,34 +302,45 @@ test("offline assets never receive HTML; cached assets work and partial/error re
   assert.equal(app.writes.length, 1);
 });
 
+test("an uncached pinned asset requires the release bytes even for online recovery", async () => {
+  const app = bootWorker();
+  const fish = "./assets/fish-aji-v68.png";
+  app.state.network = async () => new Response("incorrect online bytes");
+  assert.equal((await app.fetch(fish)).type, "error");
+  app.state.network = async request => assetResponse(request);
+  assert.equal(await (await app.fetch(fish)).text(), bodyFor(fish));
+});
+
 test("cache failures cannot discard successful network responses or reject worker lifetime promises", async () => {
   for (const failure of ["failOpen", "failWrite"]) {
     const app = bootWorker();
     app.state[failure] = true;
-    app.state.network = async () => new Response("network success");
+    app.state.network = async request => assetResponse(request);
     for (const resource of ["./index.html", "./assets/fish.png"])
-      assert.equal(await (await app.fetch(resource)).text(), "network success", `${failure}: ${resource}`);
+      assert.equal(await (await app.fetch(resource)).text(), bodyFor(resource), `${failure}: ${resource}`);
     assert.equal(app.writes.length, 0);
   }
 });
 
-test("POST and cross-origin requests pass through without cache interception", async () => {
+test("POST, cross-origin and out-of-scope requests pass through without cache interception", async () => {
   const app = bootWorker();
   assert.equal(await app.fetch("./index.html", { method: "POST" }), undefined);
   assert.equal(await app.fetch("https://other.test/index.html", { mode: "navigate" }), undefined);
+  assert.equal(await app.fetch("https://game.test/nushi-tsuri-other/index.html"), undefined);
   assert.equal(app.requests.length, 0);
   assert.equal(app.writes.length, 0);
 });
 
 test("noncanonical navigations never overwrite or receive the canonical offline fallback", async () => {
   const app = bootWorker();
-  app.seed(app.name, "./index.html", "canonical game");
+  app.state.network = async request => assetResponse(request);
+  await app.install();
   app.state.network = async () => new Response("other page");
   for (const url of ["./village-release-rehearsal.html", "./nested/index.html", "./not-found"]) {
     assert.equal(await (await app.fetch(url, { mode: "navigate" })).text(), "other page");
-    assert.equal(await app.cached("./index.html").text(), "canonical game");
+    assert.equal(await (await app.fetch("./", {mode: "navigate"})).text(), bodyFor("./index.html"));
   }
   app.state.network = async () => { throw new TypeError("Offline"); };
   assert.equal((await app.fetch("./uncached-page", { mode: "navigate" })).type, "error");
-  assert.equal(await (await app.fetch("./?v=252-67", { mode: "navigate" })).text(), "canonical game");
+  assert.equal(await (await app.fetch("./?v=252-67", { mode: "navigate" })).text(), bodyFor("./index.html"));
 });

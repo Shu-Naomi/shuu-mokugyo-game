@@ -75,7 +75,7 @@ for(const cover of ['options','modal'])for(const hidden of [false,true])test(`co
   const OriginalImage=w.Image;
   w.Image=function(){
    const image=w.document.createElement('img');
-   Object.defineProperties(image,{complete:{get:()=>ready},naturalWidth:{get:()=>ready?320:0},naturalHeight:{get:()=>ready?160:0},src:{get(){return this._src;},set(value){this._src=value;pending=this;}}});
+   Object.defineProperties(image,{complete:{get:()=>ready},naturalWidth:{get:()=>ready?320:0},naturalHeight:{get:()=>ready?160:0},src:{get(){return this._src;},set(value){this._src=value;if(value===R.asset)pending=this;}}});
    image.decode=()=>Promise.resolve();return image;
   };
   walk(w,'villageGate');w.document.querySelector('#action').click();assert.equal(read(w,'s.mapRegion'),R.id);assert.ok(pending?.src.includes(R.asset));w.Image=OriginalImage;

@@ -28,6 +28,24 @@ jobs:
       - run: node browser-rural-canals.cjs
         env:
           RURAL_EVIDENCE_DIR: rural-evidence
+      - name: Check out the shipped v252-85 browser client
+        if: github.event.pull_request.number == 374
+        uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803
+        with:
+          ref: 12df756d184120a59d4d6c78d39356d0a0612e73
+          path: .previous-map-release
+          sparse-checkout: nushi-tsuri
+          persist-credentials: false
+      - name: Verify v252-92 installation, upgrade, and failure recovery
+        if: github.event.pull_request.number == 374
+        run: |
+          mkdir -p rural-evidence
+          failed=0
+          for scenario in fresh success corrupt quota; do
+            MAP_UPDATE_REPORT="rural-evidence/update-$scenario.json" \
+              node browser-map-update.cjs "$GITHUB_WORKSPACE/.previous-map-release/nushi-tsuri" "$scenario" || failed=1
+          done
+          exit "$failed"
       - name: Verify deployed sources and public gameplay
         if: github.event_name == 'push' && github.ref == 'refs/heads/main'
         run: |

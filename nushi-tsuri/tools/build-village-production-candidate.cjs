@@ -4,6 +4,7 @@
 const fs = require('node:fs');
 const path = require('node:path');
 const crypto = require('node:crypto');
+const writeGeneratedFile = require('./write-generated-file.cjs');
 const hash = bytes => crypto.createHash('sha256').update(bytes).digest();
 function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputPath = 'village-production-candidate.html', production = false, mapSource = 'assets/village-reference-pilot.png'} = {}) {
   root = fs.realpathSync(path.resolve(root));
@@ -65,7 +66,7 @@ function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputP
   const image = fs.readFileSync(inside(mapSource, true));
   const mapSHA256 = hash(image).toString('hex');
   const mapURL = 'assets/village-reference-' + mapSHA256.slice(0, 16) + '.png';
-  const manifest = {expectedUrls: [...new Set(expectedUrls)], mapURL, mapSHA256, ...(production ? {workerURL: './sw.js?v=252-85'} : {})};
+  const manifest = {expectedUrls: [...new Set(expectedUrls)], mapURL, mapSHA256, ...(production ? {workerURL: './sw.js?v=252-92'} : {})};
   const config = JSON.stringify(manifest).replace(/</g, '\\u003c');
   const bootstrap = `<script id="villageCandidateBootstrap">\n(function(){\n  const config = ${config};\n  config.expectedUrls = config.expectedUrls.map(url => new URL(url, location.href).href);\n  config.mapURL = new URL(config.mapURL, location.href).href;\n  config.loaded = new Set(); config.failed = [];\n  globalThis.ShuVillageReleaseCandidate = config;\n  function blocked() {\n    if (!config.failed.length || !document.body || document.getElementById('villageCandidateFailure')) return;\n    const notice = document.createElement('div');\n    notice.id = 'villageCandidateFailure'; notice.setAttribute('role', 'alert');\n    notice.style.cssText = 'position:fixed;inset:0;z-index:2147483647;background:#10202b;color:white;padding:24px;display:grid;place-content:center;font:18px sans-serif';\n    notice.textContent = '起動を止めました。必要なファイルを確認できませんでした。保存データは変更していません。接続を確認して再読み込みしてください。';\n    document.body.appendChild(notice);\n  }\n  document.addEventListener('DOMContentLoaded', blocked, {once:true});\n  function record(event) {\n    const target = event.target;\n    if (!target || !/^(SCRIPT|LINK)$/.test(target.tagName)) return;\n    const url = target.src || target.href;\n    if (!config.expectedUrls.includes(url)) return;\n    if (event.type === 'load') config.loaded.add(url);\n    else { if (!config.failed.includes(url)) config.failed.push(url); blocked(); }\n  }\n  document.addEventListener('load', record, true);\n  document.addEventListener('error', record, true);\n})();\n</script>`;
   if (!/<head\b[^>]*>/i.test(html)) throw Error('Head missing');
@@ -74,8 +75,8 @@ function withMetadata({root = path.resolve(__dirname, '..'), sourcePath, outputP
   html = html.replace(/<head\b[^>]*>/i, head => head + '\n<meta charset="utf-8">\n' + bootstrap);
   html = html.replace(/^[ \t]+$/gm, '');
   // Finish all validation/reads before writing either generated artifact.
-  fs.writeFileSync(path.join(root, mapURL), image);
-  fs.writeFileSync(outputPath, html);
+  writeGeneratedFile(path.join(root, mapURL), image);
+  writeGeneratedFile(outputPath, html);
   return {html, manifest, outputPath, sourcePath};
 }
 function build(options) { return withMetadata(options).html; }

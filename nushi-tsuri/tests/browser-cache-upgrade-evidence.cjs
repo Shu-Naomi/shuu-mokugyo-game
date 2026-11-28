@@ -64,7 +64,7 @@ function inspectRelease(files) {
     const direct = [...core.matchAll(/"([^"]+)"/g)].map(match => match[1]);
     assert.ok(!core.includes('...self.SHU_VILLAGE_PRECACHE') || imported.length, 'spread manifest must be loaded');
     const all = [...imported,...direct];
-    const deduplicates = /addAll\(\[\.\.\.new Set\(CORE_ASSETS\)\]\)/.test(worker);
+    const deduplicates = /addAll\(\[\.\.\.new Set\(CORE_ASSETS\)\]\)|for \(const resource of new Set\(CORE_ASSETS\)\)/.test(worker);
     if(!deduplicates)assert.equal(new Set(all).size,all.length,'no duplicate precache entries');
     const coreAssets = deduplicates ? [...new Set(all)] : all;
     assert.ok(coreAssets.includes(cssUrl), 'CSS URL belongs to the actual install list');

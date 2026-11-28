@@ -1,0 +1,256 @@
+'use strict';
+
+// Run against a checkout of the previous public release and the real candidate tree.
+// node browser-map-update.cjs /path/to/previous/nushi-tsuri [success|corrupt|quota|fresh]
+const assert = require('node:assert/strict');
+const { createHash } = require('node:crypto');
+const fs = require('node:fs');
+const http = require('node:http');
+const path = require('node:path');
+const { chromium } = require('playwright');
+const { legacyFixture } = require('./browser-reference-village-evidence.cjs');
+
+const candidateRoot = path.resolve(__dirname, '..');
+const baselineRoot = path.resolve(process.argv[2]);
+const scenario = process.argv[3] || 'success';
+assert.ok(['success', 'corrupt', 'quota', 'fresh'].includes(scenario));
+const scope = '/nushi-tsuri/';
+const quotaLimit = 450_000_000;
+const timeout = 150_000;
+const oldRelease = 'v252-85';
+const newRelease = 'v252-92';
+const repair = 'assets/rural-bridge-shadow-repair.png';
+const sha256 = bytes => createHash('sha256').update(bytes).digest('hex');
+const fileHash = (directory, file) => sha256(fs.readFileSync(path.join(directory, file)));
+const mime = {html:'text/html; charset=utf-8', js:'text/javascript', css:'text/css', json:'application/json', png:'image/png', jpg:'image/jpeg', webp:'image/webp', svg:'image/svg+xml', mp3:'audio/mpeg', wav:'audio/wav'};
+const report = {scenario, quotaLimit, storage:{}, offlineSlots:[], networkBytes:0};
+const slots = [{id:1, money:4321}, {id:2, money:6789}];
+
+function deferred() {
+  let resolve;
+  const promise = new Promise(done => { resolve = done; });
+  return {promise, resolve};
+}
+
+function createHost() {
+  const host = {phase:'old', workerRequest:deferred(), releaseWorker:deferred(), injectedCorruption:false};
+  host.server = http.createServer(async (req, res) => {
+    if (host.phase === 'offline') return req.socket.destroy();
+    const pathname = new URL(req.url, 'http://localhost').pathname;
+    if (pathname === '/observe') {
+      res.writeHead(200, {'Content-Type':mime.html});
+      return res.end('<!doctype html><title>Disposable save fixture</title>');
+    }
+    if (!pathname.startsWith(scope)) {res.writeHead(404); return res.end();}
+    const relative = decodeURIComponent(pathname.slice(scope.length)) || 'index.html';
+    const candidate = host.phase === 'candidate';
+    const directory = candidate ? candidateRoot : baselineRoot;
+    const file = path.resolve(directory, relative);
+    const stat = file.startsWith(directory + path.sep) && fs.statSync(file, {throwIfNoEntry:false});
+    if (!stat?.isFile()) {res.writeHead(404); return res.end();}
+    if (candidate && relative === 'sw.js') {
+      host.workerRequest.resolve();
+      await host.releaseWorker.promise;
+    }
+    if (candidate && scenario === 'corrupt' && relative === repair) {
+      host.injectedCorruption = true;
+      res.writeHead(200, {'Content-Type':'image/png', 'Cache-Control':'no-store'});
+      return res.end('intentionally corrupt map image');
+    }
+    res.writeHead(200, {'Content-Type':mime[path.extname(file).slice(1)] || 'application/octet-stream', 'Cache-Control':'no-store'});
+    if (candidate) res.once('finish', () => { report.networkBytes += stat.size; });
+    fs.createReadStream(file).on('error', () => res.destroy()).pipe(res);
+  });
+  return host;
+}
+
+function saveSnapshot() {
+  return Object.fromEntries(Object.keys(localStorage).filter(key =>
+    /^nushi-(production-reference|inugoya-v2)/.test(key)
+  ).sort().map(key => [key, localStorage.getItem(key)]));
+}
+
+async function gameReady(page, controlled = true) {
+  try {
+    await page.waitForFunction(required => (!required || navigator.serviceWorker.controller) && globalThis.ShuVillageReleaseGate?.started, controlled, {timeout:45_000});
+  } catch (error) {
+    console.error(await page.evaluate(() => ({
+      gate:document.getElementById('villageSaveGate')?.textContent,
+      controller:navigator.serviceWorker.controller?.scriptURL
+    })));
+    throw error;
+  }
+}
+
+async function cachedEntry(page, name) {
+  const hash = await page.evaluate(async cacheName => {
+    const cache = await caches.open(cacheName);
+    const cached = await cache.match('/nushi-tsuri/');
+    if (!cached) return null;
+    const digest = await crypto.subtle.digest('SHA-256', await cached.arrayBuffer());
+    return Array.from(new Uint8Array(digest), byte => byte.toString(16).padStart(2, '0')).join('');
+  }, name);
+  return hash;
+}
+
+async function resumeOffline(context, url, expected, before) {
+  for (const slot of slots) {
+    const page = await context.newPage();
+    // Both normal entry URLs must resolve when every network request is denied.
+    const start = slot.id === 1 ? url + 'index.html' : url;
+    const response = await page.goto(start);
+    assert.ok(response.fromServiceWorker(), 'offline entry was served by the worker');
+    const responseHash = sha256(await response.body());
+    assert.ok(expected.hashes.includes(responseHash), 'Unexpected offline navigation response: ' + responseHash);
+    await gameReady(page);
+    assert.equal(await page.locator('#gameRelease').textContent(), expected.version);
+    if (slot.id === 1) assert.deepEqual(await page.evaluate(saveSnapshot), before);
+    await page.locator('#titleContinue').click();
+    await page.locator('[data-save-slot="' + slot.id + '"]').click();
+    await page.locator('#titleResume').click();
+    // Switching slots can reload the game before its HUD has been attached.
+    await page.waitForFunction(({id, money}) => {
+      const active = document.getElementById('activeSaveSlot');
+      const balance = document.getElementById('money');
+      return active?.textContent === 'セーブ' + id && balance &&
+        Number(balance.textContent.replaceAll(',', '')) === money;
+    }, slot);
+    report.offlineSlots.push({...slot, release:expected.version, sha256:responseHash});
+    await page.close();
+  }
+}
+
+async function run() {
+  const baselineHash = fileHash(baselineRoot, 'index.html');
+  const candidateHash = fileHash(candidateRoot, 'release-252-92.html');
+  const guardedEntryHash = fileHash(candidateRoot, 'index.html');
+  assert.notEqual(candidateHash, baselineHash);
+  const host = createHost();
+  await new Promise(resolve => host.server.listen(0, '127.0.0.1', resolve));
+  const origin = 'http://127.0.0.1:' + host.server.address().port;
+  const gameURL = origin + scope;
+  let browser;
+  try {
+    const executablePath = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE || process.env.CHROMIUM_EXECUTABLE_PATH;
+    browser = await chromium.launch({headless:true, ...(executablePath ? {executablePath} : {})});
+    const context = await browser.newContext({viewport:{width:844, height:390}, isMobile:true, hasTouch:true, deviceScaleFactor:2});
+    // This monitoring page is outside the game scope. It never owns a save lock
+    // or keeps either worker waiting once the last gameplay tab closes.
+    const probe = await context.newPage();
+    await probe.goto(origin + '/observe');
+    const devtools = await context.newCDPSession(probe);
+    const quota = size => devtools.send('Storage.overrideQuotaForOrigin', {origin, quotaSize:size});
+    const usage = async () => (await devtools.send('Storage.getUsageAndQuota', {origin})).usage;
+    await quota(quotaLimit);
+    await probe.evaluate(async saves => {
+      localStorage.setItem('nushi-inugoya-v2', JSON.stringify(saves[0]));
+      localStorage.setItem('nushi-inugoya-v2-slot2', JSON.stringify(saves[1]));
+    }, slots.map(({money}) => ({...legacyFixture(), money})));
+    if (scenario === 'fresh') {
+      assert.deepEqual(await probe.evaluate(() => caches.keys()), []);
+      assert.equal(await probe.evaluate(async () => (await navigator.serviceWorker.getRegistrations()).length), 0);
+      host.phase = 'candidate';
+      host.releaseWorker.resolve();
+      const first = await context.newPage();
+      await first.goto(gameURL);
+      await gameReady(first, false);
+      assert.equal(await first.locator('#gameRelease').textContent(), newRelease);
+      const saved = await first.evaluate(saveSnapshot);
+      await first.evaluate(() => {
+        navigator.serviceWorker.ready.then(registration => { window.freshRegistration = registration; });
+      });
+      await first.waitForFunction(() => window.freshRegistration?.active?.state === 'activated', null, {timeout});
+      report.storage.afterInstall = await usage();
+      await first.close();
+      host.phase = 'offline';
+      await context.setOffline(true);
+      await resumeOffline(context, gameURL, {hashes:[candidateHash], version:newRelease}, saved);
+      report.storage.afterResume = await usage();
+      assert.ok(report.storage.afterResume > 0 && report.storage.afterResume <= quotaLimit);
+      await context.close();
+      return;
+    }
+    await probe.evaluate(async () => {
+      window.registration = await navigator.serviceWorker.register('/nushi-tsuri/sw.js?v=252-85');
+    });
+    await probe.waitForFunction(() => registration.active?.state === 'activated', null, {timeout});
+    const old = await context.newPage();
+    const oldResponse = await old.goto(gameURL + 'index.html');
+    assert.equal(sha256(await oldResponse.body()), baselineHash);
+    await gameReady(old);
+    assert.equal(await old.locator('#gameRelease').textContent(), oldRelease);
+    const before = await old.evaluate(saveSnapshot);
+    for (const slot of slots) assert.ok(Object.keys(before).some(key => key.endsWith('-slot' + slot.id)));
+    const cacheNames = await probe.evaluate(() => caches.keys());
+    const oldCache = cacheNames.find(name => name.endsWith('252-85'));
+    assert.ok(oldCache);
+    assert.equal(await cachedEntry(probe, oldCache), baselineHash);
+    report.storage.before = await usage();
+    assert.ok(report.storage.before > 0 && report.storage.before < quotaLimit);
+    if (scenario === 'quota') {
+      report.storage.imposed = report.storage.before + 524288;
+      await quota(report.storage.imposed);
+    }
+    await probe.evaluate(() => {
+      registration.addEventListener('updatefound', () => {
+        window.installingCandidate = registration.installing;
+      });
+    });
+    host.phase = 'candidate';
+    await probe.evaluate(() => { registration.update().catch(error => { window.updateError = String(error); }); });
+    let timer;
+    try {
+      await Promise.race([host.workerRequest.promise, new Promise((_, reject) => {
+        timer = setTimeout(() => reject(Error('Old registration never requested the candidate worker')), 30_000);
+      })]);
+    } finally { clearTimeout(timer); }
+    // Exercise the published loader while v252-85 still controls navigation.
+    // Its network-first handler writes the network response into the old cache.
+    await old.close(); // release the single-tab save lock while the old worker is still active
+    const secondTab = await context.newPage();
+    await secondTab.goto(gameURL);
+    await gameReady(secondTab);
+    assert.equal(await secondTab.locator('#gameRelease').textContent(), oldRelease);
+    assert.deepEqual(await secondTab.evaluate(saveSnapshot), before);
+    host.releaseWorker.resolve();
+    const success = scenario === 'success';
+    await probe.waitForFunction(expected =>
+      window.installingCandidate?.state === expected,
+      success ? 'installed' : 'redundant', {timeout});
+    report.storage.afterInstall = await usage();
+    assert.deepEqual(await secondTab.evaluate(saveSnapshot), before);
+    assert.equal(await cachedEntry(probe, oldCache), baselineHash, 'the old worker must retain a usable offline entry');
+    if (success) {
+      assert.ok(await probe.evaluate(() => registration.waiting === window.installingCandidate));
+      assert.ok(report.storage.afterInstall <= quotaLimit);
+    } else {
+      assert.deepEqual(await probe.evaluate(() => caches.keys()), cacheNames, 'failed update must remove only its partial cache');
+      if (scenario === 'corrupt') assert.ok(host.injectedCorruption, 'candidate requested the deliberately damaged file');
+    }
+    await secondTab.close();
+    if (success) {
+      await probe.waitForFunction(() => window.installingCandidate.state === 'activated', null, {timeout});
+    }
+    host.phase = 'offline';
+    await context.setOffline(true);
+    await resumeOffline(context, gameURL, success
+      ? {hashes:[candidateHash], version:newRelease} : {hashes:[baselineHash, guardedEntryHash], version:oldRelease}, before);
+    report.storage.afterResume = await usage();
+    report.storage.added = report.storage.afterInstall - report.storage.before;
+    await context.close();
+  } finally {
+    host.releaseWorker.resolve();
+    await browser?.close();
+    host.server.closeAllConnections();
+    await new Promise(resolve => host.server.close(resolve));
+  }
+}
+
+run().catch(error => {
+  report.failure = String(error);
+  console.error(error);
+  process.exitCode = 1;
+}).finally(() => {
+  console.log(JSON.stringify(report));
+  if (process.env.MAP_UPDATE_REPORT) fs.writeFileSync(process.env.MAP_UPDATE_REPORT, JSON.stringify(report, null, 2) + '\n');
+});
