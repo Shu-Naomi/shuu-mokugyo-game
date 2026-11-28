@@ -20,8 +20,8 @@ const timeout = 150_000;
 const hasPublishedMapRelease = fs.existsSync(path.join(baselineRoot, 'release-252-92.html'));
 const oldRelease = hasPublishedMapRelease ? 'v252-92' : 'v252-85';
 const oldEntry = hasPublishedMapRelease ? 'release-252-92.html' : 'index.html';
-const newRelease = 'v252-92';
-const damagedFile = hasPublishedMapRelease ? 'assets/player-girl-walk-v35-final.png' : 'assets/rural-bridge-shadow-repair.png';
+const newRelease = 'v252-93';
+const damagedFile = hasPublishedMapRelease ? 'rural-canals-252-93.js' : 'assets/rural-bridge-shadow-repair.png';
 const media = [
   {file:'assets/player-boy.png', width:540, height:430},
   {file:'assets/player-boy-walk-v35-final.png', width:540, height:860},
@@ -155,7 +155,7 @@ async function resumeOffline(context, url, expected, before, completedUpdate) {
 
 async function run() {
   const baselineHash = fileHash(baselineRoot, oldEntry);
-  const candidateHash = fileHash(candidateRoot, 'release-252-92.html');
+  const candidateHash = fileHash(candidateRoot, 'release-252-93.html');
   const guardedEntryHash = fileHash(candidateRoot, 'index.html');
   assert.notEqual(fileHash(candidateRoot, 'sw.js'), fileHash(baselineRoot, 'sw.js'), 'expected a different candidate worker');
   const host = createHost();

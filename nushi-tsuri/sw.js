@@ -1,7 +1,7 @@
 // Keep this release suffix, the HUD badge, and the index.html registration in sync.
-const CACHE_NAME = "nushi-tsuri-v252-map-offline-252-92";
+const CACHE_NAME = "nushi-tsuri-v252-map-offline-252-93";
 
-importScripts("./village-precache-252-92.js");
+importScripts("./village-precache-252-93.js");
 const CORE_ASSETS = [
   ...self.SHU_VILLAGE_PRECACHE,
   "./assets/fish-kijihata.png",
@@ -19,7 +19,7 @@ const CORE_ASSETS = [
   "./assets/fish-houraihimeji-v252-56.png",
   "./outdoor-light.js?v=252-85",
   "./assets/rural-bridge-shadow-repair.png",
-  "./rural-canals.js?v=252-55",
+  "./rural-canals-252-93.js?v=252-93",
   "./assets/rural-canals-v252-48.webp",
   "./assets/rural-canal-cast-v252-48.webp",
   "./assets/rural-backwater-cast-v252-48.webp",
@@ -452,7 +452,7 @@ const CORE_ASSETS = [
 // Directory and query aliases can share bytes without copying the old cache.
 const INDEX_KEY = './__offline_release_index__';
 // These sprites are required to draw both saved avatars and their pets. Keep
-// this addition independent of the already installed v252-92 game index.
+// this addition independent of the already installed v252-93 game index.
 const SPRITE_CACHE = CACHE_NAME + '-sprites-1';
 const SPRITE_DIGESTS = {
   'assets/player-boy.png':'c436f30a96e216f3e355636617b0eef7c738653f1fa605f3ed429c64a365bc18',

@@ -1,8 +1,8 @@
 const assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),http=require('node:http');
 const {chromium}=require('playwright'),{seed,saveKey}=require('./game-harness.cjs');
 const {planRuralRoute}=require('./rural-canals-route.cjs');
-const {createHash}=require('node:crypto'),R=require('../rural-canals.js');
-const sourceFiles=['index.html','rural-canals.js','mountain-region.js','scene-layers.js','scenery-worker.js','layered-scenery.js','sw.js',R.asset,'assets/rural-canal-cast-v252-48.webp','assets/rural-backwater-cast-v252-48.webp'];
+const {createHash}=require('node:crypto'),R=require('../rural-canals-252-93.js');
+const sourceFiles=['index.html','rural-canals-252-93.js','mountain-region.js','scene-layers.js','scenery-worker.js','layered-scenery.js','sw.js',R.asset,'assets/rural-canal-cast-v252-48.webp','assets/rural-backwater-cast-v252-48.webp'];
 const digest=data=>createHash('sha256').update(data).digest('hex');
 const root=path.resolve(__dirname,'..'),directory=path.resolve(process.env.RURAL_EVIDENCE_DIR||'/tmp/rural-canals-evidence');
 const screens=[{width:1280,height:720,mobile:false,dpr:1},{width:844,height:390,mobile:true,dpr:3},{width:820,height:366,mobile:true,dpr:1.875}];

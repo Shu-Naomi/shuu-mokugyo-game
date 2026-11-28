@@ -1,7 +1,7 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path');
 const {boot,seed,read,saveKey}=require('./game-harness.cjs');
 const {planRuralRoute}=require('./rural-canals-route.cjs');
-const M=require('../mountain-region.js'),R=require('../rural-canals.js');
+const M=require('../mountain-region.js'),R=require('../rural-canals-252-93.js');
 const fixture=extra=>({...seed(),mapRegion:'village',x:210,y:43,hp:100,soundEnabled:false,...extra});
 const resources=w=>read(w,'({money:s.money,hp:s.hp,baits:s.baits,caught:s.caught,equipment:s.equipment,questCompletions:s.questCompletions,gameMinutes:s.gameMinutes})');
 function walk(w,target){const steps=w.eval('('+planRuralRoute.toString()+')('+JSON.stringify(target)+')');for(const direction of steps){const b=w.document.querySelector('[data-move="'+direction+'"]');b.onpointerdown({preventDefault(){},currentTarget:b,pointerId:1});b.onpointerup();}return steps.length;}
@@ -38,8 +38,8 @@ test('invalid rural saves recover onto land and old village saves preserve progr
 test('rural scene is registered and packaged for offline reload',()=>{
  assert.ok(M.isRegion(R.id));assert.equal(M.regions[R.id].asset,R.asset);
  const root=path.join(__dirname,'..'),html=fs.readFileSync(path.join(root,'index.html'),'utf8'),sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');
- assert.match(html,/rural-canals.js\?v=/);assert.ok(sw.includes(R.asset));assert.ok(fs.existsSync(path.join(root,R.asset)));
- require('./release-assets.cjs').releaseAssets().assertPageAsset('rural-canals.js');
+ assert.match(html,/rural-canals-252-93.js\?v=/);assert.ok(sw.includes(R.asset));assert.ok(fs.existsSync(path.join(root,R.asset)));
+ require('./release-assets.cjs').releaseAssets().assertPageAsset('rural-canals-252-93.js');
 });
 test('ordinary rural funa, dojo and namazu can be landed once and their catch records survive reload',()=>{
  const app=boot(fixture({mapRegion:R.id,...R.entry,baits:{worm:10},selectedBait:'worm',selectedHook:'medium',ownedRods:['bamboo','starGazer'],selectedRod:'starGazer'})),w=app.window;let saved;
