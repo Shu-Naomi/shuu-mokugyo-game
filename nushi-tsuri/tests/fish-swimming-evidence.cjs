@@ -1,11 +1,17 @@
 // Real decoded artwork, deterministic before/after temporal evidence. No saves or network writes.
-const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process'),Module=require('node:module');
+const fs=require('node:fs'),path=require('node:path'),{execFileSync}=require('node:child_process'),{compileFunction}=require('node:vm');
 const {createCanvas,loadImage}=require('@napi-rs/canvas'),A=require('./fixtures/current-fish-art.cjs'),M=require('../fish-motion-252-94.js'),L=require('../aquarium-life-252-94.js');
 const root=path.resolve(__dirname,'..'),directory=path.resolve(process.env.FISH_SWIM_EVIDENCE_DIR||path.join(__dirname,'fish-swimming-evidence'));
 const baselineRef=process.env.FISH_SWIM_BASE_REF||'a67f76b6e7072478a098d25ba3200fff9b39f4d4';
-const source=execFileSync('git',['show',baselineRef+':nushi-tsuri/fish-art.js'],{cwd:root,encoding:'utf8'});
-const beforeModule=new Module(path.join(root,'fish-art-baseline.cjs'));beforeModule.paths=module.paths;beforeModule._compile(source,path.join(root,'fish-art-baseline.cjs'));
-const Before=beforeModule.exports;
+// Recreate the original browser load order so the older renderer uses the
+// species definitions from its own commit, including their sprite layout.
+const baselineRuntime = {};
+for (const file of ['fish-additions.js', 'fish-art.js']) {
+  const revision = baselineRef + ':nushi-tsuri/' + file;
+  const source = execFileSync('git', ['show', revision], {cwd: root, encoding: 'utf8'});
+  compileFunction(source, ['globalThis', 'module'], {filename: revision})(baselineRuntime, undefined);
+}
+const Before = baselineRuntime.ShuFishArt;
 const ids=['unagi','utsubo','dojoAlbino','moroko','buri','kawahagi','namazu','medakaGold','hirame'];
 const baseId=id=>id==='dojoAlbino'?'dojo':id==='medakaGold'?'medaka':id;
 const all={...A.species,...A.aquarium},smooth=t=>t*t*(3-2*t);
